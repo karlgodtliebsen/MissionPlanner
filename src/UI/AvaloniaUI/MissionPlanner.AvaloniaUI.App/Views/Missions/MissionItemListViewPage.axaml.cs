@@ -11,12 +11,18 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Missions;
 /// </summary>
 public partial class MissionItemListViewPage : UserControlViewBase
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MissionItemListViewPage"/> class.
-    /// </summary>
-    public MissionItemListViewPage(MissionMapViewModel viewModel)
+    /// <summary>Initializes a new instance for dialog hosting.</summary>
+    public MissionItemListViewPage()
     {
         InitializeComponent();
-        DataContext = viewModel;
     }
+
+    ///// <summary>
+    ///// Initializes a new instance of the <see cref="MissionItemListViewPage"/> class.
+    ///// </summary>
+    //public MissionItemListViewPage(MissionMapViewModel viewModel)
+    //{
+    //    InitializeComponent();
+    //    DataContext = viewModel;
+    //}
 }

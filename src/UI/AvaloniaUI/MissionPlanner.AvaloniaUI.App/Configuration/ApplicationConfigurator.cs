@@ -100,6 +100,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
         services.TryAddSingleton<IPlannerSettingsStore, JsonPlannerSettingsStore>();
         services.TryAddSingleton<IPlannerSecretStore, SecurePlannerSecretStore>();
+        services.TryAddSingleton<IFilePickerPathStore, FilePickerPathStore>();
         services.TryAddTransient<IMapSecretStore, PlannerMapSecretStoreAdapter>();
 
         services.TryAddTransient<IActiveMapSourceStore, PlannerActiveMapSourceStore>();
@@ -139,6 +140,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<AvaloniaMissionPlanningFileService>();
         services.TryAddTransient<IFileOpenService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
         services.TryAddTransient<IFileSaveService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
+        services.TryAddTransient<IFirmwareFilePicker, AvaloniaFirmwareFilePicker>();
         services.TryAddTransient<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
         services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
         services.TryAddTransient<IFirmwareUserInteraction, FirmwareInteractionService>();

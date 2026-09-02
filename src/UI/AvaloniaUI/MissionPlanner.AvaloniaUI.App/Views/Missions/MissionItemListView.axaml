@@ -1,231 +1,468 @@
-﻿<utilities:UserControlViewBase 
-                    xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                    xmlns:missions="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Missions"
-                    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
-                    x:Class="MissionPlanner.AvaloniaUI.App.Views.Missions.MissionItemListView"
-                    x:DataType="missions:MissionMapViewModel"
-                    x:Name="Root">
+﻿<utilities:UserControlViewBase
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:missions="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Missions"
+    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+    x:Class="MissionPlanner.AvaloniaUI.App.Views.Missions.MissionItemListView"
+    x:DataType="missions:MissionMapViewModel"
+    x:Name="Root">
 
     <Grid RowDefinitions="Auto,*" Margin="10"
-          RowSpacing="6"   HorizontalAlignment="Center"  VerticalAlignment="Stretch">
+          RowSpacing="25"  HorizontalAlignment="Stretch"  VerticalAlignment="Stretch">
 
-        <Border  HorizontalAlignment="Center"  Classes="SectionCard">
-            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="10"
+        <Border  HorizontalAlignment="Center" VerticalAlignment="Stretch"  Classes="SectionCard" Padding="20" Width="{Binding  #BorderItemsRepeater.Bounds.Width}">
+
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,0,20,0"
                   RowSpacing="6"  HorizontalAlignment="Stretch"   VerticalAlignment="Stretch">
                 <!-- Title and mode switch. -->
-                <Label Grid.Row="1"  Content="Mission" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
+                <Label Grid.Row="1"  Content="Mission" Classes="Title" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
-                <Label Grid.Row="2" Content="{Binding HomePosition, StringFormat='Home: {0}'}" FontSize="12" Opacity="0.8" />
+                <Label Grid.Row="2" Content="{Binding HomePosition, StringFormat='Home: {0}'}"  Classes="H4" Opacity="0.8" />
 
                 <!-- Complete-mode header: info + editor settings -->
-                <Label Grid.Row="3" Content="{Binding MissionSummary}" FontSize="12" FontWeight="Bold" />
+                <Label Grid.Row="3" Content="{Binding MissionSummary}" Classes="H4" />
 
-                <Grid Grid.Row="4" 
-                      Width="400"
-                      HorizontalAlignment="Left" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalAlignment="Center" ColumnSpacing="6"
-                        IsVisible="{Binding #Root.ShowAllRows}">
-                    <Label Grid.Column="0" Content="WP Radius (m):" FontSize="11" VerticalAlignment="Center"  />
-                    <!--
-                    <extended:NumericField
-                        Grid.Column="1"   FontSize="11" WidthRequest="25"
-                        Content="{Binding WaypointRadiusMeters,Mode=TwoWay}"
-                        NumberFormat="F1"
-                        HorizontalAlignment="Stretch"
-                        HorizontalTextAlignment="End" />
-
-                    <Label Grid.Column="2" Content="Loiter Radius (m):" FontSize="11" VerticalAlignment="Center"  />
-                    <extended:NumericField
-                        Grid.Column="3"   FontSize="11" WidthRequest="25"
-                        Content="{Binding LoiterRadiusMeters,Mode=TwoWay}"
-                        NumberFormat="F1"
-                        HorizontalAlignment="Stretch"
-                        HorizontalTextAlignment="End" />
-
-                    <Label Grid.Column="4" Content="Default Alt (m):" FontSize="11" VerticalAlignment="Center" />
-                    <extended:NumericField
-                        Grid.Column="5"  FontSize="11" WidthRequest="25"
-                        Content="{Binding DefaultAltitudeMeters,Mode=TwoWay}"
-                        NumberFormat="F1"
-                        HorizontalAlignment="Stretch"
-                        HorizontalTextAlignment="End" />
-                    <Label Grid.Column="6" Content="Alt Warn (m):" FontSize="11" VerticalAlignment="Center"  />
-                    <extended:NumericField
-                        Grid.Column="7" FontSize="11" WidthRequest="25"
-                        Content="{Binding AltWarnMeters,Mode=TwoWay}"
-                        NumberFormat="F1"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Right" />
--->
+                <Grid Grid.Row="4"
+                      HorizontalAlignment="Stretch" ColumnDefinitions="Auto,100,Auto,100,Auto,100,Auto,100" VerticalAlignment="Center" ColumnSpacing="6"
+                      IsVisible="{Binding #Root.ShowAllRows}">
+                    <Label Grid.Column="0" Content="WP Radius (m):"  Classes="H5"  VerticalAlignment="Center"  />
+                    <NumericUpDown Grid.Column="1"  Classes="H5"  HorizontalAlignment="Stretch"   HorizontalContentAlignment="Right" Value="{Binding WaypointRadiusMeters, Mode=TwoWay}" />
+                    <Label Grid.Column="2" Content="Loiter Radius (m):" Classes="H5" VerticalAlignment="Center"  />
+                    <NumericUpDown Grid.Column="3"  Classes="H5"  HorizontalAlignment="Stretch"    HorizontalContentAlignment="Right" Value="{Binding LoiterRadiusMeters, Mode=TwoWay}" />
+                    <Label Grid.Column="4" Content="Default Alt (m):"  Classes="H5"  VerticalAlignment="Center"  />
+                    <NumericUpDown Grid.Column="5"  Classes="H5" HorizontalAlignment="Stretch"   HorizontalContentAlignment="Right" Value="{Binding DefaultAltitudeMeters, Mode=TwoWay}" />
+                    <Label Grid.Column="6" Content="Alt Warn (m):"  Classes="H5"  VerticalAlignment="Center"  />
+                    <NumericUpDown Grid.Column="7"  Classes="H5" HorizontalAlignment="Stretch"  HorizontalContentAlignment="Right" Value="{Binding AltWarnMeters, Mode=TwoWay}" />
                 </Grid>
             </Grid>
         </Border>
+        <Border x:Name="BorderItemsRepeater" Grid.Row="1"  HorizontalAlignment="Center" VerticalAlignment="Stretch"  Classes="SectionCard" Padding="20">
+            <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" >
+                <!--
+                Assumptions:
 
-        <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <!--
-            <controls:VirtualizedDataGrid 
-                ItemsSource="{Binding MissionItems}" 
-                ItemSizingStrategy= "MeasureFirstItem"
-                ShowSearchBar="False"
-                HorizontalAlignment="Center" 
-                VerticalAlignment="Stretch" 
-            >
-                <controls:VirtualizedDataGrid.EmptyView>
-                    <Label HorizontalAlignment="Center" Content="No mission items. Right-click the map to add waypoints."
-                       FontSize="12" Opacity="0.6" Margin="0,20" />
-                </controls:VirtualizedDataGrid.EmptyView>
+                Root is your MissionMapView UserControl and already has:
+                x:Name="Root"
 
-                <controls:VirtualizedDataGrid.Columns>
+                MissionMapView.DataContext is MissionMapViewModel.
 
-                        <material:DataGridColumn Width="75" Title="#" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="missions1:MissionItemRow">
-                                    <Label Content="{Binding Number}" FontAttributes="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"  />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                The DataTemplate DataContext is MissionItemRow.
+                -->
 
-                    <material:DataGridColumn Width="200" Title="Command" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <material:SelectField ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
-                                        SelectedItem="{Binding SelectedCommand}"
-                                        HorizontalTextAlignment="Center"
-                                        VerticalAlignment="Center" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="100" Title="Param1"  IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <extended:NumericField
-                                    Value="{Binding Param1, Mode=TwoWay}"
-                                    NumberFormat="F1"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalTextAlignment="End" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="100" Title="Param2"  IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <extended:NumericField
-                                    Value="{Binding Param2, Mode=TwoWay}"
-                                    NumberFormat="F1"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalTextAlignment="End" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="100" Title="Param3" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <extended:NumericField
-                                    Value="{Binding Param3, Mode=TwoWay}"
-                                    NumberFormat="F1"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalTextAlignment="End" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="100" Title="Param4" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <extended:NumericField
-                                    Value="{Binding Param4, Mode=TwoWay}"
-                                    NumberFormat="F1"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalTextAlignment="End" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="120" Title="Latitude">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <extended:NumericField
-                                    Value="{Binding Latitude, Mode=TwoWay}"
-                                    NumberFormat="F7"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalTextAlignment="End" />
+                <ScrollViewer
+                    HorizontalScrollBarVisibility="Auto"
+                    VerticalScrollBarVisibility="Disabled"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
 
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="120" Title="Longitude">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <extended:NumericField
-                                    Value="{Binding Longitude, Mode=TwoWay}"
-                                    NumberFormat="F7"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalTextAlignment="End" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="100" Title="Alt (m)">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <extended:NumericField
-                                    Value="{Binding Altitude, Mode=TwoWay}"
-                                    NumberFormat="F1"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalTextAlignment="End" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="125" Title="Frame" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <material:SelectField ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
-                                    SelectedItem="{Binding SelectedFrame}" VerticalAlignment="Center" HorizontalTextAlignment="Center" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="100" Title="Distance" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <Label  Content="{Binding Distance, StringFormat='{0:F1}'}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="100" Title="Azimuth" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <Label  Content="{Binding Azimuth, StringFormat='{0:F0}'}"  VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="100" Title="Gradient" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <Label  Content="{Binding Gradient, StringFormat='{0:F1}'}"  VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="130" Title="Commands">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions1:MissionItemRow">
-                                <HorizontalStackLayout Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                    <Button Content="▲" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
-                                      Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
-                                      CommandParameter="{Binding .}" />
-                                    <Button Content="▼" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
-                                      Command="{Binding MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
-                                      CommandParameter="{Binding .}" />
-                                    <Button Content="✕" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
-                                      Command="{Binding RemoveItemCommand, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
-                                      CommandParameter="{Binding .}" />
-                                </HorizontalStackLayout>
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                </controls:VirtualizedDataGrid.Columns>
-            </controls:VirtualizedDataGrid>
+                    <!--
+                    Outer horizontal ScrollViewer keeps header and rows horizontally
+                    synchronized.
 
-            -->
+                    Inner ScrollViewer below handles vertical scrolling/virtualization.
+                    -->
+                    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center">
 
-        </Grid>
+                        <!-- ============================================================= -->
+                        <!-- Header                                                        -->
+                        <!-- ============================================================= -->
+
+                        <Border Grid.Row="0" HorizontalAlignment="Center"
+                                BorderThickness="0,0,0,1"
+                                Padding="0,0,0,4">
+
+                            <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Center">
+
+                                <!-- Columns only shown when ShowAllRows == true -->
+                                <StackPanel Orientation="Horizontal"  Spacing="5"
+                                            IsVisible="{Binding ShowAllRows, ElementName=Root}">
+
+                                    <TextBlock   x:Name="Column1" Width="75"
+                                                 Text="#"
+                                                 FontWeight="Bold"
+                                                 TextAlignment="Center"
+                                                 VerticalAlignment="Center" />
+
+                                    <TextBlock   x:Name="Column2" Width="200"
+                                                 Text="Command"
+                                                 FontWeight="Bold"
+                                                 TextAlignment="Center"
+                                                 VerticalAlignment="Center" />
+
+                                    <TextBlock   x:Name="Column3" Width="70"
+                                                 Text="Param1"
+                                                 FontWeight="Bold"
+                                                 TextAlignment="Center"
+                                                 VerticalAlignment="Center" />
+
+                                    <TextBlock   x:Name="Column4" Width="70"
+                                                 Text="Param2"
+                                                 FontWeight="Bold"
+                                                 TextAlignment="Center"
+                                                 VerticalAlignment="Center" />
+
+                                    <TextBlock   x:Name="Column5" Width="70"
+                                                 Text="Param3"
+                                                 FontWeight="Bold"
+                                                 TextAlignment="Center"
+                                                 VerticalAlignment="Center" />
+
+                                    <TextBlock   x:Name="Column6" Width="70"
+                                                 Text="Param4"
+                                                 FontWeight="Bold"
+                                                 TextAlignment="Center"
+                                                 VerticalAlignment="Center" />
+
+                                </StackPanel>
+
+                                <!-- Always visible -->
+                                <TextBlock   x:Name="Column7" Width="130"
+                                             Text="Latitude"
+                                             FontWeight="Bold"
+                                             TextAlignment="Center"
+                                             VerticalAlignment="Center" />
+
+                                <TextBlock   x:Name="Column8" Width="130"
+                                             Text="Longitude"
+                                             FontWeight="Bold"
+                                             TextAlignment="Center"
+                                             VerticalAlignment="Center" />
+
+                                <TextBlock   x:Name="Column9" Width="100"
+                                             Text="Alt (m)"
+                                             FontWeight="Bold"
+                                             TextAlignment="Center"
+                                             VerticalAlignment="Center" />
+
+                                <!-- Columns only shown when ShowAllRows == true -->
+                                <StackPanel Orientation="Horizontal"  Spacing="5"
+                                            IsVisible="{Binding ShowAllRows, ElementName=Root}">
+
+                                    <TextBlock   x:Name="Column10" Width="125"
+                                                 Text="Frame"
+                                                 FontWeight="Bold"
+                                                 TextAlignment="Center"
+                                                 VerticalAlignment="Center" />
+
+                                    <TextBlock   x:Name="Column11" Width="100"
+                                                 Text="Distance"
+                                                 FontWeight="Bold"
+                                                 TextAlignment="Center"
+                                                 VerticalAlignment="Center" />
+
+                                    <TextBlock  x:Name="Column12"  Width="100"
+                                                Text="Azimuth"
+                                                FontWeight="Bold"
+                                                TextAlignment="Center"
+                                                VerticalAlignment="Center" />
+
+                                    <TextBlock  x:Name="Column13" Width="100"
+                                                Text="Gradient"
+                                                FontWeight="Bold"
+                                                TextAlignment="Center"
+                                                VerticalAlignment="Center" />
+
+                                </StackPanel>
+
+                                <!-- Always visible -->
+                                <TextBlock  x:Name="Column14"
+                                            Width="130"
+                                            Text="Commands"
+                                            FontWeight="Bold"
+                                            TextAlignment="Left"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center" />
+
+                            </StackPanel>
+                        </Border>
+
+
+                        <!-- ============================================================= -->
+                        <!-- Data / Empty view                                              -->
+                        <!-- ============================================================= -->
+
+                        <Grid Grid.Row="1">
+
+                            <ScrollViewer
+                                HorizontalScrollBarVisibility="Disabled"
+                                VerticalScrollBarVisibility="Visible">
+
+                                <ItemsRepeater ItemsSource="{Binding MissionItems}">
+
+                                    <ItemsRepeater.Layout>
+                                        <StackLayout Orientation="Vertical" Spacing="0" />
+                                    </ItemsRepeater.Layout>
+
+                                    <ItemsRepeater.ItemTemplate>
+
+                                        <DataTemplate x:DataType="missions:MissionItemRow">
+
+                                            <Border BorderThickness="0,0,0,1"
+                                                    MinHeight="36">
+
+                                                <StackPanel Orientation="Horizontal" Spacing="5">
+
+                                                    <!-- ================================================= -->
+                                                    <!-- #, Command, Param1-4                             -->
+                                                    <!-- ================================================= -->
+
+                                                    <!--
+                                                    ShowAllRows lives on the UserControl rather than
+                                                    MissionItemRow, so resolve it from the visual ancestor.
+
+                                                    ReflectionBinding is intentional here because the
+                                                    compile-time type is UserControl while ShowAllRows is
+                                                    defined on the concrete MissionMapView.
+                                                    -->
+                                                    <StackPanel  Spacing="5"
+                                                                 Orientation="Horizontal"
+                                                                 IsVisible="{ReflectionBinding $parent[UserControl].ShowAllRows}">
+
+                                                        <!-- # -->
+                                                        <TextBlock
+                                                            
+                                                            Width="{Binding #Column1.Bounds.Width}"
+                                                            Text="{Binding Number}"
+                                                            FontWeight="Bold"
+                                                            TextAlignment="Center"
+                                                            VerticalAlignment="Center" />
+
+
+                                                        <!-- Command -->
+                                                        <ComboBox
+                                                            Width="{Binding #Column2.Bounds.Width}"
+                                                            ItemsSource="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).CommandOptions}"
+                                                            SelectedItem="{Binding SelectedCommand, Mode=TwoWay}"
+                                                            VerticalAlignment="Center"
+                                                            HorizontalContentAlignment="Center"
+                                                            VerticalContentAlignment="Center" />
+
+
+                                                        <TextBox
+                                                            Width="{Binding #Column3.Bounds.Width}"
+                                                            Classes="H5"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Right"
+                                                            TextAlignment="Right"
+                                                            VerticalContentAlignment="Center"
+                                                            VerticalAlignment="Center"
+
+                                                            Text="{Binding Param1, Mode=TwoWay}" />
+
+
+                                                        <TextBox
+                                                            Width="{Binding #Column4.Bounds.Width}"
+                                                            Classes="H5"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Right"
+                                                            TextAlignment="Right"
+                                                            VerticalContentAlignment="Center"
+                                                            VerticalAlignment="Center"
+
+                                                            Text="{Binding Param2, Mode=TwoWay}" />
+                                                        <TextBox
+                                                            Width="{Binding #Column5.Bounds.Width}"
+                                                            Classes="H5"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Right"
+                                                            TextAlignment="Right"
+                                                            VerticalContentAlignment="Center"
+                                                            VerticalAlignment="Center"
+
+                                                            Text="{Binding Param3, Mode=TwoWay}" />
+
+                                                        <!-- Param4 -->
+                                                        <TextBox
+                                                            Width="{Binding #Column6.Bounds.Width}"
+                                                            Classes="H5"
+                                                            HorizontalAlignment="Stretch"
+                                                            HorizontalContentAlignment="Right"
+                                                            TextAlignment="Right"
+                                                            VerticalContentAlignment="Center"
+                                                            VerticalAlignment="Center"
+
+                                                            Text="{Binding Param4, Mode=TwoWay}" />
+
+                                                    </StackPanel>
+
+
+                                                    <!-- ================================================= -->
+                                                    <!-- Latitude                                          -->
+                                                    <!-- ================================================= -->
+
+                                                    <NumericUpDown
+                                                        Width="{Binding #Column7.Bounds.Width}"
+                                                        Classes="H5"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Right"
+                                                        TextAlignment="Right"
+                                                        VerticalContentAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        FormatString="F7"
+                                                        Increment="0.0000001"
+                                                        Value="{Binding Latitude, Mode=TwoWay}" />
+
+
+                                                    <!-- ================================================= -->
+                                                    <!-- Longitude                                         -->
+                                                    <!-- ================================================= -->
+
+                                                    <NumericUpDown
+                                                        Width="{Binding #Column8.Bounds.Width}"
+                                                        Classes="H5"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Right"
+                                                        TextAlignment="Right"
+                                                        VerticalContentAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        FormatString="F7"
+                                                        Increment="0.0000001"
+                                                        Value="{Binding Longitude, Mode=TwoWay}" />
+
+
+                                                    <!-- ================================================= -->
+                                                    <!-- Altitude                                          -->
+                                                    <!-- ================================================= -->
+
+                                                    <NumericUpDown
+                                                        Width="{Binding #Column9.Bounds.Width}"
+                                                        Classes="H5"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Right"
+                                                        TextAlignment="Right"
+                                                        VerticalContentAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        FormatString="F1"
+                                                        Increment="0.1"
+                                                        Value="{Binding Altitude, Mode=TwoWay}" />
+
+
+                                                    <!-- ================================================= -->
+                                                    <!-- Frame, Distance, Azimuth, Gradient                 -->
+                                                    <!-- ================================================= -->
+
+                                                    <StackPanel
+                                                        Orientation="Horizontal"
+                                                        Spacing="5"
+                                                        IsVisible="{ReflectionBinding $parent[UserControl].ShowAllRows}">
+
+                                                        <!-- Frame -->
+                                                        <ComboBox
+                                                            Width="{Binding #Column10.Bounds.Width}"
+                                                            ItemsSource="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).FrameOptions}"
+                                                            SelectedItem="{Binding SelectedFrame, Mode=TwoWay}"
+                                                            HorizontalContentAlignment="Center"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalContentAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            />
+
+
+                                                        <!-- Distance -->
+                                                        <TextBlock
+                                                            Width="{Binding #Column11.Bounds.Width}"
+                                                            Text="{Binding Distance, StringFormat='{}{0:F0}'}"
+                                                            TextAlignment="Center"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center" />
+
+                                                        <!-- Azimuth -->
+                                                        <TextBlock
+                                                            Width="{Binding #Column12.Bounds.Width}"
+                                                            Text="{Binding Azimuth, StringFormat='{}{0:F0}'}"
+                                                            TextAlignment="Center"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center" />
+
+
+                                                        <!-- Gradient -->
+                                                        <TextBlock
+                                                            Width="{Binding #Column13.Bounds.Width}"
+                                                            Text="{Binding Gradient, StringFormat='{}{0:F1}'}"
+                                                            TextAlignment="Center"
+                                                            HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center" />
+
+                                                    </StackPanel>
+
+
+                                                    <!-- ================================================= -->
+                                                    <!-- Commands                                          -->
+                                                    <!-- ================================================= -->
+
+                                                    <StackPanel
+                                                       
+                                                        Width="{Binding #Column14.Bounds.Width}"
+                                                        Orientation="Horizontal"
+                                                        Spacing="4"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center">
+
+                                                        <Button
+                                                            Content="▲"
+                                                            FontSize="10"
+                                                            Padding="4,2"
+                                                            Height="26"
+                                                            Width="26" 
+
+                                                            HorizontalAlignment="Center"
+
+
+                                                            Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).MoveItemUpCommand}"
+                                                            CommandParameter="{Binding .}" />
+
+                                                        <Button
+                                                            Content="▼"
+                                                            FontSize="10"
+                                                            Padding="4,2"
+                                                            Height="26"
+                                                            Width="26" 
+                                                            HorizontalAlignment="Center"
+                                                            Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).MoveItemDownCommand}"
+                                                            CommandParameter="{Binding .}" />
+
+                                                        <Button
+                                                            Content="✕"
+                                                            FontSize="10"
+                                                            Padding="4,2"
+                                                            Height="26"
+                                                            Width="26" 
+                                                            HorizontalAlignment="Center"
+                                                            Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).RemoveItemCommand}"
+                                                            CommandParameter="{Binding .}" />
+
+                                                    </StackPanel>
+
+                                                </StackPanel>
+
+                                            </Border>
+
+                                        </DataTemplate>
+
+                                    </ItemsRepeater.ItemTemplate>
+
+                                </ItemsRepeater>
+
+                            </ScrollViewer>
+
+                            <!-- Equivalent of VirtualizedDataGrid.EmptyView -->
+                            <TextBlock
+                                Text="No mission items. Right-click the map to add waypoints."
+                                FontSize="12"
+                                Opacity="0.6"
+                                Margin="0,20"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Top"
+                                IsVisible="{Binding !MissionItems.Count}" />
+
+                        </Grid>
+
+                    </Grid>
+
+                </ScrollViewer>
+            </Grid>
+        </Border>
     </Grid>
 </utilities:UserControlViewBase>

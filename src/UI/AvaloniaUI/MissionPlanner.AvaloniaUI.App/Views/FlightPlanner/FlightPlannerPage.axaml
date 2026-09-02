@@ -1,14 +1,65 @@
-<utilities:NavigationViewBase x:TypeArguments="flightPlanner:FlightPlannerViewModel" xmlns="https://github.com/avaloniaui"
-                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                               xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
-                               xmlns:flightPlanner="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightPlanner"
-                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                               x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightPlanner.FlightPlannerPage">
-    <ContentPage Header="Welcome">
-        <TextBlock Text="Welcome to Avalonia!"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
+<utilities:NavigationViewBase
+    x:TypeArguments="flightPlanner:FlightPlannerViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+    xmlns:flightPlanner="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightPlanner"
+    xmlns:missions="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Missions"
+    mc:Ignorable="d"
+    d:DesignWidth="1200"
+    d:DesignHeight="720"
+    x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightPlanner.FlightPlannerPage"
+    x:DataType="flightPlanner:FlightPlannerViewModel">
+    <ContentPage Header="Flight Planner">
+        <Grid ColumnDefinitions="*,Auto,Auto" Background="{DynamicResource Surface}">
+            <Grid Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="4" Margin="5">
+                <WrapPanel Grid.Row="0" Margin="10,5,0,5">
+                    <Button Content="Load File" Command="{Binding Map.LoadWpFileCommand}" Margin="0,0,4,4" />
+                    <Button Content="Save File" Command="{Binding Map.SaveWpFileCommand}" Margin="0,0,4,4" />
+                    <Button Content="Clear Mission" Command="{Binding Map.ClearMissionCommand}" Margin="0,0,4,4" />
+                    <Button Content="Apply" Command="{Binding Map.ApplyRowEditsCommand}" Margin="0,0,4,4" />
+                    <Button Content="Revert" Command="{Binding Map.CancelRowEditsCommand}" Margin="0,0,4,4" />
+                    <Button Content="Read" Command="{Binding ReadFromVehicleCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+                    <Button Content="Write" Command="{Binding WriteToVehicleCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+                    <Button Content="Write Fast" Command="{Binding WriteToVehicleFastCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+                    <Button Content="Editor" Command="{Binding EditCommand}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+                    <ToggleButton x:Name="QuickEditorToggle" Content="Quick Editor" IsChecked="False" Margin="0,0,8,4" />
+                    <TextBlock Text="Map:" VerticalAlignment="Center" Margin="0,0,4,4" />
+                    <ComboBox Width="170" ItemsSource="{Binding Map.AvailableSourceIds}"
+                              SelectedItem="{Binding Map.SelectedSourceId, Mode=TwoWay}" Margin="0,0,8,4" />
+                    <TextBlock Text="Default Altitude (m):" VerticalAlignment="Center" Margin="0,0,4,4" />
+                    <NumericUpDown Width="80" Value="{Binding Map.DefaultAltitudeMeters, Mode=TwoWay}"
+                                   FormatString="F1" HorizontalContentAlignment="Right" Margin="0,0,8,4" />
+                    <CheckBox Content="Click map to add WP" IsChecked="{Binding Map.AddWaypointOnMapClick, Mode=TwoWay}"
+                              VerticalAlignment="Center" Margin="0,0,8,4" />
+                    <TextBlock Text="{Binding TransferStatus}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,4,4" />
+                </WrapPanel>
+
+                <flightPlanner:FlightPlannerMissionMapView x:Name="MapView" Grid.Row="1"
+                                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                <ProgressBar x:Name="MapLoadingIndicator" Grid.Row="1" Width="160" IsIndeterminate="True"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Grid>
+
+            <GridSplitter Grid.Column="1" Width="5" ResizeDirection="Columns"
+                          IsVisible="{Binding #QuickEditorToggle.IsChecked}" />
+
+            <Border Grid.Column="2" Width="360" MinWidth="260" MaxWidth="520" Padding="8"
+                    Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Outline}"
+                    BorderThickness="1,0,0,0" IsVisible="{Binding #QuickEditorToggle.IsChecked}">
+                <Grid RowDefinitions="Auto,*" RowSpacing="6">
+                    <TextBlock Classes="SectionTitle" Text="Quick Editor" />
+                    <missions:MissionItemListView Grid.Row="1" DataContext="{Binding Map}"
+                                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                  ShowAllRows="False" />
+                </Grid>
+            </Border>
+        </Grid>
     </ContentPage>
 </utilities:NavigationViewBase>

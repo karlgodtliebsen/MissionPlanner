@@ -30,6 +30,7 @@ public partial class FlightPlannerViewModel : ViewModelBase
     private readonly IVehicleRegistry vehicleRegistry;
 
     private readonly IList<IDisposable> disposables = [];
+    private bool isActive;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FlightPlannerViewModel"/> class.
@@ -149,34 +150,16 @@ public partial class FlightPlannerViewModel : ViewModelBase
     {
         if (e.Name == "EditorOpen")
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            //TODO: Must be migrated to use a Drawer
-            throw new NotImplementedException();
-
-            //var options = AvaloniaDialogService.CreateDialogOptions("Connect Vehicle", "Ok", null);
-            //var viewModel = domainFactory.Create<MissionMapViewModel>();
-
-            //var result = await dialogService.ShowOverlayDialogAsync<MissionItemListViewPage, MissionMapViewModel>(viewModel, options, cancellationToken: cancellationToken);
-
-            //var view = domainFactory.Create<MissionItemListViewPage, MissionMapViewModel>(Map);
-            ////await dialogService.DisplayViewAsync("Mission editor", pageView, "Close", 1100, 760);
-
-            //await dialogService.ShowWindowAsync(
-            //    view,
-            //    new DialogOptions
-            //    {
-            //        Title = "Connection",
-            //        Presentation = DialogPresentation.Window,
-            //        Width = 600,
-            //        Height = 500,
-            //        OkText = "Ok",
-            //        CloseText = "Cancel"
-            //    });
-
+            var options = dialogService.CreateOptions("Mission editor", "Close", null);
+            options.FullScreen = true;
+            await dialogService.ShowOverlayDialogAsync<MissionItemListViewPage, MissionMapViewModel>(
+                Map,
+                options,
+                cancellationToken: cancellationToken);
         }
         else if (e.Name == "EditorClose")
         {
-            // await dialogService.CloseAsync(true, cancellationToken);
+            await dialogService.CloseAsync(cancellationToken);
         }
     }
 
@@ -261,6 +244,12 @@ public partial class FlightPlannerViewModel : ViewModelBase
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
+        if (isActive)
+        {
+            return Task.CompletedTask;
+        }
+
+        isActive = true;
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<EditorDisplayEvent>(ShowHideEditAsync));
         return Task.CompletedTask;
     }
@@ -274,6 +263,12 @@ public partial class FlightPlannerViewModel : ViewModelBase
 
     private void Deactivate()
     {
+        if (!isActive)
+        {
+            return;
+        }
+
+        isActive = false;
         foreach (var disposable in disposables)
         {
             disposable.Dispose();
