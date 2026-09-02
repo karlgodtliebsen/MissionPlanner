@@ -1,23 +1,27 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-                    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
-                    x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.ParametersEditorView"
-                    x:DataType="tabs:ParametersEditorViewModel"
-                    MaxWidth="800"
->
+             xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
+             x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.ParametersEditorView"
+             x:DataType="tabs:ParametersEditorViewModel"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             MaxWidth="800"
+             >
     <Grid
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                RowDefinitions="Auto,*"
-                RowSpacing="10"
-                Margin="12">
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        RowDefinitions="Auto,*"
+        RowSpacing="10"
+        Margin="12">
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button HorizontalAlignment="Right"
-                Content="Use Parameters" Width="200" Command="{Binding UseCommand}">
+                    Content="Use Parameters" Width="200" Command="{Binding UseCommand}">
             </Button>
             <Button HorizontalAlignment="Right"
-                     Content="Clear" Width="150" Command="{Binding ClearCommand}">
+                    Content="Clear" Width="150" Command="{Binding ClearCommand}">
             </Button>
             <Button HorizontalAlignment="Right"
                     Content="Cancel" Width="100" Command="{Binding CancelCommand}">
@@ -25,22 +29,22 @@
         </StackPanel>
 
 
-        <Border Grid.Row="1" Margin="25" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+        <Border Grid.Row="1" Margin="25" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                 Classes="SectionCard">
 
-            <Grid 
+            <Grid
                 RowDefinitions="Auto,Auto,*"
                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="20" Margin="30">
 
                 <TextBlock Grid.Row="0"
-                        FontSize="16" Text="Add a List of Parameters and Values"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                           FontSize="16" Text="Add a List of Parameters and Values"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
                 <TextBlock  Grid.Row="1" FontSize="12" Text="Format: (name=value) or (name=value//comment)"
-                        HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                            HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
 
                 <TextBox AcceptsReturn="True"  Grid.Row="2"
-                    
-                         Text="{Binding Text}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+
+                         Text="{Binding Text}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                          Margin="10"></TextBox>
 
             </Grid>

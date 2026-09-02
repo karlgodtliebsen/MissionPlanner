@@ -1,10 +1,13 @@
-using MissionPlanner.AvaloniaUI.App.Utilities;
+﻿using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
 /// <summary>Displays the MAVFtpTabView configuration workflow.</summary>
-public partial class MAVFtpTabView : UserControlViewBase<MavFtpTabViewModel>
+public partial class MAVFtpTabView : TabItemViewBase<MavFtpTabViewModel>
 {
     /// <summary>Initializes the MAVFtpTabView.</summary>
-    public MAVFtpTabView() => InitializeComponent();
+    public MAVFtpTabView()
+    {
+        InitializeComponent();
+    }
 }

@@ -1,10 +1,13 @@
-using MissionPlanner.AvaloniaUI.App.Utilities;
+﻿using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
 /// <summary>Displays the BasicTuningTabView configuration workflow.</summary>
-public partial class BasicTuningTabView : UserControlViewBase<BasicTuningTabViewModel>
+public partial class BasicTuningTabView : TabItemViewBase<BasicTuningTabViewModel>
 {
     /// <summary>Initializes the BasicTuningTabView.</summary>
-    public BasicTuningTabView() => InitializeComponent();
+    public BasicTuningTabView()
+    {
+        InitializeComponent();
+    }
 }

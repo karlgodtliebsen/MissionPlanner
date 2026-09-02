@@ -1,9 +1,13 @@
 <UserControl
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Introduction.Models"
-    x:Class="MissionPlanner.AvaloniaUI.App.Views.Introduction.Views.IntroductionCalloutView"
-    x:DataType="models:IntroductionCallout">
+            xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+            xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Introduction.Models"
+            x:Class="MissionPlanner.AvaloniaUI.App.Views.Introduction.Views.IntroductionCalloutView"
+            x:DataType="models:IntroductionCallout">
+
     <Border Padding="12" Classes="SectionCard">
         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
             <Border Width="32" Height="32" VerticalAlignment="Top" Classes="SectionCard">

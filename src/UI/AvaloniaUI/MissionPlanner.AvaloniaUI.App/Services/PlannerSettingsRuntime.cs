@@ -17,7 +17,6 @@ public sealed class PlannerSettingsRuntime : IDisposable
     public PlannerSettingsRuntime(
         IPlannerSettingsService settingsService,
         ApplicationStateService applicationState,
-        //  IThemeManager themeManager,
         ILogger<PlannerSettingsRuntime> logger)
     {
         throw new NotImplementedException();

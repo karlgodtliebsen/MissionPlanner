@@ -3,26 +3,12 @@
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs"
                            xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                            x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs.QuickTabItemView"
                            x:DataType="tabs:QuickTabViewModel">
     <ScrollViewer>
-
-
-        <!--        <Grid Margin="12" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
-        <Label Grid.ColumnSpan="2" Content="Quick telemetry" FontSize="18" FontWeight="Bold" />
-        <TextBlock Grid.Row="1" Content="{Binding FlightMode, StringFormat='Mode: {0}'}" />
-        <TextBlock Grid.Row="1" Grid.Column="1" Content="{Binding IsArmed, StringFormat='Armed: {0}'}" />
-        <TextBlock Grid.Row="2" Content="{Binding GroundSpeed, StringFormat='Ground speed: {0:0.0} m/s'}" />
-        <TextBlock Grid.Row="2" Grid.Column="1" Content="{Binding AirSpeed, StringFormat='Air speed: {0:0.0} m/s'}" />
-        <TextBlock Grid.Row="3" Content="{Binding Altitude, StringFormat='Altitude: {0:0.0} m'}" />
-        <TextBlock Grid.Row="3" Grid.Column="1" Content="{Binding VerticalSpeed, StringFormat='Vertical: {0:0.0} m/s'}" />
-        <TextBlock Grid.Row="4" Content="{Binding DistanceToMav, StringFormat='Distance MAV: {0:0} m'}" />
-        <TextBlock Grid.Row="4" Grid.Column="1" Content="{Binding DistanceToWp, StringFormat='Distance WP: {0:0} m'}" />
-        <TextBlock Grid.Row="5" Content="{Binding BatteryRemaining, StringFormat='Battery: {0:0}%'}" />
-        <TextBlock Grid.Row="5" Grid.Column="1" Content="{Binding GpsSatellites, StringFormat='Satellites: {0}'}" />
-        </Grid>
-        -->
-
         <Grid
             Margin="5,30,5,10"
             ColumnDefinitions="*,*"

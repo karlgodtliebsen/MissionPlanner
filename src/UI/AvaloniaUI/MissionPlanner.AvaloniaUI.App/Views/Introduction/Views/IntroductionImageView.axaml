@@ -1,9 +1,12 @@
 <UserControl
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Introduction.Models"
-    x:Class="MissionPlanner.AvaloniaUI.App.Views.Introduction.Views.IntroductionImageView"
-    x:DataType="models:IntroductionImage">
+            xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Introduction.Models"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+            x:Class="MissionPlanner.AvaloniaUI.App.Views.Introduction.Views.IntroductionImageView"
+            x:DataType="models:IntroductionImage">
     <StackPanel Spacing="5">
         <Border Classes="SectionCard">
             <Grid>

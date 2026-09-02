@@ -1,4 +1,4 @@
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -27,6 +27,7 @@ using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections;
 using MissionPlanner.AvaloniaUI.App.Views.Introduction;
+using MissionPlanner.AvaloniaUI.App.Views.Introduction.Services;
 using MissionPlanner.AvaloniaUI.App.Views.Landing;
 using MissionPlanner.AvaloniaUI.App.Views.Main;
 using MissionPlanner.AvaloniaUI.App.Views.Missions;
@@ -108,6 +109,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<MapsuiMbTilesSourceFactory>();
         services.TryAddTransient<IMapsuiBasemapFactory, CompositeMapsuiBasemapFactory>();
         services.TryAddTransient<IMapHttpRuntimeSettings, PlannerMapHttpRuntimeSettings>();
+
         services.TryAddSingleton<MapHttpOptionsProvider>();
         services.TryAddSingleton(sp => sp.GetRequiredService<MapHttpOptionsProvider>().GetOptions());
 
@@ -123,7 +125,7 @@ public static class ApplicationConfigurator
 
         services.TryAddSingleton<ApplicationStateService>();
         services.TryAddTransient<ParametersFileHandler>();
-        //services.TryAddSingleton<PlannerSettingsRuntime>();
+        services.TryAddSingleton<PlannerSettingsRuntime>();
         services.TryAddTransient<MissionItemListViewPage>();
         services.TryAddTransient<MissionItemListDockViewModel>();
         services.TryAddTransient<MissionMapPresenter>();
@@ -137,9 +139,18 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IPoiService, PoiService>();
 
         services.TryAddTransient<IMissionTerrainElevationProvider, MissionTerrainElevationProvider>();
-        services.TryAddTransient<AvaloniaMissionPlanningFileService>();
-        services.TryAddTransient<IFileOpenService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
-        services.TryAddTransient<IFileSaveService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
+
+
+        services.TryAddTransient<IFileOpenService, AvaloniaMissionPlanningFileService>();
+        services.TryAddTransient<IFileSaveService, AvaloniaMissionPlanningFileService>();
+
+        //services.TryAddTransient<AvaloniaMissionPlanningFileService>();
+        //services.TryAddTransient<IFileOpenService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
+        //services.TryAddTransient<IFileSaveService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
+
+        services.TryAddTransient<IDeviceManagerLauncher, DeviceManagerLauncher>();
+        services.TryAddTransient<IFirmwareSupportLinkProvider, FirmwareSupportLinkProvider>();
+        services.TryAddTransient<IFirmwarePackageCache, FirmwarePackageCache>();
         services.TryAddTransient<IFirmwareFilePicker, AvaloniaFirmwareFilePicker>();
         services.TryAddTransient<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
         services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
@@ -150,6 +161,10 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
         services.TryAddTransient<ITextClipboardService, TextClipboardService>();
         services.TryAddSingleton<ISetupCompletionStore, JsonSetupCompletionStore>();
+
+        services.TryAddSingleton<IIntroductionContentLoader, IntroductionContentLoader>();
+        services.TryAddSingleton<IExternalLinkLauncher, ExternalLinkLauncher>();
+
 
         services
             .AddLibraryServices()

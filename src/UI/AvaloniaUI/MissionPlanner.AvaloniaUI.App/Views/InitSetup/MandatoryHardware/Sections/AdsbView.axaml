@@ -1,35 +1,44 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:AdsbViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections.AdsbView" x:DataType="sections:AdsbViewModel">
-<ScrollViewer VerticalScrollBarVisibility="Visible">
-<StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-<TextBlock Text="ADSB" FontSize="18" FontWeight="Bold" />
-<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
-<TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-<TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
-<ItemsControl ItemsSource="{Binding Guidance}">
-<ItemsControl.ItemTemplate>
-<DataTemplate x:DataType="x:String">
-<TextBlock Text="{Binding .}" Foreground="{DynamicResource Warning}" />
-</DataTemplate>
-</ItemsControl.ItemTemplate>
-</ItemsControl>
-<ItemsControl ItemsSource="{Binding Settings}">
-<ItemsControl.ItemTemplate>
-<DataTemplate x:DataType="sections:PeripheralSettingViewModel">
-<Border Classes="SectionCard" Padding="12">
-<Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="10">
-<StackPanel Orientation="Vertical">
-<TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
-<TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
-</StackPanel>
-<ComboBox Grid.Column="1" ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" DisplayMemberBinding="{Binding Name}" />
-<TextBox Grid.Column="1" Watermark="Value" IsVisible="{Binding IsNumeric}" Text="{Binding NumericValue}" />
-<Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
-</Grid>
-</Border>
-</DataTemplate>
-</ItemsControl.ItemTemplate>
-</ItemsControl>
-<Button Content="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
-</StackPanel>
-</ScrollViewer>
+<utilities:UserControlViewBase x:TypeArguments="sections:AdsbViewModel"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                               xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                               x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections.AdsbView"
+                               x:DataType="sections:AdsbViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Visible">
+        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+            <TextBlock Text="ADSB" FontSize="18" FontWeight="Bold" />
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <ItemsControl ItemsSource="{Binding Guidance}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <TextBlock Text="{Binding .}" Foreground="{DynamicResource Warning}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding Settings}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
+                        <Border Classes="SectionCard" Padding="12">
+                            <Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="10">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
+                                </StackPanel>
+                                <ComboBox Grid.Column="1" ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" DisplayMemberBinding="{Binding Name}" />
+                                <TextBox Grid.Column="1" PlaceholderText="Value" IsVisible="{Binding IsNumeric}" Text="{Binding NumericValue}" />
+                                <Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Content="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+        </StackPanel>
+    </ScrollViewer>
 </utilities:UserControlViewBase>

@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Navigation;
 

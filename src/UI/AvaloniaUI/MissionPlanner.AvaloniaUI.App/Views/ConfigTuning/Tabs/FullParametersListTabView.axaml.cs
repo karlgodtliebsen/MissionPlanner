@@ -1,10 +1,13 @@
-using MissionPlanner.AvaloniaUI.App.Utilities;
+﻿using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
 /// <summary>Displays the FullParametersListTabView configuration workflow.</summary>
-public partial class FullParametersListTabView : UserControlViewBase<FullParametersListTabViewModel>
+public partial class FullParametersListTabView : TabItemViewBase<FullParametersListTabViewModel>
 {
     /// <summary>Initializes the FullParametersListTabView.</summary>
-    public FullParametersListTabView() => InitializeComponent();
+    public FullParametersListTabView()
+    {
+        InitializeComponent();
+    }
 }

@@ -1,15 +1,15 @@
 ﻿<utilities:UserControlViewBase
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:u="https://irihi.tech/ursa"
-    xmlns:mapsui="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
-    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
-    xmlns:missions1="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Missions"
-    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-    x:Class="MissionPlanner.AvaloniaUI.App.Views.Missions.MissionMapView"
-    x:DataType="missions1:MissionMapViewModel"
+            xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:u="https://irihi.tech/ursa"
+            xmlns:mapsui="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
+            xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+            xmlns:missions1="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Missions"
+            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+            x:Class="MissionPlanner.AvaloniaUI.App.Views.Missions.MissionMapView"
+            x:DataType="missions1:MissionMapViewModel"
     >
 
     <Grid RowDefinitions="*,Auto">

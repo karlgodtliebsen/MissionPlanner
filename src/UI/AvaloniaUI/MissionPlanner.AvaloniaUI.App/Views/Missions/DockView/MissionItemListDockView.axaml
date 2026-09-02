@@ -8,6 +8,7 @@
                     xmlns:missions="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Missions"
                     xmlns:data="https://github.com/avaloniaui"
                     xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 
                     x:Class="MissionPlanner.AvaloniaUI.App.Views.Missions.DockView.MissionItemListDockView"
                     x:DataType="dockView:MissionItemListDockViewModel"
