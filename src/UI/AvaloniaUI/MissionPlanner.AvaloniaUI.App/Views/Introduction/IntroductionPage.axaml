@@ -1,15 +1,47 @@
-<utilities:NavigationViewBase x:TypeArguments="introduction:IntroductionViewModel" 
-                              xmlns="https://github.com/avaloniaui"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
-                              xmlns:introduction="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Introduction"
-                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                              x:Class="MissionPlanner.AvaloniaUI.App.Views.Introduction.IntroductionPage">
-    <ContentPage Header="Welcome">
-        <TextBlock Text="Welcome to Avalonia!"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
+<utilities:NavigationViewBase
+    x:TypeArguments="introduction:IntroductionViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:introduction="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Introduction"
+    xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Introduction.Models"
+    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+    xmlns:views="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Introduction.Views"
+    mc:Ignorable="d"
+    d:DesignWidth="1000"
+    d:DesignHeight="700"
+    x:Class="MissionPlanner.AvaloniaUI.App.Views.Introduction.IntroductionPage"
+    x:DataType="introduction:IntroductionViewModel">
+    <ContentPage Header="Introduction" Background="{DynamicResource Surface}">
+        <Grid Margin="20,0,20,10" RowDefinitions="Auto,*" RowSpacing="20">
+            <StackPanel HorizontalAlignment="Center" Spacing="8">
+                <TextBlock Text="{Binding Title}" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding Subtitle}" FontSize="13" Opacity="0.7" HorizontalAlignment="Center" />
+                <ComboBox x:Name="MobileTopicPicker" Width="240" ItemsSource="{Binding Topics}"
+                          SelectedItem="{Binding SelectedTopic, Mode=TwoWay}"
+                          DisplayMemberBinding="{Binding DisplayTitle}" IsVisible="False" />
+            </StackPanel>
+            <Grid x:Name="MainGrid" Grid.Row="1" ColumnDefinitions="250,*" ColumnSpacing="20">
+                <Border x:Name="ContentsBorder" Classes="SectionCard">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Text="QUICK GUIDE" Padding="10,8,10,6" FontSize="11" FontWeight="Bold" Opacity="0.65" />
+                        <ListBox Grid.Row="1" ItemsSource="{Binding Topics}"
+                                 SelectedItem="{Binding SelectedTopic, Mode=TwoWay}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:IntroductionTopic">
+                                    <TextBlock Text="{Binding DisplayTitle}" Padding="10,9" FontSize="14"
+                                               TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+                <Border x:Name="TopicHost" Grid.Column="1" Classes="SectionCard">
+                    <views:IntroductionTopicView DataContext="{Binding SelectedTopic}"
+                                                 ActionRequested="OnActionRequested" />
+                </Border>
+            </Grid>
+        </Grid>
     </ContentPage>
 </utilities:NavigationViewBase>
