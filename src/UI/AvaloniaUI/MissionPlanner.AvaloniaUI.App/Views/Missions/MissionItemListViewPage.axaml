@@ -10,7 +10,7 @@
     Padding="25"
     >
 
-    <Border Classes="SurfaceContainer Rounded Elevation1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Border Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid RowDefinitions="Auto,*"
               RowSpacing="6" HorizontalAlignment="Stretch"   VerticalAlignment="Stretch">
 

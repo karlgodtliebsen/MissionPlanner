@@ -8,10 +8,4 @@ public partial class PromptInputDialogView : UserControl
     {
         InitializeComponent();
     }
-
-    public PromptInputDialogView(PromptInputDialogViewModel viewModel)
-        : this()
-    {
-        DataContext = viewModel;
-    }
 }

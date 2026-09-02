@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.Common;
+namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews;
 
 /// <summary>
 /// Represents the error view.

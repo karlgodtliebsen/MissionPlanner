@@ -12,6 +12,8 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
+using ErrorView = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorView;
+using ErrorViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
@@ -162,13 +164,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         }
         catch (Exception exception)
         {
-            var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
-            var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
-            await dialogService.ShowWindowAsync(view, new DialogOptions()
-            {
-                Title = "Load failed",
-                ShowCloseButton = false
-            });
+            var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
+            var options = AvaloniaDialogService.CreateDialogOptions("Load failed", "Ok", null);
+            var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         }
 
         HasRows = Parameters.Count > 0;
@@ -176,7 +174,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
 
     [RelayCommand]
-    private async Task LoadFromFileAsync()
+    private async Task LoadFromFileAsync(CancellationToken cancellationToken)
     {
         if (EditSession is null)
         {
@@ -199,22 +197,16 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         }
         catch (Exception exception)
         {
-            var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
-            var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
-
-
-            await dialogService.ShowWindowAsync(view, new DialogOptions()
-            {
-                Title = "Load from file failed",
-                ShowCloseButton = false
-            });
+            var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
+            var options = AvaloniaDialogService.CreateDialogOptions("Load from file failed", "Ok", null);
+            var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         }
 
         HasRows = Parameters.Count > 0;
     }
 
     [RelayCommand]
-    private async Task LoadFromJsonFileAsync()
+    private async Task LoadFromJsonFileAsync(CancellationToken cancellationToken)
     {
         if (EditSession is null)
         {
@@ -235,13 +227,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         }
         catch (Exception exception)
         {
-            var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
-            var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
-            await dialogService.ShowWindowAsync(view, options: new DialogOptions()
-            {
-                Title = "Load from Json file failed",
-                ShowCloseButton = false
-            });
+            var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
+            var options = AvaloniaDialogService.CreateDialogOptions("Load from Json file failed", "Ok", null);
+            var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         }
 
         HasRows = Parameters.Count > 0;
@@ -403,13 +391,13 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             cancellationToken);
     }
 
-    private Task<bool> ShowMessageAsync(string title, string message, CancellationToken cancellationToken) =>
-        dialogService.ConfirmAsync(message, new DialogOptions
-        {
-            Title = title,
-            OkText = "OK",
-            ShowCloseButton = false
-        }, cancellationToken);
+    private async Task<bool> ShowMessageAsync(string title, string message, CancellationToken cancellationToken)
+    {
+        var options = AvaloniaDialogService.CreateDialogOptions(title, "Ok", null);
+        var result = await dialogService.ConfirmAsync(options, message, cancellationToken);
+        return result;
+    }
+
 
     [RelayCommand(CanExecute = nameof(CanRetryFailed))]
     private async Task RetryFailedAsync(CancellationToken cancellationToken)

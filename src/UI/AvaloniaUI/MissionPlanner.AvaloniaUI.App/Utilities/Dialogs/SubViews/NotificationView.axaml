@@ -16,7 +16,7 @@
     StyleClass="SurfaceContainer,Rounded,Elevation1"
     -->
 
-    <Border 
+    <Border Classes="SectionCard"
             Padding="8,2"
             VerticalAlignment="Stretch" 
             HorizontalAlignment="Stretch"

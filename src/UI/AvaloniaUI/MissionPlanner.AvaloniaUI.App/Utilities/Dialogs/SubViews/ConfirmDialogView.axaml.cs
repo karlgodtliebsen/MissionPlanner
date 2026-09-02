@@ -9,9 +9,9 @@ public partial class ConfirmDialogView : UserControl
         InitializeComponent();
     }
 
-    public ConfirmDialogView(ConfirmDialogViewModel viewModel)
-        : this()
-    {
-        DataContext = viewModel;
-    }
+    //public ConfirmDialogView(ConfirmDialogViewModel viewModel)
+    //    : this()
+    //{
+    //    DataContext = viewModel;
+    //}
 }

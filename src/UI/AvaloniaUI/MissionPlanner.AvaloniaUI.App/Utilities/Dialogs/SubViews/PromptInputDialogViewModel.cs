@@ -2,7 +2,7 @@
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews;
 
-public partial class PromptInputDialogViewModel : ObservableObject
+public partial class PromptInputDialogViewModel : DialogViewModelBase
 {
 
     /// <inheritdoc />
@@ -12,17 +12,25 @@ public partial class PromptInputDialogViewModel : ObservableObject
         Message = message;
     }
 
+
+    /// <inheritdoc/>
+    public override void Cancel()
+    {
+        PromptText = null;
+        base.Cancel();
+    }
+
     [ObservableProperty]
     public partial string? PromptText
     {
         get;
         set;
     }
-    [ObservableProperty]
-    public partial string? Message
+
+
+    public string? Message
     {
         get;
         set;
     }
-
 }

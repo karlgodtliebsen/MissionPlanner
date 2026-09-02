@@ -29,7 +29,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Common;
 /// </summary>
 public partial class TopBarViewModel : ViewModelBase
 {
-    public WindowNotificationManager? NotificationManager
+    public new WindowNotificationManager? NotificationManager
     {
         get; set;
     }
@@ -265,20 +265,10 @@ public partial class TopBarViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanOpenConnection))]
     private async Task Connect()
     {
-        var view = serviceFactory.Create<ConnectPopupView>();
+        var options = AvaloniaDialogService.CreateDialogOptions("Connect Vehicle", "Ok", null);
         var dialogService = serviceFactory.Create<IDialogService>();
-        await dialogService.ShowWindowAsync(
-            view,
-            new DialogOptions
-            {
-                Title = "Connection",
-                Presentation = DialogPresentation.Window,
-                Width = 600,
-                Height = 500,
-                OkText = "Ok",
-                ShowCloseButton = false,
-            });
-
+        var viewModel = serviceFactory.Create<ConnectPopupViewModel>();
+        var result = await dialogService.ShowOverlayDialogAsync<ConnectPopupView, ConnectPopupViewModel>(viewModel, options);
     }
 
     [RelayCommand]

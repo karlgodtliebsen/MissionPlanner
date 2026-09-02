@@ -1,5 +1,6 @@
 ﻿using AsyncAwaitBestPractices;
 using Avalonia.Interactivity;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities;
 
@@ -9,10 +10,12 @@ namespace MissionPlanner.AvaloniaUI.App.Utilities;
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
 public class TabItemViewBase<TViewModel> : UserControlViewBase<TViewModel> where TViewModel : ViewModelBase
 {
+
     /// <inheritdoc />
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        NotificationHelper.SetupManagers(this, ViewModel);
         ViewModel.ActivateAsync().SafeFireAndForget();
     }
 

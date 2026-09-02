@@ -100,6 +100,26 @@
                 <ScrollViewer Grid.Row="1">
 
                     <StackPanel Spacing="4">
+                        <!-- Dialog Demo Data -->
+
+                        <Button Classes="NavigationItem"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="DialogDemo">
+
+                            <Grid ColumnDefinitions="28,*">
+
+                                <Image
+                                    Width="20"
+                                    Height="20"
+                                    Source="/Resources/Images/light_flightdata_icon.png"/>
+
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Text="Dialog Demo Data"
+                                    VerticalAlignment="Center"/>
+                            </Grid>
+
+                        </Button>
 
                         <!-- Flight Data -->
 

@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities;
 
@@ -34,6 +35,7 @@ public partial class UserControlViewBase<TViewModel> : UserControl where TViewMo
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        NotificationHelper.SetupManagers(this, ViewModel);
         ViewModel?.ActivateAsync().SafeFireAndForget();
     }
 
@@ -46,6 +48,7 @@ public partial class UserControlViewBase<TViewModel> : UserControl where TViewMo
     }
 }
 
+
 /// <inheritdoc/>
 public partial class UserControlViewBase : UserControl
 {
@@ -53,6 +56,19 @@ public partial class UserControlViewBase : UserControl
     /// The logger instance used for logging within the UserControlViewBase class. 
     /// </summary>
     protected ILogger Logger;
+
+    /// <inheritdoc />
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        if (DataContext is not ViewModelBase viewModel)
+        {
+            return;
+        }
+
+        NotificationHelper.SetupManagers(this, viewModel);
+    }
+
 
 
     /// <inheritdoc />

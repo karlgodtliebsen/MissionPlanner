@@ -1,7 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using MissionPlanner.Library.EventHub.Abstractions;
+using Ursa.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities;
 
@@ -10,6 +12,35 @@ namespace MissionPlanner.AvaloniaUI.App.Utilities;
 /// </summary>
 public partial class ViewModelBase : ObservableObject, IDisposable
 {
+
+    /// <summary>
+    /// Gets or sets the notification manager for displaying window notifications.
+    /// </summary>
+    public WindowNotificationManager? NotificationManager
+    {
+        get; set;
+    }
+    /// <summary>
+    /// Gets or sets the toast manager for displaying window toasts.
+    /// </summary>
+    public WindowToastManager? ToastManager
+    {
+        get; set;
+    }
+
+
+    [RelayCommand]
+    private void ShowToast(string message)
+    {
+        ToastManager?.Show(message);
+    }
+
+    [RelayCommand]
+    private void ShowNotification(string message)
+    {
+        NotificationManager?.Show(message);
+    }
+
 
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private bool disposed;

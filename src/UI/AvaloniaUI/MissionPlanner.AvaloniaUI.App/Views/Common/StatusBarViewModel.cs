@@ -136,6 +136,10 @@ public partial class StatusBarViewModel : ViewModelBase
                 StatusMessage = FormatParameterLoadStatus(latest);
                 HasStatusMessage = !string.IsNullOrEmpty(StatusMessage);
             }
+            if (StatusMessage.StartsWith("Loaded ") && NotificationManager is not null)
+            {
+                NotificationManager!.Show(StatusMessage);
+            }
         });
         return Task.CompletedTask;
     }

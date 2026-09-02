@@ -9,9 +9,9 @@ public partial class ChoiceDialogView : UserControl
         InitializeComponent();
     }
 
-    public ChoiceDialogView(ChoiceDialogViewModel viewModel)
-        : this()
-    {
-        DataContext = viewModel;
-    }
+    //public ChoiceDialogView(ChoiceDialogViewModel viewModel)
+    //    : this()
+    //{
+    //    DataContext = viewModel;
+    //}
 }

@@ -310,7 +310,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AvaloniaXaml Update="Views\Common\NotificationView.axaml">
+	  <AvaloniaXaml Update="Utilities\Dialogs\SubViews\NotificationView.axaml">
 	    <Generator></Generator>
 	  </AvaloniaXaml>
 	  <AvaloniaXaml Update="Views\Common\TopBarView.axaml">
@@ -319,10 +319,6 @@
 	  <AvaloniaXaml Update="Views\Missions\MissionItemListView.axaml">
 	    <Generator></Generator>
 	  </AvaloniaXaml>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Views\Setup\" />
 	</ItemGroup>
 
 	<ItemGroup>

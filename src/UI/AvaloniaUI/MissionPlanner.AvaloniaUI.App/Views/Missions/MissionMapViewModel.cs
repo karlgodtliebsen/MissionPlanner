@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
-using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.DomainEvents;
@@ -36,16 +35,14 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Missions;
 /// edited, and exposes the commands behind the map's right-click context menu. It is registered as a
 /// Keyed singleton so the FlightData map and the FlightPlanner screen does not edit the same mission.
 /// </summary>
-public partial class MissionMapViewModel : ViewModelBase
+public partial class MissionMapViewModel : DialogViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IMissionFileCodec fileCodec;
     private readonly IDomainEventHub domainEventHub;
-    private readonly IUiDispatcher dispatcher;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileOpenService fileOpenService;
     private readonly IFileSaveService fileSaveService;
-    private readonly IUserChoiceService choiceService;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IMissionMapInteractionService interactionService;
     private readonly IAdvancedMissionItemService advancedMissionItems;
@@ -78,13 +75,11 @@ public partial class MissionMapViewModel : ViewModelBase
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
     /// </summary>
-    public MissionMapViewModel(IServiceFactory factory, ILogger logger) : base(logger)
+    public MissionMapViewModel(IServiceFactory factory, ILogger logger)
     {
         domainEventHub = factory.Create<IDomainEventHub>();
-        dispatcher = factory.Create<IUiDispatcher>();
         dateTimeProvider = factory.Create<IDateTimeProvider>();
         dialogService = factory.Create<IDialogService>();
-
         activeVehicle = factory.Create<IActiveVehicleContext>();
         fileCodec = factory.Create<IMissionFileCodec>();
         protocolMapper = factory.Create<IMissionProtocolMapper>();
@@ -94,7 +89,6 @@ public partial class MissionMapViewModel : ViewModelBase
         polygonService = factory.Create<IPlanningPolygonService>();
         fileOpenService = factory.Create<IFileOpenService>();
         fileSaveService = factory.Create<IFileSaveService>();
-        choiceService = factory.Create<IUserChoiceService>();
         geospatialImportService = factory.Create<IGeospatialImportService>();
         fenceService = factory.Create<IFenceConfigurationService>();
         fenceFileCodec = factory.Create<IFencePlanFileCodec>();
@@ -786,8 +780,10 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task JumpToWaypointAsync(CancellationToken cancellationToken)
     {
-        var options = new DialogOptions() { Title = "Jump to waypoint" };
+        var options = AvaloniaDialogService.CreateDialogOptions("Jump to waypoint", "Ok", null);
         var targetText = await dialogService.PromptAsync(options, "Target mission row (1-based)", "1", cancellationToken: cancellationToken);
+
+
         if (!ushort.TryParse(targetText, NumberStyles.Integer, CultureInfo.CurrentCulture, out var displayTarget) || displayTarget == 0)
         {
             if (targetText is not null)
@@ -819,7 +815,7 @@ public partial class MissionMapViewModel : ViewModelBase
 
     private async Task<int?> PromptRepeatCountAsync(CancellationToken cancellationToken)
     {
-        var text = await dialogService.DisplayPromptAsync("DO_JUMP", "Repeat count (use -1 for infinite)", "1");
+        var text = await dialogService.PromptAsync("DO_JUMP", "Repeat count (use -1 for infinite)", "1");
         if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var repeat) || repeat < -1)
         {
             if (text is not null)
@@ -897,7 +893,7 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task OffsetPolygonAsync(CancellationToken cancellationToken)
     {
-        var text = await dialogService.DisplayPromptAsync("Offset polygon", "Signed offset distance in metres (positive outward)", "10");
+        var text = await dialogService.PromptAsync("Offset polygon", "Signed offset distance in metres (positive outward)", "10");
         if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var metres))
         {
             if (text is not null)
@@ -1008,10 +1004,11 @@ public partial class MissionMapViewModel : ViewModelBase
             ShowStatus("The shapefile contains no polygon geometry.");
             return;
         }
+        var options = dialogService.CreateOptions("Choose planning polygon");
 
         var selectedName = polygons.Length == 1
             ? polygons[0].Name
-            : await choiceService.ChooseAsync("Choose planning polygon", polygons.Select(feature => feature.Name).ToArray(), cancellationToken);
+            : await dialogService.ChooseAsync(options, polygons.Select(feature => feature.Name).ToArray(), cancellationToken);
         var selected = polygons.FirstOrDefault(feature => feature.Name == selectedName);
         if (selected is not null)
         {
@@ -1028,9 +1025,17 @@ public partial class MissionMapViewModel : ViewModelBase
         }
 
         var preview = imported.Preview;
-        var choice = await choiceService.ChooseAsync(
-            $"{preview.Points} points, {preview.LineStrings} lines, {preview.Polygons} polygons, {preview.MissionCandidates} waypoint candidates, {preview.Unsupported} unsupported",
+        var message = $"{preview.Points} points, {preview.LineStrings} lines, " +
+                      $"{preview.Polygons} polygons, " +
+                      $"{preview.MissionCandidates} waypoint candidates, " +
+                      $"{preview.Unsupported} unsupported";
+
+        var options = dialogService.CreateOptions("Choose planning polygon");
+        options.Title = message;
+        var choice = await dialogService.ChooseAsync(
+            options,
             ["Append waypoints", "Replace mission", "Use first polygon as planning polygon"], cancellationToken);
+
         if (choice == "Use first polygon as planning polygon")
         {
             var polygon = imported.Features.FirstOrDefault(feature => feature.Kind == GeospatialGeometryKind.Polygon);
@@ -1213,8 +1218,8 @@ public partial class MissionMapViewModel : ViewModelBase
             ShowStatus("Select a vehicle workspace first.");
             return;
         }
-
-        var choice = await choiceService.ChooseAsync("Clear Geo-Fence", ["Clear local plan only", "Clear vehicle fence"], cancellationToken);
+        var options = dialogService.CreateOptions("Clear Geo-Fence");
+        var choice = await dialogService.ChooseAsync(options, ["Clear local plan only", "Clear vehicle fence"], cancellationToken);
         if (choice == "Clear local plan only")
         {
             fenceService.SetLocalPlan(vehicleId, FencePlan.Empty);
@@ -1270,7 +1275,7 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task SetRallyPointAsync(CancellationToken cancellationToken)
     {
-        var altitudeText = await dialogService.DisplayPromptAsync("Set rally point", "Altitude in metres", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture));
+        var altitudeText = await dialogService.PromptAsync("Set rally point", "Altitude in metres", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture));
         if (!double.TryParse(altitudeText, NumberStyles.Float, CultureInfo.CurrentCulture, out var altitude))
         {
             if (altitudeText is not null)
@@ -1280,8 +1285,9 @@ public partial class MissionMapViewModel : ViewModelBase
 
             return;
         }
+        var options = dialogService.CreateOptions("Rally altitude reference");
 
-        var reference = await choiceService.ChooseAsync("Rally altitude reference", ["Relative to home", "Mean sea level", "Terrain"], cancellationToken);
+        var reference = await dialogService.ChooseAsync(options, ["Relative to home", "Mean sea level", "Terrain"], cancellationToken);
         if (reference is null)
         {
             return;
@@ -1338,8 +1344,9 @@ public partial class MissionMapViewModel : ViewModelBase
             ShowStatus("Select a vehicle workspace first.");
             return;
         }
+        var options = dialogService.CreateOptions("Clear rally points");
 
-        var choice = await choiceService.ChooseAsync("Clear rally points", ["Clear local plan only", "Clear vehicle rally points"], cancellationToken);
+        var choice = await dialogService.ChooseAsync(options, ["Clear local plan only", "Clear vehicle rally points"], cancellationToken);
         if (choice == "Clear local plan only")
         {
             rallyService.SetLocalPlan(vehicleId, RallyPlan.Empty);
@@ -1412,16 +1419,16 @@ public partial class MissionMapViewModel : ViewModelBase
             return;
         }
 
-        var radiusText = await dialogService.DisplayPromptAsync("Generate circle", "Radius in metres", "100");
-        var countText = await dialogService.DisplayPromptAsync("Generate circle", "Number of points (3-1000)", "12");
+        var radiusText = await dialogService.PromptAsync("Generate circle", "Radius in metres", "100");
+        var countText = await dialogService.PromptAsync("Generate circle", "Number of points (3-1000)", "12");
         if (!double.TryParse(radiusText, NumberStyles.Float, CultureInfo.CurrentCulture, out var radius)
             || !int.TryParse(countText, NumberStyles.Integer, CultureInfo.CurrentCulture, out var count))
         {
             ShowStatus("Enter a valid radius and point count.");
             return;
         }
-
-        var direction = await choiceService.ChooseAsync("Circle direction", ["Clockwise", "Counter-clockwise"], cancellationToken);
+        var options = dialogService.CreateOptions("Circle direction");
+        var direction = await dialogService.ChooseAsync(options, ["Clockwise", "Counter-clockwise"], cancellationToken);
         if (direction is null)
         {
             return;
@@ -1430,7 +1437,7 @@ public partial class MissionMapViewModel : ViewModelBase
         double? endAltitude = null;
         if (spline)
         {
-            var endText = await dialogService.DisplayPromptAsync("Spline circle", "End altitude in metres (for deterministic helical climb)", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture));
+            var endText = await dialogService.PromptAsync("Spline circle", "End altitude in metres (for deterministic helical climb)", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture));
             if (!double.TryParse(endText, NumberStyles.Float, CultureInfo.CurrentCulture, out var parsed))
             {
                 return;
@@ -1458,8 +1465,8 @@ public partial class MissionMapViewModel : ViewModelBase
             return;
         }
 
-        var text = await dialogService.DisplayPromptAsync("Waypoint text", "Text (supported stroke-font letters/digits, maximum 32)", "HOME");
-        var heightText = await dialogService.DisplayPromptAsync("Waypoint text", "Character height in metres", "50");
+        var text = await dialogService.PromptAsync("Waypoint text", "Text (supported stroke-font letters/digits, maximum 32)", "HOME");
+        var heightText = await dialogService.PromptAsync("Waypoint text", "Character height in metres", "50");
         if (text is null || !double.TryParse(heightText, NumberStyles.Float, CultureInfo.CurrentCulture, out var height))
         {
             return;
@@ -1478,7 +1485,9 @@ public partial class MissionMapViewModel : ViewModelBase
 
         generatedPreview = result.PreviewPositions;
         UpdatePlanningOverlay();
-        var choice = await choiceService.ChooseAsync($"Preview: {result.Items.Count} generated mission items", ["Append to mission", "Replace mission"], cancellationToken);
+        var options = dialogService.CreateOptions($"Preview: {result.Items.Count} generated mission items");
+
+        var choice = await dialogService.ChooseAsync(options, ["Append to mission", "Replace mission"], cancellationToken);
         if (choice is not ("Append to mission" or "Replace mission"))
         {
             generatedPreview = [];
@@ -1513,8 +1522,8 @@ public partial class MissionMapViewModel : ViewModelBase
             return;
         }
 
-        var outerText = await dialogService.DisplayPromptAsync("Circle survey", "Outer radius in metres", "200");
-        var spacingText = await dialogService.DisplayPromptAsync("Circle survey", "Radial spacing in metres", "50");
+        var outerText = await dialogService.PromptAsync("Circle survey", "Outer radius in metres", "200");
+        var spacingText = await dialogService.PromptAsync("Circle survey", "Radial spacing in metres", "50");
         if (!double.TryParse(outerText, NumberStyles.Float, CultureInfo.CurrentCulture, out var outer)
             || !double.TryParse(spacingText, NumberStyles.Float, CultureInfo.CurrentCulture, out var spacing))
         {
@@ -1534,8 +1543,8 @@ public partial class MissionMapViewModel : ViewModelBase
             return;
         }
 
-        var spacingText = await dialogService.DisplayPromptAsync("Grid survey", "Flight-line spacing in metres", "30");
-        var angleText = await dialogService.DisplayPromptAsync("Grid survey", "Flight-line angle in degrees", "0");
+        var spacingText = await dialogService.PromptAsync("Grid survey", "Flight-line spacing in metres", "30");
+        var angleText = await dialogService.PromptAsync("Grid survey", "Flight-line angle in degrees", "0");
         if (!double.TryParse(spacingText, NumberStyles.Float, CultureInfo.CurrentCulture, out var spacing)
             || !double.TryParse(angleText, NumberStyles.Float, CultureInfo.CurrentCulture, out var angle))
         {
@@ -1571,7 +1580,7 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task RotateMapAsync(CancellationToken cancellationToken)
     {
-        var text = await dialogService.DisplayPromptAsync("Rotate map", "Bearing degrees (0-359; 0 resets north)", "0");
+        var text = await dialogService.PromptAsync("Rotate map", "Bearing degrees (0-359; 0 resets north)", "0");
         if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var angle) || !double.IsFinite(angle))
         {
             if (text is not null)
@@ -1666,8 +1675,7 @@ public partial class MissionMapViewModel : ViewModelBase
             ShowStatus("Select a map position for the POI.");
             return;
         }
-        var options = new DialogOptions() { Title = "Add point of interest" };
-
+        var options = AvaloniaDialogService.CreateDialogOptions("Add point of interest", "Ok", null);
         var name = await dialogService.PromptAsync(options, $"POI {poiService.Snapshot.Items.Count + 1}", cancellationToken: cancellationToken);
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -1687,14 +1695,12 @@ public partial class MissionMapViewModel : ViewModelBase
             ShowStatus("No POI is available to edit.");
             return;
         }
-
-        var options = new DialogOptions() { Title = "Edit nearest POI" };
+        var options = AvaloniaDialogService.CreateDialogOptions("Edit nearest POI", "Ok", null);
         var name = await dialogService.PromptAsync(options, $"Name ({item.Name})", item.Name, cancellationToken: cancellationToken);
         if (string.IsNullOrWhiteSpace(name))
         {
             return;
         }
-
         var description = await dialogService.PromptAsync(options, "Description", item.Description ?? string.Empty, cancellationToken: cancellationToken);
         await poiService.UpdateAsync(item with
         {
@@ -1731,7 +1737,7 @@ public partial class MissionMapViewModel : ViewModelBase
             return;
         }
 
-        var options = new DialogOptions() { Title = "Tracker home" };
+        var options = AvaloniaDialogService.CreateDialogOptions("Tracker home", "Ok", null);
         var text = await dialogService.PromptAsync(options, "Optional altitude in metres", PointerAltitude?.ToString("F1", CultureInfo.CurrentCulture) ?? string.Empty, cancellationToken: cancellationToken);
         double? altitude = null;
         if (!string.IsNullOrWhiteSpace(text))
@@ -1752,7 +1758,7 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task EnterUtmCoordinateAsync(CancellationToken cancellationToken)
     {
-        var options = new DialogOptions() { Title = "Enter UTM coordinate" };
+        var options = dialogService.CreateOptions("Enter UTM coordinate");
         var text = await dialogService.PromptAsync(options, "Format: zone+hemisphere easting northing (example: 32N 500000 6170000)", "32N 500000 6170000", cancellationToken: cancellationToken);
         if (text is null)
         {
@@ -1772,7 +1778,10 @@ public partial class MissionMapViewModel : ViewModelBase
 
         var position = new GeoPosition(geographic.Latitude, geographic.Longitude);
         MapContext = new MissionMapContext(position, MissionMapContextSource.CoordinateEntry, dateTimeProvider.UtcNow);
-        var choice = await choiceService.ChooseAsync($"Converted to {geographic.Latitude:F7}, {geographic.Longitude:F7}", ["Add waypoint here", "Center map here"], cancellationToken);
+
+        options = dialogService.CreateOptions($"Converted to {geographic.Latitude:F7}, {geographic.Longitude:F7}");
+
+        var choice = await dialogService.ChooseAsync(options, ["Add waypoint here", "Center map here"], cancellationToken);
         if (choice == "Add waypoint here")
         {
             AddWaypoint(position, "Waypoint added from UTM coordinate.");
@@ -1857,7 +1866,7 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task LoiterTimeAsync(CancellationToken cancellationToken)
     {
-        var options = new DialogOptions() { Title = "Loiter Time" };
+        var options = AvaloniaDialogService.CreateDialogOptions("Loiter Time", "Ok", null);
 
         var input = await dialogService.PromptAsync(options, "Time to loiter (seconds)", 30, 0, 24 * 60, cancellationToken: cancellationToken);
         if (input is null)
@@ -1871,7 +1880,7 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task LoiterCirclesAsync()
     {
-        var turns = await dialogService.DisplayPromptAsync("Loiter Circles", "Number of circles", 3, 0, 100);
+        var turns = await dialogService.PromptAsync("Loiter Circles", "Number of circles", 3, 0, 100);
         if (turns is null)
         {
             return;
@@ -1903,7 +1912,7 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task AddTakeoffAsync()
     {
-        var altitude = await dialogService.DisplayPromptAsync("Takeoff", "Takeoff altitude (meters)", DefaultAltitudeMeters);
+        var altitude = await dialogService.PromptAsync("Takeoff", "Takeoff altitude (meters)", DefaultAltitudeMeters);
         if (altitude is null)
         {
             return;
@@ -1954,7 +1963,7 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task ModifyAltitudeAsync()
     {
-        var altitude = await dialogService.DisplayPromptAsync("Modify Alt", "New altitude for all mission items (meters)", DefaultAltitudeMeters);
+        var altitude = await dialogService.PromptAsync("Modify Alt", "New altitude for all mission items (meters)", DefaultAltitudeMeters);
         if (altitude is null)
         {
             return;
@@ -2015,9 +2024,8 @@ public partial class MissionMapViewModel : ViewModelBase
 
     private async Task<(MissionFileFormat? Format, string? Extension)> PickSaveFormatAsync()
     {
-        var choice = await choiceService.ChooseAsync("Save mission as",
-            ["Waypoints (.waypoints)", "Text (.txt)", "Mission JSON (.mission)"]);
-
+        var options = dialogService.CreateOptions("Save mission as");
+        var choice = await dialogService.ChooseAsync(options, ["Waypoints (.waypoints)", "Text (.txt)", "Mission JSON (.mission)"]);
         return choice switch
         {
             "Waypoints (.waypoints)" => (MissionFileFormat.QgcWpl, ".waypoints"),

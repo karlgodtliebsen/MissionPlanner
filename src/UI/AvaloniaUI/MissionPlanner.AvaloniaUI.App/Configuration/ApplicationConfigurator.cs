@@ -13,6 +13,7 @@ using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.AvaloniaUI.App.Views.Config;
 using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.AvaloniaUI.App.Views.Connect;
+using MissionPlanner.AvaloniaUI.App.Views.DialogTest;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData.Hud;
@@ -60,6 +61,9 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
+using DialogDemoViewModel = MissionPlanner.AvaloniaUI.App.Views.DialogTest.DialogDemoViewModel;
+using ErrorView = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorView;
+using ErrorViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Configuration;
 
@@ -130,17 +134,12 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IPoiRepository, JsonPoiRepository>();
         services.TryAddSingleton<IPoiService, PoiService>();
 
-        services.TryAddTransient<AvaloniaMissionPlanningDialogService>();
-        services.TryAddTransient<IUserPromptService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningDialogService>());
         services.TryAddTransient<IMissionTerrainElevationProvider, MissionTerrainElevationProvider>();
-        services.TryAddTransient<IUserChoiceService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningDialogService>());
         services.TryAddTransient<AvaloniaMissionPlanningFileService>();
         services.TryAddTransient<IFileOpenService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
         services.TryAddTransient<IFileSaveService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
         services.TryAddTransient<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
         services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
-        //services.TryAddTransient<IFirmwareFilePicker, MauiFirmwareFilePicker>();
-
         services.TryAddTransient<IFirmwareUserInteraction, FirmwareInteractionService>();
         services.TryAddTransient<IBootloaderEntryInteraction, FirmwareInteractionService>();
         services.TryAddTransient<IDfuUserInteraction, FirmwareInteractionService>();
@@ -173,7 +172,6 @@ public static class ApplicationConfigurator
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<MainWindow>();
 
-
         // Common/Shared UI Components
         services.TryAddSingleton<StatusBarViewModel>();
         services.TryAddSingleton<TopBarViewModel>();
@@ -188,12 +186,19 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ConnectPopupViewModel>();
         services.TryAddTransient<ConnectPopupView>();
 
+        services.TryAddTransient<DialogDemoViewModel>();
+        services.TryAddTransient<DialogDemoPage>();
+
+
         services.TryAddTransient<ExitViewModel>();
         services.TryAddTransient<ExitUserControlView>();
 
         services.TryAddSingleton<INavigationPageFactory, NavigationPageFactory>();
-        services.TryAddSingleton<AvaloniaNavigationService>();
-        services.TryAddSingleton<INavigationService>(sp => sp.GetRequiredService<AvaloniaNavigationService>());
+
+        //This is to satisfy the DI container for INavigationService, but we will use AvaloniaNavigationService as the implementation
+        services.TryAddSingleton<INavigationService, AvaloniaNavigationService>();
+        //services.TryAddSingleton<INavigationService>(sp => sp.GetRequiredService<AvaloniaNavigationService>());
+
         services.TryAddSingleton<MainShellViewModel>();
 
         services.TryAddTransient<FlightDataMissionMapViewModel>();
@@ -252,7 +257,7 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<FlightDataViewModel>();
         services.TryAddTransient<FlightPlannerViewModel>();
-        services.TryAddTransient<SimulationViewModel>();
+        services.TryAddTransient<DialogDemoViewModel>();
         services.TryAddTransient<ExitViewModel>();
 
         // Tabs on Config View
@@ -327,13 +332,13 @@ public static class ApplicationConfigurator
         domainFactory.Add<ConnectPopupView>();
         domainFactory.Add<IDialogService, AvaloniaDialogService>();
 
-        //domainFactory.Add<ParameterComparisonViewModel>();
+        domainFactory.Add<ParameterComparisonViewModel>();
         //domainFactory.Add<ParameterComparisonView>();
         domainFactory.Add<MissionItemListViewPage>();
         domainFactory.Add<MissionMapPresenter>();
         //domainFactory.Add<FlightPlannerMissionMapViewModel>();
         //domainFactory.Add<FlightPlannerMissionMapView>();
-        //domainFactory.Add<ParametersEditorViewModel>();
+        domainFactory.Add<ParametersEditorViewModel>();
         //domainFactory.Add<ParametersEditorView>();
         return services;
     }

@@ -19,6 +19,7 @@
             VerticalContentAlignment="Stretch"/>
 
         <Border
+            Classes="SectionCard"
             Grid.Row="2"
             Padding="16,10">
 
@@ -28,12 +29,14 @@
                 Spacing="8">
 
                 <Button
+                    Classes="Secondary"
                     MinWidth="90"
                     Content="{Binding CloseText}"
                     Command="{Binding CancelCommand}"
                     IsVisible="{Binding ShowCloseButton}"/>
 
                 <Button
+                    Classes="Primary"
                     MinWidth="90"
                     Content="{Binding OkText}"
                     Command="{Binding OkCommand}"

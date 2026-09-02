@@ -12,7 +12,7 @@
     <Grid RowDefinitions="Auto,*" Margin="10"
           RowSpacing="6"   HorizontalAlignment="Center"  VerticalAlignment="Stretch">
 
-        <Border  HorizontalAlignment="Center"  >
+        <Border  HorizontalAlignment="Center"  Classes="SectionCard">
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="10"
                   RowSpacing="6"  HorizontalAlignment="Stretch"   VerticalAlignment="Stretch">
                 <!-- Title and mode switch. -->

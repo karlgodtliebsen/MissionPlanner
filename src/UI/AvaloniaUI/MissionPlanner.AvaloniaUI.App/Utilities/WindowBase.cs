@@ -1,6 +1,7 @@
 ﻿using AsyncAwaitBestPractices;
 using Avalonia.Interactivity;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 using Ursa.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities;
@@ -9,15 +10,17 @@ namespace MissionPlanner.AvaloniaUI.App.Utilities;
 /// A base class for views that are associated with a specific view model.
 /// </summary>
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
-public partial class WindowBase<TViewModel> : UrsaWindow where TViewModel : ViewModelBase
+public partial class WindowBase<TViewModel> : UrsaWindow where TViewModel : ViewModelBase, IDisposable
 {
+    private bool disposed;
+
     /// <summary>
     /// The logger instance used for logging within the TabViewLifecycleContent class. 
     /// </summary>
     protected ILogger Logger;
 
     /// <summary>The view model associated with this View.</summary>
-    protected TViewModel ViewModel
+    protected TViewModel? ViewModel
     {
         get;
         private set;
@@ -30,10 +33,21 @@ public partial class WindowBase<TViewModel> : UrsaWindow where TViewModel : View
         Logger = ServiceHelper.GetRequiredService<ILogger<TViewModel>>();
         DataContext = ViewModel;
     }
+
+    /// <summary>Initializes the page, optionally using a keyed view model.</summary>
+    protected WindowBase(string? key = null)
+    {
+        ViewModel = key is not null
+            ? ServiceHelper.GetRequiredKeyedService<TViewModel>(key)
+            : ServiceHelper.GetRequiredService<TViewModel>();
+        Logger = ServiceHelper.GetRequiredService<ILogger<TViewModel>>();
+        DataContext = ViewModel;
+    }
     /// <inheritdoc/>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        NotificationHelper.SetupManagers(this, ViewModel);
         ViewModel?.ActivateAsync().SafeFireAndForget();
     }
 
@@ -44,6 +58,21 @@ public partial class WindowBase<TViewModel> : UrsaWindow where TViewModel : View
         ViewModel?.DeactivateAsync().SafeFireAndForget();
         base.OnUnloaded(e);
     }
+
+    /// <inheritdoc />
+    public virtual void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        ViewModel?.Dispose();
+        ViewModel = null;
+        DataContext = null;
+    }
+
 }
 
 /// <inheritdoc/>

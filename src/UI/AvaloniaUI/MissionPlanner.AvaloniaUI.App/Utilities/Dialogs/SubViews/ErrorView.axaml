@@ -1,0 +1,35 @@
+﻿<UserControl   xmlns="https://github.com/avaloniaui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+               xmlns:u="https://irihi.tech/ursa"
+               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+               xmlns:common="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Common"
+               xmlns:subViews="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews"
+               x:Class="MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorView"
+               x:DataType="subViews:ErrorViewModel"
+               HorizontalContentAlignment="Center"
+               VerticalAlignment="Center"
+               Margin="50"
+               >
+    <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="50">
+        <StackPanel    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="50">
+            <TextBlock Text="{Binding Title}" TextAlignment="Center" Classes="Title"
+                       Foreground="{DynamicResource Error}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            
+            <TextBlock Text="{Binding ErrorMessage}" TextAlignment="Center" Classes="H5"
+                       Foreground="{DynamicResource Error}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+            <Button
+                Width="100"
+                Classes="Primary"
+                Padding="5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Command="{Binding OKCommand}"
+                >
+                <avalonia:MaterialIcon Kind="HandOkay" Width="30" Height="30" />
+            </Button>
+        </StackPanel>
+    </Border>
+</UserControl>

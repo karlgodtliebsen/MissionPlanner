@@ -6,7 +6,7 @@
                            x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs.TelemetryLogsTabItemView"
                            x:DataType="tabs:TelemetryLogsTabViewModel">
     <Grid Margin="12" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="10">
-        <Border Padding="12">
+        <Border Padding="12" Classes="SectionCard">
             <StackPanel>
                 <TextBlock Text="{Binding SourceModeLabel}" FontSize="16" FontWeight="Bold"/>
                 <TextBlock Text="Replay is read-only and cannot send vehicle commands." TextWrapping="Wrap"/>

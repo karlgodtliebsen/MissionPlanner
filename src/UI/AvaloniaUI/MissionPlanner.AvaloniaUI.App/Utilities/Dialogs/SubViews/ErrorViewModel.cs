@@ -1,20 +1,13 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.Common;
+namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews;
 
 
 /// <summary>
-/// 
+/// Represents the view model for the error dialog, providing properties and commands for displaying error messages. 
 /// </summary>
-public partial class ErrorViewModel : ObservableObject
+public partial class ErrorViewModel : DialogViewModelBase
 {
-
-    [ObservableProperty]
-    public partial string? ErrorMessage
-    {
-        get; set;
-    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ErrorViewModel"/> class with the specified application state and options.

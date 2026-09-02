@@ -53,7 +53,7 @@
                         ToolTip.Tip="Sets the current displayed relative altitude to 0. Vehicle HOME is not changed." />
             </Grid>
 
-            <Border Padding="10" Classes="SurfaceContainer Rounded Elevation1">
+            <Border Padding="10" Classes="SectionCard" >
                 <StackPanel Orientation="Vertical" Spacing="7">
                     <Label Content="Mission intervention" FontWeight="Bold" />
                     <Label Content="{Binding CurrentMissionSequenceText}" FontSize="11" />
@@ -85,7 +85,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Padding="10" Classes="SurfaceContainer Rounded Elevation1">
+            <Border Padding="10" Classes="SectionCard" >
                 <StackPanel Orientation="Vertical" Spacing="7">
                     <Label Content="In-flight adjustments" FontWeight="Bold" />
                     <Label Content="Ground speed" FontSize="11" IsVisible="{Binding IsSpeedTypeSelectorVisible, Converter={StaticResource InvertedBoolConverter}}" />
@@ -110,7 +110,7 @@
                 </StackPanel>
             </Border>
 
-            <Border Padding="10" Classes="SurfaceContainer Rounded Elevation1">
+            <Border Padding="10" Classes="SectionCard" >
                 <StackPanel Orientation="Vertical" Spacing="5">
                     <Label Content="Command status" FontWeight="Bold" />
                     <Label Content="{Binding PendingCommand, StringFormat='{}Pending: {0}'}" />

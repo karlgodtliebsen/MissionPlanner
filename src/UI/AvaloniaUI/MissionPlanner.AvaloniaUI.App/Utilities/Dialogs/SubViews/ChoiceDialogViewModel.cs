@@ -2,7 +2,7 @@
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews;
 
-public sealed partial class ChoiceDialogViewModel : ObservableObject
+public sealed partial class ChoiceDialogViewModel : DialogViewModelBase
 {
     public ChoiceDialogViewModel(IReadOnlyList<string> choices)
     {

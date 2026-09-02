@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities;
 
@@ -35,6 +36,7 @@ public partial class TabbedPageViewBase<TViewModel> : TabbedPage where TViewMode
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        NotificationHelper.SetupManagers(this, ViewModel);
         ViewModel?.ActivateAsync().SafeFireAndForget();
     }
 

@@ -1,415 +1,473 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         >
-  <Style Selector="Grid.FrontMatec-gridSubView">
-    <Setter Property="Margin" Value="1"></Setter>
-    <Setter Property="HorizontalAlignment" Value="Center"></Setter>
-    <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
-  </Style>
 
-  <Style Selector="DataGridCell">
-    <Style Selector="^.CenterAlign">
-      <Setter Property="MinWidth" Value="150" />
-      <Setter Property="HorizontalContentAlignment" Value="Center" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
-      <Setter Property="VerticalAlignment" Value="Stretch" />
-      <Setter Property="Margin" Value="0,0,0,6" />
+    <!--
+    <Style Selector="Grid.gridSubView">
+        <Setter Property="Margin" Value="1"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
     </Style>
-    <Style Selector="^.RightAlign">
-      <Setter Property="MinWidth" Value="150" />
-      <Setter Property="HorizontalContentAlignment" Value="Right" />
-      <Setter Property="HorizontalAlignment" Value="Stretch" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
-      <Setter Property="VerticalAlignment" Value="Stretch" />
-      <Setter Property="Margin" Value="0,0,0,6" />
+
+    <Style Selector="DataGridCell">
+        <Style Selector="^.CenterAlign">
+            <Setter Property="MinWidth" Value="150" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style Selector="^.RightAlign">
+            <Setter Property="MinWidth" Value="150" />
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
     </Style>
-  </Style>
-  <Style Selector="StackPanel.FrontMatec-first">
-    <Setter Property="Margin" Value="5"></Setter>
-    <Setter Property="HorizontalAlignment" Value="Center"></Setter>
-    <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
-  </Style>
-
-  <Style Selector="StackPanel.FrontMatec-second">
-    <Setter Property="Margin" Value="5"></Setter>
-    <Setter Property="HorizontalAlignment" Value="Center"></Setter>
-    <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
-  </Style>
-
-  <Style Selector="TextBox.FrontMatec-Form">
-    <Setter Property="Width" Value="250"></Setter>
-  </Style>
-  <Style Selector="ComboBox.FrontMatec-Form">
-    <Setter Property="Width" Value="250"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-Form">
-    <Setter Property="Margin" Value="0,10,0,0"></Setter>
-    <Setter Property="Width" Value="250"></Setter>
-  </Style>
-
-  <Style Selector="TextBox.FrontMatec-Form-small">
-    <Setter Property="Width" Value="200"></Setter>
-  </Style>
-
-  <Style Selector="TextBox.FrontMatec-Form-x-small">
-    <Setter Property="Width" Value="125"></Setter>
-  </Style>
-  <Style Selector="ComboBox.FrontMatec-Form-small">
-    <Setter Property="Width" Value="200"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-Form-small">
-    <Setter Property="Margin" Value="0,10,0,0"></Setter>
-    <Setter Property="Width" Value="200"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-Form-x-small">
-    <Setter Property="Margin" Value="0,10,0,0"></Setter>
-    <Setter Property="Width" Value="125"></Setter>
-  </Style>
-  <Style Selector="TextBox.FrontMatec-Form-large">
-    <Setter Property="Width" Value="300"></Setter>
-  </Style>
-
-  <Style Selector="ComboBox.FrontMatec-Form-large">
-    <Setter Property="Width" Value="300"></Setter>
-  </Style>
-
-  <Style Selector="Label.FrontMatec-Form-large">
-    <Setter Property="Margin" Value="0,10,0,0"></Setter>
-    <Setter Property="Width" Value="300"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-Large">
-    <Setter Property="Width" Value="300"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-Top-Margin-Small">
-    <Setter Property="Margin" Value="0,25,0,0"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-Top-Margin-XSmall">
-    <Setter Property="Margin" Value="0,10,0,0"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-Top-Margin">
-    <Setter Property="Margin" Value="0,50,0,0"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-Bottom-Margin">
-    <Setter Property="Margin" Value="0,0,0,50"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-Top-Bottom-Margin">
-    <Setter Property="Margin" Value="0,50,0,50"></Setter>
-  </Style>
-
-  <Style Selector="StackPanel.FrontMatec-Top-Margin-Small">
-    <Setter Property="Margin" Value="0,25,0,0"></Setter>
-  </Style>
-  <Style Selector="StackPanel.FrontMatec-Top-Margin-XSmall">
-    <Setter Property="Margin" Value="0,10,0,0"></Setter>
-  </Style>
-  <Style Selector="StackPanel.FrontMatec-Top-Margin">
-    <Setter Property="Margin" Value="0,50,0,0"></Setter>
-  </Style>
-  <Style Selector="StackPanel.FrontMatec-Bottom-Margin">
-    <Setter Property="Margin" Value="0,0,0,50"></Setter>
-  </Style>
-  <Style Selector="StackPanel.FrontMatec-Top-Bottom-Margin">
-    <Setter Property="Margin" Value="0,50,0,50"></Setter>
-  </Style>
-  <Style Selector="DataGrid">
-    <Setter Property="Transitions">
-      <Transitions>
-        <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="QuadraticEaseInOut" />
-      </Transitions>
-    </Setter>
-  </Style>
-  <Style Selector="DataGrid.FrontMatec-Top-Margin-Small">
-    <Setter Property="Margin" Value="0,25,0,0"></Setter>
-  </Style>
-  <Style Selector="DataGrid.FrontMatec-Top-Margin-XSmall">
-    <Setter Property="Margin" Value="0,10,0,0"></Setter>
-  </Style>
-  <Style Selector="DataGrid.FrontMatec-Top-Margin">
-    <Setter Property="Margin" Value="0,50,0,0"></Setter>
-  </Style>
-  <Style Selector="DataGrid.FrontMatec-Bottom-Margin">
-    <Setter Property="Margin" Value="0,0,0,50"></Setter>
-  </Style>
-  <Style Selector="DataGrid.FrontMatec-Top-Bottom-Margin">
-    <Setter Property="Margin" Value="0,50,0,50"></Setter>
-  </Style>
-
-  <Style Selector="DockPanel.FrontMatec-Top-Margin-Small">
-    <Setter Property="Margin" Value="0,25,0,0"></Setter>
-  </Style>
-  <Style Selector="DockPanel.FrontMatec-Top-Margin-XSmall">
-    <Setter Property="Margin" Value="0,10,0,0"></Setter>
-  </Style>
-  <Style Selector="DockPanel.FrontMatec-Top-Margin">
-    <Setter Property="Margin" Value="0,50,0,0"></Setter>
-  </Style>
-
-  <Style Selector="WrapPanel.FrontMatec-Top-Margin-Small">
-    <Setter Property="Margin" Value="0,25,0,0"></Setter>
-  </Style>
-  <Style Selector="WrapPanel.FrontMatec-Top-Margin-XSmall">
-    <Setter Property="Margin" Value="0,10,0,0"></Setter>
-  </Style>
-  <Style Selector="WrapPanel.FrontMatec-Top-Margin">
-    <Setter Property="Margin" Value="0,50,0,0"></Setter>
-  </Style>
-  <Style Selector="WrapPanel.FrontMatec-Bottom-Margin">
-    <Setter Property="Margin" Value="0,0,0,50"></Setter>
-  </Style>
-  <Style Selector="WrapPanel.FrontMatec-Top-Bottom-Margin">
-    <Setter Property="Margin" Value="0,50,0,50"></Setter>
-  </Style>
-  <Style Selector="WrapPanel.FrontMatec-Top-Margin">
-    <Setter Property="Margin" Value="0,50,0,0"></Setter>
-  </Style>
-
-  <Style Selector="Button.FrontMatec-Top-Margin">
-    <Setter Property="Margin" Value="0,50,0,0"></Setter>
-  </Style>
-
-  <Style Selector="Button.FrontMatec-Top-Margin">
-    <Setter Property="Margin" Value="0,50,0,0"></Setter>
-  </Style>
-  <Style Selector="Button.FrontMatec-Bottom-Margin">
-    <Setter Property="Margin" Value="0,0,0,50"></Setter>
-  </Style>
-
-  <Style Selector="Button.FrontMatec-Large">
-    <Setter Property="Width" Value="200"></Setter>
-    <Setter Property="Height" Value="100"></Setter>
-    <Setter Property="HorizontalAlignment" Value="Center" />
-    <Setter Property="Margin" Value="0,5,0,5"></Setter>
-  </Style>
-  <Style Selector="Button.FrontMatec-S-Wide">
-    <Setter Property="Width" Value="120"></Setter>
-    <Setter Property="Height" Value="50"></Setter>
-    <Setter Property="HorizontalAlignment" Value="Center" />
-    <Setter Property="Margin" Value="5,5,5,5"></Setter>
-  </Style>
-  <Style Selector="Button.FrontMatec-Wide">
-    <Setter Property="Width" Value="200"></Setter>
-    <Setter Property="Height" Value="50"></Setter>
-    <Setter Property="HorizontalAlignment" Value="Center" />
-    <Setter Property="Margin" Value="5,5,5,5"></Setter>
-  </Style>
-
-  <Style Selector="Button.FrontMatec-Small">
-    <Setter Property="Width" Value="120"></Setter>
-    <Setter Property="Height" Value="30"></Setter>
-    <Setter Property="HorizontalAlignment" Value="Center" />
-    <Setter Property="Margin" Value="2,2,2,2"></Setter>
-  </Style>
-
-  <Style Selector="Button.FrontMatec-Small-Wide">
-    <Setter Property="Width" Value="200"></Setter>
-    <Setter Property="Height" Value="30"></Setter>
-    <Setter Property="HorizontalAlignment" Value="Center" />
-    <Setter Property="Margin" Value="2,2,2,2"></Setter>
-  </Style>
-
-  <Style Selector="Button.FrontMatec-X-Wide">
-    <Setter Property="Width" Value="250"></Setter>
-  </Style>
-
-  <Style Selector="Button.H5">
-    <Setter Property="FontSize" Value="13"></Setter>
-    <Setter Property="FontWeight" Value="Light"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="Button.H6">
-    <Setter Property="FontSize" Value="12"></Setter>
-    <Setter Property="FontWeight" Value="Light"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="Button.H7">
-    <Setter Property="FontSize" Value="11"></Setter>
-    <Setter Property="FontWeight" Value="Light"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-
-  <Style Selector="TextBox.H1">
-    <Setter Property="FontSize" Value="48"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBox.H2">
-    <Setter Property="FontSize" Value="32"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBox.H3">
-    <Setter Property="FontSize" Value="20"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBox.H4">
-    <Setter Property="FontSize" Value="16"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBox.H5">
-    <Setter Property="FontSize" Value="13"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBox.H6">
-    <Setter Property="FontSize" Value="11"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBox.FrontMatec-size">
-    <Setter Property="Width" Value="250"></Setter>
-  </Style>
-  <Style Selector="TextBox.FrontMatec-small-size">
-    <Setter Property="Width" Value="200"></Setter>
-  </Style>
-  <Style Selector="TextBox.FrontMatec-xsmall-size">
-    <Setter Property="Width" Value="175"></Setter>
-  </Style>
-  <Style Selector="ComboBox.FrontMatec-small-size">
-    <Setter Property="Width" Value="200"></Setter>
-  </Style>
-  <Style Selector="ComboBox.FrontMatec-size">
-    <Setter Property="Width" Value="250"></Setter>
-  </Style>
-  <Style Selector="TextBlock.H1">
-    <Setter Property="FontSize" Value="48"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBlock.H2">
-    <Setter Property="FontSize" Value="32"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBlock.H3">
-    <Setter Property="FontSize" Value="20"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBlock.H4">
-    <Setter Property="FontSize" Value="16"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBlock.H5">
-    <Setter Property="FontSize" Value="13"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBlock.H6">
-    <Setter Property="FontSize" Value="11"></Setter>
-    <Setter Property="FontWeight" Value="Light"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-  </Style>
-  <Style Selector="TextBlock.FrontMatec-size">
-    <Setter Property="Width" Value="250"></Setter>
-  </Style>
-  <Style Selector="Label.H1">
-    <Setter Property="FontSize" Value="48"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-  </Style>
-  <Style Selector="Label.H2">
-    <Setter Property="FontSize" Value="32"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-  </Style>
-
-  <Style Selector="Label.H3">
-    <Setter Property="FontSize" Value="20"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-    <Setter Property="Margin" Value="10,0,0,0" />
-  </Style>
-
-  <Style Selector="Label.H4">
-    <Setter Property="FontSize" Value="16"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-    <Setter Property="Margin" Value="10,0,0,0" />
-  </Style>
-
-  <Style Selector="Label.H5">
-    <Setter Property="FontSize" Value="13"></Setter>
-    <Setter Property="FontWeight" Value="Normal"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-    <Setter Property="Margin" Value="10,0,0,0" />
-  </Style>
-  <Style Selector="Label.H6">
-    <Setter Property="FontSize" Value="11"></Setter>
-    <Setter Property="FontWeight" Value="Light"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-    <Setter Property="Margin" Value="10,0,0,0" />
-  </Style>
-
-  <Style Selector="Label.Title">
-    <Setter Property="FontSize" Value="16"></Setter>
-    <Setter Property="FontWeight" Value="ExtraLight"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-    <Setter Property="Margin" Value="0,0,0,0" />
-  </Style>
-
-  <Style Selector="CheckBox.H5">
-    <Setter Property="FontSize" Value="15"></Setter>
-    <Setter Property="FontWeight" Value="Light"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-  </Style>
-  <Style Selector="CheckBox.H6">
-    <Setter Property="FontSize" Value="11"></Setter>
-    <Setter Property="FontWeight" Value="Light"></Setter>
-    <Setter Property="VerticalAlignment" Value="Center"></Setter>
-    <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
-  </Style>
-  <Style Selector="Label.FrontMatec-size">
-    <Setter Property="Width" Value="275"></Setter>
-  </Style>
-  <Style Selector="DockPanel.FrontMatec-size">
-    <Setter Property="Width" Value="275"></Setter>
-  </Style>
-  <Style Selector="ScrollViewer.FrontMatec-size">
-    <Setter Property="Width" Value="275"></Setter>
-  </Style>
-  <Style Selector="Border.FrontMatec-Border">
-    <Setter Property="Margin" Value="50"></Setter>
-  </Style>
-  <Style Selector="Border.FrontMatec-Border-double">
-    <Setter Property="Margin" Value="50"></Setter>
-    <Setter Property="BorderThickness" Value="5"></Setter>
-
-	</Style>
-  <Style Selector="Grid.Row">
-    <Setter Property="Width" Value="250"></Setter>
-    <Setter Property="Margin" Value="0,5,0,0"></Setter>
-  </Style>
-  <Style Selector="Grid.ExtendedRow">
-    <Setter Property="Margin" Value="0,5,0,0"></Setter>
-  </Style>
-
-  <Style Selector="TextBox.clearButton, TextBox.ClearButton">
-    <Style Selector="^[AcceptsReturn=False][IsReadOnly=False]:focus:not(:empty) /template/ Button#PART_ClearButton">
-      <Setter Property="Focusable" Value="False" />
-      <Setter Property="IsVisible" Value="True" />
+    <Style Selector="StackPanel.first">
+        <Setter Property="Margin" Value="5"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
     </Style>
-    <Style Selector="^[AcceptsReturn=False][IsReadOnly=False]:pointerover:not(:empty) /template/ Button#PART_ClearButton">
-      <Setter Property="Focusable" Value="False" />
-      <Setter Property="IsVisible" Value="True" />
+
+    <Style Selector="StackPanel.second">
+        <Setter Property="Margin" Value="5"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
     </Style>
-  </Style>
+
+    <Style Selector="TextBox.Form">
+        <Setter Property="Width" Value="250"></Setter>
+    </Style>
+    <Style Selector="ComboBox.Form">
+        <Setter Property="Width" Value="250"></Setter>
+    </Style>
+    <Style Selector="Label.Form">
+        <Setter Property="Margin" Value="0,10,0,0"></Setter>
+        <Setter Property="Width" Value="250"></Setter>
+    </Style>
+
+    <Style Selector="TextBox.Form-small">
+        <Setter Property="Width" Value="200"></Setter>
+    </Style>
+
+    <Style Selector="TextBox.Form-x-small">
+        <Setter Property="Width" Value="125"></Setter>
+    </Style>
+    <Style Selector="ComboBox.Form-small">
+        <Setter Property="Width" Value="200"></Setter>
+    </Style>
+    <Style Selector="Label.Form-small">
+        <Setter Property="Margin" Value="0,10,0,0"></Setter>
+        <Setter Property="Width" Value="200"></Setter>
+    </Style>
+    <Style Selector="Label.Form-x-small">
+        <Setter Property="Margin" Value="0,10,0,0"></Setter>
+        <Setter Property="Width" Value="125"></Setter>
+    </Style>
+    <Style Selector="TextBox.Form-large">
+        <Setter Property="Width" Value="300"></Setter>
+    </Style>
+
+    <Style Selector="ComboBox.Form-large">
+        <Setter Property="Width" Value="300"></Setter>
+    </Style>
+
+    <Style Selector="Label.Form-large">
+        <Setter Property="Margin" Value="0,10,0,0"></Setter>
+        <Setter Property="Width" Value="300"></Setter>
+    </Style>
+    <Style Selector="Label.Large">
+        <Setter Property="Width" Value="300"></Setter>
+    </Style>
+    <Style Selector="Label.Top-Margin-Small">
+        <Setter Property="Margin" Value="0,25,0,0"></Setter>
+    </Style>
+    <Style Selector="Label.Top-Margin-XSmall">
+        <Setter Property="Margin" Value="0,10,0,0"></Setter>
+    </Style>
+    <Style Selector="Label.Top-Margin">
+        <Setter Property="Margin" Value="0,50,0,0"></Setter>
+    </Style>
+    <Style Selector="Label.Bottom-Margin">
+        <Setter Property="Margin" Value="0,0,0,50"></Setter>
+    </Style>
+    <Style Selector="Label.Top-Bottom-Margin">
+        <Setter Property="Margin" Value="0,50,0,50"></Setter>
+    </Style>
+
+    <Style Selector="StackPanel.Top-Margin-Small">
+        <Setter Property="Margin" Value="0,25,0,0"></Setter>
+    </Style>
+    <Style Selector="StackPanel.Top-Margin-XSmall">
+        <Setter Property="Margin" Value="0,10,0,0"></Setter>
+    </Style>
+    <Style Selector="StackPanel.Top-Margin">
+        <Setter Property="Margin" Value="0,50,0,0"></Setter>
+    </Style>
+    <Style Selector="StackPanel.Bottom-Margin">
+        <Setter Property="Margin" Value="0,0,0,50"></Setter>
+    </Style>
+    <Style Selector="StackPanel.Top-Bottom-Margin">
+        <Setter Property="Margin" Value="0,50,0,50"></Setter>
+    </Style>
+    <Style Selector="DataGrid">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Height" Duration="0:0:0.25" Easing="QuadraticEaseInOut" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="DataGrid.Top-Margin-Small">
+        <Setter Property="Margin" Value="0,25,0,0"></Setter>
+    </Style>
+    <Style Selector="DataGrid.Top-Margin-XSmall">
+        <Setter Property="Margin" Value="0,10,0,0"></Setter>
+    </Style>
+    <Style Selector="DataGrid.Top-Margin">
+        <Setter Property="Margin" Value="0,50,0,0"></Setter>
+    </Style>
+    <Style Selector="DataGrid.Bottom-Margin">
+        <Setter Property="Margin" Value="0,0,0,50"></Setter>
+    </Style>
+    <Style Selector="DataGrid.Top-Bottom-Margin">
+        <Setter Property="Margin" Value="0,50,0,50"></Setter>
+    </Style>
+
+    <Style Selector="DockPanel.Top-Margin-Small">
+        <Setter Property="Margin" Value="0,25,0,0"></Setter>
+    </Style>
+    <Style Selector="DockPanel.Top-Margin-XSmall">
+        <Setter Property="Margin" Value="0,10,0,0"></Setter>
+    </Style>
+    <Style Selector="DockPanel.Top-Margin">
+        <Setter Property="Margin" Value="0,50,0,0"></Setter>
+    </Style>
+
+    <Style Selector="WrapPanel.Top-Margin-Small">
+        <Setter Property="Margin" Value="0,25,0,0"></Setter>
+    </Style>
+    <Style Selector="WrapPanel.Top-Margin-XSmall">
+        <Setter Property="Margin" Value="0,10,0,0"></Setter>
+    </Style>
+    <Style Selector="WrapPanel.Top-Margin">
+        <Setter Property="Margin" Value="0,50,0,0"></Setter>
+    </Style>
+    <Style Selector="WrapPanel.Bottom-Margin">
+        <Setter Property="Margin" Value="0,0,0,50"></Setter>
+    </Style>
+    <Style Selector="WrapPanel.Top-Bottom-Margin">
+        <Setter Property="Margin" Value="0,50,0,50"></Setter>
+    </Style>
+    <Style Selector="WrapPanel.Top-Margin">
+        <Setter Property="Margin" Value="0,50,0,0"></Setter>
+    </Style>
+
+    <Style Selector="Button.Top-Margin">
+        <Setter Property="Margin" Value="0,50,0,0"></Setter>
+    </Style>
+
+    <Style Selector="Button.Top-Margin">
+        <Setter Property="Margin" Value="0,50,0,0"></Setter>
+    </Style>
+    <Style Selector="Button.Bottom-Margin">
+        <Setter Property="Margin" Value="0,0,0,50"></Setter>
+    </Style>
+
+    <Style Selector="Button.Large">
+        <Setter Property="Width" Value="200"></Setter>
+        <Setter Property="Height" Value="100"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0,5,0,5"></Setter>
+    </Style>
+    <Style Selector="Button.S-Wide">
+        <Setter Property="Width" Value="120"></Setter>
+        <Setter Property="Height" Value="50"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="5,5,5,5"></Setter>
+    </Style>
+    <Style Selector="Button.Wide">
+        <Setter Property="Width" Value="200"></Setter>
+        <Setter Property="Height" Value="50"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="5,5,5,5"></Setter>
+    </Style>
+
+    <Style Selector="Button.Small">
+        <Setter Property="Width" Value="120"></Setter>
+        <Setter Property="Height" Value="30"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="2,2,2,2"></Setter>
+    </Style>
+
+    <Style Selector="Button.Small-Wide">
+        <Setter Property="Width" Value="200"></Setter>
+        <Setter Property="Height" Value="30"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="2,2,2,2"></Setter>
+    </Style>
+
+    <Style Selector="Button.X-Wide">
+        <Setter Property="Width" Value="250"></Setter>
+    </Style>
+
+        <Style Selector="Label.size">
+        <Setter Property="Width" Value="275"></Setter>
+    </Style>
+    <Style Selector="DockPanel.size">
+        <Setter Property="Width" Value="275"></Setter>
+    </Style>
+    <Style Selector="ScrollViewer.size">
+        <Setter Property="Width" Value="275"></Setter>
+    </Style>
+    <Style Selector="Border.Border">
+        <Setter Property="Margin" Value="50"></Setter>
+    </Style>
+    <Style Selector="Border.Border-double">
+        <Setter Property="Margin" Value="50"></Setter>
+        <Setter Property="BorderThickness" Value="5"></Setter>
+    </Style>
+
+        <Style Selector="TextBox.size">
+        <Setter Property="Width" Value="250"></Setter>
+    </Style>
+    <Style Selector="TextBox.small-size">
+        <Setter Property="Width" Value="200"></Setter>
+    </Style>
+    <Style Selector="TextBox.xsmall-size">
+        <Setter Property="Width" Value="175"></Setter>
+    </Style>
+    <Style Selector="ComboBox.small-size">
+        <Setter Property="Width" Value="200"></Setter>
+    </Style>
+    <Style Selector="ComboBox.size">
+        <Setter Property="Width" Value="250"></Setter>
+    </Style>
+
+    -->
+    <Style Selector="Border.SectionCard">
+        <Setter Property="Background" Value="{DynamicResource SemiColorBgDefault}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="Margin" Value="4" />
+    </Style>
+    <Style Selector="TextBlock.SectionTitle">
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <Style Selector="Button">
+        <Setter Property="Theme" Value="{DynamicResource SolidIconButton}"></Setter>
+   </Style>
+  
+    <Style Selector="Border">
+        <Setter Property="Theme" Value="{DynamicResource SolidIconButton}"></Setter>
+    </Style>
+
+    <Style Selector="Button.H5">
+        <Setter Property="FontSize" Value="13"></Setter>
+        <Setter Property="FontWeight" Value="Light"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="Button.H6">
+        <Setter Property="FontSize" Value="12"></Setter>
+        <Setter Property="FontWeight" Value="Light"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="Button.H7">
+        <Setter Property="FontSize" Value="11"></Setter>
+        <Setter Property="FontWeight" Value="Light"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+
+    <Style Selector="TextBox.H1">
+        <Setter Property="FontSize" Value="48"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBox.H2">
+        <Setter Property="FontSize" Value="32"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBox.H3">
+        <Setter Property="FontSize" Value="20"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBox.H4">
+        <Setter Property="FontSize" Value="16"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBox.H5">
+        <Setter Property="FontSize" Value="13"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBox.H6">
+        <Setter Property="FontSize" Value="11"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBox.size">
+        <Setter Property="Width" Value="250"></Setter>
+    </Style>
+    <Style Selector="TextBox.small-size">
+        <Setter Property="Width" Value="200"></Setter>
+    </Style>
+    <Style Selector="TextBox.xsmall-size">
+        <Setter Property="Width" Value="175"></Setter>
+    </Style>
+    <Style Selector="ComboBox.small-size">
+        <Setter Property="Width" Value="200"></Setter>
+    </Style>
+    <Style Selector="ComboBox.size">
+        <Setter Property="Width" Value="250"></Setter>
+    </Style>
+    <Style Selector="TextBlock.H1">
+        <Setter Property="FontSize" Value="48"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBlock.H2">
+        <Setter Property="FontSize" Value="32"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBlock.H3">
+        <Setter Property="FontSize" Value="20"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBlock.H4">
+        <Setter Property="FontSize" Value="16"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBlock.H5">
+        <Setter Property="FontSize" Value="13"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBlock.H6">
+        <Setter Property="FontSize" Value="11"></Setter>
+        <Setter Property="FontWeight" Value="Light"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+    </Style>
+    <Style Selector="TextBlock.size">
+        <Setter Property="Width" Value="250"></Setter>
+    </Style>
+    <Style Selector="Label.H1">
+        <Setter Property="FontSize" Value="48"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+    </Style>
+    <Style Selector="Label.H2">
+        <Setter Property="FontSize" Value="32"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+    </Style>
+
+    <Style Selector="Label.H3">
+        <Setter Property="FontSize" Value="20"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+        <Setter Property="Margin" Value="10,0,0,0" />
+    </Style>
+
+    <Style Selector="Label.H4">
+        <Setter Property="FontSize" Value="16"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+        <Setter Property="Margin" Value="10,0,0,0" />
+    </Style>
+
+    <Style Selector="Label.H5">
+        <Setter Property="FontSize" Value="13"></Setter>
+        <Setter Property="FontWeight" Value="Normal"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+        <Setter Property="Margin" Value="10,0,0,0" />
+    </Style>
+    <Style Selector="Label.H6">
+        <Setter Property="FontSize" Value="11"></Setter>
+        <Setter Property="FontWeight" Value="Light"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+        <Setter Property="Margin" Value="10,0,0,0" />
+    </Style>
+
+    <Style Selector="Label.Title">
+        <Setter Property="FontSize" Value="16"></Setter>
+        <Setter Property="FontWeight" Value="ExtraLight"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+        <Setter Property="Margin" Value="0,0,0,0" />
+    </Style>
+
+    <Style Selector="CheckBox.H5">
+        <Setter Property="FontSize" Value="15"></Setter>
+        <Setter Property="FontWeight" Value="Light"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+    </Style>
+    <Style Selector="CheckBox.H6">
+        <Setter Property="FontSize" Value="11"></Setter>
+        <Setter Property="FontWeight" Value="Light"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalContentAlignment" Value="Left"></Setter>
+    </Style>
+
+    <Style Selector="Label.size">
+        <Setter Property="Width" Value="275"></Setter>
+    </Style>
+    <Style Selector="DockPanel.size">
+        <Setter Property="Width" Value="275"></Setter>
+    </Style>
+    <Style Selector="ScrollViewer.size">
+        <Setter Property="Width" Value="275"></Setter>
+    </Style>
+    <Style Selector="Border.DefaultBorder">
+        <Setter Property="Margin" Value="50"></Setter>
+    </Style>
+    <Style Selector="Border.Border-double">
+        <Setter Property="Margin" Value="50"></Setter>
+        <Setter Property="BorderThickness" Value="5"></Setter>
+    </Style>
+
+    <Style Selector="Grid.Row">
+        <Setter Property="Width" Value="250"></Setter>
+        <Setter Property="Margin" Value="0,5,0,0"></Setter>
+    </Style>
+    <Style Selector="Grid.ExtendedRow">
+        <Setter Property="Margin" Value="0,5,0,0"></Setter>
+    </Style>
+
+    <Style Selector="TextBox.clearButton, TextBox.ClearButton">
+        <Style Selector="^[AcceptsReturn=False][IsReadOnly=False]:focus:not(:empty) /template/ Button#PART_ClearButton">
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+        <Style Selector="^[AcceptsReturn=False][IsReadOnly=False]:pointerover:not(:empty) /template/ Button#PART_ClearButton">
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="IsVisible" Value="True" />
+        </Style>
+    </Style>
 
 </Styles>

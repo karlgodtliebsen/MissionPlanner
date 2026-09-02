@@ -18,13 +18,14 @@ using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Connect;
 
-public partial class ConnectPopupViewModel : ViewModelBase
+public partial class ConnectPopupViewModel : DialogViewModelBase
 {
     private readonly ISerialPortDiscoveryService portDiscovery;
     private readonly IVehicleConnectionService connectionService;
     private readonly IList<IDisposable> disposables = [];
     private readonly ApplicationStateService stateService;
 
+    private readonly bool isConnectedStatusSet;
     /// <summary>
     /// Provides the public API for Channels.
     /// </summary>
@@ -161,7 +162,7 @@ public partial class ConnectPopupViewModel : ViewModelBase
         IDomainEventHub domainEventHub,
         ApplicationStateService stateService,
         IOptionsMonitor<ApplicationOptions> options,
-        ILogger<ConnectPopupViewModel> logger) : base(logger)
+        ILogger<ConnectPopupViewModel> logger)
     {
         this.portDiscovery = portDiscovery;
         this.connectionService = connectionService;
@@ -273,13 +274,13 @@ public partial class ConnectPopupViewModel : ViewModelBase
     private void UpdateConnectionStatus()
     {
         Dispatcher.Dispatch(() =>
-         {
-             // IsConnectedImage = stateService.IsConnected ? ConnectImage : DisConnectImage;
-             ConnectionImage = stateService.IsConnected ? LoadImage(ConnectImage) : LoadImage(DisConnectImage);
-             VehicleId = stateService.VehicleId;
-             VehicleName = stateService.VehicleName;
-             IsConnecting = false;
-         });
+        {
+            ConnectionImage = stateService.IsConnected ? LoadImage(ConnectImage) : LoadImage(DisConnectImage);
+            VehicleId = stateService.VehicleId;
+            VehicleName = stateService.VehicleName;
+            IsConnecting = false;
+
+        });
         Task.Yield();
     }
 
@@ -382,8 +383,14 @@ public partial class ConnectPopupViewModel : ViewModelBase
             return;
         }
 
+
+
         IsConnecting = true;
         StatusMessage = "Connecting...";
+        if (NotificationManager is not null)
+        {
+            NotificationManager!.Show(StatusMessage);
+        }
         await Task.Yield();
         try
 
@@ -419,6 +426,7 @@ public partial class ConnectPopupViewModel : ViewModelBase
             await Task.Yield();
             if (result.Success && result.VehicleId.HasValue)
             {
+                NotificationManager?.Show("Connected to vehicle: " + result.VehicleId.Value);
                 SuccessConnection(result.VehicleId.Value);
             }
             else
@@ -426,12 +434,15 @@ public partial class ConnectPopupViewModel : ViewModelBase
                 await DisconnectAsync();
                 StatusMessage = $"Connection failed: {result.ErrorMessage}";
                 Logger.LogWarning("Connection failed: {Error}", result.ErrorMessage);
+                NotificationManager?.Show(StatusMessage);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error during connection attempt");
             StatusMessage = $"Connection error: {ex.Message}";
+            NotificationManager?.Show(StatusMessage);
+
         }
         finally
         {
@@ -483,6 +494,10 @@ public partial class ConnectPopupViewModel : ViewModelBase
                 StatusMessage = "Disconnecting...";
                 await connectionService.DisconnectAsync();
                 StatusMessage = "Disconnected";
+                if (NotificationManager is not null)
+                {
+                    NotificationManager!.Show(StatusMessage);
+                }
                 UpdateConnectionStatus();
             });
             Logger.LogInformation("Disconnected from all vehicles");
@@ -491,6 +506,10 @@ public partial class ConnectPopupViewModel : ViewModelBase
         {
             Logger.LogError(ex, "Error during disconnect");
             StatusMessage = $"Disconnect error: {ex.Message}";
+            if (NotificationManager is not null)
+            {
+                NotificationManager!.Show(StatusMessage);
+            }
         }
     }
 

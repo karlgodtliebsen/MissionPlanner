@@ -17,7 +17,6 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="/Resources/Geometries/Geometry.axaml" />
-                <ResourceInclude Source="/Resources/Styles/ExpanderResources.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <converters:BoolToObjectConverter x:Key="BoolToYesNoConverter" TrueObject="Yes" FalseObject="No" />
@@ -32,7 +31,5 @@
         <semi:SemiPopupAnimations />
         <materialIcons:MaterialIconStyles />
         <StyleInclude Source="/Resources/Styles/SharedStyles.axaml" />
-        <StyleInclude Source="/Resources/Styles/ExpanderStyles.axaml" />
     </Application.Styles>
-
 </Application>

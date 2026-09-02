@@ -1,7 +1,8 @@
 ﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
-using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.Config;
+using MissionPlanner.AvaloniaUI.App.Views.DialogTest;
+using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
 using MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
 using MissionPlanner.AvaloniaUI.App.Views.Help;
@@ -26,6 +27,10 @@ public sealed class NavigationPageFactory : INavigationPageFactory
     {
         return route switch
         {
+            MissionPlannerRoutes.DialogDemo =>
+                  services.GetRequiredService<DialogDemoPage>(),
+
+
             MissionPlannerRoutes.FlightData =>
                 services.GetRequiredService<FlightDataPage>(),
 

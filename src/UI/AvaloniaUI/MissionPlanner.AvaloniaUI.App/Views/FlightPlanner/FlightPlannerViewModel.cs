@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Utilities;
@@ -149,22 +149,29 @@ public partial class FlightPlannerViewModel : ViewModelBase
     {
         if (e.Name == "EditorOpen")
         {
-            var view = domainFactory.Create<MissionItemListViewPage, MissionMapViewModel>(Map);
             cancellationToken.ThrowIfCancellationRequested();
-            //await dialogService.DisplayViewAsync("Mission editor", pageView, "Close", 1100, 760);
+            //TODO: Must be migrated to use a Drawer
+            throw new NotImplementedException();
 
-            await dialogService.ShowWindowAsync(
-                view,
-                new DialogOptions
-                {
-                    Title = "Connection",
-                    Presentation = DialogPresentation.Window,
-                    Width = 600,
-                    Height = 500,
-                    OkText = "Ok",
-                    CloseText = "Cancel"
-                });
+            //var options = AvaloniaDialogService.CreateDialogOptions("Connect Vehicle", "Ok", null);
+            //var viewModel = domainFactory.Create<MissionMapViewModel>();
 
+            //var result = await dialogService.ShowOverlayDialogAsync<MissionItemListViewPage, MissionMapViewModel>(viewModel, options, cancellationToken: cancellationToken);
+
+            //var view = domainFactory.Create<MissionItemListViewPage, MissionMapViewModel>(Map);
+            ////await dialogService.DisplayViewAsync("Mission editor", pageView, "Close", 1100, 760);
+
+            //await dialogService.ShowWindowAsync(
+            //    view,
+            //    new DialogOptions
+            //    {
+            //        Title = "Connection",
+            //        Presentation = DialogPresentation.Window,
+            //        Width = 600,
+            //        Height = 500,
+            //        OkText = "Ok",
+            //        CloseText = "Cancel"
+            //    });
 
         }
         else if (e.Name == "EditorClose")

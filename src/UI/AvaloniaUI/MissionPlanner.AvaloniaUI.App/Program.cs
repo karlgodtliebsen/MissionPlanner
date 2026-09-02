@@ -36,7 +36,7 @@ internal class Program
 
         var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? null;
 
-        var app = BuildAvaloniaApp(args)
+        var app = BuildAvaloniaApp()
         .With(new FontManagerOptions
         {
             FontFallbacks =
@@ -84,7 +84,7 @@ internal class Program
 
 
     // Avalonia configuration, don't remove; also used by visual designer.
-    public static AppBuilder BuildAvaloniaApp(string[] args)
+    public static AppBuilder BuildAvaloniaApp(/*string[] args*/)
     {
         IServiceCollection? services = null;
         IServiceProvider? serviceProvider = null;

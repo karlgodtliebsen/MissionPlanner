@@ -1,9 +1,8 @@
-﻿using Avalonia.Controls;
+﻿using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Introduction;
 
-//NavigationViewBase<PreferencesViewModel>
-public partial class IntroductionPage : NavigationPage
+public partial class IntroductionPage : NavigationViewBase<IntroductionViewModel>
 {
     public IntroductionPage()
     {

@@ -1,17 +1,16 @@
-using MissionPlanner.AvaloniaUI.App.Views.Common;
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning;
+using MissionPlanner.AvaloniaUI.App.Utilities;
+using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.Firmware;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
-using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Simulation;
 
@@ -56,7 +55,6 @@ public sealed partial class SimulationViewModel : ViewModelBase
     /// <param name="scenarioRunner">The exact-target scenario runner.</param>
     /// <param name="scenarioReportExporter">The machine/readable report exporter.</param>
     /// <param name="fileHandler">The platform file helper.</param>
-    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="dateTimeProvider">The date time provider.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="fleetManager">Optional multi-instance fleet coordinator.</param>

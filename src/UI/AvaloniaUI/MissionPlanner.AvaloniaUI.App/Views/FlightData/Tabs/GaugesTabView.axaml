@@ -9,11 +9,11 @@
                            >
 
  
-        <Border Padding="12" Background="{DynamicResource Surface}">
+        <Border Padding="12" Background="{DynamicResource Surface}" Classes="SectionCard">
             <Grid >
 
                 <Grid Grid.Row="1" ColumnDefinitions="*,*" RowDefinitions="*,*" ColumnSpacing="8" RowSpacing="8">
-                    <Border >
+                    <Border Classes="SectionCard">
                         <tabs:FlightGaugeView
                             Minimum="-10" Maximum="10"
                             Label="VSI"
@@ -22,7 +22,7 @@
                             Unit="{Binding VerticalSpeed.Unit}" />
                     </Border>
 
-                    <Border Grid.Column="1" >
+                    <Border Grid.Column="1" Classes="SectionCard" >
                         <tabs:FlightGaugeView
                             Minimum="0" Maximum="60"
                             Label="Speed"
@@ -31,7 +31,7 @@
                             Unit="{Binding Speed.Unit}" />
                     </Border>
 
-                    <Border Grid.Row="1" >
+                    <Border Grid.Row="1" Classes="SectionCard">
                         <tabs:FlightGaugeView
                             Minimum="0" Maximum="100"
                             Label="Alt"
@@ -40,7 +40,7 @@
                             Unit="{Binding Altitude.Unit}" />
                     </Border>
 
-                    <Border Grid.Row="1" Grid.Column="1" >
+                    <Border Grid.Row="1" Grid.Column="1" Classes="SectionCard">
                         <tabs:FlightGaugeView
                             Mode="Compass"
                             Label="Heading"

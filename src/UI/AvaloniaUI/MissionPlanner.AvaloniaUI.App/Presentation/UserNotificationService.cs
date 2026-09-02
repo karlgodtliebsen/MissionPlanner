@@ -11,7 +11,7 @@ namespace MissionPlanner.AvaloniaUI.App.Presentation;
 public sealed class UserNotificationService : IUserNotificationService
 {
     private readonly IUiDispatcher dispatcher;
-    private readonly AvaloniaMissionPlanningDialogService dialogService;
+    private readonly IDialogService dialogService;
     private readonly IApplicationNotificationStore notificationStore;
     private readonly IDateTimeProvider clock;
 
@@ -24,7 +24,7 @@ public sealed class UserNotificationService : IUserNotificationService
     /// <param name="clock">The application clock.</param>
     public UserNotificationService(
         IUiDispatcher dispatcher,
-        AvaloniaMissionPlanningDialogService dialogService,
+        IDialogService dialogService,
         IApplicationNotificationStore notificationStore,
         IDateTimeProvider clock)
     {
@@ -55,7 +55,8 @@ public sealed class UserNotificationService : IUserNotificationService
         await dispatcher.DispatchAsync(async () =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await dialogService.ConfirmAsync(notification.Title ?? "Mission Planner", notification.Message, "OK", cancellationToken);
+            var options = dialogService.CreateOptions(notification.Title ?? "Mission Planner");
+            await dialogService.ConfirmAsync(options, notification.Message, cancellationToken);
         });
     }
 }

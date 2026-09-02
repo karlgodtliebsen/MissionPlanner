@@ -9,6 +9,7 @@ using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
+using Ursa.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
@@ -121,7 +122,7 @@ public partial class ParameterComparisonViewModel : ObservableObject
             return;
         }
 
-        DialogOptions options;
+        OverlayDialogOptions options;
         ParameterWritePlan plan;
         string message;
         try
@@ -130,35 +131,33 @@ public partial class ParameterComparisonViewModel : ObservableObject
         }
         catch (InvalidOperationException exception)
         {
-            options = new DialogOptions() { OkText = "Ok", Title = "No changes to apply" };
-            await dialogService.ConfirmAsync(exception.Message, options, cancellationToken);
+            options = AvaloniaDialogService.CreateDialogOptions("No changes to apply", "Ok", null);
+            message = exception.Message;
+            var result = await dialogService.ConfirmAsync(options, message, cancellationToken);
             return;
         }
 
         if (plan.Entries.Count == 0)
         {
-            options = new DialogOptions() { OkText = "Ok", Title = "No safe changes to apply" };
             message = string.Join(Environment.NewLine, plan.Skipped.Select(item => $"{item.Name}: {item.Message}"));
-            await dialogService.ConfirmAsync(message, options, cancellationToken);
+            options = AvaloniaDialogService.CreateDialogOptions("No safe changes to apply", "Ok", null);
+            var result = await dialogService.ConfirmAsync(options, message, cancellationToken);
             return;
         }
 
         var title = "Review parameter writes" + $"Write {plan.Entries.Count} parameters";
-        options = new DialogOptions() { OkText = "Ok", Title = title };
         message = $"Write {plan.Entries.Count} safe modified parameter(s)? " +
                      $"{plan.Skipped.Count} unsafe parameter(s) will be skipped. " +
                      $"{plan.RebootRequiredCount} confirmed change(s) will require reboot.";
-
-        var accepted = await dialogService.ConfirmAsync(message, options, cancellationToken);
-
+        options = AvaloniaDialogService.CreateDialogOptions(title, "Ok", null);
+        var accepted = await dialogService.ConfirmAsync(options, message, cancellationToken);
 
         if (!accepted)
         {
             return;
         }
-
         var report = await editSession.ApplyAsync(plan, cancellationToken: cancellationToken);
-        var summary = string.Join(
+        message = string.Join(
             Environment.NewLine,
             report.Results
                 .GroupBy(result => result.Outcome)
@@ -166,10 +165,8 @@ public partial class ParameterComparisonViewModel : ObservableObject
                 .Select(group => $"{group.Key}: {group.Count()}"));
 
         title = report.Success ? "Parameters applied" : "Parameter apply report";
-        options = new DialogOptions() { OkText = "Ok", Title = title };
-
-        await dialogService.ConfirmAsync(summary, options, cancellationToken);
-
+        options = AvaloniaDialogService.CreateDialogOptions(title, "Ok", null);
+        await dialogService.ConfirmAsync(options, message, cancellationToken);
         Show();
     }
 

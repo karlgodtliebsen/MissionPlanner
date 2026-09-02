@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities;
 
@@ -11,6 +12,7 @@ namespace MissionPlanner.AvaloniaUI.App.Utilities;
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
 public partial class NavigationViewBase<TViewModel> : NavigationPage/*, ITabItemLifecycle*/ where TViewModel : ViewModelBase
 {
+
     /// <summary>
     /// The logger instance used for logging within the NavigationViewBase class. 
     /// </summary>
@@ -35,6 +37,7 @@ public partial class NavigationViewBase<TViewModel> : NavigationPage/*, ITabItem
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        NotificationHelper.SetupManagers(this, ViewModel);
         ViewModel.ActivateAsync().SafeFireAndForget();
     }
 
@@ -48,6 +51,7 @@ public partial class NavigationViewBase<TViewModel> : NavigationPage/*, ITabItem
 
 }
 
+/// <inheritdoc/>
 public partial class NavigationViewBase : NavigationPage
 {
     /// <summary>

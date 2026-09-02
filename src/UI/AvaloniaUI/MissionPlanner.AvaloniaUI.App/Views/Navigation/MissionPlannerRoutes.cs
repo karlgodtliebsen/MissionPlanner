@@ -2,6 +2,8 @@
 
 public static class MissionPlannerRoutes
 {
+    public const string DialogDemo = "DialogDemo";
+
     public const string FlightData = "FlightData";
     public const string FlightPlanner = "FlightPlanner";
 

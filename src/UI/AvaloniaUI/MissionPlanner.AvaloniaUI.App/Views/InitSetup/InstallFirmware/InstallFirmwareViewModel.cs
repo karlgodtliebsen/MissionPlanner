@@ -837,20 +837,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
 
         var requiredPhrase = $"FLASH {platform}";
-
-        //Task<string?> PromptAsync(DialogOptions options, string? initialValue = null, CancellationToken cancellationToken = default);
-
-        var options = new DialogOptions()
-        {
-            Title = "Confirm initial ArduPilot installation",
-            OkText = "Continue",
-            ShowCloseButton = false
-        };
+        var options = AvaloniaDialogService.CreateDialogOptions("Confirm initial ArduPilot installation", "Continue", null);
         var message = $"This replaces Betaflight and installs ArduPilot plus its bootloader for {platform}{(boardId is int id ? $"(board ID {id})" : string.Empty)}. Type exactly: {requiredPhrase}";
-
         var phrase = await dialogService.PromptAsync(options, message, string.Empty, cancellationToken);
-
-
 
         if (!string.Equals(phrase?.Trim(), requiredPhrase, StringComparison.Ordinal))
         {

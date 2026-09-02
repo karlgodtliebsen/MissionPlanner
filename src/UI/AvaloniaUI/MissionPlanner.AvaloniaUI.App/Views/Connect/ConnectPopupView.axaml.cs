@@ -2,8 +2,15 @@
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Connect;
 
-public partial class ConnectPopupView : UserControlViewBase<ConnectPopupViewModel>
+/// <summary>
+/// Interaction logic for ConnectPopupView.xaml
+/// </summary>
+public partial class ConnectPopupView : UserControlViewBase
 {
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConnectPopupView"/> class. 
+    /// </summary>
     public ConnectPopupView()
     {
         InitializeComponent();
