@@ -1,7 +1,8 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls">
+    xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls" 
+    xmlns:u="https://irihi.tech/ursa">
 
     <ControlTheme x:Key="{x:Type controls:VirtualizedItemsGrid}"
                   TargetType="controls:VirtualizedItemsGrid">
@@ -11,14 +12,13 @@
 
         <Setter Property="Template">
             <ControlTemplate>
-                <Grid RowDefinitions="Auto,Auto,*,Auto"
-                      RowSpacing="6"
+                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto"
+                      RowSpacing="15"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch">
 
                     <!-- Search -->
-                    <Border Grid.Row="0" Margin="10,0,10,10"
-                            IsVisible="{TemplateBinding ShowSearchBar}">
+                    <Border Grid.Row="0" IsVisible="{TemplateBinding ShowSearchBar}" Margin="0,5,0,5">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
                             <TextBox Grid.Column="0"
                                      Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
@@ -32,20 +32,24 @@
                                     VerticalAlignment="Center" />
                         </Grid>
                     </Border>
-
+                    <u:Divider Grid.Row="1" Orientation="Horizontal"/>
                     <!-- Sticky horizontally synchronized header -->
                     <ScrollViewer x:Name="PART_HeaderScrollViewer"
-                                  Grid.Row="1"
+                                  Grid.Row="2"
                                   HorizontalScrollBarVisibility="Hidden"
                                   VerticalScrollBarVisibility="Disabled"
                                   IsVisible="{TemplateBinding ShowHeader}">
-                        <Grid ColumnDefinitions="Auto,*" HorizontalAlignment="Left">
-                            <Border Grid.Column="0"
+                        <Grid ColumnDefinitions="Auto,*" HorizontalAlignment="Left" 
+                             >
+                            <Border Grid.Column="0"  Margin="8,0,0 0"
                                     Width="{TemplateBinding SelectionColumnWidth}"
                                     IsVisible="{Binding IsSelectionEnabled, RelativeSource={RelativeSource TemplatedParent}}">
                                 <CheckBox x:Name="PART_SelectAllCheckBox"
                                           IsThreeState="True"
-                                          HorizontalAlignment="Center"
+                                          Margin="8,0,0 0"
+                                          
+                                          HorizontalContentAlignment="Center"
+                                          HorizontalAlignment="Stretch"
                                           VerticalAlignment="Center"
                                           IsVisible="{Binding IsMultiSelectionEnabled, RelativeSource={RelativeSource TemplatedParent}}" />
                             </Border>
@@ -57,42 +61,36 @@
                         </Grid>
                     </ScrollViewer>
 
-                    <!-- Virtualized body -->
-                    <Border Grid.Row="2"
+                    <!-- Virtualized body. Padding is deliberately zero so the
+                         body geometry stays exactly aligned with the header. -->
+                    <Border Grid.Row="3"
                             Classes="SectionCard"
-                            Padding="10"
+                            Padding="0"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch">
-
                         <ScrollViewer x:Name="PART_BodyScrollViewer"
                                       HorizontalScrollBarVisibility="Auto"
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch">
-
                             <Grid HorizontalAlignment="Left">
-
                                 <ItemsRepeater x:Name="PART_Repeater">
                                     <ItemsRepeater.Layout>
-                                        <StackLayout Orientation="Vertical"
-                                                     Spacing="0" />
+                                        <StackLayout Orientation="Vertical" Spacing="0" />
                                     </ItemsRepeater.Layout>
                                 </ItemsRepeater>
 
-                                <ContentPresenter
-                                    Content="{TemplateBinding EmptyView}"
-                                    IsVisible="{Binding IsEmpty, RelativeSource={RelativeSource TemplatedParent}}"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Top"
-                                    Margin="20" />
-
+                                <ContentPresenter Content="{TemplateBinding EmptyView}"
+                                                  IsVisible="{Binding IsEmpty, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  HorizontalAlignment="Center"
+                                                  VerticalAlignment="Top"
+                                                  Margin="20" />
                             </Grid>
-
                         </ScrollViewer>
-
                     </Border>
+
                     <!-- Pagination -->
-                    <Grid Grid.Row="3"
+                    <Grid Grid.Row="4"
                           ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                           ColumnSpacing="8"
                           HorizontalAlignment="Center"

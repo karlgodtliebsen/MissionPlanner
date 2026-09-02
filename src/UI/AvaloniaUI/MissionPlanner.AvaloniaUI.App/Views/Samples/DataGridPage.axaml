@@ -16,12 +16,12 @@
         <Grid RowDefinitions="Auto,*"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch"
-              Margin="8,0"
+              Margin="8,10"
 
               >
 
             <StackPanel Orientation="Horizontal" Grid.Row="0" MinHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        Margin="8,0" Spacing="12" >
+                        Margin="8,10" Spacing="12" >
                 <Button
                     Content="Load sample data from json file"
                     Padding="10,4"
@@ -31,41 +31,10 @@
 
             </StackPanel>
 
-
-            <!--
-            <controls:VirtualizedItemsGrid.EmptyView>
-            <StackPanel Orientation="Vertical"
-            Padding="40"
-            Spacing="8"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center">
-
-            --><!--                        <Image
-            WidthRequest="40"
-            HeightRequest="40"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table},
-            Color={AppThemeBinding Light={StaticResource OnSurface},
-            Dark={StaticResource OnSurfaceDark}}}"/>
-            --><!--
-            <Label
-            Content="No parameters match the current filter."
-            FontWeight="Bold"
-            FontSize="16"
-            HorizontalContentAlignment="Center" />
-            <Label
-            Content="Refresh parameters or clear the search text to display parameters."
-            FontSize="13"
-            Opacity="0.75"
-            HorizontalContentAlignment="Center" />
-            </StackPanel>
-            </controls:VirtualizedItemsGrid.EmptyView>-->
-
             <controls:VirtualizedItemsGrid
                 Grid.Row="1"
-
-                HorizontalAlignment="Center"
+                Margin="25"
+                HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
 
                 ItemsSource="{Binding Parameters}"
@@ -83,28 +52,40 @@
                 ShowPagination="False"
 
                 SelectionMode="Multiple"
-                SelectionColumnWidth="50">
+                SelectionColumnWidth="25">
 
                 <!-- ================================================= -->
                 <!-- Empty view                                                   -->
                 <!-- ================================================= -->
 
                 <controls:VirtualizedItemsGrid.EmptyView >
-                    <StackPanel
-                        Margin="20"
-                        Spacing="6"
-                        HorizontalAlignment="Stretch">
 
-                        <TextBlock
-                            HorizontalAlignment="Stretch"
-                            Text="No parameters found."
-                            Classes="H3"
-                            Opacity="0.65" />
-
+                    <StackPanel Orientation="Vertical"
+                                Margin="40"
+                                Spacing="8"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+                        <!--                        <Image
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table},
+                        Color={AppThemeBinding Light={StaticResource OnSurface},
+                        Dark={StaticResource OnSurfaceDark}}}"/>
+                        -->
+                        <Label
+                            Content="No parameters match the current filter."
+                            FontWeight="Bold"
+                            FontSize="16"
+                            HorizontalContentAlignment="Center" />
+                        <Label
+                            Content="Refresh parameters or clear the search text to display parameters."
+                            FontSize="13"
+                            Opacity="0.75"
+                            HorizontalContentAlignment="Center" />
                     </StackPanel>
                 </controls:VirtualizedItemsGrid.EmptyView>
-
-
                 <!-- Header                                                       -->
 
                 <controls:VirtualizedItemsGrid.HeaderTemplate>
@@ -163,14 +144,15 @@
                                 Grid.Column="8"
                                 Text="Write status"
                                 Classes="DataGridColumn"
+                                HorizontalAlignment="Center"
                                 />
 
                             <TextBlock
                                 Grid.Column="9"
                                 Text="Description"
                                 Classes="DataGridColumn"
-                                HorizontalAlignment="Right"
-                                Background="Red"
+                                HorizontalAlignment="Center"
+                                x:Name="Column9"
                                 />
 
                         </controls:VirtualizedItemsGridRow>
@@ -244,18 +226,6 @@
                                     ItemsSource="{Binding BitmaskOptions}"
                                     SelectedItems="{Binding SelectedBitmaskItems}"
                                     Classes="DataGridRow">
-     <!--                               <Button.Flyout>
-                                        <Flyout Placement="Bottom">
-
-                                            <ListBox
-                                                MinWidth="200"
-                                                MaxHeight="320"
-
-                                                ItemsSource="{Binding BitmaskOptions}"
-                                                SelectedItems="{Binding SelectedBitmaskItems}"
-                                                SelectionMode="Multiple,Toggle" />
-                                        </Flyout>
-                                    </Button.Flyout>-->
                                 </u:MultiComboBox>
 
                                 <!-- ================================================= -->
@@ -289,8 +259,8 @@
                             <TextBlock
                                 Grid.Column="4"
                                 Text="{Binding StepSize}"
-                                Classes="DataGridRow" 
-                                 />
+                                Classes="DataGridRow"
+                                />
 
 
                             <!-- ================================================= -->
@@ -300,7 +270,7 @@
                             <TextBlock
                                 Grid.Column="5"
                                 Text="{Binding MavNumericType}"
-                                Classes="DataGridRow" 
+                                Classes="DataGridRow"
                                 />
 
 
@@ -328,49 +298,51 @@
                             <!-- Write status                                      -->
                             <!-- ================================================= -->
 
-                            <StackPanel
+                            <Grid
+                                RowDefinitions="*,*"
                                 Grid.Column="8"
-                                Orientation="Vertical"
-                                Margin="10,3"
-                                Spacing="2"
+                                RowSpacing="10"
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
 
-                                <TextBlock
-                                    Text="{Binding WriteStatus}"
-                                    Classes="DataGridRow"  />
+                                <TextBlock Grid.Row="0"
+                                           Text="{Binding WriteStatus}"
+                                           Classes="DataGridRow"
+                                           TextAlignment="Start" />
 
-                                <TextBlock
-                                    Text="{Binding WriteMessage}"
-                                    TextWrapping="Wrap"
-                                    Classes="DataGridRow"  />
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding WriteMessage}"
+                                           Classes="DataGridRow"
+                                           TextAlignment="Start" />
 
-                            </StackPanel>
+                            </Grid>
 
 
                             <!-- ================================================= -->
-                            <!-- Description                                       -->
+                            <!-- Description           TextWrapping="Wrap"                            -->
                             <!-- ================================================= -->
 
-                            <StackPanel
+                            <Grid
                                 Grid.Column="9"
-                                Orientation="Vertical"
-                                Margin="10,6"
-                                Spacing="4"
+                                RowDefinitions="*,*"
+                                RowSpacing="10"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center">
 
-                                <TextBlock
+                                <TextBlock Grid.Row="0"
                                     Text="{Binding DisplayName}"
-                                    TextWrapping="Wrap"
-                                    Classes="DataGridRow" />
+                                    Classes="DataGridRow"
+                                    TextAlignment="Start"
+                                    />
 
-                                <TextBlock
+                                <TextBlock Grid.Row="1"
                                     Text="{Binding Description}"
-                                    Classes="DataGridRow" 
-                                    TextWrapping="Wrap" />
+                                    Classes="DataGridRow"
+                                    TextAlignment="Start"
+                                    TextWrapping="Wrap"
+                                    />
 
-                            </StackPanel>
+                            </Grid>
 
                         </controls:VirtualizedItemsGridRow>
 

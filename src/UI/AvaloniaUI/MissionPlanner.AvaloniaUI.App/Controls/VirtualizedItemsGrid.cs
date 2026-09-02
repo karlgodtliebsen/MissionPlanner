@@ -59,6 +59,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     private bool _isSelectionEnabled;
     private bool _isMultiSelectionEnabled;
     private object? _selectedItem;
+    private double _resolvedColumnsWidth;
 
     private static readonly ConcurrentDictionary<(Type Type, string Path), PropertyInfo?> SearchPropertyCache = new();
 
@@ -77,8 +78,15 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         CurrentPageProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.RefreshView(resetPage: false));
         RowTemplateProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.ConfigureRepeaterTemplate());
         RowMinHeightProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.ConfigureRepeaterTemplate());
+        ColumnWidthsProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.UpdateResolvedColumnsWidth());
+        ColumnSpacingProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.UpdateResolvedColumnsWidth());
+        MinimumStarColumnWidthProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.UpdateResolvedColumnsWidth());
         SelectionModeProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.OnSelectionModeChanged());
-        SelectionColumnWidthProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.ConfigureRepeaterTemplate());
+        SelectionColumnWidthProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) =>
+        {
+            grid.ConfigureRepeaterTemplate();
+            grid.UpdateResolvedColumnsWidth();
+        });
     }
 
     #region Styled properties
@@ -120,8 +128,9 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     }
 
     /// <summary>
-    /// Comma-separated grid lengths, e.g. "180,120,90,*,Auto".
-    /// Pixel, Auto and star lengths are supported.
+    /// Comma-separated grid lengths, e.g. "180,120,90,*" or "180,120,2*".
+    /// Pixel and star lengths are supported. Auto is intentionally not supported:
+    /// independent virtualized rows cannot share an Auto measurement reliably.
     /// </summary>
     public static readonly StyledProperty<string> ColumnWidthsProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, string>(nameof(ColumnWidths), string.Empty);
@@ -139,6 +148,22 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     {
         get => GetValue(ColumnSpacingProperty);
         set => SetValue(ColumnSpacingProperty, value);
+    }
+
+    /// <summary>
+    /// Minimum width assigned to one star-weight unit when the viewport is too
+    /// narrow to display all configured columns without horizontal scrolling.
+    /// </summary>
+    public static readonly StyledProperty<double> MinimumStarColumnWidthProperty =
+        AvaloniaProperty.Register<VirtualizedItemsGrid, double>(
+            nameof(MinimumStarColumnWidth),
+            240d,
+            coerce: (_, value) => Math.Max(0d, value));
+
+    public double MinimumStarColumnWidth
+    {
+        get => GetValue(MinimumStarColumnWidthProperty);
+        set => SetValue(MinimumStarColumnWidthProperty, value);
     }
 
     public static readonly StyledProperty<double> RowMinHeightProperty =
@@ -315,6 +340,22 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         private set => SetAndRaise(IsMultiSelectionEnabledProperty, ref _isMultiSelectionEnabled, value);
     }
 
+    /// <summary>
+    /// Resolved finite width shared by the header row and every realized data row.
+    /// This makes star columns resolve against exactly the same available width and
+    /// prevents header/body drift when ItemsRepeater realizes data.
+    /// </summary>
+    public static readonly DirectProperty<VirtualizedItemsGrid, double> ResolvedColumnsWidthProperty =
+        AvaloniaProperty.RegisterDirect<VirtualizedItemsGrid, double>(
+            nameof(ResolvedColumnsWidth),
+            grid => grid.ResolvedColumnsWidth);
+
+    public double ResolvedColumnsWidth
+    {
+        get => _resolvedColumnsWidth;
+        private set => SetAndRaise(ResolvedColumnsWidthProperty, ref _resolvedColumnsWidth, value);
+    }
+
     public ReadOnlyObservableCollection<object> SelectedItems => _readonlySelectedItems;
 
     public static readonly DirectProperty<VirtualizedItemsGrid, object?> SelectedItemProperty =
@@ -354,6 +395,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         RefreshView(resetPage: false);
         UpdateSelectionModeState();
         UpdateSelectionUi();
+        UpdateResolvedColumnsWidth();
     }
 
     public void Refresh() => RefreshView(resetPage: false);
@@ -424,7 +466,9 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     {
         if (token.Equals("Auto", StringComparison.OrdinalIgnoreCase))
         {
-            return GridLength.Auto;
+            throw new NotSupportedException(
+                "VirtualizedItemsGrid ColumnWidths does not support Auto. " +
+                "Use an explicit pixel width or a star width so header and virtualized rows share deterministic geometry.");
         }
 
         if (token.EndsWith('*'))
@@ -487,6 +531,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         UpdateSelectionModeState();
         ConfigureRepeaterTemplate();
         UpdateSelectionUi();
+        UpdateResolvedColumnsWidth();
     }
 
     private void UpdateSelectionModeState()
@@ -764,11 +809,82 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     private void SynchronizeSelectedItem()
         => SelectedItem = _selectedItems.Count == 0 ? null : _selectedItems[0];
 
+    private void UpdateResolvedColumnsWidth()
+    {
+        var columns = GetParsedColumnWidths();
+        if (columns.Count == 0)
+        {
+            ResolvedColumnsWidth = 0d;
+            return;
+        }
+
+        var pixelWidth = 0d;
+        var starWeight = 0d;
+
+        foreach (var column in columns)
+        {
+            switch (column.GridUnitType)
+            {
+                case GridUnitType.Pixel:
+                    pixelWidth += column.Value;
+                    break;
+
+                case GridUnitType.Star:
+                    starWeight += column.Value;
+                    break;
+
+                case GridUnitType.Auto:
+                    // ParseGridLength rejects Auto. Keep this guard here in case
+                    // a future parser implementation changes that contract.
+                    throw new NotSupportedException(
+                        "VirtualizedItemsGrid does not support Auto column widths.");
+            }
+        }
+
+        var spacingWidth = Math.Max(0, columns.Count - 1) * ColumnSpacing;
+        var naturalWidth = pixelWidth + spacingWidth;
+
+        if (starWeight > 0d)
+        {
+            naturalWidth += MinimumStarColumnWidth * starWeight;
+        }
+
+        // ScrollViewer.Viewport is the authoritative width after layout and
+        // excludes the vertical scrollbar. Bounds is a useful first-layout fallback.
+        var viewportWidth = _bodyScrollViewer?.Viewport.Width ?? 0d;
+        if (!double.IsFinite(viewportWidth) || viewportWidth <= 0d)
+        {
+            viewportWidth = _bodyScrollViewer?.Bounds.Width ?? Bounds.Width;
+        }
+
+        if (!double.IsFinite(viewportWidth) || viewportWidth < 0d)
+        {
+            viewportWidth = 0d;
+        }
+
+        var selectionWidth = IsSelectionEnabled ? SelectionColumnWidth : 0d;
+        var availableColumnsWidth = Math.Max(0d, viewportWidth - selectionWidth);
+
+        // Pixel-only tables retain their natural width. A table containing star
+        // columns fills the viewport, but never shrinks below its configured
+        // minimum star width; horizontal scrolling then takes over.
+        var resolvedWidth = starWeight > 0d
+            ? Math.Max(naturalWidth, availableColumnsWidth)
+            : naturalWidth;
+
+        // Avoid churning layout for sub-pixel viewport fluctuations.
+        if (Math.Abs(ResolvedColumnsWidth - resolvedWidth) > 0.5d)
+        {
+            ResolvedColumnsWidth = resolvedWidth;
+        }
+    }
+
     private void AttachTemplatePartHandlers()
     {
         if (_bodyScrollViewer is not null)
         {
             _bodyScrollViewer.ScrollChanged += BodyScrollViewerOnScrollChanged;
+            _bodyScrollViewer.SizeChanged += BodyScrollViewerOnSizeChanged;
         }
 
         if (_firstPageButton is not null) _firstPageButton.Click += FirstPageButtonOnClick;
@@ -784,6 +900,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         if (_bodyScrollViewer is not null)
         {
             _bodyScrollViewer.ScrollChanged -= BodyScrollViewerOnScrollChanged;
+            _bodyScrollViewer.SizeChanged -= BodyScrollViewerOnSizeChanged;
         }
 
         if (_firstPageButton is not null) _firstPageButton.Click -= FirstPageButtonOnClick;
@@ -796,6 +913,8 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     private void BodyScrollViewerOnScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
+        UpdateResolvedColumnsWidth();
+
         if (_bodyScrollViewer is null || _headerScrollViewer is null)
         {
             return;
@@ -803,6 +922,9 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
         _headerScrollViewer.Offset = new Vector(_bodyScrollViewer.Offset.X, 0);
     }
+
+    private void BodyScrollViewerOnSizeChanged(object? sender, SizeChangedEventArgs e)
+        => UpdateResolvedColumnsWidth();
 
     private void ClearSearchButtonOnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         => SearchText = null;
