@@ -7,118 +7,471 @@
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                            xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
+                           xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
+                           xmlns:common="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Common"
                            x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
                            x:DataType="tabs:FullParametersListTabViewModel">
 
-  
-        <Grid RowDefinitions="Auto,Auto,*"
+
+    <Grid RowDefinitions="Auto,Auto,*"
           HorizontalAlignment="Stretch"
           VerticalAlignment="Stretch"
           Margin="8,0"
           >
 
-            <StackPanel Orientation="Horizontal" Grid.Row="0" Height="50" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="8,0" Spacing="12" >
-                <Button 
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0" Spacing="12" >
+            <Button
                 Content="Load from file"
-                    VerticalAlignment="Center"
-                    Command="{Binding LoadFromFileCommand}" />
-                <Button 
+                VerticalAlignment="Center"
+                Command="{Binding LoadFromFileCommand}" />
+            <Button
                 Content="Save to file"
                 VerticalAlignment="Center"
                 Command="{Binding SaveToFileCommand}" />
-                <Button 
-                    Content="Load from json file"
-                    VerticalAlignment="Center"
-                    Command="{Binding LoadFromJsonFileCommand}" />
+            <Button
+                Content="Load from json file"
+                VerticalAlignment="Center"
+                Command="{Binding LoadFromJsonFileCommand}" />
 
-                <Button 
-                    Content="Save to json file"
-                    VerticalAlignment="Center"
-                    Command="{Binding SaveToJsonFileCommand}" />
-                <Button 
-                    Content="Use editor"
-                    VerticalAlignment="Center"
-                    Command="{Binding LoadFromEditorCommand}" />
+            <Button
+                Content="Save to json file"
+                VerticalAlignment="Center"
+                Command="{Binding SaveToJsonFileCommand}" />
+            <Button
+                Content="Use editor"
+                VerticalAlignment="Center"
+                Command="{Binding LoadFromEditorCommand}" />
 
-                <Button 
+            <Button
                 Content="Apply modified"
                 VerticalAlignment="Center"
                 Command="{Binding WriteParametersCommand}" />
 
-                <Button
-                    Content="Retry failed"
-                    VerticalAlignment="Center"
-                    Command="{Binding RetryFailedCommand}" />
+            <Button
+                Content="Retry failed"
+                VerticalAlignment="Center"
+                Command="{Binding RetryFailedCommand}" />
 
-                <Button 
-                    Content="Refresh parameters"
-                    VerticalAlignment="Center"
-                    Command="{Binding RefreshParametersCommand}" />
+            <Button
+                Content="Refresh parameters"
+                VerticalAlignment="Center"
+                Command="{Binding RefreshParametersCommand}" />
 
-                <Button 
-                    Content="Clear parameters"
-                    VerticalAlignment="Center"
-                    Command="{Binding ClearParametersCommand}" />
+            <Button
+                Content="Clear parameters"
+                VerticalAlignment="Center"
+                Command="{Binding ClearParametersCommand}" />
 
-                <Button 
-                    Content="Compare parameters"
-                    VerticalAlignment="Center"
-                    Command="{Binding CompareParametersCommand}" />
+            <Button
+                Content="Compare parameters"
+                VerticalAlignment="Center"
+                Command="{Binding CompareParametersCommand}" />
 
-                <Button 
+            <Button
                 Content="Cancel"
                 VerticalAlignment="Center"
                 Command="{Binding CancelLoadCommand}" />
 
-                <Button 
+            <Button
                 Content="Parameter profiles"
                 VerticalAlignment="Center"
                 Command="{Binding LoadPreSavedCommand}" />
 
 
-                <Button Content="Revert Changes"
-                VerticalAlignment="Center"
-                Command="{Binding RevertChangesCommand}" />
+            <Button Content="Revert Changes"
+                    VerticalAlignment="Center"
+                    Command="{Binding RevertChangesCommand}" />
 
-            </StackPanel>
+        </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,10,0,10" Spacing="12">
-                <ProgressBar IsIndeterminate="True"
-                    IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
-                    Width="20"
-                    Height="20" />
-                <TextBlock
-                    Text="{Binding ProgressMessage}"
-                    IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
-                    TextWrapping="Wrap"
-                    VerticalAlignment="Center" />
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,10,0,10" Spacing="12" HorizontalAlignment="Center">
+            <ProgressBar IsIndeterminate="True"
+                         IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
+                         Width="20"
+                         Height="20" />
+            <TextBlock
+                Text="{Binding ProgressMessage}"
+                IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
+                TextWrapping="Wrap"
+                VerticalAlignment="Center" />
 
-                <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Error}" TextWrapping="Wrap" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding StatusMessage}" 
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Error}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding StatusMessage}"
                        IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
                        TextWrapping="Wrap" VerticalAlignment="Center" />
 
-                <TextBlock Text="Vehicle Reboot required after confirmed changes"
+            <TextBlock Text="Vehicle Reboot required after confirmed changes"
                        IsVisible="{Binding RebootRequired}"
                        Foreground="{DynamicResource Warning}"
                        FontWeight="Bold"
                        VerticalAlignment="Center" />
-            </StackPanel>
+        </StackPanel>
 
-            <Grid Grid.Row="2" 
-                  VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                  Margin="0,10,0,10">
+        <Grid Grid.Row="2"
+              VerticalAlignment="Stretch" HorizontalAlignment="Center"
+              Margin="0,10,0,10">
 
-                <!-- TODO: Replace auto-generated columns with native Avalonia column templates after the FullParametersList virtualization test establishes the final grid strategy. -->
-                <DataGrid AutoGenerateColumns="True"
-                    ItemsSource="{Binding Parameters}"
-                    
-                    >
-                    
+            <controls:VirtualizedItemsGrid
+                ItemsSource="{Binding Parameters}"
 
-                    
-                </DataGrid>
-            </Grid>
+                ColumnWidths="160,100,200,100,100,100,100,125,150,*"
+                ColumnSpacing="6"
+                RowMinHeight="38"
+
+                ShowHeader="True"
+
+                ShowSearchBar="True"
+                SearchWatermark="Search parameters..."
+                SearchMemberPaths="Name,DisplayName,Description,Range,Units,MavNumericType,WriteStatus"
+
+                ShowPagination="False"
+
+                SelectionMode="Multiple"
+                SelectionColumnWidth="36">
+
+                <!-- ================================================= -->
+                <!-- Empty view                                                   -->
+                <!-- ================================================= -->
+
+                <controls:VirtualizedItemsGrid.EmptyView >
+                    <StackPanel
+                        Margin="20"
+                        Spacing="6"
+                        HorizontalAlignment="Stretch">
+
+                        <TextBlock
+                            HorizontalAlignment="Stretch"
+                            Text="No parameters found."
+                            Classes="H3"
+                            Opacity="0.65" />
+
+                    </StackPanel>
+                </controls:VirtualizedItemsGrid.EmptyView>
+
+
+                <!-- Header                                                       -->
+
+                <controls:VirtualizedItemsGrid.HeaderTemplate>
+                    <DataTemplate>
+
+                        <controls:VirtualizedItemsGridRow>
+
+                            <TextBlock
+                                Grid.Column="0"
+                                Text="Param"
+                                FontWeight="Bold"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="Value"
+                                FontWeight="Bold"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="2"
+                                Text="Selections"
+                                FontWeight="Bold"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="3"
+                                Text="Range"
+                                FontWeight="Bold"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="4"
+                                Text="StepSize"
+                                FontWeight="Bold"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="5"
+                                Text="Type"
+                                FontWeight="Bold"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="6"
+                                Text="Default"
+                                FontWeight="Bold"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="7"
+                                Text="Units"
+                                FontWeight="Bold"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="8"
+                                Text="Write status"
+                                FontWeight="Bold"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+                            <TextBlock
+                                Grid.Column="9"
+                                Text="Description"
+                                FontWeight="Bold"
+                                VerticalAlignment="Center" />
+
+                        </controls:VirtualizedItemsGridRow>
+
+                    </DataTemplate>
+                </controls:VirtualizedItemsGrid.HeaderTemplate>
+
+
+                <!-- ================================================= -->
+                <!-- Rows                                                         -->
+                <!-- ================================================= -->
+
+                <controls:VirtualizedItemsGrid.RowTemplate>
+
+                    <DataTemplate x:DataType="common:ParameterItemViewModel">
+
+                        <controls:VirtualizedItemsGridRow>
+
+
+                            <!-- ================================================= -->
+                            <!-- Parameter name                                    -->
+                            <!-- ================================================= -->
+
+                            <SelectableTextBlock
+                                Grid.Column="0"
+                                Text="{Binding Name}"
+                                FontSize="12"
+                                Margin="4,0"
+                                VerticalAlignment="Center" />
+
+
+                            <!-- ================================================= -->
+                            <!-- Current value                                     -->
+                            <!-- ================================================= -->
+
+                            <NumericUpDown
+                                Grid.Column="1"
+                                Classes="H5"
+                                Margin="4,2"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Right"
+                                TextAlignment="Right"
+                                VerticalAlignment="Center"
+
+                                Minimum="{Binding Min}"
+                                Maximum="{Binding Max}"
+                                Increment="{Binding StepSize}"
+                                FormatString="G7"
+
+                                Value="{Binding Value, Mode=TwoWay}" />
+
+
+                            <!-- ================================================= -->
+                            <!-- Selection / specialised editor                    -->
+                            <!-- ================================================= -->
+
+                            <Grid
+                                Grid.Column="2"
+                                Margin="4,2"
+                                VerticalAlignment="Center">
+
+                                <!-- ================================================= -->
+                                <!-- Enumerated parameter   -->
+                                <!-- ================================================= -->
+
+                                <ComboBox
+                                    IsVisible="{Binding HasValuesData}"
+
+                                    ItemsSource="{Binding ValuesData}"
+                                    SelectedItem="{Binding SelectedValue, Mode=TwoWay}"
+
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalAlignment="Center" />
+
+
+                                <!-- ================================================= -->
+                                <!-- Bitmask parameter                              -->
+                                <!-- ================================================= -->
+
+                                <Button
+                                    IsVisible="{Binding HasBitmask}"
+                                    Content="Multiple options"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center">
+
+                                    <Button.Flyout>
+
+                                        <Flyout Placement="Bottom">
+
+                                            <ListBox
+                                                MinWidth="200"
+                                                MaxHeight="320"
+
+                                                ItemsSource="{Binding BitmaskOptions}"
+                                                SelectedItems="{Binding SelectedBitmaskItems}"
+                                                SelectionMode="Multiple,Toggle" />
+
+                                        </Flyout>
+
+                                    </Button.Flyout>
+
+                                </Button>
+
+                                <!-- ================================================= -->
+                                <!-- Numeric range parameter                        -->
+                                <!-- ================================================= -->
+
+                                <NumericUpDown
+                                    IsVisible="{Binding HasNumericRangeData}"
+
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalContentAlignment="Right"
+                                    TextAlignment="Right"
+
+                                    Minimum="{Binding Min}"
+                                    Maximum="{Binding Max}"
+                                    Increment="{Binding StepSize}"
+                                    FormatString="G7"
+
+                                    Value="{Binding Value, Mode=TwoWay}" />
+
+                            </Grid>
+
+
+                            <!-- ================================================= -->
+                            <!-- Range                                             -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="3"
+                                Text="{Binding Range}"
+                                Margin="4,0"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+
+                            <!-- ================================================= -->
+                            <!-- Step size                                         -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="4"
+                                Text="{Binding StepSize}"
+                                Margin="4,0"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+
+                            <!-- ================================================= -->
+                            <!-- MAV numeric type                                  -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="5"
+                                Text="{Binding MavNumericType}"
+                                Margin="4,0"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+
+                            <!-- ================================================= -->
+                            <!-- Default                                           -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="6"
+                                Text="{Binding OriginalValueText}"
+                                Margin="4,0"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+
+                            <!-- ================================================= -->
+                            <!-- Units                                             -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="7"
+                                Text="{Binding Units}"
+                                FontSize="14"
+                                Margin="10,0"
+                                TextAlignment="Center"
+                                VerticalAlignment="Center" />
+
+
+                            <!-- ================================================= -->
+                            <!-- Write status                                      -->
+                            <!-- ================================================= -->
+
+                            <StackPanel
+                                Grid.Column="8"
+                                Orientation="Vertical"
+                                Margin="10,3"
+                                Spacing="2"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center">
+
+                                <TextBlock
+                                    Text="{Binding WriteStatus}"
+                                    FontSize="12"
+                                    TextAlignment="Center"
+                                    HorizontalAlignment="Stretch" />
+
+                                <TextBlock
+                                    Text="{Binding WriteMessage}"
+                                    FontSize="10"
+                                    TextAlignment="Center"
+                                    TextWrapping="Wrap"
+                                    HorizontalAlignment="Stretch" />
+
+                            </StackPanel>
+
+
+                            <!-- ================================================= -->
+                            <!-- Description                                       -->
+                            <!-- ================================================= -->
+
+                            <StackPanel
+                                Grid.Column="9"
+                                Orientation="Vertical"
+                                Margin="10,6"
+                                Spacing="4"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center">
+
+                                <TextBlock
+                                    Text="{Binding DisplayName}"
+                                    FontSize="12"
+                                    FontWeight="SemiBold"
+                                    TextWrapping="Wrap"
+                                    HorizontalAlignment="Stretch" />
+
+                                <TextBlock
+                                    Text="{Binding Description}"
+                                    FontSize="12"
+                                    TextWrapping="Wrap"
+                                    HorizontalAlignment="Stretch" />
+
+                            </StackPanel>
+
+                        </controls:VirtualizedItemsGridRow>
+
+                    </DataTemplate>
+
+                </controls:VirtualizedItemsGrid.RowTemplate>
+
+            </controls:VirtualizedItemsGrid>
+
         </Grid>
+    </Grid>
 
-</utilities:TabItemViewBase>      
+</utilities:TabItemViewBase>

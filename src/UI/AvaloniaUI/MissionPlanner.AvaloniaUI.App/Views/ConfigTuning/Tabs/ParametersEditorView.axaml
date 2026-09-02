@@ -8,6 +8,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              MaxWidth="800"
+             Margin="50"
+
              >
     <Grid
         HorizontalAlignment="Stretch"
@@ -16,7 +18,7 @@
         RowSpacing="10"
         Margin="12">
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
             <Button HorizontalAlignment="Right"
                     Content="Use Parameters" Width="200" Command="{Binding UseCommand}">
             </Button>
@@ -29,7 +31,8 @@
         </StackPanel>
 
 
-        <Border Grid.Row="1" Margin="25" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+        <Border Grid.Row="1" Margin="25" HorizontalAlignment="Stretch" 
+                VerticalAlignment="Stretch"
                 Classes="SectionCard">
 
             <Grid
@@ -48,10 +51,6 @@
                          Margin="10"></TextBox>
 
             </Grid>
-
-
-
         </Border>
     </Grid>
-
 </UserControl>

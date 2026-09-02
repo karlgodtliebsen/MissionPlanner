@@ -4,9 +4,13 @@
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                               xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
                               xmlns:samples="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Samples"
-                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
+                              xmlns:common="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Common"
+                              xmlns:u="https://irihi.tech/ursa"
+                              mc:Ignorable="d" d:DesignWidth="1980" d:DesignHeight="800"
                               x:DataType="samples:DataGridViewModel"
                               x:Class="MissionPlanner.AvaloniaUI.App.Views.Samples.DataGridPage">
+
     <ContentPage Header="Large DataGrid Sample">
 
         <Grid RowDefinitions="Auto,*"
@@ -16,7 +20,8 @@
 
               >
 
-            <StackPanel Orientation="Horizontal" Grid.Row="0" MinHeight="50" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="8,0" Spacing="12" >
+            <StackPanel Orientation="Horizontal" Grid.Row="0" MinHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Margin="8,0" Spacing="12" >
                 <Button
                     Content="Load sample data from json file"
                     Padding="10,4"
@@ -25,22 +30,17 @@
                 </Button>
 
             </StackPanel>
+
+
             <!--
-            <virtualized:VirtualizedDataGrid Grid.Row="1"
-            ItemsSource="{Binding Parameters}"
-            MinimumStarColumnWidth= "120"
-            ItemSizingStrategy= "MeasureAllItems"
-            ShowRowSeparators="True"
-            FilterMemberPaths="Name,DisplayName,Description"
-            ShowSearchBar="True"
-            >
-            <virtualized:VirtualizedDataGrid.EmptyView>
-            <VerticalStackLayout
+            <controls:VirtualizedItemsGrid.EmptyView>
+            <StackPanel Orientation="Vertical"
             Padding="40"
             Spacing="8"
             HorizontalAlignment="Center"
             VerticalAlignment="Center">
-            <Image
+
+            --><!--                        <Image
             WidthRequest="40"
             HeightRequest="40"
             HorizontalAlignment="Center"
@@ -48,119 +48,339 @@
             Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table},
             Color={AppThemeBinding Light={StaticResource OnSurface},
             Dark={StaticResource OnSurfaceDark}}}"/>
+            --><!--
             <Label
-            Text="No parameters match the current filter."
-            FontAttributes="Bold"
+            Content="No parameters match the current filter."
+            FontWeight="Bold"
             FontSize="16"
-            HorizontalTextAlignment="Center" />
+            HorizontalContentAlignment="Center" />
             <Label
-            Text="Refresh parameters or clear the search text to display parameters."
+            Content="Refresh parameters or clear the search text to display parameters."
             FontSize="13"
             Opacity="0.75"
-            HorizontalTextAlignment="Center" />
-            </VerticalStackLayout>
-            </virtualized:VirtualizedDataGrid.EmptyView>
+            HorizontalContentAlignment="Center" />
+            </StackPanel>
+            </controls:VirtualizedItemsGrid.EmptyView>-->
 
-            <virtualized:VirtualizedDataGrid.Columns>
-            <material:DataGridColumn Width="160" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding Name}" Title="Param"  />
-            <material:DataGridColumn Title="Value" >
-            <material:DataGridColumn.CellItemTemplate >
-            <DataTemplate  x:DataType="arduPilotSample:ParameterItemViewModel" >
-            <controls:NumericField
-            IsReadOnly="{Binding IsReadOnly}"
-            Value="{Binding Value, Mode=TwoWay}"
-            BorderColor="Aqua"
-            NumberFormat="N7"
-            Min="{Binding Min}"
-            Max="{Binding Max}"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Center"
-            HorizontalTextAlignment="End"
-            AllowClear="True"
-            AllowSign="True"
-            AllowThousands="True" />
-            </DataTemplate>
-            </material:DataGridColumn.CellItemTemplate>
-            </material:DataGridColumn>
+            <controls:VirtualizedItemsGrid
+                Grid.Row="1"
 
-            <material:DataGridColumn  Width="200" >
-            <material:DataGridColumn.CellItemTemplate>
-            <DataTemplate  x:DataType="arduPilotSample:ParameterItemViewModel">
-            <VerticalStackLayout HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,5,0" >
-            <material:PickerField IsVisible="{Binding HasValuesData}"
-            FontSize="12"
-            BorderColor="Aqua"
-            Title="Pick an option"
-            TitleFontSize="10"
-            WidthRequest="200" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-            ItemsSource="{Binding ValuesData}"
-            SelectedItem="{Binding SelectedValue}" />
+                HorizontalAlignment="Center"
+                VerticalAlignment="Stretch"
 
-            <controls:ExtendedMultiplePickerField IsVisible="{Binding HasBitmask}"
-            Title="Multiple options"
-            BorderColor="Aqua"
-            TitleFontSize="10"
-            FontSize="14"
-            WidthRequest="200" VerticalAlignment="Center" HorizontalAlignment="Stretch"
-            ItemsSource="{Binding BitmaskOptions}"
-            SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
-            SelectedItems="{Binding SelectedBitmaskItems}" />
+                ItemsSource="{Binding Parameters}"
 
-            <controls:NumericUpDownField IsVisible="{Binding HasNumericRangeData}"
-            Title="Number"
-            BorderColor="Aqua"
-            TitleFontSize="10"
-            FontSize="14"
-            WidthRequest="200"
-            ButtonOrientation="Vertical"
-            Value="{Binding Value, Mode=TwoWay}"
-            Min="{Binding Min}"
-            Max="{Binding Max}"
-            StepSize="{Binding StepSize}"
-            VerticalAlignment="Center" HorizontalAlignment="Stretch"
-            HorizontalTextAlignment="End"
-            VerticalTextAlignment="Center" />
-            </VerticalStackLayout>
-            </DataTemplate>
-            </material:DataGridColumn.CellItemTemplate>
-            </material:DataGridColumn>
+                ColumnWidths="160,100,180,100,100,100,100,125,150,*"
+                ColumnSpacing="6"
+                RowMinHeight="38"
 
-            <material:DataGridColumn Width="100" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding Range}" Title="Range"  />
-            <material:DataGridColumn Width="100" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding OriginalValueText}" Title="Default"  />
-            <material:DataGridColumn Width="125" x:DataType="arduPilotSample:ParameterItemViewModel" Title="Units">
-            <material:DataGridColumn.CellItemTemplate>
-            <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
-            <Label FontSize="14" Text="{Binding Units}" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" HorizontalTextAlignment="Center" />
-            </DataTemplate>
-            </material:DataGridColumn.CellItemTemplate>
-            </material:DataGridColumn>
+                ShowHeader="True"
 
-            <material:DataGridColumn Width="150" x:DataType="arduPilotSample:ParameterItemViewModel" Title="Write status">
-            <material:DataGridColumn.CellItemTemplate>
-            <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
-            <VerticalStackLayout Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Stretch">
-            <Label FontSize="12" Text="{Binding WriteStatus}" HorizontalAlignment="Center" HorizontalTextAlignment="Center"/>
-            <Label FontSize="10" Text="{Binding WriteMessage}"  LineBreakMode="WordWrap" HorizontalAlignment="Center" HorizontalTextAlignment="Center"/>
-            </VerticalStackLayout>
-            </DataTemplate>
-            </material:DataGridColumn.CellItemTemplate>
-            </material:DataGridColumn>
+                ShowSearchBar="True"
+                SearchWatermark="Search by name or description..."
+                SearchMemberPaths="Name,DisplayName,Description,Range,Units,MavNumericType,WriteStatus"
 
-            <material:DataGridColumn x:DataType="arduPilotSample:ParameterItemViewModel" Title="Description" Width="*">
-            <material:DataGridColumn.CellItemTemplate>
-            <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
-            <VerticalStackLayout HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,10,0,10">
-            <Label FontSize="12" VerticalAlignment="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalAlignment="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
-            <Label FontSize="12" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Text=" "/>
-            <Label FontSize="12" VerticalAlignment="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalAlignment="Start" HorizontalTextAlignment="Start" Text="{Binding Description}"/>
-            </VerticalStackLayout>
-            </DataTemplate>
-            </material:DataGridColumn.CellItemTemplate>
-            </material:DataGridColumn>
+                ShowPagination="False"
 
-            </virtualized:VirtualizedDataGrid.Columns>
-            </virtualized:VirtualizedDataGrid>
-            -->
+                SelectionMode="Multiple"
+                SelectionColumnWidth="50">
+
+                <!-- ================================================= -->
+                <!-- Empty view                                                   -->
+                <!-- ================================================= -->
+
+                <controls:VirtualizedItemsGrid.EmptyView >
+                    <StackPanel
+                        Margin="20"
+                        Spacing="6"
+                        HorizontalAlignment="Stretch">
+
+                        <TextBlock
+                            HorizontalAlignment="Stretch"
+                            Text="No parameters found."
+                            Classes="H3"
+                            Opacity="0.65" />
+
+                    </StackPanel>
+                </controls:VirtualizedItemsGrid.EmptyView>
+
+
+                <!-- Header                                                       -->
+
+                <controls:VirtualizedItemsGrid.HeaderTemplate>
+                    <DataTemplate>
+
+                        <controls:VirtualizedItemsGridRow>
+
+                            <TextBlock
+
+                                Grid.Column="0"
+                                Text="Param"
+                                Classes="DataGridColumn"
+                                />
+
+                            <TextBlock
+                                Grid.Column="1"
+                                Text="Value"
+                                Classes="DataGridColumn"
+                                />
+
+                            <TextBlock
+                                Grid.Column="2"
+                                Text="Selections"
+                                Classes="DataGridColumn"/>
+
+                            <TextBlock
+                                Grid.Column="3"
+                                Text="Range"
+                                Classes="DataGridColumn"/>
+
+                            <TextBlock
+                                Grid.Column="4"
+                                Text="StepSize"
+                                Classes="DataGridColumn"
+                                />
+
+                            <TextBlock
+                                Grid.Column="5"
+                                Text="Type"
+                                Classes="DataGridColumn"
+                                />
+
+                            <TextBlock
+                                Grid.Column="6"
+                                Text="Default"
+                                Classes="DataGridColumn"
+                                />
+
+                            <TextBlock
+                                Grid.Column="7"
+                                Text="Units"
+                                Classes="DataGridColumn"
+                                />
+
+                            <TextBlock
+                                Grid.Column="8"
+                                Text="Write status"
+                                Classes="DataGridColumn"
+                                />
+
+                            <TextBlock
+                                Grid.Column="9"
+                                Text="Description"
+                                Classes="DataGridColumn"
+                                HorizontalAlignment="Right"
+                                Background="Red"
+                                />
+
+                        </controls:VirtualizedItemsGridRow>
+
+                    </DataTemplate>
+                </controls:VirtualizedItemsGrid.HeaderTemplate>
+
+
+                <!-- ================================================= -->
+                <!-- Rows                                                         -->
+                <!-- ================================================= -->
+
+                <controls:VirtualizedItemsGrid.RowTemplate>
+
+                    <DataTemplate x:DataType="common:ParameterItemViewModel">
+
+                        <controls:VirtualizedItemsGridRow>
+
+
+                            <!-- ================================================= -->
+                            <!-- Parameter name                                    -->
+                            <!-- ================================================= -->
+
+                            <SelectableTextBlock
+                                Grid.Column="0"
+                                Text="{Binding Name}"
+                                Classes="DataGridRow"
+                                />
+
+
+                            <!-- ================================================= -->
+                            <!-- Current value                                     -->
+                            <!-- ================================================= -->
+
+                            <NumericUpDown
+                                Grid.Column="1"
+                                Classes="DataGridRow"
+                                Margin="4,2"
+                                Minimum="{Binding Min}"
+                                Maximum="{Binding Max}"
+                                Increment="{Binding StepSize}"
+                                Value="{Binding Value, Mode=TwoWay}" />
+
+
+                            <!-- ================================================= -->
+                            <!-- Selection / specialised editor                    -->
+                            <!-- ================================================= -->
+
+                            <Grid
+                                Grid.Column="2"
+                                Margin="4,2"
+                                VerticalAlignment="Center">
+
+                                <!-- ================================================= -->
+                                <!-- Enumerated parameter   -->
+                                <!-- ================================================= -->
+
+                                <ComboBox
+                                    IsVisible="{Binding HasValuesData}"
+                                    ItemsSource="{Binding ValuesData}"
+                                    SelectedItem="{Binding SelectedValue, Mode=TwoWay}"
+                                    Classes="DataGridRow" />
+
+
+                                <!-- ================================================= -->
+                                <!-- Bitmask parameter                              -->
+                                <!-- ================================================= -->
+
+                                <u:MultiComboBox
+                                    IsVisible="{Binding HasBitmask}"
+                                    ItemsSource="{Binding BitmaskOptions}"
+                                    SelectedItems="{Binding SelectedBitmaskItems}"
+                                    Classes="DataGridRow">
+     <!--                               <Button.Flyout>
+                                        <Flyout Placement="Bottom">
+
+                                            <ListBox
+                                                MinWidth="200"
+                                                MaxHeight="320"
+
+                                                ItemsSource="{Binding BitmaskOptions}"
+                                                SelectedItems="{Binding SelectedBitmaskItems}"
+                                                SelectionMode="Multiple,Toggle" />
+                                        </Flyout>
+                                    </Button.Flyout>-->
+                                </u:MultiComboBox>
+
+                                <!-- ================================================= -->
+                                <!-- Numeric range parameter                        -->
+                                <!-- ================================================= -->
+
+                                <NumericUpDown
+                                    IsVisible="{Binding HasNumericRangeData}"
+                                    Classes="DataGridRow"
+                                    Minimum="{Binding Min}"
+                                    Maximum="{Binding Max}"
+                                    Increment="{Binding StepSize}"
+                                    Value="{Binding Value, Mode=TwoWay}" />
+                            </Grid>
+
+
+                            <!-- ================================================= -->
+                            <!-- Range                                             -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="3"
+                                Text="{Binding Range}"
+                                Classes="DataGridRow"  />
+
+
+                            <!-- ================================================= -->
+                            <!-- Step size                                         -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="4"
+                                Text="{Binding StepSize}"
+                                Classes="DataGridRow" 
+                                 />
+
+
+                            <!-- ================================================= -->
+                            <!-- MAV numeric type                                  -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="5"
+                                Text="{Binding MavNumericType}"
+                                Classes="DataGridRow" 
+                                />
+
+
+                            <!-- ================================================= -->
+                            <!-- Default                                           -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="6"
+                                Text="{Binding OriginalValueText}"
+                                Classes="DataGridRow"  />
+
+
+                            <!-- ================================================= -->
+                            <!-- Units                                             -->
+                            <!-- ================================================= -->
+
+                            <TextBlock
+                                Grid.Column="7"
+                                Text="{Binding Units}"
+                                Classes="DataGridRow" />
+
+
+                            <!-- ================================================= -->
+                            <!-- Write status                                      -->
+                            <!-- ================================================= -->
+
+                            <StackPanel
+                                Grid.Column="8"
+                                Orientation="Vertical"
+                                Margin="10,3"
+                                Spacing="2"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center">
+
+                                <TextBlock
+                                    Text="{Binding WriteStatus}"
+                                    Classes="DataGridRow"  />
+
+                                <TextBlock
+                                    Text="{Binding WriteMessage}"
+                                    TextWrapping="Wrap"
+                                    Classes="DataGridRow"  />
+
+                            </StackPanel>
+
+
+                            <!-- ================================================= -->
+                            <!-- Description                                       -->
+                            <!-- ================================================= -->
+
+                            <StackPanel
+                                Grid.Column="9"
+                                Orientation="Vertical"
+                                Margin="10,6"
+                                Spacing="4"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center">
+
+                                <TextBlock
+                                    Text="{Binding DisplayName}"
+                                    TextWrapping="Wrap"
+                                    Classes="DataGridRow" />
+
+                                <TextBlock
+                                    Text="{Binding Description}"
+                                    Classes="DataGridRow" 
+                                    TextWrapping="Wrap" />
+
+                            </StackPanel>
+
+                        </controls:VirtualizedItemsGridRow>
+
+                    </DataTemplate>
+
+                </controls:VirtualizedItemsGrid.RowTemplate>
+
+            </controls:VirtualizedItemsGrid>
+
+
         </Grid>
 
 

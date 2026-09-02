@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 
@@ -9,9 +9,20 @@ namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 /// </summary>
 public sealed class OsdPreviewCanvas : Control
 {
+    /// <summary>Identifies the view model used to render the character-grid preview.</summary>
+    public static readonly StyledProperty<OnboardOsdTabViewModel?> ViewModelProperty =
+        AvaloniaProperty.Register<OsdPreviewCanvas, OnboardOsdTabViewModel?>(nameof(ViewModel));
+
+    static OsdPreviewCanvas()
+    {
+        AffectsRender<OsdPreviewCanvas>(ViewModelProperty);
+    }
+
+    /// <summary>Gets or sets the OSD workspace projected by this canvas.</summary>
     public OnboardOsdTabViewModel? ViewModel
     {
-        get; set;
+        get => GetValue(ViewModelProperty);
+        set => SetValue(ViewModelProperty, value);
     }
 
     /// <summary>
@@ -56,8 +67,10 @@ public sealed class OsdPreviewCanvas : Control
             var origin = new Point((item.Column * cellWidth) + 2, (item.Row * cellHeight) + 1);
             if (selected)
             {
+                var availableWidth = Math.Max(0, Bounds.Right - origin.X);
+                var selectionWidth = Math.Min(availableWidth, Math.Max(cellWidth, text.Width + 4));
                 context.DrawRectangle(null, new Pen(Brushes.Orange, 2),
-                    new Rect(item.Column * cellWidth, item.Row * cellHeight, Math.Max(cellWidth, text.Width + 4), cellHeight));
+                    new Rect(item.Column * cellWidth, item.Row * cellHeight, selectionWidth, cellHeight));
             }
 
             context.DrawText(text, origin);

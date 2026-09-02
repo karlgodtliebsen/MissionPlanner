@@ -8,6 +8,7 @@
                 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                 x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.ParameterComparisonView"
                 x:DataType="tabs:ParameterComparisonViewModel"
+                Margin="50"
                 >
     <Grid
        
