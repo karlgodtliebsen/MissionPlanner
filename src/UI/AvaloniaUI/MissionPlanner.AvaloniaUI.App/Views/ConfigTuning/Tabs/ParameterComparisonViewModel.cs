@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
@@ -14,7 +15,7 @@ using Ursa.Controls;
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
 /// <summary>Provides the parameter comparison workspace.</summary>
-public partial class ParameterComparisonViewModel : ObservableObject
+public partial class ParameterComparisonViewModel : DialogViewModelBase
 {
     private readonly ObservableRangeCollection<ParameterComparisonItemViewModel> allRows = [];
     private ParameterComparisonResult? comparisonResult;

@@ -1,6 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
@@ -11,7 +12,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 /// </summary>
 /// <param name="dialogService"></param>
 /// <param name="callback"></param>
-public partial class ParametersEditorViewModel(IDialogService dialogService, Action<ParametersEditorViewModel> callback) : ObservableObject
+public partial class ParametersEditorViewModel(IDialogService dialogService, Action<ParametersEditorViewModel> callback) : DialogViewModelBase
 {
     /// <summary>
     /// Gets or sets the text input by the user, which contains parameter values in a specific format. This property is bound to the view and is used to update the parameters in the provided list.

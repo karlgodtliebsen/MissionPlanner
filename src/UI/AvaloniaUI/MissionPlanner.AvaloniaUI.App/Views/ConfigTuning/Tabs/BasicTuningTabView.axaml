@@ -1,0 +1,132 @@
+<navigation:ExtendedContentPage x:TypeArguments="tabs:BasicTuningTabViewModel"
+                            xmlns="https://github.com/avaloniaui"
+                            xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
+                            xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
+                            x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.BasicTuningTabView"
+                            x:DataType="tabs:BasicTuningTabViewModel">
+    <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <StackPanel Orientation="Vertical" Spacing="2">
+                <TextBlock Text="Basic Tuning" FontWeight="Bold" FontSize="24" />
+                <TextBlock Text="{Binding FirmwareFamilyText, StringFormat='Firmware profile: {0}'}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="8">
+                <Button  Content="Import presented fields" Command="{Binding ImportCommand}" />
+                <Button  Content="Export presented fields" Command="{Binding ExportCommand}" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Padding="10" Classes="SectionCard">
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="Basic Tuning intentionally hides expert control-loop fields. Use Extended Tuning or Full Parameters only when you understand the stability risks."
+                       Foreground="{DynamicResource Warning}"
+                       FontWeight="Bold"
+                       IsVisible="{Binding HasSupportedProfile}" />
+                <TextBlock Text="This connected firmware has no supported Basic Tuning profile."
+                       Foreground="{DynamicResource Warning}"
+                       IsVisible="{Binding IsUnsupported}" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="2" IsVisible="{Binding HasSupportedProfile}">
+            <ItemsControl ItemsSource="{Binding Groups}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="tabs:BasicTuningGroupViewModel">
+                        <Border Padding="12" Classes="SectionCard">
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                    <StackPanel Orientation="Vertical" Spacing="2">
+                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="20" />
+                                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="6">
+                                        <Button  Content="Refresh" Command="{Binding RefreshCommand}" />
+                                        <Button  Content="Revert group" Command="{Binding RevertCommand}" />
+                                        <Button  Content="Apply group" Command="{Binding ApplyCommand}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="{Binding Warning}"
+                                       Foreground="{DynamicResource Warning}"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       IsVisible="{Binding HasWarning}" />
+                                <TextBlock Text="{Binding ValidationMessage}"
+                                       Foreground="{DynamicResource Warning}"
+                                       TextWrapping="Wrap"
+                                       IsVisible="{Binding HasValidationError}" />
+                                <TextBlock Text="This group has pending changes."
+                                       Foreground="{DynamicResource Warning}"
+                                       IsVisible="{Binding IsModified}" />
+
+                                <ItemsControl ItemsSource="{Binding Parameters}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="tabs:BasicTuningParameterViewModel">
+                                            <Border Padding="10" BorderThickness="1">
+                                                <Grid ColumnDefinitions="2*,Auto,180" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="4">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                                                        <TextBlock Text="{Binding ParameterName}" FontSize="11" Opacity="0.7" />
+                                                    </StackPanel>
+
+                                                    <TextBlock Grid.Column="1"
+                                                           Text="{Binding Editor.LiveValue, StringFormat='Live: {0:G}'}"
+                                                           VerticalAlignment="Center" />
+
+                                                    <Grid Grid.Column="2">
+                                                        <NumericUpDown
+                                                            IsReadOnly="{Binding Editor.IsReadOnly}"
+                                                            Value="{Binding Editor.Value, Mode=TwoWay}"
+                                                            HorizontalAlignment="Stretch"
+                                                             >
+                                                            <!-- TODO: Replace the MAUI DataTrigger with an Avalonia style selector after verifying editor visibility behavior. -->
+                                                        </NumericUpDown>
+  
+                                                        <ComboBox ItemsSource="{Binding Editor.ValuesData}"
+                                                                SelectedItem="{Binding Editor.SelectedValue, Mode=TwoWay}"
+                                                                IsVisible="{Binding Editor.HasValuesData}" />
+                                                    </Grid>
+
+                                                    <TextBlock Grid.Row="1" Grid.ColumnSpan="2"
+                                                           Text="{Binding Description}"
+                                                           TextWrapping="Wrap"
+                                                           FontSize="12" />
+                                                    <TextBlock Grid.Row="1" Grid.Column="2"
+                                                           Text="{Binding Units, StringFormat='Units: {0}'}"
+                                                           FontSize="12" />
+
+                                                    <Slider Grid.Row="2" Grid.ColumnSpan="3"
+                                                            Minimum="{Binding Editor.Min}"
+                                                            Maximum="{Binding Editor.Max}"
+                                                            Value="{Binding Editor.Value, Mode=TwoWay}"
+                                                            IsVisible="{Binding Editor.HasNumericRangeData}" />
+
+                                                    <StackPanel Orientation="Vertical" Grid.Row="3" Grid.ColumnSpan="3" Spacing="2">
+                                                        <TextBlock Text="{Binding RecommendationText}"
+                                                               IsVisible="{Binding HasRecommendation}"
+                                                               Foreground="ForestGreen"
+                                                               FontSize="12" />
+                                                        <TextBlock Text="{Binding Warning}"
+                                                               IsVisible="{Binding HasWarning}"
+                                                               Foreground="{DynamicResource Warning}"
+                                                               FontSize="12" />
+                                                        <TextBlock Text="{Binding Editor.ValidationError}"
+                                                               Foreground="{DynamicResource Warning}"
+                                                               FontSize="12" />
+                                                        <TextBlock Text="{Binding Editor.WriteMessage}"
+                                                               FontSize="12" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate></ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate></ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</navigation:ExtendedContentPage>

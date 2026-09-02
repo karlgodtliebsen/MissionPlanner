@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+                    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
+                    x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.ParametersEditorView"
+                    x:DataType="tabs:ParametersEditorViewModel"
+                    MaxWidth="800"
+>
+    <Grid
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                RowDefinitions="Auto,*"
+                RowSpacing="10"
+                Margin="12">
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button HorizontalAlignment="Right"
+                Content="Use Parameters" Width="200" Command="{Binding UseCommand}">
+            </Button>
+            <Button HorizontalAlignment="Right"
+                     Content="Clear" Width="150" Command="{Binding ClearCommand}">
+            </Button>
+            <Button HorizontalAlignment="Right"
+                    Content="Cancel" Width="100" Command="{Binding CancelCommand}">
+            </Button>
+        </StackPanel>
+
+
+        <Border Grid.Row="1" Margin="25" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                Classes="SectionCard">
+
+            <Grid 
+                RowDefinitions="Auto,Auto,*"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="20" Margin="30">
+
+                <TextBlock Grid.Row="0"
+                        FontSize="16" Text="Add a List of Parameters and Values"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                <TextBlock  Grid.Row="1" FontSize="12" Text="Format: (name=value) or (name=value//comment)"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+
+                <TextBox AcceptsReturn="True"  Grid.Row="2"
+                    
+                         Text="{Binding Text}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                         Margin="10"></TextBox>
+
+            </Grid>
+
+
+
+        </Border>
+    </Grid>
+
+</UserControl>

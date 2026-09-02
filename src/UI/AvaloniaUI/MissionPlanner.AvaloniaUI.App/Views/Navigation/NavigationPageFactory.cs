@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.AvaloniaUI.App.Views.Config;
+using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
 using MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
@@ -55,10 +56,13 @@ public sealed class NavigationPageFactory : INavigationPageFactory
             MissionPlannerRoutes.SetupAdvanced =>
                 services.GetRequiredService<AdvancedPage>(),
 
-            // These route identities are retained for the future Config tab views.
-            // Until those AXAML views are migrated, both open the existing Config shell.
-            MissionPlannerRoutes.ConfigOnboardOSD or MissionPlannerRoutes.ConfigFullParameters =>
-                services.GetRequiredService<ConfigPage>(),
+            MissionPlannerRoutes.ConfigGeoFence => CreateViewPage<GeoFenceTabView>("Geo Fence"),
+            MissionPlannerRoutes.ConfigBasicTuning => CreateViewPage<BasicTuningTabView>("Basic Tuning"),
+            MissionPlannerRoutes.ConfigExtendedTuning => CreateViewPage<ExtendedTuningTabView>("Extended Tuning"),
+            MissionPlannerRoutes.ConfigOnboardOSD => CreateViewPage<OnboardOSDTabView>("Onboard OSD"),
+            MissionPlannerRoutes.ConfigMavFtp => CreateViewPage<MAVFtpTabView>("MAV FTP"),
+            MissionPlannerRoutes.ConfigFullParameters => CreateViewPage<FullParametersListTabView>("Full Parameters List"),
+            MissionPlannerRoutes.ConfigCubeLan8PortSwitch => CreateViewPage<CubeLan8PortSwitchTabView>("CubeLAN 8 Port Switch"),
 
             //MissionPlannerRoutes.SetupInstallFirmware =>
             //    CreateViewPage<InstallFirmwarePage>("Install Firmware"),
@@ -71,30 +75,6 @@ public sealed class NavigationPageFactory : INavigationPageFactory
 
             //MissionPlannerRoutes.SetupAdvanced =>
             //    CreateViewPage<AdvancedView>("Advanced"),
-
-
-            //MissionPlannerRoutes.ConfigGeoFence =>
-            //    CreateViewPage<GeoFenceTabView>("Geo Fence"),
-
-            //MissionPlannerRoutes.ConfigBasicTuning =>
-            //    CreateViewPage<BasicTuningTabView>("Basic Tuning"),
-
-            //MissionPlannerRoutes.ConfigExtendedTuning =>
-            //    CreateViewPage<ExtendedTuningTabView>("Extended Tuning"),
-
-            //MissionPlannerRoutes.ConfigOnboardOSD =>
-            //    CreateViewPage<OnboardOSDTabView>("Onboard OSD"),
-
-            //MissionPlannerRoutes.ConfigMavFtp =>
-            //    CreateViewPage<MAVFtpTabView>("MAV Ftp"),
-
-            //MissionPlannerRoutes.ConfigFullParameters =>
-            //    CreateViewPage<FullParametersListTabView>(
-            //        "Full Parameters List"),
-
-            //MissionPlannerRoutes.ConfigCubeLan8PortSwitch =>
-            //    CreateViewPage<CubeLan8PortSwitchTabView>(
-            //        "CubeLan 8 Port Switch"),
 
 
             MissionPlannerRoutes.Preferences =>

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -156,11 +156,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 HasRows = Parameters.Count > 0;
             });
 
-            //TODO: ParametersEditorView
-            throw new NotImplementedException();
-            //    var pageView = domainFactory.Create<ParametersEditorView, ParametersEditorViewModel>(viewModel);
-
-            //    await dialogService.ShowAsync(pageView, true, cancellationToken);
+            var options = dialogService.CreateOptions("Parameter file preview", "Close", null);
+            options.FullScreen = true;
+            await dialogService.ShowOverlayDialogAsync<ParametersEditorView, ParametersEditorViewModel>(
+                viewModel,
+                options,
+                cancellationToken: cancellationToken);
         }
         catch (Exception exception)
         {
@@ -348,12 +349,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
         var viewModel = domainFactory.Create<ParameterComparisonViewModel, IParameterEditSession>(EditSession);
 
-        //TODO: ParameterComparisonView
-        throw new NotImplementedException();
-
-
-        //var pageView = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
-        //await dialogService.ShowAsync(pageView, new DialogOptions());
+        var options = dialogService.CreateOptions("Compare parameters", "Close", null);
+        options.FullScreen = true;
+        await dialogService.ShowOverlayDialogAsync<ParameterComparisonView, ParameterComparisonViewModel>(
+            viewModel,
+            options,
+            cancellationToken: cancellationToken);
     }
 
     private void OnComparisonStaged(object? sender, int count)

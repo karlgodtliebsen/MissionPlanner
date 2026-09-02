@@ -1,0 +1,50 @@
+<navigation:ExtendedContentPage x:TypeArguments="tabs:CubeLan8PortSwitchTabViewModel"
+    
+    xmlns="https://github.com/avaloniaui"
+             xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
+             xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
+             x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.CubeLan8PortSwitchTabView"
+             x:DataType="tabs:CubeLan8PortSwitchTabViewModel"
+    >
+
+    <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+        <StackPanel Orientation="Vertical" Spacing="4">
+            <TextBlock Text="CubeLAN 8 Port Switch" FontSize="24" FontWeight="Bold" />
+            <TextBlock Text="{Binding VehicleHeading}" FontWeight="Bold" />
+            <TextBlock Text="Discovery uses only the repository-documented MAVLink DEVICE_OP I²C path at address 0x50. The editor exposes COS, COS priority, EEE, VLAN tagging, and the 8×8 VLAN membership matrix. PoE, port enablement, VLAN IDs, modes, authentication, and editable labels are not exposed because no verified protocol definition exists for them." />
+        </StackPanel>
+
+        <Border Grid.Row="1" Padding="12">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" />
+                <StackPanel Orientation="Vertical" Grid.Column="1">
+                    <TextBlock Text="{Binding Status}" FontWeight="Bold" />
+                    <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}"/>
+                </StackPanel>
+                <Button  Grid.Column="2" Content="Discover / read" Command="{Binding RefreshCommand}" VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
+        <!-- TODO: Replace auto-generated columns with native Avalonia column templates after the FullParametersList virtualization test establishes the final grid strategy. -->
+        <DataGrid AutoGenerateColumns="True" Grid.Row="2" 
+                                      ItemsSource="{Binding Ports}" 
+                                      
+                                      HorizontalAlignment="Stretch" 
+                                      VerticalAlignment="Stretch" 
+                                      Background="Transparent">
+            
+            
+        </DataGrid>
+
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <TextBlock Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalAlignment="Center" />
+            <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <Button  Content="Export" Command="{Binding ExportCommand}" />
+                <Button  Content="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" />
+                <Button  Content="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</navigation:ExtendedContentPage>

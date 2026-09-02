@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
+             x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.OnboardOsdPreviewView">
+    <Border Padding="10" CornerRadius="8" Background="#101010">
+        <local:OsdPreviewCanvas
+                                x:Name="PreviewCanvas"
+                                MinHeight="480" />
+    </Border>
+</UserControl>

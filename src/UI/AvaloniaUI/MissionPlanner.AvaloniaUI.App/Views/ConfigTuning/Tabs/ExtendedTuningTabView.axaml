@@ -1,0 +1,175 @@
+<navigation:ExtendedContentPage x:TypeArguments="tabs:ExtendedTuningTabViewModel"
+                            xmlns="https://github.com/avaloniaui"
+                            xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
+                            xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
+                            x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.ExtendedTuningTabView"
+                            x:DataType="tabs:ExtendedTuningTabViewModel">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="12" RowSpacing="10">
+        <Grid ColumnDefinitions="*,360,Auto" ColumnSpacing="10">
+            <StackPanel Orientation="Vertical" Spacing="2">
+                <TextBlock Text="Extended Tuning" FontWeight="Bold" FontSize="24" />
+                <TextBlock Text="{Binding FirmwareFamilyText, StringFormat='Advanced firmware profile: {0}'}" />
+            </StackPanel>
+            <TextBox Grid.Column="1" Watermark="Search curated advanced parameters" Text="{Binding SearchText, Mode=TwoWay}" />
+            <ProgressBar IsIndeterminate="True" Grid.Column="2" IsVisible="{Binding IsBusy}" />
+        </Grid>
+
+        <Border Grid.Row="1" Padding="10" Classes="SectionCard">
+            <StackPanel Orientation="Vertical" Spacing="4">
+                <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="Expert page: changes to controllers, estimators, and filters can destabilize a vehicle. Autotune execution is intentionally not available here."
+                       Foreground="{DynamicResource Warning}"
+                       FontWeight="Bold"
+                       IsVisible="{Binding HasSupportedProfile}" />
+                <TextBlock Text="This connected firmware has no supported advanced profile."
+                       Foreground="{DynamicResource Warning}"
+                       IsVisible="{Binding IsUnsupported}" />
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="2*,3*" ColumnSpacing="10" IsVisible="{Binding HasSupportedProfile}">
+            <Border Padding="10" Classes="SectionCard">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                    <TextBlock Text="{Binding ModifiedCount, StringFormat='Pending advanced changes: {0}'}" FontWeight="Bold" />
+                    <TextBlock Text="{Binding ChangeSummary}"
+                           MaxLines="5"
+                           TextTrimming="CharacterEllipsis"
+                           FontFamily="Consolas" />
+                </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Padding="10" Classes="SectionCard">
+                <StackPanel Orientation="Vertical" Spacing="4">
+                    <TextBlock Text="Live controller response (read-only PID_TUNING context)" FontWeight="Bold" />
+
+                    <!-- TODO: Replace auto-generated columns with native Avalonia column templates after the FullParametersList virtualization test establishes the final grid strategy. -->
+                    <DataGrid AutoGenerateColumns="True" 
+                        ItemsSource="{Binding ResponseMetrics}" 
+                        
+                        Height="54"
+                        HorizontalAlignment="Stretch" 
+                        VerticalAlignment="Stretch" 
+                        Background="Transparent">
+                        
+                        
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <ListBox Grid.Row="3"
+                        ItemsSource="{Binding VisibleGroups}"
+                        IsVisible="{Binding HasSupportedProfile}">
+            
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="tabs:ExtendedTuningGroupViewModel">
+                    <Border Padding="12" Margin="0,0,0,10">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                <StackPanel Orientation="Vertical" Spacing="2">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="20" />
+                                        <TextBlock Text="{Binding Category}" FontSize="12" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SupportedFieldCount, StringFormat='{}{0} supported fields'}" FontSize="12" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                                </StackPanel>
+                                <Button  Grid.Column="1" Content="Expand / collapse" Command="{Binding ToggleExpandedCommand}" />
+                            </Grid>
+
+                            <TextBlock Text="{Binding ExpertWarning}"
+                                   Foreground="{DynamicResource Warning}"
+                                   FontWeight="Bold"
+                                   TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ValidationMessage}"
+                                   Foreground="{DynamicResource Warning}"
+                                   IsVisible="{Binding HasValidationError}"
+                                   TextWrapping="Wrap" />
+                            <TextBlock Text="This group has pending changes."
+                                   Foreground="{DynamicResource Warning}"
+                                   IsVisible="{Binding IsModified}" />
+
+                            <StackPanel Orientation="Vertical" IsVisible="{Binding IsExpanded}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Button  Content="Refresh" Command="{Binding RefreshCommand}" />
+                                        <Button  Content="Revert group" Command="{Binding RevertCommand}" />
+                                        <Button  Content="Review &amp; apply group" Command="{Binding ApplyCommand}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="6" IsVisible="{Binding SupportsAxisCopy}">
+                                        <ComboBox ToolTip.Tip="Source axis" Width="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedSourceAxis}" />
+                                        <ComboBox ToolTip.Tip="Target axis" Width="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedTargetAxis}" />
+                                        <Button  Content="Preview axis copy" Command="{Binding PreviewCopyCommand}" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <Border Padding="10" IsVisible="{Binding HasCopyPreview}" Classes="SectionCard">
+                                    <StackPanel Orientation="Vertical" Spacing="4">
+                                        <TextBlock Text="Axis copy preview — no pending values have changed" FontWeight="Bold" />
+                                        <ItemsControl ItemsSource="{Binding CopyPreview}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="tabs:AxisCopyChangeViewModel">
+                                                    <Grid ColumnDefinitions="90,*,*,Auto,Auto" ColumnSpacing="8">
+                                                        <TextBlock Text="{Binding Component}" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding SourceParameter}" />
+                                                        <TextBlock Grid.Column="2" Text="{Binding TargetParameter}" />
+                                                        <TextBlock Grid.Column="3" Text="{Binding BeforeValue, StringFormat='{}{0:G} →'}" />
+                                                        <TextBlock Grid.Column="4" Text="{Binding AfterValue, StringFormat='{}{0:G}'}" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate></ItemsControl>
+                                        <Button  Content="Confirm preview into pending values" Command="{Binding ApplyCopyCommand}" HorizontalAlignment="Right" />
+                                    </StackPanel>
+                                </Border>
+
+                                <ItemsControl ItemsSource="{Binding Fields}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="tabs:AdvancedTuningFieldViewModel">
+                                            <Border Padding="10" BorderThickness="1" Classes="SectionCard">
+                                                <Grid ColumnDefinitions="120,2*,Auto,180" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="3">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock Text="{Binding AxisText}" FontWeight="Bold" />
+                                                        <TextBlock Text="{Binding InstanceText}" FontSize="11" />
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Vertical" Grid.Column="1">
+                                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                                                        <TextBlock Text="{Binding ParameterName}" FontSize="11" Opacity="0.7" />
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="2" Text="{Binding Editor.LiveValue, StringFormat='Live {0:G}'}" VerticalAlignment="Center" />
+                                                    <Grid Grid.Column="3">
+                                                        <NumericUpDown
+                                                            IsReadOnly="{Binding Editor.IsReadOnly}"
+                                                            Value="{Binding Editor.Value, Mode=TwoWay}"
+                                                            HorizontalAlignment="Stretch"
+                                                             >
+                                                            <!-- TODO: Replace the MAUI DataTrigger with an Avalonia style selector after verifying editor visibility behavior. -->
+                                                        </NumericUpDown>
+                                                        <ComboBox ItemsSource="{Binding Editor.ValuesData}"
+                                                                SelectedItem="{Binding Editor.SelectedValue, Mode=TwoWay}"
+                                                                IsVisible="{Binding Editor.HasValuesData}" />
+                                                    </Grid>
+
+                                                    <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                                           Text="{Binding Description}"
+                                                           TextWrapping="Wrap"
+                                                           FontSize="12" />
+                                                    <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding Units, StringFormat='Units: {0}'}" FontSize="12" />
+
+                                                    <ProgressBar Grid.Row="2" Grid.Column="0" Value="{Binding NormalizedMagnitude}" />
+                                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="Normalized magnitude across axes" FontSize="11" />
+                                                    <TextBlock Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
+                                                           Text="{Binding Editor.ValidationError}"
+                                                           Foreground="{DynamicResource Warning}"
+                                                           FontSize="12" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate></ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</navigation:ExtendedContentPage>
