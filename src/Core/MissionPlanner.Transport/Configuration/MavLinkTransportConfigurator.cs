@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Library;
 using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Transport.Configuration;
@@ -19,14 +20,14 @@ public static class MavLinkTransportConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddMavLinkTransportServices(this IServiceCollection services, IConfiguration configuration)
     {
+        var transportEndpointOptions = configuration.GetSection(TransportEndpoint.SectionName).Get<TransportEndpoint>();
+        DomainException.ThrowIfNull(transportEndpointOptions, TransportEndpoint.Template);
+        services.AddSingleton(Options.Create(transportEndpointOptions));
         services.TryAddTransient<IMavLinkTransport, UdpMavLinkTransport>();
 
         services.TryAddTransient<ISerialMavLinkTransport, SerialMavLinkTransport>();
         services.TryAddTransient<IUdpMavLinkTransport, UdpMavLinkTransport>();
         services.TryAddTransient<ITcpMavLinkTransport, TcpMavLinkTransport>();
-
-        //TODO: must be based on configuration data
-        services.AddSingleton(Options.Create(new TransportEndpoint()));
 
         return services;
     }

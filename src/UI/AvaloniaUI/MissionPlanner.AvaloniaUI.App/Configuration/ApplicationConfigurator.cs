@@ -126,6 +126,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ISimulatorRuntime, ArduPilotSitlRuntime>();
 
         services.TryAddSingleton<ApplicationStateService>();
+
         services.TryAddTransient<ParametersFileHandler>();
         services.TryAddSingleton<PlannerSettingsRuntime>();
         services.TryAddTransient<MissionItemListViewPage>();
@@ -217,9 +218,7 @@ public static class ApplicationConfigurator
 
         services.TryAddSingleton<INavigationPageFactory, NavigationPageFactory>();
 
-        //This is to satisfy the DI container for INavigationService, but we will use AvaloniaNavigationService as the implementation
         services.TryAddSingleton<INavigationService, AvaloniaNavigationService>();
-        //services.TryAddSingleton<INavigationService>(sp => sp.GetRequiredService<AvaloniaNavigationService>());
 
         services.TryAddSingleton<MainShellViewModel>();
 
@@ -233,6 +232,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<PreferencesViewModel>();
         services.TryAddTransient<PreferencesPage>();
         services.TryAddTransient<SimulationPage>();
+        services.TryAddTransient<SimulationViewModel>();
+
         services.TryAddTransient<IntroductionPage>();
         services.TryAddTransient<HelpPage>();
 
@@ -244,13 +245,9 @@ public static class ApplicationConfigurator
         services.TryAddTransient<LandingPageViewModel>();
         services.TryAddTransient<IntroductionViewModel>();
 
-        //services.TryAddTransient<ParametersEditorView>();
         services.TryAddTransient<ParametersEditorViewModel>();
-
         services.TryAddTransient<AsyncOperationRunner>();
 
-        //services.TryAddTransient<FlightDataMissionMapView>();
-        //services.TryAddTransient<FlightPlannerMissionMapView>();
         services.TryAddTransient<FlightPlannerMissionMapViewModel>();
         services.TryAddTransient<FlightDataMissionMapViewModel>();
 
@@ -366,13 +363,9 @@ public static class ApplicationConfigurator
         domainFactory.Add<IDialogService, AvaloniaDialogService>();
 
         domainFactory.Add<ParameterComparisonViewModel>();
-        //domainFactory.Add<ParameterComparisonView>();
         domainFactory.Add<MissionItemListViewPage>();
         domainFactory.Add<MissionMapPresenter>();
-        //domainFactory.Add<FlightPlannerMissionMapViewModel>();
-        //domainFactory.Add<FlightPlannerMissionMapView>();
         domainFactory.Add<ParametersEditorViewModel>();
-        //domainFactory.Add<ParametersEditorView>();
         return services;
     }
 

@@ -7,13 +7,17 @@ namespace MissionPlanner.Transport;
 /// </summary>
 public sealed class TransportEndPoint : IEquatable<TransportEndPoint>
 {
+
     private readonly IPEndPoint? iPEndPoint;
     private readonly string? endpoint;
 
     /// <summary>
     /// Gets the name of the transport.
     /// </summary>
-    public string? TransportName { get; }
+    public string? TransportName
+    {
+        get;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TransportEndPoint"/> class with the specified endpoint string.
@@ -125,42 +129,65 @@ public sealed class TransportEndPoint : IEquatable<TransportEndPoint>
 /// </summary>
 public class TransportEndpoint
 {
+    public const string SectionName = "TransportEndpoint";
+    public const string Template = "TransportEndpoint template";
     /// <summary>
     /// The name of the transport endpoint.
     /// </summary>
-    public string Name { get; set; }
+    public string Name
+    {
+        get; set;
+    }
 
     /// <summary>
     /// The expected ID of the transport endpoint.
     /// </summary>
-    public string ExpectedId { get; set; }
+    public string ExpectedId
+    {
+        get; set;
+    }
 
 
     /// <summary>
     /// The port number of the remote endpoint.
     /// </summary>
-    public int RemotePort { get; set; }
+    public int RemotePort
+    {
+        get; set;
+    }
 
     /// <summary>
     /// The protocol used by the transport endpoint (e.g., "udp", "tcp").
     /// </summary>
-    public string Protocol { get; set; }
+    public string Protocol
+    {
+        get; set;
+    }
 
 
     /// <summary>
     /// The host address of the remote endpoint.
     /// </summary>
-    public string RemoteHost { get; set; }
+    public string RemoteHost
+    {
+        get; set;
+    }
 
     /// <summary>
     /// The port number of the local endpoint.
     /// </summary>
-    public int LocalPort { get; set; }
+    public int LocalPort
+    {
+        get; set;
+    }
 
     /// <summary>
     /// 
     /// </summary>
-    public string SerialPort { get; set; }
+    public string SerialPort
+    {
+        get; set;
+    }
 
 
     /// <summary>
@@ -177,7 +204,14 @@ public class TransportEndpoint
     /// <summary>
     /// 
     /// </summary>
-    public int ReceiveBufferSize { get; }
+    public int ReceiveBufferSize
+    {
+        get;
+    }
+
+    public TransportEndpoint()
+    {
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TransportEndpoint"/> class with the specified protocol, remote port, remote host, local port, local host, and receive buffer size.
