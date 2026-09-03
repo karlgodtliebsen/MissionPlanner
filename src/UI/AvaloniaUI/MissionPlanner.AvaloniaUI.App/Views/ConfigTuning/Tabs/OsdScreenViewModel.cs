@@ -1,7 +1,7 @@
-using MissionPlanner.AvaloniaUI.App.Views.Common;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Osd;
+using ParameterItemViewModel = MissionPlanner.AvaloniaUI.App.Models.ParameterItemViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 

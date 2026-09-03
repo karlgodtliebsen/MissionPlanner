@@ -14,7 +14,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.Common;
+namespace MissionPlanner.AvaloniaUI.App.Models;
 
 /// <summary>
 /// Provides the searchable full parameter list through the shared safe editing session.
@@ -492,6 +492,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
                 AttachSession(session);
                 CompleteBusyState();
                 SetMessages($"Loaded {session.Fields.Count} cached parameters.");
+                NotificationManager?.Show($"Loaded {session.Fields.Count} cached parameters for Vehicle: {activeVehicle.VehicleId}");
             });
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
@@ -594,6 +595,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             ModifiedParameterCount = 0;
             CompleteBusyState();
             SetMessages("Parameters cleared. Refresh to load again.");
+            NotificationManager?.Show($"Cleared Full Parameters List for Vehicle: {vehicleId}. Refresh to load again.");
         });
 
         Logger.LogInformation("Cleared Full Parameters List for {VehicleId}.", vehicleId);
@@ -654,6 +656,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
                 AttachSession(session);
                 CompleteBusyState();
                 SetMessages($"Loaded {session.Fields.Count} parameters for {session.Scope.FirmwareIdentity.Family}.");
+                NotificationManager?.Show($"Loaded {session.Fields.Count} cached parameters for Vehicle: {activeVehicle.VehicleId}");
             });
             Logger.LogInformation("Loaded {Count} editable parameter fields for {VehicleId}.", session.Fields.Count, vehicleId);
         }

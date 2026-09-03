@@ -5,7 +5,6 @@ using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Utilities;
-using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.Missions.Models;
@@ -13,6 +12,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using ParameterItemViewModel = MissionPlanner.AvaloniaUI.App.Models.ParameterItemViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 

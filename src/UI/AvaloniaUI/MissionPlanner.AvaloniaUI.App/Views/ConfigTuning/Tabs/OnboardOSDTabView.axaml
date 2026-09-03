@@ -7,6 +7,7 @@
                            xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                           xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Models"
                            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                            x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.OnboardOSDTabView"
                            x:DataType="tabs:OnboardOsdTabViewModel">
@@ -59,7 +60,7 @@
                             <TextBlock Text="Screen enable and options" FontWeight="Bold" FontSize="18" />
                             <ItemsControl ItemsSource="{Binding SelectedScreen.Parameters}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="common:ParameterItemViewModel">
+                                    <DataTemplate x:DataType="models:ParameterItemViewModel">
                                         <Grid ColumnDefinitions="2*,Auto,130" ColumnSpacing="8">
                                             <StackPanel Orientation="Vertical">
                                                 <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
@@ -84,7 +85,7 @@
                             <TextBlock Text="Global OSD options" FontWeight="Bold" FontSize="18" />
                             <ItemsControl ItemsSource="{Binding GlobalParameters}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="common:ParameterItemViewModel">
+                                    <DataTemplate x:DataType="models:ParameterItemViewModel">
                                         <Grid ColumnDefinitions="*,130" ColumnSpacing="8">
                                             <TextBlock Text="{Binding DisplayName}" />
                                             <NumericUpDown
@@ -154,7 +155,7 @@
                         <TextBlock Text="{Binding SelectedItem.ValidationError}" Foreground="{DynamicResource Warning}" FontSize="12" />
                         <ItemsControl ItemsSource="{Binding SelectedItem.AdditionalParameters}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="common:ParameterItemViewModel">
+                                <DataTemplate x:DataType="models:ParameterItemViewModel">
                                     <Grid ColumnDefinitions="*,110" ColumnSpacing="6">
                                         <TextBlock Text="{Binding DisplayName}" />
                                       <NumericUpDown

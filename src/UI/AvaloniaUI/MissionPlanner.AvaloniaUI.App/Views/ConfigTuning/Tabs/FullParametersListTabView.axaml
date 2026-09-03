@@ -1,14 +1,16 @@
 <utilities:TabItemViewBase x:TypeArguments="tabs:FullParametersListTabViewModel"
                            xmlns="https://github.com/avaloniaui"
-                           xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                           xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
-                           xmlns:configTuning="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning"
+                           xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" 
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                           xmlns:u="https://irihi.tech/ursa"
                            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                           xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
                            xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
                            xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
-                           xmlns:common="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Common"
+                           xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                           xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Models"
                            x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
                            x:DataType="tabs:FullParametersListTabViewModel">
 
@@ -19,7 +21,8 @@
           Margin="8,0"
           >
 
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Height="50" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0" Spacing="12" >
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Height="50" 
+                    HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0" Spacing="12" >
             <Button
                 Content="Load from file"
                 VerticalAlignment="Center"
@@ -108,47 +111,52 @@
         </StackPanel>
 
         <Grid Grid.Row="2"
-              VerticalAlignment="Stretch" HorizontalAlignment="Center"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
               Margin="0,10,0,10">
 
             <controls:VirtualizedItemsGrid
+                Grid.Row="0"
+                Margin="25"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
                 ItemsSource="{Binding Parameters}"
-
-                ColumnWidths="160,100,200,100,100,100,100,125,150,*"
+                ColumnWidths="160,100,180,100,100,100,100,125,150,*"
                 ColumnSpacing="6"
                 RowMinHeight="38"
-
                 ShowHeader="True"
-
                 ShowSearchBar="True"
-                SearchWatermark="Search parameters..."
+                SearchWatermark="Search by name or description..."
                 SearchMemberPaths="Name,DisplayName,Description,Range,Units,MavNumericType,WriteStatus"
-
                 ShowPagination="False"
-
-                SelectionMode="Multiple"
-                SelectionColumnWidth="36">
+                >
 
                 <!-- ================================================= -->
-                <!-- Empty view                                                   -->
+                <!-- Empty view               -->
                 <!-- ================================================= -->
 
                 <controls:VirtualizedItemsGrid.EmptyView >
-                    <StackPanel
-                        Margin="20"
-                        Spacing="6"
-                        HorizontalAlignment="Stretch">
 
-                        <TextBlock
-                            HorizontalAlignment="Stretch"
-                            Text="No parameters found."
+                    <StackPanel Orientation="Vertical"
+                                Margin="40"
+                                Spacing="8"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center">
+                        <avalonia:MaterialIcon Kind="BinEmpty" Width="30" Height="30"  />
+
+                        <Label
+                            Content="No parameters match the current filter."
                             Classes="H3"
-                            Opacity="0.65" />
-
+                            HorizontalAlignment="Center"
+                            HorizontalContentAlignment="Center" />
+                        <Label
+                            Content="Refresh parameters or clear the search text to display parameters."
+                            Classes="H3"
+                            Opacity="0.75"
+                            HorizontalAlignment="Center"
+                            HorizontalContentAlignment="Center" />
                     </StackPanel>
                 </controls:VirtualizedItemsGrid.EmptyView>
-
-
                 <!-- Header                                                       -->
 
                 <controls:VirtualizedItemsGrid.HeaderTemplate>
@@ -157,72 +165,66 @@
                         <controls:VirtualizedItemsGridRow>
 
                             <TextBlock
+
                                 Grid.Column="0"
                                 Text="Param"
-                                FontWeight="Bold"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"
+                                />
 
                             <TextBlock
                                 Grid.Column="1"
                                 Text="Value"
-                                FontWeight="Bold"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"
+                                />
 
                             <TextBlock
                                 Grid.Column="2"
                                 Text="Selections"
-                                FontWeight="Bold"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"/>
 
                             <TextBlock
                                 Grid.Column="3"
                                 Text="Range"
-                                FontWeight="Bold"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"/>
 
                             <TextBlock
                                 Grid.Column="4"
                                 Text="StepSize"
-                                FontWeight="Bold"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"
+                                />
 
                             <TextBlock
                                 Grid.Column="5"
                                 Text="Type"
-                                FontWeight="Bold"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"
+                                />
 
                             <TextBlock
                                 Grid.Column="6"
                                 Text="Default"
-                                FontWeight="Bold"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"
+                                />
 
                             <TextBlock
                                 Grid.Column="7"
                                 Text="Units"
-                                FontWeight="Bold"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"
+                                />
 
                             <TextBlock
                                 Grid.Column="8"
                                 Text="Write status"
-                                FontWeight="Bold"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"
+                                HorizontalAlignment="Center"
+                                />
 
                             <TextBlock
                                 Grid.Column="9"
                                 Text="Description"
-                                FontWeight="Bold"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridColumn"
+                                HorizontalAlignment="Center"
+                                x:Name="Column9"
+                                />
 
                         </controls:VirtualizedItemsGridRow>
 
@@ -236,7 +238,7 @@
 
                 <controls:VirtualizedItemsGrid.RowTemplate>
 
-                    <DataTemplate x:DataType="common:ParameterItemViewModel">
+                    <DataTemplate x:DataType="models:ParameterItemViewModel">
 
                         <controls:VirtualizedItemsGridRow>
 
@@ -248,9 +250,8 @@
                             <SelectableTextBlock
                                 Grid.Column="0"
                                 Text="{Binding Name}"
-                                FontSize="12"
-                                Margin="4,0"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridRow"
+                                />
 
 
                             <!-- ================================================= -->
@@ -259,18 +260,11 @@
 
                             <NumericUpDown
                                 Grid.Column="1"
-                                Classes="H5"
+                                Classes="DataGridRow"
                                 Margin="4,2"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Right"
-                                TextAlignment="Right"
-                                VerticalAlignment="Center"
-
                                 Minimum="{Binding Min}"
                                 Maximum="{Binding Max}"
                                 Increment="{Binding StepSize}"
-                                FormatString="G7"
-
                                 Value="{Binding Value, Mode=TwoWay}" />
 
 
@@ -289,42 +283,21 @@
 
                                 <ComboBox
                                     IsVisible="{Binding HasValuesData}"
-
                                     ItemsSource="{Binding ValuesData}"
                                     SelectedItem="{Binding SelectedValue, Mode=TwoWay}"
-
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Center"
-                                    VerticalAlignment="Center" />
+                                    Classes="DataGridRow" />
 
 
                                 <!-- ================================================= -->
                                 <!-- Bitmask parameter                              -->
                                 <!-- ================================================= -->
 
-                                <Button
+                                <u:MultiComboBox
                                     IsVisible="{Binding HasBitmask}"
-                                    Content="Multiple options"
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Center">
-
-                                    <Button.Flyout>
-
-                                        <Flyout Placement="Bottom">
-
-                                            <ListBox
-                                                MinWidth="200"
-                                                MaxHeight="320"
-
-                                                ItemsSource="{Binding BitmaskOptions}"
-                                                SelectedItems="{Binding SelectedBitmaskItems}"
-                                                SelectionMode="Multiple,Toggle" />
-
-                                        </Flyout>
-
-                                    </Button.Flyout>
-
-                                </Button>
+                                    ItemsSource="{Binding BitmaskOptions}"
+                                    SelectedItems="{Binding SelectedBitmaskItems, Mode=TwoWay}"
+                                    Classes="DataGridRow">
+                                </u:MultiComboBox>
 
                                 <!-- ================================================= -->
                                 <!-- Numeric range parameter                        -->
@@ -332,18 +305,11 @@
 
                                 <NumericUpDown
                                     IsVisible="{Binding HasNumericRangeData}"
-
-                                    HorizontalAlignment="Stretch"
-                                    HorizontalContentAlignment="Right"
-                                    TextAlignment="Right"
-
+                                    Classes="DataGridRow"
                                     Minimum="{Binding Min}"
                                     Maximum="{Binding Max}"
                                     Increment="{Binding StepSize}"
-                                    FormatString="G7"
-
                                     Value="{Binding Value, Mode=TwoWay}" />
-
                             </Grid>
 
 
@@ -354,9 +320,7 @@
                             <TextBlock
                                 Grid.Column="3"
                                 Text="{Binding Range}"
-                                Margin="4,0"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridRow"  />
 
 
                             <!-- ================================================= -->
@@ -366,9 +330,8 @@
                             <TextBlock
                                 Grid.Column="4"
                                 Text="{Binding StepSize}"
-                                Margin="4,0"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridRow"
+                                />
 
 
                             <!-- ================================================= -->
@@ -378,9 +341,8 @@
                             <TextBlock
                                 Grid.Column="5"
                                 Text="{Binding MavNumericType}"
-                                Margin="4,0"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridRow"
+                                />
 
 
                             <!-- ================================================= -->
@@ -390,9 +352,7 @@
                             <TextBlock
                                 Grid.Column="6"
                                 Text="{Binding OriginalValueText}"
-                                Margin="4,0"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridRow"  />
 
 
                             <!-- ================================================= -->
@@ -402,66 +362,58 @@
                             <TextBlock
                                 Grid.Column="7"
                                 Text="{Binding Units}"
-                                FontSize="14"
-                                Margin="10,0"
-                                TextAlignment="Center"
-                                VerticalAlignment="Center" />
+                                Classes="DataGridRow" />
 
 
                             <!-- ================================================= -->
                             <!-- Write status                                      -->
                             <!-- ================================================= -->
 
-                            <StackPanel
+                            <Grid
+                                RowDefinitions="*,*"
                                 Grid.Column="8"
-                                Orientation="Vertical"
-                                Margin="10,3"
-                                Spacing="2"
-                                HorizontalAlignment="Stretch"
+                                RowSpacing="10"
+                                HorizontalAlignment="Center"
                                 VerticalAlignment="Center">
 
-                                <TextBlock
-                                    Text="{Binding WriteStatus}"
-                                    FontSize="12"
-                                    TextAlignment="Center"
-                                    HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Row="0"
+                                           Text="{Binding WriteStatus}"
+                                           Classes="DataGridRow"
+                                           TextAlignment="Start" />
 
-                                <TextBlock
-                                    Text="{Binding WriteMessage}"
-                                    FontSize="10"
-                                    TextAlignment="Center"
-                                    TextWrapping="Wrap"
-                                    HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding WriteMessage}"
+                                           Classes="DataGridRow"
+                                           TextAlignment="Start" />
 
-                            </StackPanel>
+                            </Grid>
 
 
                             <!-- ================================================= -->
-                            <!-- Description                                       -->
+                            <!-- Description           TextWrapping="Wrap"                            -->
                             <!-- ================================================= -->
 
-                            <StackPanel
+                            <Grid
                                 Grid.Column="9"
-                                Orientation="Vertical"
-                                Margin="10,6"
-                                Spacing="4"
+                                RowDefinitions="*,*"
+                                RowSpacing="10"
                                 HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center">
 
-                                <TextBlock
-                                    Text="{Binding DisplayName}"
-                                    FontSize="12"
-                                    FontWeight="SemiBold"
-                                    TextWrapping="Wrap"
-                                    HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Row="0"
+                                           Text="{Binding DisplayName}"
+                                           Classes="DataGridRow"
+                                           TextAlignment="Start"
+                                           />
 
-                                <TextBlock
-                                    Text="{Binding Description}"
-                                    FontSize="12"
-                                    TextWrapping="Wrap"
-                                    HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Row="1"
+                                           Text="{Binding Description}"
+                                           Classes="DataGridRow"
+                                           TextAlignment="Start"
+                                           TextWrapping="Wrap"
+                                           />
 
-                            </StackPanel>
+                            </Grid>
 
                         </controls:VirtualizedItemsGridRow>
 
@@ -470,6 +422,7 @@
                 </controls:VirtualizedItemsGrid.RowTemplate>
 
             </controls:VirtualizedItemsGrid>
+
 
         </Grid>
     </Grid>

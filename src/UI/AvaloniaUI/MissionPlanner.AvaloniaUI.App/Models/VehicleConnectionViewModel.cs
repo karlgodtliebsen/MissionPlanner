@@ -5,7 +5,7 @@ using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.Common;
+namespace MissionPlanner.AvaloniaUI.App.Models;
 
 /// <summary>
 /// Provides the searchable full parameter list through the shared safe editing session.

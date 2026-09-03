@@ -1,7 +1,7 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
+namespace MissionPlanner.AvaloniaUI.App.Models;
 
 /// <summary>
 /// Provides the public API for VehicleFileSystemEntryViewModel.
@@ -23,7 +23,11 @@ public sealed partial class VehicleFileSystemEntryViewModel(string name, Vehicle
     /// </summary>
     public long? Size { get; } = size;
 
-    [ObservableProperty] public partial bool IsSelected { get; set; }
+    [ObservableProperty]
+    public partial bool IsSelected
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Provides the public API for IsDirectory.

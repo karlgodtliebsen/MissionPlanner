@@ -1,10 +1,11 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using MissionPlanner.AvaloniaUI.App.Presentation;
+using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.Common;
+namespace MissionPlanner.AvaloniaUI.App.Models;
 
 /// <summary>Imports and exports vehicle parameter files through Avalonia's file-service boundary.</summary>
 public sealed class ParametersFileHandler(IFileOpenService fileOpenService, IFileSaveService fileSaveService)

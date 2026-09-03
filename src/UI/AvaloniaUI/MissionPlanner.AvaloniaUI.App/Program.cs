@@ -29,6 +29,8 @@ internal class Program
     public static void Main(string[] args)
     {
         var ci = new CultureInfo("en-US");
+        CultureInfo.DefaultThreadCurrentUICulture = ci;
+        CultureInfo.DefaultThreadCurrentCulture = ci;
         Thread.CurrentThread.CurrentUICulture = ci;
         Thread.CurrentThread.CurrentCulture = ci;
 

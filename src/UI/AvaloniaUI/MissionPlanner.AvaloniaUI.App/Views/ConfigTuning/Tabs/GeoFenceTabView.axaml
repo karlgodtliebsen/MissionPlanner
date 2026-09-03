@@ -9,6 +9,7 @@
                     xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Models"
                     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                     x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.GeoFenceTabView"
                     x:DataType="tabs:GeoFenceTabViewModel">
@@ -52,7 +53,7 @@
                             <TextBlock Text="Fence parameters" FontWeight="Bold" FontSize="18" />
                             <ItemsControl ItemsSource="{Binding Parameters}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="common:ParameterItemViewModel">
+                                    <DataTemplate x:DataType="models:ParameterItemViewModel">
                                         <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto" ColumnSpacing="8">
                                             <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
                                             <NumericUpDown

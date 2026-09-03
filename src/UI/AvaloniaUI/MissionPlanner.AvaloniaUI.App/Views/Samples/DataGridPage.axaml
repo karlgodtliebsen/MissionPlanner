@@ -7,6 +7,8 @@
                               xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
                               xmlns:common="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Common"
                               xmlns:u="https://irihi.tech/ursa"
+                              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                              xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Models"
                               mc:Ignorable="d" d:DesignWidth="1980" d:DesignHeight="800"
                               x:DataType="samples:DataGridViewModel"
                               x:Class="MissionPlanner.AvaloniaUI.App.Views.Samples.DataGridPage">
@@ -63,26 +65,20 @@
                     <StackPanel Orientation="Vertical"
                                 Margin="40"
                                 Spacing="8"
-                                HorizontalAlignment="Center"
+                                HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center">
-                        <!--                        <Image
-                        WidthRequest="40"
-                        HeightRequest="40"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table},
-                        Color={AppThemeBinding Light={StaticResource OnSurface},
-                        Dark={StaticResource OnSurfaceDark}}}"/>
-                        -->
+                        <avalonia:MaterialIcon Kind="BinEmpty" Width="30" Height="30"  />
+
                         <Label
                             Content="No parameters match the current filter."
-                            FontWeight="Bold"
-                            FontSize="16"
+                            Classes="H3"
+                            HorizontalAlignment="Center"
                             HorizontalContentAlignment="Center" />
                         <Label
                             Content="Refresh parameters or clear the search text to display parameters."
-                            FontSize="13"
+                            Classes="H3"
                             Opacity="0.75"
+                            HorizontalAlignment="Center"
                             HorizontalContentAlignment="Center" />
                     </StackPanel>
                 </controls:VirtualizedItemsGrid.EmptyView>
@@ -167,7 +163,7 @@
 
                 <controls:VirtualizedItemsGrid.RowTemplate>
 
-                    <DataTemplate x:DataType="common:ParameterItemViewModel">
+                    <DataTemplate x:DataType="models:ParameterItemViewModel">
 
                         <controls:VirtualizedItemsGridRow>
 
@@ -224,7 +220,7 @@
                                 <u:MultiComboBox
                                     IsVisible="{Binding HasBitmask}"
                                     ItemsSource="{Binding BitmaskOptions}"
-                                    SelectedItems="{Binding SelectedBitmaskItems}"
+                                    SelectedItems="{Binding SelectedBitmaskItems, Mode=TwoWay}"
                                     Classes="DataGridRow">
                                 </u:MultiComboBox>
 

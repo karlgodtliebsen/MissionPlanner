@@ -96,13 +96,13 @@ public partial class MavFtpTabViewModel : ViewModelBase
     /// <summary>
     /// Gets the collection of file system entries.
     /// </summary>
-    public ObservableRangeCollection<VehicleFileSystemEntryViewModel> Entries { get; } = [];
+    public ObservableRangeCollection<Models.VehicleFileSystemEntryViewModel> Entries { get; } = [];
 
 
     /// <summary>
     /// Gets or sets the currently selected file system entry.
     /// </summary>
-    public VehicleFileSystemEntryViewModel? SelectedEntry
+    public Models.VehicleFileSystemEntryViewModel? SelectedEntry
     {
         get; set;
     }
@@ -309,7 +309,7 @@ public partial class MavFtpTabViewModel : ViewModelBase
         }
     }
 
-    private async Task OpenEntryAsync(VehicleFileSystemEntryViewModel entry)
+    private async Task OpenEntryAsync(Models.VehicleFileSystemEntryViewModel entry)
     {
         if (entry.IsDirectory)
         {
@@ -476,10 +476,10 @@ public partial class MavFtpTabViewModel : ViewModelBase
             Dispatcher.Dispatch(() =>
             {
                 Message = $"Found {entries.Count} Remote Entries";
-                var entryViewModels = new List<VehicleFileSystemEntryViewModel>();
+                var entryViewModels = new List<Models.VehicleFileSystemEntryViewModel>();
                 foreach (var entry in entries.OrderBy(x => x.Type).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    entryViewModels.Add(new VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size));
+                    entryViewModels.Add(new Models.VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size));
                 }
 
                 Entries.ReplaceRange(entryViewModels);

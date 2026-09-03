@@ -1,5 +1,4 @@
-using MissionPlanner.AvaloniaUI.App.Views.Common;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -11,6 +10,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.AvaloniaUI.App.Utilities;
+using MissionPlanner.AvaloniaUI.App.Models;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 

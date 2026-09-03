@@ -1,6 +1,6 @@
-using MissionPlanner.AvaloniaUI.App.Views.Common;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
+using System.Collections.Specialized;
 using System.Text.Json.Serialization;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,7 +10,7 @@ using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Library.Math;
 using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.Common;
+namespace MissionPlanner.AvaloniaUI.App.Models;
 
 /// <summary>
 /// View model for a single parameter item in the grid.
@@ -34,15 +34,6 @@ public partial class ParameterItemViewModel : ObservableObject
         get;
         set;
     }
-
-    ///// <summary>
-    ///// Provides the public API for OriginalMetadata.
-    ///// </summary>
-    //public ParameterMetadata? OriginalMetadata
-    //{
-    //    get;
-    //    set;
-    //}
 
     /// <summary>
     /// Command that is triggered when the selected values change.
@@ -262,6 +253,13 @@ public partial class ParameterItemViewModel : ObservableObject
         get;
         set;
     } = new();
+    [ObservableProperty]
+    public partial object SelectedBitmaskItem
+    {
+        get;
+        set;
+    } = new();
+
 
     //   [DataGridIgnore]
     [ObservableProperty]
@@ -367,16 +365,18 @@ public partial class ParameterItemViewModel : ObservableObject
     public ParameterItemViewModel(IParameterEditSession editSession, ParameterEditField field)
     {
         this.editSession = editSession;
-
         SelectedValuesChanged = new RelayCommand<object>(OnSelectedValuesChanged);
+        SelectedBitmaskItems.CollectionChanged += OnSelectedBitmaskCollectionChanged;
         SetField(field);
     }
+
     /// <summary>
-    /// Default contructor for serialization and design-time support.
+    /// Default constructor for serialization and design-time support.
     /// </summary>
     public ParameterItemViewModel()
     {
-
+        SelectedBitmaskItems.CollectionChanged += OnSelectedBitmaskCollectionChanged;
+        //Do not use this constructor for runtime instances. Use the constructor that takes an IParameterEditSession and ParameterEditField instead.
     }
 
     partial void OnSelectedValueChanged(string? value)
@@ -402,6 +402,105 @@ public partial class ParameterItemViewModel : ObservableObject
 
         Value = selectedValue;
     }
+    partial void OnSelectedBitmaskItemChanged(object? oldValue, object? newValue)
+    {
+        if (loadingData)
+        {
+            return;
+        }
+        var selectedMask = SelectedBitmaskItem is SelectItem item ? (ulong)item.Value : 0UL;
+        Value = selectedMask;
+    }
+
+    partial void OnSelectedBitmaskItemsChanged(
+        ObservableRangeCollection<object>? oldValue,
+        ObservableRangeCollection<object>? newValue)
+    {
+        if (oldValue is not null)
+        {
+            oldValue.CollectionChanged -= OnSelectedBitmaskCollectionChanged;
+        }
+
+        if (newValue is not null)
+        {
+            newValue.CollectionChanged += OnSelectedBitmaskCollectionChanged;
+        }
+
+        UpdateBitmaskValue();
+    }
+
+    private void OnSelectedBitmaskCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
+    {
+        UpdateBitmaskValue();
+    }
+
+    private void UpdateBitmaskValue()
+    {
+        if (loadingData)
+        {
+            return;
+        }
+
+        var selectedMask = SelectedBitmaskItems
+            .OfType<SelectItem>()
+            .Aggregate(0UL, (mask, item) => mask | (ulong)item.Value);
+        Value = selectedMask;
+    }
+    partial void OnSelectedValueChanged(string? oldValue, string? newValue)
+    {
+        if (loadingData)
+        {
+            return;
+        }
+
+        if (ValuesItems is not null)
+        {
+            var item = ValuesItems.FirstOrDefault(i => i.Name == newValue);
+            if (item is not null &&
+
+                // Math.Abs(item.Value - Value) > 0.0001f)
+                MathUtils.AreNearlyEqual(item.Value, Value) == false)
+            {
+                Value = item.Value;
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Updates the formatted original-value projection.
+    /// </summary>
+    partial void OnOriginalValueChanged(double value)
+    {
+        OnPropertyChanged(nameof(OriginalValueText));
+    }
+
+    /// <summary>
+    /// Checks if the value has been modified from the original.
+    /// </summary>
+    partial void OnValueChanged(double value)
+    {
+        OnPropertyChanged(nameof(ValueText));
+
+        if (loadingData)
+        {
+            return;
+        }
+
+        IsModified = MathUtils.AreNearlyEqual(value, OriginalValue) == false;
+        if (editSession is not null)
+        {
+            editSession.TrySetPending(Name, value, out var error);
+            ValidationError = error;
+            if (editSession.GetField(Name) is { } current)
+            {
+                IsModified = current.IsModified;
+                WriteStatus = current.WriteStatus;
+                WriteMessage = current.WriteMessage;
+            }
+        }
+    }
+
 
     /// <summary>Updates this item from the shared editing-session field.</summary>
     /// <param name="field">The latest field projection.</param>
@@ -651,61 +750,6 @@ public partial class ParameterItemViewModel : ObservableObject
         }
 
         Value = Math.Clamp(steppedValue, Min, Max);
-    }
-
-    partial void OnSelectedValueChanged(string? oldValue, string? newValue)
-    {
-        if (loadingData)
-        {
-            return;
-        }
-
-        if (ValuesItems is not null)
-        {
-            var item = ValuesItems.FirstOrDefault(i => i.Name == newValue);
-            if (item is not null &&
-
-                // Math.Abs(item.Value - Value) > 0.0001f)
-                MathUtils.AreNearlyEqual(item.Value, Value) == false)
-            {
-                Value = item.Value;
-            }
-        }
-    }
-
-
-    /// <summary>
-    /// Updates the formatted original-value projection.
-    /// </summary>
-    partial void OnOriginalValueChanged(double value)
-    {
-        OnPropertyChanged(nameof(OriginalValueText));
-    }
-
-    /// <summary>
-    /// Checks if the value has been modified from the original.
-    /// </summary>
-    partial void OnValueChanged(double value)
-    {
-        OnPropertyChanged(nameof(ValueText));
-
-        if (loadingData)
-        {
-            return;
-        }
-
-        IsModified = MathUtils.AreNearlyEqual(value, OriginalValue) == false;
-        if (editSession is not null)
-        {
-            editSession.TrySetPending(Name, value, out var error);
-            ValidationError = error;
-            if (editSession.GetField(Name) is { } current)
-            {
-                IsModified = current.IsModified;
-                WriteStatus = current.WriteStatus;
-                WriteMessage = current.WriteMessage;
-            }
-        }
     }
 
     private static string FormatParameterValue(double value)

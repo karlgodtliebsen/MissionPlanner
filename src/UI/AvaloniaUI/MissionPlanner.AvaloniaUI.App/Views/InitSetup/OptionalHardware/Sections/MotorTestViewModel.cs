@@ -1,10 +1,9 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
-using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
@@ -12,6 +11,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using ParametersViewModel = MissionPlanner.AvaloniaUI.App.Models.ParametersViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections;
 

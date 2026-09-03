@@ -1,7 +1,7 @@
 <ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls" 
+    xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
     xmlns:u="https://irihi.tech/ursa">
 
     <ControlTheme x:Key="{x:Type controls:VirtualizedItemsGrid}"
@@ -12,10 +12,7 @@
 
         <Setter Property="Template">
             <ControlTemplate>
-                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto"
-                      RowSpacing="15"
-                      HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch">
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
                     <!-- Search -->
                     <Border Grid.Row="0" IsVisible="{TemplateBinding ShowSearchBar}" Margin="0,5,0,5">
@@ -32,38 +29,45 @@
                                     VerticalAlignment="Center" />
                         </Grid>
                     </Border>
-                    <u:Divider Grid.Row="1" Orientation="Horizontal"/>
+
                     <!-- Sticky horizontally synchronized header -->
-                    <ScrollViewer x:Name="PART_HeaderScrollViewer"
-                                  Grid.Row="2"
-                                  HorizontalScrollBarVisibility="Hidden"
-                                  VerticalScrollBarVisibility="Disabled"
-                                  IsVisible="{TemplateBinding ShowHeader}">
-                        <Grid ColumnDefinitions="Auto,*" HorizontalAlignment="Left" 
-                             >
-                            <Border Grid.Column="0"  Margin="8,0,0 0"
-                                    Width="{TemplateBinding SelectionColumnWidth}"
-                                    IsVisible="{Binding IsSelectionEnabled, RelativeSource={RelativeSource TemplatedParent}}">
-                                <CheckBox x:Name="PART_SelectAllCheckBox"
-                                          IsThreeState="True"
-                                          Margin="8,0,0 0"
-                                          
-                                          HorizontalContentAlignment="Center"
-                                          HorizontalAlignment="Stretch"
-                                          VerticalAlignment="Center"
-                                          IsVisible="{Binding IsMultiSelectionEnabled, RelativeSource={RelativeSource TemplatedParent}}" />
-                            </Border>
+                    <Border Grid.Row="1"
+                            Classes="SectionCard"
+                            Padding="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            IsVisible="{TemplateBinding ShowHeader}">
 
-                            <ContentPresenter Grid.Column="1"
-                                              Content="{Binding DataContext, RelativeSource={RelativeSource TemplatedParent}}"
-                                              ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                              HorizontalAlignment="Left" />
-                        </Grid>
-                    </ScrollViewer>
+                        <ScrollViewer x:Name="PART_HeaderScrollViewer"
 
+                                      HorizontalScrollBarVisibility="Hidden"
+                                      VerticalScrollBarVisibility="Disabled"
+                                     >
+                            <Grid ColumnDefinitions="Auto,*" HorizontalAlignment="Left"
+                                  >
+                                <Border Grid.Column="0"  Margin="8,0,0 0"
+                                        Width="{TemplateBinding SelectionColumnWidth}"
+                                        IsVisible="{Binding IsSelectionEnabled, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <CheckBox x:Name="PART_SelectAllCheckBox"
+                                              IsThreeState="True"
+                                              Margin="8,0,0 0"
+
+                                              HorizontalContentAlignment="Center"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Center"
+                                              IsVisible="{Binding IsMultiSelectionEnabled, RelativeSource={RelativeSource TemplatedParent}}" />
+                                </Border>
+
+                                <ContentPresenter Grid.Column="1"
+                                                  Content="{Binding DataContext, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                                  HorizontalAlignment="Left" />
+                            </Grid>
+                        </ScrollViewer>
+                    </Border>
                     <!-- Virtualized body. Padding is deliberately zero so the
-                         body geometry stays exactly aligned with the header. -->
-                    <Border Grid.Row="3"
+                    body geometry stays exactly aligned with the header. -->
+                    <Border Grid.Row="2"
                             Classes="SectionCard"
                             Padding="0"
                             HorizontalAlignment="Stretch"
@@ -73,7 +77,7 @@
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch">
-                            <Grid HorizontalAlignment="Left">
+                            <Grid HorizontalAlignment="Stretch">
                                 <ItemsRepeater x:Name="PART_Repeater">
                                     <ItemsRepeater.Layout>
                                         <StackLayout Orientation="Vertical" Spacing="0" />
@@ -82,44 +86,49 @@
 
                                 <ContentPresenter Content="{TemplateBinding EmptyView}"
                                                   IsVisible="{Binding IsEmpty, RelativeSource={RelativeSource TemplatedParent}}"
-                                                  HorizontalAlignment="Center"
+                                                  HorizontalAlignment="Stretch"
                                                   VerticalAlignment="Top"
                                                   Margin="20" />
                             </Grid>
                         </ScrollViewer>
                     </Border>
+                    <Border Grid.Row="3"
+                            Classes="SectionCard"
+                            Padding="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            IsVisible="{TemplateBinding ShowPagination}">
+                        <!-- Pagination -->
+                        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                              ColumnSpacing="8"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              >
 
-                    <!-- Pagination -->
-                    <Grid Grid.Row="4"
-                          ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                          ColumnSpacing="8"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center"
-                          IsVisible="{TemplateBinding ShowPagination}">
+                            <Button x:Name="PART_FirstPageButton" Grid.Column="0" Content="⏮" Padding="8,3" />
+                            <Button x:Name="PART_PreviousPageButton" Grid.Column="1" Content="◀" Padding="8,3" />
 
-                        <Button x:Name="PART_FirstPageButton" Grid.Column="0" Content="⏮" Padding="8,3" />
-                        <Button x:Name="PART_PreviousPageButton" Grid.Column="1" Content="◀" Padding="8,3" />
+                            <TextBlock Grid.Column="2" Text="Page" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="3"
+                                       Text="{Binding CurrentPage, RelativeSource={RelativeSource TemplatedParent}}"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="4" Text="of" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="5"
+                                       Text="{Binding PageCount, RelativeSource={RelativeSource TemplatedParent}}"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center" />
 
-                        <TextBlock Grid.Column="2" Text="Page" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="3"
-                                   Text="{Binding CurrentPage, RelativeSource={RelativeSource TemplatedParent}}"
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="4" Text="of" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="5"
-                                   Text="{Binding PageCount, RelativeSource={RelativeSource TemplatedParent}}"
-                                   FontWeight="Bold"
-                                   VerticalAlignment="Center" />
+                            <Button x:Name="PART_NextPageButton" Grid.Column="6" Content="▶" Padding="8,3" />
+                            <Button x:Name="PART_LastPageButton" Grid.Column="7" Content="⏭" Padding="8,3" />
 
-                        <Button x:Name="PART_NextPageButton" Grid.Column="6" Content="▶" Padding="8,3" />
-                        <Button x:Name="PART_LastPageButton" Grid.Column="7" Content="⏭" Padding="8,3" />
-
-                        <TextBlock Grid.Column="8"
-                                   Margin="12,0,0,0"
-                                   VerticalAlignment="Center"
-                                   Opacity="0.7"
-                                   Text="{Binding FilteredItemCount, RelativeSource={RelativeSource TemplatedParent}, StringFormat='{}{0} items'}" />
-                    </Grid>
+                            <TextBlock Grid.Column="8"
+                                       Margin="12,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Opacity="0.7"
+                                       Text="{Binding FilteredItemCount, RelativeSource={RelativeSource TemplatedParent}, StringFormat='{}{0} items'}" />
+                        </Grid>
+                    </Border>
                 </Grid>
             </ControlTemplate>
         </Setter>

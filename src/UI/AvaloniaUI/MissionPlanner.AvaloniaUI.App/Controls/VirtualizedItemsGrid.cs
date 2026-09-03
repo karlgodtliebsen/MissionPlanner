@@ -1,19 +1,16 @@
-using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
-using Avalonia.Media;
+using Ursa.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Controls;
 
@@ -34,10 +31,10 @@ namespace MissionPlanner.AvaloniaUI.App.Controls;
 /// </summary>
 public sealed class VirtualizedItemsGrid : TemplatedControl
 {
-    private readonly ObservableCollection<object> _viewItems = new();
-    private readonly ObservableCollection<object> _selectedItems = new();
+    private readonly ObservableCollection<object> _viewItems = [];
+    private readonly ObservableCollection<object> _selectedItems = [];
     private readonly ReadOnlyObservableCollection<object> _readonlySelectedItems;
-    private readonly List<WeakReference<CheckBox>> _selectionCheckBoxes = new();
+    private readonly List<WeakReference<CheckBox>> _selectionCheckBoxes = [];
 
     private INotifyCollectionChanged? _observableSource;
     private ItemsRepeater? _repeater;
@@ -50,7 +47,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     private CheckBox? _selectAllCheckBox;
     private Button? _clearSearchButton;
     private bool _updatingSelectionUi;
-    private List<object> _filteredItems = new();
+    private List<object> _filteredItems = [];
 
     private int _totalItemCount;
     private int _filteredItemCount;
@@ -373,7 +370,10 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     /// Optional search override. Return true when item matches searchText.
     /// If null, SearchMemberPaths (or ToString) is used.
     /// </summary>
-    public Func<object, string, bool>? SearchFilter { get; set; }
+    public Func<object, string, bool>? SearchFilter
+    {
+        get; set;
+    }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -398,7 +398,10 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         UpdateResolvedColumnsWidth();
     }
 
-    public void Refresh() => RefreshView(resetPage: false);
+    public void Refresh()
+    {
+        RefreshView(resetPage: false);
+    }
 
     public void ClearSelection()
     {
@@ -412,7 +415,10 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         UpdateSelectionUi();
     }
 
-    public bool IsSelected(object item) => _selectedItems.Contains(item);
+    public bool IsSelected(object item)
+    {
+        return _selectedItems.Contains(item);
+    }
 
     public void Select(object item)
     {
@@ -451,12 +457,9 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     internal IReadOnlyList<GridLength> GetParsedColumnWidths()
     {
-        if (string.IsNullOrWhiteSpace(ColumnWidths))
-        {
-            return Array.Empty<GridLength>();
-        }
-
-        return ColumnWidths
+        return string.IsNullOrWhiteSpace(ColumnWidths)
+            ? Array.Empty<GridLength>()
+            : ColumnWidths
             .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(ParseGridLength)
             .ToArray();
@@ -486,19 +489,13 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     private void OnItemsSourceChanged()
     {
-        if (_observableSource is not null)
-        {
-            _observableSource.CollectionChanged -= OnSourceCollectionChanged;
-        }
+        _observableSource?.CollectionChanged -= OnSourceCollectionChanged;
 
         _observableSource = ItemsSource as INotifyCollectionChanged;
-        if (_observableSource is not null)
-        {
-            _observableSource.CollectionChanged += OnSourceCollectionChanged;
-        }
+        _observableSource?.CollectionChanged += OnSourceCollectionChanged;
 
         // Drop selections for items no longer present.
-        var current = ItemsSource?.Cast<object>().ToHashSet() ?? new HashSet<object>();
+        var current = ItemsSource?.Cast<object>().ToHashSet() ?? [];
         for (var i = _selectedItems.Count - 1; i >= 0; --i)
         {
             if (!current.Contains(_selectedItems[i]))
@@ -512,7 +509,9 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     }
 
     private void OnSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        => RefreshView(resetPage: false);
+    {
+        RefreshView(resetPage: false);
+    }
 
     private void OnSelectionModeChanged()
     {
@@ -542,18 +541,11 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     private void RefreshView(bool resetPage)
     {
-        var allItems = ItemsSource?.Cast<object>().ToList() ?? new List<object>();
+        var allItems = ItemsSource?.Cast<object>().ToList() ?? [];
         TotalItemCount = allItems.Count;
 
         var search = SearchText?.Trim();
-        if (string.IsNullOrEmpty(search))
-        {
-            _filteredItems = allItems;
-        }
-        else
-        {
-            _filteredItems = allItems.Where(item => MatchesSearch(item, search)).ToList();
-        }
+        _filteredItems = string.IsNullOrEmpty(search) ? allItems : allItems.Where(item => MatchesSearch(item, search)).ToList();
 
         FilteredItemCount = _filteredItems.Count;
         PageCount = ShowPagination && FilteredItemCount > 0
@@ -592,10 +584,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
             _repeater.ItemsSource = _viewItems;
         }
 
-        if (_bodyScrollViewer is not null)
-        {
-            _bodyScrollViewer.Offset = new Vector(_bodyScrollViewer.Offset.X, 0);
-        }
+        _bodyScrollViewer?.Offset = new Vector(_bodyScrollViewer.Offset.X, 0);
 
         UpdatePaginationButtons();
         UpdateSelectionUi();
@@ -629,7 +618,9 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     }
 
     private static bool Contains(string? value, string searchText)
-        => value?.Contains(searchText, StringComparison.CurrentCultureIgnoreCase) == true;
+    {
+        return value?.Contains(searchText, StringComparison.CurrentCultureIgnoreCase) == true;
+    }
 
     private static object? ReadPropertyPath(object? instance, string path)
     {
@@ -638,7 +629,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
             return null;
         }
 
-        object? current = instance;
+        var current = instance;
         foreach (var segment in path.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
             if (current is null)
@@ -685,6 +676,8 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         };
         outer.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
         outer.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
+        outer.RowDefinitions.Add(new RowDefinition(new GridLength(1, GridUnitType.Star)));
+        outer.RowDefinitions.Add(new RowDefinition(new GridLength(1, GridUnitType.Auto)));
 
         if (SelectionMode != VirtualizedItemsGridSelectionMode.None)
         {
@@ -710,7 +703,17 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
             VerticalAlignment = VerticalAlignment.Stretch
         };
         Grid.SetColumn(content, 1);
+        Grid.SetRow(content, 0);
         outer.Children.Add(content);
+        var divider = new Divider()
+        {
+            Orientation = Orientation.Horizontal,
+            Margin = new Thickness(0, 2, 0, 2)
+        };
+        Grid.SetRow(divider, 1);
+        Grid.SetColumnSpan(divider, 2);
+        outer.Children.Add(divider);
+
 
         return outer;
     }
@@ -773,9 +776,11 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     }
 
     private IReadOnlyList<object> GetSelectAllScopeItems()
-        => SelectAllScope == VirtualizedItemsGridSelectAllScope.FilteredItems
-            ? _filteredItems
-            : _viewItems;
+    {
+        return SelectAllScope == VirtualizedItemsGridSelectAllScope.FilteredItems
+                ? _filteredItems
+                : _viewItems;
+    }
 
     private void OnSelectAllClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
@@ -807,7 +812,9 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     }
 
     private void SynchronizeSelectedItem()
-        => SelectedItem = _selectedItems.Count == 0 ? null : _selectedItems[0];
+    {
+        SelectedItem = _selectedItems.Count == 0 ? null : _selectedItems[0];
+    }
 
     private void UpdateResolvedColumnsWidth()
     {
@@ -887,12 +894,12 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
             _bodyScrollViewer.SizeChanged += BodyScrollViewerOnSizeChanged;
         }
 
-        if (_firstPageButton is not null) _firstPageButton.Click += FirstPageButtonOnClick;
-        if (_previousPageButton is not null) _previousPageButton.Click += PreviousPageButtonOnClick;
-        if (_nextPageButton is not null) _nextPageButton.Click += NextPageButtonOnClick;
-        if (_lastPageButton is not null) _lastPageButton.Click += LastPageButtonOnClick;
-        if (_selectAllCheckBox is not null) _selectAllCheckBox.Click += OnSelectAllClicked;
-        if (_clearSearchButton is not null) _clearSearchButton.Click += ClearSearchButtonOnClick;
+        _firstPageButton?.Click += FirstPageButtonOnClick;
+        _previousPageButton?.Click += PreviousPageButtonOnClick;
+        _nextPageButton?.Click += NextPageButtonOnClick;
+        _lastPageButton?.Click += LastPageButtonOnClick;
+        _selectAllCheckBox?.Click += OnSelectAllClicked;
+        _clearSearchButton?.Click += ClearSearchButtonOnClick;
     }
 
     private void DetachTemplatePartHandlers()
@@ -903,12 +910,12 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
             _bodyScrollViewer.SizeChanged -= BodyScrollViewerOnSizeChanged;
         }
 
-        if (_firstPageButton is not null) _firstPageButton.Click -= FirstPageButtonOnClick;
-        if (_previousPageButton is not null) _previousPageButton.Click -= PreviousPageButtonOnClick;
-        if (_nextPageButton is not null) _nextPageButton.Click -= NextPageButtonOnClick;
-        if (_lastPageButton is not null) _lastPageButton.Click -= LastPageButtonOnClick;
-        if (_selectAllCheckBox is not null) _selectAllCheckBox.Click -= OnSelectAllClicked;
-        if (_clearSearchButton is not null) _clearSearchButton.Click -= ClearSearchButtonOnClick;
+        _firstPageButton?.Click -= FirstPageButtonOnClick;
+        _previousPageButton?.Click -= PreviousPageButtonOnClick;
+        _nextPageButton?.Click -= NextPageButtonOnClick;
+        _lastPageButton?.Click -= LastPageButtonOnClick;
+        _selectAllCheckBox?.Click -= OnSelectAllClicked;
+        _clearSearchButton?.Click -= ClearSearchButtonOnClick;
     }
 
     private void BodyScrollViewerOnScrollChanged(object? sender, ScrollChangedEventArgs e)
@@ -924,29 +931,41 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     }
 
     private void BodyScrollViewerOnSizeChanged(object? sender, SizeChangedEventArgs e)
-        => UpdateResolvedColumnsWidth();
+    {
+        UpdateResolvedColumnsWidth();
+    }
 
     private void ClearSearchButtonOnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        => SearchText = null;
+    {
+        SearchText = null;
+    }
 
     private void FirstPageButtonOnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        => CurrentPage = 1;
+    {
+        CurrentPage = 1;
+    }
 
     private void PreviousPageButtonOnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        => CurrentPage = Math.Max(1, CurrentPage - 1);
+    {
+        CurrentPage = Math.Max(1, CurrentPage - 1);
+    }
 
     private void NextPageButtonOnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        => CurrentPage = PageCount == 0 ? 1 : Math.Min(PageCount, CurrentPage + 1);
+    {
+        CurrentPage = PageCount == 0 ? 1 : Math.Min(PageCount, CurrentPage + 1);
+    }
 
     private void LastPageButtonOnClick(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
-        => CurrentPage = Math.Max(1, PageCount);
+    {
+        CurrentPage = Math.Max(1, PageCount);
+    }
 
     private void UpdatePaginationButtons()
     {
-        if (_firstPageButton is not null) _firstPageButton.IsEnabled = CurrentPage > 1;
-        if (_previousPageButton is not null) _previousPageButton.IsEnabled = CurrentPage > 1;
-        if (_nextPageButton is not null) _nextPageButton.IsEnabled = PageCount > 0 && CurrentPage < PageCount;
-        if (_lastPageButton is not null) _lastPageButton.IsEnabled = PageCount > 0 && CurrentPage < PageCount;
+        _firstPageButton?.IsEnabled = CurrentPage > 1;
+        _previousPageButton?.IsEnabled = CurrentPage > 1;
+        _nextPageButton?.IsEnabled = PageCount > 0 && CurrentPage < PageCount;
+        _lastPageButton?.IsEnabled = PageCount > 0 && CurrentPage < PageCount;
     }
 
 

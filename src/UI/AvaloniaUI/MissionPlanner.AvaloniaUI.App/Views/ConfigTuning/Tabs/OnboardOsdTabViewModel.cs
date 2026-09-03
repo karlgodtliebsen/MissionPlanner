@@ -1,17 +1,18 @@
-using MissionPlanner.AvaloniaUI.App.Views.Common;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Models;
 using MissionPlanner.AvaloniaUI.App.Presentation;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.ConfigTuning.Osd;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using MissionPlanner.AvaloniaUI.App.Utilities;
+using ParameterItemViewModel = MissionPlanner.AvaloniaUI.App.Models.ParameterItemViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
@@ -33,7 +34,6 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
     /// <param name="osdService">The OSD configuration service.</param>
     /// <param name="fileHandler">The Config file helper.</param>
     /// <param name="confirmation">The overlap/write confirmation service.</param>
-    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public OnboardOsdTabViewModel(
         IActiveVehicleContext activeVehicle,

@@ -1,5 +1,4 @@
-using MissionPlanner.AvaloniaUI.App.Views.Common;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -11,6 +10,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.AvaloniaUI.App.Utilities;
+using MissionPlanner.AvaloniaUI.App.Models;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 

@@ -1,6 +1,4 @@
-﻿using MissionPlanner.AvaloniaUI.App.Utilities;
-
-namespace MissionPlanner.AvaloniaUI.App.Views.Common;
+﻿namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews;
 
 /// <summary>
 /// A view that displays notifications to the user.

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.AvaloniaUI.App.Maps;
+using MissionPlanner.AvaloniaUI.App.Models;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Services;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
@@ -66,6 +67,7 @@ using DialogDemoPage = MissionPlanner.AvaloniaUI.App.Views.Samples.DialogDemoPag
 using DialogDemoViewModel = MissionPlanner.AvaloniaUI.App.Views.Samples.DialogDemoViewModel;
 using ErrorView = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorView;
 using ErrorViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorViewModel;
+using NotificationViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.NotificationViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Configuration;
 

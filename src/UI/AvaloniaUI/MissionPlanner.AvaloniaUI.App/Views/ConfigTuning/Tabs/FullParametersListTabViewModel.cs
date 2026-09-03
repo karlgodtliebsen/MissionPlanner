@@ -1,10 +1,10 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Models;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
-using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Notifications;
@@ -14,6 +14,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using ErrorView = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorView;
 using ErrorViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorViewModel;
+using ParametersViewModel = MissionPlanner.AvaloniaUI.App.Models.ParametersViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
@@ -166,7 +167,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         catch (Exception exception)
         {
             var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
-            var options = AvaloniaDialogService.CreateDialogOptions("Load failed", "Ok", null);
+            var options = dialogService.CreateOptions("Load failed", "Ok", null);
             var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         }
 
@@ -199,7 +200,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         catch (Exception exception)
         {
             var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
-            var options = AvaloniaDialogService.CreateDialogOptions("Load from file failed", "Ok", null);
+            var options = dialogService.CreateOptions("Load from file failed", "Ok", null);
             var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         }
 
@@ -229,7 +230,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         catch (Exception exception)
         {
             var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
-            var options = AvaloniaDialogService.CreateDialogOptions("Load from Json file failed", "Ok", null);
+            var options = dialogService.CreateOptions("Load from Json file failed", "Ok", null);
             var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         }
 
@@ -245,8 +246,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var result = await parametersFileHandler.SaveParametersToFile(parameters, cancellationToken);
             if (result is not null)
             {
-                await userNotificationService.NotifyAsync(
-                    new UserNotification($"File saved to:\n{result}", VehicleId: activeVehicle.VehicleId), cancellationToken);
+                if (NotificationManager is not null)
+                {
+                    NotificationManager!.Show($"File saved to:\n{result}\nfor Vehicle: {activeVehicle.VehicleId}");
+                }
+                //await userNotificationService.NotifyAsync(
+                //    new UserNotification($"File saved to:\n{result}", VehicleId: activeVehicle.VehicleId), cancellationToken);
             }
         }
         catch (Exception exception)
@@ -263,8 +268,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var result = await parametersFileHandler.SaveParametersToJsonFile(Parameters, cancellationToken);
             if (result is not null)
             {
-                await userNotificationService.NotifyAsync(
-                    new UserNotification($"File saved to:\n{result}", VehicleId: activeVehicle.VehicleId), cancellationToken);
+                if (NotificationManager is not null)
+                {
+                    NotificationManager!.Show($"File saved to:\n{result}\nfor Vehicle: {activeVehicle.VehicleId}");
+                }
+                //await userNotificationService.NotifyAsync(
+                //    new UserNotification($"File saved to:\n{result}", VehicleId: activeVehicle.VehicleId), cancellationToken);
             }
         }
         catch (Exception exception)
@@ -322,7 +331,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var statusMessage = report.Success ? $"Confirmed {report.Confirmed.Count} parameter changes by vehicle readback." : null;
             var errorMessage = report.Success ? null : BuildResultSummary(report);
 
-            Dispatcher.Dispatch(() => SetMessages(statusMessage, errorMessage));
+            await Dispatcher.DispatchAsync(() => SetMessages(statusMessage, errorMessage));
         }
         catch (OperationCanceledException)
         {
@@ -387,14 +396,14 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             return;
         }
         await ShowMessageAsync("Parameter profiles", saved.Count == 0
-            ? "No named parameter profiles have been saved."
+            ? "No previously saved parameter profiles have been found."
             : string.Join(Environment.NewLine, saved.Select(profile => $"{profile.Name} — {profile.Values.Count} values — {profile.UpdatedAt:g}")),
             cancellationToken);
     }
 
     private async Task<bool> ShowMessageAsync(string title, string message, CancellationToken cancellationToken)
     {
-        var options = AvaloniaDialogService.CreateDialogOptions(title, "Ok", null);
+        var options = dialogService.CreateOptions(title, "Ok", null);
         var result = await dialogService.ConfirmAsync(options, message, cancellationToken);
         return result;
     }

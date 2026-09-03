@@ -27,8 +27,8 @@
     </Application.Resources>
 
     <Application.Styles>
-        <semi:SemiTheme Locale="us-US" />
-        <semi:UrsaSemiTheme Locale="us-US" />
+        <semi:SemiTheme Locale="en-US" />
+        <semi:UrsaSemiTheme Locale="en-US" />
         <semi:SemiPopupAnimations />
         <materialIcons:MaterialIconStyles />
         <StyleInclude Source="/Resources/Styles/SharedStyles.axaml" />

@@ -1,8 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
+using MissionPlanner.AvaloniaUI.App.Models;
 using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
-using MissionPlanner.AvaloniaUI.App.Views.Common;
+using ParameterItemViewModel = MissionPlanner.AvaloniaUI.App.Models.ParameterItemViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Samples;
 

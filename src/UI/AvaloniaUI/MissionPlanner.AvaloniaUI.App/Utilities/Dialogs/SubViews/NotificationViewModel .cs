@@ -1,11 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using MissionPlanner.Core.Notifications;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.Common;
+namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews;
 
 /// <summary>
 /// ViewModel for the global status bar
