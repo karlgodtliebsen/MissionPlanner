@@ -10,96 +10,63 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.AvaloniaUI.App.Views.Connect.ConnectPopupView"
                                x:DataType="connect:ConnectPopupViewModel"
-                               Width="500" Height="450"
+                               Width="400" Height="400"
                                Margin="50"
 
                                >
 
 
     <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="25">
-        <Grid RowDefinitions="Auto,*"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="25">
-            <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" Classes="H1" />
+        <Grid RowDefinitions="Auto,*,Auto"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="25">
+            <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" Classes="H3" />
 
-            <StackPanel Grid.Row="1" Orientation="Vertical"  Spacing="25"  HorizontalAlignment="Stretch"  VerticalAlignment="Center"
+            <StackPanel Grid.Row="1" Orientation="Vertical"  Spacing="25"  HorizontalAlignment="Center"  VerticalAlignment="Center"
                         IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                         IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}"
 
                         >
-                <Grid  ColumnDefinitions="200,*" HorizontalAlignment="Stretch">
+                <Grid  ColumnDefinitions="150,150" HorizontalAlignment="Stretch">
                     <Label Content="Channel" HorizontalAlignment="Stretch"
-                           FontSize="16"   />
+                           FontSize="16" FontWeight="Bold" />
 
-                    <ComboBox Grid.Column="1" HorizontalAlignment="Stretch"
+                    <ComboBox Grid.Column="1" 
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Right"
                               ItemsSource="{Binding Channels}"
                               SelectedItem="{Binding SelectedChannel}"
                               DisplayMemberBinding="{Binding .}"
                               />
                 </Grid >
-                <Grid  ColumnDefinitions="200,*" HorizontalAlignment="Stretch" IsVisible="{Binding ShowSelectedHost, Converter={StaticResource InvertedBoolConverter}}">
+                <Grid  ColumnDefinitions="150,150" HorizontalAlignment="Stretch" IsVisible="{Binding ShowSelectedHost, Converter={StaticResource InvertedBoolConverter}}">
                     <Label Content="Baud rate" HorizontalAlignment="Stretch"
-                           FontSize="16"  />
+                           FontSize="16" FontWeight="Bold" />
 
                     <ComboBox Grid.Column="1"
                               HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Right"
                               ItemsSource="{Binding BaudRates}"
                               SelectedItem="{Binding SelectedBaudRate}"
                               DisplayMemberBinding="{Binding .}"
                               />
                 </Grid >
-                <Grid  ColumnDefinitions="200,*" HorizontalAlignment="Stretch" >
+                <Grid  ColumnDefinitions="150,150" HorizontalAlignment="Stretch" >
 
                     <Label Content="Host" IsVisible="{Binding ShowSelectedHost}"
-                           FontSize="16" HorizontalAlignment="Stretch"  />
-                    <u:IPv4Box Grid.Column="1" IsVisible="{Binding ShowSelectedHost}"  IPAddress="{Binding Address}" />
+                           FontSize="16" HorizontalAlignment="Stretch" FontWeight="Bold" />
+                    <u:IPv4Box Grid.Column="1" Width="150" IsVisible="{Binding ShowSelectedHost}"  IPAddress="{Binding Address}" />
 
                 </Grid >
-                <Grid  ColumnDefinitions="200,*" HorizontalAlignment="Stretch" >
+                <Grid  ColumnDefinitions="150,150" HorizontalAlignment="Stretch" >
                     <Label Content="Port" IsVisible="{Binding ShowSelectedHost}"
-                           FontSize="16" HorizontalAlignment="Stretch">
-                        <Label.FontWeight>Bold</Label.FontWeight>
+                           FontSize="16" HorizontalAlignment="Stretch" FontWeight="Bold">
+
                     </Label>
-                    <TextBox Grid.Column="1"  PlaceholderText="Port" Text="{Binding SelectedPort}"
+                    <TextBox Grid.Column="1" Width="150" HorizontalContentAlignment="Right" PlaceholderText="Port" Text="{Binding SelectedPort}"
                              IsVisible="{Binding ShowSelectedHost}" />
                 </Grid >
-                <Label Content="{Binding StatusMessage}" Margin="0,25,0,0"
+                <Label Content="{Binding StatusMessage}" 
+                       Margin="0,10,0,0"
                        FontSize="16" HorizontalAlignment="Center"  />
-                <StackPanel Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center">
-
-                    <Button
-                        Width="100"
-                        Classes="Secondary"
-                        Padding="5"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Command="{Binding RefreshCommand}" >
-                        <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
-                    </Button>
-
-                    <Button
-                        Width="100"
-                        Classes="Primary"
-                        Padding="5"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Command="{Binding ConnectCommand}" >
-                        <Image Source="{Binding ConnectionImage}"
-                               Width="30"
-                               Height="30"
-                               Stretch="Uniform"/>
-                    </Button>
-
-                    <Button
-                        Width="100"
-                        Classes="Primary"
-                        Padding="5"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Command="{Binding OKCommand}"
-                        >
-                        <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                    </Button>
-
-                </StackPanel>
             </StackPanel>
 
             <StackPanel  Grid.Row="1" Orientation="Vertical"
@@ -109,33 +76,75 @@
                 <Label Content="{Binding StatusMessage}" FontSize="16"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Center"  />
-                <StackPanel Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center">
-
-                    <Button
-                        Classes="Primary"
-                        Width="100"
-                        Padding="5"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Bottom"
-                        Command="{Binding ConnectCommand}" >
-                        <Image Source="{Binding ConnectionImage}"
-                               Width="30"
-                               Height="30"
-                               Stretch="Uniform"/>
-                    </Button>
-
-                    <Button
-                        Width="100"
-                        Classes="Primary"
-                        Padding="5"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Command="{Binding OKCommand}"
-                        >
-                        <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                    </Button>
-                </StackPanel>
             </StackPanel>
+
+            <StackPanel Grid.Row="2"  Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center"
+                        IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
+                        IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
+
+                <Button
+                    Width="100"
+                    Classes="Secondary"
+                    Padding="5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Command="{Binding RefreshCommand}" >
+                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                </Button>
+
+                <Button
+                    Width="100"
+                    Classes="Primary"
+                    Padding="5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Command="{Binding ConnectCommand}" >
+                    <Image Source="{Binding ConnectionImage}"
+                           Width="30"
+                           Height="30"
+                           Stretch="Uniform"/>
+                </Button>
+
+                <Button
+                    Width="100"
+                    Classes="Primary"
+                    Padding="5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Command="{Binding OKCommand}"
+                    >
+                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                </Button>
+
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center"  IsVisible="{Binding IsConnected}">
+
+                <Button
+                    Classes="Primary"
+                    Width="100"
+                    Padding="5"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Bottom"
+                    Command="{Binding ConnectCommand}" >
+                    <Image Source="{Binding ConnectionImage}"
+                           Width="30"
+                           Height="30"
+                           Stretch="Uniform"/>
+                </Button>
+
+                <Button
+                    Width="100"
+                    Classes="Primary"
+                    Padding="5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Command="{Binding OKCommand}"
+                    >
+                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                </Button>
+            </StackPanel>
+
         </Grid>
     </Border>
 

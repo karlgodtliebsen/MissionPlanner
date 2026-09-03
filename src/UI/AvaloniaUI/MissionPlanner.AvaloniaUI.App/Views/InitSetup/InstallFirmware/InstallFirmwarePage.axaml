@@ -1,17 +1,19 @@
-<utilities:NavigationViewBase
-    x:TypeArguments="local:InstallFirmwareViewModel"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-    xmlns:local="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
-    x:DataType="local:InstallFirmwareViewModel">
+<utilities:NavigationViewBase x:TypeArguments="local:InstallFirmwareViewModel"
+                              xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
+                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              xmlns:local="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware" 
+                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" 
+                              x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
+                              x:DataType="local:InstallFirmwareViewModel">
 
-    <ContentPage Header="Install Firmware" Background="{DynamicResource Surface}">
-        <Grid RowDefinitions="*,32">
-            <ScrollViewer Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <StackPanel Orientation="Vertical" Margin="32" Spacing="20" MaxWidth="1200" HorizontalAlignment="Center">
+    <ContentPage Header="Install Firmware" >
+        <Grid RowDefinitions="*,32" HorizontalAlignment="{Binding ContextWidth,Mode=OneWay}">
+            <ScrollViewer Grid.Row="0"  HorizontalAlignment="{Binding ContextWidth,Mode=OneWay}" VerticalAlignment="Stretch">
+                <StackPanel Orientation="Vertical" Margin="25" Spacing="20" HorizontalAlignment="{Binding ContextWidth,Mode=OneWay}">
                     <Border IsVisible="{Binding IsConnectedMode}" Padding="24" Classes="SectionCard">
                         <StackPanel Orientation="Vertical" Spacing="14">
                             <TextBlock Text="A vehicle is connected" Classes="Title"  />
@@ -45,69 +47,60 @@
                             <ComboBox ItemsSource="{Binding FrameTypes}" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
                             <ComboBox ItemsSource="{Binding Manufacturers}" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
                         </StackPanel>
+                        <controls:VirtualizedItemsGrid
+                            Grid.Row="3"
+                            IsVisible="{Binding IsVehicleConnected,Converter={StaticResource InvertedBoolConverter}}"
+                            Height="600"
+                            ItemsSource="{Binding FilteredFirmwareChoices}"
+                            ColumnWidths="100,200,200,2*,100,2*"
+                            ColumnSpacing="6"
+                            RowMinHeight="48"
+                            ShowHeader="True"
+                            ShowSearchBar="True"
+                            SearchWatermark="Search firmware..."
+                            SearchMemberPaths="VehicleType,FirmwareVersion.Value,FirmwareVersion.SemanticVersion,Platform,Manufacturer,BoardId,MatchReason"
+                            ShowPagination="False"
+                            SelectionMode="Single"
+                            SelectionColumnWidth="30"
+                            SelectedItem="{Binding SelectedFirmware, Mode=OneWayToSource}">
 
-                        <DataGrid AutoGenerateColumns="False" Grid.Row="3"
-                                  Height="600"
-                                  IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
-                                  ItemsSource="{Binding FilteredFirmwareChoices}"
-                                  HorizontalAlignment="Stretch"
-                                  VerticalAlignment="Stretch"
-                                  Background="Transparent"
-                                  SelectionMode="Single"
-                                  SelectedItem="{Binding SelectedFirmware, Mode=TwoWay}">
+                            <controls:VirtualizedItemsGrid.EmptyView>
+                                <TextBlock Text="No firmware releases match the current filters."
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Margin="20"
+                                           Opacity="0.7" />
+                            </controls:VirtualizedItemsGrid.EmptyView>
 
-                            <DataGrid.Columns>
-                                <DataGridCheckBoxColumn Width="50" Binding="{Binding IsSelected}" />
+                            <controls:VirtualizedItemsGrid.HeaderTemplate>
+                                <DataTemplate>
+                                    <controls:VirtualizedItemsGridRow>
+                                        <TextBlock Grid.Column="0" Text="Vehicle type" Classes="DataGridColumn" />
+                                        <TextBlock Grid.Column="1" Text="Version information" Classes="DataGridColumn" />
+                                        <TextBlock Grid.Column="2" Text="Platform" Classes="DataGridColumn" />
+                                        <TextBlock Grid.Column="3" Text="Manufacturer" Classes="DataGridColumn" />
+                                        <TextBlock Grid.Column="4" Text="Board ID" Classes="DataGridColumn" />
+                                        <TextBlock Grid.Column="5" Text="Match reason" Classes="DataGridColumn" />
+                                    </controls:VirtualizedItemsGridRow>
+                                </DataTemplate>
+                            </controls:VirtualizedItemsGrid.HeaderTemplate>
 
-                                <DataGridTemplateColumn Width="*" Header="VehicleType">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                            <TextBlock Text="{Binding VehicleType}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-
-                                <DataGridTemplateColumn Width="200" Header="Version Information">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-
-                                            <StackPanel Orientation="Vertical">
-                                                <TextBlock Text="{Binding FirmwareVersion.Value, StringFormat='Version: {0}'}" HorizontalAlignment="Left" VerticalAlignment="Center" />
-                                                <TextBlock Text="{Binding FirmwareVersion.SemanticVersion, StringFormat='SemanticVersion: {0}'}" HorizontalAlignment="Left" VerticalAlignment="Center" />
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="*" Header="Platform">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                            <TextBlock Text="{Binding Platform}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="*" Header="Manufacturer">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                            <TextBlock Text="{Binding Manufacturer}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="*" Header="BoardId">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                            <TextBlock Text="{Binding BoardId}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                                <DataGridTemplateColumn Width="*" Header="MatchReason">
-                                    <DataGridTemplateColumn.CellTemplate>
-                                        <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                            <TextBlock Text="{Binding MatchReason}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
-                                        </DataTemplate>
-                                    </DataGridTemplateColumn.CellTemplate>
-                                </DataGridTemplateColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
+                            <controls:VirtualizedItemsGrid.RowTemplate>
+                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                    <controls:VirtualizedItemsGridRow>
+                                        <TextBlock Grid.Column="0" Text="{Binding VehicleType}" Classes="DataGridRow" />
+                                        <StackPanel Grid.Column="1" Orientation="Vertical" Classes="DataGridRow" HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding FirmwareVersion.Value, StringFormat='Version: {0}'}" />
+                                            <TextBlock Text="{Binding FirmwareVersion.SemanticVersion, StringFormat='Semantic version: {0}'}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2" HorizontalAlignment="Center" Text="{Binding Platform}" Classes="DataGridRow" />
+                                        <TextBlock Grid.Column="3" HorizontalAlignment="Center" Text="{Binding Manufacturer}" Classes="DataGridRow" />
+                                        <TextBlock Grid.Column="4" HorizontalAlignment="Center" Text="{Binding BoardId}" Classes="DataGridRow" />
+                                        <TextBlock Grid.Column="5" HorizontalAlignment="Center" Text="{Binding MatchReason}" Classes="DataGridRow" />
+                                    </controls:VirtualizedItemsGridRow>
+                                </DataTemplate>
+                            </controls:VirtualizedItemsGrid.RowTemplate>
+                        </controls:VirtualizedItemsGrid>
 
                         <Border Grid.Row="4" IsVisible="{Binding HasSelectedFirmware}" Padding="16" Classes="SectionCard">
                             <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">

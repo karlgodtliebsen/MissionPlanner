@@ -1,4 +1,6 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using AsyncAwaitBestPractices;
+using Avalonia.Layout;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -135,6 +137,29 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [ObservableProperty]
     public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FilteredFirmwareChoices { get; private set; } = [];
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableProperty]
+    public partial HorizontalAlignment ContextWidth
+    {
+        get;
+        private set;
+    } = HorizontalAlignment.Center;
+
+    partial void OnIsVehicleConnectedChanged(bool oldValue, bool newValue)
+    {
+        ContextWidth = HorizontalAlignment.Center;// newValue ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
+    }
+
+    [ObservableProperty]
+    public partial bool IsVehicleConnected
+    {
+        get;
+        set;
+    }
+
+    ///
     /// <summary>
     /// Gets the distinct firmware versions available in the catalogue.
     /// </summary>
@@ -436,12 +461,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         private set;
     }
 
-    [ObservableProperty]
-    public new partial string StatusMessage
-    {
-        get;
-        private set;
-    } = "Ready";
 
     [ObservableProperty]
     public partial string DeviceStatus
@@ -484,9 +503,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         OperationProgress.TechnicalDetail = null;
         LastDiagnosticReport = null;
         var visibleMode = ApplyMode();
-
         if (visibleMode == FirmwarePageMode.Disconnected)
         {
+            IsVehicleConnected = false;
             await RefreshSafelyAsync(false, lifetime.Token);
         }
     }
@@ -512,7 +531,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         active = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         CancelRefresh();
-
+        IsVehicleConnected = false;
         var current = lifetime;
         lifetime = null;
 
@@ -541,8 +560,11 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         {
             Logger.LogError(ex, "Refresh failed");
         }
+        finally { }
 
-        ResetBusy();
+        {
+            ResetBusy();
+        }
     }
 
 
@@ -959,6 +981,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             {
                 IsCatalogRefreshRunning = true;
                 SetMessages("Loading firmware catalogue…");
+                NotificationManager?.Show(StatusMessage!);
             });
             var channel = SelectedChannel;
 
@@ -1025,6 +1048,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                             ? $"Recommended device: {SelectedDevice}"
                             : "Select the flight controller explicitly.";
                 SetMessages(catalog.IsStale ? "Showing cached firmware catalogue" : $"{FirmwareChoices.Count} vehicle firmware choices available");
+                NotificationManager?.Show(StatusMessage!);
                 UpdateContextHelp();
             });
         }
@@ -1041,6 +1065,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 if (IsLatestRefresh(version))
                 {
                     SetMessages(exception);
+                    NotificationManager?.Show(ErrorMessage!);
+
                 }
             });
         }
@@ -1091,8 +1117,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             choices = choices.Where(x => x.Manufacturer == manufacturer).ToList();
         }
 
-        FilteredFirmwareChoices.Clear();
-        FilteredFirmwareChoices.AddRange(choices);
+        // Replace the bound collection rather than issuing a range/reset notification.
+        // Avalonia's DataGrid did not reliably refresh its rows when the existing
+        // ObservableRangeCollection instance was cleared and repopulated.
+        FilteredFirmwareChoices = new ObservableRangeCollection<FirmwareCatalogItemViewModel>(choices);
     }
 
     private void ApplyTargetQuery()
@@ -1141,7 +1169,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         Manufacturers.Clear();
         Manufacturers.AddRange(manufacturers);
 
-        FilteredFirmwareChoices.ReplaceRange(choices);
+        // Keep the initial catalogue population on the same path as subsequent
+        // filter changes. FilterData also updates HasFirmwareChoices, which controls
+        // whether the Avalonia DataGrid is present in the visual tree.
+        FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
 
         Debug.Print($"InstallFirmware ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
 
@@ -1318,6 +1349,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private void OnActiveVehicleChanged(Core.Vehicles.ActiveVehicleChangedEventArgs e)
     {
+        IsVehicleConnected = !e.Current.IsOnline;
         if (e.Current.IsOnline)
         {
             // The disconnected catalogue/device scan is no longer relevant once a vehicle
@@ -1331,12 +1363,14 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         var visibleMode = ApplyMode();
         if (visibleMode == FirmwarePageMode.Disconnected && lifetime is { } currentLifetime)
         {
-            _ = RefreshSafelyAsync(false, currentLifetime.Token);
+            RefreshSafelyAsync(false, currentLifetime.Token).SafeFireAndForget();
             return;
         }
 
         ResetBusy();
     }
+
+
 
     private void SetOperation(bool operationActive, FirmwareOperationState? stage)
     {
