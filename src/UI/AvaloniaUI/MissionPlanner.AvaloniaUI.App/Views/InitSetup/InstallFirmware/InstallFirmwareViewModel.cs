@@ -483,9 +483,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         OperationProgress.IsPowerCritical = false;
         OperationProgress.TechnicalDetail = null;
         LastDiagnosticReport = null;
-        ApplyMode();
+        var visibleMode = ApplyMode();
 
-        if (IsDisconnectedMode)
+        if (visibleMode == FirmwarePageMode.Disconnected)
         {
             await RefreshSafelyAsync(false, lifetime.Token);
         }
@@ -943,7 +943,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private async Task RefreshAsync(bool forceRefresh, CancellationToken cancellationToken, bool allOptions = false)
     {
-        if (!IsDisconnectedMode || IsOperationInProgress)
+        // Do not use IsDisconnectedMode here. ApplyMode updates that UI property through
+        // the dispatcher, so it may still contain the previous value during activation.
+        if (!OperatingSystem.IsWindows() || activeVehicle.IsOnline || IsOperationInProgress)
         {
             return;
         }
@@ -1326,7 +1328,13 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         {
             return;
         }
-        ApplyMode();
+        var visibleMode = ApplyMode();
+        if (visibleMode == FirmwarePageMode.Disconnected && lifetime is { } currentLifetime)
+        {
+            _ = RefreshSafelyAsync(false, currentLifetime.Token);
+            return;
+        }
+
         ResetBusy();
     }
 
@@ -1344,7 +1352,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         ApplyMode(stage);
     }
 
-    private void ApplyMode(FirmwareOperationState? stage = null)
+    private FirmwarePageMode ApplyMode(FirmwareOperationState? stage = null)
     {
         var directInstallationSupported = OperatingSystem.IsWindows();
         var vehicleConnected = activeVehicle.IsOnline;
@@ -1371,6 +1379,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             CanInstall = state.CanInstallApplicationFirmware;
             CanUpdateBootloader = state.CanUpdateEmbeddedBootloader;
         });
+
+        return visibleMode;
     }
 
     private void UpdateProgress(FirmwareProgress progress)

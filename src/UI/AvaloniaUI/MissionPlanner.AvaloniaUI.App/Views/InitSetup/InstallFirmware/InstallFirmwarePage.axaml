@@ -32,21 +32,29 @@
                     </Border>
 
                     <Grid IsVisible="{Binding IsDisconnectedMode}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="16">
-                        <StackPanel Orientation="Horizontal" Grid.Row="0">
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Spacing="10">
                             <Button Content="Refresh catalogue" Command="{Binding RefreshCatalogCommand}" />
                             <Button Content="All Options" Command="{Binding ShowAllOptionsCommand}" />
                             <!--<Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />-->
                         </StackPanel>
 
                         <ProgressBar IsIndeterminate="True" Grid.Row="1" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
-                        <StackPanel Orientation="Horizontal" Grid.Row="2">
+                        <StackPanel Orientation="Horizontal" Grid.Row="2" Spacing="10">
                             <ComboBox Width="250" ToolTip.Tip="Release" ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" />
                             <ComboBox ItemsSource="{Binding Versions}" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
                             <ComboBox ItemsSource="{Binding FrameTypes}" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
                             <ComboBox ItemsSource="{Binding Manufacturers}" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
                         </StackPanel>
 
-                        <DataGrid AutoGenerateColumns="False" Grid.Row="3" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" MaxHeight="600" ItemsSource="{Binding FilteredFirmwareChoices}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" SelectionMode="Single" SelectedItem="{Binding SelectedFirmware, Mode=TwoWay}">
+                        <DataGrid AutoGenerateColumns="False" Grid.Row="3"
+                                  Height="600"
+                                  IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                                  ItemsSource="{Binding FilteredFirmwareChoices}"
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  Background="Transparent"
+                                  SelectionMode="Single"
+                                  SelectedItem="{Binding SelectedFirmware, Mode=TwoWay}">
 
                             <DataGrid.Columns>
                                 <DataGridCheckBoxColumn Width="50" Binding="{Binding IsSelected}" />
@@ -226,7 +234,9 @@
                             </StackPanel>
                         </Border>
 
-                        <Expander Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsExpanded="{Binding HasDevice}">
+                        <Expander Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  IsVisible="{Binding HasDevice}"
+                                  IsExpanded="{Binding HasDevice}">
                             <Expander.Header>
                                 <TextBlock Text="Flash Firmware" Padding="10" />
                             </Expander.Header>
@@ -252,7 +262,9 @@
                             </Grid>
                         </Expander>
 
-                        <Expander Grid.Row="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsExpanded="{Binding HasDfuBootLoader}">
+                        <Expander Grid.Row="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  IsVisible="{Binding HasDfuBootLoader}"
+                                  IsExpanded="{Binding HasDfuBootLoader}">
                             <Expander.Header>
                                 <TextBlock Text="STM32 Bootloader" Padding="10" />
                             </Expander.Header>
@@ -281,9 +293,9 @@
                                             </StackPanel>
                                             <TextBlock Text="{Binding DfuStatus}" />
                                         </StackPanel>
-                                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,10" Text="Warning: this erases the current firmware. Keep USB power connected until programming and verification complete." Classes="Warning" />
+                                        <TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,10" Text="Warning: this erases the current firmware. Keep USB power connected until programming and verification complete." Classes="Warning" />
 
-                                        <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Spacing="10">
                                             <Button Content="Refresh devices" Command="{Binding RefreshCatalogCommand}" />
                                             <Button Content="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
                                             <Button Content="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
@@ -352,7 +364,8 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
-                                    <Button Content="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}" IsVisible="{Binding CanOpenDeviceManager}" HorizontalAlignment="Left" />
+                                    <Button Content="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}" 
+                                            IsVisible="{Binding CanOpenDeviceManager}" HorizontalAlignment="Left" />
                                 </StackPanel>
                             </Border>
                         </Expander>
