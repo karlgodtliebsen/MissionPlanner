@@ -14,7 +14,7 @@
             <TextBlock Text="FFT/log settings are available only when INS_LOG_BAT or FFT parameters are reported. Log acquisition remains owned by DataFlash Logs." />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <NumericUpDown  PlaceholderText="Sample rate Hz" Value="{Binding SampleRateHz}" Minimum="0" FormatString="F0" />
             <TextBox AcceptsReturn="True" PlaceholderText="Paste comma/newline-separated samples from an existing log artifact" Text="{Binding SamplesText}" Height="180" />
             <Button Content="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Left" />

@@ -14,11 +14,12 @@
                >
     <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="50">
         <StackPanel    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="50">
-            <TextBlock Text="{Binding Title}" TextAlignment="Center" Classes="Title"
-                       Foreground="{DynamicResource Error}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding Title}" TextAlignment="Center" Classes="Title Danger"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" />
             
-            <TextBlock Text="{Binding ErrorMessage}" TextAlignment="Center" Classes="H5"
-                       Foreground="{DynamicResource Error}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding ErrorMessage}" TextAlignment="Center" 
+                       Classes="H5 Danger"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" />
 
             <Button
                 Width="100"
@@ -28,7 +29,7 @@
                 VerticalAlignment="Center"
                 Command="{Binding OKCommand}"
                 >
-                <avalonia:MaterialIcon Kind="HandOkay" Width="30" Height="30" />
+                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
             </Button>
         </StackPanel>
     </Border>

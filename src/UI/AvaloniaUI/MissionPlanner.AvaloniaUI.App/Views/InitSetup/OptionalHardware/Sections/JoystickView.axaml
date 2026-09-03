@@ -13,7 +13,7 @@
         <TextBlock Text="Joystick Setup" FontSize="24" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
         <TextBlock Text="{Binding PlatformStatus}" />
         <Grid ColumnDefinitions="Auto,Auto" VerticalAlignment="Stretch" ColumnSpacing="25" HorizontalAlignment="Stretch">
             <ComboBox ToolTip.Tip="Local device" ItemsSource="{Binding Devices}" VerticalAlignment="Bottom" DisplayMemberBinding="{Binding Name}" SelectedItem="{Binding SelectedDevice}" Width="300" />

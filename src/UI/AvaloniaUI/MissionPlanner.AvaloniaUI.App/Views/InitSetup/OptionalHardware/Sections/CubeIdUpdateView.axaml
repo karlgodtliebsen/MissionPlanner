@@ -13,7 +13,7 @@
         <TextBlock Text="CubeID Firmware Update" FontSize="24" FontWeight="Bold" />
         <TextBlock Text="The target component identity is retained; an autopilot component cannot consume CubeID acknowledgements." />
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
         <TextBox PlaceholderText="Local firmware .bin path" Text="{Binding FirmwarePath}" />
         <Button Content="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" />
         <TextBlock Text="{Binding FirmwareSummary}" />

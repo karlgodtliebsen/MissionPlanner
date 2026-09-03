@@ -1,16 +1,17 @@
 ﻿using System.ComponentModel;
+using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Models;
 using MissionPlanner.AvaloniaUI.App.Presentation;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.ConfigTuning.VendorDevices;
 using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using MissionPlanner.AvaloniaUI.App.Utilities;
-using MissionPlanner.AvaloniaUI.App.Models;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
@@ -45,7 +46,6 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
         this.adapter = adapter;
         this.fileHandler = fileHandler;
         this.confirmation = confirmation;
-        SetMessages("Connect a vehicle to discover CubeLAN through the documented MAVLink I²C proxy.");
     }
 
     /// <summary>Gets the eight port editors after successful discovery.</summary>
@@ -108,6 +108,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
             Load(result.Snapshot.Configuration);
             Status = VendorDeviceStatus.Available;
             SetMessages(result.Message);
+            NotificationManager?.Show(StatusMessage!);
         });
     }
 
@@ -129,6 +130,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
             if (issues.Count != 0)
             {
                 SetMessages(string.Join(" ", issues.Select(issue => issue.Message)));
+                NotificationManager!.Show(StatusMessage!);
                 return;
             }
 
@@ -139,6 +141,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
                     cancellationToken))
             {
                 SetMessages("CubeLAN apply cancelled.");
+                NotificationManager?.Show(StatusMessage!);
                 return;
             }
 
@@ -157,6 +160,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
                 ? VendorDeviceStatus.ReconnectRequired
                 : VendorDeviceStatus.Available;
             SetMessages(result.Message);
+            NotificationManager?.Show(StatusMessage!);
         });
     }
 
@@ -171,6 +175,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
 
         Load(original.Configuration);
         SetMessages("Local CubeLAN edits reverted to the last confirmed readback.");
+        NotificationManager?.Show(StatusMessage!);
     }
 
     /// <summary>Exports the current verified subset without credentials or raw registers.</summary>
@@ -183,16 +188,15 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
             if (original is null)
             {
                 SetMessages("Discover CubeLAN before exporting configuration.");
+                NotificationManager?.Show(StatusMessage!);
                 return;
             }
 
-            var path = await fileHandler.SaveTextFileAsync(
-                "cubelan-switch-config.json",
-                adapter.Export(CreateConfiguration()),
-                cancellationToken);
+            var path = await fileHandler.SaveTextFileAsync("cubelan-switch-config.json", adapter.Export(CreateConfiguration()), cancellationToken);
             SetMessages(path is null
                 ? "CubeLAN export cancelled."
                 : $"CubeLAN configuration exported to {path}. Authentication secrets and raw registers are excluded.");
+            NotificationManager?.Show(StatusMessage!);
         });
     }
     /// <inheritdoc />
@@ -261,21 +265,21 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
         VehicleHeading = activeVehicle.IsOnline && activeVehicle.State is { } state
             ? $"{state.DisplayName} — CubeLAN via MAVLink DEVICE_OP"
             : "No connected vehicle";
+
         if (!activeVehicle.IsOnline || activeVehicle.VehicleId is null)
         {
             Clear(VendorDeviceStatus.NotConnected, "Connect a vehicle before discovering CubeLAN.");
             return;
         }
 
-        _ = RefreshAsync();
+        RefreshAsync().SafeFireAndForget();
     }
 
     private async Task RunAsync(Func<CancellationToken, Task> operation)
     {
         await operationGate.WaitAsync();
 
-        operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-            activeVehicle.ConnectionCancellationToken);
+        operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         SetBusy();
         try
         {
@@ -289,7 +293,8 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
         {
             Logger.LogError(exception, "CubeLAN workflow failed.");
             Status = VendorDeviceStatus.Error;
-            SetMessages($"CubeLAN operation failed: {exception.Message}");
+            SetMessages(errorMessage: $"CubeLAN operation failed: {exception.Message}");
+            NotificationManager?.Show(ErrorMessage!);
         }
         finally
         {
@@ -375,6 +380,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
         IsDirty = false;
         Status = status;
         SetMessages(message);
+        NotificationManager!.Show(StatusMessage!);
     }
 
     private void CancelOperation()

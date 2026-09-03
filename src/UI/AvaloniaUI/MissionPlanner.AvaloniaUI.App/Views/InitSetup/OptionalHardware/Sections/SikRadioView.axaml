@@ -14,7 +14,7 @@
 <TextBlock Text="Direct serial configuration. Disconnect any vehicle using the selected port." Classes="Warning" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Horizontal" Spacing="50" HorizontalAlignment="Stretch" Height="75" VerticalAlignment="Stretch">
                 <ComboBox ToolTip.Tip="Serial device" VerticalAlignment="Bottom" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
                 <NumericUpDown PlaceholderText="BaudRate" FormatString="F0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Minimum="0" Value="{Binding BaudRate, Mode=TwoWay}" Width="110" />

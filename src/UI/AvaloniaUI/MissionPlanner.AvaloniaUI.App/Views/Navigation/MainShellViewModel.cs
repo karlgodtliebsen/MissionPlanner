@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
@@ -79,19 +81,24 @@ public partial class MainShellViewModel : ObservableObject
         await navigationService.NavigateAsync(route);
     }
 
+    private static Bitmap LoadImage(string image)
+    {
+        return new Bitmap(AssetLoader.Open(new Uri(image)));
+    }
+
     private static ObservableCollection<NavigationMenuItemViewModel> CreateMenuItems()
     {
         return [
-        new("Flight Data", MissionPlannerRoutes.FlightData, "/Resources/Images/light_flightdata_icon.png"),
-        new("Flight Planner", MissionPlannerRoutes.FlightPlanner, "/Resources/Images/light_flightplan_icon.png"),
-        new("Setup", icon: "/Resources/Images/light_initialsetup_icon.png", children:
+        new("Flight Data", MissionPlannerRoutes.FlightData, LoadImage("avares://MissionPlanner.AvaloniaUI.App/Resources/Images/light_flightdata_icon.png")),
+        new("Flight Planner", MissionPlannerRoutes.FlightPlanner, LoadImage("avares://MissionPlanner.AvaloniaUI.App/Resources/Images/light_flightplan_icon.png")),
+        new("Setup", icon: LoadImage("avares://MissionPlanner.AvaloniaUI.App/Resources/Images/light_initialsetup_icon.png"), children:
         [
             new("Install Firmware", MissionPlannerRoutes.SetupInstallFirmware),
             new("Mandatory Hardware", MissionPlannerRoutes.SetupMandatoryHardware),
             new("Optional Hardware", MissionPlannerRoutes.SetupOptionalHardware),
             new("Advanced", MissionPlannerRoutes.SetupAdvanced)
         ]),
-        new("Config", icon: "/Resources/Images/light_tuningconfig_icon.png", children:
+        new("Config", icon: LoadImage("avares://MissionPlanner.AvaloniaUI.App/Resources/Images/light_tuningconfig_icon.png"), children:
         [
             new("Geo Fence", MissionPlannerRoutes.ConfigGeoFence),
             new("Basic Tuning", MissionPlannerRoutes.ConfigBasicTuning),
@@ -102,9 +109,9 @@ public partial class MainShellViewModel : ObservableObject
             new("CubeLAN 8 Port Switch", MissionPlannerRoutes.ConfigCubeLan8PortSwitch)
         ]),
         new("Preferences", MissionPlannerRoutes.Preferences),
-        new("Simulation", MissionPlannerRoutes.Simulation, "/Resources/Images/light_simulation_icon.png"),
+        new("Simulation", MissionPlannerRoutes.Simulation, LoadImage("avares://MissionPlanner.AvaloniaUI.App/Resources/Images/light_simulation_icon.png")),
         new("Tutorial", MissionPlannerRoutes.Introduction),
-        new("Help", MissionPlannerRoutes.Help, "/Resources/Images/light_help_icon.png")
+        new("Help", MissionPlannerRoutes.Help, LoadImage("avares://MissionPlanner.AvaloniaUI.App/Resources/Images/light_help_icon.png"))
     ];
     }
 }

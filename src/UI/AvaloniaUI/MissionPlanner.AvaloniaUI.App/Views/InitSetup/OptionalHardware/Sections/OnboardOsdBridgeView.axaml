@@ -15,7 +15,7 @@
         <TextBlock Text="This entry uses the same OSD configuration service and editing session as Config; it does not create a second configuration engine." Opacity="0.75" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
         <Button Content="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalAlignment="Left" />
     </StackPanel>
 </utilities:UserControlViewBase>

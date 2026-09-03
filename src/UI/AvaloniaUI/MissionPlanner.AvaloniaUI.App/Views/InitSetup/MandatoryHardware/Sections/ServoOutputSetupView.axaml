@@ -13,7 +13,7 @@
             <TextBlock HorizontalAlignment="Center" Text="Servo output functions" FontSize="18" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" HorizontalAlignment="Center" IsVisible="{Binding IsBusy}" />
             <TextBlock HorizontalAlignment="Center" Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
-            <TextBlock HorizontalAlignment="Center" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock HorizontalAlignment="Center" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,10,0,10">
                 <Button Content="Refresh servo outputs" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
                 <Button Content="Write" Command="{Binding WriteCommand}" HorizontalAlignment="Right" />

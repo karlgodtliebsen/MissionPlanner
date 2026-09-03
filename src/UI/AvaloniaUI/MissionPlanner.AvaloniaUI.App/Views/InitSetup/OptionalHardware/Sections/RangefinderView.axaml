@@ -13,7 +13,7 @@
             <TextBlock Text="Rangefinder" FontSize="20" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
 <TextBlock Text="Vehicle Reboot required" Classes="Warning" IsVisible="{Binding RebootRequired}" />
             <ItemsControl ItemsSource="{Binding Settings}">
                 <ItemsControl.ItemTemplate>

@@ -1,6 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Globalization;
-using System.Collections.Specialized;
 using System.Text.Json.Serialization;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -412,20 +412,10 @@ public partial class ParameterItemViewModel : ObservableObject
         Value = selectedMask;
     }
 
-    partial void OnSelectedBitmaskItemsChanged(
-        ObservableRangeCollection<object>? oldValue,
-        ObservableRangeCollection<object>? newValue)
+    partial void OnSelectedBitmaskItemsChanged(ObservableRangeCollection<object> oldValue, ObservableRangeCollection<object> newValue)
     {
-        if (oldValue is not null)
-        {
-            oldValue.CollectionChanged -= OnSelectedBitmaskCollectionChanged;
-        }
-
-        if (newValue is not null)
-        {
-            newValue.CollectionChanged += OnSelectedBitmaskCollectionChanged;
-        }
-
+        oldValue.CollectionChanged -= OnSelectedBitmaskCollectionChanged;
+        newValue.CollectionChanged += OnSelectedBitmaskCollectionChanged;
         UpdateBitmaskValue();
     }
 

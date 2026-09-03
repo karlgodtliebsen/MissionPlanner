@@ -346,7 +346,7 @@
                         <StackPanel Orientation="Vertical" Spacing="4">
                             <TextBlock Text="{Binding SessionState}" FontSize="20" FontWeight="Bold" />
                             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                            <TextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+                            <TextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Classes="Danger" />
                         </StackPanel>
                         <ProgressBar Grid.Column="1" IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" Width="120" />
                     </Grid>

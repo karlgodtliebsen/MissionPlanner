@@ -9,6 +9,7 @@ using MissionPlanner.AvaloniaUI.App.Models;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Services;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.AvaloniaUI.App.Views.Config;
@@ -62,11 +63,6 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
-using DialogDemoPage = MissionPlanner.AvaloniaUI.App.Views.Samples.DialogDemoPage;
-using DialogDemoViewModel = MissionPlanner.AvaloniaUI.App.Views.Samples.DialogDemoViewModel;
-using ErrorView = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorView;
-using ErrorViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorViewModel;
-using NotificationViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.NotificationViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Configuration;
 
@@ -195,7 +191,6 @@ public static class ApplicationConfigurator
         // Common/Shared UI Components
         services.TryAddSingleton<StatusBarViewModel>();
         services.TryAddSingleton<TopBarViewModel>();
-        services.TryAddSingleton<NotificationViewModel>();
 
         services.TryAddTransient<ViewDialogViewModel>();
         services.TryAddTransient<OverlayViewDialogViewModel>();

@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:imaging="clr-namespace:Avalonia.Media.Imaging;assembly=Avalonia.Base"
     xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Navigation"
     xmlns:u="https://irihi.tech/ursa"
     x:Class="MissionPlanner.AvaloniaUI.App.Views.Navigation.MainShellView"
@@ -39,16 +40,6 @@
                            Text="MissionPlanner Next Generation" />
             </DockPanel>
         </DrawerPage.DrawerHeader>
-        <!--        IsVisible="{Binding !#NavigationMenu.IsHorizontalCollapsed}"
-        -->
-        <!--        <DrawerPage.DrawerFooter>
-        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-        Classes="Tertiary Light" Content="Exit"
-        Command="{Binding ExitCommand}"
-        Theme="{DynamicResource BorderlessIconButton}" />
-        </DrawerPage.DrawerFooter>
-        -->
-
         <DrawerPage.Drawer>
             <Border DockPanel.Dock="Left" Padding="8,4" VerticalAlignment="Stretch"
                     Theme="{DynamicResource CardBorder}">
@@ -64,7 +55,7 @@
                     IsHorizontalCollapsed="{Binding IsNavigationCollapsed, Mode=TwoWay}">
 
                     <u:NavMenu.IconTemplate>
-                        <DataTemplate x:DataType="x:String">
+                    <DataTemplate x:DataType="imaging:Bitmap">
                             <Image Width="20" Height="20" Source="{Binding}" />
                         </DataTemplate>
                     </u:NavMenu.IconTemplate>
@@ -75,22 +66,6 @@
                                        TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Header}" />
                         </DataTemplate>
                     </u:NavMenu.HeaderTemplate>
-
-<!--                    <u:NavMenu.Header>
-                        <DockPanel Margin="8,16,8,8" HorizontalAlignment="Center">
-                            <Panel DockPanel.Dock="Left" Width="32" Height="32"
-                                   Background="Transparent" u:NavMenu.CanToggle="True">
-                                <Image Source="/Resources/AppIcon/mpdesktop.png" />
-                            </Panel>
-                            <TextBlock Margin="16,0,0,0" VerticalAlignment="Center"
-                                       FontSize="20" FontWeight="SemiBold"
-                                       IsVisible="{Binding !#NavigationMenu.IsHorizontalCollapsed}"
-                                       Text="MissionPlanner" />
-                        </DockPanel>
-                    </u:NavMenu.Header>-->
-
-
-
                     <u:NavMenu.Footer>
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
                                 Classes="Tertiary Light" Content="Exit"

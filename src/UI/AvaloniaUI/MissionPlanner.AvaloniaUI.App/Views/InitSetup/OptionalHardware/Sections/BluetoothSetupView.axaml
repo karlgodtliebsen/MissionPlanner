@@ -14,7 +14,7 @@
             <TextBlock Text="Classic Serial Bluetooth Setup" FontSize="20" FontWeight="Bold" />
             <TextBlock Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Opacity="0.75" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Horizontal" Spacing="25" VerticalAlignment="Center">
                 <ComboBox ToolTip.Tip="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
                 <Button Content="Refresh ports" Command="{Binding RefreshPortsCommand}" />

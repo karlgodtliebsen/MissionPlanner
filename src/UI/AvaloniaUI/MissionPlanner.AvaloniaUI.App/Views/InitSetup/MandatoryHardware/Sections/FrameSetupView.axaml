@@ -13,7 +13,7 @@
             <TextBlock Text="Supported frame configuration" FontSize="18" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <TextBlock Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}" />
             <TextBlock Text="Only values advertised by the connected firmware metadata are shown. Current values remain unchanged until Write and verify is confirmed." />
             <ItemsControl ItemsSource="{Binding Settings}">

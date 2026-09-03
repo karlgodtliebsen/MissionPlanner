@@ -1,10 +1,11 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media.Imaging;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Navigation;
 
 public sealed class NavigationMenuItemViewModel
 {
-    public NavigationMenuItemViewModel(string header, string? route = null, string? icon = null,
+    public NavigationMenuItemViewModel(string header, string? route = null, Bitmap? icon = null,
         IEnumerable<NavigationMenuItemViewModel>? children = null)
     {
         Header = header;
@@ -15,6 +16,6 @@ public sealed class NavigationMenuItemViewModel
 
     public string Header { get; }
     public string? Route { get; }
-    public string? Icon { get; }
+    public Bitmap? Icon { get; }
     public ObservableCollection<NavigationMenuItemViewModel> Children { get; }
 }

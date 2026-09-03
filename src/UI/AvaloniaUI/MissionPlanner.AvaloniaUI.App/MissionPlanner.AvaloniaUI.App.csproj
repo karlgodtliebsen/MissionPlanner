@@ -311,9 +311,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AvaloniaXaml Update="Utilities\Dialogs\SubViews\NotificationView.axaml">
-	    <Generator></Generator>
-	  </AvaloniaXaml>
 	  <AvaloniaXaml Update="Views\Common\TopBarView.axaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </AvaloniaXaml>

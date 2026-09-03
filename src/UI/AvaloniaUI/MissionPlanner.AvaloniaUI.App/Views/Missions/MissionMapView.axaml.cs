@@ -1,4 +1,5 @@
 ﻿using Mapsui;
+using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.AvaloniaUI.App.Services;
 using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -19,6 +20,14 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
     private CancellationTokenSource? operationCancellation;
     private bool disposed;
     private bool isActive;
+
+    /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
+    public MissionMapView(IServiceProvider sp)
+    {
+        InitializeComponent();
+        this.domainFactory = sp.GetRequiredService<IDomainFactory>();
+        this.locationService = sp.GetRequiredService<IPlatformLocationService>();
+    }
 
     /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
     public MissionMapView(IDomainFactory domainFactory, IPlatformLocationService locationService)

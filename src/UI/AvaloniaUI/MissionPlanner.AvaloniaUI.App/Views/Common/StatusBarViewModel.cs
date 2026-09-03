@@ -29,12 +29,6 @@ public partial class StatusBarViewModel : ViewModelBase
     /// 
     /// </summary>
     [ObservableProperty]
-    public partial string StatusMessage { get; set; } = "Ready";
-
-    /// <summary>
-    /// 
-    /// </summary>
-    [ObservableProperty]
     public partial bool IsConnectedStatus
     {
         get; set;

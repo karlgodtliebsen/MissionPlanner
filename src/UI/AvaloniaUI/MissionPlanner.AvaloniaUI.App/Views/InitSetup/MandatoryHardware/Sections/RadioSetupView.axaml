@@ -21,7 +21,7 @@
             </Grid>
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <Border Padding="14" Classes="SectionCard">
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                     <TextBlock Text="!" FontSize="22" FontWeight="Bold" VerticalAlignment="Top" />

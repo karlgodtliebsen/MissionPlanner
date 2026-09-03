@@ -13,10 +13,10 @@
     <ContentPage Header="Extended Tuning" Background="{DynamicResource Surface}">
 
         <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Center">
-            
+
             <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Stretch">
-                <TextBox HorizontalAlignment="Right" PlaceholderText="Search curated advanced parameters" 
-                         Text="{Binding SearchText, Mode=TwoWay}" 
+                <TextBox HorizontalAlignment="Right" PlaceholderText="Search curated advanced parameters"
+                         Text="{Binding SearchText, Mode=TwoWay}"
                          IsVisible="{Binding IsConnected}"/>
                 <ProgressBar IsIndeterminate="True"  Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
@@ -24,11 +24,11 @@
             <Border Grid.Row="1" Padding="10" Classes="SectionCard">
                 <StackPanel Orientation="Vertical" Spacing="10">
                     <TextBlock Text="{Binding FirmwareFamilyText, StringFormat='Advanced firmware profile: {0}'}" />
-<TextBlock Text="Expert page: changes to controllers, estimators, and filters can destabilize a vehicle. Autotune execution is intentionally not available here."
+                    <TextBlock Text="Expert page: changes to controllers, estimators, and filters can destabilize a vehicle. Autotune execution is intentionally not available here."
                                Classes="Warning"
                                FontWeight="Bold"
                                IsVisible="{Binding HasSupportedProfile}" />
-<TextBlock Text="This connected firmware has no supported advanced profile."
+                    <TextBlock Text="This connected firmware has no supported advanced profile."
                                Classes="Warning"
                                IsVisible="{Binding IsUnsupported}" />
                 </StackPanel>
@@ -72,7 +72,7 @@
                                         <TextBlock Grid.Column="0" Text="Axis" Classes="DataGridColumn" />
                                         <TextBlock Grid.Column="1" Text="Desired" Classes="DataGridColumn" />
                                         <TextBlock Grid.Column="2" Text="Achieved" Classes="DataGridColumn" />
-                                        <TextBlock Grid.Column="3" Text="Error" Classes="DataGridColumn" />
+                                        <TextBlock Grid.Column="3" Text="Error" Classes="DataGridColumn Danger" />
                                     </controls:VirtualizedItemsGridRow>
                                 </DataTemplate>
                             </controls:VirtualizedItemsGrid.HeaderTemplate>
@@ -82,7 +82,7 @@
                                         <TextBlock Grid.Column="0" Text="{Binding Axis}" Classes="DataGridRow" />
                                         <TextBlock Grid.Column="1" Text="{Binding Desired}" Classes="DataGridRow" />
                                         <TextBlock Grid.Column="2" Text="{Binding Achieved}" Classes="DataGridRow" />
-                                        <TextBlock Grid.Column="3" Text="{Binding Error}" Classes="DataGridRow" />
+                                        <TextBlock Grid.Column="3" Text="{Binding Error}" Classes="DataGridRow Danger" />
                                     </controls:VirtualizedItemsGridRow>
                                 </DataTemplate>
                             </controls:VirtualizedItemsGrid.RowTemplate>
@@ -111,15 +111,15 @@
                                     <Button  Grid.Column="1" Content="Expand / collapse" Command="{Binding ToggleExpandedCommand}" />
                                 </Grid>
 
-<TextBlock Text="{Binding ExpertWarning}"
+                                <TextBlock Text="{Binding ExpertWarning}"
                                            Classes="Warning"
                                            FontWeight="Bold"
                                            TextWrapping="Wrap" />
-<TextBlock Text="{Binding ValidationMessage}"
+                                <TextBlock Text="{Binding ValidationMessage}"
                                            Classes="Warning"
                                            IsVisible="{Binding HasValidationError}"
                                            TextWrapping="Wrap" />
-<TextBlock Text="This group has pending changes."
+                                <TextBlock Text="This group has pending changes."
                                            Classes="Warning"
                                            IsVisible="{Binding IsModified}" />
 
@@ -140,7 +140,12 @@
                                     <Border Padding="10" IsVisible="{Binding HasCopyPreview}" Classes="SectionCard">
                                         <StackPanel Orientation="Vertical" Spacing="4">
                                             <TextBlock Text="Axis copy preview — no pending values have changed" FontWeight="Bold" />
-                                            <ItemsControl ItemsSource="{Binding CopyPreview}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                                            <ItemsControl ItemsSource="{Binding CopyPreview}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate x:DataType="tabs:AxisCopyChangeViewModel">
                                                         <Grid ColumnDefinitions="90,*,*,Auto,Auto" ColumnSpacing="8">
@@ -151,7 +156,8 @@
                                                             <TextBlock Grid.Column="4" Text="{Binding AfterValue, StringFormat='{}{0:G}'}" />
                                                         </Grid>
                                                     </DataTemplate>
-                                                </ItemsControl.ItemTemplate></ItemsControl>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
                                             <Button  Content="Confirm preview into pending values" Command="{Binding ApplyCopyCommand}" HorizontalAlignment="Right" />
                                         </StackPanel>
                                     </Border>
@@ -188,10 +194,10 @@
                                                                    FontSize="12" />
                                                         <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding Units, StringFormat='Units: {0}'}" FontSize="12" />
 
-                                                        <ProgressBar Grid.Row="2" Grid.Column="0" 
+                                                        <ProgressBar Grid.Row="2" Grid.Column="0"
                                                                      Value="{Binding NormalizedMagnitude}" />
                                                         <TextBlock Grid.Row="2" Grid.Column="1" Text="Normalized magnitude across axes" FontSize="11" />
-<TextBlock Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
+                                                        <TextBlock Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
                                                                    Text="{Binding Editor.ValidationError}"
                                                                    Classes="Warning"
                                                                    FontSize="12" />

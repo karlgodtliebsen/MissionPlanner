@@ -14,7 +14,7 @@
     <ContentPage Header="Optional Hardware" Background="{DynamicResource Surface}">
         <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
             <StackPanel Spacing="5" HorizontalAlignment="Center">
-                <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+                <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
                 <TextBlock Text="{Binding VehicleHeading}" />
                 <TextBlock Text="{Binding AvailabilitySummary}" Opacity="0.75" />
             </StackPanel>

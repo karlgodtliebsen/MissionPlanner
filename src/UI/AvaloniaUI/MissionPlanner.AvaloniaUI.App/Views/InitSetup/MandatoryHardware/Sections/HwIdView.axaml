@@ -14,7 +14,7 @@
             <TextBlock Text="HW ID" FontSize="18" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <Border Classes="SectionCard" Padding="12">
                 <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="140,*" RowSpacing="6">
                     <TextBlock Text="Autopilot board" FontWeight="Bold" />

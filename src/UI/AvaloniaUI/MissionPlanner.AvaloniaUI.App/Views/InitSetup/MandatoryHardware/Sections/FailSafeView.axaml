@@ -13,13 +13,13 @@
             <TextBlock Text="Failsafe" FontSize="18" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <TextBlock Text="{Binding Description}" />
             <ItemsControl ItemsSource="{Binding Guidance}">
                 <ItemsControl.ItemTemplate>
                     <!--x:DataType="x:String"-->
                     <DataTemplate>
-<TextBlock Text="{Binding .}" Classes="Warning" />
+                        <TextBlock Text="{Binding .}" Classes="Warning" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

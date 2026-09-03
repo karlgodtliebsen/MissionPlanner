@@ -11,9 +11,9 @@
                               x:Name="RootPage"
                               x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
                               x:DataType="tabs:MavFtpTabViewModel">
-    <ContentPage Header="Mav Ftp" Background="{DynamicResource Surface}">
+    <ContentPage Header="Mav Ftp" >
 
-        <Grid Margin="16" RowDefinitions="Auto,*,Auto" RowSpacing="12">
+        <Grid Margin="16" RowDefinitions="Auto,*,Auto" RowSpacing="12" HorizontalAlignment="Center">
             <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
                 <Button Content="↑" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}" />
                 <TextBlock Grid.Column="1" Text="{Binding CurrentPath}" FontWeight="Bold" VerticalAlignment="Center" />
@@ -22,6 +22,7 @@
                 <Button Grid.Column="4" Content="Reset sessions"  IsVisible="{Binding HasConnection}" Command="{Binding ResetSessionsCommand}" />
             </Grid>
             <Grid Grid.Row="1"  HorizontalAlignment="Stretch" >
+               
                 <controls:VirtualizedItemsGrid
                     ItemsSource="{Binding Entries}"
                     SelectedItem="{Binding SelectedEntry, Mode=OneWayToSource}"
@@ -61,9 +62,10 @@
                         </DataTemplate>
                     </controls:VirtualizedItemsGrid.RowTemplate>
                 </controls:VirtualizedItemsGrid>
+
             </Grid>
             <StackPanel Orientation="Vertical" Grid.Row="2" Spacing="6">
-                <TextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+                <TextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Classes="Danger" />
                 <ProgressBar Value="{Binding TransferProgress}" />
                 <TextBlock Text="{Binding TransferDetails}" FontSize="12" />
                 <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />

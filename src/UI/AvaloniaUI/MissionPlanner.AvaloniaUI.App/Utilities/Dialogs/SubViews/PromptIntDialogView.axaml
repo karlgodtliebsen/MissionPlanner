@@ -49,7 +49,7 @@
                     VerticalAlignment="Center"
                     Command="{Binding OKCommand}"
                 >
-                    <avalonia:MaterialIcon Kind="HandOkay" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
                 </Button>
             </StackPanel>
         </StackPanel>

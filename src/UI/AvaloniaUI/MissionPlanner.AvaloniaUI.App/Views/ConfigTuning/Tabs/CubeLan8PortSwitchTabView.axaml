@@ -1,7 +1,7 @@
 <utilities:NavigationViewBase x:TypeArguments="tabs:CubeLan8PortSwitchTabViewModel"
-
                               xmlns="https://github.com/avaloniaui"
-                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" 
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                               xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
                               xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
                               xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
@@ -13,19 +13,27 @@
                               >
     <ContentPage Header="CubeLAN 8 Port Switch" Background="{DynamicResource Surface}">
 
-        <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
-            <StackPanel Orientation="Vertical" Spacing="4">
-                <TextBlock Text="{Binding VehicleHeading}" FontWeight="Bold" />
+        <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12" HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                
+<!--                <TextBlock Text="{Binding VehicleHeading}" FontWeight="Bold" />
+-->
                 <TextBlock Text="Discovery uses only the repository-documented MAVLink DEVICE_OP I²C path at address 0x50. The editor exposes COS, COS priority, EEE, VLAN tagging, and the 8×8 VLAN membership matrix. PoE, port enablement, VLAN IDs, modes, authentication, and editable labels are not exposed because no verified protocol definition exists for them." />
             </StackPanel>
 
             <Border Grid.Row="1" Padding="12">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                     <ProgressBar IsIndeterminate="True"  Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" />
-                    <StackPanel Orientation="Vertical" Grid.Column="1">
-                        <TextBlock Text="{Binding Status}" FontWeight="Bold" />
-                        <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                        <TextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}"/>
+                    <StackPanel Orientation="Vertical" Grid.Column="1" Spacing="10">
+                        
+<!--                        <TextBlock Text="{Binding Status}" FontWeight="Bold" />
+-->
+<!--                        <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+-->                        
+                        <TextBlock Text="{Binding ErrorMessage}"  
+                                   IsVisible="{Binding HasError}" 
+                                   Classes="Danger"/>
+
                     </StackPanel>
                     <Button  Grid.Column="2" Content="Discover / read" Command="{Binding RefreshCommand}" VerticalAlignment="Center" />
                 </Grid>
@@ -94,7 +102,7 @@
 
             <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <TextBlock Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalAlignment="Center" />
-                <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="10">
                     <Button  Content="Export" Command="{Binding ExportCommand}" />
                     <Button  Content="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" />
                     <Button  Content="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" />

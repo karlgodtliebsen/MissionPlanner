@@ -13,7 +13,7 @@
             <TextBlock Text="Compass discovery and calibration" FontSize="18" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Vertical" IsVisible="{Binding HasIssues}" Spacing="4">
 <TextBlock Text="Configuration warnings" FontWeight="Bold" Classes="Warning" />
                 <ItemsControl ItemsSource="{Binding Issues}">

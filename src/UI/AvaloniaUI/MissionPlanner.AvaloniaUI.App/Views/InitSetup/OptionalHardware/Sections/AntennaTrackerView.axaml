@@ -13,7 +13,7 @@
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="Antenna Tracker Configuration" FontSize="24" FontWeight="Bold" />
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
         <TextBlock Text="{Binding TargetStatus}" />
         <TextBlock Text="Configuration and live tracker operation are deliberately separate." />
         <TextBlock Text="{Binding SafetyStatus}" Opacity="0.75" />

@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -67,6 +68,26 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
         get;
         private set;
     }
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableProperty]
+    public partial bool HasWarning
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableProperty]
+    public partial string? WarningMessage
+    {
+        get;
+        private set;
+    }
+
 
     /// <summary>Gets preview items for the selected screen.</summary>
     public ObservableRangeCollection<OsdPreviewItem> PreviewItems
@@ -377,8 +398,14 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
         return error;
     }
 
+    private void SetWarning(string? warning = null)
+    {
+        WarningMessage = warning;
+        HasWarning = !string.IsNullOrEmpty(warning);
+    }
     private async Task InitializeAsync()
     {
+        SetWarning();
         CancelOperation();
         DetachWorkspace();
         Screens.Clear();
@@ -393,6 +420,7 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
         if (!snapshot.IsOnline || snapshot.VehicleId is not { } vehicleId)
         {
             SetMessages("Connect a vehicle to discover onboard OSD parameters.");
+            NotificationManager!.Show(StatusMessage!);
             return;
         }
 
@@ -402,6 +430,7 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
             if (workspace is null)
             {
                 SetMessages("The connected firmware exposes no supported onboard OSD parameters.");
+                SetWarning(StatusMessage);
                 return;
             }
 
@@ -424,6 +453,7 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
             HasOsdConfiguration = true;
             SelectedScreen = Screens.FirstOrDefault();
             SetMessages($"Discovered {Screens.Count} OSD screens and {Screens.Sum(screen => screen.Items.Count)} firmware-defined items.");
+            NotificationManager?.Show(StatusMessage!);
         }).ConfigureAwait(false);
     }
 
@@ -530,7 +560,7 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
     {
         if (ActiveProfileKey.From(args.Current) != activeKey)
         {
-            Dispatcher.Dispatch(() => _ = InitializeAsync());
+            Dispatcher.Dispatch(() => InitializeAsync().SafeFireAndForget());
         }
     }
 

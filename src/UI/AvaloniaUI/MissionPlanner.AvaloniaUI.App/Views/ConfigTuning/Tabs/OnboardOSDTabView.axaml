@@ -14,11 +14,11 @@
 
     <ContentPage Header="Onboard OSD" Background="{DynamicResource Surface}">
 
-        <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10">
-            <Grid ColumnDefinitions="Auto,220,*,Auto" ColumnSpacing="8">
+        <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Center">
+            <Grid ColumnDefinitions="Auto,220,*,Auto" ColumnSpacing="8" IsVisible="{Binding IsUnsupported}">
                 <TextBlock Text="Screen" VerticalAlignment="Center" />
                 <ComboBox Grid.Column="1" ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}" />
-                <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="8">
+                <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="10">
                     <Button  Content="Apply selected screen" Command="{Binding ApplyScreenCommand}" />
                     <Button  Content="Reset to live" Command="{Binding ResetScreenCommand}" />
                     <Button  Content="Import layout" Command="{Binding ImportCommand}" />
@@ -29,16 +29,22 @@
 
             <Border Grid.Row="1" Padding="10">
                 <StackPanel Orientation="Vertical" Spacing="3">
+                    <!--                    
                     <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-<TextBlock Text="{Binding ValidationMessage}"
+                    -->                   
+                    <TextBlock Text="{Binding ValidationMessage}"
                                Classes="Warning"
                                IsVisible="{Binding HasValidationIssues}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding WarningMessage}"
+                               Classes="Warning"
+                               IsVisible="{Binding HasWarning}"
                                TextWrapping="Wrap" />
                     <TextBlock Text="Font upload is not offered because no font-transfer service is registered."
                                FontSize="12"
                                Opacity="0.75"
                                IsVisible="{Binding HasOsdConfiguration}" />
-<TextBlock Text="The connected firmware exposes no discoverable OSD screens/items."
+                    <TextBlock Text="The connected firmware exposes no discoverable OSD screens/items."
                                Classes="Warning"
                                IsVisible="{Binding IsUnsupported}" />
                 </StackPanel>
@@ -148,13 +154,13 @@
 
 
                             </Grid>
-                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
+                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10" >
                                 <Button  Content="← Left" Command="{Binding MoveLeftCommand}" />
                                 <Button  Grid.Column="1" Content="↑ Up" Command="{Binding MoveUpCommand}" />
                                 <Button  Grid.Column="2" Content="↓ Down" Command="{Binding MoveDownCommand}" />
                                 <Button  Grid.Column="3" Content="Right →" Command="{Binding MoveRightCommand}" />
                             </Grid>
-<TextBlock Text="{Binding SelectedItem.ValidationError}" Classes="Warning" FontSize="12" />
+                            <TextBlock Text="{Binding SelectedItem.ValidationError}" Classes="Warning" FontSize="12" />
                             <ItemsControl ItemsSource="{Binding SelectedItem.AdditionalParameters}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="models:ParameterItemViewModel">

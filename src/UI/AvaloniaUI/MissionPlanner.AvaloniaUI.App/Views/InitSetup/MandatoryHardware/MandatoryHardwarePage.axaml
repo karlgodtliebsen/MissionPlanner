@@ -14,7 +14,7 @@
     <ContentPage Header="Mandatory Hardware" Background="{DynamicResource Surface}">
         <Grid Margin="20" RowDefinitions="Auto,Auto,*" RowSpacing="14">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+                <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
                 <TextBlock Text="{Binding VehicleHeading}" FontSize="16" />
             </StackPanel>
             <TabControl Grid.Row="2">
