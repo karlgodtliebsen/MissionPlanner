@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Navigation;
@@ -7,12 +7,8 @@ public sealed class AvaloniaNavigationService : INavigationService
 {
     private readonly INavigationPageFactory pageFactory;
     private readonly IUiDispatcher dispatcher;
-
     private readonly SemaphoreSlim navigationGate = new(1, 1);
-
-    private NavigationPage? navigationPage;
-    private DrawerPage? drawerPage;
-
+    private readonly List<NavigationEntry> navigationStack = [];
     private string? currentRoute;
 
     public AvaloniaNavigationService(INavigationPageFactory pageFactory, IUiDispatcher dispatcher)
@@ -21,45 +17,24 @@ public sealed class AvaloniaNavigationService : INavigationService
         this.dispatcher = dispatcher;
     }
 
-    public void Attach(NavigationPage navigationPage, DrawerPage drawerPage)
-    {
-        this.navigationPage = navigationPage;
-        this.drawerPage = drawerPage;
-        currentRoute = null;
-    }
+    public event Action<Page>? CurrentPageChanged;
 
     public async Task NavigateAsync(string route)
     {
-        if (route == currentRoute)
-        {
-            drawerPage?.IsOpen = false;
-            return;
-        }
-
         await navigationGate.WaitAsync();
-
         try
         {
-            await dispatcher.DispatchAsync(async () =>
+            if (route == currentRoute && navigationStack.Count == 1)
+                return;
+
+            await dispatcher.DispatchAsync(() =>
             {
-                var navigation = GetNavigationPage();
-
-                //
-                // Main menu navigation represents changing
-                // application section, not drilling deeper.
-                //
-                if (navigation.StackDepth > 1)
-                {
-                    await navigation.PopToRootAsync();
-                }
-
                 var page = pageFactory.Create(route);
-
-                await navigation.ReplaceAsync(page);
-
+                navigationStack.Clear();
+                navigationStack.Add(new NavigationEntry(route, page));
                 currentRoute = route;
-
-                drawerPage?.IsOpen = false;
+                CurrentPageChanged?.Invoke(page);
+                return Task.CompletedTask;
             });
         }
         finally
@@ -70,24 +45,45 @@ public sealed class AvaloniaNavigationService : INavigationService
 
     public async Task PushAsync(Page page)
     {
-        await dispatcher.DispatchAsync(async () => await GetNavigationPage().PushAsync(page));
+        await navigationGate.WaitAsync();
+        try
+        {
+            await dispatcher.DispatchAsync(() =>
+            {
+                navigationStack.Add(new NavigationEntry(null, page));
+                currentRoute = null;
+                CurrentPageChanged?.Invoke(page);
+                return Task.CompletedTask;
+            });
+        }
+        finally
+        {
+            navigationGate.Release();
+        }
     }
 
     public async Task GoBackAsync()
     {
-        await dispatcher.DispatchAsync(async () =>
+        await navigationGate.WaitAsync();
+        try
         {
-            var navigation = GetNavigationPage();
-
-            if (navigation.CanGoBack)
+            await dispatcher.DispatchAsync(() =>
             {
-                await navigation.PopAsync();
-            }
-        });
+                if (navigationStack.Count <= 1)
+                    return Task.CompletedTask;
+
+                navigationStack.RemoveAt(navigationStack.Count - 1);
+                var entry = navigationStack[^1];
+                currentRoute = entry.Route;
+                CurrentPageChanged?.Invoke(entry.Page);
+                return Task.CompletedTask;
+            });
+        }
+        finally
+        {
+            navigationGate.Release();
+        }
     }
 
-    private NavigationPage GetNavigationPage()
-    {
-        return navigationPage ?? throw new InvalidOperationException("NavigationPage has not been attached.");
-    }
+    private sealed record NavigationEntry(string? Route, Page Page);
 }

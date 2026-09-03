@@ -8,10 +8,8 @@ public partial class MainShellView : UserControl
     public MainShellView()
     {
         InitializeComponent();
-        DataContext = ServiceHelper.GetRequiredService<MainShellViewModel>();
-        var navigation = ServiceHelper.GetRequiredService<INavigationService>();
-        navigation.Attach(NavigationHost, MainDrawer);
-        AttachedToVisualTree += async (_, _) =>
-            await navigation.NavigateAsync(MissionPlannerRoutes.FlightData);
+        var viewModel = ServiceHelper.GetRequiredService<MainShellViewModel>();
+        DataContext = viewModel;
+        AttachedToVisualTree += async (_, _) => await viewModel.InitializeAsync();
     }
 }

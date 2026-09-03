@@ -4,7 +4,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Navigation;
 
 public interface INavigationService
 {
-    void Attach(NavigationPage navigationPage, DrawerPage drawerPage);
+    event Action<Page>? CurrentPageChanged;
 
     Task NavigateAsync(string route);
 
