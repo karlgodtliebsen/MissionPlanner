@@ -1,15 +1,14 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
-using MissionPlanner.AvaloniaUI.App.Views.Config;
 using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
 using MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
 using MissionPlanner.AvaloniaUI.App.Views.Help;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.Advanced;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware;
-using MissionPlanner.AvaloniaUI.App.Views.InitSetup.Advanced;
 using MissionPlanner.AvaloniaUI.App.Views.Introduction;
 using MissionPlanner.AvaloniaUI.App.Views.Preferences;
 using MissionPlanner.AvaloniaUI.App.Views.Samples;
@@ -64,19 +63,6 @@ public sealed class NavigationPageFactory : INavigationPageFactory
             MissionPlannerRoutes.ConfigFullParameters => CreateViewPage<FullParametersListTabView>("Full Parameters List"),
             MissionPlannerRoutes.ConfigCubeLan8PortSwitch => CreateViewPage<CubeLan8PortSwitchTabView>("CubeLAN 8 Port Switch"),
 
-            //MissionPlannerRoutes.SetupInstallFirmware =>
-            //    CreateViewPage<InstallFirmwarePage>("Install Firmware"),
-
-            //MissionPlannerRoutes.SetupMandatoryHardware =>
-            //    CreateViewPage<MandatoryHardwareView>("Mandatory Hardware"),
-
-            //MissionPlannerRoutes.SetupOptionalHardware =>
-            //    CreateViewPage<OptionalHardwareView>("Optional Hardware"),
-
-            //MissionPlannerRoutes.SetupAdvanced =>
-            //    CreateViewPage<AdvancedView>("Advanced"),
-
-
             MissionPlannerRoutes.Preferences =>
                 services.GetRequiredService<PreferencesPage>(),
 
@@ -90,7 +76,7 @@ public sealed class NavigationPageFactory : INavigationPageFactory
                 services.GetRequiredService<HelpPage>(),
 
             MissionPlannerRoutes.Exit =>
-                CreateViewPage<ExitView>("Exit"),
+                CreateViewPage<ExitPage>("Exit"),
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(route),

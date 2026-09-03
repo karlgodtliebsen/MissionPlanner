@@ -37,7 +37,6 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     /// <param name="coordinator">The guarded update coordinator.</param>
     /// <param name="flashingService">The platform flashing adapter.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
-    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public FirmwareSetupViewModel(
         ISetupWorkflowCatalog workflowCatalog,

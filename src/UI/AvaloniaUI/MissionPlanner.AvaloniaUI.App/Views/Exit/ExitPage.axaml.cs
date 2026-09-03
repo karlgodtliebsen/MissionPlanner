@@ -1,10 +1,8 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Exit;
 
-public partial class ExitPage : NavigationPage
+public partial class ExitPage : UserControlViewBase<ExitViewModel>
 {
     public ExitPage()
     {

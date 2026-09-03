@@ -121,7 +121,7 @@ public partial class NotificationViewModel : ViewModelBase
 
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
     {
         if (isDisposed)
         {
@@ -132,5 +132,6 @@ public partial class NotificationViewModel : ViewModelBase
         bannerDismissal?.Cancel();
         bannerDismissal?.Dispose();
         bannerDismissal = null;
+        base.Dispose();
     }
 }

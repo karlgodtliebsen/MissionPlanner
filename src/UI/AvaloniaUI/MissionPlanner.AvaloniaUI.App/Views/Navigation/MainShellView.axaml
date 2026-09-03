@@ -20,10 +20,10 @@
                     Value="10,8"/>
             <Setter Property="CornerRadius"
                     Value="6"/>
-            <Setter Property="Background"
-                    Value="Transparent"/>
             <Setter Property="BorderThickness"
                     Value="0"/>
+            <Setter Property="Theme" Value="{DynamicResource BorderlessIconSplitButton}"></Setter>
+
         </Style>
 
         <Style Selector="Button.NavigationItem:pointerover">
@@ -41,10 +41,9 @@
                     Value="10,6"/>
             <Setter Property="CornerRadius"
                     Value="6"/>
-            <Setter Property="Background"
-                    Value="Transparent"/>
             <Setter Property="BorderThickness"
                     Value="0"/>
+            <Setter Property="Theme" Value="{DynamicResource BorderlessIconSplitButton}"></Setter>
         </Style>
 
         <Style Selector="Button.NavigationSubItem:pointerover">
@@ -100,10 +99,11 @@
                 <ScrollViewer Grid.Row="1">
 
                     <StackPanel Spacing="4">
-                       
+
                         <!-- Flight Data -->
 
-                        <Button Classes="NavigationItem"
+                        <Button Classes="NavigationItem Tertiary Light"
+
                                 Command="{Binding NavigateCommand}"
                                 CommandParameter="FlightData">
 
@@ -125,7 +125,7 @@
 
                         <!-- Flight Plan -->
 
-                        <Button Classes="NavigationItem"
+                        <Button Classes="NavigationItem Tertiary Light"
                                 Command="{Binding NavigateCommand}"
                                 CommandParameter="FlightPlanner">
 
@@ -145,43 +145,43 @@
                         </Button>
                         <!-- Dialog Demo Data -->
 
-                        <Button Classes="NavigationItem"
-                                Command="{Binding NavigateCommand}"
-                                CommandParameter="DialogDemo">
+                        <!--                   <Button Classes="NavigationItem"
+                        Command="{Binding NavigateCommand}"
+                        CommandParameter="DialogDemo">
 
-                            <Grid ColumnDefinitions="28,*">
+                        <Grid ColumnDefinitions="28,*">
 
-                                <Image
-                                    Width="20"
-                                    Height="20"
-                                    Source="/Resources/Images/light_flightdata_icon.png"/>
+                        <Image
+                        Width="20"
+                        Height="20"
+                        Source="/Resources/Images/light_flightdata_icon.png"/>
 
-                                <TextBlock
-                                    Grid.Column="1"
-                                    Text="Dialog Demo Data"
-                                    VerticalAlignment="Center"/>
-                            </Grid>
-
-                        </Button>
-
-                        <Button Classes="NavigationItem"
-                                Command="{Binding NavigateCommand}"
-                                CommandParameter="DataGridDemo">
-
-                            <Grid ColumnDefinitions="28,*">
-
-                                <Image
-                                    Width="20"
-                                    Height="20"
-                                    Source="/Resources/Images/light_flightdata_icon.png"/>
-
-                                <TextBlock
-                                    Grid.Column="1"
-                                    Text="Data Grid Demo"
-                                    VerticalAlignment="Center"/>
-                            </Grid>
+                        <TextBlock
+                        Grid.Column="1"
+                        Text="Dialog Demo Data"
+                        VerticalAlignment="Center"/>
+                        </Grid>
 
                         </Button>
+
+                        <Button Classes="NavigationItem"
+                        Command="{Binding NavigateCommand}"
+                        CommandParameter="DataGridDemo">
+
+                        <Grid ColumnDefinitions="28,*">
+
+                        <Image
+                        Width="20"
+                        Height="20"
+                        Source="/Resources/Images/light_flightdata_icon.png"/>
+
+                        <TextBlock
+                        Grid.Column="1"
+                        Text="Data Grid Demo"
+                        VerticalAlignment="Center"/>
+                        </Grid>
+
+                        </Button>-->
 
                         <!-- SETUP -->
 
@@ -200,6 +200,7 @@
                                         Grid.Column="1"
                                         Text="Setup"
                                         FontWeight="SemiBold"
+                                        
                                         VerticalAlignment="Center"/>
 
                                 </Grid>
@@ -210,22 +211,22 @@
                                 Margin="28,4,0,8"
                                 Spacing="2">
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="Install Firmware"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="SetupInstallFirmware"/>
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="Mandatory Hardware"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="SetupMandatoryHardware"/>
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="Optional Hardware"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="SetupOptionalHardware"/>
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="Advanced"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="SetupAdvanced"/>
@@ -254,6 +255,9 @@
                                         FontWeight="SemiBold"
                                         VerticalAlignment="Center"/>
 
+<!--                                    <Label Grid.Column="1" Classes="Blue Ghost" Theme="{DynamicResource TagLabel}">Config</Label>
+-->
+
                                 </Grid>
 
                             </Expander.Header>
@@ -262,37 +266,37 @@
                                 Margin="28,4,0,8"
                                 Spacing="2">
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="Geo Fence"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="ConfigGeoFence"/>
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="Basic Tuning"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="ConfigBasicTuning"/>
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="Extended Tuning"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="ConfigExtendedTuning"/>
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="Onboard OSD"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="ConfigOnboardOSD"/>
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="MAV Ftp"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="ConfigMavFtp"/>
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="Full Parameters List"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="ConfigFullParameters"/>
 
-                                <Button Classes="NavigationSubItem"
+                                <Button Classes="NavigationSubItem Tertiary Light"
                                         Content="CubeLan 8 Port Switch"
                                         Command="{Binding NavigateCommand}"
                                         CommandParameter="ConfigCubeLan8PortSwitch"/>
@@ -305,22 +309,22 @@
                         <Separator Margin="8,8"/>
 
 
-                        <Button Classes="NavigationItem"
+                        <Button Classes="NavigationItem Tertiary Light"
                                 Content="Preferences"
                                 Command="{Binding NavigateCommand}"
                                 CommandParameter="Preferences"/>
 
-                        <Button Classes="NavigationItem"
+                        <Button Classes="NavigationItem Tertiary Light"
                                 Content="Simulation"
                                 Command="{Binding NavigateCommand}"
                                 CommandParameter="Simulation"/>
 
-                        <Button Classes="NavigationItem"
+                        <Button Classes="NavigationItem Tertiary Light"
                                 Content="Tutorial"
                                 Command="{Binding NavigateCommand}"
                                 CommandParameter="IntroductionPage"/>
 
-                        <Button Classes="NavigationItem"
+                        <Button Classes="NavigationItem Tertiary Light"
                                 Content="Help"
                                 Command="{Binding NavigateCommand}"
                                 CommandParameter="Help"/>
@@ -334,7 +338,7 @@
 
                 <Button Grid.Row="2"
                         Margin="0,8,0,0"
-                        Classes="NavigationItem"
+                        Classes="NavigationItem Tertiary Light"
                         Content="Exit"
                         Command="{Binding NavigateCommand}"
                         CommandParameter="Exit"/>

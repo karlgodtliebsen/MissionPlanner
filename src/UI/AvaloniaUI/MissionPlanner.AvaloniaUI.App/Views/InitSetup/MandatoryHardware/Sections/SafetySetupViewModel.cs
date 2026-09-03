@@ -23,7 +23,6 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="safetyService">The safety assessment service.</param>
     /// <param name="parameterRegistry">The live parameter registry.</param>
-    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public SafetySetupViewModel(
         ISetupWorkflowCatalog workflowCatalog,

@@ -9,7 +9,6 @@
                               xmlns:hud="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightData.Hud"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightData.FlightDataPage">
-    <!--SelectionChanged="OnTabSelectionChanged"-->
     <ContentPage Header="Flight Data">
         <Grid ColumnDefinitions="400,5,*">
             <Grid Grid.Column="0" RowDefinitions="240,*" RowSpacing="4">

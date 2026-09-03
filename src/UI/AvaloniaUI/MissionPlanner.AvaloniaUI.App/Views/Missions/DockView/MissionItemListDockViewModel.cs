@@ -64,8 +64,4 @@ public partial class MissionItemListDockViewModel : ViewModelBase
         await domainEventHub.PublishDomainEventAsync(new EditorDisplayEvent("EditorClose"), cancellationToken);
     }
 
-    /// <inheritdoc />
-    public void Dispose()
-    {
-    }
 }

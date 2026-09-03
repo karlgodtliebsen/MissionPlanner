@@ -32,7 +32,6 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
     /// <param name="tuningService">The curated tuning service.</param>
     /// <param name="fileHandler">The Config file helper.</param>
     /// <param name="confirmation">The hazardous-change confirmation service.</param>
-    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public BasicTuningTabViewModel(
         IActiveVehicleContext activeVehicle,
@@ -377,4 +376,3 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
         }
     }
 }
-

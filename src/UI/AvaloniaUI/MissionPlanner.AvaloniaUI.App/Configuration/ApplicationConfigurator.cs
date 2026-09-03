@@ -212,8 +212,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<DataGridViewModel>();
         services.TryAddTransient<DataGridPage>();
 
+        services.TryAddTransient<ExitPage>();
         services.TryAddTransient<ExitViewModel>();
-        services.TryAddTransient<ExitUserControlView>();
 
         services.TryAddSingleton<INavigationPageFactory, NavigationPageFactory>();
 

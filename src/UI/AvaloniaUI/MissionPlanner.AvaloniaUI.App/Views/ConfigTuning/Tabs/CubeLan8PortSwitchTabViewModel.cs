@@ -34,7 +34,6 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
     /// <param name="adapter">The isolated CubeLAN vendor-device adapter.</param>
     /// <param name="fileHandler">The Config file helper.</param>
     /// <param name="confirmation">The apply confirmation service.</param>
-    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public CubeLan8PortSwitchTabViewModel(
         IActiveVehicleContext activeVehicle,
@@ -385,4 +384,3 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
 
     private readonly record struct ActiveKey(VehicleId? VehicleId, bool IsOnline);
 }
-

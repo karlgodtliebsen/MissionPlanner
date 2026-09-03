@@ -228,12 +228,10 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     }
 
     /// <inheritdoc />
-    public ValueTask<PlannerSettingsSaveResult> SaveFlyout(PlannerSettings settings, bool isFlyoutVisibleAtStartup, bool isFlyoutLocked, bool isTutorialVisibleAtStartup, CancellationToken cancellationToken = default)
+    public ValueTask<PlannerSettingsSaveResult> SaveStartup(PlannerSettings settings, bool isTutorialVisibleAtStartup, CancellationToken cancellationToken = default)
     {
         settings.Appearance = settings.Appearance with
         {
-            IsFlyoutVisibleAtStartup = isFlyoutVisibleAtStartup,
-            IsFlyoutLocked = isFlyoutLocked,
             IsTutorialVisibleAtStartup = isTutorialVisibleAtStartup
         };
         return SaveAsync(settings, cancellationToken);

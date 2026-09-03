@@ -47,12 +47,10 @@ public interface IPlannerSettingsService
     /// This is a convenience method that updates the Flyout section and saves the settings.
     /// </summary>
     /// <param name="settings"></param>
-    /// <param name="isFlyoutVisibleAtStartup"></param>
-    /// <param name="isFlyoutLocked"></param>
     /// <param name="isTutorialVisibleAtStartup"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    ValueTask<PlannerSettingsSaveResult> SaveFlyout(PlannerSettings settings, bool isFlyoutVisibleAtStartup, bool isFlyoutLocked, bool isTutorialVisibleAtStartup, CancellationToken cancellationToken = default);
+    ValueTask<PlannerSettingsSaveResult> SaveStartup(PlannerSettings settings, bool isTutorialVisibleAtStartup, CancellationToken cancellationToken = default);
 
     /// <summary>Resets one section to defaults.</summary>
     /// <param name="section">The section to reset.</param>

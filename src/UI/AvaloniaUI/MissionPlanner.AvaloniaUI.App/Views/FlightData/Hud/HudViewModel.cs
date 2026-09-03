@@ -135,9 +135,10 @@ public partial class HudViewModel : ViewModelBase
     }
 
     /// <inheritdoc/>
-    public void Dispose()
+    public override void Dispose()
     {
         hudDataSubscription?.Dispose();
+        base.Dispose();
     }
 
     private void SubscribeToVehicleData()

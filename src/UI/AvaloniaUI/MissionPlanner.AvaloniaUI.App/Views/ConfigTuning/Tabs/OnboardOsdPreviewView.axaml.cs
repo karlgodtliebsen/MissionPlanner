@@ -1,5 +1,6 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using MissionPlanner.Library;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
@@ -9,7 +10,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 public partial class OnboardOsdPreviewView : UserControl
 {
     private OnboardOsdTabViewModel? viewModel;
-    private OsdPreviewCanvas previewCanvas = null!;
+    private readonly OsdPreviewCanvas previewCanvas = null!;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OnboardOsdPreviewView"/> class.
@@ -17,8 +18,8 @@ public partial class OnboardOsdPreviewView : UserControl
     public OnboardOsdPreviewView()
     {
         InitializeComponent();
-        previewCanvas = this.FindControl<OsdPreviewCanvas>("PreviewCanvas")
-            ?? throw new InvalidOperationException("The OSD preview canvas could not be loaded.");
+        previewCanvas = this.FindControl<OsdPreviewCanvas>("PreviewCanvas");
+        DomainException.ThrowIfNull(previewCanvas, "The OSD preview canvas could not be loaded.");
         DataContextChanged += OnDataContextChanged;
         OnDataContextChanged(this, EventArgs.Empty);
     }

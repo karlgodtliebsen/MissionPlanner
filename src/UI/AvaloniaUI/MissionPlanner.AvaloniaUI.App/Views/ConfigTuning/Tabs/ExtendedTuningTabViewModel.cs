@@ -30,7 +30,6 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
     /// <param name="tuningService">The advanced tuning service.</param>
     /// <param name="metricsService">The read-only control-response service.</param>
     /// <param name="confirmation">The expert-change confirmation service.</param>
-    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public ExtendedTuningTabViewModel(
         IActiveVehicleContext activeVehicle,
@@ -495,4 +494,3 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
         }
     }
 }
-

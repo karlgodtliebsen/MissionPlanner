@@ -9,6 +9,7 @@ namespace MissionPlanner.Core.Vehicles.Observations;
 /// <param name="Total">The Total value.</param>
 /// <param name="MissionState">The MissionState value.</param>
 /// <param name="MissionMode">The MissionMode value.</param>
+/// <param name="MissionId">The active mission identifier.</param>
 /// <param name="ObservedAt">The ObservedAt value.</param>
 public sealed record VehicleMissionProgressObservation(
     ushort CurrentSequence,

@@ -39,15 +39,25 @@ public partial class MainShellViewModel : ObservableObject
     private static bool CanNavigate(string? route)
     {
         return route is
-        MissionPlannerRoutes.DataGridDemo or
-        MissionPlannerRoutes.DialogDemo or
+        //MissionPlannerRoutes.DataGridDemo or
+        //MissionPlannerRoutes.DialogDemo or
         MissionPlannerRoutes.FlightData or
         MissionPlannerRoutes.FlightPlanner or
         MissionPlannerRoutes.Preferences or
         MissionPlannerRoutes.SetupInstallFirmware or
         MissionPlannerRoutes.SetupMandatoryHardware or
+        MissionPlannerRoutes.SetupOptionalHardware or
+        MissionPlannerRoutes.SetupAdvanced or
+
+
         MissionPlannerRoutes.ConfigOnboardOSD or
         MissionPlannerRoutes.ConfigFullParameters or
+        MissionPlannerRoutes.ConfigBasicTuning or
+        MissionPlannerRoutes.ConfigGeoFence or
+        MissionPlannerRoutes.ConfigExtendedTuning or
+        MissionPlannerRoutes.ConfigCubeLan8PortSwitch or
+        MissionPlannerRoutes.ConfigMavFtp or
+        MissionPlannerRoutes.ConfigOnboardOSD or
         MissionPlannerRoutes.Simulation or
         MissionPlannerRoutes.Introduction or
         MissionPlannerRoutes.Help or

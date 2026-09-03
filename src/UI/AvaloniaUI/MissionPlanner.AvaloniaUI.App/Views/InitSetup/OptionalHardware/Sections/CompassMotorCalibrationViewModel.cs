@@ -24,7 +24,6 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
     /// <param name="active"></param>
     /// <param name="service"></param>
     /// <param name="confirmation"></param>
-    /// <param name="dispatcher"></param>
     /// <param name="logger"></param>
     public CompassMotorCalibrationViewModel(IActiveVehicleContext active, ICompassMotorCalibrationService service,
         IUserConfirmationService confirmation, ILogger<CompassMotorCalibrationViewModel> logger) : base(logger)

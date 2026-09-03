@@ -31,6 +31,7 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
     /// <param name="vehicleRegistry">The vehicle registry to query current vehicle state.</param>
     /// <param name="domainEventHub">The domain event hub to subscribe to vehicle updates.</param>
     /// <param name="logger">The logger instance.</param>
+    /// <param name="altitudeReferenceService">Optional local altitude-reference service.</param>
     public VehicleHudDataService(IVehicleRegistry vehicleRegistry, IDomainEventHub domainEventHub, ILogger<VehicleHudDataService> logger, ILocalAltitudeReferenceService? altitudeReferenceService = null)
     {
         this.vehicleRegistry = vehicleRegistry ?? throw new ArgumentNullException(nameof(vehicleRegistry));

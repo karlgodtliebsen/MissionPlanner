@@ -122,13 +122,6 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     }
 
     [ObservableProperty]
-    public partial string? StatusMessage
-    {
-        get;
-        set;
-    }
-
-    [ObservableProperty]
     public partial bool ShowSelectedHost
     {
         get;

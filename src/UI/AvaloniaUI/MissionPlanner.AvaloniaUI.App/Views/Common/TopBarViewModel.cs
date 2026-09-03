@@ -14,6 +14,7 @@ using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 using MissionPlanner.AvaloniaUI.App.Views.Connect;
 using MissionPlanner.AvaloniaUI.App.Views.Navigation;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -41,36 +42,34 @@ public partial class TopBarViewModel : ViewModelBase
     private readonly IList<IDisposable> disposables = [];
     private readonly IReplaySessionManager replaySessionManager;
     private readonly INavigationService navigationService;
+    private readonly IPlannerSettingsService settingsService;
+    private bool changingTheme;
     private bool disposed;
 
 
+    /// <summary>Gets the themes supported by Avalonia and Semi.</summary>
     public ObservableCollection<ThemeItem> Themes
     {
         get;
     } =
     [
-        new("Default", ThemeVariant.Default),
-        new("Light", ThemeVariant.Light),
-        new("Dark", ThemeVariant.Dark),
-        new("Aquatic", SemiTheme.Aquatic),
-        new("Desert", SemiTheme.Desert),
-        new("Dusk", SemiTheme.Dusk),
-        new("NightSky", SemiTheme.NightSky)
+        .. AvaloniaThemeCatalog.Items
     ];
 
     partial void OnSelectedThemeChanged(ThemeItem? oldValue, ThemeItem? newValue)
     {
         if (newValue is null)
             return;
-        var app = Application.Current;
-        if (app is not null)
+        AvaloniaThemeCatalog.Apply(newValue);
+        if (!changingTheme)
         {
-            app.RequestedThemeVariant = newValue.Theme;
-            NotificationManager?.Show(
-                new Notification("Theme changed", $"Theme changed to {newValue.Name}"),
-                type: NotificationType.Success,
-                classes: ["Light"]);
+            _ = PersistThemeAsync(newValue);
         }
+
+        NotificationManager?.Show(
+            new Notification("Theme changed", $"Theme changed to {newValue.Name}"),
+            type: NotificationType.Success,
+            classes: ["Light"]);
     }
 
 
@@ -158,6 +157,7 @@ public partial class TopBarViewModel : ViewModelBase
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="replaySessionManager">Application-wide replay safety state.</param>
     /// <param name="navigationService">Application route navigation.</param>
+    /// <param name="settingsService">The persisted Planner settings service.</param>
     /// <param name="logger">The logger instance.</param>
     public TopBarViewModel(
         ApplicationStateService stateService,
@@ -165,12 +165,14 @@ public partial class TopBarViewModel : ViewModelBase
         IDomainEventHub domainEventHub,
         IReplaySessionManager replaySessionManager,
         INavigationService navigationService,
+        IPlannerSettingsService settingsService,
         ILogger<TopBarViewModel> logger) : base(logger)
     {
         this.stateService = stateService;
         this.serviceFactory = serviceFactory;
         this.replaySessionManager = replaySessionManager;
         this.navigationService = navigationService;
+        this.settingsService = settingsService;
         // Subscribe to connection events
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
@@ -180,7 +182,8 @@ public partial class TopBarViewModel : ViewModelBase
         stateService.PropertyChanged += OnApplicationStateChanged;
         ApplyReplayState(replaySessionManager.Snapshot);
 
-        SelectedTheme = Themes.FirstOrDefault(t => t.Theme == Application.Current?.RequestedThemeVariant) ?? Themes.First();
+        AvaloniaThemeCatalog.ThemeChanged += OnThemeChanged;
+        SetSelectedTheme(AvaloniaThemeCatalog.Resolve(settingsService.Current.Appearance.ThemeId));
         LoadImage(ConnectImage);
         // Initial state
         UpdateConnectionStatus();
@@ -287,12 +290,39 @@ public partial class TopBarViewModel : ViewModelBase
         disposed = true;
         stateService.PropertyChanged -= OnApplicationStateChanged;
         replaySessionManager.Changed -= OnReplayChanged;
+        AvaloniaThemeCatalog.ThemeChanged -= OnThemeChanged;
         foreach (var disposable in disposables)
         {
             disposable.Dispose();
         }
         disposables.Clear();
         base.Dispose();
+    }
+
+    private async Task PersistThemeAsync(ThemeItem theme)
+    {
+        settingsService.Current.Appearance = settingsService.Current.Appearance with { ThemeId = theme.Id };
+        var result = await settingsService.SaveAsync(settingsService.Current);
+        if (!result.Success)
+        {
+            Logger.LogWarning("Could not persist theme {ThemeId}: {Errors}", theme.Id,
+                string.Join(" ", result.Errors.Select(error => error.Message)));
+        }
+    }
+
+    private void OnThemeChanged(object? sender, ThemeItem theme) => SetSelectedTheme(theme);
+
+    private void SetSelectedTheme(ThemeItem theme)
+    {
+        var selected = Themes.First(item => item.Id == theme.Id);
+        if (SelectedTheme == selected)
+        {
+            return;
+        }
+
+        changingTheme = true;
+        SelectedTheme = selected;
+        changingTheme = false;
     }
 
     private void OnReplayChanged(ReplaySessionChangedEventArgs args)

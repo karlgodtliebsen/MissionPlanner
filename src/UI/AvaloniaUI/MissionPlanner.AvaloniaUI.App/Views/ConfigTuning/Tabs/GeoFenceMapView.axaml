@@ -1,11 +1,13 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mapsui="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.GeoFenceMapView"
-             x:CompileBindings="False">
+<utilities:TabItemViewBase x:TypeArguments="tabs:GeoFenceTabViewModel" xmlns="https://github.com/avaloniaui"
+                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                           xmlns:mapsui="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
+                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                           xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                           xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
+                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                           x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.GeoFenceMapView"
+                           x:CompileBindings="False">
     <Grid>
         <mapsui:MapControl x:Name="FenceMap" />
         <Border Margin="12" Padding="10,6" HorizontalAlignment="Left" VerticalAlignment="Top"
@@ -13,4 +15,4 @@
             <TextBlock Text="{Binding EditModeText}" />
         </Border>
     </Grid>
-</UserControl>
+</utilities:TabItemViewBase>

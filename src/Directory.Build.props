@@ -18,7 +18,8 @@
 		<AnalysisLevelSecurity>latest-recommended</AnalysisLevelSecurity>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
-		<NoWarn>$(NoWarn);NU1608</NoWarn>
+		<!-- Public XML files are generated for documented APIs. Do not require comments on every public UI/framework member. -->
+		<NoWarn>$(NoWarn);NU1608;CS1591</NoWarn>
 	</PropertyGroup>
 
 </Project>

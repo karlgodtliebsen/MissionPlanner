@@ -130,7 +130,6 @@ public partial class QuickTabViewModel : ViewModelBase
     /// </summary>
     /// <param name="hudDataService"></param>
     /// <param name="activeVehicle"></param>
-    /// <param name="dispatcher"></param>
     /// <param name="logger"></param>
     public QuickTabViewModel(IVehicleHudDataService hudDataService, IActiveVehicleContext activeVehicle, ILogger<QuickTabViewModel> logger) : base(logger)
     {
@@ -195,4 +194,3 @@ public partial class QuickTabViewModel : ViewModelBase
         disposable = null;
     }
 }
-

@@ -23,7 +23,6 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
     /// <param name="workflowCatalog">The setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="summaryService">The setup summary service.</param>
-    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public SetupSummaryViewModel(
         ISetupWorkflowCatalog workflowCatalog,

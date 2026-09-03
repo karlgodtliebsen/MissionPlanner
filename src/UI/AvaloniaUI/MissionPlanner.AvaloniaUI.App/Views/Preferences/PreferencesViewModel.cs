@@ -1,10 +1,12 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Models;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Utilities;
+using MissionPlanner.AvaloniaUI.App.Views.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Maps.Catalog;
 using MissionPlanner.Maps.Credentials;
@@ -32,6 +34,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     private bool loading;
     private bool active;
     private bool disposed;
+    private bool changingTheme;
     private CancellationTokenSource? activationCancellation;
     private CancellationTokenSource? operationCancellation;
 
@@ -72,6 +75,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         this.offlinePackManager = offlinePackManager;
         this.offlinePackValidator = offlinePackValidator;
         this.mapCache = mapCache;
+        AvaloniaThemeCatalog.ThemeChanged += OnThemeChanged;
     }
 
     /// <summary>
@@ -81,6 +85,24 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     {
         get;
     } = Enum.GetValues<UnitSystem>();
+
+    /// <summary>Gets the themes supported by Avalonia and Semi.</summary>
+    public ObservableCollection<ThemeItem> Themes { get; } = [.. AvaloniaThemeCatalog.Items];
+
+    /// <summary>Gets or sets the live application theme.</summary>
+    [ObservableProperty]
+    public partial ThemeItem? SelectedTheme
+    {
+        get; set;
+    }
+
+    partial void OnSelectedThemeChanged(ThemeItem? value)
+    {
+        if (!loading && !changingTheme && value is not null)
+        {
+            AvaloniaThemeCatalog.Apply(value);
+        }
+    }
 
     /// <summary>Gets selectable built-in sources grouped for the settings UI.</summary>
     public IReadOnlyList<MapSettingsSourceItem> MapSources
@@ -199,15 +221,6 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         get;
     } = ["Basic", "Advanced", "Custom"];
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the flyout menu is visible at startup.
-    /// </summary>
-    [ObservableProperty]
-    public partial bool IsFlyoutVisibleAtStartup
-    {
-        get;
-        set;
-    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is visible at startup.
@@ -219,15 +232,6 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         set;
     }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
-    /// </summary>
-    [ObservableProperty]
-    public partial bool IsFlyoutLocked
-    {
-        get;
-        set;
-    }
 
 
     /// <summary>Gets the selected unit system.</summary>
@@ -747,6 +751,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
         Debug.Print("Disposing PreferencesViewModel");
         Deactivate();
+        AvaloniaThemeCatalog.ThemeChanged -= OnThemeChanged;
         disposed = true;
         base.Dispose();
     }
@@ -1125,9 +1130,8 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         loading = true;
         try
         {
-            IsFlyoutLocked = settings.Appearance.IsFlyoutLocked;
-            IsFlyoutVisibleAtStartup = settings.Appearance.IsFlyoutVisibleAtStartup;
             IsTutorialVisibleAtStartup = settings.Appearance.IsTutorialVisibleAtStartup;
+            SetSelectedTheme(AvaloniaThemeCatalog.Resolve(settings.Appearance.ThemeId));
 
             SelectedUnitSystem = settings.Units.System;
             DefaultMapZoom = settings.Map.DefaultZoom;
@@ -1203,7 +1207,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings { DefaultZoom = DefaultMapZoom, SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard", HttpCacheEnabled = MapHttpCacheEnabled, HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L },
             Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
-            Appearance = new PlannerAppearanceSettings { IsFlyoutVisibleAtStartup = IsFlyoutVisibleAtStartup, IsTutorialVisibleAtStartup = IsTutorialVisibleAtStartup, IsFlyoutLocked = IsFlyoutLocked },
+            Appearance = new PlannerAppearanceSettings { ThemeId = SelectedTheme?.Id ?? PlannerAppearanceSettings.DefaultThemeId, IsTutorialVisibleAtStartup = IsTutorialVisibleAtStartup },
             Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays, LogDirectory = LogDirectory },
             Connection = new PlannerConnectionSettings { Channel = ConnectionChannel, Host = ConnectionHost, Port = ConnectionPort, BaudRate = ConnectionBaudRate },
             ParameterCache = new PlannerParameterCacheSettings { Policy = SelectedParameterCachePolicy, MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes },
@@ -1247,6 +1251,29 @@ public sealed partial class PreferencesViewModel : ViewModelBase
                 MapAccessMode = MapAccessMode
             }
         };
+    }
+
+    private void SetSelectedTheme(ThemeItem theme)
+    {
+        changingTheme = true;
+        SelectedTheme = Themes.First(item => item.Id == theme.Id);
+        changingTheme = false;
+        AvaloniaThemeCatalog.Apply(SelectedTheme);
+    }
+
+    private void OnThemeChanged(object? sender, ThemeItem theme)
+    {
+        if (SelectedTheme?.Id == theme.Id)
+        {
+            return;
+        }
+
+        Dispatcher.Dispatch(() =>
+        {
+            changingTheme = true;
+            SelectedTheme = Themes.First(item => item.Id == theme.Id);
+            changingTheme = false;
+        });
     }
 
     private void ShowSaveResult(PlannerSettingsSaveResult result, string successMessage)
