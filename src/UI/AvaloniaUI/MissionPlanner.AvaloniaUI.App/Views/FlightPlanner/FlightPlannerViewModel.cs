@@ -11,6 +11,9 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using Ursa.Common;
+using Ursa.Controls;
+using Ursa.Controls.Options;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
 
@@ -23,6 +26,7 @@ public partial class FlightPlannerViewModel : ViewModelBase
     private readonly IDialogService dialogService;
 
     private readonly IDomainFactory domainFactory;
+    private readonly IServiceFactory serviceFactory;
     private readonly IDomainEventHub domainEventHub;
     private readonly IMissionTransferService transferService;
     private readonly IMissionProtocolMapper protocolMapper;
@@ -39,6 +43,7 @@ public partial class FlightPlannerViewModel : ViewModelBase
         FlightPlannerMissionMapViewModel map,
         IDialogService dialogService,
         IDomainFactory domainFactory,
+        IServiceFactory serviceFactory,
         IDomainEventHub domainEventHub,
         IMissionTransferService transferService,
         IMissionProtocolMapper protocolMapper,
@@ -49,6 +54,7 @@ public partial class FlightPlannerViewModel : ViewModelBase
         Map = map;
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
+        this.serviceFactory = serviceFactory;
         this.domainEventHub = domainEventHub;
         this.transferService = transferService;
         this.protocolMapper = protocolMapper;
@@ -133,6 +139,21 @@ public partial class FlightPlannerViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    private async Task QuickEditAsync(CancellationToken cancellationToken)
+    {
+        var options = new DrawerOptions()
+        {
+            Position = Position.Right,
+            CanLightDismiss = true,
+            IsCloseButtonVisible = true,
+            Title = "Quick Editor",
+            CanResize = true,
+        };
+
+        var task = await OverlayDrawer.ShowCustomAsync<MissionItemListView, MissionMapViewModel, object?>(Map, null, options);
+
+    }
 
     [RelayCommand]
     private async Task EditAsync(CancellationToken cancellationToken)

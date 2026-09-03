@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -11,12 +12,11 @@ using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
-using SetupWorkflowDetailViewModel = MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects compass discovery, editing, and the onboard calibration state machine into Setup controls.</summary>
-public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class CompassSetupViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ICompassConfigurationService compassService;
@@ -48,7 +48,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         ISetupWorkflowCatalog workflowCatalog,
         IUserConfirmationService confirmation,
         IDateTimeProvider clock, ILogger<CompassSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Compass), logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.compassService = compassService;
@@ -323,7 +323,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
-    public override void Cancel()
+    public void Cancel()
     {
         if (CanCancel)
         {

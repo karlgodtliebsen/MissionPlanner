@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -13,8 +14,8 @@ public sealed class AdsbViewModel : MandatoryParameterViewModel
     private readonly IAdsbService service;
 
     /// <summary>Initializes the ADS-B workflow ViewModel.</summary>
-    public AdsbViewModel(ISetupWorkflowCatalog catalog, IActiveVehicleContext activeVehicle, IAdsbService service, ILogger<AdsbViewModel> logger)
-        : base(catalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.Adsb), activeVehicle, logger)
+    public AdsbViewModel(IActiveVehicleContext activeVehicle, IAdsbService service, ILogger<AdsbViewModel> logger)
+        : base(activeVehicle, logger)
     {
         this.service = service;
     }

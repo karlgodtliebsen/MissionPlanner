@@ -1,35 +1,32 @@
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
-using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using SetupWorkflowDetailViewModel = MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects the evidence-based safety assessment into Setup controls.</summary>
-public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class SafetySetupViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ISafetyAssessmentService safetyService;
     private readonly IVehicleParameterRegistry parameterRegistry;
 
     /// <summary>Initializes the safety Setup workflow.</summary>
-    /// <param name="workflowCatalog"></param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="safetyService">The safety assessment service.</param>
     /// <param name="parameterRegistry">The live parameter registry.</param>
     /// <param name="logger">The logger.</param>
     public SafetySetupViewModel(
-        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         ISafetyAssessmentService safetyService,
         IVehicleParameterRegistry parameterRegistry, ILogger<SafetySetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Safety), logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.safetyService = safetyService;
@@ -59,7 +56,6 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
-        Cancel();
         activeVehicle.Changed -= OnActiveVehicleChanged;
         parameterRegistry.Changed -= OnParameterChanged;
         return base.DeactivateAsync();

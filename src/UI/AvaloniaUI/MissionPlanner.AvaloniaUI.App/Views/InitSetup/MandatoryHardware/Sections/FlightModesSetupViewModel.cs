@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
@@ -9,27 +10,24 @@ using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
-using SetupWorkflowDetailViewModel = MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects firmware flight-mode slot configuration and confirmed slot writes into Setup controls.</summary>
-public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class FlightModesSetupViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IFlightModeConfigurationService modeService;
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes the flight-mode Setup workflow.</summary>
-    /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="modeService">The flight-mode configuration service.</param>
     /// <param name="logger">The logger.</param>
     public FlightModesSetupViewModel(
-        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IFlightModeConfigurationService modeService, ILogger<FlightModesSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.FlightModes), logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.modeService = modeService;
@@ -76,7 +74,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
     }
 
     /// <inheritdoc />
-    public override void Cancel()
+    public void Cancel()
     {
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();

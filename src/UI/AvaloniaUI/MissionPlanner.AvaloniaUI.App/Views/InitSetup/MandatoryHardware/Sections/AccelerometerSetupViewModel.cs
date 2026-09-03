@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -14,7 +15,7 @@ using MissionPlanner.Shared.Models.Vehicles.Models;
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects the Core accelerometer calibration state machine into guided Setup controls.</summary>
-public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class AccelerometerSetupViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IArduPilotCalibrationService calibration;
@@ -42,7 +43,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         ISetupWorkflowCatalog workflowCatalog,
         IUserConfirmationService confirmation,
         IDateTimeProvider clock, ILogger<AccelerometerSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Accelerometer), logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.calibration = calibration;
@@ -113,7 +114,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         CalibrationWorkflowState.Sampling or CalibrationWorkflowState.Completing;
 
     /// <inheritdoc />
-    public override void Cancel()
+    public void Cancel()
     {
         if (CanCancel)
         {

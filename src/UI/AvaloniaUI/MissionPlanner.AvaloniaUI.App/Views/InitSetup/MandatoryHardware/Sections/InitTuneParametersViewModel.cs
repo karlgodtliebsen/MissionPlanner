@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -13,9 +14,9 @@ public sealed class InitTuneParametersViewModel : MandatoryParameterViewModel
     private readonly IInitTuneParametersService service;
 
     /// <summary>Initializes the Initial Tune Parameters workflow ViewModel.</summary>
-    public InitTuneParametersViewModel(ISetupWorkflowCatalog catalog, IActiveVehicleContext activeVehicle,
+    public InitTuneParametersViewModel(IActiveVehicleContext activeVehicle,
         IInitTuneParametersService service, ILogger<InitTuneParametersViewModel> logger)
-        : base(catalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.InitTuneParameters), activeVehicle, logger)
+        : base(activeVehicle, logger)
     {
         this.service = service;
     }

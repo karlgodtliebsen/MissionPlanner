@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -10,12 +11,11 @@ using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
-using SetupWorkflowDetailViewModel = MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Presents metadata-backed frame choices and confirmed, recoverable writes.</summary>
-public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class FrameSetupViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IFrameConfigurationService frameService;
@@ -43,7 +43,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         ISetupWorkflowCatalog workflowCatalog,
         IUserConfirmationService confirmation,
         IDateTimeProvider clock, ILogger<FrameSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Frame), logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.frameService = frameService;
@@ -116,7 +116,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
-    public override void Cancel()
+    public void Cancel()
     {
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();

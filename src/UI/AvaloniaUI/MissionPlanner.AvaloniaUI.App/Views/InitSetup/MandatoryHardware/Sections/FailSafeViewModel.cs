@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -12,12 +13,14 @@ public sealed class FailSafeViewModel : MandatoryParameterViewModel
 {
     private readonly IFailSafeService service;
 
+    /// <summary>Gets the purpose of the failsafe settings page.</summary>
+    public string Description => "Configure supported vehicle failsafe actions and thresholds.";
+
     /// <summary>Initializes the Failsafe workflow ViewModel.</summary>
     public FailSafeViewModel(
-        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IFailSafeService service, ILogger<FailSafeViewModel> logger)
-        : base(workflowCatalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.FailSafe), activeVehicle, logger)
+        : base(activeVehicle, logger)
     {
         this.service = service;
     }

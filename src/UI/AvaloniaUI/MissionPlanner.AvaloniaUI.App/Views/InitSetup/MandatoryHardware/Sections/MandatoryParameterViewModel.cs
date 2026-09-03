@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -10,14 +11,14 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Provides lifecycle-safe presentation for metadata-backed mandatory parameter pages.</summary>
-public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailViewModel
+public abstract partial class MandatoryParameterViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes a metadata-backed mandatory workflow.</summary>
-    protected MandatoryParameterViewModel(SetupWorkflowDescriptor descriptor, IActiveVehicleContext activeVehicle, ILogger<MandatoryParameterViewModel> logger)
-        : base(descriptor, logger)
+    protected MandatoryParameterViewModel(IActiveVehicleContext activeVehicle, ILogger logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
     }
@@ -70,7 +71,7 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
     }
 
     /// <inheritdoc />
-    public override void Cancel()
+    public virtual void Cancel()
     {
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();

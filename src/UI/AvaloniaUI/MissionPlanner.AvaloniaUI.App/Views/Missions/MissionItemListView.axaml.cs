@@ -17,6 +17,7 @@ public partial class MissionItemListView : UserControlViewBase
     public MissionItemListView()
     {
         InitializeComponent();
+        ShowAllRows = false;
     }
 
     /// <summary>
@@ -28,6 +29,5 @@ public partial class MissionItemListView : UserControlViewBase
     }
 
     /// <summary>Controls whether the complete editor columns are displayed.</summary>
-    public static readonly StyledProperty<bool> ShowAllRowsProperty =
-        AvaloniaProperty.Register<MissionItemListView, bool>(nameof(ShowAllRows), true);
+    public static readonly StyledProperty<bool> ShowAllRowsProperty = AvaloniaProperty.Register<MissionItemListView, bool>(nameof(ShowAllRows), true);
 }

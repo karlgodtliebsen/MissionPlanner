@@ -3,25 +3,25 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using SetupWorkflowDetailViewModel = MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Presents reported autopilot and peripheral hardware identifiers.</summary>
-public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
+public sealed partial class HwIdViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IHwIdService service;
     private CancellationTokenSource? cancellation;
 
     /// <summary>Initializes the HW ID ViewModel.</summary>
-    public HwIdViewModel(ISetupWorkflowCatalog catalog, IActiveVehicleContext activeVehicle, IHwIdService service, ILogger<HwIdViewModel> logger)
-        : base(catalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.HwId), logger)
+    public HwIdViewModel(IActiveVehicleContext activeVehicle, IHwIdService service, ILogger<HwIdViewModel> logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.service = service;
@@ -69,7 +69,7 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
-    public override void Cancel()
+    public void Cancel()
     {
         cancellation?.Cancel();
         cancellation?.Dispose();

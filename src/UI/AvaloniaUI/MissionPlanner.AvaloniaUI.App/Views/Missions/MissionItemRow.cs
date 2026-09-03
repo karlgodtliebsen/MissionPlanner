@@ -135,6 +135,29 @@ public sealed partial class MissionItemRow : ObservableObject, IDisposable
         }
     }
 
+    partial void OnLatitudeChanged(double? value)
+    {
+        LatitudeChanged?.Invoke(value, Id);
+    }
+
+    partial void OnAltitudeChanged(double? value)
+    {
+        AltitudeChanged?.Invoke(value, Id);
+    }
+
+    partial void OnLongitudeChanged(double? value)
+    {
+        LongitudeChanged?.Invoke(value, Id);
+    }
+
+    public event Action<double?, MissionItemId>? LatitudeChanged;
+
+    public event Action<double?, MissionItemId>? LongitudeChanged;
+
+    public event Action<double?, MissionItemId>? AltitudeChanged;
+
+
+
     partial void OnSelectedCommandChanged(string? oldValue, string? newValue)
     {
         // A picker clear (or recycle race) pushes null: restore the previous value so the
@@ -180,6 +203,9 @@ public sealed partial class MissionItemRow : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        AltitudeChanged = null;
+        LongitudeChanged = null;
+        LatitudeChanged = null;
         selectionChanged = null;
         valueChanged = null;
     }

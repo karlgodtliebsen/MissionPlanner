@@ -16,13 +16,4 @@ public partial class MissionItemListViewPage : UserControlViewBase
     {
         InitializeComponent();
     }
-
-    ///// <summary>
-    ///// Initializes a new instance of the <see cref="MissionItemListViewPage"/> class.
-    ///// </summary>
-    //public MissionItemListViewPage(MissionMapViewModel viewModel)
-    //{
-    //    InitializeComponent();
-    //    DataContext = viewModel;
-    //}
 }

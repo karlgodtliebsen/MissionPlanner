@@ -3,6 +3,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
@@ -19,7 +20,7 @@ using MissionPlanner.MavLink.Generated;
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Presents firmware identity and guarded discovery, verification, and flashing actions.</summary>
-public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class FirmwareSetupViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IDomainEventHub domainEventHub;
@@ -31,7 +32,6 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     private VehicleIdentityState? projectedIdentity;
 
     /// <summary>Initializes the firmware setup workflow.</summary>
-    /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="activeVehicle">The active-vehicle context.</param>
     /// <param name="domainEventHub">The domain event hub used for firmware identity updates.</param>
     /// <param name="coordinator">The guarded update coordinator.</param>
@@ -39,13 +39,12 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     /// <param name="confirmation">The shared confirmation service.</param>
     /// <param name="logger">The logger.</param>
     public FirmwareSetupViewModel(
-        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IDomainEventHub domainEventHub,
         IFirmwareUpdateCoordinator coordinator,
         IFirmwareFlashingService flashingService,
         IUserConfirmationService confirmation, ILogger<FirmwareSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Firmware), logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.domainEventHub = domainEventHub;
@@ -243,7 +242,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     }
 
     /// <inheritdoc />
-    public override void Cancel()
+    public void Cancel()
     {
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();

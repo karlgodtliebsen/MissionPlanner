@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
@@ -17,7 +18,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects live RC channels and the radio endpoint-calibration state machine into Setup controls.</summary>
-public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class RadioSetupViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IRadioCalibrationService radioService;
@@ -50,7 +51,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         ISetupWorkflowCatalog workflowCatalog,
         IUserConfirmationService confirmation,
         IDateTimeProvider clock, ILogger<RadioSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Radio), logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.radioService = radioService;
@@ -182,7 +183,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     public bool CanCancelCalibration => CalibrationState is RadioCalibrationState.Capturing or RadioCalibrationState.Review;
 
     /// <inheritdoc />
-    public override void Cancel()
+    public void Cancel()
     {
         if (CanCancelCalibration)
         {

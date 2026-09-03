@@ -1866,7 +1866,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
     [RelayCommand]
     private async Task LoiterTimeAsync(CancellationToken cancellationToken)
     {
-        var options = AvaloniaDialogService.CreateDialogOptions("Loiter Time", "Ok", null);
+        var options = dialogService.CreateOptions("Loiter Time", "Ok", null);
 
         var input = await dialogService.PromptAsync(options, "Time to loiter (seconds)", 30, 0, 24 * 60, cancellationToken: cancellationToken);
         if (input is null)
@@ -2052,8 +2052,6 @@ public partial class MissionMapViewModel : DialogViewModelBase
     {
         await domainEventHub.PublishDomainEventAsync(new EditorDisplayEvent("EditorClose"), cancellationToken);
     }
-
-
     private async Task LoadMissionFileAsync(bool append)
     {
         try

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -15,7 +16,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects servo output functions with live PWM and confirmed function writes into Setup controls.</summary>
-public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class ServoOutputSetupViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IServoOutputConfigurationService servoService;
@@ -39,17 +40,15 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
 
 
     /// <summary>Initializes the servo output Setup workflow.</summary>
-    /// <param name="workflowCatalog">The setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="servoService">The servo output configuration service.</param>
     /// <param name="domainEventHub">The domain event hub used for live servo output state.</param>
     /// <param name="logger">The logger.</param>
     public ServoOutputSetupViewModel(
-        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IServoOutputConfigurationService servoService,
         IDomainEventHub domainEventHub, ILogger<ServoOutputSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.ServoOutput), logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.servoService = servoService;
@@ -102,7 +101,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     }
 
     /// <inheritdoc />
-    public override void Cancel()
+    public void Cancel()
     {
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();

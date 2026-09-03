@@ -29,7 +29,8 @@
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
                     <Button Content="Editor" Command="{Binding EditCommand}"
                             IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
-                    <ToggleButton x:Name="QuickEditorToggle" Content="Quick Editor" IsChecked="False" Margin="0,0,8,4" />
+
+
                     <TextBlock Text="Map:" VerticalAlignment="Center" Margin="0,0,4,4" />
                     <ComboBox Width="170" ItemsSource="{Binding Map.AvailableSourceIds}"
                               SelectedItem="{Binding Map.SelectedSourceId, Mode=TwoWay}" Margin="0,0,8,4" />
@@ -39,27 +40,35 @@
                     <CheckBox Content="Click map to add WP" IsChecked="{Binding Map.AddWaypointOnMapClick, Mode=TwoWay}"
                               VerticalAlignment="Center" Margin="0,0,8,4" />
                     <TextBlock Text="{Binding TransferStatus}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,4,4" />
+                    <Button Content="Quick Editor"
+                            HorizontalAlignment="Right"
+                            Command="{Binding QuickEditCommand}"
+                            Margin="0,0,8,4" />
                 </WrapPanel>
 
                 <flightPlanner:FlightPlannerMissionMapView x:Name="MapView" Grid.Row="1"
-                                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                                                           HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
                 <ProgressBar x:Name="MapLoadingIndicator" Grid.Row="1" Width="160" IsIndeterminate="True"
                              HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
 
-            <GridSplitter Grid.Column="1" Width="5" ResizeDirection="Columns"
-                          IsVisible="{Binding #QuickEditorToggle.IsChecked}" />
+
+            <!--        <GridSplitter Grid.Column="1" Width="5" ResizeDirection="Columns"
+            IsVisible="{Binding #QuickEditorToggle.IsChecked}" />
 
             <Border Grid.Column="2" Width="360" MinWidth="260" MaxWidth="520" Padding="8"
-                    Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Outline}"
-                    BorderThickness="1,0,0,0" IsVisible="{Binding #QuickEditorToggle.IsChecked}">
-                <Grid RowDefinitions="Auto,*" RowSpacing="6">
-                    <TextBlock Classes="SectionTitle" Text="Quick Editor" />
-                    <missions:MissionItemListView Grid.Row="1" DataContext="{Binding Map}"
-                                                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                  ShowAllRows="False" />
-                </Grid>
+            Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Outline}"
+            BorderThickness="1,0,0,0" IsVisible="{Binding #QuickEditorToggle.IsChecked}">
+            <Grid RowDefinitions="Auto,*" RowSpacing="6">
+            <TextBlock Classes="SectionTitle" Text="Quick Editor" />
+            <missions:MissionItemListView Grid.Row="1" DataContext="{Binding Map}"
+            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+            ShowAllRows="False" />
+            </Grid>
             </Border>
+            -->
+
+
         </Grid>
     </ContentPage>
 </utilities:NavigationViewBase>
