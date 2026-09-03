@@ -12,17 +12,17 @@
     x:Class="MissionPlanner.AvaloniaUI.App.Views.Common.TopBarView"
     >
     <Border Height="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  >
-        <Grid RowDefinitions="41,1" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" >
+        <Grid RowDefinitions="41" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" 
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Center"
-                  Margin="20,5,100,5"
+                  Margin="20,0,0,0"
                   >
                 <!-- Data source mode uses the semantic Warning color. -->
                 <Label Grid.Column="0"
                        Content="{Binding DataSourceMode}"
                        FontWeight="Bold"
-                       Foreground="{DynamicResource Warning}"
+                       Classes="Warning"
                        VerticalAlignment="Center" />
                 <!-- App Title/Logo -->
                 <Image Grid.Column="1"
@@ -53,7 +53,7 @@
                         Classes="Tertiary"
                         IsEnabled="{Binding CanOpenConnection}"
                         Theme="{DynamicResource BorderlessButton}"
-                        RenderTransform="{x:Null}"
+                       
                         ToolTip.Tip="Connect"
                         FontWeight="Normal"
                         Padding="5"
@@ -75,7 +75,6 @@
                         Classes="Tertiary"
                         IsEnabled="{Binding CanOpenConnection}"
                         Theme="{DynamicResource BorderlessButton}"
-                        RenderTransform="{x:Null}"
                         ToolTip.Tip="Select Theme"
                         FontWeight="Normal"
                         Padding="5"
@@ -104,7 +103,6 @@
                 <Button Grid.Column="5"
                         Classes="Tertiary"
                         Theme="{DynamicResource BorderlessButton}"
-                        RenderTransform="{x:Null}"
                         ToolTip.Tip="Preferences"
                         FontWeight="Normal"
                         Padding="5"
@@ -116,10 +114,7 @@
                         > <materialIcons:MaterialIcon Kind="SettingsApplications" Width="30" Height="30" />
 
                 </Button>
-
-
             </Grid>
-            <u:Divider Grid.Row="1" Grid.Column ="0"  Orientation="Horizontal"  HorizontalAlignment="Stretch"/>
         </Grid>
     </Border>
 </utilities:UserControlViewBase>

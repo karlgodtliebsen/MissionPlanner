@@ -9,12 +9,20 @@
     x:Class="MissionPlanner.AvaloniaUI.App.Views.Main.MainWindow"
     x:DataType="main:MainViewModel"
     Icon="/Resources/AppIcon/mpdesktop.png"
+    TitleBarMargin="0,0,138,0"
     Title="MissionPlanner Next Generation">
-    
-        <Grid RowDefinitions="Auto,*,Auto">
 
-            <!-- Persistent application toolbar -->
-            <common:TopBarView Grid.Row="0" />
+    <u:UrsaWindow.TitleBarContent>
+        <common:TopBarView />
+    </u:UrsaWindow.TitleBarContent>
+
+        <Grid RowDefinitions="50,*,Auto">
+
+            <!-- Row 0 reserves the height occupied by the Ursa title-bar content. -->
+            <u:Divider Grid.Row="0"
+                       VerticalAlignment="Bottom"
+                       HorizontalAlignment="Stretch"
+                       Orientation="Horizontal" />
 
             <!--
             Everything navigable lives here.
