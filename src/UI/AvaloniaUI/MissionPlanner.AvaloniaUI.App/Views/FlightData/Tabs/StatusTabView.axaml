@@ -2,6 +2,7 @@
                            xmlns="https://github.com/avaloniaui"
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs"
+                           xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
                            xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,19 +10,40 @@
                            x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs.StatusTabItemView"
                            x:DataType="tabs:StatusTabViewModel">
     <Grid Margin="12" RowDefinitions="*,160" RowSpacing="8">
-        <!-- TODO: Replace this ListBox with the selected Avalonia extended/virtualized grid after its migration is decided. -->
-        <ListBox ItemsSource="{Binding Items}">
-            <ListBox.ItemTemplate>
+        <controls:VirtualizedItemsGrid
+            ItemsSource="{Binding Items}"
+            ColumnWidths="2*,3*,*,2*,2*"
+            ColumnSpacing="6"
+            RowMinHeight="34"
+            ShowHeader="True"
+            ShowSearchBar="True"
+            SearchWatermark="Search status telemetry..."
+            SearchMemberPaths="Label,Category,Value,Unit,Freshness"
+            ShowPagination="False"
+            SelectionMode="None">
+            <controls:VirtualizedItemsGrid.HeaderTemplate>
                 <DataTemplate>
-                    <Grid ColumnDefinitions="2*,3*,*,2*" Margin="4">
-                        <TextBlock Text="{Binding Category}"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Value}"/>
-                        <TextBlock Grid.Column="2" Text="{Binding Unit}"/>
-                        <TextBlock Grid.Column="3" Text="{Binding Freshness}"/>
-                    </Grid>
+                    <controls:VirtualizedItemsGridRow>
+                        <TextBlock Grid.Column="0" Text="Category" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="1" Text="Value" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="2" Text="Unit" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="3" Text="Freshness" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="4" Text="Observed At" Classes="DataGridColumn" />
+                    </controls:VirtualizedItemsGridRow>
                 </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            </controls:VirtualizedItemsGrid.HeaderTemplate>
+            <controls:VirtualizedItemsGrid.RowTemplate>
+                <DataTemplate x:DataType="tabs:StatusTelemetryItemViewModel">
+                    <controls:VirtualizedItemsGridRow>
+                        <TextBlock Grid.Column="0" Text="{Binding Category}" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="1" Text="{Binding Value}" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="2" Text="{Binding Unit}" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="3" Text="{Binding Freshness}" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="4" Text="{Binding ObservedAt}" Classes="DataGridRow" />
+                    </controls:VirtualizedItemsGridRow>
+                </DataTemplate>
+            </controls:VirtualizedItemsGrid.RowTemplate>
+        </controls:VirtualizedItemsGrid>
         <TextBox Grid.Row="1" Text="{Binding ExportJson}" IsReadOnly="True" AcceptsReturn="True"/>
     </Grid>
 </utilities:TabItemViewBase>

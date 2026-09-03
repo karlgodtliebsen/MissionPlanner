@@ -49,7 +49,7 @@
                 <Button Content="Download and verify" Command="{Binding DownloadCommand}" />
                 <Button Content="Flash verified package" Command="{Binding FlashCommand}" />
             </StackPanel>
-            <!-- TODO: Restore the firmware operation status line when FirmwareSetupViewModel exposes the source Status property. -->
+            <TextBlock Text="{Binding StatusMessage}" FontStyle="Italic" TextWrapping="Wrap" />
             <TextBlock Text="{Binding FlashingAvailability}" />
             <TextBlock Text="After flashing: reconnect, confirm the reported firmware identity, then restore only reviewed parameters from your backup." FontWeight="Bold" />
         </StackPanel>

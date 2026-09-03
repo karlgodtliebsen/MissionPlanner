@@ -3,15 +3,27 @@ using Avalonia;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace MissionPlanner.AvaloniaUI.App;
+namespace MissionPlanner.AvaloniaUI.App.Utilities;
 
+/// <summary>
+/// Provides methods to run the application and handle exceptions in the AppDomain.
+/// </summary>
 public static class ApplicationRunner
 {
+    /// <summary>
+    /// Sets up handling for unhandled exceptions in the current AppDomain.
+    /// </summary>
+    /// <param name="title">The title of the application.</param>
     public static void SetAppDomainExceptionHandling(string title)
     {
         AppDomain.CurrentDomain.UnhandledException += (s, ex) => CurrentDomainUnhandledException(title, ex);
     }
 
+    /// <summary>
+    /// Handles unhandled exceptions in the current AppDomain.
+    /// </summary>
+    /// <param name="title">The title of the application.</param>
+    /// <param name="e">The unhandled exception event arguments.</param>
     public static void CurrentDomainUnhandledException(string title, UnhandledExceptionEventArgs e)
     {
         // ReSharper disable once LocalizableElement
@@ -22,6 +34,14 @@ public static class ApplicationRunner
         Log.Logger.Fatal(e.ExceptionObject as Exception, "{title} Unhandled Exception", title);
         Log.CloseAndFlush();
     }
+    /// <summary>
+    /// Runs the host and the application concurrently.
+    /// </summary>
+    /// <param name="host">The host to run.</param>
+    /// <param name="app">The Avalonia application builder.</param>
+    /// <param name="args">The command-line arguments.</param>
+    /// <param name="title">The title of the application.</param>
+    /// <param name="cancellationToken"></param>
     public static async Task RunAllAsync(IHost host, AppBuilder app, string[] args, string title, CancellationToken cancellationToken)
     {
         try
@@ -43,6 +63,14 @@ public static class ApplicationRunner
         }
     }
 
+    /// <summary>
+    /// Runs the Avalonia application.
+    /// </summary>
+    /// <param name="app">The Avalonia application builder.</param>
+    /// <param name="args">The command-line arguments.</param>
+    /// <param name="title">The title of the application.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns></returns>
     public static Task RunAsync(AppBuilder app, string[] args, string title, CancellationToken cancellationToken)
     {
         return Task.Run(() =>
@@ -59,6 +87,13 @@ public static class ApplicationRunner
         }, cancellationToken);
     }
 
+    /// <summary>
+    /// Runs the host.
+    /// </summary>
+    /// <param name="host">The host to run.</param>
+    /// <param name="title">The title of the application.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public static Task RunHostAsync(IHost host, string title, CancellationToken cancellationToken)
     {
         try
@@ -72,6 +107,13 @@ public static class ApplicationRunner
         }
     }
 
+    /// <summary>
+    /// Runs multiple hosts concurrently.
+    /// </summary>
+    /// <param name="hosts">The hosts to run.</param>
+    /// <param name="title">The title of the application.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public static Task RunHostsAsync(IHost[] hosts, string title, CancellationToken cancellationToken)
     {
         try

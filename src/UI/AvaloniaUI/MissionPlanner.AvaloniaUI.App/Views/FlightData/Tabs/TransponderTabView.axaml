@@ -2,6 +2,8 @@
                            xmlns="https://github.com/avaloniaui"
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs"
+                           xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
+                           xmlns:components="clr-namespace:MissionPlanner.Core.FlightData.Components;assembly=MissionPlanner.Core"
                            xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -11,13 +13,80 @@
     <Grid Margin="16" RowDefinitions="Auto,*,*" RowSpacing="10">
         <TextBlock Text="{Binding StatusMessage}" FontSize="18" FontWeight="Bold"/>
 
-        <!-- TODO: Restore both VirtualizedDataGrid controls after an Avalonia equivalent is selected. -->
-
         <GroupBox Grid.Row="1" Header="Transponder components">
-            <ListBox ItemsSource="{Binding Components}"/>
+            <controls:VirtualizedItemsGrid
+                ItemsSource="{Binding Components}"
+                ColumnWidths="*"
+                RowMinHeight="34"
+                ShowHeader="True"
+                ShowSearchBar="False"
+                ShowPagination="False"
+                SelectionMode="None">
+                <controls:VirtualizedItemsGrid.EmptyView>
+                    <TextBlock Text="No rows could be found."
+                               FontSize="12"
+                               Opacity="0.6"
+                               Margin="0,20"
+                               HorizontalAlignment="Center" />
+                </controls:VirtualizedItemsGrid.EmptyView>
+                <controls:VirtualizedItemsGrid.HeaderTemplate>
+                    <DataTemplate>
+                        <controls:VirtualizedItemsGridRow>
+                            <TextBlock Grid.Column="0" Text="Flight ID" Classes="DataGridColumn" />
+                        </controls:VirtualizedItemsGridRow>
+                    </DataTemplate>
+                </controls:VirtualizedItemsGrid.HeaderTemplate>
+                <controls:VirtualizedItemsGrid.RowTemplate>
+                    <DataTemplate x:DataType="components:TransponderComponentState">
+                        <controls:VirtualizedItemsGridRow>
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding FlightId}"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center"
+                                       Classes="DataGridRow" />
+                        </controls:VirtualizedItemsGridRow>
+                    </DataTemplate>
+                </controls:VirtualizedItemsGrid.RowTemplate>
+            </controls:VirtualizedItemsGrid>
         </GroupBox>
         <GroupBox Grid.Row="2" Header="Nearby ADS-B traffic">
-            <ListBox ItemsSource="{Binding Traffic}"/>
+            <controls:VirtualizedItemsGrid
+                ItemsSource="{Binding Traffic}"
+                ColumnWidths="*,*,*,*"
+                ColumnSpacing="6"
+                RowMinHeight="34"
+                ShowHeader="True"
+                ShowSearchBar="False"
+                ShowPagination="False"
+                SelectionMode="None">
+                <controls:VirtualizedItemsGrid.EmptyView>
+                    <TextBlock Text="No rows could be found."
+                               FontSize="12"
+                               Opacity="0.6"
+                               Margin="0,20"
+                               HorizontalAlignment="Center" />
+                </controls:VirtualizedItemsGrid.EmptyView>
+                <controls:VirtualizedItemsGrid.HeaderTemplate>
+                    <DataTemplate>
+                        <controls:VirtualizedItemsGridRow>
+                            <TextBlock Grid.Column="0" Text="Callsign" Classes="DataGridColumn" />
+                            <TextBlock Grid.Column="1" Text="ICAO address" Classes="DataGridColumn" />
+                            <TextBlock Grid.Column="2" Text="Altitude (m)" Classes="DataGridColumn" />
+                            <TextBlock Grid.Column="3" Text="Observed at" Classes="DataGridColumn" />
+                        </controls:VirtualizedItemsGridRow>
+                    </DataTemplate>
+                </controls:VirtualizedItemsGrid.HeaderTemplate>
+                <controls:VirtualizedItemsGrid.RowTemplate>
+                    <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                        <controls:VirtualizedItemsGridRow>
+                            <TextBlock Grid.Column="0" Text="{Binding Callsign}" FontWeight="Bold" Classes="DataGridRow" />
+                            <TextBlock Grid.Column="1" Text="{Binding IcaoAddress}" Classes="DataGridRow" />
+                            <TextBlock Grid.Column="2" Text="{Binding AltitudeMeters, StringFormat='{}{0:0} m'}" Classes="DataGridRow" />
+                            <TextBlock Grid.Column="3" Text="{Binding ObservedAt}" Classes="DataGridRow" />
+                        </controls:VirtualizedItemsGridRow>
+                    </DataTemplate>
+                </controls:VirtualizedItemsGrid.RowTemplate>
+            </controls:VirtualizedItemsGrid>
         </GroupBox>
     </Grid>
 </utilities:TabItemViewBase>

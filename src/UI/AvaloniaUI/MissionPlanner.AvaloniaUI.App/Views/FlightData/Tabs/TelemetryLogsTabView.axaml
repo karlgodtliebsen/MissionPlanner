@@ -2,6 +2,8 @@
                            xmlns="https://github.com/avaloniaui"
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs"
+                           xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
+                           xmlns:vehicles="clr-namespace:MissionPlanner.Core.Vehicles.Models;assembly=MissionPlanner.Core"
                            xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -35,7 +37,42 @@
             <ProgressBar Maximum="1" Value="{Binding Progress}"/>
             <TextBlock Grid.Column="1" Text="{Binding ReplayTimeText}"/>
         </Grid>
-        <!-- TODO: Restore the replay VirtualizedDataGrid after an Avalonia equivalent is selected. -->
-        <ListBox Grid.Row="4" ItemsSource="{Binding ReplayVehicles}"/>
+        <Grid Grid.Row="4" RowDefinitions="Auto,*" RowSpacing="6">
+            <TextBlock Text="Replay vehicles" FontWeight="Bold" />
+            <controls:VirtualizedItemsGrid
+                Grid.Row="1"
+                ItemsSource="{Binding ReplayVehicles}"
+                ColumnWidths="*,*"
+                ColumnSpacing="6"
+                RowMinHeight="34"
+                ShowHeader="True"
+                ShowSearchBar="False"
+                ShowPagination="False"
+                SelectionMode="None">
+                <controls:VirtualizedItemsGrid.EmptyView>
+                    <TextBlock Text="No vehicle heartbeat has been decoded at this replay position."
+                               FontSize="12"
+                               Opacity="0.6"
+                               Margin="0,20"
+                               HorizontalAlignment="Center" />
+                </controls:VirtualizedItemsGrid.EmptyView>
+                <controls:VirtualizedItemsGrid.HeaderTemplate>
+                    <DataTemplate>
+                        <controls:VirtualizedItemsGridRow>
+                            <TextBlock Grid.Column="0" Text="Display name" Classes="DataGridColumn" />
+                            <TextBlock Grid.Column="1" Text="Vehicle ID" Classes="DataGridColumn" />
+                        </controls:VirtualizedItemsGridRow>
+                    </DataTemplate>
+                </controls:VirtualizedItemsGrid.HeaderTemplate>
+                <controls:VirtualizedItemsGrid.RowTemplate>
+                    <DataTemplate x:DataType="vehicles:VehicleState">
+                        <controls:VirtualizedItemsGridRow>
+                            <TextBlock Grid.Column="0" Text="{Binding DisplayName}" TextWrapping="Wrap" Classes="DataGridRow" />
+                            <TextBlock Grid.Column="1" Text="{Binding VehicleId}" TextWrapping="Wrap" Classes="DataGridRow" />
+                        </controls:VirtualizedItemsGridRow>
+                    </DataTemplate>
+                </controls:VirtualizedItemsGrid.RowTemplate>
+            </controls:VirtualizedItemsGrid>
+        </Grid>
     </Grid>
 </utilities:TabItemViewBase>

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.AvaloniaUI.App.Configuration;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Library;
 
 namespace MissionPlanner.AvaloniaUI.App;

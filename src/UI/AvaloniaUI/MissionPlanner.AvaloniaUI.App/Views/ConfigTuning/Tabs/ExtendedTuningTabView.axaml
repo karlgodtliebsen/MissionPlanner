@@ -173,11 +173,10 @@
                                                     <Grid Grid.Column="3">
                                                         <NumericUpDown
                                                             IsReadOnly="{Binding Editor.IsReadOnly}"
+                                                            IsVisible="{Binding !Editor.HasValuesData}"
                                                             Value="{Binding Editor.Value, Mode=TwoWay}"
                                                             HorizontalAlignment="Stretch"
-                                                             >
-                                                            <!-- TODO: Replace the MAUI DataTrigger with an Avalonia style selector after verifying editor visibility behavior. -->
-                                                        </NumericUpDown>
+                                                             />
                                                         <ComboBox ItemsSource="{Binding Editor.ValuesData}"
                                                                 SelectedItem="{Binding Editor.SelectedValue, Mode=TwoWay}"
                                                                 IsVisible="{Binding Editor.HasValuesData}" />

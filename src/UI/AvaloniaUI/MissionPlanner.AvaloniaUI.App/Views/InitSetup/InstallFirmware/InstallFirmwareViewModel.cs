@@ -42,6 +42,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private readonly IDialogService dialogService;
     private readonly IExternalLinkLauncher externalLinkLauncher;
     private readonly IDeviceManagerLauncher deviceManagerLauncher;
+    private readonly ITextClipboardService clipboard;
     private readonly object refreshSync = new();
     private CancellationTokenSource? lifetime;
     private CancellationTokenSource? refreshCancellation;
@@ -76,6 +77,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="supportLinkProvider"></param>
     /// <param name="externalLinkLauncher"></param>
     /// <param name="deviceManagerLauncher"></param>
+    /// <param name="clipboard">Copies firmware URLs and diagnostic reports.</param>
     /// <param name="dialogService">Displays the cancellable firmware-operation progress dialog.</param>
     /// <param name="logger"></param>
     public InstallFirmwareViewModel(
@@ -94,7 +96,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         IUserConfirmationService confirmation,
         IFirmwareSupportLinkProvider supportLinkProvider,
         IExternalLinkLauncher externalLinkLauncher,
-        IDeviceManagerLauncher deviceManagerLauncher, IDialogService dialogService,
+        IDeviceManagerLauncher deviceManagerLauncher, ITextClipboardService clipboard, IDialogService dialogService,
         ILogger<InstallFirmwareViewModel> logger) : base(logger)
     {
         this.catalogService = catalogService;
@@ -113,6 +115,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         SupportLinks = supportLinkProvider.GetLinks();
         this.externalLinkLauncher = externalLinkLauncher;
         this.deviceManagerLauncher = deviceManagerLauncher;
+        this.clipboard = clipboard;
         this.dialogService = dialogService;
     }
 
@@ -892,12 +895,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [RelayCommand]
     private Task CopyDiagnosticReportAsync()
     {
-        //TODO: Clipboard
-        throw new NotImplementedException();
-
-        //return string.IsNullOrWhiteSpace(LastDiagnosticReport)
-        //    ? Task.CompletedTask
-        //    : Clipboard.Default.SetTextAsync(LastDiagnosticReport);
+        return string.IsNullOrWhiteSpace(LastDiagnosticReport)
+            ? Task.CompletedTask
+            : clipboard.SetTextAsync(LastDiagnosticReport);
     }
 
     [RelayCommand(CanExecute = nameof(CanStartBootloaderUpdate), AllowConcurrentExecutions = false)]
@@ -1297,9 +1297,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [RelayCommand]
     private Task CopyDownloadUrlAsync()
     {
-        //TODO: ClipBoard
-        throw new NotImplementedException();
-        //return SelectedFirmware is null ? Task.CompletedTask : Clipboard.Default.SetTextAsync(SelectedFirmware.Entry.Artifact.DownloadUri.AbsoluteUri);
+        return SelectedFirmware is null
+            ? Task.CompletedTask
+            : clipboard.SetTextAsync(SelectedFirmware.Entry.Artifact.DownloadUri.AbsoluteUri);
     }
 
     [RelayCommand]
