@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.AvaloniaUI.App.Utilities;
+using Ursa.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Main;
 
@@ -15,5 +16,9 @@ public partial class MainWindow : WindowBase<MainViewModel>
         InitializeComponent();
     }
 
-
+    protected override async Task<bool> CanClose()
+    {
+        var result = await OverlayMessageBox.ShowAsync("Are you sure you want to exit?？", "Exit MissionPlanner Next Gen", button: MessageBoxButton.YesNo);
+        return result == MessageBoxResult.Yes;
+    }
 }

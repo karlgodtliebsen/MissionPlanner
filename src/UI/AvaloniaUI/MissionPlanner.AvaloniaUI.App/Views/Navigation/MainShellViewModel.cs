@@ -1,15 +1,20 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Navigation;
 
 public partial class MainShellViewModel : ObservableObject
 {
     private readonly INavigationService navigationService;
+    private readonly IWindowProvider windowProvider;
 
-    public MainShellViewModel(INavigationService navigationService)
+    public MainShellViewModel(
+        INavigationService navigationService,
+        IWindowProvider windowProvider)
     {
         this.navigationService = navigationService;
+        this.windowProvider = windowProvider;
     }
 
     [ObservableProperty]
@@ -23,6 +28,12 @@ public partial class MainShellViewModel : ObservableObject
     public void ToggleNavigation()
     {
         IsNavigationOpen = !IsNavigationOpen;
+    }
+
+    [RelayCommand]
+    private void Exit()
+    {
+        windowProvider.ActiveWindow?.Close();
     }
 
     [RelayCommand(CanExecute = nameof(CanNavigate))]
@@ -60,7 +71,6 @@ public partial class MainShellViewModel : ObservableObject
         MissionPlannerRoutes.ConfigOnboardOSD or
         MissionPlannerRoutes.Simulation or
         MissionPlannerRoutes.Introduction or
-        MissionPlannerRoutes.Help or
-        MissionPlannerRoutes.Exit;
+        MissionPlannerRoutes.Help;
     }
 }

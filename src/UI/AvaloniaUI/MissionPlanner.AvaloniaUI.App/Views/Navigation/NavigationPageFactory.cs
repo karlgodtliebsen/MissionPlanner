@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
-using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
 using MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
 using MissionPlanner.AvaloniaUI.App.Views.Help;
@@ -74,9 +73,6 @@ public sealed class NavigationPageFactory : INavigationPageFactory
 
             MissionPlannerRoutes.Help =>
                 services.GetRequiredService<HelpPage>(),
-
-            MissionPlannerRoutes.Exit =>
-                CreateViewPage<ExitPage>("Exit"),
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(route),

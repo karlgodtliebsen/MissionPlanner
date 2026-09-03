@@ -337,11 +337,12 @@
                 <!-- Footer -->
 
                 <Button Grid.Row="2"
+                        MinWidth="200"
                         Margin="0,8,0,0"
+                        HorizontalAlignment="Stretch"
                         Classes="NavigationItem Tertiary Light"
                         Content="Exit"
-                        Command="{Binding NavigateCommand}"
-                        CommandParameter="Exit"/>
+                        Command="{Binding ExitCommand}"/>
 
             </Grid>
 

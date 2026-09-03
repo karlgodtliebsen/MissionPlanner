@@ -14,7 +14,6 @@ using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.AvaloniaUI.App.Views.Config;
 using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.AvaloniaUI.App.Views.Connect;
-using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData.Hud;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs;
@@ -213,9 +212,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<DataGridViewModel>();
         services.TryAddTransient<DataGridPage>();
 
-        services.TryAddTransient<ExitPage>();
-        services.TryAddTransient<ExitViewModel>();
-
         services.TryAddSingleton<INavigationPageFactory, NavigationPageFactory>();
 
         services.TryAddSingleton<INavigationService, AvaloniaNavigationService>();
@@ -278,7 +274,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FlightDataViewModel>();
         services.TryAddTransient<FlightPlannerViewModel>();
         services.TryAddTransient<DialogDemoViewModel>();
-        services.TryAddTransient<ExitViewModel>();
 
         // Tabs on Config View
         services.TryAddTransient<GeoFenceTabView>();
