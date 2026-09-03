@@ -3,6 +3,7 @@
                            xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" 
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
+                           xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
                            xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -46,17 +47,46 @@
                 <StackPanel Orientation="Vertical" Spacing="4">
                     <TextBlock Text="Live controller response (read-only PID_TUNING context)" FontWeight="Bold" />
 
-                    <!-- TODO: Replace auto-generated columns with native Avalonia column templates after the FullParametersList virtualization test establishes the final grid strategy. -->
-                    <DataGrid AutoGenerateColumns="True" 
-                        ItemsSource="{Binding ResponseMetrics}" 
-                        
+                    <controls:VirtualizedItemsGrid
+                        ItemsSource="{Binding ResponseMetrics}"
+                        ColumnWidths="*,*,*,*"
+                        ColumnSpacing="6"
+                        RowMinHeight="28"
+                        ShowHeader="True"
+                        ShowSearchBar="False"
+                        ShowPagination="False"
+                        SelectionMode="None"
                         Height="54"
-                        HorizontalAlignment="Stretch" 
-                        VerticalAlignment="Stretch" 
-                        Background="Transparent">
-                        
-                        
-                    </DataGrid>
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+                        <controls:VirtualizedItemsGrid.EmptyView>
+                            <TextBlock Text="No PID response telemetry received."
+                                       FontSize="12"
+                                       Opacity="0.6"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </controls:VirtualizedItemsGrid.EmptyView>
+                        <controls:VirtualizedItemsGrid.HeaderTemplate>
+                            <DataTemplate>
+                                <controls:VirtualizedItemsGridRow>
+                                    <TextBlock Grid.Column="0" Text="Axis" Classes="DataGridColumn" />
+                                    <TextBlock Grid.Column="1" Text="Desired" Classes="DataGridColumn" />
+                                    <TextBlock Grid.Column="2" Text="Achieved" Classes="DataGridColumn" />
+                                    <TextBlock Grid.Column="3" Text="Error" Classes="DataGridColumn" />
+                                </controls:VirtualizedItemsGridRow>
+                            </DataTemplate>
+                        </controls:VirtualizedItemsGrid.HeaderTemplate>
+                        <controls:VirtualizedItemsGrid.RowTemplate>
+                            <DataTemplate x:DataType="tabs:ControlResponseMetricViewModel">
+                                <controls:VirtualizedItemsGridRow>
+                                    <TextBlock Grid.Column="0" Text="{Binding Axis}" Classes="DataGridRow" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Desired}" Classes="DataGridRow" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Achieved}" Classes="DataGridRow" />
+                                    <TextBlock Grid.Column="3" Text="{Binding Error}" Classes="DataGridRow" />
+                                </controls:VirtualizedItemsGridRow>
+                            </DataTemplate>
+                        </controls:VirtualizedItemsGrid.RowTemplate>
+                    </controls:VirtualizedItemsGrid>
                 </StackPanel>
             </Border>
         </Grid>

@@ -3,6 +3,7 @@
                 xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" 
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
+                xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -35,14 +36,59 @@
             </Button>
         </Grid>
 
-        <!-- TODO: Replace auto-generated columns with native Avalonia column templates after the FullParametersList virtualization test establishes the final grid strategy. -->
-        <DataGrid AutoGenerateColumns="True"
+        <controls:VirtualizedItemsGrid
             Grid.Row="1"
-            ItemsSource="{Binding Items}">
-
-            
-
-            
-        </DataGrid>
+            ItemsSource="{Binding Items}"
+            ColumnWidths="70,2*,2*,2*,2*,2*,4*"
+            ColumnSpacing="6"
+            RowMinHeight="38"
+            ShowHeader="True"
+            ShowSearchBar="True"
+            SearchWatermark="Search parameters..."
+            SearchMemberPaths="Name,DisplayName,Status,Message"
+            ShowPagination="False"
+            SelectionMode="None">
+            <controls:VirtualizedItemsGrid.EmptyView>
+                <StackPanel Margin="40"
+                            Spacing="8"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <TextBlock Text="No parameters found."
+                               FontWeight="Bold"
+                               FontSize="16"
+                               TextAlignment="Center" />
+                </StackPanel>
+            </controls:VirtualizedItemsGrid.EmptyView>
+            <controls:VirtualizedItemsGrid.HeaderTemplate>
+                <DataTemplate>
+                    <controls:VirtualizedItemsGridRow>
+                        <TextBlock Grid.Column="0" Text="Stage" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="1" Text="Parameter" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="2" Text="Live" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="3" Text="Right" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="4" Text="Difference" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="5" Text="Status" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="6" Text="Message" Classes="DataGridColumn" />
+                    </controls:VirtualizedItemsGridRow>
+                </DataTemplate>
+            </controls:VirtualizedItemsGrid.HeaderTemplate>
+            <controls:VirtualizedItemsGrid.RowTemplate>
+                <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">
+                    <controls:VirtualizedItemsGridRow>
+                        <CheckBox Grid.Column="0"
+                                  IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                  IsEnabled="{Binding CanStage}"
+                                  HorizontalAlignment="Center"
+                                  Classes="DataGridRow" />
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="2" Text="{Binding LeftValueText}" HorizontalAlignment="Right" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="3" Text="{Binding RightValueText}" HorizontalAlignment="Right" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="4" Text="{Binding DifferenceText}" HorizontalAlignment="Right" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="5" Text="{Binding Status}" HorizontalAlignment="Center" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="6" Text="{Binding Message}" Classes="DataGridRow" />
+                    </controls:VirtualizedItemsGridRow>
+                </DataTemplate>
+            </controls:VirtualizedItemsGrid.RowTemplate>
+        </controls:VirtualizedItemsGrid>
     </Grid>
 </UserControl>

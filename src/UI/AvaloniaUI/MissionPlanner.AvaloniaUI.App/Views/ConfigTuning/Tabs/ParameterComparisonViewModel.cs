@@ -88,14 +88,25 @@ public partial class ParameterComparisonViewModel : DialogViewModelBase
             pending,
             metadata);
 
-        allRows.ReplaceRange(comparisonResult.Rows.Select(row => new ParameterComparisonItemViewModel(row)));
+        SelectedItems.Clear();
+        var rows = comparisonResult.Rows.Select(row => new ParameterComparisonItemViewModel(row)).ToArray();
+        foreach (var row in rows)
+        {
+            row.TrackSelectionIn(SelectedItems);
+        }
+
+        allRows.ReplaceRange(rows);
         FilterRows();
     }
 
     [RelayCommand]
     private void SelectAllSafeDifferences()
     {
-        SelectedItems.Clear();
+        foreach (var row in allRows)
+        {
+            row.IsSelected = false;
+        }
+
         foreach (var row in allRows)
         {
             row.IsSelected = row.CanStage;

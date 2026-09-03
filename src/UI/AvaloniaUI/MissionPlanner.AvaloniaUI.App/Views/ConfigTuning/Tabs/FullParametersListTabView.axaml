@@ -41,7 +41,7 @@
                 VerticalAlignment="Center"
                 Command="{Binding SaveToJsonFileCommand}" />
             <Button
-                Content="Use editor"
+                Content="Use Text Editor"
                 VerticalAlignment="Center"
                 Command="{Binding LoadFromEditorCommand}" />
 
@@ -97,12 +97,7 @@
                 IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
                 TextWrapping="Wrap"
                 VerticalAlignment="Center" />
-
             <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource Error}" TextWrapping="Wrap" VerticalAlignment="Center" />
-            <TextBlock Text="{Binding StatusMessage}"
-                       IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
-                       TextWrapping="Wrap" VerticalAlignment="Center" />
-
             <TextBlock Text="Vehicle Reboot required after confirmed changes"
                        IsVisible="{Binding RebootRequired}"
                        Foreground="{DynamicResource Warning}"

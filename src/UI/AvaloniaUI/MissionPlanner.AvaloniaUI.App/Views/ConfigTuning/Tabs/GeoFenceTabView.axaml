@@ -10,6 +10,7 @@
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                     xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Models"
+                    xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
                     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                     x:Class="MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs.GeoFenceTabView"
                     x:DataType="tabs:GeoFenceTabViewModel">
@@ -102,19 +103,44 @@
                             <TextBlock Text="Local geometry" FontWeight="Bold" FontSize="18" />
 
 
-                            <!-- TODO: Replace auto-generated columns with native Avalonia column templates after the FullParametersList virtualization test establishes the final grid strategy. -->
-                            <DataGrid AutoGenerateColumns="True"
-                                      ItemsSource="{Binding Areas}"
-                                      SelectedItem="{Binding SelectedArea}"
-                                      SelectionMode="Single"
-
-                                      Height="180"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"
-                                      Background="Transparent">
-
-
-                            </DataGrid>
+                            <controls:VirtualizedItemsGrid
+                                ItemsSource="{Binding Areas}"
+                                SelectedItem="{Binding SelectedArea, Mode=OneWayToSource}"
+                                SelectionMode="Single"
+                                SelectionColumnWidth="25"
+                                ColumnWidths="*,*"
+                                ColumnSpacing="6"
+                                RowMinHeight="34"
+                                ShowHeader="True"
+                                ShowSearchBar="False"
+                                ShowPagination="False"
+                                Height="180"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch">
+                                <controls:VirtualizedItemsGrid.EmptyView>
+                                    <TextBlock Text="No items."
+                                               FontSize="12"
+                                               Opacity="0.6"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center" />
+                                </controls:VirtualizedItemsGrid.EmptyView>
+                                <controls:VirtualizedItemsGrid.HeaderTemplate>
+                                    <DataTemplate>
+                                        <controls:VirtualizedItemsGridRow>
+                                            <TextBlock Grid.Column="0" Text="Kind" Classes="DataGridColumn" />
+                                            <TextBlock Grid.Column="1" Text="Summary" Classes="DataGridColumn" />
+                                        </controls:VirtualizedItemsGridRow>
+                                    </DataTemplate>
+                                </controls:VirtualizedItemsGrid.HeaderTemplate>
+                                <controls:VirtualizedItemsGrid.RowTemplate>
+                                    <DataTemplate x:DataType="tabs:FenceAreaListItem">
+                                        <controls:VirtualizedItemsGridRow>
+                                            <TextBlock Grid.Column="0" Text="{Binding Kind}" Classes="DataGridRow" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Summary}" Classes="DataGridRow" />
+                                        </controls:VirtualizedItemsGridRow>
+                                    </DataTemplate>
+                                </controls:VirtualizedItemsGrid.RowTemplate>
+                            </controls:VirtualizedItemsGrid>
                             <StackPanel Orientation="Horizontal" Spacing="6">
                                 <Button Content="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" />
                                 <Button Content="Remove return" Command="{Binding RemoveReturnPointCommand}" />

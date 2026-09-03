@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Library.Math;
@@ -7,12 +8,26 @@ namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 /// <summary>Selectable presentation row for a parameter comparison result.</summary>
 public sealed partial class ParameterComparisonItemViewModel(ParameterComparisonRow row) : ObservableObject
 {
+    private ObservableCollection<ParameterComparisonItemViewModel>? selectedItems;
+
     /// <summary>Gets the underlying immutable comparison result.</summary>
     public ParameterComparisonRow Row { get; } = row;
 
     /// <summary>Gets or sets whether the safe difference is selected for staging.</summary>
     [ObservableProperty]
     public partial bool IsSelected { get; set; }
+
+    /// <summary>Connects this row's selector to the owning view model's selected-items collection.</summary>
+    public void TrackSelectionIn(ObservableCollection<ParameterComparisonItemViewModel> selection)
+    {
+        selectedItems = selection;
+        SynchronizeSelection();
+    }
+
+    partial void OnIsSelectedChanged(bool value)
+    {
+        SynchronizeSelection();
+    }
 
     /// <summary>Gets the parameter name.</summary>
     public string Name => Row.Name;
@@ -50,6 +65,26 @@ public sealed partial class ParameterComparisonItemViewModel(ParameterComparison
     /// <summary>Gets the classification explanation.</summary>
     public string? Message => Row.Message;
 
+    private void SynchronizeSelection()
+    {
+        if (selectedItems is null)
+        {
+            return;
+        }
+
+        if (IsSelected)
+        {
+            if (!selectedItems.Contains(this))
+            {
+                selectedItems.Add(this);
+            }
+        }
+        else
+        {
+            selectedItems.Remove(this);
+        }
+    }
+
     private string? FormatValue(double? value)
     {
         if (value is null)
@@ -63,4 +98,3 @@ public sealed partial class ParameterComparisonItemViewModel(ParameterComparison
             : value.Value.ToString("G7", System.Globalization.CultureInfo.CurrentCulture);
     }
 }
-
