@@ -14,7 +14,7 @@
                 <StackPanel Orientation="Vertical" Margin="32" Spacing="20" MaxWidth="1200" HorizontalAlignment="Center">
                     <Border IsVisible="{Binding IsConnectedMode}" Padding="24" Classes="SectionCard">
                         <StackPanel Orientation="Vertical" Spacing="14">
-                            <TextBlock Text="A vehicle is connected" FontSize="18" FontWeight="Bold" />
+                            <TextBlock Text="A vehicle is connected" Classes="Title"  />
                             <TextBlock Text="Application firmware cannot be installed while Mission Planner owns the active connection. Disconnect the vehicle first to browse or install firmware." />
                             <TextBlock Text="Embedded bootloader update is available only for a supported, disarmed ArduPilot vehicle. Keep power connected and reboot after an accepted update." />
                             <Button Content="Update Bootloader" Command="{Binding UpdateBootloaderCommand}" IsEnabled="{Binding CanUpdateBootloader}" HorizontalAlignment="Left" />
@@ -22,11 +22,11 @@
                     </Border>
 
                     <Border IsVisible="{Binding IsUnsupportedMode}" Padding="24" Classes="SectionCard">
-                        <TextBlock Text="Direct firmware installation is not available on this platform." FontWeight="Bold" FontSize="18" />
+                        <TextBlock Text="Direct firmware installation is not available on this platform." Classes="Title"  />
                     </Border>
                     <Border Padding="14" Classes="SectionCard">
                         <StackPanel Orientation="Vertical" Spacing="4">
-                            <TextBlock Text="{Binding ContextHelp.Title}" FontWeight="Bold" FontSize="18" />
+                            <TextBlock Text="{Binding ContextHelp.Title}" Classes="Title" />
                             <TextBlock Text="{Binding ContextHelp.Content}" />
                         </StackPanel>
                     </Border>
@@ -42,12 +42,8 @@
                         <StackPanel Orientation="Horizontal" Grid.Row="2">
                             <ComboBox Width="250" ToolTip.Tip="Release" ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" />
                             <ComboBox ItemsSource="{Binding Versions}" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
-
                             <ComboBox ItemsSource="{Binding FrameTypes}" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
-
                             <ComboBox ItemsSource="{Binding Manufacturers}" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
-
-
                         </StackPanel>
 
                         <DataGrid AutoGenerateColumns="False" Grid.Row="3" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" MaxHeight="600" ItemsSource="{Binding FilteredFirmwareChoices}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" SelectionMode="Single" SelectedItem="{Binding SelectedFirmware, Mode=TwoWay}">
@@ -159,8 +155,10 @@
                                     <TextBlock Margin="0,8,0,0" Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
                                     <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
                                     <TextBlock Text="Require exact board ID match" />
-                                    <Border Classes="SectionCard" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12" BorderBrush="{DynamicResource Warning}">
-<TextBlock Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply." Classes="Warning" FontWeight="Bold" TextWrapping="Wrap" />
+                                    <Border Classes="SectionCard" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12" 
+                                            BorderBrush="{DynamicResource Warning}">
+                                        <TextBlock Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply."
+                                                   Classes="Warning" FontWeight="Bold" TextWrapping="Wrap" />
                                     </Border>
                                 </StackPanel>
                             </Grid>
@@ -276,14 +274,14 @@
                                                 </StackPanel>
                                                 <TextBlock Text="Local HEX mode is active. This file takes precedence over any firmware row selected in the catalogue. Clear the local HEX selection to return to catalogue installation." TextWrapping="Wrap" FontWeight="Bold" />
                                                 <TextBox PlaceholderText="Exact ArduPilot platform (for example omnibusf4)" Text="{Binding LocalDfuPlatform, Mode=TwoWay}" />
-<TextBlock Text="Intel HEX does not contain the APJ board metadata used for catalogue matching. Enter the exact platform that was used to produce this custom build." TextWrapping="Wrap" Classes="Warning" />
+                                                <TextBlock Text="Intel HEX does not contain the APJ board metadata used for catalogue matching. Enter the exact platform that was used to produce this custom build." TextWrapping="Wrap" Classes="Warning" />
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" Spacing="10">
                                                 <ComboBox Width="600" ToolTip.Tip="Select STM32 DFU device" ItemsSource="{Binding DfuDevices}" SelectedItem="{Binding SelectedDfuDevice}" />
                                             </StackPanel>
                                             <TextBlock Text="{Binding DfuStatus}" />
                                         </StackPanel>
-<TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,10" Text="Warning: this erases the current firmware. Keep USB power connected until programming and verification complete." Classes="Warning" />
+                                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,10" Text="Warning: this erases the current firmware. Keep USB power connected until programming and verification complete." Classes="Warning" />
 
                                         <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Center" Spacing="6">
                                             <Button Content="Refresh devices" Command="{Binding RefreshCatalogCommand}" />
@@ -366,7 +364,7 @@
             <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="12,6" Spacing="10" Background="{DynamicResource SurfaceContainer}">
 
                 <TextBlock Text="•" FontSize="16" IsVisible="{Binding IsCancellationDeferred}" VerticalAlignment="Center" />
-<TextBlock Text="Cancellation is deferred until verification and vehicle reboot reach a safe boundary. Keep power connected." Classes="Warning" IsVisible="{Binding IsCancellationDeferred}" />
+                <TextBlock Text="Cancellation is deferred until verification and vehicle reboot reach a safe boundary. Keep power connected." Classes="Warning" IsVisible="{Binding IsCancellationDeferred}" />
 
                 <TextBlock Text="•" FontSize="16" IsVisible="{Binding OperationProgress.HasStage}" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding OperationProgress.Stage}" />
@@ -375,7 +373,7 @@
                 <TextBlock Text="{Binding OperationProgress.TechnicalDetail}" />
 
                 <TextBlock Text="•" FontSize="16" IsVisible="{Binding OperationProgress.IsPowerCritical}" VerticalAlignment="Center" />
-<TextBlock Text="Do not disconnect power while flash memory is being changed." Classes="Warning" IsVisible="{Binding OperationProgress.IsPowerCritical}" />
+                <TextBlock Text="Do not disconnect power while flash memory is being changed." Classes="Warning" IsVisible="{Binding OperationProgress.IsPowerCritical}" />
 
             </StackPanel>
 

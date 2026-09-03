@@ -98,8 +98,10 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate x:DataType="tabs:ExtendedTuningGroupViewModel">
                         <Border Padding="12" Margin="0,0,0,10">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <Expander
+                                IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+                                HorizontalContentAlignment="Stretch">
+                                <Expander.Header>
                                     <StackPanel Orientation="Vertical" Spacing="2">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="20" />
@@ -107,23 +109,21 @@
                                             <TextBlock Text="{Binding SupportedFieldCount, StringFormat='{}{0} supported fields'}" FontSize="12" VerticalAlignment="Center" />
                                         </StackPanel>
                                         <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding ExpertWarning}"
+                                                   Classes="Warning"
+                                                   FontWeight="Bold"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding ValidationMessage}"
+                                                   Classes="Warning"
+                                                   IsVisible="{Binding HasValidationError}"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="This group has pending changes."
+                                                   Classes="Warning"
+                                                   IsVisible="{Binding IsModified}" />
                                     </StackPanel>
-                                    <Button  Grid.Column="1" Content="Expand / collapse" Command="{Binding ToggleExpandedCommand}" />
-                                </Grid>
+                                </Expander.Header>
 
-                                <TextBlock Text="{Binding ExpertWarning}"
-                                           Classes="Warning"
-                                           FontWeight="Bold"
-                                           TextWrapping="Wrap" />
-                                <TextBlock Text="{Binding ValidationMessage}"
-                                           Classes="Warning"
-                                           IsVisible="{Binding HasValidationError}"
-                                           TextWrapping="Wrap" />
-                                <TextBlock Text="This group has pending changes."
-                                           Classes="Warning"
-                                           IsVisible="{Binding IsModified}" />
-
-                                <StackPanel Orientation="Vertical" IsVisible="{Binding IsExpanded}" Spacing="8">
+                                <StackPanel Orientation="Vertical" Spacing="8">
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <Button  Content="Refresh" Command="{Binding RefreshCommand}" />
@@ -206,7 +206,7 @@
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate></ItemsControl>
                                 </StackPanel>
-                            </StackPanel>
+                            </Expander>
                         </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
