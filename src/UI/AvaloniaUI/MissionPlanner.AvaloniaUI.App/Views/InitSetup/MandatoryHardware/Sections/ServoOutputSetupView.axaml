@@ -11,7 +11,7 @@
     <Grid RowDefinitions="Auto,*" Margin="26" RowSpacing="16" HorizontalAlignment="Stretch">
         <StackPanel Orientation="Vertical" Grid.Row="0" Spacing="12" HorizontalAlignment="Stretch">
             <TextBlock HorizontalAlignment="Center" Text="Servo output functions" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" HorizontalAlignment="Center" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" HorizontalAlignment="Center" IsVisible="{Binding IsBusy}" />
             <TextBlock HorizontalAlignment="Center" Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
             <TextBlock HorizontalAlignment="Center" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,10,0,10">

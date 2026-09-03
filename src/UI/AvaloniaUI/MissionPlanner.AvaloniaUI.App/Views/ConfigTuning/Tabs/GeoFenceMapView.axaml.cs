@@ -20,7 +20,7 @@ using NetTopologySuite.Geometries;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
-public partial class GeoFenceMapView : TabItemViewBase<GeoFenceTabViewModel>, IDisposable
+public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>, IDisposable
 {
     private const double WebMercatorInitialResolution = 156543.03392804097;
     private readonly Mapsui.Map map = new();
@@ -49,7 +49,6 @@ public partial class GeoFenceMapView : TabItemViewBase<GeoFenceTabViewModel>, ID
         FenceMap = this.FindControl<MapControl>("FenceMap");
         DomainException.ThrowIfNull(FenceMap, "The MapsUI FenceMap could not be loaded.");
         FenceMap.Map = map;
-        FenceMap.MapTapped += OnMapTapped;
     }
 
     public void Dispose()
@@ -61,7 +60,6 @@ public partial class GeoFenceMapView : TabItemViewBase<GeoFenceTabViewModel>, ID
 
         disposed = true;
         DeactivateMap();
-        FenceMap.MapTapped -= OnMapTapped;
         basemapController.Dispose();
     }
 
@@ -75,6 +73,7 @@ public partial class GeoFenceMapView : TabItemViewBase<GeoFenceTabViewModel>, ID
         }
 
         mapActive = true;
+        FenceMap.MapTapped += OnMapTapped;
         ViewModel.GeometryChanged += OnGeometryChanged;
         FenceMap.SizeChanged += OnMapLayoutChanged;
         FenceMap.LayoutUpdated += OnMapLayoutChanged;
@@ -110,6 +109,7 @@ public partial class GeoFenceMapView : TabItemViewBase<GeoFenceTabViewModel>, ID
         }
 
         mapActive = false;
+        FenceMap.MapTapped -= OnMapTapped;
         ViewModel.GeometryChanged -= OnGeometryChanged;
         FenceMap.SizeChanged -= OnMapLayoutChanged;
         FenceMap.LayoutUpdated -= OnMapLayoutChanged;

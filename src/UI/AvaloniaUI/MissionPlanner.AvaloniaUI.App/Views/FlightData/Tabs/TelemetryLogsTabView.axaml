@@ -25,7 +25,7 @@
                 <TextBlock Text="{Binding SourceName}" FontWeight="Bold"/>
                 <TextBlock Text="{Binding StatusMessage}"/>
             </StackPanel>
-            <ProgressBar Grid.Column="4" Width="40" IsIndeterminate="True" IsVisible="{Binding IsBusy}"/>
+            <ProgressBar Grid.Column="4" Width="40" IsIndeterminate="True" IsVisible="{Binding IsBusy}" Theme="{DynamicResource ProgressRing}" />
         </Grid>
         <Grid Grid.Row="2" ColumnDefinitions="*,Auto,90,Auto" ColumnSpacing="8">
             <Slider Maximum="{Binding DurationSeconds}" Value="{Binding SeekSeconds}"/>
@@ -34,7 +34,7 @@
             <Button Grid.Column="3" Content="Apply speed ×" Command="{Binding ApplySpeedCommand}"/>
         </Grid>
         <Grid Grid.Row="3" ColumnDefinitions="*,Auto">
-            <ProgressBar Maximum="1" Value="{Binding Progress}"/>
+            <ProgressBar Maximum="1" Value="{Binding Progress}" Theme="{DynamicResource ProgressRing}" />
             <TextBlock Grid.Column="1" Text="{Binding ReplayTimeText}"/>
         </Grid>
         <Grid Grid.Row="4" RowDefinitions="Auto,*" RowSpacing="6">

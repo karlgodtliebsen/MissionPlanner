@@ -1,14 +1,18 @@
+﻿using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Presentation;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.ConfigTuning.Tuning;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
+using MissionPlanner.Library;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
@@ -19,7 +23,10 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
     private readonly IExtendedTuningService tuningService;
     private readonly IControlResponseMetricsService metricsService;
     private readonly IUserConfirmationService confirmation;
+    private readonly IDomainEventHub domainEventHub;
+    private readonly SemaphoreSlim initializationGate = new(1, 1);
     private ExtendedTuningWorkspace? workspace;
+    private IDisposable? parameterLoadSubscription;
     private CancellationTokenSource? operationCancellation;
     private ActiveProfileKey activeKey;
     private bool active;
@@ -35,13 +42,15 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
         IActiveVehicleContext activeVehicle,
         IExtendedTuningService tuningService,
         IControlResponseMetricsService metricsService,
-        IUserConfirmationService confirmation, ILogger<ExtendedTuningTabViewModel> logger) : base(logger)
+        IUserConfirmationService confirmation,
+        IDomainEventHub domainEventHub,
+        ILogger<ExtendedTuningTabViewModel> logger) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.tuningService = tuningService;
         this.metricsService = metricsService;
         this.confirmation = confirmation;
-        SetMessages("Connect a vehicle to use Extended Tuning.");
+        this.domainEventHub = domainEventHub;
     }
 
     /// <summary>Gets all lazy descriptor groups.</summary>
@@ -143,19 +152,19 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
     }
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         if (active)
         {
-            return Task.CompletedTask;
+            return;
         }
-
         active = true;
         activeVehicle.Changed += OnActiveVehicleChanged;
         metricsService.Changed += OnMetricChanged;
-        Dispatcher.Dispatch(() => _ = InitializeAsync());
-        return Task.CompletedTask;
+        parameterLoadSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(
+            OnParameterLoadStatusChanged);
+        await Dispatcher.DispatchAsync(async () => await InitializeAsync());
     }
 
     /// <inheritdoc />
@@ -175,6 +184,8 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
         active = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         metricsService.Changed -= OnMetricChanged;
+        parameterLoadSubscription?.Dispose();
+        parameterLoadSubscription = null;
         CancelOperation();
     }
 
@@ -190,38 +201,36 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
             return;
         }
 
-        await RunAsync(async cancellationToken =>
+        var groupChanges = group.ParameterNames
+            .Select(name => workspace.Session.GetField(name))
+            .Where(item => item?.IsModified == true)
+            .Select(item => $"{item!.Name}: {item.LiveValue:G} → {item.PendingValue:G}")
+            .ToArray();
+        if (groupChanges.Length == 0)
         {
-            var groupChanges = group.ParameterNames
-                .Select(name => workspace.Session.GetField(name))
-                .Where(item => item?.IsModified == true)
-                .Select(item => $"{item!.Name}: {item.LiveValue:G} → {item.PendingValue:G}")
-                .ToArray();
-            if (groupChanges.Length == 0)
-            {
-                SetMessages($"{group.Title} has no pending changes.");
-                return;
-            }
+            SetMessages($"{group.Title} has no pending changes.");
+            NotificationManager?.Show(StatusMessage ?? "");
+            return;
+        }
 
-            if (!await confirmation.ConfirmAsync(
-                    "Apply expert tuning changes?",
-                    $"{group.ExpertWarning}\n\n{string.Join(Environment.NewLine, groupChanges)}",
-                    "Apply expert changes",
-                    cancellationToken))
-            {
-                SetMessages("Advanced tuning changes were not applied.");
-                return;
-            }
+        if (!await confirmation.ConfirmAsync(
+                "Apply expert tuning changes?",
+                $"{group.ExpertWarning}\n\n{string.Join(Environment.NewLine, groupChanges)}",
+                "Apply expert changes",
+                CancellationToken.None))
+        {
+            SetMessages("Advanced tuning changes were not applied.");
+            NotificationManager?.Show(StatusMessage ?? "");
+            return;
+        }
 
-            var result = await tuningService.ApplyGroupAsync(workspace, group.Key, cancellationToken);
-            group.ValidationMessage = result.ValidationIssues.Count == 0
-                ? null
-                : string.Join(" ", result.ValidationIssues.Select(issue => issue.Message));
-            RefreshState();
-            SetMessages(result.Success
-                ? $"{group.Title} applied and confirmed. Flight-test cautiously."
-                : group.ValidationMessage ?? $"{group.Title} was not fully confirmed; failed fields remain pending.");
-        }).ConfigureAwait(false);
+        var result = await tuningService.ApplyGroupAsync(workspace, group.Key, CancellationToken.None);
+        group.ValidationMessage = result.ValidationIssues.Count == 0
+            ? null
+            : string.Join(" ", result.ValidationIssues.Select(issue => issue.Message));
+        RefreshState();
+        SetMessages(result.Success ? $"{group.Title} applied and confirmed. Flight-test cautiously." : group.ValidationMessage ?? $"{group.Title} was not fully confirmed; failed fields remain pending.");
+        NotificationManager?.Show(StatusMessage ?? "");
     }
 
     private void RevertGroup(ExtendedTuningGroupViewModel group)
@@ -236,6 +245,7 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
         group.ClearCopyPreview();
         RefreshState();
         SetMessages($"Pending changes in {group.Title} were reverted.");
+        NotificationManager?.Show(StatusMessage ?? "");
     }
 
     private async Task RefreshGroupAsync(ExtendedTuningGroupViewModel group)
@@ -244,13 +254,10 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
         {
             return;
         }
-
-        await RunAsync(async cancellationToken =>
-        {
-            await workspace.Session.RefreshAsync(group.ParameterNames, cancellationToken);
-            RefreshState();
-            SetMessages($"Refresh requested for {group.Title}.");
-        }).ConfigureAwait(false);
+        await workspace.Session.RefreshAsync(group.ParameterNames, CancellationToken.None);
+        RefreshState();
+        SetMessages($"Refresh requested for {group.Title}.");
+        NotificationManager?.Show(StatusMessage ?? "");
     }
 
     private void PreviewCopy(ExtendedTuningGroupViewModel group)
@@ -268,6 +275,7 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
                 group.SelectedSourceAxis,
                 group.SelectedTargetAxis));
             SetMessages("Axis copy preview created. Review every target value; no pending value has changed yet.");
+            NotificationManager?.Show(StatusMessage ?? "");
         }
         catch (Exception exception)
         {
@@ -304,9 +312,23 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
         {
             SetMessages(string.Join(" ", result.Errors));
         }
+        NotificationManager?.Show(StatusMessage ?? "");
     }
 
     private async Task InitializeAsync()
+    {
+        await initializationGate.WaitAsync();
+        try
+        {
+            await InitializeCoreAsync();
+        }
+        finally
+        {
+            initializationGate.Release();
+        }
+    }
+
+    private async Task InitializeCoreAsync()
     {
         CancelOperation();
         DetachWorkspace();
@@ -321,18 +343,27 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
         if (!snapshot.IsOnline || snapshot.VehicleId is not { } vehicleId)
         {
             SetMessages("Connect a vehicle to use Extended Tuning.");
+            NotificationManager?.Show(StatusMessage ?? "");
             return;
         }
 
-        await RunAsync(async cancellationToken =>
+        workspace = await tuningService.OpenAsync(vehicleId, CancellationToken.None);
+        if (workspace is null)
         {
-            workspace = await tuningService.OpenAsync(vehicleId, cancellationToken);
-            if (workspace is null || workspace.Groups.Count == 0)
-            {
-                SetMessages($"No curated advanced fields are present for {FirmwareFamilyText}.");
-                return;
-            }
+            SetMessages($"No curated advanced fields are present for {FirmwareFamilyText}.");
+            NotificationManager?.Show(StatusMessage ?? "");
+            return;
+        }
+        await RunInitializeAsync(vehicleId);
+    }
 
+    private async Task RunInitializeAsync(VehicleId vehicleId)
+    {
+        DomainException.ThrowIfNull(workspace);
+        CancelOperation();
+        SetBusy();
+        try
+        {
             workspace.Session.Changed += OnSessionChanged;
             var groups = new List<ExtendedTuningGroupViewModel>();
             foreach (var item in workspace.Groups)
@@ -349,26 +380,14 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
             }
 
             Groups.ReplaceRange(groups);
-
             HasSupportedProfile = true;
             FilterGroups();
             RefreshMetrics(vehicleId);
             RefreshState();
             SetMessages($"Loaded {Groups.Count} lazy advanced groups for {FirmwareFamilyText}. Expand only the controller you intend to review.");
-        }).ConfigureAwait(false);
-    }
-
-    private async Task RunAsync(Func<CancellationToken, Task> operation)
-    {
-        CancelOperation();
-        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        operationCancellation = cancellation;
-        SetBusy();
-        try
-        {
-            await operation(cancellation.Token);
+            NotificationManager?.Show(StatusMessage ?? "");
         }
-        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
             SetMessages(activeVehicle.IsOnline ? "Extended Tuning operation cancelled." : "Vehicle disconnected; Extended Tuning operation cancelled.");
         }
@@ -379,11 +398,7 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
         }
         finally
         {
-            if (ReferenceEquals(operationCancellation, cancellation))
-            {
-                operationCancellation = null;
-                ResetBusy();
-            }
+            ResetBusy();
         }
     }
 
@@ -446,8 +461,24 @@ public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
         var next = ActiveProfileKey.From(args.Current);
         if (next != activeKey)
         {
-            Dispatcher.Dispatch(() => _ = InitializeAsync());
+            Dispatcher.Dispatch(() => InitializeAsync().SafeFireAndForget());
         }
+    }
+
+    private Task OnParameterLoadStatusChanged(
+        VehicleParameterLoadStatusChanged evt,
+        CancellationToken cancellationToken)
+    {
+        if (!active || disposed ||
+            evt.Status.State != ParameterLoadState.Completed ||
+            evt.Status.VehicleId != activeVehicle.VehicleId ||
+            workspace?.Groups.Count > 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        Dispatcher.Dispatch(() => InitializeAsync().SafeFireAndForget());
+        return Task.CompletedTask;
     }
 
     private void OnSessionChanged()

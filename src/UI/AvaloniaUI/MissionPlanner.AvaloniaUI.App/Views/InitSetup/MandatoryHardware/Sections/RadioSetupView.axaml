@@ -19,7 +19,7 @@
                 </StackPanel>
                 <TextBlock Grid.Column="1" Text="{Binding CalibrationState}" Padding="12,6" VerticalAlignment="Center" FontWeight="Bold" Background="{DynamicResource PrimaryContainer}" />
             </Grid>
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
             <Border Padding="14" Classes="SectionCard">
@@ -77,7 +77,7 @@
                     <TextBlock Text="Next step" FontWeight="Bold" />
                     <TextBlock Text="{Binding Instruction}" FontSize="16" />
                     <TextBlock Text="{Binding CaptureSummary}" FontSize="12" Opacity="0.75" />
-                    <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsWriting}" />
+                            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsWriting}" />
                 </StackPanel>
             </Border>
             <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">

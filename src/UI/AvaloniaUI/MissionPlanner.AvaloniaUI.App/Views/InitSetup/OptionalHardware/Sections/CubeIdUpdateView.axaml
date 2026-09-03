@@ -9,7 +9,7 @@
                                x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections.CubeIdUpdateView"
                                x:DataType="sections:CubeIdUpdateViewModel">
     <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="CubeID Firmware Update" FontSize="24" FontWeight="Bold" />
         <TextBlock Text="The target component identity is retained; an autopilot component cannot consume CubeID acknowledgements." />
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />

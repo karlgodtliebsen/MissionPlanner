@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,34 +20,70 @@ public partial class MainShellViewModel : ObservableObject
         SelectedMenuItem = MenuItems[0];
     }
 
-    public ObservableCollection<NavigationMenuItemViewModel> MenuItems { get; }
+    public ObservableCollection<NavigationMenuItemViewModel> MenuItems
+    {
+        get;
+    }
 
     [ObservableProperty]
-    public partial Page? Content { get; private set; }
+    public partial Page? Content
+    {
+        get; private set;
+    }
 
     [ObservableProperty]
-    public partial bool IsNavigationCollapsed { get; set; }
+    public partial bool IsNavigationCollapsed
+    {
+        get; set;
+    }
 
     [ObservableProperty]
-    public partial NavigationMenuItemViewModel? SelectedMenuItem { get; set; }
+    public partial bool IsNavigationOpen
+    {
+        get; set;
+    }
+
+    //partial void OnIsNavigationOpenChanged(bool oldValue, bool newValue)
+    //{
+    //    IsNavigationCollapsed = !newValue;
+    //}
+
+    [ObservableProperty]
+    public partial NavigationMenuItemViewModel? SelectedMenuItem
+    {
+        get; set;
+    }
+
 
     partial void OnSelectedMenuItemChanged(NavigationMenuItemViewModel? value)
     {
         if (value?.Route is not null)
+        {
             NavigateToSelectionAsync(value.Route);
+        }
     }
 
-    public Task InitializeAsync() => navigationService.NavigateAsync(MissionPlannerRoutes.FlightData);
+    public Task InitializeAsync()
+    {
+        return navigationService.NavigateAsync(MissionPlannerRoutes.FlightData);
+    }
 
     [RelayCommand]
-    private void Exit() => windowProvider.ActiveWindow?.Close();
+    private void Exit()
+    {
+        windowProvider.ActiveWindow?.Close();
+    }
 
-    private async void NavigateToSelectionAsync(string route) => await navigationService.NavigateAsync(route);
+    private async void NavigateToSelectionAsync(string route)
+    {
+        await navigationService.NavigateAsync(route);
+    }
 
-    private static ObservableCollection<NavigationMenuItemViewModel> CreateMenuItems() =>
-    [
+    private static ObservableCollection<NavigationMenuItemViewModel> CreateMenuItems()
+    {
+        return [
         new("Flight Data", MissionPlannerRoutes.FlightData, "/Resources/Images/light_flightdata_icon.png"),
-        new("Flight Plan", MissionPlannerRoutes.FlightPlanner, "/Resources/Images/light_flightplan_icon.png"),
+        new("Flight Planner", MissionPlannerRoutes.FlightPlanner, "/Resources/Images/light_flightplan_icon.png"),
         new("Setup", icon: "/Resources/Images/light_initialsetup_icon.png", children:
         [
             new("Install Firmware", MissionPlannerRoutes.SetupInstallFirmware),
@@ -70,4 +106,5 @@ public partial class MainShellViewModel : ObservableObject
         new("Tutorial", MissionPlannerRoutes.Introduction),
         new("Help", MissionPlannerRoutes.Help, "/Resources/Images/light_help_icon.png")
     ];
+    }
 }

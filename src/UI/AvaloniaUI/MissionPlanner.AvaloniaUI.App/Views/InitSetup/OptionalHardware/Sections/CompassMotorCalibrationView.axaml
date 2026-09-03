@@ -12,8 +12,8 @@
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Compass / Motor Calibration" FontSize="20" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
-            <TextBlock Text="Remove ALL propellers. CompassMot may spin motors." Foreground="{DynamicResource Warning}" FontWeight="Bold" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="Remove ALL propellers. CompassMot may spin motors." Classes="Warning" FontWeight="Bold" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
             <TextBlock Text="{Binding Instruction}" />

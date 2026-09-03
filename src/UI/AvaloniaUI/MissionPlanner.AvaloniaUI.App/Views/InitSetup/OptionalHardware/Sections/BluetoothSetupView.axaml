@@ -10,7 +10,7 @@
                                x:DataType="sections:BluetoothSetupViewModel">
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="Classic Serial Bluetooth Setup" FontSize="20" FontWeight="Bold" />
             <TextBlock Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Opacity="0.75" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />

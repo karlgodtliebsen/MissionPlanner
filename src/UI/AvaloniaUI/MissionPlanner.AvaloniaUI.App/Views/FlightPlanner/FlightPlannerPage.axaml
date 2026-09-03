@@ -15,7 +15,7 @@
     <ContentPage Header="Flight Planner">
         <Grid ColumnDefinitions="*,Auto,Auto" Background="{DynamicResource Surface}">
             <Grid Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="4" Margin="5">
-                <WrapPanel Grid.Row="0" Margin="10,5,0,5">
+                <WrapPanel Grid.Row="0" Margin="10,5,0,5" HorizontalAlignment="Center">
                     <Button Content="Load File" Command="{Binding Map.LoadWpFileCommand}" Margin="0,0,4,4" />
                     <Button Content="Save File" Command="{Binding Map.SaveWpFileCommand}" Margin="0,0,4,4" />
                     <Button Content="Clear Mission" Command="{Binding Map.ClearMissionCommand}" Margin="0,0,4,4" />
@@ -48,7 +48,7 @@
 
                 <flightPlanner:FlightPlannerMissionMapView x:Name="MapView" Grid.Row="1"
                                                            HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-                <ProgressBar x:Name="MapLoadingIndicator" Grid.Row="1" Width="160" IsIndeterminate="True"
+                <ProgressBar x:Name="MapLoadingIndicator" Grid.Row="1" Width="160" IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" 
                              HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Grid>
 

@@ -11,7 +11,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Supported frame configuration" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
             <TextBlock Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}" />
@@ -45,7 +45,7 @@
                 <Button Content="Write and verify" Command="{Binding ApplyCommand}" />
             </StackPanel>
             <TextBlock Text="{Binding StatusMessage}" FontSize="12" FontStyle="Italic" TextTrimming="CharacterEllipsis" />
-            <TextBlock IsVisible="{Binding RebootRequired}" Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration." Foreground="{DynamicResource Warning}" FontWeight="Bold" />
+<TextBlock IsVisible="{Binding RebootRequired}" Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration." Classes="Warning" FontWeight="Bold" />
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

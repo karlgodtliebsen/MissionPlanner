@@ -8,7 +8,7 @@
              x:DataType="subViews:ProgressDialogViewModel"
              mc:Ignorable="d">
     <StackPanel Spacing="14">
-        <ProgressBar IsIndeterminate="True" />
+        <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" />
         <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
     </StackPanel>
 </UserControl>

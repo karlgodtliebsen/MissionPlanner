@@ -11,7 +11,7 @@
                 x:DataType="sections:JoystickViewModel">
     <StackPanel Orientation="Vertical" Margin="20" Spacing="25" HorizontalAlignment="Center">
         <TextBlock Text="Joystick Setup" FontSize="24" FontWeight="Bold" />
-        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
         <TextBlock Text="{Binding PlatformStatus}" />

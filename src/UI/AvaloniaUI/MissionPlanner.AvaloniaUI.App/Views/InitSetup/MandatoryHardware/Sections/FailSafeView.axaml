@@ -11,7 +11,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Failsafe" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
             <TextBlock Text="{Binding Description}" />
@@ -19,7 +19,7 @@
                 <ItemsControl.ItemTemplate>
                     <!--x:DataType="x:String"-->
                     <DataTemplate>
-                        <TextBlock Text="{Binding .}" Foreground="{DynamicResource Warning}" />
+<TextBlock Text="{Binding .}" Classes="Warning" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

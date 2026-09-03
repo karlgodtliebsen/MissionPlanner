@@ -11,12 +11,12 @@
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Camera / Gimbal Configuration" FontSize="20" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
             <TextBlock Text="Changes are explicit and confirmed by parameter readback. Live movement and capture commands remain in Payload Control." Opacity="0.75" />
             <Button Content="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" />
-            <TextBlock Text="Vehicle Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" Foreground="{DynamicResource Warning}" FontWeight="Bold" />
+<TextBlock Text="Vehicle Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" Classes="Warning" FontWeight="Bold" />
             <ItemsControl ItemsSource="{Binding Settings}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="sections:ParameterSettingViewModel">

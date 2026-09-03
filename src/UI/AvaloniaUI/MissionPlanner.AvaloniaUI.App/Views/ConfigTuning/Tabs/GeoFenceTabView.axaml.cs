@@ -3,7 +3,7 @@
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
 /// <summary>Displays the GeoFenceTabView configuration workflow.</summary>
-public partial class GeoFenceTabView : TabItemViewBase<GeoFenceTabViewModel>
+public partial class GeoFenceTabView : NavigationViewBase<GeoFenceTabViewModel>
 {
     /// <summary>Initializes the GeoFenceTabView.</summary>
     public GeoFenceTabView()

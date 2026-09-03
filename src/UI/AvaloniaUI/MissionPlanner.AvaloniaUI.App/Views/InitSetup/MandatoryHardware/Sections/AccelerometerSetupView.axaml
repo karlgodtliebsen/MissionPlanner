@@ -11,10 +11,10 @@
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Accelerometer and level calibration" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
-            <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." Foreground="{DynamicResource Warning}" FontWeight="Bold" />
+<TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." Classes="Warning" FontWeight="Bold" />
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <Button Content="Start six-position calibration" Command="{Binding StartSixPositionCommand}" />
                 <Button Content="Calibrate level" Command="{Binding StartLevelCommand}" />

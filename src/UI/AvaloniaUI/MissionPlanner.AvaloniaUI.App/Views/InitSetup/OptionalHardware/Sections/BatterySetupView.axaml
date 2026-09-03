@@ -10,7 +10,7 @@
                                x:DataType="sections:BatterySetupViewModel">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
             <TextBlock Text="Battery monitors and failsafe" FontSize="18" FontWeight="Bold" />
@@ -19,7 +19,7 @@
             <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="x:String">
-                        <TextBlock Text="{Binding .}" Foreground="{DynamicResource Warning}" />
+<TextBlock Text="{Binding .}" Classes="Warning" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

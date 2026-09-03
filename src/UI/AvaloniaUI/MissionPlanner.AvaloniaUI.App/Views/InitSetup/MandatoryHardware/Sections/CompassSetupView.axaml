@@ -11,15 +11,15 @@
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Compass discovery and calibration" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
             <StackPanel Orientation="Vertical" IsVisible="{Binding HasIssues}" Spacing="4">
-                <TextBlock Text="Configuration warnings" FontWeight="Bold" Foreground="{DynamicResource Warning}" />
+<TextBlock Text="Configuration warnings" FontWeight="Bold" Classes="Warning" />
                 <ItemsControl ItemsSource="{Binding Issues}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="x:String">
-                            <TextBlock Text="{Binding .}" Foreground="{DynamicResource Warning}" />
+<TextBlock Text="{Binding .}" Classes="Warning" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -49,7 +49,7 @@
             </ItemsControl>
             <Button Content="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" />
             <TextBlock Text="Onboard calibration" FontSize="18" FontWeight="Bold" />
-            <TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Foreground="{DynamicResource Warning}" FontWeight="Bold" />
+<TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning" FontWeight="Bold" />
             <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
             <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
             <TextBlock Text="{Binding ProgressSummary}" />

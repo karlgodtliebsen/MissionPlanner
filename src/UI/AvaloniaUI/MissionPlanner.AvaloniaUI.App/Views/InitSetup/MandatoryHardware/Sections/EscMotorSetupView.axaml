@@ -11,10 +11,10 @@
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="ESC calibration and motor test" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
-            <TextBlock Text="Remove ALL propellers before any actuator test. Motors will spin." Foreground="{DynamicResource Warning}" FontWeight="Bold" />
+<TextBlock Text="Remove ALL propellers before any actuator test. Motors will spin." Classes="Warning" FontWeight="Bold" />
             <TextBlock Text="{Binding EscExplanation}" />
             <ItemsControl IsVisible="{Binding EscCalibrationApplicable}" ItemsSource="{Binding EscSteps}">
                 <ItemsControl.ItemTemplate>

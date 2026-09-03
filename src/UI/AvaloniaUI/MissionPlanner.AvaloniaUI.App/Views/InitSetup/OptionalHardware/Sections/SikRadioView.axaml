@@ -11,8 +11,8 @@
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" VerticalAlignment="Center" HorizontalAlignment="Center">
             <TextBlock Text="SiK / RFD Radio" FontSize="20" FontWeight="Bold" />
-            <TextBlock Text="Direct serial configuration. Disconnect any vehicle using the selected port." Foreground="{DynamicResource Warning}" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="Direct serial configuration. Disconnect any vehicle using the selected port." Classes="Warning" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
             <StackPanel Orientation="Horizontal" Spacing="50" HorizontalAlignment="Stretch" Height="75" VerticalAlignment="Stretch">

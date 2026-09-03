@@ -31,7 +31,7 @@
             </Grid>
             <GridSplitter Grid.Column="1" Width="5" ResizeDirection="Columns" />
             <flightData:FlightDataMissionMapView x:Name="MapView" Grid.Column="2" />
-            <ProgressBar x:Name="MapLoadingIndicator" Grid.Column="2" Width="160"
+            <ProgressBar x:Name="MapLoadingIndicator" Grid.Column="2" Width="160" Theme="{DynamicResource ProgressRing}" 
                          IsIndeterminate="True" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
     </ContentPage>

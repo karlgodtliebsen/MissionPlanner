@@ -514,10 +514,10 @@
                     </StackPanel>
                 </Border>
 
-                <TextBlock Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}"
-                           Foreground="{DynamicResource Warning}" FontWeight="Bold" />
+<TextBlock Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}"
+                           Classes="Warning" FontWeight="Bold" />
                 <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis"/>
-                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
 
                 <WrapPanel HorizontalAlignment="Right">
                     <Button  Content="Import" Command="{Binding ImportCommand}" Margin="4" />

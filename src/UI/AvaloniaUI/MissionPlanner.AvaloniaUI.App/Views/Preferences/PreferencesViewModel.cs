@@ -30,7 +30,6 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     private readonly IOfflineMapPackManager offlinePackManager;
     private readonly IOfflineMapPackValidator offlinePackValidator;
     private readonly MapHttpDiskCache mapCache;
-    private readonly SemaphoreSlim operationGate = new(1, 1);
     private bool loading;
     private bool active;
     private bool disposed;
@@ -75,7 +74,6 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         this.offlinePackManager = offlinePackManager;
         this.offlinePackValidator = offlinePackValidator;
         this.mapCache = mapCache;
-        AvaloniaThemeCatalog.ThemeChanged += OnThemeChanged;
     }
 
     /// <summary>
@@ -697,7 +695,10 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             return;
         }
         active = true;
+
         Debug.Print("Activating PreferencesViewModel");
+        AvaloniaThemeCatalog.ThemeChanged += OnThemeChanged;
+
         var cancellation = new CancellationTokenSource();
         activationCancellation = cancellation;
         operationCancellation = new CancellationTokenSource();
@@ -751,7 +752,6 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         }
         Debug.Print("Disposing PreferencesViewModel");
         Deactivate();
-        AvaloniaThemeCatalog.ThemeChanged -= OnThemeChanged;
         disposed = true;
         base.Dispose();
     }
@@ -767,8 +767,8 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             return;
         }
         Debug.Print("Deactivating PreferencesViewModel");
-
         active = false;
+        AvaloniaThemeCatalog.ThemeChanged -= OnThemeChanged;
         Cancel(Interlocked.Exchange(ref activationCancellation, null));
         Cancel(Interlocked.Exchange(ref operationCancellation, null));
     }

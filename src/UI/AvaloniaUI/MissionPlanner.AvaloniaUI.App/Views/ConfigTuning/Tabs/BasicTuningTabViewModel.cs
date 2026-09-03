@@ -4,10 +4,12 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.Core.ConfigTuning.Tuning;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Models;
@@ -21,7 +23,10 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
     private readonly IBasicTuningService tuningService;
     private readonly ParametersFileHandler fileHandler;
     private readonly IUserConfirmationService confirmation;
+    private readonly IDomainEventHub domainEventHub;
+    private readonly SemaphoreSlim initializationGate = new(1, 1);
     private BasicTuningWorkspace? workspace;
+    private IDisposable? parameterLoadSubscription;
     private CancellationTokenSource? operationCancellation;
     private ActiveProfileKey activeKey;
     private bool active;
@@ -37,12 +42,15 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
         IActiveVehicleContext activeVehicle,
         IBasicTuningService tuningService,
         ParametersFileHandler fileHandler,
-        IUserConfirmationService confirmation, ILogger<BasicTuningTabViewModel> logger) : base(logger)
+        IUserConfirmationService confirmation,
+        IDomainEventHub domainEventHub,
+        ILogger<BasicTuningTabViewModel> logger) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.tuningService = tuningService;
         this.fileHandler = fileHandler;
         this.confirmation = confirmation;
+        this.domainEventHub = domainEventHub;
         SetMessages("Connect a vehicle to use Basic Tuning.");
     }
 
@@ -115,6 +123,8 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
 
         active = true;
         activeVehicle.Changed += OnActiveVehicleChanged;
+        parameterLoadSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(
+            OnParameterLoadStatusChanged);
         Dispatcher.Dispatch(() => _ = InitializeAsync());
         return Task.CompletedTask;
     }
@@ -136,6 +146,8 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
 
         active = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        parameterLoadSubscription?.Dispose();
+        parameterLoadSubscription = null;
         CancelOperation();
     }
 
@@ -254,6 +266,19 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
 
     private async Task InitializeAsync()
     {
+        await initializationGate.WaitAsync();
+        try
+        {
+            await InitializeCoreAsync();
+        }
+        finally
+        {
+            initializationGate.Release();
+        }
+    }
+
+    private async Task InitializeCoreAsync()
+    {
         CancelOperation();
         DetachWorkspace();
         Groups.Clear();
@@ -329,6 +354,22 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
         }
 
         Dispatcher.Dispatch(() => _ = InitializeAsync());
+    }
+
+    private Task OnParameterLoadStatusChanged(
+        VehicleParameterLoadStatusChanged evt,
+        CancellationToken cancellationToken)
+    {
+        if (!active || disposed ||
+            evt.Status.State != ParameterLoadState.Completed ||
+            evt.Status.VehicleId != activeVehicle.VehicleId ||
+            workspace?.Groups.Count > 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        Dispatcher.Dispatch(() => _ = InitializeAsync());
+        return Task.CompletedTask;
     }
 
     private void OnSessionChanged()

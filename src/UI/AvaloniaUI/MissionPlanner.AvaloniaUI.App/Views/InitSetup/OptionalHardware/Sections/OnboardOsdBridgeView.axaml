@@ -13,7 +13,7 @@
         <TextBlock Text="Onboard OSD" FontSize="20" FontWeight="Bold" />
         <TextBlock Text="Configure screens, elements, positions, units and supported options in the existing Onboard OSD workspace." />
         <TextBlock Text="This entry uses the same OSD configuration service and editing session as Config; it does not create a second configuration engine." Opacity="0.75" />
-        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
         <Button Content="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalAlignment="Left" />

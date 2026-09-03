@@ -13,14 +13,10 @@
 
     <ContentPage Header="Mandatory Hardware" Background="{DynamicResource Surface}">
         <Grid Margin="20" RowDefinitions="Auto,Auto,*" RowSpacing="14">
-            <StackPanel Spacing="6">
-                <TextBlock Text="Mandatory Hardware" FontSize="26" FontWeight="Bold" />
-                <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
                 <TextBlock Text="{Binding VehicleHeading}" FontSize="16" />
             </StackPanel>
-            <Button Grid.Row="1" Content="Open related Config page" HorizontalAlignment="Left"
-                    IsVisible="{Binding HasConfigDestination}" Command="{Binding OpenConfigCommand}" />
             <TabControl Grid.Row="2">
                 <TabItem Header="Frame"><sections:FrameSetupView /></TabItem>
                 <TabItem Header="Accelerometer"><sections:AccelerometerSetupView /></TabItem>

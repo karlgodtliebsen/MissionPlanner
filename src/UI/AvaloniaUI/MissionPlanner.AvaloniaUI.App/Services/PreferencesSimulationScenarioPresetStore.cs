@@ -10,6 +10,7 @@ public sealed class PreferencesSimulationScenarioPresetStore : ISimulationScenar
     /// <inheritdoc />
     public ValueTask<string?> ReadAsync(CancellationToken cancellationToken = default)
     {
+        //TODO: Implement this method to read the simulation scenario presets from platform application preferences.
         throw new NotImplementedException();
 
         //cancellationToken.ThrowIfCancellationRequested();
@@ -19,6 +20,7 @@ public sealed class PreferencesSimulationScenarioPresetStore : ISimulationScenar
     /// <inheritdoc />
     public ValueTask WriteAsync(string document, CancellationToken cancellationToken = default)
     {
+        //TODO: Implement this method to read the simulation scenario presets from platform application preferences.
         throw new NotImplementedException();
         //ArgumentNullException.ThrowIfNull(document);
         //cancellationToken.ThrowIfCancellationRequested();

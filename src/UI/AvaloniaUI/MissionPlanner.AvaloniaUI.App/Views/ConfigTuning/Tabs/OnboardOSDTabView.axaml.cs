@@ -3,7 +3,7 @@
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
 /// <summary>Displays the OnboardOSDTabView configuration workflow.</summary>
-public partial class OnboardOSDTabView : TabItemViewBase<OnboardOsdTabViewModel>
+public partial class OnboardOSDTabView : NavigationViewBase<OnboardOsdTabViewModel>
 {
     /// <summary>Initializes the OnboardOSDTabView.</summary>
     public OnboardOSDTabView()

@@ -127,7 +127,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ApplicationStateService>();
 
         services.TryAddTransient<ParametersFileHandler>();
-        services.TryAddSingleton<PlannerSettingsRuntime>();
+
         services.TryAddTransient<MissionItemListViewPage>();
         services.TryAddTransient<MissionItemListDockViewModel>();
         services.TryAddTransient<MissionMapPresenter>();
