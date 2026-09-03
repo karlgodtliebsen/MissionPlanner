@@ -149,7 +149,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     partial void OnIsVehicleConnectedChanged(bool oldValue, bool newValue)
     {
-        ContextWidth = HorizontalAlignment.Center;// newValue ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
+        ContextWidth = newValue ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
     }
 
     [ObservableProperty]
