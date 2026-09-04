@@ -2,7 +2,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Models;
 using MissionPlanner.AvaloniaUI.App.Presentation;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.ConfigTuning.Tuning;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
@@ -11,8 +13,6 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using MissionPlanner.AvaloniaUI.App.Utilities;
-using MissionPlanner.AvaloniaUI.App.Models;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
@@ -37,6 +37,7 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
     /// <param name="tuningService">The curated tuning service.</param>
     /// <param name="fileHandler">The Config file helper.</param>
     /// <param name="confirmation">The hazardous-change confirmation service.</param>
+    /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="logger">The logger.</param>
     public BasicTuningTabViewModel(
         IActiveVehicleContext activeVehicle,

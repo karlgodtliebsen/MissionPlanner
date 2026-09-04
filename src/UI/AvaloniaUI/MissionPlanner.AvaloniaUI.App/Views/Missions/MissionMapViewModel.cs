@@ -303,20 +303,6 @@ public partial class MissionMapViewModel : DialogViewModelBase
 
     /// <summary>Short feedback message for the last menu action.</summary>
     [ObservableProperty]
-    public partial string? StatusMessage
-    {
-        get; set;
-    }
-
-    /// <summary>Short feedback message for the last menu action.</summary>
-    [ObservableProperty]
-    public new partial bool HasStatusMessage
-    {
-        get; set;
-    }
-
-    /// <summary>Short feedback message for the last menu action.</summary>
-    [ObservableProperty]
     public partial bool HasAltitudeMessage
     {
         get; set;
@@ -359,10 +345,6 @@ public partial class MissionMapViewModel : DialogViewModelBase
     } =
         ["osm-standard", "esri-world-topo", "esri-world-physical", "esri-world-shaded-relief", "esri-world-dark-gray", "no-map"];
 
-    partial void OnStatusMessageChanged(string? value)
-    {
-        HasStatusMessage = value is not null;
-    }
 
     partial void OnPointerAltitudeChanged(double? oldValue, double? newValue)
     {

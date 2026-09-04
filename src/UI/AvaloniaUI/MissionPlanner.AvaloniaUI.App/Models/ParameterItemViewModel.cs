@@ -402,7 +402,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
         Value = selectedValue;
     }
-    partial void OnSelectedBitmaskItemChanged(object? oldValue, object? newValue)
+    partial void OnSelectedBitmaskItemChanged(object oldValue, object newValue)
     {
         if (loadingData)
         {
