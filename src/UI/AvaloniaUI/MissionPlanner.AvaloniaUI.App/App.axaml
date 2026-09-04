@@ -23,7 +23,10 @@
             <converters:BoolToObjectConverter x:Key="BoolToYesNoConverter" TrueObject="Yes" FalseObject="No" />
             <converters:IntegerDoubleConverter x:Key="IntegerDoubleConverter" />
             <converters:ByteDoubleConverter x:Key="ByteDoubleConverter" />
+            <converters:StringDoubleConverter x:Key="StringDoubleConverter" />
+            <converters:StringIntegerConverter x:Key="StringIntegerConverter" />
         </ResourceDictionary>
+        <CornerRadius x:Key="ButtonCornerRadius">16</CornerRadius>
     </Application.Resources>
 
     <Application.Styles>

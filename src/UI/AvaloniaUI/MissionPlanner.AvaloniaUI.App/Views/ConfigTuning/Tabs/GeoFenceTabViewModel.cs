@@ -1,4 +1,4 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -11,6 +11,8 @@ using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
+using MissionPlanner.Maps.Coordinates;
+using MissionPlanner.Maps.Terrain;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using ParameterItemViewModel = MissionPlanner.AvaloniaUI.App.Models.ParameterItemViewModel;
 
@@ -113,6 +115,103 @@ public sealed partial class GeoFenceTabViewModel : ViewModelBase
 
     /// <summary>Gets a description of the current map editing mode.</summary>
     public string EditModeText => EditMode == FenceMapEditMode.None ? "Inspect mode" : $"Editing: {EditMode}";
+
+    /// <summary>Gets the coordinate currently under the map pointer.</summary>
+    [ObservableProperty]
+    public partial string PointerCoordinateText { get; private set; } = "Position unavailable";
+
+    /// <summary>Gets the coordinate display styles available in the map status bar.</summary>
+    public IReadOnlyList<string> MapStyles { get; } = ["GEO", "UTM", "MGRS"];
+
+    /// <summary>Gets or sets the coordinate display style used by the map status bar.</summary>
+    [ObservableProperty]
+    public partial string SelectedMapStyle { get; set; } = "GEO";
+
+    /// <summary>Gets the latitude currently under the map pointer.</summary>
+    [ObservableProperty]
+    public partial double? PointerLatitude { get; private set; }
+
+    /// <summary>Gets the longitude currently under the map pointer.</summary>
+    [ObservableProperty]
+    public partial double? PointerLongitude { get; private set; }
+
+    /// <summary>Gets the freshness of the map pointer position.</summary>
+    [ObservableProperty]
+    public partial string MapFreshness { get; private set; } = "Map: no position";
+
+    /// <summary>Gets the terrain altitude currently under the map pointer.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAltitudeMessage))]
+    public partial double? PointerAltitude { get; private set; }
+
+    /// <summary>Gets whether a terrain altitude is available for display.</summary>
+    public bool HasAltitudeMessage => PointerAltitude is not null;
+
+    /// <summary>Gets the user-facing state of the current terrain lookup.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPointerAltitudeStatus))]
+    public partial string PointerAltitudeStatusText { get; private set; } = string.Empty;
+
+    /// <summary>Gets whether terrain lookup status should be displayed.</summary>
+    public bool HasPointerAltitudeStatus => !string.IsNullOrWhiteSpace(PointerAltitudeStatusText);
+
+    /// <summary>Gets the attribution text required by the active basemap.</summary>
+    [ObservableProperty]
+    public partial string AttributionText { get; private set; } = string.Empty;
+
+    /// <summary>Gets whether basemap attribution should be displayed.</summary>
+    [ObservableProperty]
+    public partial bool IsAttributionVisible { get; private set; }
+
+    /// <summary>Updates the basemap attribution overlay.</summary>
+    public void SetAttribution(string text)
+    {
+        AttributionText = text;
+        IsAttributionVisible = !string.IsNullOrWhiteSpace(text);
+    }
+
+    /// <summary>Updates the coordinate currently under the map pointer.</summary>
+    public void SetPointerPosition(double latitude, double longitude)
+    {
+        PointerLatitude = latitude;
+        PointerLongitude = longitude;
+        UpdatePointerCoordinateText();
+        MapFreshness = "Map: live";
+    }
+
+    partial void OnSelectedMapStyleChanged(string value)
+    {
+        UpdatePointerCoordinateText();
+    }
+
+    private void UpdatePointerCoordinateText()
+    {
+        PointerCoordinateText = PointerLatitude is { } latitude && PointerLongitude is { } longitude
+            ? MapCoordinateFormatter.Format(SelectedMapStyle, latitude, longitude)
+            : "Position unavailable";
+    }
+
+    /// <summary>Marks the terrain lookup for the current pointer position as pending.</summary>
+    public void SetPointerElevationLoading()
+    {
+        PointerAltitude = null;
+        PointerAltitudeStatusText = "Terrain: loading";
+    }
+
+    /// <summary>Applies a terrain lookup result for the current pointer position.</summary>
+    public void SetPointerElevation(TerrainElevationResult result)
+    {
+        PointerAltitude = result.ElevationMeters;
+        PointerAltitudeStatusText = result.Status switch
+        {
+            TerrainElevationStatus.Available => "Terrain: available",
+            TerrainElevationStatus.OutsideCoverage => "Terrain: outside coverage",
+            TerrainElevationStatus.NetworkUnavailable => "Terrain: network unavailable",
+            TerrainElevationStatus.InvalidData => "Terrain: invalid data",
+            TerrainElevationStatus.Loading => "Terrain: loading",
+            _ => string.Empty
+        };
+    }
 
     /// <summary>Gets or sets the radius used by the next circle map click.</summary>
     [ObservableProperty]

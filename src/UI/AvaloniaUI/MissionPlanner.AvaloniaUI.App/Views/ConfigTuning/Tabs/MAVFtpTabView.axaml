@@ -2,9 +2,7 @@
                               xmlns="https://github.com/avaloniaui"
                               xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                               xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs"
-                              xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
                               xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Models"
-                              xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Navigation"
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -21,48 +19,39 @@
                 <Button Grid.Column="3" Content="Open" IsVisible="{Binding HasEntries}" Command="{Binding OpenSelectedCommand}" />
                 <Button Grid.Column="4" Content="Reset sessions"  IsVisible="{Binding HasConnection}" Command="{Binding ResetSessionsCommand}" />
             </Grid>
-            <Grid Grid.Row="1"  HorizontalAlignment="Stretch" >
-               
-                <controls:VirtualizedItemsGrid
-                    ItemsSource="{Binding Entries}"
-                    SelectedItem="{Binding SelectedEntry, Mode=OneWayToSource}"
-                    SelectionMode="Single"
-                    SelectionColumnWidth="25"
-                    ColumnWidths="400,100,100"
-                    ColumnSpacing="6"
-                    RowMinHeight="38"
-                    ShowHeader="True"
-                    ShowSearchBar="False"
-                    ShowPagination="False"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Stretch">
-                    <controls:VirtualizedItemsGrid.EmptyView>
-                        <TextBlock Text="{Binding EmptyText}"
-                                   FontSize="12"
-                                   Opacity="0.6"
-                                   Margin="0,20"
-                                   HorizontalAlignment="Center" />
-                    </controls:VirtualizedItemsGrid.EmptyView>
-                    <controls:VirtualizedItemsGrid.HeaderTemplate>
-                        <DataTemplate>
-                            <controls:VirtualizedItemsGridRow>
-                                <TextBlock Grid.Column="0" Text="Name" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="1" Text="Type" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="2" Text="Size" Classes="DataGridColumn" />
-                            </controls:VirtualizedItemsGridRow>
-                        </DataTemplate>
-                    </controls:VirtualizedItemsGrid.HeaderTemplate>
-                    <controls:VirtualizedItemsGrid.RowTemplate>
+            <Grid Grid.Row="1" RowDefinitions="Auto,*" MinWidth="640">
+                <Grid ColumnDefinitions="400,100,100" ColumnSpacing="6" Margin="12,0,12,6">
+                    <TextBlock Grid.Column="0" Text="Name" Classes="DataGridColumn" />
+                    <TextBlock Grid.Column="1" Text="Type" Classes="DataGridColumn" />
+                    <TextBlock Grid.Column="2" Text="Size" Classes="DataGridColumn" />
+                </Grid>
+
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding Entries}"
+                         SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                         SelectionMode="Single"
+                         DoubleTapped="OnEntriesDoubleTapped"
+                         VerticalAlignment="Stretch">
+                    <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:VehicleFileSystemEntryViewModel">
-                            <controls:VirtualizedItemsGridRow>
+                            <Grid ColumnDefinitions="400,100,100" ColumnSpacing="6" MinHeight="38">
                                 <TextBlock Grid.Column="0" Text="{Binding Name}" Classes="DataGridRow" />
                                 <TextBlock Grid.Column="1" Text="{Binding TypeText}" Classes="DataGridRow" />
                                 <TextBlock Grid.Column="2" Text="{Binding SizeText}" Classes="DataGridRow" />
-                            </controls:VirtualizedItemsGridRow>
+                            </Grid>
                         </DataTemplate>
-                    </controls:VirtualizedItemsGrid.RowTemplate>
-                </controls:VirtualizedItemsGrid>
+                    </ListBox.ItemTemplate>
+                </ListBox>
 
+                <TextBlock Grid.Row="1"
+                           Text="{Binding EmptyText}"
+                           IsVisible="{Binding !HasEntries}"
+                           FontSize="12"
+                           Opacity="0.6"
+                           Margin="0,20"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Top"
+                           IsHitTestVisible="False" />
             </Grid>
             <StackPanel Orientation="Vertical" Grid.Row="2" Spacing="6">
                 <TextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Classes="Danger" />

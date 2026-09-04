@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Models;
 using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 using MissionPlanner.Core.ConfigTuning;
@@ -11,7 +12,6 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
-using ParametersViewModel = MissionPlanner.AvaloniaUI.App.Models.ParametersViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections;
 
@@ -254,9 +254,9 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
-    private async Task TestMotor(MotorLayoutMotor motor)
+    private async Task TestMotor(MotorLayoutMotor motor, CancellationToken cancellationToken)
     {
-        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync())
+        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync(cancellationToken))
         {
             return;
         }
@@ -268,9 +268,9 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
-    private async Task TestSequenceAsync()
+    private async Task TestSequenceAsync(CancellationToken cancellationToken)
     {
-        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync())
+        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync(cancellationToken))
         {
             return;
         }
@@ -281,14 +281,15 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
 
     [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
-    private async Task TestAllAsync()
+    private async Task TestAllAsync(CancellationToken cancellationToken)
     {
-        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync())
+        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync(cancellationToken))
         {
             return;
         }
 
         SetMessages($"Starting all {layout.Motors.Count} motors...");
+        NotificationManager?.Show(StatusMessage!);
         try
         {
             var result = await service.TestAllAsync(
@@ -298,6 +299,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
                 layout.Motors.Count,
                 activeVehicle.ConnectionCancellationToken);
             SetMessages(result.Success ? result.Message : null, result.Success ? null : result.Message);
+            NotificationManager?.Show(StatusMessage!);
         }
         catch (OperationCanceledException)
         {
@@ -311,14 +313,14 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
 
     [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
-    private Task StopAsync()
+    private async Task StopAsync(CancellationToken cancellationToken)
     {
-        return service.EmergencyStopAsync();
+        await service.EmergencyStopAsync(cancellationToken);
     }
 
-    private Task<bool> ConfirmAsync()
+    private async Task<bool> ConfirmAsync(CancellationToken cancellationToken)
     {
-        return confirmation.ConfirmAsync("Confirm motor-test safety", "Confirm ALL propellers are removed and the area is clear.", "Propellers removed – test");
+        return await confirmation.ConfirmAsync("Confirm motor-test safety", "Confirm ALL propellers are removed and the area is clear.", "Propellers removed – test", cancellationToken);
     }
 
     private void Refresh()
@@ -402,6 +404,8 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             if (!disposed)
             {
                 SetMessages(e.Snapshot.Instruction);
+                NotificationManager?.Show(StatusMessage!);
+
             }
         });
     }
@@ -424,12 +428,13 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
         activated = true;
         SetMessages("Remove all propellers before testing.");
+        NotificationManager?.Show(StatusMessage!);
         activeVehicle.Changed += Changed;
         service.StateChanged += StateChanged;
         try
         {
             await base.ActivateAsync();
-            Dispatcher.Dispatch(Refresh);
+            await Dispatcher.DispatchAsync(Refresh);
         }
         catch
         {

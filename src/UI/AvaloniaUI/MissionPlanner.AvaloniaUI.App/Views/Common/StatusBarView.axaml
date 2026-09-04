@@ -43,7 +43,7 @@
             
             <!-- Clock (Right) -->
             <Label Grid.Column="2" Content="{Binding CurrentTime}" VerticalAlignment="Center"  VerticalContentAlignment="Center" 
-                   FontSize="12" Foreground="{DynamicResource OnSurfaceVariant}"/>
+                   FontSize="12" Margin="0,0,16,0"/>
         </Grid>
     </Border>
 

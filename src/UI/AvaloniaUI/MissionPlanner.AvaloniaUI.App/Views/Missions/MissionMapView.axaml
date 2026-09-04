@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase
+<utilities:UserControlViewBase
             xmlns="https://github.com/avaloniaui"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -43,8 +43,29 @@
                     </MenuItem>
                 </ContextMenu>
             </mapsui:MapControl.ContextMenu>
-            
+           
         </mapsui:MapControl>
+
+        <StackPanel Grid.Row="0"
+                    Opacity="0.75"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Margin="0,0,12,0"
+                    Spacing="6">
+            <Button Width="38" Height="38" Padding="0" FontSize="20" Content="+" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+                    ToolTip.Tip="Zoom in" Click="OnZoomInClicked" />
+            <Button Width="38" Height="38" Padding="0" FontSize="20" Content="−" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+                    ToolTip.Tip="Zoom out" Click="OnZoomOutClicked" />
+            <Button Width="38" Height="38" Padding="0" FontSize="25" Content="◎" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+                    ToolTip.Tip="Center on my location" Click="OnCenterOnMyLocationClicked" />
+            <Button Width="38" Height="38" Padding="0" FontWeight="SemiBold"  CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+                    ToolTip.Tip="Reset map rotation to north" Click="OnResetNorthClicked">
+                <StackPanel Spacing="-5" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="▲" FontSize="15" HorizontalAlignment="Center" Foreground="Black"/>
+                    <TextBlock Text="N" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="Black"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
 
         <Border Grid.Row="0" IsVisible="{Binding IsElevationProfileVisible}" MinHeight="190"
                 VerticalAlignment="Bottom" Margin="12" Padding="6"

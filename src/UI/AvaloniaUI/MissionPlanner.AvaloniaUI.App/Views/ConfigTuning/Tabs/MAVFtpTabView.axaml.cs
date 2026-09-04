@@ -1,4 +1,7 @@
-﻿using MissionPlanner.AvaloniaUI.App.Utilities;
+using MissionPlanner.AvaloniaUI.App.Utilities;
+
+using Avalonia.Controls;
+using Avalonia.Input;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 
@@ -9,5 +12,22 @@ public partial class MAVFtpTabView : NavigationViewBase<MavFtpTabViewModel>
     public MAVFtpTabView()
     {
         InitializeComponent();
+    }
+
+    private async void OnEntriesDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (e.Source is not Control { DataContext: Models.VehicleFileSystemEntryViewModel { IsDirectory: true } entry })
+        {
+            return;
+        }
+
+        ViewModel.SelectedEntry = entry;
+        if (!ViewModel.OpenSelectedCommand.CanExecute(null))
+        {
+            return;
+        }
+
+        await ViewModel.OpenSelectedCommand.ExecuteAsync(null);
+        e.Handled = true;
     }
 }

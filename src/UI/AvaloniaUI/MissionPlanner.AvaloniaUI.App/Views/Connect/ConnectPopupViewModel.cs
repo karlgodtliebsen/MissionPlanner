@@ -75,6 +75,46 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
         set;
     }
 
+    partial void OnSelectedPortChanged(string? value)
+    {
+        if (value is null)
+        {
+            SelectedIntPort = null;
+            return;
+        }
+
+        if (int.TryParse(value, out var port) && SelectedIntPort != port)
+        {
+            SelectedIntPort = port;
+        }
+        else
+        {
+            SelectedIntPort = null;
+        }
+    }
+
+    partial void OnSelectedIntPortChanged(int? oldValue, int? newValue)
+    {
+        if (newValue is null)
+        {
+            SelectedPort = null;
+            return;
+        }
+        var newV = newValue.Value.ToString();
+        if (SelectedPort != newV)
+        {
+            SelectedPort = newV;
+        }
+    }
+
+    [ObservableProperty]
+    public partial int? SelectedIntPort
+    {
+        get;
+        set;
+    }
+
+
     [ObservableProperty]
     public partial string? VehicleName
     {

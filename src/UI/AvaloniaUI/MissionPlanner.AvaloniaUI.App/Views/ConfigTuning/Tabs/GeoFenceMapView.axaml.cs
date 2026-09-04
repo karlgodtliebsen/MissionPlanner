@@ -1,4 +1,4 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Mapsui;
@@ -15,7 +15,9 @@ using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
+using MissionPlanner.Maps.Attribution;
 using MissionPlanner.Maps.Sources;
+using MissionPlanner.Maps.Terrain;
 using NetTopologySuite.Geometries;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
@@ -29,7 +31,10 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
     private readonly IPlannerSettingsService settingsService;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IPlatformLocationService locationService;
+    private readonly ITerrainElevationService terrainElevationService;
+    private readonly IMapAttributionCoordinator attributionCoordinator;
     private CancellationTokenSource? mapLifecycleCancellation;
+    private long pointerGeneration;
     private Action? pendingNavigation;
     private bool mapActive;
     private bool disposed;
@@ -40,6 +45,8 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
         settingsService = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
         activeVehicle = ServiceHelper.GetRequiredService<IActiveVehicleContext>();
         locationService = ServiceHelper.GetRequiredService<IPlatformLocationService>();
+        terrainElevationService = ServiceHelper.GetRequiredService<ITerrainElevationService>();
+        attributionCoordinator = ServiceHelper.GetRequiredService<IMapAttributionCoordinator>();
         basemapController = new MapBasemapController(
             map,
             ServiceHelper.GetRequiredService<IMapSourceResolver>(),
@@ -74,6 +81,8 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
 
         mapActive = true;
         FenceMap.MapTapped += OnMapTapped;
+        FenceMap.MapPointerMoved += OnMapPointerMoved;
+        attributionCoordinator.Changed += OnAttributionChanged;
         ViewModel.GeometryChanged += OnGeometryChanged;
         FenceMap.SizeChanged += OnMapLayoutChanged;
         FenceMap.LayoutUpdated += OnMapLayoutChanged;
@@ -93,6 +102,7 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
     {
         await basemapController.SwitchAsync(settingsService.Current.Map.SelectedSourceId, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
+        await attributionCoordinator.SetBasemapAsync(basemapController.CurrentResolvedSource, cancellationToken);
         await CenterInitiallyAsync(cancellationToken);
     }
 
@@ -110,6 +120,8 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
 
         mapActive = false;
         FenceMap.MapTapped -= OnMapTapped;
+        FenceMap.MapPointerMoved -= OnMapPointerMoved;
+        attributionCoordinator.Changed -= OnAttributionChanged;
         ViewModel.GeometryChanged -= OnGeometryChanged;
         FenceMap.SizeChanged -= OnMapLayoutChanged;
         FenceMap.LayoutUpdated -= OnMapLayoutChanged;
@@ -117,6 +129,7 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
         mapLifecycleCancellation?.Cancel();
         mapLifecycleCancellation?.Dispose();
         mapLifecycleCancellation = null;
+        pointerGeneration++;
     }
 
     private async Task CenterInitiallyAsync(CancellationToken cancellationToken)
@@ -181,6 +194,38 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
         navigation();
     }
 
+    private void OnZoomInClicked(object? sender, RoutedEventArgs e)
+    {
+        map.Navigator.ZoomIn();
+    }
+
+    private void OnZoomOutClicked(object? sender, RoutedEventArgs e)
+    {
+        map.Navigator.ZoomOut();
+    }
+
+    private async void OnCenterOnMyLocationClicked(object? sender, RoutedEventArgs e)
+    {
+        var cancellationToken = mapLifecycleCancellation?.Token ?? CancellationToken.None;
+        try
+        {
+            var location = await locationService.GetLocationAsync(cancellationToken);
+            if (location is { } position && mapActive && !disposed)
+            {
+                CenterOn(position.LatitudeDegrees, position.LongitudeDegrees);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The map was unloaded while the location request was active.
+        }
+    }
+
+    private void OnResetNorthClicked(object? sender, RoutedEventArgs e)
+    {
+        map.Navigator.RotateTo(0);
+    }
+
     private void OnGeometryChanged(object? sender, EventArgs e)
     {
         Redraw();
@@ -190,6 +235,72 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
     {
         var (longitude, latitude) = SphericalMercator.ToLonLat(e.WorldPosition.X, e.WorldPosition.Y);
         ViewModel?.HandleMapClick(latitude, longitude);
+    }
+
+    private void OnMapPointerMoved(object? sender, MapEventArgs e)
+    {
+        var (longitude, latitude) = SphericalMercator.ToLonLat(e.WorldPosition.X, e.WorldPosition.Y);
+        ViewModel.SetPointerPosition(latitude, longitude);
+        ViewModel.SetPointerElevationLoading();
+        RequestPointerElevation(latitude, longitude);
+    }
+
+    private void RequestPointerElevation(double latitude, double longitude)
+    {
+        var generation = ++pointerGeneration;
+        var cancellationToken = mapLifecycleCancellation?.Token ?? CancellationToken.None;
+        UpdatePointerElevationAsync(latitude, longitude, generation, cancellationToken)
+            .SafeFireAndForget(OnPointerElevationFailed);
+    }
+
+    private async Task UpdatePointerElevationAsync(
+        double latitude,
+        double longitude,
+        long generation,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Use the generation as the pointer debounce. Cancelling a delay for every
+            // mouse movement produces a stream of expected TaskCanceledExceptions in
+            // the debugger even though no operation has actually failed.
+            await Task.Delay(250, cancellationToken);
+            if (generation != pointerGeneration || disposed || !mapActive)
+            {
+                return;
+            }
+
+            var result = await terrainElevationService.GetElevationAsync(latitude, longitude, cancellationToken);
+            if (generation != pointerGeneration || disposed || !mapActive)
+            {
+                return;
+            }
+
+            await new AvaloniaMapUiDispatcher(Dispatcher).InvokeAsync(
+                () => ViewModel.SetPointerElevation(result), cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The map was unloaded or disposed while a debounce/terrain lookup was active.
+        }
+    }
+
+    private void OnPointerElevationFailed(Exception exception)
+    {
+        if (exception is not OperationCanceledException)
+        {
+            Logger.LogDebug(exception, "Could not resolve terrain altitude for the GeoFence map pointer.");
+        }
+    }
+
+    private void OnAttributionChanged(object? sender, MapAttributionOverlayState state)
+    {
+        Dispatcher.Post(() => ViewModel.SetAttribution(state.DisplayText));
+    }
+
+    private void OnAttributionClicked(object? sender, RoutedEventArgs e)
+    {
+        attributionCoordinator.ToggleExpanded();
     }
 
     private void Redraw()

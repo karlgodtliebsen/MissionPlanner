@@ -1,4 +1,4 @@
-﻿using Mapsui;
+using Mapsui;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.AvaloniaUI.App.Services;
 using MissionPlanner.AvaloniaUI.App.Utilities;
@@ -185,6 +185,11 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
     private void OnZoomOutClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
         presenter?.ZoomOut();
+    }
+
+    private void OnResetNorthClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
+    {
+        presenter?.RotateTo(0);
     }
 
     private void OnZoomToVehicleClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)

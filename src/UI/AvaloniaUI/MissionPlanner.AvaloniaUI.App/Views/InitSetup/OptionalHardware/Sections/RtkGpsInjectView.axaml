@@ -11,14 +11,16 @@
             <TextBlock Text="RTK / GPS Correction Injection" FontSize="20" FontWeight="Bold" />
             <TextBlock Text="RTCM3 source → active vehicle via MAVLink GPS_RTCM_DATA" Opacity="0.75" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
-            <ComboBox ToolTip.Tip="Source" ItemsSource="{Binding SourceKinds}" SelectedItem="{Binding SourceKind}" />
-            <TextBox PlaceholderText="Serial port or caster host" Text="{Binding Endpoint}" />
-            <NumericUpDown PlaceholderText="Baud or caster port" Value="{Binding PortOrBaud}" Minimum="0" FormatString="F0" />
-            <TextBox PlaceholderText="NTRIP mount point" Text="{Binding MountPoint}" />
-            <TextBox PlaceholderText="NTRIP username" Text="{Binding Username}" />
-            <TextBox PlaceholderText="NTRIP password" Text="{Binding Password}" PasswordChar="●" />
+            <ComboBox HorizontalAlignment="Stretch"
+                      ToolTip.Tip="Source" ItemsSource="{Binding SourceKinds}" SelectedItem="{Binding SourceKind}" 
+                      HorizontalContentAlignment="Right"
+                      />
+            <TextBox PlaceholderText="Serial port or caster host" Text="{Binding Endpoint}"  HorizontalContentAlignment="Right"/>
+            <NumericUpDown ShowButtonSpinner="False" PlaceholderText="Baud or caster port" Value="{Binding PortOrBaud}" Minimum="0" FormatString="F0" />
+            <TextBox PlaceholderText="NTRIP mount point" Text="{Binding MountPoint}" HorizontalContentAlignment="Right" />
+            <TextBox PlaceholderText="NTRIP username" Text="{Binding Username}" HorizontalContentAlignment="Right" />
+            <TextBox PlaceholderText="NTRIP password" Text="{Binding Password}" PasswordChar="●" HorizontalContentAlignment="Right" />
             <StackPanel Orientation="Horizontal">
                 <CheckBox IsChecked="{Binding UseTls}" Content="Use TLS" />
             </StackPanel>

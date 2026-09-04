@@ -184,6 +184,7 @@
                             <!-- ================================================= -->
 
                             <NumericUpDown
+                                ShowButtonSpinner="False"
                                 Grid.Column="1"
                                 Classes="DataGridRow"
                                 Margin="4,2"

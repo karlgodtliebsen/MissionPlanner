@@ -118,6 +118,28 @@ public sealed class AvaloniaMigrationContractTests
         Assert.DoesNotContain("UraniumUI", content, StringComparison.Ordinal);
     }
 
+    /// <summary>Guards the first-connect MAVFTP refresh against self-cancelling initialization.</summary>
+    [Fact]
+    public void MavFtpConnectionHandlerCreatesItsTokenAfterResettingThePreviousOperation()
+    {
+        var source = File.ReadAllText(RepositoryPath(
+            "src", "UI", "AvaloniaUI", "MissionPlanner.AvaloniaUI.App", "Views",
+            "ConfigTuning", "Tabs", "MAVFtpTabViewModel.cs"));
+        var handlerStart = source.IndexOf("private async Task OnVehicleConnected", StringComparison.Ordinal);
+        var handlerEnd = source.IndexOf("private async Task Start", handlerStart, StringComparison.Ordinal);
+        var handler = source[handlerStart..handlerEnd];
+
+        var reset = handler.IndexOf("await ResetFilesystemService", StringComparison.Ordinal);
+        var tokenCreation = handler.IndexOf(
+            "CancellationTokenSource.CreateLinkedTokenSource",
+            StringComparison.Ordinal);
+        var refresh = handler.IndexOf("await Start()", StringComparison.Ordinal);
+
+        Assert.True(reset >= 0, "The handler must reset the previous MAVFTP connection.");
+        Assert.True(tokenCreation > reset, "The new connection token must not be cancelled by reset.");
+        Assert.True(refresh > tokenCreation, "The root-directory refresh must follow initialization.");
+    }
+
     private static string RepositoryPath(params string[] parts)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

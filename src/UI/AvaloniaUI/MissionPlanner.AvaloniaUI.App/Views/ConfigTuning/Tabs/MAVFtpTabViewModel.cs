@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -102,9 +102,16 @@ public partial class MavFtpTabViewModel : ViewModelBase
     /// <summary>
     /// Gets or sets the currently selected file system entry.
     /// </summary>
-    public Models.VehicleFileSystemEntryViewModel? SelectedEntry
+    [ObservableProperty]
+    public partial Models.VehicleFileSystemEntryViewModel? SelectedEntry
     {
-        get; set;
+        get;
+        set;
+    }
+
+    partial void OnSelectedEntryChanged(Models.VehicleFileSystemEntryViewModel? value)
+    {
+        SelectionChanged();
     }
 
     /// <summary>
@@ -190,16 +197,28 @@ public partial class MavFtpTabViewModel : ViewModelBase
             return;
         }
 
-        operationCancellation ??= new CancellationTokenSource();
-
-        using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, operationCancellation.Token);
-        var cancellationToken = linkedCancellation.Token;
         try
         {
             activeVehicleId = evt.VehicleId;
-            Entries.Clear();
+            Dispatcher.Dispatch(() =>
+            {
+                Entries.Clear();
+                HasEntries = false;
+                SelectedEntry = null;
+            });
             SetConnectionStatus();
-            await ResetFilesystemService(evt.VehicleId, cancellationToken);
+
+            // ResetFilesystemService cancels the previous operation. Create the token for
+            // this connection only after that reset; otherwise the handler cancels its own
+            // initialization before it can refresh the root directory.
+            await ResetFilesystemService(evt.VehicleId, ct);
+            operationCancellation?.Dispose();
+            operationCancellation = new CancellationTokenSource();
+            using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                ct,
+                operationCancellation.Token);
+            var cancellationToken = linkedCancellation.Token;
+
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             if (disposed)
             {
@@ -207,7 +226,7 @@ public partial class MavFtpTabViewModel : ViewModelBase
             }
 
             SetConnectionStatus();
-            if (stateService.IsConnected)
+            if (ResolveActiveVehicle() is not null)
             {
                 var newFileSystem = connectionSession.CreateMavFtpConnection();
                 lock (lifecycleSync)
@@ -228,9 +247,13 @@ public partial class MavFtpTabViewModel : ViewModelBase
                 await ResetSessionsAsync();
                 SetConnectionStatus();
                 await Start();
+                Dispatcher.Dispatch(() => HasConnection = true);
             }
         }
-        catch (OperationCanceledException) when (linkedCancellation.IsCancellationRequested)
+        catch (OperationCanceledException) when (
+            ct.IsCancellationRequested ||
+            operationCancellation?.IsCancellationRequested == true ||
+            disposed)
         {
             // The transient page ViewModel was disposed during connection initialization.
             Debug.Print("The transient page ViewModel was disposed during connection initialization.");

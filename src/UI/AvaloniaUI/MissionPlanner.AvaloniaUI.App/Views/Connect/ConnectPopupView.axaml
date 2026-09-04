@@ -61,8 +61,12 @@
                            FontSize="16" HorizontalAlignment="Stretch" FontWeight="Bold">
 
                     </Label>
-                    <TextBox Grid.Column="1" Width="150" HorizontalContentAlignment="Right" PlaceholderText="Port" Text="{Binding SelectedPort}"
-                             IsVisible="{Binding ShowSelectedHost}" />
+
+                    <NumericUpDown Grid.Column="1" Width="150" PlaceholderText="Port" 
+                                   AllowSpin="False"
+                                   ShowButtonSpinner="False" IsVisible="{Binding ShowSelectedHost}"
+                                   Value="{Binding SelectedIntPort, Mode=TwoWay}" FormatString="F0" 
+                                   VerticalAlignment="Center"  HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" />
                 </Grid >
                 <Label Content="{Binding StatusMessage}" 
                        Margin="0,10,0,0"
@@ -84,6 +88,7 @@
 
                 <Button
                     Width="100"
+                    ToolTip.Tip="Refresh"
                     Classes="Secondary"
                     Padding="5"
                     HorizontalAlignment="Stretch"
@@ -94,6 +99,7 @@
 
                 <Button
                     Width="100"
+                    ToolTip.Tip="Connect"
                     Classes="Primary"
                     Padding="5"
                     HorizontalAlignment="Stretch"
@@ -108,6 +114,7 @@
                 <Button
                     Width="100"
                     Classes="Primary"
+                    ToolTip.Tip="Close"
                     Padding="5"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
@@ -122,6 +129,7 @@
 
                 <Button
                     Classes="Primary"
+                    ToolTip.Tip="Disconnect"
                     Width="100"
                     Padding="5"
                     HorizontalAlignment="Center"
@@ -135,6 +143,7 @@
 
                 <Button
                     Width="100"
+                    ToolTip.Tip="Close"
                     Classes="Primary"
                     Padding="5"
                     HorizontalAlignment="Stretch"
