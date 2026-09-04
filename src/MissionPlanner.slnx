@@ -23,7 +23,7 @@
     <File Path="../docs/KNOWN_TEST_FAILURES.md" />
     <File Path="../docs/MAPS.md" />
     <File Path="../docs/MAPS_PLATFORM_VERIFICATION.md" />
-    <File Path="../docs/MAUI_DEFERRED_POPUP_CLOSE.md" />
+    <File Path="../docs/AVALONIA_DIALOG_LIFECYCLE.md" />
     <File Path="../docs/MAVFTP.md" />
     <File Path="../docs/mavlink-promotion-catalog.json" />
     <File Path="../docs/MAVLINK.md" />
@@ -49,6 +49,7 @@
     <File Path="Directory.Packages.props" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.AvaloniaUI.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Firmware.Tests/MissionPlanner.Firmware.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Smoke.Simulator.Tests/MissionPlanner.Smoke.Simulator.Tests.csproj" />
