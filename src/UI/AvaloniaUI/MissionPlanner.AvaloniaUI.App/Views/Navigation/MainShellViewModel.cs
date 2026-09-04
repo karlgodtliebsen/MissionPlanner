@@ -79,6 +79,8 @@ public partial class MainShellViewModel : ObservableObject
     private async void NavigateToSelectionAsync(string route)
     {
         await navigationService.NavigateAsync(route);
+        IsNavigationOpen = false;
+        await Task.Yield();
     }
 
     private static Bitmap LoadImage(string image)
