@@ -100,7 +100,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         IDeviceManagerLauncher deviceManagerLauncher,
         IDispatcher dispatcher,
         IExtendedDialogService dialogService,
-        ILogger<InstallFirmwareViewModel> logger) : base(logger)
+        ILogger<InstallFirmwareViewModel> logger) : base(logger, dispatcher)
     {
         this.catalogService = catalogService;
         this.installationService = installationService;
@@ -1252,6 +1252,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         }
 
         using var ownedCancellation = BeginOperationCancellation(cancellationToken);
+        var wasCancelled = false;
         try
         {
             SetOperation(true, FirmwareOperationState.Downloading);
@@ -1261,7 +1262,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
-            SetMessages("Firmware download and validation cancelled.", null);
+            wasCancelled = true;
         }
         catch (Exception exception)
         {
@@ -1274,6 +1275,10 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             CloseOperationDialog();
             EndOperationCancellation(ownedCancellation);
             SetOperation(false, null);
+            if (wasCancelled)
+            {
+                SetMessages("Firmware download and validation cancelled.", null);
+            }
         }
     }
 

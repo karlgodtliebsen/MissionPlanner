@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -24,7 +24,7 @@ public sealed class FirmwareManagementTests
 {
     /// <summary>Verifies all protocol-reported identity fields are formatted for the firmware page.</summary>
     [Fact]
-    public void FirmwareViewModelFormatsCompleteIdentity()
+    public async Task FirmwareViewModelFormatsCompleteIdentity()
     {
         var state = State();
         var active = new TestActiveVehicleContext(state);
@@ -40,6 +40,7 @@ public sealed class FirmwareManagementTests
             Substitute.For<IUserConfirmationService>(),
             ImmediateDispatcher(),
             Substitute.For<ILogger<FirmwareSetupViewModel>>());
+        await viewModel.ActivateAsync();
 
         viewModel.VehicleLabel.Should().Be(state.DisplayName);
         viewModel.FirmwareVersion.Should().Contain("4.5.6-beta");

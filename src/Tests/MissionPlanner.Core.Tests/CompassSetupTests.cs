@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
@@ -175,7 +175,7 @@ public sealed class CompassSetupTests
 
     /// <summary>Verifies the ViewModel projects calibration and records evidence only on protocol success.</summary>
     [Fact]
-    public void ViewModelRecordsEvidenceOnConfirmedSuccess()
+    public async Task ViewModelRecordsEvidenceOnConfirmedSuccess()
     {
         var active = Substitute.For<IActiveVehicleContext>();
         active.VehicleId.Returns(vehicleId);
@@ -199,6 +199,7 @@ public sealed class CompassSetupTests
             clock,
             ImmediateDispatcher(),
             Substitute.For<ILogger<CompassSetupViewModel>>());
+        await viewModel.ActivateAsync();
 
         var running = new CompassCalibrationSnapshot(vehicleId, CompassCalibrationWorkflowState.Running,
             [new CompassCalibrationProgress(0, CompassCalibrationStatus.Running, 50, 1)], [], 0.5, "Rotating", false);
@@ -208,7 +209,7 @@ public sealed class CompassSetupTests
         store.GetAll().Should().BeEmpty();
 
         calibration.StateChanged += Raise.Event<Action<CompassCalibrationStateChangedEventArgs>>(
-            calibration, new CompassCalibrationStateChangedEventArgs(running with
+            new CompassCalibrationStateChangedEventArgs(running with
             {
                 State = CompassCalibrationWorkflowState.Success,
                 OverallProgress = 1

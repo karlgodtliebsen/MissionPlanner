@@ -149,6 +149,7 @@ public sealed class VehicleFirmwareIdentityTests
         var connectionSession = Substitute.For<IVehicleConnectionSession>();
 
         client.IsConnected.Returns(true);
+        connectionSession.Client.Returns(client);
         var registry = Substitute.For<IVehicleRegistry>();
         registry.GetRequired(session.Id).Returns(session);
         var service = new MavLinkCommandService(connectionSession, registry, Substitute.For<ILogger<MavLinkCommandService>>());

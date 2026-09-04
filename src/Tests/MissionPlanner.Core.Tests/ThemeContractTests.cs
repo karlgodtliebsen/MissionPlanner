@@ -57,7 +57,7 @@ public sealed class ThemeContractTests
     private static string GetThemePath(ThemeDescriptor descriptor)
     {
         var root = FindRepositoryRoot();
-        return Path.Combine(root, "src", "UI", "MissionPlanner.App", descriptor.ResourcePath.Replace('/', Path.DirectorySeparatorChar));
+        return Path.Combine(root, "src", "UI", "MAUI", "MissionPlanner.App", descriptor.ResourcePath.Replace('/', Path.DirectorySeparatorChar));
     }
 
     private static string FindRepositoryRoot()

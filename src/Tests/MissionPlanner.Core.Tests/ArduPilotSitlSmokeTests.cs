@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
@@ -51,6 +51,11 @@ public sealed class ArduPilotSitlSmokeTests(ITestOutputHelper output)
             ["ApplicationSettings:BaudRate"] = "115200",
             ["ApplicationSettings:Host"] = "127.0.0.1",
             ["ApplicationSettings:Port"] = mavLinkPort.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["TransportEndpoint:Protocol"] = "udp",
+            ["TransportEndpoint:RemotePort"] = mavLinkPort.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["TransportEndpoint:RemoteHost"] = "127.0.0.1",
+            ["TransportEndpoint:LocalPort"] = mavLinkPort.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ["TransportEndpoint:LocalHost"] = "127.0.0.1",
             ["Simulation:HeartbeatTimeoutSeconds"] = "15",
             ["Simulation:StopTimeoutSeconds"] = "8",
             ["Simulation:LogRootDirectory"] = logRoot

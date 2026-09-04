@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Presentation;

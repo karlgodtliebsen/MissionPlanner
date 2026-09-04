@@ -2446,12 +2446,11 @@
       "MessageId": 259,
       "Name": "CAMERA_INFORMATION",
       "Category": "ProtocolWorkflow",
-      "Owner": "PayloadProtocolService",
+      "Owner": "Camera protocol service (planned)",
       "ObservationType": null,
       "IntendedUpdateFrequency": "request/response",
       "StaleTimeout": null,
       "UiConsumers": [
-        "Payload Control",
         "Protocol diagnostics"
       ]
     },
@@ -2644,12 +2643,11 @@
       "MessageId": 280,
       "Name": "GIMBAL_MANAGER_INFORMATION",
       "Category": "ProtocolWorkflow",
-      "Owner": "PayloadProtocolService",
+      "Owner": "Gimbal protocol service (planned)",
       "ObservationType": null,
       "IntendedUpdateFrequency": "request/response",
       "StaleTimeout": null,
       "UiConsumers": [
-        "Payload Control",
         "Protocol diagnostics"
       ]
     },

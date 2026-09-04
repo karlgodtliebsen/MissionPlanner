@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Library.EventHub.Abstractions;
 using UraniumUI.Material;
@@ -15,7 +16,7 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private readonly ILogger logger;
     private bool disposed;
-    private readonly IDomainEventHub eventHub;
+    private readonly IDomainEventHub? eventHub;
     /// <summary>
     /// 
     /// </summary>
@@ -31,7 +32,9 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
             ?? Microsoft.Maui.Dispatching.Dispatcher.GetForCurrentThread()
             ?? HeadlessDispatcher.Instance;
         this.logger = logger;
-        this.eventHub = ServiceProviderHelper.GetRequiredService<IDomainEventHub>();
+        // MAUI supplies the application event hub in production. Headless unit tests
+        // construct view models directly and therefore have no IPlatformApplication.
+        eventHub = IPlatformApplication.Current?.Services.GetService<IDomainEventHub>();
         logger.LogTrace("BaseViewModel initialized for ViewModel {viewModel}", GetType().FullName);
         Debug.Print($"BaseViewModel initialized for ViewModel {GetType().FullName}");
     }
@@ -95,7 +98,7 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
 
     partial void OnStatusMessageChanged(string? value)
     {
-        eventHub.PublishDomainEventAsync<StatusMessageReceived>(new StatusMessageReceived(value));
+        eventHub?.PublishDomainEventAsync<StatusMessageReceived>(new StatusMessageReceived(value));
         //eventHub/
     }
 
@@ -147,7 +150,7 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
         string? eMsg = null;
         if (ex is not null)
         {
-            ErrorMessage = ex.Message;
+            eMsg = ex.Message;
         }
         StatusMessage = null;
         ErrorMessage = eMsg;

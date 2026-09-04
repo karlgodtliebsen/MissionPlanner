@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;

@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -196,11 +196,16 @@ public sealed class FenceConfigurationTests
 
     /// <summary>Verifies explicit map modes create closed polygons, circles, and return points in the fence plan.</summary>
     [Fact]
-    public void MapViewModelEditsDedicatedFenceGeometry()
+    public async Task MapViewModelEditsDedicatedFenceGeometry()
     {
         var vehicleId = new VehicleId(1, 1);
         var active = Substitute.For<IActiveVehicleContext>();
         active.VehicleId.Returns(vehicleId);
+        var state = State();
+        active.Current.Returns(new ActiveVehicleSnapshot(vehicleId, state));
+        active.State.Returns(state);
+        active.IsOnline.Returns(true);
+        active.ConnectionCancellationToken.Returns(CancellationToken.None);
         var service = Substitute.For<IFenceConfigurationService>();
         var current = new FenceConfigurationSnapshot(vehicleId, FencePlan.Empty, null, null, 0, null, false);
         service.GetSnapshot(vehicleId).Returns(_ => current);
@@ -219,6 +224,7 @@ public sealed class FenceConfigurationTests
             service,
             Substitute.For<IUserConfirmationService>(),
             NullLogger<GeoFenceTabViewModel>.Instance);
+        await viewModel.ActivateAsync();
 
         viewModel.BeginPolygonInclusionCommand.Execute(null);
         viewModel.HandleMapClick(0, 0);

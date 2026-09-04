@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
@@ -127,7 +127,7 @@ public sealed class SimulationFleetTests
         await exactConnection.Received(1).SendRawAsync(
             Arg.Any<ReadOnlyMemory<byte>>(),
             Arg.Any<TransportEndPoint>(),
-            cancellationToken);
+            Arg.Any<CancellationToken>());
         await defaultConnection.DidNotReceive().SendRawAsync(
             Arg.Any<ReadOnlyMemory<byte>>(),
             Arg.Any<TransportEndPoint>(),

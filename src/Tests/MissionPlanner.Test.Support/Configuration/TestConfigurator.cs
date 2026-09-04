@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Library.Configuration;
@@ -98,10 +99,32 @@ public static class TestConfigurator
             .AddFirmwareServices(configuration)
             .AddMavLinkServices(configuration)
             ;
+        services.TryAddSingleton<IPlannerSettingsStore, TestPlannerSettingsStore>();
+        services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
 
         services.TryAddTransient<ITransportSmokeTestService, TransportSmokeTestService>();
         services.AddDefaultTestLogging(configuration, output);
         return services;
+    }
+
+    private sealed class TestPlannerSettingsStore : IPlannerSettingsStore
+    {
+        private string? document;
+
+        public ValueTask<string?> ReadAsync(CancellationToken cancellationToken = default) =>
+            ValueTask.FromResult(document);
+
+        public ValueTask WriteAsync(string value, CancellationToken cancellationToken = default)
+        {
+            document = value;
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask ClearAsync(CancellationToken cancellationToken = default)
+        {
+            document = null;
+            return ValueTask.CompletedTask;
+        }
     }
 
     /// <summary>

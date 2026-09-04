@@ -31,7 +31,7 @@ public static class VehicleDisplayNameFormatter
             var _ => "Unknown"
         };
 
-        return $"{vehicleId.SystemId}:{typeName}"; //SysID
+        return $"SysID {vehicleId.SystemId}:{typeName}";
     }
 
     private static string? FormatMavType(byte mavType)

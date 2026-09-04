@@ -77,7 +77,7 @@ public class SmokeTestsDroneBridge
     /// <summary>
     /// Sends a TCP  probe to the DroneBridge without expecting any response.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Requires a configured external DroneBridge device.")]
     public async Task Should_Send_Tcp_Probe_To_DroneBridge_Without_Error()
     {
         foreach (var ep in endPoints)
@@ -94,7 +94,7 @@ public class SmokeTestsDroneBridge
     /// <summary>
     /// Sends a UDP probe to the DroneBridge without expecting any response.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Requires a configured external DroneBridge device.")]
     public async Task Should_Send_Udp_Probe_To_DroneBridge_Without_Error()
     {
         var smokeTest =
@@ -110,7 +110,7 @@ public class SmokeTestsDroneBridge
     /// <summary>
     /// Sends a UDP probe to the DroneBridge and verifies that data is received.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Requires a configured external DroneBridge device.")]
     public async Task Should_Send_Udp_Probe_To_DroneBridge()
     {
         var smokeTest = serviceProvider.GetRequiredService<ITransportSmokeTestService>();
@@ -136,7 +136,7 @@ public class SmokeTestsDroneBridge
     /// <summary>
     /// Receives a MAVLink heartbeat message through the DroneBridge.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Requires a configured external DroneBridge device.")]
     public async Task Should_Receive_MavLink_Heartbeat_Through_DroneBridge()
     {
         var eventHub = serviceProvider.GetRequiredService<IEventHub>();

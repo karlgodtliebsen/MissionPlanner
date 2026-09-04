@@ -2,6 +2,8 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
@@ -188,7 +190,7 @@ public sealed class AccelerometerCalibrationTests
 
     /// <summary>Verifies the ViewModel maps orientation images and stores evidence only on protocol success.</summary>
     [Fact]
-    public void ViewModelProjectsOrientationAndConfirmedCompletion()
+    public async Task ViewModelProjectsOrientationAndConfirmedCompletion()
     {
         var active = Substitute.For<IActiveVehicleContext>();
         active.VehicleId.Returns(vehicleId);
@@ -211,6 +213,7 @@ public sealed class AccelerometerCalibrationTests
             clock,
             ImmediateDispatcher(),
             Substitute.For<ILogger<AccelerometerSetupViewModel>>());
+        await viewModel.ActivateAsync();
         var waiting = new CalibrationSnapshot(vehicleId, AccelerometerCalibrationKind.SixPosition,
             CalibrationWorkflowState.WaitingForOrientation, CalibrationOrientation.NoseUp,
             new HashSet<CalibrationOrientation>(), 0.5, "Nose up");
@@ -228,6 +231,7 @@ public sealed class AccelerometerCalibrationTests
         }));
         store.GetAll().Should().ContainSingle(item => item.Workflow == SetupWorkflowKey.Accelerometer);
 
+        await viewModel.DeactivateAsync();
         var inactiveImage = viewModel.OrientationImage;
         calibration.StateChanged += Raise.Event<Action<CalibrationStateChangedEventArgs>>(new CalibrationStateChangedEventArgs(waiting with
         {

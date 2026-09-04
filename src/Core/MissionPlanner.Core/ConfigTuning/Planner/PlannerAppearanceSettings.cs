@@ -9,6 +9,8 @@ public sealed record PlannerAppearanceSettings
     /// <summary>Gets the stable persisted theme or selection-policy identifier.</summary>
     public string ThemeId { get; init; } = DefaultThemeId;
 
+    /// <summary>Gets or sets whether the legacy MAUI flyout is shown at startup.</summary>
+    public bool IsFlyoutVisibleAtStartup { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the tutorial is currently presented in the UI.
@@ -17,5 +19,8 @@ public sealed record PlannerAppearanceSettings
     {
         get; set;
     }
+
+    /// <summary>Gets or sets whether the legacy MAUI flyout remains locked open.</summary>
+    public bool IsFlyoutLocked { get; set; }
 
 }

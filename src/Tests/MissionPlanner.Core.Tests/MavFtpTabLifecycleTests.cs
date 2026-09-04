@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -28,10 +28,9 @@ public sealed class MavFtpTabLifecycleTests
     {
         var fixture = CreateFixture();
 
-        fixture.Timer.Received(1).Start();
+        await fixture.ViewModel.ActivateAsync();
         fixture.ViewModel.Dispose();
 
-        fixture.Timer.Received(1).Stop();
         await fixture.FileSystemDisposed.Task.WaitAsync(TestContext.Current.CancellationToken);
         await fixture.FileSystem.Received(1).DisposeAsync();
         fixture.ApplicationState.Dispose();
@@ -63,7 +62,7 @@ public sealed class MavFtpTabLifecycleTests
             return [];
         });
 
-        var refresh = fixture.ViewModel.RefreshCommand.ExecuteAsync(null);
+        var refresh = fixture.ViewModel.ActivateAsync();
         await readStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
 
         fixture.ViewModel.Dispose();

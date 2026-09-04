@@ -32,6 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\UI\MAUI\MissionPlanner.App\MissionPlanner.App.csproj" />
       <ProjectReference Include="..\..\Core\MissionPlanner.Core\MissionPlanner.Core.csproj" />
       <ProjectReference Include="..\..\Core\MissionPlanner.MavLink\MissionPlanner.MavLink.csproj" />
       <ProjectReference Include="..\..\Core\MissionPlanner.Maps\MissionPlanner.Maps.csproj" />

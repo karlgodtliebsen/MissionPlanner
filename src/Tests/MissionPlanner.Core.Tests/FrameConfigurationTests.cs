@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Presentation;
@@ -29,8 +29,6 @@ public sealed class FullParametersListLifecycleTests
         using var fixture = CreateFixture(true);
 
         fixture.ViewModel.StatusMessage.Should().BeNull();
-        //fixture.ViewModel.InitializeView();
-
         fixture.ViewModel.HasConnection.Should().BeTrue();
         fixture.ViewModel.ShowVehicleDisconnected.Should().BeFalse();
         fixture.ViewModel.StatusMessage.Should().BeNull();
@@ -239,8 +237,6 @@ public sealed class FullParametersListLifecycleTests
                 return Task.FromResult(progressDialog);
             });
         using var fixture = CreateFixture(true, streamService, extendedDialogService);
-        //   fixture.ViewModel.InitializeView();
-
         var load = fixture.ViewModel.RefreshParametersCommand.ExecuteAsync(null);
         var streamToken = await streamStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
         streamToken.IsCancellationRequested.Should().BeFalse();
@@ -355,6 +351,7 @@ public sealed class FullParametersListLifecycleTests
             eventHub,
             Substitute.For<IUserNotificationService>(),
             NullLogger<FullParametersListTabViewModel>.Instance);
+        viewModel.ActivateAsync().GetAwaiter().GetResult();
         return new Fixture(viewModel, connectionLifetime, parameterLoadStatus, () => statusHandler);
     }
 

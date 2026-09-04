@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Maui.Storage;
+using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using MissionPlanner.App.Configuration;
@@ -149,7 +149,18 @@ public sealed class FlightDataInfrastructureTests
     [Fact]
     public async Task DependencyInjectionResolvesFlightDataViewModels()
     {
-        var values = new Dictionary<string, string?> { ["ApplicationSettings:Channel"] = "UDP", ["ApplicationSettings:BaudRate"] = "115200", ["ApplicationSettings:Host"] = "127.0.0.1", ["ApplicationSettings:Port"] = "14550" };
+        var values = new Dictionary<string, string?>
+        {
+            ["ApplicationSettings:Channel"] = "UDP",
+            ["ApplicationSettings:BaudRate"] = "115200",
+            ["ApplicationSettings:Host"] = "127.0.0.1",
+            ["ApplicationSettings:Port"] = "14550",
+            ["TransportEndpoint:Protocol"] = "udp",
+            ["TransportEndpoint:RemotePort"] = "14551",
+            ["TransportEndpoint:RemoteHost"] = "127.0.0.1",
+            ["TransportEndpoint:LocalPort"] = "14550",
+            ["TransportEndpoint:LocalHost"] = "127.0.0.1"
+        };
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
         var services = new ServiceCollection();
         services.AddSingleton(Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackRepository>());

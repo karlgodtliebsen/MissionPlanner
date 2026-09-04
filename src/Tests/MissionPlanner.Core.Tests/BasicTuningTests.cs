@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Nodes;
+using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,9 @@ using MissionPlanner.Library;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Test.Support.Configuration;
+using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.ConfigTuning;
+using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;

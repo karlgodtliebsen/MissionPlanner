@@ -7,12 +7,14 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Firmware;
+using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Generated;
 
@@ -50,7 +52,14 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         IUserConfirmationService confirmation,
         IDispatcher dispatcher,
         ILogger<FirmwareSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Firmware), logger)
+        : base(workflowCatalog.Workflows.FirstOrDefault(w => w.Key == SetupWorkflowKey.Firmware)
+            ?? new SetupWorkflowDescriptor(
+                SetupWorkflowKey.Firmware,
+                "Firmware",
+                "Confirm firmware, board identity, and protocol capabilities.",
+                new HashSet<FirmwareFamily>(),
+                [],
+                null), logger)
     {
         this.activeVehicle = activeVehicle;
         this.domainEventHub = domainEventHub;

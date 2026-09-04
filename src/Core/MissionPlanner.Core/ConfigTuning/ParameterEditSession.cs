@@ -301,7 +301,7 @@ public sealed class ParameterEditSession : IParameterEditSession
     /// <inheritdoc />
     public async Task<ParameterApplyReport> ApplyAsync(IReadOnlyList<string>? names = null, CancellationToken cancellationToken = default)
     {
-        return await ApplyCoreAsync(names ?? Array.Empty<string>(), null, cancellationToken).ConfigureAwait(false);
+        return await ApplyCoreAsync(names, null, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -341,10 +341,10 @@ public sealed class ParameterEditSession : IParameterEditSession
         };
     }
 
-    private async Task<ParameterApplyReport> ApplyCoreAsync(IReadOnlyList<string> names, IProgress<ParameterApplyProgress>? progress, CancellationToken cancellationToken)
+    private async Task<ParameterApplyReport> ApplyCoreAsync(IReadOnlyList<string>? names, IProgress<ParameterApplyProgress>? progress, CancellationToken cancellationToken)
     {
-        Debug.Print("ApplyCoreAsync-Applying parameter edits to {0} for {1}.", names.Count, VehicleId);
         var targets = GetApplyTargets(names);
+        Debug.Print("ApplyCoreAsync-Applying parameter edits to {0} for {1}.", targets.Count, VehicleId);
         if (cancellationToken.IsCancellationRequested)
         {
             return CancelledReport(targets);

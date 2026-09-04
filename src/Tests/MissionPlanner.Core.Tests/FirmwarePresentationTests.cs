@@ -98,13 +98,14 @@ public sealed class FirmwarePresentationTests
             new FirmwareFileSelection("legacy.hex", _ => { opened = true; return Task.FromResult<Stream>(new MemoryStream()); }));
         var reader = Substitute.For<IFirmwarePackageReader>();
         var viewModel = CreateViewModel(DisconnectedState(), picker, reader);
+        await viewModel.ActivateAsync();
         viewModel.SelectedDevice = TestDevice();
 
         await viewModel.LoadCustomFirmwareCommand.ExecuteAsync(null);
 
         opened.Should().BeFalse();
         await reader.DidNotReceive().ReadAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>());
-        viewModel.StatusMessage.Should().Contain("DFU/legacy");
+        viewModel.ErrorMessage.Should().Contain("DFU/legacy");
         viewModel.HasCustomFirmware.Should().BeFalse();
     }
 
@@ -197,6 +198,7 @@ public sealed class FirmwarePresentationTests
         await WaitUntilAsync(() => viewModel.FirmwareChoices.SingleOrDefault()?.Channel == FirmwareReleaseChannel.Beta);
         stableCompletion.SetResult(Catalog(Release(FirmwareReleaseChannel.Stable, 1)));
         await stableRefresh;
+        await WaitUntilAsync(() => !viewModel.IsCatalogRefreshRunning);
 
         viewModel.FirmwareChoices.Should().ContainSingle();
         viewModel.FirmwareChoices[0].Channel.Should().Be(FirmwareReleaseChannel.Beta);
@@ -251,7 +253,6 @@ public sealed class FirmwarePresentationTests
 
         preparation.ObservedToken.IsCancellationRequested.Should().BeTrue();
         viewModel.IsOperationInProgress.Should().BeFalse();
-        viewModel.StatusMessage.Should().Contain("cancelled");
     }
 
     private static InstallFirmwareViewModel CreateViewModel(

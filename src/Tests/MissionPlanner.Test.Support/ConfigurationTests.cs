@@ -85,13 +85,15 @@ public class ConfigurationTests
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();
 
-        var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
-        transportOptions.Value.Protocol = "serial";
         var portName = "COM 10";
         var baudRate = 115200;
+        var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
+        transportOptions.Value.Protocol = "serial";
+        transportOptions.Value.SerialPort = portName;
+        transportOptions.Value.BaudRate = baudRate;
 
         // Create serial transport
-        var transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
+        var transport = domainFactory.Create<ISerialMavLinkTransport>();
         Assert.NotNull(transport);
         // Create MAVLink client
         var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport>(transport);

@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Views.Common;

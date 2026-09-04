@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 namespace MissionPlanner.Core.Tests;

@@ -96,9 +96,11 @@ public sealed class GaugesTabViewModel : BaseViewModel
     {
         activeVehicle.Changed -= OnChanged;
         settings.SettingsChanged -= OnSettingsChanged;
-        subscription.Dispose();
-        lifetime.Cancel();
-        lifetime.Dispose();
+        subscription?.Dispose();
+        subscription = null;
+        lifetime?.Cancel();
+        lifetime?.Dispose();
+        lifetime = null;
     }
 
     /// <inheritdoc />

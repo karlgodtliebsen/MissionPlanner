@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;

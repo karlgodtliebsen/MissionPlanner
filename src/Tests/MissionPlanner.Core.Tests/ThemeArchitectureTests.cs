@@ -23,6 +23,7 @@ public sealed class ThemeArchitectureTests
             FindRepositoryRoot(),
             "src",
             "UI",
+            "MAUI",
             "MissionPlanner.App");
         var violations = new List<string>();
 
