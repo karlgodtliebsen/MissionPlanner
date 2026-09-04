@@ -10,6 +10,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Layout;
+using Avalonia.Threading;
 using Ursa.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Controls;
@@ -19,8 +20,9 @@ namespace MissionPlanner.AvaloniaUI.App.Controls;
 ///
 /// Design goals:
 /// - row virtualization remains owned by ItemsRepeater;
+/// - recycled rows are explicitly prepared from the current view item;
 /// - header and row templates share one authoritative column geometry;
-/// - optional client-side search and paging;
+/// - optional debounced client-side search and paging;
 /// - reusable empty content;
 /// - checkbox-based single/multiple selection;
 /// - synchronized sticky header while horizontally scrolling;
@@ -31,10 +33,11 @@ namespace MissionPlanner.AvaloniaUI.App.Controls;
 /// </summary>
 public sealed class VirtualizedItemsGrid : TemplatedControl
 {
-    private readonly ObservableCollection<object> _viewItems = [];
+    private IReadOnlyList<object> _viewItems = Array.Empty<object>();
     private readonly ObservableCollection<object> _selectedItems = [];
     private readonly ReadOnlyObservableCollection<object> _readonlySelectedItems;
     private readonly List<WeakReference<CheckBox>> _selectionCheckBoxes = [];
+    private readonly DispatcherTimer _searchDebounceTimer;
 
     private INotifyCollectionChanged? _observableSource;
     private ItemsRepeater? _repeater;
@@ -47,6 +50,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     private CheckBox? _selectAllCheckBox;
     private Button? _clearSearchButton;
     private bool _updatingSelectionUi;
+    private bool _refreshingView;
     private List<object> _filteredItems = [];
 
     private int _totalItemCount;
@@ -60,15 +64,42 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     private static readonly ConcurrentDictionary<(Type Type, string Path), PropertyInfo?> SearchPropertyCache = new();
 
+    /// <summary>
+    /// Concrete row container used by ItemsRepeater.
+    ///
+    /// The presenter and selection checkbox are retained explicitly so that
+    /// ElementPrepared can assign the exact current item every time a row is
+    /// newly realized or recycled for another index.
+    /// </summary>
+    private sealed class RowContainer : Grid
+    {
+        public required ContentPresenter Presenter
+        {
+            get; init;
+        }
+
+        public CheckBox? SelectionCheckBox
+        {
+            get; set;
+        }
+    }
+
     public VirtualizedItemsGrid()
     {
         _readonlySelectedItems = new ReadOnlyObservableCollection<object>(_selectedItems);
+
+        _searchDebounceTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(SearchDelayMilliseconds)
+        };
+        _searchDebounceTimer.Tick += SearchDebounceTimerOnTick;
     }
 
     static VirtualizedItemsGrid()
     {
         ItemsSourceProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.OnItemsSourceChanged());
-        SearchTextProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.RefreshView(resetPage: true));
+        SearchTextProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.OnSearchTextChanged());
+        SearchDelayMillisecondsProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.OnSearchDelayChanged());
         SearchMemberPathsProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.RefreshView(resetPage: true));
         ShowPaginationProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.RefreshView(resetPage: true));
         PageSizeProperty.Changed.AddClassHandler<VirtualizedItemsGrid>((grid, _) => grid.RefreshView(resetPage: true));
@@ -197,6 +228,22 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     {
         get => GetValue(SearchTextProperty);
         set => SetValue(SearchTextProperty, value);
+    }
+
+    /// <summary>
+    /// Delay after the last SearchText change before filtering is applied.
+    /// Set to 0 to restore immediate filtering.
+    /// </summary>
+    public static readonly StyledProperty<int> SearchDelayMillisecondsProperty =
+        AvaloniaProperty.Register<VirtualizedItemsGrid, int>(
+            nameof(SearchDelayMilliseconds),
+            300,
+            coerce: (_, value) => Math.Max(0, value));
+
+    public int SearchDelayMilliseconds
+    {
+        get => GetValue(SearchDelayMillisecondsProperty);
+        set => SetValue(SearchDelayMillisecondsProperty, value);
     }
 
     public static readonly StyledProperty<string> SearchWatermarkProperty =
@@ -400,6 +447,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     public void Refresh()
     {
+        _searchDebounceTimer.Stop();
         RefreshView(resetPage: false);
     }
 
@@ -489,6 +537,8 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     private void OnItemsSourceChanged()
     {
+        _searchDebounceTimer.Stop();
+
         _observableSource?.CollectionChanged -= OnSourceCollectionChanged;
 
         _observableSource = ItemsSource as INotifyCollectionChanged;
@@ -510,7 +560,51 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     private void OnSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        RefreshView(resetPage: false);
+        // A Reset normally represents Clear, ReplaceRange, or another wholesale
+        // replacement of the logical view. Returning to page 1 avoids retaining
+        // a page number from the previous data set.
+        RefreshView(resetPage: e.Action == NotifyCollectionChangedAction.Reset);
+    }
+
+    private void OnSearchTextChanged()
+    {
+        _searchDebounceTimer.Stop();
+
+        // Clearing search should restore the full data set immediately.
+        // A zero delay explicitly requests the old immediate-filter behavior.
+        if (string.IsNullOrWhiteSpace(SearchText) || SearchDelayMilliseconds <= 0)
+        {
+            RefreshView(resetPage: true);
+            return;
+        }
+
+        _searchDebounceTimer.Interval = TimeSpan.FromMilliseconds(SearchDelayMilliseconds);
+        _searchDebounceTimer.Start();
+    }
+
+    private void OnSearchDelayChanged()
+    {
+        if (!_searchDebounceTimer.IsEnabled)
+        {
+            return;
+        }
+
+        _searchDebounceTimer.Stop();
+
+        if (SearchDelayMilliseconds <= 0)
+        {
+            RefreshView(resetPage: true);
+            return;
+        }
+
+        _searchDebounceTimer.Interval = TimeSpan.FromMilliseconds(SearchDelayMilliseconds);
+        _searchDebounceTimer.Start();
+    }
+
+    private void SearchDebounceTimerOnTick(object? sender, EventArgs e)
+    {
+        _searchDebounceTimer.Stop();
+        RefreshView(resetPage: true);
     }
 
     private void OnSelectionModeChanged()
@@ -541,54 +635,74 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     private void RefreshView(bool resetPage)
     {
-        var allItems = ItemsSource?.Cast<object>().ToList() ?? [];
-        TotalItemCount = allItems.Count;
-
-        var search = SearchText?.Trim();
-        _filteredItems = string.IsNullOrEmpty(search) ? allItems : allItems.Where(item => MatchesSearch(item, search)).ToList();
-
-        FilteredItemCount = _filteredItems.Count;
-        PageCount = ShowPagination && FilteredItemCount > 0
-            ? (int)Math.Ceiling(FilteredItemCount / (double)PageSize)
-            : FilteredItemCount > 0 ? 1 : 0;
-
-        if (resetPage)
+        // CurrentPage changes are raised synchronously by SetCurrentValue below.
+        // Do not let that callback recursively rebuild the repeater while this
+        // refresh is still producing its snapshot.
+        if (_refreshingView)
         {
-            SetCurrentValue(CurrentPageProperty, 1);
+            return;
         }
 
-        var effectivePage = PageCount == 0 ? 1 : Math.Clamp(CurrentPage, 1, PageCount);
-        if (effectivePage != CurrentPage)
+        _refreshingView = true;
+        try
         {
-            SetCurrentValue(CurrentPageProperty, effectivePage);
-        }
+            // Snapshot the external source first. Everything below works from this
+            // stable snapshot, so changes in the external collection cannot leave
+            // _filteredItems and the repeater view representing different states.
+            var allItems = ItemsSource?.Cast<object>().ToArray() ?? Array.Empty<object>();
+            TotalItemCount = allItems.Length;
 
-        IEnumerable<object> pageItems = _filteredItems;
-        if (ShowPagination && PageCount > 0)
+            var search = SearchText?.Trim();
+            _filteredItems = string.IsNullOrEmpty(search)
+                ? allItems.ToList()
+                : allItems.Where(item => MatchesSearch(item, search)).ToList();
+
+            FilteredItemCount = _filteredItems.Count;
+            PageCount = ShowPagination && FilteredItemCount > 0
+                ? (int)Math.Ceiling(FilteredItemCount / (double)PageSize)
+                : FilteredItemCount > 0 ? 1 : 0;
+
+            var effectivePage = resetPage
+                ? 1
+                : PageCount == 0
+                    ? 1
+                    : Math.Clamp(CurrentPage, 1, PageCount);
+
+            if (effectivePage != CurrentPage)
+            {
+                SetCurrentValue(CurrentPageProperty, effectivePage);
+            }
+
+            IEnumerable<object> pageItems = _filteredItems;
+            if (ShowPagination && PageCount > 0)
+            {
+                pageItems = _filteredItems
+                    .Skip((effectivePage - 1) * PageSize)
+                    .Take(PageSize);
+            }
+
+            // Publish a new immutable-in-practice snapshot for every refresh.
+            // Avoid Clear()+Add() on an ObservableCollection, which exposes the
+            // ItemsRepeater to intermediate collection states.
+            _viewItems = pageItems.ToArray();
+            IsEmpty = _viewItems.Count == 0;
+
+            // Publish one complete source snapshot. Do not assign null first:
+            // changing to this new snapshot already resets the repeater's view.
+            //
+            // Reused rows are then explicitly synchronized by ElementPrepared.
+            _repeater?.ItemsSource = _viewItems;
+
+            _bodyScrollViewer?.Offset = new Vector(_bodyScrollViewer.Offset.X, 0);
+            UpdatePaginationButtons();
+            UpdateSelectionUi();
+        }
+        finally
         {
-            pageItems = _filteredItems
-                .Skip((effectivePage - 1) * PageSize)
-                .Take(PageSize);
+            _refreshingView = false;
         }
-
-        _viewItems.Clear();
-        foreach (var item in pageItems)
-        {
-            _viewItems.Add(item);
-        }
-
-        IsEmpty = _viewItems.Count == 0;
-
-        if (_repeater is not null && !ReferenceEquals(_repeater.ItemsSource, _viewItems))
-        {
-            _repeater.ItemsSource = _viewItems;
-        }
-
-        _bodyScrollViewer?.Offset = new Vector(_bodyScrollViewer.Offset.X, 0);
-
-        UpdatePaginationButtons();
-        UpdateSelectionUi();
     }
+
 
     private bool MatchesSearch(object item, string searchText)
     {
@@ -663,17 +777,30 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         }
 
         _selectionCheckBoxes.Clear();
+
+        // The template itself is deliberately item-independent.
+        // The exact current item is assigned in RepeaterOnElementPrepared,
+        // which Avalonia raises for both newly-created and reused rows.
+        _repeater.ItemTemplate = new FuncDataTemplate<object>((_, _) => BuildRowContainer());
         _repeater.ItemsSource = _viewItems;
-        _repeater.ItemTemplate = new FuncDataTemplate<object>((item, _) => BuildRowContainer(item));
     }
 
-    private Control BuildRowContainer(object item)
+    private Control BuildRowContainer()
     {
-        var outer = new Grid
+        var content = new ContentPresenter
         {
+            ContentTemplate = RowTemplate,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Stretch
+        };
+
+        var outer = new RowContainer
+        {
+            Presenter = content,
             MinHeight = RowMinHeight,
             HorizontalAlignment = HorizontalAlignment.Left
         };
+
         outer.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
         outer.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(1, GridUnitType.Star)));
         outer.RowDefinitions.Add(new RowDefinition(new GridLength(1, GridUnitType.Star)));
@@ -685,42 +812,95 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
             {
                 Width = SelectionColumnWidth,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                IsChecked = _selectedItems.Contains(item)
+                VerticalAlignment = VerticalAlignment.Center
             };
 
-            checkBox.Click += (_, _) => OnRowSelectionClicked(item, checkBox);
+            // The checkbox never captures an item. Its DataContext is assigned
+            // explicitly whenever this row is prepared/reused.
+            checkBox.Click += OnRowSelectionClicked;
+
+            outer.SelectionCheckBox = checkBox;
             _selectionCheckBoxes.Add(new WeakReference<CheckBox>(checkBox));
+
             Grid.SetColumn(checkBox, 0);
             outer.Children.Add(checkBox);
         }
 
-        var content = new ContentPresenter
-        {
-            Content = item,
-            ContentTemplate = RowTemplate,
-            HorizontalAlignment = HorizontalAlignment.Left,
-            VerticalAlignment = VerticalAlignment.Stretch
-        };
+        // Deliberately do not bind or assign Content here. A RowContainer may
+        // be reused for a completely different source index. ElementPrepared
+        // will assign the exact current item.
         Grid.SetColumn(content, 1);
         Grid.SetRow(content, 0);
         outer.Children.Add(content);
-        var divider = new Divider()
+
+        var divider = new Divider
         {
             Orientation = Orientation.Horizontal,
             Margin = new Thickness(0, 2, 0, 2)
         };
+
         Grid.SetRow(divider, 1);
         Grid.SetColumnSpan(divider, 2);
         outer.Children.Add(divider);
 
-
         return outer;
     }
 
-    private void OnRowSelectionClicked(object item, CheckBox checkBox)
+    /// <summary>
+    /// Prepares a realized row from the authoritative current view snapshot.
+    ///
+    /// This is intentionally explicit rather than relying on inherited
+    /// DataContext propagation. ItemsRepeater raises ElementPrepared for both
+    /// newly created controls and controls that are being reused.
+    /// </summary>
+    private void RepeaterOnElementPrepared(
+        object? sender,
+        ItemsRepeaterElementPreparedEventArgs e)
     {
-        if (_updatingSelectionUi)
+        if (e.Index < 0 || e.Index >= _viewItems.Count)
+        {
+            return;
+        }
+
+        var item = _viewItems[e.Index];
+
+        // Keep the root row and the actual presenter synchronized with the
+        // exact item at the repeater's current index.
+        e.Element.SetCurrentValue(Control.DataContextProperty, item);
+
+        if (e.Element is not RowContainer row)
+        {
+            return;
+        }
+
+        // These assignments are the core V5 recycling fix.
+        // Never leave Content from a previous use of this RowContainer.
+        row.Presenter.ContentTemplate = RowTemplate;
+        row.Presenter.Content = item;
+
+        if (row.SelectionCheckBox is null)
+        {
+            return;
+        }
+
+        row.SelectionCheckBox.DataContext = item;
+
+        _updatingSelectionUi = true;
+        try
+        {
+            row.SelectionCheckBox.IsChecked = _selectedItems.Contains(item);
+        }
+        finally
+        {
+            _updatingSelectionUi = false;
+        }
+    }
+
+    private void OnRowSelectionClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (_updatingSelectionUi ||
+            sender is not CheckBox checkBox ||
+            checkBox.DataContext is not { } item)
         {
             return;
         }
@@ -748,12 +928,9 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
                     continue;
                 }
 
-                var row = checkBox.Parent as Grid;
-                var presenter = row?.Children.OfType<ContentPresenter>().FirstOrDefault();
-                if (presenter?.Content is { } item)
-                {
-                    checkBox.IsChecked = _selectedItems.Contains(item);
-                }
+                checkBox.IsChecked =
+                    checkBox.DataContext is { } item &&
+                    _selectedItems.Contains(item);
             }
 
             if (_selectAllCheckBox is not null)
@@ -888,6 +1065,8 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     private void AttachTemplatePartHandlers()
     {
+        _repeater?.ElementPrepared += RepeaterOnElementPrepared;
+
         if (_bodyScrollViewer is not null)
         {
             _bodyScrollViewer.ScrollChanged += BodyScrollViewerOnScrollChanged;
@@ -904,6 +1083,8 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     private void DetachTemplatePartHandlers()
     {
+        _repeater?.ElementPrepared -= RepeaterOnElementPrepared;
+
         if (_bodyScrollViewer is not null)
         {
             _bodyScrollViewer.ScrollChanged -= BodyScrollViewerOnScrollChanged;
@@ -967,6 +1148,4 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         _nextPageButton?.IsEnabled = PageCount > 0 && CurrentPage < PageCount;
         _lastPageButton?.IsEnabled = PageCount > 0 && CurrentPage < PageCount;
     }
-
-
 }

@@ -971,9 +971,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         {
             return;
         }
-
         Debug.Print("InstallFirmware RefreshAsync");
-
         var (version, refreshToken) = BeginRefresh(cancellationToken);
         try
         {
@@ -1082,6 +1080,32 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
     }
 
+    private bool isClearing;
+
+    [RelayCommand]
+    private void Clear()
+    {
+        if (isClearing)
+        {
+            return;
+        }
+
+        isClearing = true;
+        try
+        {
+            SelectedFrameType = null;
+            SelectedVersion = null;
+            SelectedManufacturer = null;
+        }
+        finally
+        {
+            isClearing = false;
+        }
+
+        FilterData(null, null, null);
+
+    }
+
     partial void OnSelectedVersionChanged(string? value)
     {
         FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
@@ -1099,31 +1123,46 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private void FilterData(string? version, string? vehicleType, string? manufacturer)
     {
+        if (isClearing)
+        {
+            return;
+        }
+
         var choices = FirmwareChoices.ToList();
 
         if (!string.IsNullOrEmpty(version))
         {
             choices = choices.Where(x => x.FirmwareVersion.ToString() == version).ToList();
+            Debug.Print($"Filter Version {version} found {choices.Count} items");
         }
 
         if (!string.IsNullOrEmpty(vehicleType))
         {
             choices = choices.Where(x => x.VehicleType == vehicleType).ToList();
+            Debug.Print($"Filter VehicleType {vehicleType} found {choices.Count} items");
         }
 
         if (!string.IsNullOrEmpty(manufacturer))
         {
             choices = choices.Where(x => x.Manufacturer == manufacturer).ToList();
+            Debug.Print($"Filter Manufacturer {manufacturer} found {choices.Count} items");
         }
 
         // Replace the bound collection rather than issuing a range/reset notification.
         // Avalonia's DataGrid did not reliably refresh its rows when the existing
         // ObservableRangeCollection instance was cleared and repopulated.
-        //        FilteredFirmwareChoices = new ObservableRangeCollection<FirmwareCatalogItemViewModel>(choices);
 
-        FilteredFirmwareChoices.Clear();
-        FilteredFirmwareChoices = new ObservableRangeCollection<FirmwareCatalogItemViewModel>(choices);
-        //FilteredFirmwareChoices.ReplaceRange(choices);
+        //FilteredFirmwareChoices = new ObservableRangeCollection<FirmwareCatalogItemViewModel>(choices);
+
+        //Debug.Print($"Clear FilteredFirmwareChoices");
+        //FilteredFirmwareChoices.Clear();
+        //Debug.Print($"Adding items to FilteredFirmwareChoices");
+        //FilteredFirmwareChoices.AddRange(choices);
+        //Debug.Print($"Added items {choices.Count} to FilteredFirmwareChoices and it holds {FilteredFirmwareChoices.Count}");
+
+        //FilteredFirmwareChoices = new ObservableRangeCollection<FirmwareCatalogItemViewModel>(choices);
+        FilteredFirmwareChoices.ReplaceRange(choices);
+        SetMessages($"Found {choices.Count} after Applying Filter and Collection Now Holds {FilteredFirmwareChoices.Count}");
     }
 
     private void ApplyTargetQuery()

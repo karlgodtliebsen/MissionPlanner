@@ -5,8 +5,8 @@
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                               xmlns:controls="clr-namespace:MissionPlanner.AvaloniaUI.App.Controls"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                              xmlns:local="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware" 
-                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" 
+                              xmlns:local="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware"
+                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
                               x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
                               x:DataType="local:InstallFirmwareViewModel">
 
@@ -35,17 +35,19 @@
 
                     <Grid IsVisible="{Binding IsDisconnectedMode}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="16">
                         <StackPanel Orientation="Horizontal" Grid.Row="0" Spacing="10">
-                            <Button Content="Refresh catalogue" Command="{Binding RefreshCatalogCommand}" />
-                            <Button Content="All Options" Command="{Binding ShowAllOptionsCommand}" />
+                            <Button Content="Refresh catalogue"  ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}" />
+                            <Button Content="All Options" ToolTip.Tip="Includes Beta Versions" Command="{Binding ShowAllOptionsCommand}" />
                             <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
                         </StackPanel>
 
                         <ProgressBar IsIndeterminate="True" Grid.Row="1" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
                         <StackPanel Orientation="Horizontal" Grid.Row="2" Spacing="10">
-                            <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release" ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="250"/>
+                            <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release"  ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="250"/>
                             <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
                             <ComboBox ItemsSource="{Binding FrameTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
                             <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
+                            <Button  Content="✕" ToolTip.Tip="Clear all filters" Command="{Binding ClearCommand}" Padding="8,2"
+                                     VerticalAlignment="Center"/>
                         </StackPanel>
                         <controls:VirtualizedItemsGrid
                             Grid.Row="3"
@@ -156,7 +158,7 @@
                                     <TextBlock Margin="0,8,0,0" Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
                                     <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
                                     <TextBlock Text="Require exact board ID match" />
-                                    <Border Classes="SectionCard" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12" 
+                                    <Border Classes="SectionCard" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12"
                                             BorderBrush="{DynamicResource Warning}">
                                         <TextBlock Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply."
                                                    Classes="Warning" FontWeight="Bold" TextWrapping="Wrap" />
@@ -356,7 +358,7 @@
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
 
-                                    <Button Content="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}" 
+                                    <Button Content="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}"
                                             IsVisible="{Binding CanOpenDeviceManager}" HorizontalAlignment="Left" />
                                 </StackPanel>
                             </Border>
