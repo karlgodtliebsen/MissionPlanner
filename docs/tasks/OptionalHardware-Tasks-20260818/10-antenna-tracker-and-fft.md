@@ -94,7 +94,7 @@ and launches FFT analysis.
 Current NextGen also has DataFlash Logs UI. Inspect:
 
 ```text
-src/UI/MissionPlanner.App/Views/FlightData/Tabs/DataFlashLogsTabView*
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/FlightData/Tabs/DataFlashLogsTabView*
 ```
 
 ### FFT setup view

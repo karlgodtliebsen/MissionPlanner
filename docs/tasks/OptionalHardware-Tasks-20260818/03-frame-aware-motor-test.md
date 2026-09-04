@@ -26,8 +26,8 @@ src/Core/MissionPlanner.Core/Setup/
     MotorTestSnapshot.cs
     MotorTestState.cs
 
-src/UI/MissionPlanner.App/Views/InitSetup/MandatoryHardware/Sections/
-    EscMotorSetupView.xaml
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/MandatoryHardware/Sections/
+    EscMotorSetupView.axaml
     EscMotorSetupViewModel.cs
 
 src/Tests/MissionPlanner.Core.Tests/ActuatorSetupTests.cs

@@ -99,9 +99,10 @@ boundary without turning high-rate domain state into presentation lifecycle noti
 Views and services that need live telemetry subscribe to `VehicleStateUpdated` directly for their
 active lifetime; they do not use `IActiveVehicleContext.Changed` as a telemetry stream.
 
-Flight Data uses `LifecycleTabView`. Selecting a tab activates its lifecycle content, which constructs
-and binds a fresh transient view model; leaving the tab disposes that view model. Each view model therefore
-owns its subscriptions and background work for one simple construction-to-disposal lifetime.
+Flight Data uses Avalonia `TabControl` with `TabItemViewBase<TViewModel>`. The view base
+connects loaded/unloaded state to ViewModel activation and deactivation. Each ViewModel owns
+its subscriptions and background work for its activation lifetime and replaces cancelled
+tokens before reactivation.
 `ApplicationStateService` also derives its vehicle identity and connection flag from the active vehicle
 context so application chrome and pages share one source.
 

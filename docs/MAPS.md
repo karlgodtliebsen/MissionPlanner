@@ -18,7 +18,7 @@ The catalog represents OpenStreetMap, Esri World Topographic, World Physical, Wo
 
 ## Validation and boundaries
 
-Catalog loading fails closed when identifiers are duplicated, references are missing, zoom ranges are invalid, network endpoints are not HTTP(S), or archive metadata conflicts with the access mechanism. `MissionPlanner.Maps` remains independent of MAUI and Mapsui. Later layers depend inward on the catalog and policy abstractions: platform-neutral services, renderer adapters, then MAUI views and settings.
+Catalog loading fails closed when identifiers are duplicated, references are missing, zoom ranges are invalid, network endpoints are not HTTP(S), or archive metadata conflicts with the access mechanism. `MissionPlanner.Maps` remains independent of Avalonia and Mapsui. Later layers depend inward on the catalog and policy abstractions: platform-neutral services, renderer adapters, then Avalonia views and settings.
 
 ## Policy guardrails
 
@@ -40,7 +40,7 @@ Every supported online raster tile now uses `IMapHttpResourceFetcher`; built-in 
 
 `CompositeMapsuiBasemapFactory` is the single source-to-Mapsui construction boundary for the mission map. `IMapSourceResolver` first produces a renderer-neutral source, after which the composite dispatches by typed origin/access/archive/content fields to built-in raster, credentialed hosted raster, custom XYZ/TMS, raster MBTiles, or blank-map adapters. Expected configuration failures are typed and the previous map remains active. Custom WMS/WMTS definitions can currently be validated and connection-tested but are explicitly not runtime-rendered; vector/PMTiles remains deferred by ADR-0006.
 
-Basemap switching starts from the MAUI view's loaded lifecycle and is cancelled when the view unloads; constructors never synchronously wait for source I/O. Each request has a monotonic generation and cancels the previous request. Only the latest completed generation may commit the stable basemap slot, all Mapsui layer mutations and change notifications run through the MAUI UI dispatcher, and stale replacement layers are disposed. Resolution, renderer, cancellation, and superseded outcomes are typed; a failed or stale request cannot remove the current working basemap or operational overlays.
+Basemap switching starts from the Avalonia view's loaded lifecycle and is cancelled when the view unloads; constructors never synchronously wait for source I/O. Each request has a monotonic generation and cancels the previous request. Only the latest completed generation may commit the stable basemap slot, all Mapsui layer mutations and change notifications run through the Avalonia UI dispatcher, and stale replacement layers are disposed. Resolution, renderer, cancellation, and superseded outcomes are typed; a failed or stale request cannot remove the current working basemap or operational overlays.
 
 `MapBasemapController` owns one layer named `MissionPlanner.Basemap`. Its live path is stable selected ID → resolver → composite factory → basemap-slot replacement. Switching creates the replacement before changing the map, inserts only that slot, preserves the navigator viewport and every operational layer, then disposes the previous source. Resolution, creation, credential, policy, archive, or renderer failure leaves the prior working layer installed. A successful change event is the hook for refreshing the standard attribution snapshot.
 
@@ -112,7 +112,7 @@ The current `src/` application has no map screenshot, static-image, or PDF expor
 
 Automated map tests cover catalog validation, policy intersection, attribution aggregation/export, stable provider switching with overlay and viewport preservation, credential redaction, cache isolation, raster MBTiles offline operation, custom-source validation, hosted-provider offline denial, Esri attribution fallback, pack validation, signed-feed compatibility, and rollback.
 
-The manual Windows, Android, and Mac Catalyst verification checklist is maintained in [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md). Windows compilation and deterministic tests are part of this change; interactive device checks remain explicitly pending until each target is run on its supported host/device. Vector/PMTiles is excluded under ADR-0006. WMS/WMTS support depends on server capabilities and remains raster-only. Mission Planner does not create packs from hosted providers, and HTTP cache is not a guaranteed offline pack.
+The manual verification checklist for the current Windows Avalonia target is maintained in [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md). Compilation and deterministic tests are part of this change; interactive checks remain explicitly pending until run on a supported host. Vector/PMTiles is excluded under ADR-0006. WMS/WMTS support depends on server capabilities and remains raster-only. Mission Planner does not create packs from hosted providers, and HTTP cache is not a guaranteed offline pack.
 
 Mission-map location commands consume an immutable `MissionMapContext` captured by a mouse context
 click or a primary touch tap. Pointer hover is presentation-only and cannot retarget a later menu

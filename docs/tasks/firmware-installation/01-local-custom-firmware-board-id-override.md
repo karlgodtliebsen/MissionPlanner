@@ -15,7 +15,7 @@ The feature is **not** permission to bypass other compatibility or safety checks
 The current UI class is:
 
 ```text
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware/InstallFirmwareViewModel.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware/InstallFirmwareViewModel.cs
 ```
 
 The user may refer to this area as `FirmwareInstallation/FirmwareInstallationModel`; follow the current names in the branch being edited.
@@ -58,8 +58,8 @@ Also inspect:
 src/Core/MissionPlanner.Firmware/Installation/FirmwareInstallationRequest.cs
 src/Core/MissionPlanner.Firmware/Installation/FirmwareInstallationService.cs
 src/Core/MissionPlanner.Firmware/Installation/FirmwareInstallationConfirmation.cs
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware/FirmwareInteractionService.cs
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware/InstallFirmwareView.xaml
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware/FirmwareInteractionService.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware/InstallFirmwareView.axaml
 src/Core/MissionPlanner.Firmware/Preparation/FirmwarePreparationService.cs
 src/Tests/MissionPlanner.Firmware.Tests/FirmwareCompatibilityServiceTests.cs
 src/Tests/MissionPlanner.Firmware.Tests/FirmwareInstallationServiceTests.cs
@@ -213,7 +213,7 @@ For example:
 FLASH 9 ON 50
 ```
 
-Keep the interaction behind the existing firmware interaction abstraction; do not move domain/install orchestration into the MAUI ViewModel.
+Keep the interaction behind the existing firmware interaction abstraction; do not move domain/install orchestration into the Avalonia ViewModel.
 
 Erase must not start unless this confirmation succeeds.
 

@@ -2,7 +2,7 @@
 
 ## Scope
 
-The current `MissionMapView.xaml` contains 43 MenuFlyout actions still bound to `NotImplementedCommand`.
+The current `MissionMapView.axaml` contains 43 MenuFlyout actions still bound to `NotImplementedCommand`.
 
 This package replaces those placeholders in deliberate functional groups rather than adding 43 unrelated methods to `MissionMapViewModel`.
 
@@ -133,7 +133,7 @@ Use the smallest set of interaction modes actually required.
 ### Missions
 
 ```text
-MissionMapView.xaml
+MissionMapView.axaml
 MissionMapViewModel
 MissionMapPresenter
 MissionMapSnapshot
@@ -206,7 +206,7 @@ Commit after every task.
 Task 12 must assert that:
 
 ```text
-MissionMapView.xaml contains zero NotImplementedCommand bindings
+MissionMapView.axaml contains zero NotImplementedCommand bindings
 ```
 
 and remove the generic placeholder command if it has no remaining legitimate use.

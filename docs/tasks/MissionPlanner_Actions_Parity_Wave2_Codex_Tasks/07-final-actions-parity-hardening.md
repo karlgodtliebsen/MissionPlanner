@@ -156,7 +156,7 @@ No status string/model may call a parameter confirmation or local Zero Altitude 
 
 ## 7. Binding/layout regression audit
 
-Review final `ActionsTabView.xaml` and ViewModel bindings.
+Review final `ActionsTabView.axaml` and ViewModel bindings.
 
 Verify specifically:
 

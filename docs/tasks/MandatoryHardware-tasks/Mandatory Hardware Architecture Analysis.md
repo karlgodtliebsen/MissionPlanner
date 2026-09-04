@@ -6,7 +6,7 @@ reference; the legacy WinForms implementation is used only to recover behavior.
 
 ## Existing Next Gen architecture
 
-- `MandatoryHardwareView` owns one UraniumUI `TabView`. Each tab uses
+- `MandatoryHardwareView` owns one Ursa `TabView`. Each tab uses
   `SlimTabHeaderView`, a `TabItemViewModel`, and lifecycle content that resolves
   and disposes the tab ViewModel as the tab becomes active or inactive.
 - `MandatoryHardwareViewModel` obtains ordered workflow evaluations from
@@ -54,4 +54,3 @@ reference; the legacy WinForms implementation is used only to recover behavior.
 - Tests cover service behavior and lifecycle state using the existing test
   doubles and project layout. Integration is completed only after the workflow
   catalog, ordered tabs, DI, and capability-aware counts agree.
-

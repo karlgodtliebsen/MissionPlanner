@@ -19,8 +19,8 @@ PARAMETER_METADATA_SYSTEM documents and reflects the current code
 | Rich metadata (descriptions, ranges, units) | `IVehicleParameterMetadataService` → `VehicleParameterMetadataService` | `MissionPlanner.Core.Vehicles` + `MissionPlanner.MavLink.Parameters.Metadata` |
 | Incoming PARAM_VALUE handling | `ParamValueVehicleHandler` → stores + publishes `VehicleParameterReceived` | `MissionPlanner.Core.Vehicles.Handlers` |
 | Shared Config edit state | `IParameterEditSessionFactory` → `ParameterEditSessionFactory` | `MissionPlanner.Core.Configuration` |
-| Save/load parameter files (UI) | `ParametersFileHandler` | `MissionPlanner.App.Views.ConfigTuning` |
-| Parameter editor UI | `FullParametersListTabView(Model)` | `MissionPlanner.App.Views.ConfigTuning.Tabs` |
+| Save/load parameter files (UI) | `ParametersFileHandler` | `MissionPlanner.AvaloniaUI.App.Views.ConfigTuning` |
+| Parameter editor UI | `FullParametersListTabView(Model)` | `MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs` |
 
 All services are registered in `DomainConfigurator.AddDomainServices`.
 
@@ -321,5 +321,5 @@ disabled; parameter presence never makes an unknown or hazardous action safe to 
 - Parameter loading into the Full Parameters List UI is slow (see FEATURES.md) — the
   merge of ~1000 values with metadata needs profiling.
 - Delete the unused `VehicleParameterStreamService` V1–V3 classes.
-- The comparison engine and exports are implemented; the MAUI workflow currently exposes
+- The comparison engine and exports are implemented; the Avalonia workflow currently exposes
   live-versus-pending review while richer file/profile source selection is being expanded.

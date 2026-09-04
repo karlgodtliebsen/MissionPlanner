@@ -27,7 +27,7 @@ Perform this task after the board-ID override task, so the new custom-firmware s
 Main file:
 
 ```text
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware/InstallFirmwareViewModel.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware/InstallFirmwareViewModel.cs
 ```
 
 It is currently approximately 1,300+ lines and contains a mixture of:
@@ -238,7 +238,7 @@ Do not change public API unnecessarily if XAML or tests depend on it.
 
 ### 8. Preserve thread/dispatcher behavior
 
-Do not change the existing rule that UI-bound observable state is updated on the MAUI dispatcher where required.
+Do not change the existing rule that UI-bound observable state is updated on the Avalonia dispatcher where required.
 
 This refactor is about state dependency and notification, not about moving firmware work onto different threads.
 

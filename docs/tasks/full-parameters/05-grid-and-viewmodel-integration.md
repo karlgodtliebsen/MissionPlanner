@@ -9,7 +9,7 @@ Remove duplicate filtering/paging and collection churn now that `VirtualizedData
 
 - Work only in the new solution under `src/`, `docs/`, `scripts/` and its test data.
 - Treat `src-v.1.38/` as read-only. Never modify it.
-- Preserve layering: protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, domain/application behavior in `MissionPlanner.Core`, MAUI presentation in `MissionPlanner.App`.
+- Preserve layering: protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, domain/application behavior in `MissionPlanner.Core`, Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind must not call MAVLink transports directly.
 - Reuse `IParameterEditSession`, `ParameterEditSession`, `ParameterApplyReport`, `ParameterWriteResult`, active-vehicle context, registry, metadata and parameter services.
 - Every vehicle operation must be cancellation-aware, connection-aware and scoped to current `VehicleId` and firmware identity.

@@ -58,8 +58,8 @@ src/Core/MissionPlanner.Core/Setup/RadioCalibrationState.cs
 src/Core/MissionPlanner.Core/Setup/RadioChannelCapture.cs
 src/Core/MissionPlanner.Core/Setup/RadioChannelInfo.cs
 
-src/UI/MissionPlanner.App/Views/InitSetup/MandatoryHardware/Sections/RadioSetupViewModel.cs
-src/UI/MissionPlanner.App/Views/InitSetup/MandatoryHardware/Sections/RadioSetupView.xaml
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/MandatoryHardware/Sections/RadioSetupViewModel.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/MandatoryHardware/Sections/RadioSetupView.axaml
 
 src/Tests/MissionPlanner.Core.Tests/RadioSetupTests.cs
 ```

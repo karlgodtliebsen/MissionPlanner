@@ -72,9 +72,9 @@ src/Core/MissionPlanner.MavLink/Services/
 
 src/Core/MissionPlanner.Core/Vehicles/
 
-src/UI/MissionPlanner.App/Views/ConfigTuning/Tabs/MAVFtpTabView.xaml
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/ConfigTuning/Tabs/MAVFtpTabView.axaml
 
-src/UI/MissionPlanner.App/Views/ConfigTuning/Tabs/MAVFtpTabView.xaml.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/ConfigTuning/Tabs/MAVFtpTabView.axaml.cs
 
 ```
 
@@ -894,7 +894,7 @@ Use constructor injection.
 
 
 
-The code-behind may resolve the ViewModel through the existing MAUI `ServiceHelper` exception documented in `docs/CODEX.md`.
+The code-behind may resolve the ViewModel through the existing Avalonia `ServiceHelper` exception documented in `docs/CODEX.md`.
 
 
 
@@ -1028,7 +1028,7 @@ Keep remote-path joining and normalization in one tested helper.
 
 
 
-Use MAUI file/folder APIs consistently with existing file handling in the project.
+Use Avalonia file/folder APIs consistently with existing file handling in the project.
 
 
 
@@ -1084,7 +1084,7 @@ Replace the placeholder content in:
 
 ```text
 
-Views/ConfigTuning/Tabs/MAVFtpTabView.xaml
+Views/ConfigTuning/Tabs/MAVFtpTabView.axaml
 
 ```
 
@@ -1170,7 +1170,7 @@ Directory and file icons should be visually distinguishable.
 
 
 
-Use current project controls, styling resources, UraniumUI patterns, and responsive layout conventions.
+Use current project controls, styling resources, Ursa patterns, and responsive layout conventions.
 
 
 
@@ -1452,7 +1452,7 @@ Add tests for:
 
 
 
-Do not require MAUI platform startup for ViewModel tests.
+Do not require Avalonia platform startup for ViewModel tests.
 
 
 
@@ -1653,6 +1653,3 @@ The recommended next task after successful completion should be one of:
 
 
 Do not start either follow-up within this task.
-
-
-

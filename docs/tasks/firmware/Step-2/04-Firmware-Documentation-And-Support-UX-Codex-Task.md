@@ -184,7 +184,7 @@ Add a strong warning:
 
 Display current feature support:
 
-| Capability | Windows | Linux | macOS/Mac Catalyst | Mobile |
+| Capability | Windows | Linux | macOS/macOS | Mobile |
 |---|---:|---:|---:|---:|
 | Catalogue/download/validate | Supported/planned cross-platform | Future validation | Future validation | Future |
 | Serial APJ install | Windows first | Future | Future | Not initial scope |

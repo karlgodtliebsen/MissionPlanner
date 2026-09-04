@@ -647,7 +647,7 @@ MapAttributionService
 MapAttributionOverlayState
 EsriAttributionResolver
 MapBasemapController.BasemapChanged
-MissionMapView.xaml
+MissionMapView.axaml
 Plan and FlightData map composition
 ```
 
@@ -673,7 +673,7 @@ Responsibilities:
 5. produce compact and expanded forms;
 6. refresh on source switch, layer visibility changes and metadata expiry/manual refresh.
 
-Do not let the coordinator depend directly on a MAUI view.
+Do not let the coordinator depend directly on a Avalonia view.
 
 ## Mandatory-attribution behavior
 
@@ -909,7 +909,7 @@ Update `docs/MAPS.md` and `docs/FEATURES.md`.
 
 ---
 
-# Task 06 — Harden basemap switching and MAUI lifecycle
+# Task 06 — Harden basemap switching and Avalonia lifecycle
 
 ## Objective
 
@@ -967,7 +967,7 @@ Do not serialize obsolete slow work ahead of newer user choices.
 
 Source resolution and archive/network creation may happen off the UI thread.
 
-All Mapsui mutations must dispatch to the MAUI UI thread:
+All Mapsui mutations must dispatch to the Avalonia UI thread:
 
 ```text
 insert replacement basemap
@@ -1266,7 +1266,7 @@ Update and actually run `MAPS_PLATFORM_VERIFICATION.md` on:
 ```text
 Windows
 Android
-Mac Catalyst
+macOS
 ```
 
 Where each platform is available, verify:
@@ -1387,4 +1387,3 @@ For each task:
 6. Build/test before committing.
 7. Do not continue to the next task while acceptance criteria are failing.
 8. Do not modify ADR-0006 except to add clarifying references that preserve its existing decision.
-

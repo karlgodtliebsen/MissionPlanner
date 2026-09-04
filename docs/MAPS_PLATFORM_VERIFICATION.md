@@ -1,33 +1,21 @@
-# Map platform verification matrix
+# Maps platform verification
 
-This checklist records manual verification separately from deterministic automated tests. Do not mark a cell passed without running the current commit on the named platform.
+The current application project targets `net10.0-windows10.0.19041.0`. Windows is therefore
+the required map release target. Linux and macOS remain future Avalonia targets and must not
+be reported as supported until dedicated heads, packaging, and interactive verification exist.
 
-| Scenario | Windows | Android | Mac Catalyst |
-|---|---|---|---|
-| OpenStreetMap Standard | Not run | Not run | Not run |
-| Esri Topographic, Physical, Shaded Relief, Dark Gray | Not run | Not run | Not run |
-| Blank / No Map | Not run | Not run | Not run |
-| Custom XYZ | Not run | Not run | Not run |
-| Raster MBTiles with network disabled | Not run | Not run | Not run |
-| Plan mission editing and context actions | Not run | Not run | Not run |
-| Flight Data map and follow vehicle | Not run | Not run | Not run |
-| Pan, zoom, pointer/touch gestures | Not run | Not run | Not run |
-| Mission-map context menu with mouse/trackpad | Not run | N/A | Not run |
-| Mission-map location actions with primary touch tap | N/A | Not run | N/A |
-| Polygon, survey, fence, rally, POI, and UTM menu workflows | Not run | Not run | Not run |
-| Cancel import, profile, prefetch, and transfer operations | Not run | Not run | Not run |
-| Light and dark theme attribution/settings | Not run | Not run | Not run |
-| Network loss and source fallback | Not run | Not run | Not run |
+| Scenario | Windows |
+|---|---|
+| OSM and each supported Esri source | Pending interactive verification |
+| Blank map and source switching | Pending interactive verification |
+| Installed raster MBTiles | Pending interactive verification |
+| Custom XYZ/TMS | Pending interactive verification |
+| Mission and vehicle overlays | Pending interactive verification |
+| Follow vehicle/current-position zoom | Pending interactive verification |
+| Mouse, wheel, keyboard, and context actions | Pending interactive verification |
+| Light/dark theme and attribution | Pending interactive verification |
+| Offline startup and network loss | Pending interactive verification |
 
-For each run, record the commit, OS/device version, Mapsui version, source ID, result, and sanitized diagnostic snapshot. Confirm that mission, vehicle, track, fence, ADS-B, POI, guided, and camera overlays remain present when switching basemaps. Confirm attribution remains visible and no credential or signed URL appears in logs or copied diagnostics.
-
-Automated restore, compilation, and deterministic tests are evidence for implementation and runtime composition, not manual UI verification. Vector/PMTiles is intentionally absent because ADR-0006 deferred it and the ADR's conditional vector task was not authorized.
-
-## Automated verification record
-
-Run on 2026-08-11 at commit worktree state preceding the Task 07 commit:
-
-- `dotnet restore src/MissionPlanner.slnx`: Passed; all 23 projects restored/up to date and no NuGet vulnerability warning was reported.
-- Map deterministic tests (`FullyQualifiedName~Maps`): Passed, 112 of 112.
-- Full solution build: Not passed as an all-platform validation; Windows compilation reached the application and test assemblies, while Android packaging failed in the local toolchain because `java.exe` exited with code 2.
-- Full repository test sweep: Not passed. Existing non-map Core assertions (including vehicle display-name expectations) failed, and simulator smoke tests failed without their required live simulator/network environment. These failures do not count as manual map verification and were not relabeled as passed.
+Automated builds and map tests verify composition, policy, source resolution, cancellation,
+and layer behavior. They do not replace an interactive renderer check. Record the application
+commit, Mapsui version, source IDs, test data, and observed result when completing this matrix.

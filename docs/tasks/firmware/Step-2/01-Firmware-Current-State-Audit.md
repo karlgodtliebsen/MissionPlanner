@@ -13,7 +13,7 @@ Primary implementation locations:
 ```text
 src/Core/MissionPlanner.Firmware
 src/Tests/MissionPlanner.Firmware.Tests
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware
 ```
 
 The current implementation is not an early prototype. It already contains a coherent modern ArduPilot/PX4 serial-bootloader subsystem with domain models, bounded protocol operations, catalogue handling, package parsing, installation orchestration, connected bootloader update, UI modes and automated tests.
@@ -42,7 +42,7 @@ The uploaded environment did not contain `dotnet`, so these results were not ind
 
 ### Firmware class library
 
-`MissionPlanner.Firmware.csproj` is correctly separated as a `net10.0` class library with nullable enabled and warnings treated as errors. It references only Microsoft abstraction packages and `MissionPlanner.Transport`; it has no MAUI/UraniumUI dependency.
+`MissionPlanner.Firmware.csproj` is correctly separated as a `net10.0` class library with nullable enabled and warnings treated as errors. It references only Microsoft abstraction packages and `MissionPlanner.Transport`; it has no Avalonia/Ursa dependency.
 
 ### Existing functional areas
 
@@ -65,7 +65,7 @@ The project already includes:
 - Returning application-device discovery.
 - Firmware page-mode resolution.
 - Structured diagnostic report support.
-- MAUI/UraniumUI firmware view and view model.
+- Avalonia/Ursa firmware view and view model.
 
 ## Existing task verification
 
@@ -86,7 +86,7 @@ The project already includes:
 | Task 12 — Installation orchestrator | Complete/mostly | Full workflow exists. User interaction cancellation semantics need correction. |
 | Task 13 — Connected Bootloader Update | Complete | Connected/disarmed mode and ACK handling exist. |
 | Task 14 — Page mode | Complete | Connected/disconnected/operation/unsupported modes exist. |
-| Task 15 — MAUI/Uranium UI | Partial/usable | Functional UI exists, but platform selection, documentation, cancellation and detail presentation are weak. |
+| Task 15 — Avalonia/Ursa UI | Partial/usable | Functional UI exists, but platform selection, documentation, cancellation and detail presentation are weak. |
 | Task 16 — Custom firmware | Complete for APJ/PX4 | Local `.apj`/`.px4` parsing exists; `.hex` is correctly deferred to DFU. |
 | Task 17 — Recovery/reconnect | Complete/mostly | Returning-device discovery exists and port changes are modeled. |
 | Task 18 — Diagnostics/logging | Complete/mostly | Diagnostic reports and structured logs exist; download/user evidence can be improved. |
@@ -375,8 +375,8 @@ src/Core/MissionPlanner.Firmware/Downloads/FirmwareArtifactDownloader.cs
 src/Core/MissionPlanner.Firmware/Entry/BootloaderEntryStrategies.cs
 src/Core/MissionPlanner.Firmware/Installation/FirmwareInstallationService.cs
 src/Core/MissionPlanner.Firmware/Protocol/ArduPilotBootloaderClient.cs
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware/InstallFirmwareViewModel.cs
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware/InstallFirmwareView.xaml
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware/FirmwareInteractionService.cs
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware/FirmwareHostGateways.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware/InstallFirmwareViewModel.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware/InstallFirmwareView.axaml
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware/FirmwareInteractionService.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware/FirmwareHostGateways.cs
 ```

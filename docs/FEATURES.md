@@ -10,7 +10,7 @@ The mission map now resolves stable source IDs and routes OpenStreetMap, all exi
 
 Offline map infrastructure supports user-imported raster MBTiles with versioned manifests, bounded streaming SHA-256/size/schema/payload validation, staged atomic installation, read-only access, corrupt-manifest isolation, active-source-aware removal guards, coverage/attribution/license/provenance metadata, and a Mapsui layer factory. Hosted providers are never scraped into packs, and vector MBTiles remains unsupported.
 
-Production vector/PMTiles support is explicitly deferred by ADR-0006. The current Mapsui vector path is experimental, archive conversion does not solve renderer/style requirements, and no supported alternative renderer currently spans all Mission Planner MAUI targets. Raster MBTiles remains the supported offline path.
+Production vector/PMTiles support is explicitly deferred by ADR-0006. The current Mapsui vector path is experimental, archive conversion does not solve renderer/style requirements, and no supported alternative renderer currently spans all Mission Planner Avalonia targets. Raster MBTiles remains the supported offline path.
 
 Custom map source APIs support add/edit/test/delete for raster XYZ/TMS and self-hosted WMS/WMTS, plus the existing local raster MBTiles pack path. Configuration validates templates and capabilities metadata, warns on HTTP, requires attribution, stores credentials separately, redacts diagnostics, uses a conservative user-controlled policy, and safely falls back when a selected source is deleted.
 
@@ -136,7 +136,7 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 * Implemented: lifecycle-aware Flight Data tabs lazy-initialize on their first online activation,
   dispose vehicle subscriptions when hidden or reconnected, and stop in-flight work on disconnect.
 * Implemented: reusable async-operation/command-result states cover busy, success, warning, error,
-  timeout, and disconnected outcomes; framework-neutral notifications are adapted to MAUI in the UI layer.
+  timeout, and disconnected outcomes; framework-neutral notifications are adapted to Avalonia in the UI layer.
 * Implemented: the Flight Data status strip displays the derived vehicle name, connection state,
   heartbeat freshness, and map-position freshness. Quick telemetry starts only while Quick is visible.
 
@@ -442,7 +442,7 @@ v1.38 uses GMap.NET with dozens of providers; the new app uses Mapsui + BruTile.
 | Yandex, AMap, Here/Ovi, NearMap, Czech, Lithuania | Regional providers with key/ToS constraints; add on demand. |
 | GIBS Arctic/Antarctic, Esri Arctic, ArcGIS Arctic Bathymetry, Earthbuilder | Niche polar/science layers; add on demand. |
 | Custom WMS / WMTS + "Inject Custom Map" | Needs a small "add custom source" UI; BruTile has WMS-C/WMTS support to build on. |
-| GDAL (local GeoTIFF/raster) | Dropped: native GDAL dependency doesn't fit the cross-platform MAUI stack. Revisit with a managed raster reader if offline imagery becomes a requirement. |
+| GDAL (local GeoTIFF/raster) | Dropped: native GDAL dependency doesn't fit the cross-platform Avalonia stack. Revisit with a managed raster reader if offline imagery becomes a requirement. |
 | NoMap (blank background) | Trivial; add when offline workflows land. |
 
 ### Missing — map infrastructure
@@ -609,7 +609,7 @@ while leaving Config warns before discarding them.
 * Keeps table rows and option collections stable while numeric, enum, and bitmask edits
   synchronize with the shared session
 * Pages the searched table projection with first/previous/next/last navigation and an
-  editable page size, limiting the number of MAUI editor rows rendered at once
+  editable page size, limiting the number of Avalonia editor rows rendered at once
 * Loads and saves `.param`/JSON files using invariant numeric formatting
 * Retains the packed MAVFTP download with automatic classic-stream fallback
 
@@ -698,7 +698,7 @@ while leaving Config warns before discarding them.
 * Discovers numbered screens, built-in/custom item stems, enable/X/Y fields, and additional
   option/unit/warning parameters from live `OSD<n>_*` names and metadata
 * Derives character-grid dimensions from coordinate metadata and renders enabled items in a
-  MAUI `GraphicsView`; selected items can be placed by exact numeric row/column or accessible
+  Avalonia custom control; selected items can be placed by exact numeric row/column or accessible
   directional controls
 * Validates whole-number bounds and detects same-cell overlaps. Static overlaps block apply;
   metadata-advertised dynamic overlaps require an explicit warning confirmation
@@ -721,7 +721,7 @@ while leaving Config warns before discarding them.
 * Edits local, typed settings for units, map source/style/default zoom, telemetry display
   rates, theme, logging and retention, connection defaults, parameter-cache policy,
   confirmations, update checks, and telemetry accessibility
-* Persists a versioned JSON document through MAUI Preferences, migrates older schemas, and
+* Persists a versioned JSON document through Avalonia Preferences, migrates older schemas, and
   replaces corrupt or invalid documents with validated safe defaults
 * Applies theme previews immediately and publishes all saved changes to observable runtime
   consumers; disconnected connection defaults and new-map defaults consume the live snapshot
@@ -916,7 +916,7 @@ Completed
 
 All menu entries present in the new Mission Map XAML now bind to implemented behavior; no legacy
 WinForms-only features were added. “Implemented” means the service and command path exists,
-“runtime integrated” means the MAUI/Mapsui menu invokes it, and manual platform status remains in
+“runtime integrated” means the Avalonia/Mapsui menu invokes it, and manual platform status remains in
 [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md).
 
 | Menu item/group | Owner/service | Status | Tests | Known limitations |
@@ -996,8 +996,3 @@ WinForms-only features were added. “Implemented” means the service and comma
   deterministic verify/write workflows. A dedicated GitHub Actions gate detects manual or
   stale generated output, reports all 325 coverage classifications, and runs registry,
   decoder, raw-fallback, promotion, and conformance tests.
-
-
-
-
-

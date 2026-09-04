@@ -12,7 +12,7 @@ Redesign the Radio Calibration page around:
 
 The result may take general inspiration from good flight-controller configurators, but must not look like a Betaflight clone.
 
-Use MissionPlanner/UraniumUI theme resources and existing design patterns.
+Use MissionPlanner/Ursa theme resources and existing design patterns.
 
 ---
 
@@ -352,7 +352,7 @@ Preserve the existing efficient behavior where channel display ViewModels are up
 Do not:
 
 - clear/re-add all channel rows per MAVLink packet;
-- recreate GraphicsViews every 200 ms;
+- recreate custom-drawn controls every 200 ms;
 - re-run parameter reads for each visual frame.
 
 The channel list should be driven by the current RC telemetry already provided by the domain service.

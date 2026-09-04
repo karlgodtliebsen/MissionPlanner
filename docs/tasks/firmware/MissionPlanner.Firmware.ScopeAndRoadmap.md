@@ -22,7 +22,7 @@ A corresponding test project should also be created:
 MissionPlanner.Firmware.Tests
 ```
 
-The firmware library must remain independent of the MAUI user interface.
+The firmware library must remain independent of the Avalonia user interface.
 
 \---
 
@@ -80,7 +80,7 @@ The first release is deliberately limited to modern, common ArduPilot flight con
 
 * Windows desktop.
 * Direct USB or USB-serial flight-controller connections.
-* MAUI user interface hosted by the existing MissionPlanner UI project.
+* Avalonia user interface hosted by the existing MissionPlanner UI project.
 
 The core firmware project must remain platform-neutral even though the first concrete device-monitor implementation targets Windows.
 
@@ -183,10 +183,10 @@ When no vehicle connection is active:
 
 ## 3.2 UI project responsibilities
 
-The existing MissionPlanner MAUI UI project owns:
+The existing MissionPlanner Avalonia UI project owns:
 
 * Firmware pages and view models.
-* UraniumUI presentation.
+* Ursa presentation.
 * Connected/disconnected page switching.
 * Confirmation and warning dialogs.
 * File picker integration.
@@ -219,11 +219,11 @@ if the dependency graph warrants it.
 
 `MissionPlanner.Firmware` must not reference:
 
-* .NET MAUI.
-* UraniumUI.
-* CommunityToolkit MAUI controls.
+* Avalonia UI.
+* Ursa.
+* CommunityToolkit MVVM controls.
 * WinUI.
-* Android, iOS or Mac Catalyst APIs.
+* Android, iOS or macOS APIs.
 * Application pages or view models.
 * Global UI state.
 * Static application service locators.
@@ -606,7 +606,7 @@ Future support may include:
 Future support may include:
 
 * Linux desktop.
-* Mac Catalyst.
+* macOS.
 * Android USB host.
 * iOS where platform restrictions permit.
 * Platform-specific device monitoring and permissions.
@@ -789,4 +789,3 @@ MissionPlanner connection subsystem
 ```
 
 The first release should favor correctness, board safety, bounded operations, diagnostic clarity and recoverability over breadth of hardware support.
-

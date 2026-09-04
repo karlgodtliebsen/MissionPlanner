@@ -26,7 +26,7 @@ Apply all constraints from `00-README.md`.
    ```
 
 2. Review `FlightDataTabViewModelBase`; its current constructor `key` is unused. Retain only useful shared behavior, prefer composition, or remove the base if it adds no value.
-3. Verify every tab with the transient `TabViewLifecycleContent<T>` lifecycle.
+3. Verify every tab with the transient `TabItemViewBase<T>` lifecycle.
 4. Verify `Dispose()` cancels work, releases leases/timers and unsubscribes events without mutating UI-bound collections.
 5. Verify active-vehicle switching, disconnect/reconnect and repeated tab/page navigation.
 6. Verify every outbound tab is prohibited during replay.
@@ -45,7 +45,7 @@ Document and execute appropriate coverage for:
 ```text
 Windows
 Android
-Mac Catalyst
+macOS
 SITL
 real serial FC
 single vehicle and active-vehicle switch

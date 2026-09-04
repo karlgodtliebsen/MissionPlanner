@@ -9,7 +9,7 @@
 
 ## Scope
 
-The current `MissionMapView.xaml` contains 43 MenuFlyout actions still bound to `NotImplementedCommand`.
+The current `MissionMapView.axaml` contains 43 MenuFlyout actions still bound to `NotImplementedCommand`.
 
 This package replaces those placeholders in deliberate functional groups rather than adding 43 unrelated methods to `MissionMapViewModel`.
 
@@ -140,7 +140,7 @@ Use the smallest set of interaction modes actually required.
 ### Missions
 
 ```text
-MissionMapView.xaml
+MissionMapView.axaml
 MissionMapViewModel
 MissionMapPresenter
 MissionMapSnapshot
@@ -213,7 +213,7 @@ Commit after every task.
 Task 12 must assert that:
 
 ```text
-MissionMapView.xaml contains zero NotImplementedCommand bindings
+MissionMapView.axaml contains zero NotImplementedCommand bindings
 ```
 
 and remove the generic placeholder command if it has no remaining legitimate use.
@@ -234,9 +234,9 @@ Create the shared interaction, dialog/file boundary and map-overlay infrastructu
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -252,14 +252,14 @@ Create the shared interaction, dialog/file boundary and map-overlay infrastructu
 Inspect before editing:
 
 ```text
-MissionMapView.xaml
-MissionMapView.xaml.cs
+MissionMapView.axaml
+MissionMapView.axaml.cs
 MissionMapViewModel.cs
 MissionMapPresenter.cs
 MissionMapSnapshot
 ```
 
-The current `MissionMapViewModel` is already large and contains direct MAUI calls such as:
+The current `MissionMapViewModel` is already large and contains direct Avalonia calls such as:
 
 ```text
 FilePicker
@@ -458,9 +458,9 @@ DO_SET_ROI
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -679,9 +679,9 @@ Polygon Area
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -873,9 +873,9 @@ Polygon from SHP
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -1093,9 +1093,9 @@ Geo-Fence Clear
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -1294,9 +1294,9 @@ Load Rally from File
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -1503,9 +1503,9 @@ Auto WP Text
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -1708,9 +1708,9 @@ using platform-neutral geometry/planning services.
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -1914,9 +1914,9 @@ Prefetch WP Path
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -2101,9 +2101,9 @@ using the existing terrain subsystem.
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -2192,7 +2192,7 @@ Do not silently mix reference systems.
 
 Create a cross-platform graph view using an existing chart dependency if already approved.
 
-If no chart package exists, implement a lightweight `GraphicsView` profile renderer rather than adding a large dependency solely for one graph.
+If no chart package exists, implement a lightweight Avalonia custom-control profile renderer rather than adding a large dependency solely for one graph.
 
 Display:
 
@@ -2272,9 +2272,9 @@ with a typed persistent POI repository and map overlay.
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -2444,9 +2444,9 @@ Enter UTM Coordinate
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -2620,9 +2620,9 @@ Complete the MissionMap MenuFlyout implementation after tasks 00–11, remove al
 
 - Work only in the new MissionPlanner implementation under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in a commit.
-- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / MAUI architecture, not a WinForms port.
+- `src-v.1.38/GCSViews/FlightPlanner.cs` and legacy utilities/plugins may be read to understand historic Mission Planner behavior, but new code must be cross-platform .NET 10 / Avalonia architecture, not a WinForms port.
 - Do not add the missing features as another 40+ methods inside the already-large `MissionMapViewModel`.
-- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/MAUI presentation in `MissionPlanner.App`.
+- Keep MAVLink wire/protocol concerns in `MissionPlanner.MavLink`, domain/application workflows in `MissionPlanner.Core`, map/source infrastructure in `MissionPlanner.Maps`, and Mapsui/Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind may handle native pointer/file/dialog boundaries but must not send MAVLink commands directly.
 - Reuse generated `MavCmd`, `MavMissionType`, frames, messages and the current mission transport/ACK infrastructure. Do not create duplicate numeric MAVLink constants.
 - Outbound vehicle operations must be active-vehicle scoped, connection-aware, cancellation-aware, operation-gated where appropriate, and disabled during telemetry-log replay.
@@ -2638,7 +2638,7 @@ Complete the MissionMap MenuFlyout implementation after tasks 00–11, remove al
 Search:
 
 ```text
-MissionMapView.xaml
+MissionMapView.axaml
 all MissionMap-related XAML
 MissionMapViewModel
 ```
@@ -2892,7 +2892,7 @@ Update a mission-map verification matrix for:
 ```text
 Windows
 Android
-Mac Catalyst
+macOS
 ```
 
 Verify MenuFlyout/context interaction equivalents for mouse and touch.

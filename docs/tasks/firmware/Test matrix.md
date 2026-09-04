@@ -22,9 +22,10 @@ The operator checklist and evidence fields are in [Hardware smoke test](Hardware
 
 ## Repository regression results
 
-- `MissionPlanner.App` builds successfully for its configured `net10.0` target.
-- `MissionPlanner.Firmware` references only `MissionPlanner.Transport`; it has no MAUI/UI reference.
+- `MissionPlanner.AvaloniaUI.App` builds successfully for its configured `net10.0` target.
+- `MissionPlanner.Firmware` references only `MissionPlanner.Transport`; it has no Avalonia/UI reference.
 - Eight focused firmware presentation cases pass in the current Step-2 verification, including refresh ordering, explicit selection retention, custom-package handling, and Download & Validate cancellation. Broader repository baselines must be recorded from the actual run rather than copied from an earlier snapshot.
-- The full solution restore succeeds. The managed build reaches all projects; the same two pre-existing Android packaging targets fail because `java.exe` exits with code 2 (`UraniumUI.Material.Extensions.Samples` and `MissionPlanner.Droid`).
+- The full Avalonia solution restore and managed build are the required verification baseline;
+  report any platform-specific failure against the project that actually fails.
 
 The baseline failures and Android toolchain issue are not suppressed or reclassified as successful firmware tests.

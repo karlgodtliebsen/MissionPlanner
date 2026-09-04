@@ -1,84 +1,68 @@
 # Application theming
 
-MissionPlanner uses an application-level semantic theme system. Views describe the
-purpose of a color and never choose a concrete palette or branch on light versus dark.
+MissionPlanner uses Avalonia theme variants, Semi, Ursa's Semi integration, and shared
+semantic styles. `App.axaml` is the composition root for global resources.
 
-## Semantic resource rule
-
-Use dynamic semantic resources in Views and application styles:
+## Theme composition
 
 ```xml
-<Border BackgroundColor="{DynamicResource Surface}">
-    <Label TextColor="{DynamicResource OnSurface}" />
+<Application RequestedThemeVariant="Default">
+    <Application.Styles>
+        <semi:SemiTheme Locale="en-US" />
+        <semi:UrsaSemiTheme Locale="en-US" />
+        <semi:SemiPopupAnimations />
+        <materialIcons:MaterialIconStyles />
+        <StyleInclude Source="/Resources/Styles/SharedStyles.axaml" />
+        <StyleInclude Source="/Resources/Styles/VirtualizedItemsGridStyles.axaml" />
+    </Application.Styles>
+</Application>
+```
+
+Do not create a second palette manager or copy global theme resources into views.
+
+## Persisted selection
+
+`AvaloniaThemeCatalog` supplies `TopBarView` and maps the persisted Planner setting to a
+`ThemeVariant`. Stable identifiers are `system`, `light`, `dark`, `aquatic`, `desert`, `dusk`,
+and `night-sky`. Legacy identifiers are accepted only for settings compatibility. New code
+stores the Avalonia identifiers.
+
+Applying a theme assigns `Application.Current.RequestedThemeVariant`. Feature ViewModels must
+not assign that property or translate stored theme names themselves.
+
+## View styling
+
+Prefer semantic dynamic resources and reusable classes:
+
+```xml
+<Border Background="{DynamicResource Surface}" Classes="Rounded Elevation1">
+    <TextBlock Text="{Binding Warning}" Classes="Body Warning" />
 </Border>
 ```
 
-Do not use `AppThemeBinding` for application colors, concrete theme names, or parallel
-keys such as `SurfaceDark`. The authoritative required color roles are defined by
-`ThemeResourceKeys`. Operational state uses `Success`, `Warning`, `Info`, and `Error`;
-`Primary` remains the normal application/action accent.
+- Use Avalonia brush properties such as `Background` and `Foreground`.
+- Use `Classes` for shared states such as `Warning`; append to existing classes.
+- Use `DynamicResource` when a value must respond to theme changes.
+- Put reusable selectors in `Resources/Styles/SharedStyles.axaml`.
+- Put specialized templates beside their control, as with `VirtualizedItemsGrid`.
+- Avoid hard-coded colors except for intrinsic media or documented domain visualization.
 
-When a control property requires a brush, use a semantic brush such as
-`PrimaryBrush`. These brushes bind dynamically to their corresponding color role and
-therefore update with the active palette.
+Indeterminate activity indicators use Ursa's ring template:
 
-## Resource flow
+```xml
+<ProgressBar
+    IsIndeterminate="True"
+    Theme="{DynamicResource ProgressRing}"
+    IsVisible="{Binding IsBusy}" />
+```
 
-The persisted `ThemeId` is passed to the singleton `IThemeManager`. The manager resolves
-the selection through `IThemeCatalog`, loads and validates the complete concrete
-palette, and atomically overwrites semantic colors in the named `AppColors` dictionary.
-Styles, UraniumUI overrides, and Views observe those values through `DynamicResource`.
-The application and Shell are not recreated.
+## Verification
 
-`ThemeManager` is the only runtime theme authority. ViewModels may request application
-or preview through it, but must not assign `Application.UserAppTheme` themselves.
+When adding or changing a theme:
 
-## Built-in selections
-
-- `system` — selection policy;
-- `mission-light` — Mission Light palette;
-- `mission-dark` — Mission Dark palette;
-- `mission-blue` — Mission Blue palette.
-
-Theme IDs are stable strings rather than a serialized enum. This allows an installed
-extension theme to use a future identifier without changing Core or invalidating an
-existing settings document. Core validates the identifier's structure; the UI catalog
-determines availability.
-
-## System mode
-
-System is not a palette. It resolves OS Light to Mission Light and OS Dark to Mission
-Dark. While `system` is selected, requested-appearance changes reapply the corresponding
-palette and the native `UserAppTheme` remains unspecified. An explicit theme such as
-Mission Blue is not replaced when the OS appearance changes.
-
-## Base appearance
-
-Every concrete `ThemeDescriptor` declares a `ThemeBaseAppearance` of Light or Dark.
-This value is metadata for MAUI native controls and UraniumUI fallback behavior only.
-For example, Mission Blue has a Light base appearance, but all MissionPlanner colors
-still come from `MissionBlue.xaml`; it is not translated into Mission Light.
-
-## Adding a theme
-
-1. Add a ResourceDictionary under `Resources/Themes` containing every color in
-   `ThemeResourceKeys.RequiredColorKeys`. Use the same unsuffixed semantic keys as the
-   other palettes.
-2. Add one concrete `ThemeDescriptor` to `ThemeCatalog` with a stable lowercase ID,
-   friendly display name, base appearance, and resource path. Add a `ThemeOption` when
-   users should be able to select it.
-3. Run `ThemeContractTests`, `ThemeManagerTests`, and `ThemeArchitectureTests`.
-4. Verify runtime switching on the supported platform heads.
-
-No ordinary View or application style changes are required when adding a theme.
-
-## Validation and failure behavior
-
-Before changing `AppColors`, the manager loads the entire palette and verifies that
-every required resource exists and is a MAUI `Color`. Unknown, missing, or malformed
-themes fail without partially replacing the active dictionary. A successful operation
-raises one `ThemeChanged` event after all semantic values and native base appearance
-have been applied on the UI dispatcher.
-
-Schema-four settings are migrated to schema five by mapping the old System, Light, and
-Dark names to stable IDs. That migration remains supported for existing installations.
+1. Update `AvaloniaThemeCatalog` and keep the persisted identifier stable.
+2. Expose it through `TopBarViewModel` and Planner settings.
+3. Verify switching does not recreate the shell.
+4. Exercise Ursa dialogs, `NavMenu`, title-bar controls, maps, warning states, and the
+   virtualized grid in light and dark variants.
+5. Build the solution and run theme and settings tests.

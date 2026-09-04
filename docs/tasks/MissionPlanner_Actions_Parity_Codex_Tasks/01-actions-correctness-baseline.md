@@ -10,8 +10,8 @@ This task must **not** add new Actions features.
 
 Current relevant UI/ViewModel files include:
 
-- `src/UI/MissionPlanner.App/Views/FlightData/Tabs/ActionsTabView.xaml`
-- `src/UI/MissionPlanner.App/Views/FlightData/Tabs/ActionsTabViewModel.cs`
+- `src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/FlightData/Tabs/ActionsTabView.axaml`
+- `src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/FlightData/Tabs/ActionsTabViewModel.cs`
 
 Two issues have already been identified:
 

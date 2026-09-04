@@ -15,7 +15,7 @@ Current strengths:
 - Installation orchestration.
 - Connected embedded-bootloader update.
 - Returning-device discovery.
-- Connected/disconnected MAUI UI.
+- Connected/disconnected Avalonia UI.
 - Diagnostic reports.
 - Strong automated test inventory.
 

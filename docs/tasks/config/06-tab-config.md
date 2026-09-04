@@ -13,7 +13,7 @@ Config task 01 only for consistent navigation; otherwise independent.
 
 - Work only under `src/`, `docs/`, `scripts/`, and test-data folders belonging to the new solution.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in commits.
-- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and MAUI presentation in `MissionPlanner.App`.
+- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Do not call MAVLink transports directly from views or code-behind. Use application/domain services injected into view models.
 - Keep code-behind limited to view lifecycle and unavoidable platform/UI integration.
 - Use CommunityToolkit.Mvvm patterns already present in the solution.
@@ -26,7 +26,7 @@ Config task 01 only for consistent navigation; otherwise independent.
 
 ## Scope
 
-Implement `PlannerTabView` with a typed settings service backed by MAUI Preferences/configuration as appropriate. Include migration/versioning and immediate preview where safe.
+Implement `PlannerTabView` with a typed settings service backed by Avalonia Preferences/configuration as appropriate. Include migration/versioning and immediate preview where safe.
 
 ## Implementation requirements
 
@@ -58,7 +58,7 @@ Implement `PlannerTabView` with a typed settings service backed by MAUI Preferen
 Completed 2026-07-22. The placeholder Planner page now edits a typed, validated,
 schema-versioned local settings snapshot covering units, supported map sources/styles and
 zoom, telemetry presentation, appearance, logging, connection defaults, parameter cache,
-confirmations, updates, and accessibility. MAUI Preferences persists only the non-secret
+confirmations, updates, and accessibility. Avalonia Preferences persists only the non-secret
 document; a separate SecureStorage adapter owns future credentials and tokens. Safe live
 changes are observable, theme has immediate preview, disconnected connection defaults and
 map defaults consume the snapshot, and restart-bound settings are reported explicitly.

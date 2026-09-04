@@ -38,7 +38,7 @@ dotnet build .\MissionPlanner.slnx --no-restore
 dotnet test .\MissionPlanner.slnx --no-build
 ```
 
-If the full MAUI solution cannot build on the executing platform, build/test the affected projects explicitly and report exactly what was and was not verified.
+If the full Avalonia solution cannot build on the executing platform, build/test the affected projects explicitly and report exactly what was and was not verified.
 
 At completion of each task, Codex should report:
 

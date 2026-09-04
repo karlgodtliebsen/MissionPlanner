@@ -13,14 +13,14 @@ The modern firmware feature installs ArduPilot application firmware through the 
 
 ```mermaid
 flowchart LR
-    UI["MissionPlanner.App / MAUI"] --> Core["MissionPlanner.Core adapters"]
+    UI["MissionPlanner.AvaloniaUI.App / Avalonia"] --> Core["MissionPlanner.Core adapters"]
     UI --> Firmware["MissionPlanner.Firmware"]
     Core --> Firmware
     Firmware --> Transport["MissionPlanner.Transport abstractions"]
     Firmware -. must not reference .-> UI
 ```
 
-`MissionPlanner.Firmware` owns immutable models, manifest/catalogue handling, package validation, operation policy, device discovery, compatibility, protocol, recovery matching, and orchestration. `MissionPlanner.App` owns pages, file selection, dialogs, navigation policy, clipboard integration, and platform presentation. `MissionPlanner.Core` adapts the existing acknowledged MAVLink command infrastructure. The firmware project has no MAUI dependency and must remain UI-neutral.
+`MissionPlanner.Firmware` owns immutable models, manifest/catalogue handling, package validation, operation policy, device discovery, compatibility, protocol, recovery matching, and orchestration. `MissionPlanner.AvaloniaUI.App` owns pages, file selection, dialogs, navigation policy, clipboard integration, and platform presentation. `MissionPlanner.Core` adapts the existing acknowledged MAVLink command infrastructure. The firmware project has no Avalonia dependency and must remain UI-neutral.
 
 ## Installation sequence
 
@@ -94,7 +94,7 @@ Embedded Bootloader Update uses `MAV_CMD_FLASH_BOOTLOADER` (42650), confirmation
 
 ## Platforms
 
-Direct serial installation is enabled for Windows desktop, the first supported host. Windows provides enriched device identity through its serial-device catalogue. Linux, Mac Catalyst, and mobile targets show unsupported mode until tested platform adapters exist. Automated protocol tests use in-memory transports and require no hardware.
+Direct serial installation is enabled for Windows desktop, the first supported host. Windows provides enriched device identity through its serial-device catalogue. Linux, macOS, and mobile targets show unsupported mode until tested platform adapters exist. Automated protocol tests use in-memory transports and require no hardware.
 
 ## Embedded help and support
 

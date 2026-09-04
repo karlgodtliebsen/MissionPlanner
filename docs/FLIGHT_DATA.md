@@ -2,10 +2,10 @@
 
 ## Architecture and lifecycle
 
-Flight Data tabs use `LifecycleTabView` with `TabViewLifecycleContent<TViewModel>`. A tab
-creates one transient view model when selected and disposes it when it is left. View models
-own subscriptions and cancellation for that lifetime. Disposal cancels work and releases
-subscriptions; it does not clear UI-bound collections.
+Flight Data uses Avalonia `TabControl` with `TabItemViewBase<TViewModel>` children. The
+application view base resolves each registered ViewModel and bridges the Avalonia loaded and
+unloaded lifecycle to `ActivateAsync` and `DeactivateAsync`. ViewModels own their event
+subscriptions and use a fresh cancellation source for each activation.
 
 ## Preflight
 
@@ -116,9 +116,9 @@ capability-information/state handlers.
 
 ## Integration and replay safety
 
-All eight tabs are instantiated through `TabViewLifecycleContent<TViewModel>`. Selection
-creates one transient view model and leaving the tab disposes it. Disposal cancels work,
-releases timers and subscriptions, and does not clear UI-bound collections. Active vehicle
+All Flight Data tabs inherit `TabItemViewBase<TViewModel>`. Deactivation cancels work and
+releases activation-owned timers and subscriptions without publishing late collection
+changes. Active vehicle
 changes rebuild vehicle/component selections; connection-lifetime tokens cancel outbound
 work on disconnect or vehicle switch.
 
@@ -131,7 +131,7 @@ by planner display-rate settings and stale/unavailable evidence is explicit.
 
 Deterministic automated coverage verifies Windows-target compilation, DI resolution,
 catalog/policy behavior, constrained script validation, multi-component discovery, replay
-policies, and lifecycle infrastructure. Android and Mac Catalyst builds, SITL payload
+policies, and lifecycle infrastructure. Future platform builds, SITL payload
 plugins, real serial flight controllers, light/dark themes, touch/keyboard interaction,
 disconnect/reconnect, and active-vehicle switching remain manual release checks.
 
@@ -141,4 +141,3 @@ no fixed component ID is assumed. A busy result means another operation owns tha
 gate. A timeout means no matching ACK arrived and must not be interpreted as failure or
 success of the physical action. During telemetry replay all write controls are intentionally
 read-only.
-

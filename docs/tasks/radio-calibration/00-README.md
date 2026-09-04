@@ -56,5 +56,5 @@ The improved UI may take inspiration from modern flight-controller configurators
 - no copied graphics/assets;
 - no copied layout;
 - no copied palette;
-- use existing MissionPlanner/UraniumUI theme resources;
+- use existing MissionPlanner/Ursa theme resources;
 - prioritize ArduPilot semantics and MissionPlanner workflow over visual imitation.

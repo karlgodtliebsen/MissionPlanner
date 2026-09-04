@@ -5,9 +5,9 @@ Prepared from the uploaded `MissionPlanner-202600818-v1` source snapshot and the
 The current NextGen route exists but is still a placeholder:
 
 ```text
-src/UI/MissionPlanner.App/Views/InitSetup/OptionalHardware/
-    OptionalHardwareView.xaml
-    OptionalHardwareView.xaml.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/OptionalHardware/
+    OptionalHardwareView.axaml
+    OptionalHardwareView.axaml.cs
     OptionalHardwareViewModel.cs
 ```
 
@@ -80,7 +80,7 @@ Use the current NextGen principles:
 - operation gates for mutually exclusive or safety-sensitive operations;
 - parameter writes confirmed by readback;
 - lifecycle-aware TabView content;
-- adaptive MAUI/UraniumUI presentation.
+- adaptive Avalonia/Ursa presentation.
 
 ## TabView requirement
 
@@ -90,7 +90,7 @@ The Optional Hardware page must use the same `ExtendedTabView` family and left-s
 TabPlacement="Start"
 HeaderItemsSource
 SelectedHeaderItem
-TabViewLifecycleContent
+TabItemViewBase
 ```
 
 Do not recreate the classic WinForms backstage menu.

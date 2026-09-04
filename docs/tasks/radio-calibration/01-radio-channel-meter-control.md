@@ -2,7 +2,7 @@
 
 ## Goal
 
-Create a reusable, high-performance MAUI control for displaying one RC input channel as a horizontal meter.
+Create a reusable, high-performance Avalonia control for displaying one RC input channel as a horizontal meter.
 
 The control will replace the current text-only representation in Radio Calibration and should be reusable later in other MissionPlanner pages that need live RC-channel visualization.
 
@@ -17,8 +17,8 @@ The control must represent ArduPilot RC semantics accurately.
 Locate the current implementation in the active branch. In the supplied source snapshot the relevant files are approximately:
 
 ```text
-src/UI/MissionPlanner.App/Views/InitSetup/MandatoryHardware/Sections/RadioSetupView.xaml
-src/UI/MissionPlanner.App/Views/InitSetup/MandatoryHardware/Sections/RadioSetupViewModel.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/MandatoryHardware/Sections/RadioSetupView.axaml
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/MandatoryHardware/Sections/RadioSetupViewModel.cs
 
 src/Core/MissionPlanner.Core/Setup/RadioChannelInfo.cs
 src/Core/MissionPlanner.Core/Setup/RadioChannelsView.cs
@@ -29,8 +29,8 @@ src/Core/MissionPlanner.Core/Setup/RadioChannelCapture.cs
 Also inspect existing custom-drawing patterns in the application, for example controls based on:
 
 ```text
-GraphicsView
-IDrawable
+Avalonia custom controls
+`Render(DrawingContext)` overrides
 ```
 
 Use the current project conventions rather than introducing a new rendering framework.
@@ -54,7 +54,7 @@ RadioChannelMeterView
 RadioChannelBarView
 ```
 
-Prefer a lightweight custom-drawn `GraphicsView` if that fits the existing MAUI patterns.
+Prefer a lightweight Avalonia custom control if that fits the existing rendering patterns.
 
 Do not implement the bar as many nested Grids/Boxes whose widths are rebound at RC update frequency unless measurements demonstrate that this is preferable.
 
@@ -244,7 +244,7 @@ Prefer approximately one display-frame interpolation rather than a long animatio
 
 Do not spawn a new long-running animation for every RC packet.
 
-If the simpler non-animated implementation is smoother and more reliable across MAUI targets, prefer it.
+If the simpler non-animated implementation is smoother and more reliable across Avalonia targets, prefer it.
 
 ---
 
@@ -272,7 +272,7 @@ The UI must communicate signal state using text/iconography in addition to color
 
 ## Theme and accessibility
 
-Use MissionPlanner theme resources / UraniumUI conventions.
+Use MissionPlanner theme resources / Ursa conventions.
 
 Requirements:
 
@@ -297,7 +297,7 @@ Requirements:
 - do not recreate the channel collection on every RC packet;
 - do not recreate the custom drawable for every value change;
 - update existing channel row ViewModels in place;
-- invalidate only the affected `GraphicsView` when possible;
+- invalidate only the affected custom control when possible;
 - avoid per-frame allocations in `Draw`;
 - cache pens/geometry/state where practical;
 - no Task/Timer per channel solely for ordinary rendering.

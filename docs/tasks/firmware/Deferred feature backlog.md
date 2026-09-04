@@ -62,6 +62,6 @@ Status: Backlog, one separately scoped feature per transport
 - DroneCAN: use node/file-server semantics and identity appropriate to CAN; do not tunnel the serial client abstraction.
 - BlueOS/network upload: define authenticated network API integration, TLS/trust behavior, progress, and rollback.
 - SD-card `.abin`: validate container/signature/target metadata and document on-device activation behavior.
-- Mobile USB host: assess Android/iOS/Mac Catalyst permissions, drivers, lifecycle, background limits, and safe detach behavior.
+- Mobile USB host: assess Android/iOS/macOS permissions, drivers, lifecycle, background limits, and safe detach behavior.
 
 Each transport requires its own capability model, threat/safety review, simulated tests, supported-platform declaration, and hardware smoke procedure. None is enabled by the initial firmware composition root.

@@ -13,7 +13,7 @@ The audit covers the current implementation in:
 ```text
 src/Core/MissionPlanner.Firmware
 src/Tests/MissionPlanner.Firmware.Tests
-src/UI/MissionPlanner.App/Views/InitSetup/InstallFirmware
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/InstallFirmware
 ```
 
 It also reviews the existing firmware planning documents under:
@@ -97,7 +97,7 @@ For every task:
 1. Read `ai.md`, `docs/DesignConcepts.md`, `docs/FIRMWARE.md` and the existing firmware task documents before editing.
 2. Inspect current implementations before introducing new abstractions.
 3. Do not duplicate existing domain, transport, logging, time or device abstractions without a documented reason.
-4. Keep `MissionPlanner.Firmware` free of MAUI, UraniumUI and WinUI dependencies.
+4. Keep `MissionPlanner.Firmware` free of Avalonia, Ursa and WinUI dependencies.
 5. Keep serial bootloader installation and USB DFU installation as separate workflows.
 6. Build the affected projects and run focused tests after every coherent change.
 7. Run the complete firmware test project before completing each task.

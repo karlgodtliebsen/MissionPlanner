@@ -5,15 +5,15 @@
 Reviewed the current implementation under:
 
 ```text
-src/UI/UraniumUI/UraniumUI.Material.VirtualizedDataGrid/
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Controls/VirtualizedItemsGrid.cs
 ```
 
-The control is already a substantial improvement over UraniumUI's original Grid-based DataGrid. This review concentrates on maintainability, lifecycle correctness, and scaling beyond the parameter-list scenario.
+The control is already a substantial improvement over Ursa's original Grid-based DataGrid. This review concentrates on maintainability, lifecycle correctness, and scaling beyond the parameter-list scenario.
 
 ## Strong design decisions
 
 1. **Correct virtualization boundary**
-   - The internal `CollectionView` owns vertical scrolling.
+   - The internal virtualizing repeater owns vertical scrolling.
    - It is not wrapped in a vertical `ScrollView`.
    - The fixed header and rows share one resolved column-width model.
 
@@ -30,7 +30,7 @@ The control is already a substantial improvement over UraniumUI's original Grid-
    - Filtering, paging, selection, auto columns, templates, batch refresh and horizontal scrolling are integrated.
    - `MeasureFirstItem` and `KeepScrollOffset` are sensible defaults.
 
-5. **UraniumUI compatibility**
+5. **Ursa compatibility**
    - Existing `DataGridColumn`, selection-column, style-class and value-binding concepts are retained.
 
 The fundamental architecture is sound enough to keep using and prepare for an upstream contribution.
@@ -101,7 +101,7 @@ Rules:
 - apply synchronously when already on the UI thread and state is `Ready`;
 - while detached, wait for a positive lifecycle event rather than polling;
 - after a native failure, mark the child faulted;
-- if the same child cannot recover, recreate only the internal `CollectionView`;
+- if the same child cannot recover, recreate only the internal virtualizing repeater;
 - keep navigation/ViewModel policy outside the control.
 
 The discovery that the original problem was triggered by clearing a still-bound collection during ViewModel disposal reduces the need for aggressive recovery logic. Simplification is now more valuable than adding retries.
@@ -121,15 +121,15 @@ Controls/VirtualizedDataGrid.cs
 
 Recommendation:
 
-Either remove `ReleaseVisualResources()` and `visualResourcesReleased`, or introduce an explicit final-disposal contract and tests. For a reusable MAUI control, removing the dead state is preferable.
+Either remove `ReleaseVisualResources()` and `visualResourcesReleased`, or introduce an explicit final-disposal contract and tests. For a reusable Avalonia control, removing the dead state is preferable.
 
 ### VDG-03 — UI-thread affinity is assumed but not enforced
 
-`ItemsSource_CollectionChanged` recalculates and writes MAUI state directly. A source mutated from a worker thread can produce undefined behavior.
+`ItemsSource_CollectionChanged` recalculates and writes Avalonia state directly. A source mutated from a worker thread can produce undefined behavior.
 
 Recommendation:
 
-- Document that bound collections must be mutated on the MAUI dispatcher.
+- Document that bound collections must be mutated on the Avalonia dispatcher.
 - Add debug assertions for dispatcher access.
 - Optionally coalesce off-thread notifications into one dispatcher refresh, but do not silently dispatch every individual event.
 

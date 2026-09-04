@@ -24,27 +24,27 @@ Do not port the classic WinForms backstage control.
 Current placeholder:
 
 ```text
-src/UI/MissionPlanner.App/Views/InitSetup/OptionalHardware/
-    OptionalHardwareView.xaml
-    OptionalHardwareView.xaml.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/OptionalHardware/
+    OptionalHardwareView.axaml
+    OptionalHardwareView.axaml.cs
     OptionalHardwareViewModel.cs
 ```
 
 Mandatory Hardware pattern:
 
 ```text
-src/UI/MissionPlanner.App/Views/InitSetup/MandatoryHardware/MandatoryHardwareView.xaml
-src/UI/MissionPlanner.App/Views/InitSetup/MandatoryHardware/MandatoryHardwareViewModel.cs
-src/UI/MissionPlanner.App/Views/InitSetup/MandatoryHardware/Sections/TabsUtils/*
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/MandatoryHardware/MandatoryHardwareView.axaml
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/MandatoryHardware/MandatoryHardwareViewModel.cs
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/InitSetup/MandatoryHardware/Sections/TabsUtils/*
 ```
 
 Shared tab infrastructure:
 
 ```text
-src/UI/UraniumUI/UraniumUI.Material.Controls.Extensions/TabViews/
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Utilities/
     ExtendedTabView.cs
-    LifecycleTabView.cs
-    TabViewLifecycleContent.cs
+    Avalonia TabControl.cs
+    TabItemViewBase.cs
 ```
 
 Existing optional-hardware domain:
@@ -112,7 +112,7 @@ Use one of these safe designs:
 
 **Preferred:** keep a fixed descriptor/header collection aligned with the static TabItems and let the header view collapse unavailable items while the underlying index remains stable.
 
-If the current UraniumUI TabView cannot safely collapse an unavailable header, make the **smallest general improvement** to `ExtendedTabView` needed to support `IsHeaderVisible` / availability without breaking index alignment.
+If the current Ursa TabView cannot safely collapse an unavailable header, make the **smallest general improvement** to `ExtendedTabView` needed to support `IsHeaderVisible` / availability without breaking index alignment.
 
 Whichever design is chosen, add tests for selection/index behavior.
 

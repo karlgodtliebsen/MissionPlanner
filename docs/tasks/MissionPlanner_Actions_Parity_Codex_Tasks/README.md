@@ -42,8 +42,8 @@ Use the current `main` branch as the starting point unless the repository's norm
 
 The current Actions implementation is primarily under:
 
-- `src/UI/MissionPlanner.App/Views/FlightData/Tabs/ActionsTabView.xaml`
-- `src/UI/MissionPlanner.App/Views/FlightData/Tabs/ActionsTabViewModel.cs`
+- `src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/FlightData/Tabs/ActionsTabView.axaml`
+- `src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/FlightData/Tabs/ActionsTabViewModel.cs`
 - `src/Core/MissionPlanner.Core/Commands/IVehicleCommandService.cs`
 
 Codex must locate the current concrete command-service implementation, vehicle-action policy types, MAVLink command builders/encoders, mission state/services, and relevant tests before editing. Do not assume paths if they have moved.

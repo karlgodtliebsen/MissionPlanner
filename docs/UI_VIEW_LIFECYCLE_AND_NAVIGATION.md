@@ -1,350 +1,112 @@
-# UI View Lifecycle and Shell Navigation
+# Avalonia view lifecycle and navigation
 
-This guide defines the preferred MissionPlanner patterns for tabbed content and top-level
-MAUI Shell navigation. These patterns make ViewModel ownership explicit and ensure that
-subscriptions, cancellation sources, and other resources are released when a view is no
-longer active.
+This document defines the current view, lifecycle, and navigation conventions for
+`MissionPlanner.AvaloniaUI.App`.
 
-## MAUI view file structure
+## File structure
 
-When creating a .NET MAUI view, component, or control, prefer the standard three-file
-structure:
+Use `ExampleView.axaml`, `ExampleView.axaml.cs`, and `ExampleViewModel.cs`. Keep AXAML and
+code-behind readable, UTF-8, and CRLF. Code-behind should contain only initialization and
+visual integration; state and commands belong in the ViewModel.
 
-```text
-NewView.xaml
-NewView.xaml.cs
-NewViewModel.cs
-```
-
-Declare the visual tree in XAML and keep the code-behind focused on view-specific lifecycle,
-event wiring, and calls to `InitializeComponent`. Presentation state and behavior belong in
-the ViewModel. Do not construct an entire visual tree imperatively in the code-behind when
-the same component can be expressed as ordinary XAML.
-
-Use a code-only control only when its behavior genuinely requires runtime visual-tree
-construction or XAML cannot express the implementation cleanly. Treat that as an exception,
-not as the default view pattern.
-
-Format both XAML and code-behind for review. Put attributes, nested controls, bindings, and
-statements on readable lines; do not compress a complete control, layout, method, or class
-onto one line. The examples in this guide demonstrate the expected layout.
-
-## Choosing the navigation pattern
-
-- Use `LifecycleTabView` for several child views that share one screen and are selected by
-  tab headers. Only the selected tab should own a live ViewModel.
-- Use Shell navigation for application workspaces and pages that belong in the flyout or
-  Shell hierarchy. Each destination is a `ShellContent` with its own route.
-- Do not nest a second navigation mechanism merely to change content. Choose the pattern
-  that represents the user's navigation level.
-
-## LifecycleTabView
-
-The control is defined in
-`src/UI/UraniumUI/UraniumUI.Material.Controls.Extensions/TabViews`. A working standalone
-example is in `UraniumUI.Material.Extensions.Samples/ControlsSamples`, while the Flight
-Data screen is the production reference.
-
-When selection changes, `LifecycleTabView` disables and deactivates the old tab content,
-then activates and enables the new content while the control is loaded. Loading activates
-the selected tab and unloading deactivates it. Do not drive tab lifecycle from page
-`OnAppearing`/`OnDisappearing` or ordinary navigation notifications: popup overlays can
-produce those notifications even though the selected tab still owns the visible workflow.
-`TabViewLifecycleContent<TViewModel>` implements
-that contract by resolving a new ViewModel from DI on activation and clearing the binding,
-disposing the ViewModel, and dropping its reference on deactivation.
-
-Lifecycle selection is implemented in the protected TabView selection override, not from
-the public `SelectedTabChanged` event. UraniumUI may clear `oldValue.Content` before raising
-that event when `RecreateAlways` caching is active, so event-based cleanup must not
-dereference the old `TabItem.Content`.
-
-### View and XAML pattern
-
-Declare each child as a `TabViewLifecycleContent<TViewModel>`:
-
-```csharp
-using UraniumUI.Material.TabViews;
-
-public partial class ExampleTabView : TabViewLifecycleContent<ExampleTabViewModel>
-{
-    public ExampleTabView()
-    {
-        InitializeComponent();
-    }
-}
-```
-
-Host it directly inside a `TabItem`:
+Use the namespace and root-element organization of a nearby production view:
 
 ```xml
-<tabViews:LifecycleTabView TabHeaderItemColumnWidth="*">
-    <material:TabItem Title="Example">
-        <tabs:ExampleTabView />
-    </material:TabItem>
-    <material:TabItem Title="Status">
-        <tabs:StatusTabView />
-    </material:TabItem>
-</tabViews:LifecycleTabView>
+<utilities:NavigationViewBase
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Example"
+    x:TypeArguments="local:ExampleViewModel"
+    x:Class="MissionPlanner.AvaloniaUI.App.Views.Example.ExampleView"
+    x:DataType="local:ExampleViewModel"
+    x:CompileBindings="True"
+    mc:Ignorable="d">
+    <ContentPage Header="Example" Background="{DynamicResource Surface}">
+        <!-- complete view content -->
+    </ContentPage>
+</utilities:NavigationViewBase>
 ```
 
-### Rich data-bound headers
+## Base classes and lifecycle
 
-Use `ExtendedTabView` when each static lifecycle tab needs a larger header view bound to a
-separate data collection. `HeaderItemsSource` is aligned with `Tabs` by index; the header
-template receives that item while the content keeps its lifecycle-owned binding context.
-`SelectedHeaderItem` supports two-way selection binding. Keep both collections in the same
-stable order and do not put lifecycle ownership on the header view. The control propagates
-the attached `ExtendedTabView.IsHeaderSelected` state through a custom header view tree, so
-nested elements can style selection with a self-relative `DataTrigger`; this state belongs
-to the control and must not be duplicated in the header ViewModel.
+| Role | Base class |
+|---|---|
+| Navigable Ursa page | `NavigationViewBase<TViewModel>` |
+| Reusable content | `UserControlViewBase<TViewModel>` |
+| Tab content | `TabItemViewBase<TViewModel>` |
+| Dialog content | `DialogViewModelBase` plus an AXAML view |
+| Top-level window | `WindowBase<TViewModel>` or `UrsaWindow` |
 
-For a reusable header `ContentView`, inherit `ExtendedTabHeaderView` and bind its nested
-visuals to the ordinary `IsHeaderSelected` property on the root view. This avoids relying
-on attached-property binding propagation through a templated `ContentView`. Debug builds
-write one diagnostic line for each actual header selection transition, including header
-type, bound data type, title when present, and the new state.
+The generic view bases resolve their ViewModel from DI, assign `DataContext`, install dialog
+and notification managers, and call `ActivateAsync`/`DeactivateAsync` from Avalonia's
+loaded/unloaded lifecycle. Keep view constructors parameterless.
 
-`ExtendedTabHeaderView` is also the preferred base class for consistent rich-card chrome.
-It owns the border, selected left marker, and content host; derived XAML supplies only the
-inner content because `HeaderContent` is the class content property. `SelectionColor` and
-`SelectedStrokeThickness` can be styled per application theme without duplicating the
-selection trigger or marker layout in every header view. The unselected border uses a
-non-null theme outline brush because the MAUI Windows border handler cannot convert a
-`SolidPaint` whose color is null while attaching the visual tree.
+Activation and deactivation can repeat. Each activation owns a fresh cancellation source;
+deactivation atomically detaches, cancels, and disposes it. Never reactivate with a cancelled
+token. Dispose EventHub subscriptions and detach ordinary events at the same ownership
+boundary. After each `await`, verify cancellation, activation generation, and current vehicle
+or workspace identity before publishing state. Observable UI collections are changed through
+`IUiDispatcher` or Avalonia `Dispatcher.UIThread`.
 
-`BorderStyleClass` accepts the same comma-separated class form used in XAML and defaults
-to `SurfaceContainer,Rounded,Elevation1`; set it to another class list or an empty string
-when a host needs different border chrome.
+## Navigation
 
-The default chrome follows UraniumUI's theme palette: `Primary`/`PrimaryDark` supplies the
-selected marker, border, and 20%-opacity selected background; `Surface`/`SurfaceDark`
-supplies the normal background; and `OutlineVariant`/`OutlineVariantDark` supplies the
-normal non-null border. Unselected content uses the same 50% opacity as the stock TabView.
-Setting `SelectionColor` remains an explicit single-color override for specialized hosts.
+`Views/Navigation/MainShellView.axaml` uses an Ursa `DrawerPage` and `NavMenu`. The selected
+page is exposed by `MainShellViewModel.Content` and bound to `DrawerPage.Content`.
 
-Selection visuals remain template-owned. Rich card headers should use the established
-narrow primary-color bar on the left edge; compact horizontal headers may retain
-UraniumUI's bottom indicator. Bind the bar's visibility to the same header selection state
-rather than adding selection state to the header data model.
+- Define stable route names in `MissionPlannerRoutes`.
+- Define menu entries with `NavigationMenuItemViewModel`.
+- Create destinations through `INavigationPageFactory`/`NavigationPageFactory`.
+- Navigate from ViewModels through `INavigationService`; never locate shell controls from a
+  feature ViewModel.
+- Keep destination content on `DrawerPage.Content`, outside the drawer panel.
+- Store menu icons as `Avalonia.Media.Imaging.Bitmap`; load packaged assets with
+  `AssetLoader`. A path string cannot bind directly to `Image.Source`.
+- Application exit invokes the window-close path and is not a navigation destination.
 
-```xml
-<tabViews:ExtendedTabView
-    HeaderItemsSource="{Binding Workflows}"
-    SelectedHeaderItem="{Binding SelectedWorkflow, Mode=TwoWay}"
-    TabHeaderItemColumnWidth="290">
-    <material:TabView.TabHeaderItemTemplate>
-        <DataTemplate x:DataType="local:WorkflowHeaderModel">
-            <local:WorkflowHeader />
-        </DataTemplate>
-    </material:TabView.TabHeaderItemTemplate>
-    <material:TabItem Title="First">
-        <local:FirstWorkflowView />
-    </material:TabItem>
-    <material:TabItem Title="Second">
-        <local:SecondWorkflowView />
-    </material:TabItem>
-</tabViews:ExtendedTabView>
-```
+Ursa `NavigationPage` and `ContentPage` provide page chrome and breadcrumb behavior. The
+drawer button remains the primary way to reveal application navigation.
 
-The Mandatory Hardware page is the production reference. Its rich workflow cards come
-from `Workflows`, while each setup content view resolves its transient ViewModel only when
-selected and disposes it on tab change or actual removal from the visual tree. The
-`ExtendedTabViewPage` sample is the compact control demonstration.
+## Dialogs, files, and notifications
 
-Keep the content view parameterless so XAML can construct it. Do not resolve or construct
-its ViewModel in the view constructor; the lifecycle base class owns that operation.
+Use `IDialogService` and `Utilities/Dialogs`, preferring Ursa dialogs and notifications.
+Feature ViewModels do not create windows or call platform UI APIs. Resolve an owner through
+`IWindowProvider`. Open/save dialogs use the shared persisted-directory service so the most
+recent folder survives application restarts. Core services accept paths, streams, or neutral
+request objects and never open dialogs themselves.
 
-### ViewModel ownership and disposal
+## Collections and large grids
 
-The ViewModel must be `IDisposable` and registered as transient:
+Use `ItemsControl` or `ListBox` only for bounded lists. Use `VirtualizedItemsGrid` for large
+or unbounded row sets. `FullParametersListTabView` is the production reference and
+`Views/Samples/DataGridPage` demonstrates row selection. See
+`Views/Samples/VirtualizedItemsGrid/README.md` for the control contract.
 
-```csharp
-services.TryAddTransient<ExampleTabViewModel>();
-```
+Keep sources stable when practical, update them on the UI dispatcher, cancel stale loads on
+deactivation, and coalesce refreshes. Do not render thousands of rows through an unvirtualized
+panel.
 
-Use `Dispose` to release everything acquired by that activation, including EventHub
-subscription handles, .NET event handlers, timers, cancellation token sources, and other
-disposable services owned by the ViewModel. Disposal should be idempotent. Do not assume a
-tab ViewModel survives a tab switch, and do not register it as a singleton.
+## AXAML rules
 
-```csharp
-public sealed class ExampleTabViewModel : IDisposable
-{
-    private readonly IDisposable subscription;
-    private readonly CancellationTokenSource lifetime = new();
-    private bool disposed;
-
-    public ExampleTabViewModel(IDomainEventHub events)
-    {
-        subscription = events.SubscribeDomainEventAsync<VehicleStateUpdated>(OnStateUpdatedAsync);
-    }
-
-    private Task OnStateUpdatedAsync(
-        VehicleStateUpdated update,
-        CancellationToken cancellationToken) => Task.CompletedTask;
-
-    public void Dispose()
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        disposed = true;
-        lifetime.Cancel();
-        lifetime.Dispose();
-        subscription.Dispose();
-    }
-}
-```
-
-If a view itself attaches handlers to its ViewModel, override both lifecycle methods as a
-pair: call `base.Activate()` before attaching, detach before `base.Deactivate()`, and never
-retain the old ViewModel. `MessagesTabView` is the reference implementation.
-
-```csharp
-public override void Activate()
-{
-    base.Activate();
-    ViewModel?.PropertyChanged += OnViewModelPropertyChanged;
-}
-
-public override void Deactivate()
-{
-    ViewModel?.PropertyChanged -= OnViewModelPropertyChanged;
-    base.Deactivate();
-}
-```
-
-Activation and deactivation are synchronous. Start asynchronous work from the ViewModel in
-a fire-and-observe manner consistent with project conventions, tie it to an activation
-cancellation token, and handle errors; do not make `async void` lifecycle overrides.
-
-## Shell-based navigation
-
-`AppShell.xaml` is the source of truth for top-level navigation. The Config workspace in
-`Views/ConfigTuning/Tabs` is the reference implementation: one `FlyoutItem` contains a
-`ShellContent` entry for every Config page.
-
-### Declare a destination
-
-Add the page namespace to `AppShell.xaml`, then declare the page with a stable, unique
-route and a deferred `DataTemplate`:
-
-```xml
-<FlyoutItem Title="Config" Icon="Resources/Images/x_light_tuningconfig_icon_x.png">
-    <ShellContent
-        Title="Example"
-        Route="ConfigExample"
-        ContentTemplate="{DataTemplate tabs:ExampleTabView}" />
-</FlyoutItem>
-```
-
-Use the `Config` prefix for Config route names and keep titles user-facing. Use
-`ContentTemplate`; do not construct a page instance in `AppShell` code-behind. Place a page
-under the `FlyoutItem` that owns its workspace rather than registering it as an unrelated
-global route.
-
-### Page and ViewModel pattern
-
-Shell-owned pages should inherit `ContentPageView<TViewModel>` in both XAML and code-behind:
-
-```xml
-<navigation:ContentPageView
-    x:TypeArguments="tabs:ExampleTabViewModel"
-    x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.ExampleTabView"
-    x:DataType="tabs:ExampleTabViewModel">
-    <!-- page content -->
-</navigation:ContentPageView>
-```
-
-```csharp
-public partial class ExampleTabView : ContentPageView<ExampleTabViewModel>
-{
-    public ExampleTabView()
-    {
-        InitializeComponent();
-    }
-}
-```
-
-As with lifecycle tabs, keep the page constructor parameterless and register the disposable
-ViewModel as transient. `ContentPageView<TViewModel>` resolves and binds it when Shell
-navigates to the page, then clears the binding and disposes it when Shell replaces or
-removes the page. Do not duplicate this ownership in `OnAppearing`, `OnDisappearing`, or the
-constructor.
-
-### Navigate from application code
-
-ViewModels must not manipulate `Shell.Current` or depend on MAUI Shell types. Inject a
-purpose-specific navigation abstraction such as `INavigationService`; its UI-layer
-implementation performs Shell changes on the dispatcher. `ShellNavigationService` shows
-how Setup opens an existing Config destination by selecting the matching Shell hierarchy.
-
-Prefer stable route or destination identifiers in navigation APIs. Keep the lookup and
-Shell hierarchy knowledge inside the UI navigation service, validate that the destination
-exists, and fail with a useful exception rather than silently selecting the wrong page.
-
-Before leaving a guarded workspace, use its navigation guard. Config pages share pending
-parameter state, so navigation within Config and navigation away from Config have different
-semantics; callers must preserve that distinction rather than bypassing
-`IConfigNavigationGuard`.
-
-## CollectionView ItemsSource lifecycle
-
-Treat every collection bound to `CollectionView.ItemsSource` as native UI state, not merely
-as an ordinary ViewModel property. On Windows, changing or notifying an item source while
-its page is being detached, reattached, or handled from a worker thread can corrupt the
-native collection adapter. The eventual failure may appear as an
-`ArgumentOutOfRangeException`, `COMException`, or `ExecutionEngineException` at an unrelated
-property notification.
-
-Follow these rules for every `CollectionView.ItemsSource` binding:
-
-- Create, replace, clear, and mutate the bound collection only on the MAUI dispatcher.
-- Cancel in-flight loading when the owning view deactivates. After every `await`, verify the
-  activation, cancellation token, vehicle or session identity, and disposal state before
-  publishing results.
-- Detach event handlers before clearing or replacing their bound collections. An inactive
-  or disposed ViewModel must ignore late callbacks.
-- Do not clear a collection merely because navigation temporarily covers its view. Clear it
-  only when the lifecycle contract releases that source or when the next activation needs a
-  genuinely empty state.
-- Keep the collection instance stable when practical. Mutate it through a dispatcher-safe
-  range operation instead of repeatedly assigning new deferred `IEnumerable` projections.
-- Do not assign an equivalent source or raise `PropertyChanged` for `ItemsSource` and its
-  projections during every activation. Compare the new snapshot with the current snapshot
-  and notify only when the effective items, order, or relevant presentation state changed.
-- When several controls expose filtered projections of one source, publish one stable
-  snapshot and avoid forcing several redundant native resets during page reattachment.
-- Serialize or coalesce competing refreshes, but do not rely on a semaphore as a substitute
-  for cancellation and lifecycle validation. Serialization alone can allow stale work to
-  publish after navigation.
-- If replacement is necessary, finish constructing the new snapshot off the UI thread,
-  then perform the complete source assignment and all related property notifications in one
-  dispatcher operation.
-
-Review repeated navigation explicitly: populate the collection, leave the page while a load
-is running, return to the page, open and close popup dialogs, reconnect or replace its data
-owner, and repeat the cycle several times. Verify that inactive instances produce no
-collection notifications and that an unchanged activation produces no native source reset.
+- Use Avalonia properties: `Text`, `Foreground`, `Background`, `HorizontalAlignment`,
+  `IsVisible`, and `Classes`.
+- Prefer compiled bindings with `x:DataType` and `x:CompileBindings="True"`.
+- Escape composite formats, for example `StringFormat={}{0:F1}`.
+- Use semantic dynamic resources and shared classes. Warning text uses `Classes="Warning"`;
+  append `Warning` when other classes exist.
+- An indeterminate `ProgressBar` uses `Theme="{DynamicResource ProgressRing}"`.
+- Merge reusable styles in `App.axaml` or the appropriate local resource dictionary.
 
 ## Review checklist
 
-- New MAUI components normally have `.xaml`, `.xaml.cs`, and `ViewModel.cs` files.
-- XAML and code-behind are formatted as readable multiline markup and code.
-- The chosen control matches the navigation level: child tab or Shell destination.
-- The view is parameterless and XAML-constructible.
-- The ViewModel is transient, implements `IDisposable`, and owns its subscriptions and
-  cancellation lifetime.
-- The view does not resolve a ViewModel when a lifecycle base class already owns it.
-- Rich headers use `HeaderItemsSource`; header views do not create lifecycle ViewModels.
-- Popup display does not deactivate the selected tab; only selection or visual-tree
-  lifecycle changes do.
-- Every `CollectionView.ItemsSource` mutation or replacement occurs on the MAUI dispatcher.
-- Deactivation cancels pending collection loads and prevents late collection notifications.
-- Reactivation does not replace or notify an equivalent `ItemsSource` snapshot.
-- Paired event attachment and detachment occur in the matching lifecycle methods.
-- Shell destinations use a deferred `DataTemplate` and a unique, stable route.
-- ViewModels navigate through an injected abstraction and honor workspace guards.
+- The visual tree contains every required section and command.
+- The base class matches the view's role and the constructor is XAML-constructible.
+- DI, activation, cancellation, and event ownership are explicit.
+- Navigation uses routes, the page factory, and `INavigationService`.
+- Dialogs, clipboard, notifications, and file pickers remain UI adapters.
+- Large lists use `VirtualizedItemsGrid` and preserve required selection behavior.
+- Bindings compile and UI state is updated on the Avalonia dispatcher.
+- Colors and states use shared styles and semantic resources.
+- The solution builds and relevant tests and runtime navigation paths are exercised.

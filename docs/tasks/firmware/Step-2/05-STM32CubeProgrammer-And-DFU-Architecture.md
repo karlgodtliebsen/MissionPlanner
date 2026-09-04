@@ -379,7 +379,7 @@ After programming/verifying:
 ## Acceptance for architecture phase
 
 1. ADR documents external CLI decision.
-2. DFU domain types do not depend on MAUI/WinUI.
+2. DFU domain types do not depend on Avalonia/WinUI.
 3. Serial and DFU workflows remain distinct.
 4. Exact ArduPilot platform selection is mandatory.
 5. `_with_bl.hex` is the default initial/recovery artifact type.
