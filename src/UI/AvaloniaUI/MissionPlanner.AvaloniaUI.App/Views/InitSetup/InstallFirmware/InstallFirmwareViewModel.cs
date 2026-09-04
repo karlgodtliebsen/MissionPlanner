@@ -574,7 +574,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         UpdateContextHelp();
         if (lifetime is not null && IsDisconnectedMode)
         {
-            _ = RefreshSafelyAsync(false, lifetime.Token);
+            RefreshSafelyAsync(false, lifetime.Token).SafeFireAndForget();
         }
     }
 
@@ -1097,7 +1097,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
     }
 
-
     private void FilterData(string? version, string? vehicleType, string? manufacturer)
     {
         var choices = FirmwareChoices.ToList();
@@ -1120,7 +1119,11 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         // Replace the bound collection rather than issuing a range/reset notification.
         // Avalonia's DataGrid did not reliably refresh its rows when the existing
         // ObservableRangeCollection instance was cleared and repopulated.
+        //        FilteredFirmwareChoices = new ObservableRangeCollection<FirmwareCatalogItemViewModel>(choices);
+
+        FilteredFirmwareChoices.Clear();
         FilteredFirmwareChoices = new ObservableRangeCollection<FirmwareCatalogItemViewModel>(choices);
+        //FilteredFirmwareChoices.ReplaceRange(choices);
     }
 
     private void ApplyTargetQuery()
