@@ -68,14 +68,16 @@
                             <TextBlock Text="{Binding SpinArmDisplay}" FontWeight="Bold" Classes="Warning" />
                             <TextBlock Text="Calculation:" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
                             <TextBlock Text="[Motor test throttle]% + [x]% = [MOT_SPIN_ARM]%" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" />
-                            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Grid.Column="0" Text="[" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{Binding ThrottlePercent}" FontWeight="Bold" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="]% + " VerticalAlignment="Center" />
-                                <NumericUpDown Grid.Column="3" PlaceholderText="" Value="{Binding SpinArm, Mode=TwoWay}" FormatString="F0" Minimum="1" Maximum="{Binding SpinArmMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
-                                <TextBlock Grid.Column="4" Text="% = " VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="5" Text="{Binding SpinArmSum}" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="6" Text="%" VerticalAlignment="Center" />
+                            <Grid ColumnDefinitions="Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                                <TextBlock Grid.Column="0" Text="{Binding ThrottlePercent,StringFormat=[{0:F0}]% + }"  VerticalAlignment="Center" />
+
+                                <NumericUpDown Grid.Column="1" PlaceholderText="" Value="{Binding SpinArm, Mode=TwoWay}" FormatString="F0" 
+                                               Minimum="1" Maximum="{Binding SpinArmMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
+
+                                <TextBlock Grid.Column="2" Text="{Binding SpinArmSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" />
+
+
                             </Grid>
                             <Button VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Content="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" />
                             <u:Divider Height="1" Orientation="Horizontal" HorizontalAlignment="Stretch" />
@@ -83,14 +85,11 @@
                             <TextBlock Text="{Binding SpinMinDisplay}" FontWeight="Bold" Classes="Warning" />
                             <TextBlock Text="Calculation:" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
                             <TextBlock Text="[MOT_SPIN_ARM]% + [x]% = [MOT_SPIN_MIN]%" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" />
-                            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Grid.Column="0" Text=" [" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{Binding SpinArmSum}" FontWeight="Bold" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="]% +  " VerticalAlignment="Center" />
-                                <NumericUpDown Grid.Column="3" PlaceholderText="" Value="{Binding SpinMin, Mode=TwoWay}" FormatString="F0" Minimum="1" Maximum="{Binding SpinMinMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
-                                <TextBlock Grid.Column="4" Text="% = " VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="5" Text="{Binding SpinMinSum}" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="6" Text="%" VerticalAlignment="Center" />
+                            <Grid ColumnDefinitions="Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Grid.Column="0" Text="{Binding SpinArmSum,StringFormat= [{0:F0}]% +  }" VerticalAlignment="Center" />
+                                <NumericUpDown Grid.Column="1" PlaceholderText="" Value="{Binding SpinMin, Mode=TwoWay}" FormatString="F0" 
+                                               Minimum="1" Maximum="{Binding SpinMinMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
+                                <TextBlock Grid.Column="2" Text="{Binding SpinMinSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" />
                             </Grid>
                             <Button VerticalAlignment="Center" Grid.Row="7" HorizontalAlignment="Stretch" Content="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" />
                         </StackPanel>
