@@ -13,7 +13,7 @@ Flight Data task 01, MAVFTP ownership fix, and generated log-protocol coverage.
 
 - Work only under `src/`, `docs/`, `scripts/`, and test-data folders belonging to the new solution.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in commits.
-- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and MAUI presentation in `MissionPlanner.App`.
+- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Do not call MAVLink transports directly from views or code-behind. Use application/domain services injected into view models.
 - Keep code-behind limited to view lifecycle and unavoidable platform/UI integration.
 - Use CommunityToolkit.Mvvm patterns already present in the solution.
@@ -26,7 +26,7 @@ Flight Data task 01, MAVFTP ownership fix, and generated log-protocol coverage.
 
 ## Scope
 
-Use `MAVFTP` only when capability-supported, legacy log protocols otherwise, and existing storage/file-system abstractions. Scripts must begin as a safe local automation facility; do not embed arbitrary unrestricted code execution into the MAUI process.
+Use `MAVFTP` only when capability-supported, legacy log protocols otherwise, and existing storage/file-system abstractions. Scripts must begin as a safe local automation facility; do not embed arbitrary unrestricted code execution into the Avalonia process.
 
 ## Implementation requirements
 
@@ -35,7 +35,7 @@ Use `MAVFTP` only when capability-supported, legacy log protocols otherwise, and
 3. DataFlash Logs: list remote logs using supported log protocol or filesystem path, show size/date where available, download with resumable/progress/cancel behavior, erase only with confirmation, and open/reveal local copy.
 4. Scripts: define a constrained command-script format or existing safe scripting abstraction with explicit permitted actions, validation, dry run, cancellation, and execution log.
 5. Do not run untrusted C#/Python/Lua inside the application process.
-6. Ensure local paths use MAUI storage abstractions and are platform-safe.
+6. Ensure local paths use Avalonia storage abstractions and are platform-safe.
 7. Serialize bulk transfers and coordinate bandwidth with parameter/MAVFTP operations.
 8. Add diagnostics and recovery for partial files and disconnects.
 

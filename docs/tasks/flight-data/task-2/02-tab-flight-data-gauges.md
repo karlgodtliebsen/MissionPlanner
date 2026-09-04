@@ -53,7 +53,7 @@ Do not fabricate unavailable values.
 
 ## Gauge controls and dashboard
 
-1. Add MissionPlanner-owned cross-platform controls for radial/dial, bar and numeric/text gauges. Prefer MAUI `GraphicsView`/`IDrawable` or simple primitives.
+1. Add MissionPlanner-owned controls for radial/dial, bar, and numeric/text gauges. Prefer Avalonia custom controls, Skia integration, or simple primitives.
 2. Do not add a commercial/large chart dependency without an ADR.
 3. Support light/dark themes, accessibility, stale/unavailable overlays and bounded animation.
 4. Provide a default dashboard: airspeed, ground speed, altitude, climb rate, heading and battery.

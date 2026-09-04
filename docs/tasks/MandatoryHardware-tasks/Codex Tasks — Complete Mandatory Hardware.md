@@ -105,7 +105,7 @@ Determine and document internally:
 - automatic re-evaluation
 - connected/disconnected presentation
 - navigation from the Mandatory Hardware overview
-- styling and UraniumUI controls already in use
+- styling and Ursa controls already in use
 
 Do not establish a second architecture for the new workflows.
 

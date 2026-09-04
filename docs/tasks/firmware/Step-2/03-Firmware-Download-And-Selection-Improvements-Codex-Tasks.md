@@ -34,7 +34,7 @@ Inspect:
 MissionPlanner.Firmware/Entry/BootloaderEntryStrategies.cs
 MissionPlanner.Firmware/Installation/InstallationInterfaces.cs
 MissionPlanner.Firmware/Installation/FirmwareInstallationService.cs
-MissionPlanner.App/.../InstallFirmware/FirmwareInteractionService.cs
+MissionPlanner.AvaloniaUI.App/.../InstallFirmware/FirmwareInteractionService.cs
 ```
 
 ## Changes
@@ -335,7 +335,7 @@ Persist:
 - Corrupt persistent entry is discarded safely.
 - Writes are atomic.
 
-Use an injected application-cache path abstraction. Do not directly depend on MAUI file-system APIs in the firmware project.
+Use an injected application-cache path abstraction. Do not directly depend on Avalonia file-system APIs in the firmware project.
 
 ## Tests
 

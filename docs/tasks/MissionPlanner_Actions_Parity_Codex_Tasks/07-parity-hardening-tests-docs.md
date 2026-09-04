@@ -124,7 +124,7 @@ Verify the shared status panel correctly handles:
 
 ## 6. Layout and binding regression audit
 
-Review `ActionsTabView.xaml` and ViewModel bindings after all additions.
+Review `ActionsTabView.axaml` and ViewModel bindings after all additions.
 
 Specifically verify:
 

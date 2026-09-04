@@ -13,7 +13,7 @@ This is a decision task, not a shipping task.
 - Treat `src-v.1.38/` as read-only reference material.
 - Preserve the existing Mapsui/BruTile mission-map behavior unless the task explicitly changes it.
 - Keep MissionPlanner operational overlays (mission, vehicle, track, fence, ADS-B, POI, guided/camera overlays) independent from the basemap provider.
-- Do not put Mapsui/BruTile/MAUI types into `MissionPlanner.Core` domain models.
+- Do not put Mapsui/BruTile/Avalonia types into `MissionPlanner.Core` domain models.
 - Secrets must use the existing secure secret-storage abstraction; never persist them in provider JSON, planner settings, logs or diagnostics.
 - All HTTP work must be cancellable, bounded by timeout and provider-policy aware.
 - Never implement bulk prefetch, proxying, offline-pack creation or redistribution for a hosted provider unless the reviewed policy explicitly permits that exact operation.
@@ -33,7 +33,7 @@ Evaluate PMTiles-to-vector-MBTiles only if legal/provenance constraints allow it
 
 ### C. Separate vector renderer
 
-Only if A fails. Evaluate MapLibre-native/MAUI or WebView-based approaches as a future architecture; do not migrate production code during the spike.
+Only if A fails. Evaluate MapLibre-native/Avalonia or WebView-based approaches as a future architecture; do not migrate production code during the spike.
 
 ## PMTiles reader requirements if prototyped
 
@@ -46,7 +46,7 @@ Only if A fails. Evaluate MapLibre-native/MAUI or WebView-based approaches as a 
 
 ## Functional matrix
 
-Test Windows, Android and Mac Catalyst with a real regional Protomaps archive:
+Test Windows, Android and macOS with a real regional Protomaps archive:
 
 - pan/zoom;
 - labels/styles;

@@ -11,7 +11,7 @@ Establish the common infrastructure required by every unfinished Flight Data tab
 
 - Work only under `src/`, `docs/`, `scripts/`, and test-data folders belonging to the new solution.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in commits.
-- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and MAUI presentation in `MissionPlanner.App`.
+- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Do not call MAVLink transports directly from views or code-behind. Use application/domain services injected into view models.
 - Keep code-behind limited to view lifecycle and unavoidable platform/UI integration.
 - Use CommunityToolkit.Mvvm patterns already present in the solution.
@@ -31,10 +31,10 @@ Review `FlightDataView`, `FlightDataViewModel`, all tab view models, `Applicatio
 1. Add an active-vehicle context abstraction that exposes the current `VehicleId`, current immutable `VehicleState`, online/offline state, and change notifications.
 2. Ensure subscriptions are disposed when a view model is deactivated or the selected vehicle changes.
 3. Add reusable `AsyncOperationState`/command-result presentation models for Busy, Success, Warning, Error, Timeout, and Disconnected.
-4. Add a user-notification abstraction suitable for toast/banner/dialog presentation without referencing MAUI from Core.
+4. Add a user-notification abstraction suitable for toast/banner/dialog presentation without referencing Avalonia from Core.
 5. Add a base/composition helper for Flight Data tab view models; do not create a deep inheritance hierarchy.
 6. Make tabs lazy-load expensive data on first activation and stop background work when hidden.
-7. Replace placeholder status-bar labels in `FlightDataView.xaml` with active vehicle display name, connection state, and map/telemetry freshness.
+7. Replace placeholder status-bar labels in `FlightDataView.axaml` with active vehicle display name, connection state, and map/telemetry freshness.
 8. Register and validate all services in DI.
 
 ## Tests

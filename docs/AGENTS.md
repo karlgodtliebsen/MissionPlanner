@@ -21,7 +21,7 @@ Do not duplicate those documents here.
 - `src/Core/MissionPlanner.Transport`: byte transports only.
 - `src/Core/MissionPlanner.MavLink`: MAVLink frames, messages, encoding, and decoding.
 - `src/Core/MissionPlanner.Core`: domain models, observations, application/domain services.
-- `src/UI/MissionPlanner.App`: MAUI views and ViewModels.
+- `src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App`: Avalonia views and ViewModels.
 - `src/Tests`: unit, simulator, smoke, and hardware integration tests.
 - `src-v.1.38`: original Mission Planner source for behavioral reference only; do not modify it unless explicitly requested.
 
@@ -46,7 +46,7 @@ Do not duplicate those documents here.
 - Follow `src/.editorconfig`; do not restate or override its formatting and naming rules.
 - Format C# and XAML as readable multiline source; do not compress classes, methods, or
   visual trees into one-liners. Always use braces for control-flow blocks.
-- Prefer `.xaml`, `.xaml.cs`, and `ViewModel.cs` files for new MAUI views, components, and
+- Prefer `.axaml`, `.axaml.cs`, and `ViewModel.cs` files for new Avalonia views, components, and
   controls. See `docs/UI_VIEW_LIFECYCLE_AND_NAVIGATION.md` for the canonical pattern.
 - Write comments and developer documentation in English.
 - Add meaningful XML comments to all public types and public/protected members. Run the
@@ -62,7 +62,7 @@ dotnet build .\MissionPlanner.slnx --no-restore
 dotnet test .\MissionPlanner.slnx --no-build
 ```
 
-When the full MAUI solution cannot build on the current platform, build and test the
+When the full Avalonia solution cannot build on the current platform, build and test the
 affected non-UI projects explicitly and state what was not verified.
 
 For serial hardware tests:

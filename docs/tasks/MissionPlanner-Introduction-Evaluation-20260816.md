@@ -19,7 +19,7 @@ Good choices already present:
 
 - JSON controls topic order, screenshots, captions, callouts and actions.
 - Markdown keeps most prose out of XAML.
-- The renderer is native MAUI rather than a WebView.
+- The renderer is native Avalonia rather than a WebView.
 - Screenshots are lazy-loaded per selected topic.
 - Desktop gets a left topic navigator; compact layouts switch to a Picker.
 - Topic actions allow the guide to become navigable rather than one long document.

@@ -4,7 +4,7 @@ Status: **Completed.**
 
 ## Objective
 
-Implement `ScriptsTabView` as a constrained, auditable local automation facility. Do not reproduce the legacy unrestricted IronPython model inside the MAUI process.
+Implement `ScriptsTabView` as a constrained, auditable local automation facility. Do not reproduce the legacy unrestricted IronPython model inside the Avalonia process.
 
 Apply all constraints from `00-README.md`.
 
@@ -74,7 +74,7 @@ Do not allow arbitrary command IDs, file/network/process access, reflection, dyn
 
 ## Storage and UI
 
-Use MAUI file/storage abstractions. Support select/import, validate, dry run, run, cancel, save copy and recent scripts. Provide selected file, validation summary, step list, progress/current step, bounded timestamped output and copy/export log. Use atomic saves and sanitized names.
+Use Avalonia file/storage abstractions. Support select/import, validate, dry run, run, cancel, save copy and recent scripts. Provide selected file, validation summary, step list, progress/current step, bounded timestamped output and copy/export log. Use atomic saves and sanitized names.
 
 A built-in editor is optional; do not delay the core safe execution workflow for a rich editor.
 

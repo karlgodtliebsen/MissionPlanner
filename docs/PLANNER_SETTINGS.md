@@ -19,7 +19,7 @@ Before Config task 06, local behavior came from several independent sources:
 | --- | --- | --- |
 | Connection channel, host, port, baud | `appsettings.json` and `ApplicationStateService` | `Connection` |
 | Logging threshold and file retention | `appsettings.json` / Serilog startup | `Logging` |
-| Theme | transient MAUI `UserAppTheme` state | `Appearance` |
+| Theme | Avalonia `RequestedThemeVariant` state | `Appearance` |
 | Map source and point zoom | map view-model selection and a hard-coded resolution | `Map` |
 | Units | no shared local preference | `Units` |
 | Telemetry UI rates/history | no shared local preference | `Telemetry` |
@@ -35,7 +35,7 @@ above.
 
 ## Persistence and migration
 
-The service serializes one schema-versioned JSON snapshot through MAUI Preferences. Every
+The service serializes one schema-versioned JSON snapshot through Avalonia Preferences. Every
 load, save, and import is validated. A document from an older supported schema is migrated
 and rewritten at the current version. Corrupt, unsupported, or invalid persisted data is
 replaced with safe defaults and reported to the page instead of preventing application
@@ -53,7 +53,7 @@ invariant JSON and contains only the typed non-secret sections. Unknown fields a
 which also prevents a `password`, token, or other secret-shaped import field from being
 written back to an export.
 
-Credentials and tokens must use `IPlannerSecretStore`, whose MAUI adapter delegates to
+Credentials and tokens must use `IPlannerSecretStore`, whose Avalonia adapter delegates to
 platform SecureStorage. They must not be added to `PlannerSettings`, Preferences, exports,
 or structured log properties.
 

@@ -16,11 +16,11 @@ view audit.
 
 ## Retained domain visualization colors
 
-- `HudView.xaml` keeps a black instrument background because it is part of the HUD
+- `HudView.axaml` keeps a black instrument background because it is part of the HUD
   presentation, not surrounding application chrome;
-- `OnboardOsdPreviewView.xaml` keeps black and gray because it previews the vehicle's
+- `OnboardOsdPreviewView.axaml` keeps black and gray because it previews the vehicle's
   on-screen-display output rather than the MissionPlanner theme.
 
 No remaining direct color literal in a normal MissionPlanner view represents
-application chrome. Palette literals, compatibility primitives in `Colors.xaml`, and
+application chrome. Palette literals, compatibility primitives in `Colors.axaml`, and
 the two domain visualizations above are legitimate constants.

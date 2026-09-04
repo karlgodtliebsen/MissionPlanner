@@ -4,7 +4,7 @@ The four added workflows were checked against the lifecycle used by the existing
 Mandatory Hardware TabView content.
 
 - Each ViewModel is transient and each XAML View derives from
-  `TabViewLifecycleContent<TViewModel>`.
+  `TabItemViewBase<TViewModel>`.
 - Each ViewModel listens only to `IActiveVehicleContext`; no low-level MAVLink
   connection interface is injected by the new UI or services.
 - Initial construction handles either an already-connected vehicle or an empty
@@ -21,4 +21,3 @@ Mandatory Hardware TabView content.
   registry/metadata services.
 - Registrations contain one transient entry per ViewModel and service; obsolete
   commented registrations and a duplicate Safety registration were removed.
-

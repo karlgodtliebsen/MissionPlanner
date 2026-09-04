@@ -13,7 +13,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [ARCHITECTURE_DECISION_RECORDS.md](ARCHITECTURE_DECISION_RECORDS.md) | ADRs, naming conventions, data flow, future direction |
 | [FEATURES.md](FEATURES.md) | Feature status per area (domain, UI screens): implemented vs missing |
 | [MAPS.md](MAPS.md) | Map catalog, policy, attribution, offline, and renderer architecture |
-| [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md) | Manual Windows, Android, and Mac Catalyst map verification matrix |
+| [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md) | Manual verification matrix for the current Avalonia desktop target |
 | [MISSIONS.md](MISSIONS.md#mission-map-menu-feature-guide) | Mission-map menu ownership, safety, formats, and known limitations |
 
 ## Subsystem references
@@ -29,7 +29,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [FLIGHT_DATA.md](FLIGHT_DATA.md) | Flight Data tab architecture, lifecycle, safety, and operator workflows |
 | [VEHICLE_SCRIPTS.md](VEHICLE_SCRIPTS.md) | Constrained declarative vehicle automation format and safety boundary |
 | [SERILOG_QUICKSTART.md](SERILOG_QUICKSTART.md) | Logging setup and diagnostic workflow |
-| [UI_VIEW_LIFECYCLE_AND_NAVIGATION.md](UI_VIEW_LIFECYCLE_AND_NAVIGATION.md) | Coding guide for lifecycle-aware tabs and Shell-based page navigation |
+| [UI_VIEW_LIFECYCLE_AND_NAVIGATION.md](UI_VIEW_LIFECYCLE_AND_NAVIGATION.md) | Coding guide for Avalonia view lifecycle and Ursa drawer/navigation pages |
 
 Historical point-in-time analysis and fix logs (HUD integration analysis, parameter
 streaming debugging iterations, connection fix reports, etc.) were consolidated into the
@@ -39,6 +39,6 @@ documents above in July 2026 and deleted; recover them from git history if neede
 
 | Document | Purpose |
 |---|---|
-| [CODE_REVIEW_20260717.md](CODE_REVIEW_20260717.md) | Review findings and recommended mission-planner refactors for the 2026-07-17 source snapshot |
+| [CODE_REVIEW_20260717.md](reviews/CODE_REVIEW_20260717.md) | Review findings and recommended mission-planner refactors for the 2026-07-17 source snapshot |
 
-- [MAVFTP implementation review (2026-07-19)](MAVFTP_REVIEW_20260719.md)
+- [MAVFTP implementation review (2026-07-19)](reviews/MAVFTP_REVIEW_20260719.md)

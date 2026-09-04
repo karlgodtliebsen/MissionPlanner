@@ -11,7 +11,7 @@ Expose the new subsystem through a clear cross-platform UX.
 - Treat `src-v.1.38/` as read-only reference material.
 - Preserve the existing Mapsui/BruTile mission-map behavior unless the task explicitly changes it.
 - Keep MissionPlanner operational overlays (mission, vehicle, track, fence, ADS-B, POI, guided/camera overlays) independent from the basemap provider.
-- Do not put Mapsui/BruTile/MAUI types into `MissionPlanner.Core` domain models.
+- Do not put Mapsui/BruTile/Avalonia types into `MissionPlanner.Core` domain models.
 - Secrets must use the existing secure secret-storage abstraction; never persist them in provider JSON, planner settings, logs or diagnostics.
 - All HTTP work must be cancellable, bounded by timeout and provider-policy aware.
 - Never implement bulk prefetch, proxying, offline-pack creation or redistribution for a hosted provider unless the reviewed policy explicitly permits that exact operation.

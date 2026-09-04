@@ -41,13 +41,13 @@ The original UI’s **Install Firmware Legacy**, **Secure**, and **Force Bootloa
 
 `MissionPlanner.Firmware` should be a normal `net10.0` class library with no references to:
 
-* .NET MAUI;
-* UraniumUI;
+* Avalonia UI;
+* Ursa;
 * CommunityToolkit popup controls;
 * app pages or view models;
 * platform-specific WinUI APIs.
 
-The MAUI firmware page belongs in the existing UI project. Windows device monitoring can either remain in the host project or later move to a separate `MissionPlanner.Firmware.Platforms.Windows` project.
+The Avalonia firmware page belongs in the existing UI project. Windows device monitoring can either remain in the host project or later move to a separate `MissionPlanner.Firmware.Platforms.Windows` project.
 
 ### 3. Treat connected and disconnected operations separately
 
@@ -101,4 +101,3 @@ Normal users must not be able to bypass that check accidentally. Any force optio
 ### 8. Do not implement this as one Codex change
 
 Use the tasks below sequentially. Each task must build and test before Codex proceeds to the next task.
-

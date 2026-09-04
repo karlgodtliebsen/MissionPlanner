@@ -42,7 +42,7 @@ BatteryMonitorInstance
 Existing battery UI:
 
 ```text
-MandatoryHardware/Sections/BatterySetupView.xaml
+MandatoryHardware/Sections/BatterySetupView.axaml
 MandatoryHardware/Sections/BatterySetupViewModel.cs
 ```
 

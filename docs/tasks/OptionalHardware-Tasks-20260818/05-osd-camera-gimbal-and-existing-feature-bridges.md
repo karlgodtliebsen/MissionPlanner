@@ -21,10 +21,10 @@ Inspect:
 
 ```text
 src/Core/MissionPlanner.Core/ConfigTuning/Osd/*
-src/UI/MissionPlanner.App/Views/ConfigTuning/Tabs/
-    OnboardOSDTabView.xaml
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/ConfigTuning/Tabs/
+    OnboardOSDTabView.axaml
     OnboardOsdTabViewModel.cs
-    OnboardOsdPreviewView.xaml
+    OnboardOsdPreviewView.axaml
 ```
 
 Do **not** create a second OSD configuration engine in Optional Hardware.
@@ -58,8 +58,8 @@ src/Core/MissionPlanner.Core/FlightData/Payload/
     CameraCapabilities.cs
     GimbalCapabilities.cs
 
-src/UI/MissionPlanner.App/Views/FlightData/Tabs/
-    PayloadControlTabView.xaml
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Views/FlightData/Tabs/
+    PayloadControlTabView.axaml
     PayloadControlTabViewModel.cs
 ```
 

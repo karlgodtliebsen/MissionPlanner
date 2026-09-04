@@ -145,7 +145,7 @@ Map sources are represented by a validated, versioned catalog in the platform-ne
 
 ## ADR-0006 - Defer vector/PMTiles
 
-Production vector/PMTiles support is deferred because the current Mapsui vector renderer is experimental and a supported MAUI alternative spanning Windows, Android, and Mac Catalyst is not established. Raster MBTiles remains the production offline path, and conditional Task 06 is not authorized. See [ADR-0006](adr/ADR-0006-defer-vector-pmtiles.md).
+Production vector/PMTiles support is deferred because the current Mapsui vector renderer is experimental and no alternative has been integrated and verified with the Avalonia application. Raster MBTiles remains the production offline path, and conditional Task 06 is not authorized. See [ADR-0006](adr/ADR-0006-defer-vector-pmtiles.md).
 
 ## Naming Conventions
 
@@ -293,7 +293,3 @@ execution are prohibited.
 **Consequences:** The format is deliberately less expressive, but portable, reviewable,
 deterministic, and testable. New actions require an explicit registry and typed-service
 change. Out-of-process plugins and onboard Lua remain separate future decisions.
-
-
-
-

@@ -13,7 +13,7 @@ rules remain authoritative in `MissionPlanner.Firmware.ScopeAndRoadmap.md`.
 - `MissionPlanner.Core` owns vehicle sessions, `IVehicleConnectionService`, active-vehicle
   state, `ICommandAckTracker`, serial-port discovery, and the existing preliminary firmware
   catalogue/package/coordinator contracts.
-- `MissionPlanner.App` owns MAUI views, Setup navigation, platform adapters, preferences-based
+- `MissionPlanner.AvaloniaUI.App` owns Avalonia views, Setup navigation, platform adapters, preferences-based
   caches, dialogs, dispatching, and composition in `ApplicationConfigurator`.
 - Tests use xUnit v3 with FluentAssertions, Shouldly, NSubstitute, and Microsoft logging/DI test
   support, with versions centralized in `src/Directory.Packages.props`.
@@ -37,7 +37,7 @@ MissionPlanner.Core
 
 MissionPlanner.Firmware -> MissionPlanner.Transport
 MissionPlanner.Firmware -> MissionPlanner.MavLink (only for the connected bootloader gateway)
-MissionPlanner.App      -> MissionPlanner.Core + MissionPlanner.Firmware
+MissionPlanner.AvaloniaUI.App      -> MissionPlanner.Core + MissionPlanner.Firmware
 MissionPlanner.Firmware.Tests -> MissionPlanner.Firmware
 ```
 
@@ -79,7 +79,7 @@ command/ACK services.
   zero warnings and zero errors.
 - `dotnet build .\MissionPlanner.slnx --no-restore` reaches all managed projects but fails in the
   two pre-existing Android packaging targets because `java.exe` exits with code 2:
-  `UraniumUI.Material.Extensions.Samples` (`net10.0-android`) and `MissionPlanner.Droid`.
+  the Avalonia desktop application and the applicable firmware test projects.
 - `dotnet test .\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --no-build
   --no-restore` reports 444 passed, 11 skipped, and 11 failed. The failures precede firmware work:
   two command cancellation-token assertions, seven recently changed vehicle-display-name

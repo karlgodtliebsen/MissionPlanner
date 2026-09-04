@@ -1,4 +1,4 @@
-﻿# MissionPlanner AI Contributor Guide
+# MissionPlanner AI Contributor Guide
 
 ## Purpose
 
@@ -255,8 +255,8 @@ and `CS1587`. Add or correct the XML comments responsible for those warnings bef
 the change as complete. Also fix documentation warnings in directly affected files that the
 build exposes, even when they predate the current edit.
 
-For the canonical .NET MAUI view structure and lifecycle examples, follow
-[UI_VIEW_LIFECYCLE_AND_NAVIGATION.md](UI_VIEW_LIFECYCLE_AND_NAVIGATION.md#maui-view-file-structure).
+For the canonical Avalonia UI view structure and lifecycle examples, follow
+[UI_VIEW_LIFECYCLE_AND_NAVIGATION.md](UI_VIEW_LIFECYCLE_AND_NAVIGATION.md#file-structure).
 
 ---
 
@@ -344,7 +344,7 @@ Follow
 
 .editorconfig
 
-## MAUI XAML
+## Avalonia XAML
 
 
 Use English for:

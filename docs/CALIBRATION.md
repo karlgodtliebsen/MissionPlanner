@@ -1,6 +1,6 @@
 # Calibration workflows
 
-Initial Setup calibration behavior is owned by Core and projected by MAUI. Views and
+Initial Setup calibration behavior is owned by Core and projected by Avalonia. Views and
 ViewModels do not send MAVLink packets directly.
 
 ## Accelerometer and level calibration

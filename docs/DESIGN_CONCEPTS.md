@@ -8,7 +8,7 @@
 
 
 
-MissionPlanner is a modern, cross-platform Ground Control Station (GCS) for ArduPilot-based vehicles, written in .NET 10 using .NET MAUI.
+MissionPlanner is a modern, cross-platform Ground Control Station (GCS) for ArduPilot-based vehicles, written in .NET 10 using Avalonia UI.
 
 
 
@@ -1013,10 +1013,10 @@ When adding new functionality:
 
 # UI Shell and Persistent Chrome
 
-The MAUI app uses Shell (`AppShell`) as the navigation container, with persistent chrome
+The Avalonia app uses `MainShellView` as the navigation container, with persistent chrome
 that survives page navigation:
 
-- **Top bar** — `Shell.TitleView` in `AppShell.xaml` hosts `TopBarView`
+- **Top bar** — `MainWindow.axaml` hosts `TopBarView` in the extended title-bar area.
   (`Views/Common`): app title, connection status, connect button.
 - **Bottom status bar** — the reusable `StatusBarView` + singleton `StatusBarViewModel`
   (`Views/Common`): clock, connection dot, status messages. It reflects
@@ -1026,11 +1026,12 @@ that survives page navigation:
 
 # View construction pattern
 
-Views instantiate their ViewModel in a parameterless constructor via
-`ServiceHelper.GetRequiredService<TViewModel>()` and set `BindingContext`. Views are used
-directly as XAML elements and are not registered in the container; only ViewModels are
-registered (mostly singletons) in `ApplicationConfigurator`. This keeps XAML instantiation
-(`<tabs:GaugesTabView />`) working while ViewModels still come from DI.
+Views remain parameterless so AXAML can construct them. Generic application bases such as
+`NavigationViewBase<TViewModel>` and `UserControlViewBase<TViewModel>` resolve the registered
+ViewModel and assign Avalonia `DataContext`; individual views do not repeat that wiring.
+ViewModels are registered in `ApplicationConfigurator` with a lifetime that matches their
+ownership. This keeps AXAML composition (`<tabs:GaugesTabView />`) working while activation
+and deactivation remain centralized.
 
 # Shared mission editor
 
@@ -1073,14 +1074,14 @@ only observes decoded `PID_TUNING` messages and exposes latest read-only respons
 Onboard OSD is also a projection over the shared session, but its catalog is discovered from
 live parameter-name structure. Core groups `OSD<n>_<item>_EN/X/Y` fields into screen/item
 definitions, attaches additional fields under each item stem, and derives character-grid
-bounds from metadata. The preview consumes platform-neutral `OsdPreviewItem` values; MAUI
+bounds from metadata. The preview consumes platform-neutral `OsdPreviewItem` values; Avalonia
 drawing stays in the view integration. Static overlaps are errors, while firmware-advertised
 dynamic overlaps are warnings that still require explicit acknowledgement. No font upload
 command exists until a real transfer service can own that capability.
 
 Planner preferences deliberately do not use the vehicle parameter session. Core owns an
 immutable, typed `PlannerSettings` snapshot, validation, schema migration, atomic import,
-and an observable change event. The MAUI layer supplies an opaque Preferences document
+and an observable change event. The Avalonia layer supplies an opaque Preferences document
 store and a separate SecureStorage adapter for credentials or tokens. Export serializes
 only the typed non-secret snapshot, so unknown secret-shaped fields cannot round-trip.
 `PlannerSettingsRuntime` applies safe live changes such as theme and disconnected connection
@@ -1101,7 +1102,7 @@ snapshots, validation, apply/rollback results, and reboot/reconnect state withou
 vendor register fields. Transport-specific request/reply correlation remains below it. For
 CubeLAN, `DeviceOperationClient` correlates generated MAVLink `DEVICE_OP` replies by request
 ID, vehicle, component, and endpoint, while `CubeLanDeviceAdapter` alone owns the verified
-I²C address and register layout. The MAUI view model receives only this adapter, reads before
+I²C address and register layout. The Avalonia view model receives only this adapter, reads before
 enabling edits, and never sends transport packets. Unknown registers are preserved for
 round-trip safety; exports deliberately contain only the verified public model. Unsupported
 features remain absent rather than being inferred from product behavior.
@@ -1117,7 +1118,7 @@ those inputs change. Later Setup workflows should plug into this shell and call 
 services rather than adding transport access or duplicate parameter editors to the UI.
 
 `MandatoryHardwareView` is only the workflow selector and page-lifecycle shell. Each
-concrete workflow is rendered by a dedicated, strongly typed MAUI `ContentView` that
+concrete workflow is rendered by a dedicated, strongly typed Avalonia `ContentView` that
 resolves, binds, and owns its transient section ViewModel. `MandatoryHardwareViewModel`
 owns selection, child visibility, and shared page concerns, but never creates or retains
 child ViewModels. `SetupSectionView` bridges loaded/visible state to child activation and
@@ -1147,7 +1148,7 @@ Interactive calibration is modeled as a Core state machine, not a sequence of UI
 side effects. `ArduPilotCalibrationService` consumes decoded `COMMAND_ACK` and
 `ACCELCAL_VEHICLE_POS` messages, uses status text only as supplemental evidence, and owns
 timeouts, cancellation, disconnect recovery, parameter refresh, and terminal success. The
-MAUI workflow is a projection of immutable `CalibrationSnapshot` values. A singleton
+Avalonia workflow is a projection of immutable `CalibrationSnapshot` values. A singleton
 `IVehicleOperationGate` is also shared with `VehicleCommandService`, ensuring one
 state-changing command or calibration owns a vehicle at a time.
 
@@ -1163,7 +1164,7 @@ shutdown. It never locates or kills processes by name.
 
 Simulator profiles are versioned application data, separate from vehicle parameters. They
 store argument tokens rather than shell command strings, allowing a later local adapter to
-use safe argument-list APIs. Platform persistence and file export stay in MAUI adapters;
+use safe argument-list APIs. Platform persistence and file export stay in Avalonia adapters;
 profile validation, lifecycle, and diagnostic redaction stay in Core.
 
 SITL acquisition is a separate trust and ownership boundary. Core selects only exact
@@ -1176,7 +1177,7 @@ an unresolved identity fails closed instead of falling back by display version.
 
 The local ArduPilot runtime preserves the process-neutral Core boundary through an injected
 process host. Core builds argument tokens, reserves endpoint identities, verifies the
-heartbeat, and owns cleanup sequencing; the MAUI adapter alone uses operating-system
+heartbeat, and owns cleanup sequencing; the Avalonia adapter alone uses operating-system
 process APIs. Simulator connection goes through `IVehicleConnectionService`, so it shares
 the generated decoder, dispatchers, registry, parameter services, and domain events with
 normal hardware. A successful connection has an opaque generation identity. Simulator
@@ -1202,8 +1203,3 @@ registry services. Every step owns an explicit timeout. Pause is observed only b
 steps, while cancellation resets run-owned faults and attempts a safe land or ground disarm only if the
 original exact target is still connected. Dry runs and execution share validation, and
 reports preserve capability evidence, step timing/results, and telemetry snapshots.
-
-
-
-
-

@@ -116,11 +116,11 @@ Use the same test framework and assertion library as the existing solution.
 
 It must not reference:
 
-* the MAUI UI project;
-* UraniumUI;
+* the Avalonia UI project;
+* Ursa;
 * CommunityToolkit UI;
 * WinUI;
-* Android, iOS, or Mac Catalyst APIs.
+* Android, iOS, or macOS APIs.
 
 The UI project may reference `MissionPlanner.Firmware`.
 
@@ -865,7 +865,7 @@ Requirements:
 * Verify provided checksums when the manifest supplies one.
 * Always parse and validate APJ content after download.
 
-Custom firmware selection should pass a stream or file abstraction into the firmware project. The firmware project must not open MAUI file pickers.
+Custom firmware selection should pass a stream or file abstraction into the firmware project. The firmware project must not open Avalonia file pickers.
 
 ### Acceptance
 
@@ -1088,7 +1088,7 @@ The resolver should consume connection state rather than having the view query g
 
 ---
 
-# Task 15 — Implement the MAUI/Uranium firmware UI
+# Task 15 — Implement the Avalonia/Ursa firmware UI
 
 Implement the page in the existing UI project, not in `MissionPlanner.Firmware`.
 
@@ -1487,7 +1487,7 @@ Study the original Mission Planner implementation and upstream command semantics
 The initial feature is complete when all of the following are true:
 
 1. `MissionPlanner.Firmware` and its tests build cleanly.
-2. The firmware project has no MAUI/UI dependency.
+2. The firmware project has no Avalonia/UI dependency.
 3. Connected mode blocks normal firmware installation.
 4. Connected mode supports safe Bootloader Update through existing MAVLink command infrastructure.
 5. Disconnected mode loads and caches the ArduPilot firmware catalogue.
@@ -1507,7 +1507,7 @@ The initial feature is complete when all of the following are true:
 
 The most important architectural boundary for Codex is:
 
-> `MissionPlanner.Firmware` owns firmware metadata, package validation, device discovery orchestration, bootloader protocol and update workflows. The MAUI project owns presentation, user interaction, platform integration and adapters to the existing MissionPlanner connection system.
+> `MissionPlanner.Firmware` owns firmware metadata, package validation, device discovery orchestration, bootloader protocol and update workflows. The Avalonia project owns presentation, user interaction, platform integration and adapters to the existing MissionPlanner connection system.
 
 [1]: https://ardupilot.ardupilot.org/planner/docs/mission-planner-initial-setup.html "https://ardupilot.ardupilot.org/planner/docs/mission-planner-initial-setup.html"
 [2]: https://ardupilot.org/dev/docs/bootloader.html "https://ardupilot.org/dev/docs/bootloader.html"

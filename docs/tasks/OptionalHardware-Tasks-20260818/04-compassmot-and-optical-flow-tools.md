@@ -103,7 +103,7 @@ Current vs throttle
 Interference % vs throttle
 ```
 
-Use a MAUI-compatible chart/control already in the solution if available.
+Use a Avalonia-compatible chart/control already in the solution if available.
 
 Do not introduce a heavyweight plotting dependency solely for this one page without review.
 

@@ -6,7 +6,7 @@
 
 ## Context
 
-Mission Planner needs a dependable offline basemap on Windows, Android, and Mac Catalyst without destabilizing its Mapsui mission editor. PMTiles v3 can contain MVT vector tiles and supports local random access, but archive access is only one part of a complete offline vector product. Production also requires a renderer, styles, sprites, glyph ranges/fonts, attribution, predictable gestures, and operational overlay compatibility on every target.
+Mission Planner needs a dependable offline basemap on its supported Avalonia desktop target without destabilizing its Mapsui mission editor. PMTiles v3 can contain MVT vector tiles and supports local random access, but archive access is only one part of a complete offline vector product. Production also requires a renderer, styles, sprites, glyph ranges/fonts, attribution, predictable gestures, and operational overlay compatibility.
 
 ## Evidence
 
@@ -14,19 +14,19 @@ Approach A, Mapsui plus direct PMTiles, is not production-ready. Mapsui 5.1 is t
 
 Approach B, conversion to vector MBTiles, does not remove the renderer/style problem. It also creates provenance, storage expansion, conversion integrity, and redistribution questions. Conversion is therefore not justified when archive access is not the primary blocker.
 
-Approach C, a separate renderer, is a future architecture option rather than a safe incremental change. MapLibre Native has mature Android and iOS implementations, but its official project does not provide a complete supported .NET MAUI binding across Windows, Android, and Mac Catalyst; the MAUI integration discussion remains open and platform wrappers are external experiments. A WebView renderer would introduce another event, gesture, offline asset, lifecycle, and overlay-composition boundary. See [MapLibre Native](https://github.com/maplibre/maplibre-native) and its [.NET MAUI bindings discussion](https://github.com/maplibre/maplibre-native/issues/3146).
+Approach C, a separate renderer, is a future architecture option rather than a safe incremental change. No renderer has yet been integrated and verified against Mission Planner's Avalonia windowing, input, offline assets, and Mapsui overlays. A WebView renderer would introduce another event, gesture, offline asset, lifecycle, and overlay-composition boundary.
 
 ## Functional matrix
 
-| Area | Windows | Android | Mac Catalyst | Result |
-| --- | --- | --- | --- | --- |
-| Direct PMTiles v3 random access | Not integrated | Not integrated | Not integrated | Archive reader absent |
-| MVT labels and complete styles | Experimental renderer only | Experimental renderer only | Experimental renderer only | Production gate fails |
-| Light/dark plus offline sprites/glyphs | Not demonstrated | Not demonstrated | Not demonstrated | Production gate fails |
-| Mission route/waypoint and vehicle/follow overlays | Existing raster path passes | Existing raster path baseline | Existing raster path baseline | Vector path unverified |
-| Gestures, context actions, source switching | Existing raster path passes | Existing raster path baseline | Existing raster path baseline | Vector path unverified |
-| Fully offline regional archive | Raster MBTiles passes | Raster MBTiles implementation shared | Raster MBTiles implementation shared | Use raster MBTiles |
-| Memory/CPU/startup responsiveness | No representative vector result | No representative vector result | No representative vector result | Production gate fails |
+| Area | Current Avalonia target | Result |
+| --- | --- | --- |
+| Direct PMTiles v3 random access | Not integrated | Archive reader absent |
+| MVT labels and complete styles | Experimental renderer only | Production gate fails |
+| Light/dark plus offline sprites/glyphs | Not demonstrated | Production gate fails |
+| Mission route/waypoint and vehicle/follow overlays | Existing raster path passes | Vector path unverified |
+| Gestures, context actions, source switching | Existing raster path passes | Vector path unverified |
+| Fully offline regional archive | Raster MBTiles passes | Use raster MBTiles |
+| Memory/CPU/startup responsiveness | No representative vector result | Production gate fails |
 
 No real regional Protomaps archive was promoted into product code because the renderer prerequisites fail before cross-platform acceptance testing. This avoids presenting an incomplete archive-only prototype as renderer evidence.
 
@@ -34,7 +34,7 @@ No real regional Protomaps archive was promoted into product code because the re
 
 Defer vector/PMTiles and remain on the stable raster/MBTiles production path. Keep the disabled PMTiles catalog candidate so the architecture can be revisited without persisting renderer-specific state.
 
-Task 06 is not authorized by this decision and must not execute. Reconsider only when a renderer path is supported on all three targets and a spike demonstrates complete offline styles/assets, overlays, gestures, source switching, and acceptable performance with a real regional archive.
+Task 06 is not authorized by this decision and must not execute. Reconsider only when a renderer path is supported by the active Avalonia application and a spike demonstrates complete offline styles/assets, overlays, gestures, source switching, and acceptable performance with a real regional archive.
 
 ## Consequences
 

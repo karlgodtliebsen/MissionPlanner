@@ -13,7 +13,7 @@ Config task 01.
 
 - Work only under `src/`, `docs/`, `scripts/`, and test-data folders belonging to the new solution.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in commits.
-- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and MAUI presentation in `MissionPlanner.App`.
+- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Do not call MAVLink transports directly from views or code-behind. Use application/domain services injected into view models.
 - Keep code-behind limited to view lifecycle and unavoidable platform/UI integration.
 - Use CommunityToolkit.Mvvm patterns already present in the solution.
@@ -26,7 +26,7 @@ Config task 01.
 
 ## Scope
 
-Use OSD parameter metadata and presence to discover screens/items. Reference legacy OSD behavior but implement a platform-neutral layout model and MAUI canvas/graphics preview.
+Use OSD parameter metadata and presence to discover screens/items. Reference legacy OSD behavior but implement a platform-neutral layout model and Avalonia canvas/graphics preview.
 
 ## Implementation requirements
 
@@ -57,7 +57,7 @@ Use OSD parameter metadata and presence to discover screens/items. Reference leg
 
 Completed 2026-07-22. Onboard OSD now discovers screens, built-in/custom item stems,
 placement fields, and additional options from live parameter names and metadata. A
-platform-neutral character-grid model drives the MAUI graphics preview and accessible
+platform-neutral character-grid model drives the Avalonia graphics preview and accessible
 numeric/directional placement controls. Bounds and overlap validation, explicit dynamic-
 overlap acknowledgement, selected-screen confirmed apply, reset-to-live, atomic
 family-tagged import/export, lifecycle handling, and DI registration are implemented and

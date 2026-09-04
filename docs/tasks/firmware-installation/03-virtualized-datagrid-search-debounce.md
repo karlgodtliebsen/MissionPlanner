@@ -19,7 +19,7 @@ Make it configurable.
 Control:
 
 ```text
-src/UI/UraniumUI/UraniumUI.Material.VirtualizedDataGrid/
+src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/Controls/VirtualizedItemsGrid.cs
 ```
 
 Relevant files:
@@ -28,7 +28,7 @@ Relevant files:
 Controls/VirtualizedDataGrid.DataView.cs
 Controls/VirtualizedDataGrid.DataView.BindableProperties.cs
 Controls/VirtualizedDataGrid.cs
-Tests/UraniumUI.Material.Tests/VirtualizedDataGrid.SearchTemplate.Tests.cs
+src/Tests/MissionPlanner.AvaloniaUI.Tests/VirtualizedItemsGridTests.cs
 docs/reviews/VirtualizedDataGrid-review.md
 ```
 
@@ -171,7 +171,7 @@ Do not introduce a timer/task leak for each grid instance.
 
 ### 8. UI-thread safety
 
-`RefreshDataView` writes MAUI bindable/visual state.
+`RefreshDataView` writes Avalonia bindable/visual state.
 
 Any delayed continuation must return through the control's dispatcher before mutating UI state.
 

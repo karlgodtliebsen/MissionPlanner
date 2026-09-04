@@ -38,10 +38,10 @@ Commit and verify after each task. Do not run the complete set in one Codex sess
 
 - Modify only the new solution under `src/`, `docs/`, `scripts/`, and test-data folders.
 - Treat `src-v.1.38/` as read-only reference material. Never modify or include legacy files in commits.
-- Preserve layering: MAVLink wire protocol in `MissionPlanner.MavLink`, connection/transport ownership in `MissionPlanner.Transport`, domain/application workflows in `MissionPlanner.Core`, and MAUI presentation in `MissionPlanner.App`.
+- Preserve layering: MAVLink wire protocol in `MissionPlanner.MavLink`, connection/transport ownership in `MissionPlanner.Transport`, domain/application workflows in `MissionPlanner.Core`, and Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Views and code-behind must not send MAVLink or resolve services directly.
 - Reuse the existing generated `ardupilotmega` dialect, `IActiveVehicleContext`, `IDomainEventHub`, `AsyncOperationRunner`, `IVehicleOperationGate`, confirmation/notification services, parameter services, command ACK tracking and replay safety.
-- Use the existing transient tab lifecycle: `LifecycleTabView` and `TabViewLifecycleContent<TViewModel>`.
+- Use the existing transient tab lifecycle: `Avalonia TabControl` and `TabItemViewBase<TViewModel>`.
 - `Dispose()` cancels work, releases leases/timers and unsubscribes events. It must not clear or mutate UI-bound collections.
 - All outbound operations must target the current vehicle/component, support cancellation/disconnect, be serialized when required, and be prohibited during telemetry-log replay.
 - Promote cohesive current state into domain aggregates. Keep component request/response workflows in dedicated services.

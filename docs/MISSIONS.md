@@ -3,7 +3,7 @@
 This document describes how MissionPlanner represents, edits, validates, stores, transfers,
 and monitors ArduPilot missions. It reflects the current implementation under
 `MissionPlanner.Core/Missions`, `MissionPlanner.MavLink/Missions`, and
-`MissionPlanner.App/Views/Missions`.
+`MissionPlanner.AvaloniaUI.App/Views/Missions`.
 
 ---
 
@@ -46,8 +46,8 @@ are never the source of truth.
 | Upload/download | `IMissionTransferService`, `MissionTransferService` | `MissionPlanner.Core/Missions/Transfer` |
 | Wire DTOs | `MavLinkMissionItem`, `MavMissionType`, `MavMissionResult` | `MissionPlanner.MavLink/Missions` |
 | Mission encoders/decoders | `IMavLinkMissionEncoder`, mission message decoders | `MissionPlanner.MavLink/Encoding`, `Decoding` |
-| Shared UI editor | `MissionMapView(Model)`, `MissionItemListView` | `MissionPlanner.App/Views/Missions` |
-| Plan screen | `FlightPlannerView(Model)` | `MissionPlanner.App/Views/FlightPlanner` |
+| Shared UI editor | `MissionMapView(Model)`, `MissionItemListView` | `MissionPlanner.AvaloniaUI.App/Views/Missions` |
+| Plan screen | `FlightPlannerView(Model)` | `MissionPlanner.AvaloniaUI.App/Views/FlightPlanner` |
 
 ---
 
@@ -323,7 +323,7 @@ map provider cannot discard operational planning layers.
 
 Menu commands remain thin view-model entry points and delegate stateful work to focused services.
 Native prompts, choices, file open/save, and notifications cross injectable application boundaries;
-Core planning and protocol services do not call MAUI dialogs or file pickers.
+Core planning and protocol services do not call Avalonia dialogs or file pickers.
 
 ### Advanced mission items
 
@@ -396,7 +396,7 @@ they never create or install offline map packs, and OSM Standard is explicitly d
 ### Elevation profiles
 
 The Elevation Graph samples geographic navigation legs at a bounded interval through the existing
-SRTM terrain service and renders terrain and planned MSL lines in a lightweight MAUI `GraphicsView`.
+SRTM terrain service and renders terrain and planned MSL lines in a lightweight Avalonia custom control.
 Missing tiles remain explicit graph gaps, never zero elevation. Global altitudes provide direct
 clearance; terrain-relative altitude uses sampled ground; home-relative altitude remains a relative
 profile unless a home MSL altitude is available. Samples retain cumulative distance, mission leg,
@@ -448,7 +448,7 @@ generated/imported mission replacement is previewed and confirmed, but operators
 mission before a large replacement when reversible history is required.
 
 Implementation and deterministic runtime composition are verified by automated tests. Interactive
-Windows, Android, and Mac Catalyst checks are tracked separately in
+Platform checks are tracked separately in
 [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md); unrun checks are not described as
 manually verified.
 

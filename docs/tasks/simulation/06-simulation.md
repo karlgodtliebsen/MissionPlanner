@@ -13,7 +13,7 @@ Simulation tasks 01–05.
 
 - Work only under `src/`, `docs/`, `scripts/`, and test-data folders belonging to the new solution.
 - Treat `src-v.1.38/` as read-only reference material. Never modify, format, move, or include legacy files in commits.
-- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and MAUI presentation in `MissionPlanner.App`.
+- Preserve the existing layered architecture: wire protocol in `MissionPlanner.MavLink`, transport in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Do not call MAVLink transports directly from views or code-behind. Use application/domain services injected into view models.
 - Keep code-behind limited to view lifecycle and unavoidable platform/UI integration.
 - Use CommunityToolkit.Mvvm patterns already present in the solution.

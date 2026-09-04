@@ -81,7 +81,9 @@ Important Exception for Service Locator pattern:
 
 -------
 
-Using .Net MAUI, to support Design time views, the ServiceLocator pattern is used in Views contructors, see sample below
+Avalonia views that inherit the generic application base classes are parameterless. The base
+class resolves the registered ViewModel and assigns `DataContext`; do not repeat that work in
+individual code-behind files.
 
 
 ```csharp
@@ -93,7 +95,7 @@ Using .Net MAUI, to support Design time views, the ServiceLocator pattern is use
 
 /// </summary>
 
-public partial class FlightPlannerView : UraniumContentPage
+public partial class FlightPlannerPage : NavigationViewBase<FlightPlannerViewModel>
 
 {
 
@@ -103,22 +105,13 @@ public partial class FlightPlannerView : UraniumContentPage
 	
 	   /// </summary>
 	
-	   public FlightPlannerView()
+   public FlightPlannerPage()
 	
 	   {
 	
 	       InitializeComponent();
 	
-	       var viewModel = MissionPlanner.App.Configuration.ServiceHelper.GetRequiredService<FlightPlannerViewModel>();
-	
-	       BindingContext = viewModel;
-	
 	   }
 
 }
 ```
-
-
-
-
-

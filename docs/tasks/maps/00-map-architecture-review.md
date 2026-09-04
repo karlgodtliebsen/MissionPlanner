@@ -97,7 +97,7 @@ MissionPlanner.Maps
     pack manifests/repository
     cache abstractions
 
-MissionPlanner.App/Maps/Mapsui
+MissionPlanner.AvaloniaUI.App/Maps/Mapsui
     IMapsuiBasemapFactory
     MapsuiBasemapFactory
     MapsuiMbTilesSourceFactory
@@ -251,7 +251,7 @@ Phase 2 spike:
     PMTiles reader
     Protomaps styles/glyphs/sprites
     mission overlays
-    Windows/Android/Mac Catalyst performance
+    Windows/Android/macOS performance
 
 Phase 3 conditional:
     production Protomaps/vector offline packs

@@ -4,8 +4,8 @@
 
 ## Objective
 
-Replace the workflow-specific layout blocks embedded in `MandatoryHardwareView.xaml` with
-dedicated MAUI views. Each child view must resolve, bind, and own its own ViewModel. The
+Replace the workflow-specific layout blocks embedded in `MandatoryHardwareView.axaml` with
+dedicated Avalonia views. Each child view must resolve, bind, and own its own ViewModel. The
 Mandatory Hardware shell must only select and show the active workflow and coordinate
 cross-cutting page concerns.
 
@@ -14,8 +14,8 @@ cross-cutting page concerns.
 - `MandatoryHardwareView` resolves and binds `MandatoryHardwareViewModel`.
 - `MandatoryHardwareViewModel` owns workflow selection, child visibility, the connected
   vehicle heading, summary reporting, manual completion, and navigation to Config pages.
-- Every workflow view resolves its own transient ViewModel through `ServiceHelper`, assigns
-  it to `BindingContext`, and owns its activation/deactivation lifecycle.
+- Every workflow view inherits the appropriate generic application base, which resolves its
+  transient ViewModel, assigns `DataContext`, and owns activation/deactivation.
 - Every workflow ViewModel owns its commands, status, progress, error state, subscriptions,
   cancellation, and domain-service calls.
 - `SetupSectionView` provides the shared view-lifecycle bridge. It activates the owned
@@ -35,20 +35,18 @@ streaming pipeline communication.
 
 ## View construction pattern
 
-Each child view follows the standard MAUI ownership pattern:
+Each child view follows the standard Avalonia ownership pattern:
 
 ```csharp
-private readonly AViewModel viewModel;
-
 /// <summary>
 /// Provides the public API for AView.
 /// </summary>
-public AView()
+public partial class AView : UserControlViewBase<AViewModel>
 {
-    InitializeComponent();
-    viewModel = ServiceHelper.GetRequiredService<AViewModel>();
-    BindingContext = viewModel;
-    OwnedViewModel = viewModel;
+    public AView()
+    {
+        InitializeComponent();
+    }
 }
 ```
 
@@ -77,14 +75,14 @@ The Mandatory Hardware page composes these self-owned views and binds only their
 - Treat `src-v.1.38/` as read-only reference material.
 - Preserve the existing architecture: wire protocol in `MissionPlanner.MavLink`, transport
   in `MissionPlanner.Transport`, application/domain behavior in `MissionPlanner.Core`, and
-  MAUI presentation in `MissionPlanner.App`.
+  Avalonia presentation in `MissionPlanner.AvaloniaUI.App`.
 - Do not call MAVLink transports directly from views or code-behind. Use injected
   application/domain services from ViewModels.
 - Keep code-behind limited to view ownership, lifecycle, and unavoidable UI integration.
 - Vehicle-changing operations must be connection-aware, cancellation-aware, target the
   active `VehicleId`, and expose acknowledgement or an explicit failure state.
 - All public types and members require XML documentation.
-- Every MAUI XAML `Button` must explicitly set `BackgroundColor="Transparent"` and
+- Every borderless Avalonia `Button` should use the shared transparent/button theme and
   `FontSize="14"`.
 
 ## Verification

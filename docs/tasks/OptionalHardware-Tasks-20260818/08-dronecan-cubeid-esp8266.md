@@ -26,7 +26,7 @@ src-v.1.38/ExtLibs/DroneCAN/*
 
 The current NextGen source does **not** yet contain an equivalent DroneCAN domain subsystem.
 
-Do not paste the old 1700-line WinForms control into MAUI.
+Do not paste the old 1700-line WinForms control into Avalonia.
 
 ---
 
