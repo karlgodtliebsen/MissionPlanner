@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Services.Abstractions;
@@ -52,7 +52,7 @@ public class VehicleSerialCommunicationTests
     /// <summary>
     /// Tests that a vehicle is registered when a heartbeat message is received.
     /// </summary>
-    [Fact(Skip = "Only manually run")]
+    [Fact(Skip = "Requires a connected physical vehicle and a configured serial port.")]
     public async Task Should_Establish_LowLevel_Serial_Communication_With_Vehicle()
     {
         logger.LogInformation("New Test: Should_Establish_Serial_Communication_With_Vehicle");
@@ -122,7 +122,7 @@ public class VehicleSerialCommunicationTests
     /// <summary>
     /// Tests that a vehicle is registered when a heartbeat message is received.
     /// </summary>
-    [Fact(Skip = "Only manually run")]
+    [Fact(Skip = "Requires a connected physical vehicle and a configured serial port.")]
     public async Task Should_Start_Complete_Domain_Vehicle_Service_Setup()
     {
         logger.LogInformation("New Test: Should_Start_Complete_Domain_Vehicle_Service_Setup");
@@ -162,7 +162,7 @@ public class VehicleSerialCommunicationTests
     /// <summary>
     /// Tests that all Vehicle parameters is received
     /// </summary>
-    [Fact(Skip = "Only manually run")]
+    [Fact(Skip = "Requires a connected physical vehicle and a configured serial port.")]
     public async Task Should_Handle_Connected_And_Registered()
     {
         logger.LogInformation("New Test: Should_Handle_Connected_And_Registered");
@@ -221,7 +221,7 @@ public class VehicleSerialCommunicationTests
     /// <summary>
     /// Tests that all Vehicle parameters is received
     /// </summary>
-    [Fact(Skip = "Only manually run")]
+    [Fact(Skip = "Requires a connected physical vehicle and a configured serial port.")]
     public async Task Should_Retrieve_Parameters()
     {
         logger.LogInformation("New Test: Should_Retrieve_Parameters");
@@ -304,7 +304,7 @@ public class VehicleSerialCommunicationTests
     /// <summary>
     /// Tests that all Vehicle parameters is received
     /// </summary>
-    [Fact(Skip = "Only manually run")]
+    [Fact(Skip = "Requires a connected physical vehicle and a configured serial port.")]
     public async Task Should_Retrieve_Parameters_Using_Streaming()
     {
         logger.LogInformation("New Test: Should_Retrieve_Parameters_Using_Streaming");

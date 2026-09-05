@@ -39,9 +39,12 @@ jobs:
           --no-restore
           -p:Platform=x64
 
-#      - name: Run unit tests
-#        shell: pwsh
-#        run: |
-#          dotnet test src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --configuration Release --verbosity normal
-#          dotnet test src/Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.Core.AvaloniaUI.csproj --configuration Release --verbosity normal
-#          dotnet test src/Tests/MissionPlanner.Tests/MissionPlanner.Tests.csproj --configuration Release --verbosity normal
+      - name: Run unit tests
+        shell: pwsh
+        run: |
+          dotnet test src/Tests/MissionPlanner.Tests/MissionPlanner.Tests.csproj --configuration Release --verbosity normal
+          dotnet test src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --configuration Release --verbosity normal
+          dotnet test src/Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.Core.AvaloniaUI.csproj --configuration Release --verbosity normal
+          dotnet test src/Tests/MissionPlanner.BrowserBridge.Tests/MissionPlanner.BrowserBridge.Tests.csproj --configuration Release --verbosity normal
+          dotnet test src/Tests/MissionPlanner.Smoke.Simulator.Tests/MissionPlanner.Smoke.Simulator.Tests.csproj --configuration Release --verbosity normal
+

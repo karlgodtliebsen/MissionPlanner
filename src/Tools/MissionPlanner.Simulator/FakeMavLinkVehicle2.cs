@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
 using MissionPlanner.Core.Vehicles.Models;
@@ -140,7 +140,10 @@ public sealed class FakeMavLinkVehicle2 : IAsyncDisposable
             ? (byte)(state.BaseMode | mavModeFlagSafetyArmed)
             : (byte)(state.BaseMode & ~mavModeFlagSafetyArmed);
 
-        state = VehicleStateFactory.CreateFromLegacyState(state, newBaseMode, isArmed);
+        if (commandAckResult == 0)
+        {
+            state = VehicleStateFactory.CreateFromLegacyState(state, newBaseMode, isArmed);
+        }
         if (!acknowledgeCommands)
         {
             return;
@@ -156,7 +159,10 @@ public sealed class FakeMavLinkVehicle2 : IAsyncDisposable
         var customMode = (byte)ReadFloat(frame.Payload.Span[4..8]);
         var mode = ArduCopterModeMapper.ToVehicleMode(customMode);
 
-        state = VehicleStateFactory.CreateFromLegacyState(state, customMode, mode);
+        if (commandAckResult == 0)
+        {
+            state = VehicleStateFactory.CreateFromLegacyState(state, customMode, mode);
+        }
 
         if (!acknowledgeCommands)
         {
@@ -242,6 +248,11 @@ public sealed class FakeMavLinkVehicle2 : IAsyncDisposable
                 state.MavLinkVersion);
 
             await udpClient.SendAsync(heartbeat, targetEndpoint, cancellationToken).ConfigureAwait(false);
+            // EXTENDED_SYS_STATE: landed_state = ON_GROUND. The command policy
+            // requires fresh flight-state telemetry before allowing an arm command.
+            var flightState = BuildV2Packet(state.VehicleId.SystemId, state.VehicleId.ComponentId,
+                245, new byte[] { 0, 1 });
+            await udpClient.SendAsync(flightState, targetEndpoint, cancellationToken).ConfigureAwait(false);
             await Task.Delay(heartbeatInterval, cancellationToken).ConfigureAwait(false);
         }
     }

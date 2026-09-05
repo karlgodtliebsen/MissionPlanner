@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
@@ -11,10 +11,10 @@ namespace MissionPlanner.Core.Tests.IntegrationTests;
 /// Integration tests for VehicleHudDataService verifying end-to-end data flow
 /// from vehicle state updates through to HUD data.
 /// </summary>
-public class VehicleHudDataIntegrationTests
+public class VehicleHudDataIntegrationTests : IAsyncDisposable
 {
     private readonly ITestOutputHelper output;
-    private readonly IServiceProvider serviceProvider;
+    private readonly ServiceProvider serviceProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VehicleHudDataIntegrationTests"/> class.
@@ -33,7 +33,7 @@ public class VehicleHudDataIntegrationTests
     /// <summary>
     /// Verifies that the service returns the current HUD data for a specified vehicle.
     /// </summary>
-    [Fact(Skip = "Only manually run")]
+    [Fact]
     public async Task Should_Get_Current_HudData_From_RegistryAsync()
     {
         // Arrange
@@ -48,9 +48,9 @@ public class VehicleHudDataIntegrationTests
                 Latitude = 56.1629,
                 Longitude = 10.2039,
                 Altitude = 125.5,
-                Pitch = -3.1,
-                Roll = 5.2,
-                Yaw = 90.0,
+                Pitch = -3.1 * Math.PI / 180,
+                Roll = 5.2 * Math.PI / 180,
+                Yaw = Math.PI / 2,
                 BatteryRemaining = 87,
                 BatteryVoltage = 11.4f
             };
@@ -62,8 +62,8 @@ public class VehicleHudDataIntegrationTests
         // Assert
         hudData.Should().NotBeNull();
         hudData!.VehicleId.Should().Be(vehicleId);
-        hudData.Pitch.Should().Be(-177.6);
-        hudData.Roll.Should().Be(5.2);
+        hudData.Pitch.Should().BeApproximately(-3.1, 0.0001);
+        hudData.Roll.Should().BeApproximately(5.2, 0.0001);
         hudData.Heading.Should().Be(90.0); // East
         hudData.Altitude.Should().Be(125.5);
         hudData.BatteryVoltage.Should().BeApproximately(11.4, 0.1);
@@ -73,7 +73,7 @@ public class VehicleHudDataIntegrationTests
     /// <summary>
     /// Provides the public API for Should_Get_Primary_Vehicle_HudDataAsync.
     /// </summary>
-    [Fact(Skip = "Only manually run")]
+    [Fact]
     public async Task Should_Get_Primary_Vehicle_HudDataAsync()
     {
         // Arrange
@@ -101,4 +101,5 @@ public class VehicleHudDataIntegrationTests
         primaryHudData!.VehicleId.Should().Be(vehicleId);
         primaryHudData.Altitude.Should().Be(100.0);
     }
+    public ValueTask DisposeAsync() => serviceProvider.DisposeAsync();
 }

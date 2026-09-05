@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -10,7 +10,7 @@ using MissionPlanner.Library;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Simulator;
-using MissionPlanner.Smoke.Simulator.Tests.Configuration;
+using MissionPlanner.Test.Support.Configuration;
 using MissionPlanner.Smoke.Simulator.Tests.SmokeTests;
 using MissionPlanner.Transport;
 
@@ -19,10 +19,10 @@ namespace MissionPlanner.Smoke.Simulator.Tests;
 /// <summary>
 /// Tests for the domain layer implementations.
 /// </summary>
-public class DomainVehicleServiceSimulatorTests
+public class DomainVehicleServiceSimulatorTests : IAsyncDisposable
 {
     private readonly ITestOutputHelper output;
-    private readonly IServiceProvider serviceProvider;
+    private readonly ServiceProvider serviceProvider;
     private readonly IPEndPoint simulatorIPEndPoint;
     private readonly int port;
 
@@ -34,8 +34,8 @@ public class DomainVehicleServiceSimulatorTests
     {
         this.output = output;
         var services = TestConfigurator
-            .AddTestConfiguration()
-            .AddDefaultTestLogging(output);
+            .AddTestConfiguration(output);
+        services.ConfigureIsolatedUdpTransport();
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
 
@@ -58,21 +58,18 @@ public class DomainVehicleServiceSimulatorTests
     /// <summary>
     /// Tests that a vehicle can be armed through IVehicleService using the full MAVLink simulator pipeline.
     /// </summary>
-    [Fact(Skip = "Legacy smoke harness must be migrated to establish IVehicleConnectionSession before command routing.")]
+    [Fact]
     public async Task Should_Arm_Vehicle_Through_VehicleService_When_Command_Is_Acked()
     {
         //   var endpoint = serviceProvider.GetRequiredService<IOptions<TransportEndpoint>>().Value;
 
         var vehicleId = new VehicleId(1, 1);
 
-        await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
 
         var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
-
-        await connection.StartAsync(TestContext.Current.CancellationToken);
-
+        using var lifetime = await session.CreateUdpConnection(simulatorIPEndPoint.Port, "127.0.0.1", port, cancellationToken: TestContext.Current.CancellationToken);
 
         await using var simulator =
             new FakeMavLinkVehicle2(
@@ -84,13 +81,14 @@ public class DomainVehicleServiceSimulatorTests
                 TimeSpan.FromMilliseconds(100)
             );
 
-        _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         await simulator.StartAsync(TestContext.Current.CancellationToken);
+        await WaitForRegisteredVehicle();
 
         await EventuallyAsync(
             () =>
             {
                 var state = vehicleService.GetVehicleState(vehicleId);
+                Assert.NotNull(state);
 
                 Assert.Equal(vehicleId, state.VehicleId);
                 Assert.False(state.IsArmed);
@@ -106,6 +104,7 @@ public class DomainVehicleServiceSimulatorTests
             () =>
             {
                 var state = vehicleService.GetVehicleState(vehicleId);
+                Assert.NotNull(state);
                 Assert.True(state.IsArmed);
             },
             TimeSpan.FromSeconds(5),
@@ -115,14 +114,14 @@ public class DomainVehicleServiceSimulatorTests
     /// <summary>
     /// Tests that a vehicle can be disarmed through IVehicleService using the full MAVLink simulator pipeline.
     /// </summary>
-    [Fact(Skip = "Legacy smoke harness must be migrated to establish IVehicleConnectionSession before command routing.")]
+    [Fact]
     public async Task Should_Disarm_Vehicle_Through_VehicleService_When_Command_Is_Acked()
     {
         // var endpoint = serviceProvider.GetRequiredService<IOptions<TransportEndpoint>>().Value;
         var vehicleId = new VehicleId(1, 1);
         var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
-        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
-        await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+
+        var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
 
         await using var simulator =
             new FakeMavLinkVehicle2(
@@ -134,14 +133,15 @@ public class DomainVehicleServiceSimulatorTests
                 TimeSpan.FromMilliseconds(100)
             );
 
-        _ = Task.Run(() => connection.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
-        _ = Task.Run(() => simulator.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
-        _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
+        using var lifetime = await session.CreateUdpConnection(simulatorIPEndPoint.Port, "127.0.0.1", port, cancellationToken: TestContext.Current.CancellationToken);
+        await simulator.StartAsync(TestContext.Current.CancellationToken);
+        await WaitForRegisteredVehicle();
 
         await EventuallyAsync(
             () =>
             {
                 var state = vehicleService.GetVehicleState(vehicleId);
+                Assert.NotNull(state);
                 Assert.False(state.IsArmed);
             },
             TimeSpan.FromSeconds(5),
@@ -155,6 +155,7 @@ public class DomainVehicleServiceSimulatorTests
             () =>
             {
                 var state = vehicleService.GetVehicleState(vehicleId);
+                Assert.NotNull(state);
                 Assert.True(state.IsArmed);
             },
             TimeSpan.FromSeconds(5),
@@ -168,30 +169,26 @@ public class DomainVehicleServiceSimulatorTests
             () =>
             {
                 var state = vehicleService.GetVehicleState(vehicleId);
+                Assert.NotNull(state);
                 Assert.False(state.IsArmed);
             },
             TimeSpan.FromSeconds(5),
             TestContext.Current.CancellationToken);
     }
 
-
     /// <summary>
     /// Tests that the vehicle service correctly sets the vehicle mode to Guided when the command is acknowledged.
     /// </summary>
-    [Fact(Skip = "Legacy smoke harness must be migrated to establish IVehicleConnectionSession before command routing.")]
+    [Fact]
     public async Task Should_Set_Guided_Mode_Through_VehicleService_When_Command_Is_Acked()
     {
         var vehicleId = new VehicleId(1, 1);
 
-        await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
 
         var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
-
-        await connection.StartAsync(TestContext.Current.CancellationToken);
-
-        var pump = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
+        using var lifetime = await session.CreateUdpConnection(simulatorIPEndPoint.Port, "127.0.0.1", port, cancellationToken: TestContext.Current.CancellationToken);
 
         await using var simulator =
             new FakeMavLinkVehicle2(
@@ -204,6 +201,7 @@ public class DomainVehicleServiceSimulatorTests
             );
 
         await simulator.StartAsync(TestContext.Current.CancellationToken);
+        await WaitForRegisteredVehicle();
 
         await EventuallyAsync(
             () =>
@@ -235,20 +233,16 @@ public class DomainVehicleServiceSimulatorTests
     /// <summary>
     /// Tests that the vehicle service correctly returns a timeout when the arm command is not acknowledged.
     /// </summary>
-    [Fact(Skip = "Legacy smoke harness must be migrated to establish IVehicleConnectionSession before command routing.")]
+    [Fact]
     public async Task Should_Return_Timeout_When_Arm_Command_Is_Not_Acked()
     {
         var vehicleId = new VehicleId(1, 1);
 
-        await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
 
         var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
-
-        await connection.StartAsync(TestContext.Current.CancellationToken);
-
-        var pumpTask = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
+        using var lifetime = await session.CreateUdpConnection(simulatorIPEndPoint.Port, "127.0.0.1", port, cancellationToken: TestContext.Current.CancellationToken);
 
         await using var simulator =
             new FakeMavLinkVehicle2(
@@ -261,11 +255,13 @@ public class DomainVehicleServiceSimulatorTests
                 false);
 
         await simulator.StartAsync(TestContext.Current.CancellationToken);
+        await WaitForRegisteredVehicle();
 
         await EventuallyAsync(
             () =>
             {
                 var state = vehicleService.GetVehicleState(vehicleId);
+                Assert.NotNull(state);
                 Assert.Equal(vehicleId, state!.VehicleId);
             },
             TimeSpan.FromSeconds(5),
@@ -279,20 +275,16 @@ public class DomainVehicleServiceSimulatorTests
     /// <summary>
     /// Tests that the vehicle service correctly returns a denied result when the arm command is denied.
     /// </summary>
-    [Fact(Skip = "Legacy smoke harness must be migrated to establish IVehicleConnectionSession before command routing.")]
+    [Fact]
     public async Task Should_Return_Denied_When_Arm_Command_Is_Denied()
     {
         var vehicleId = new VehicleId(1, 1);
 
-        await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
 
         var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
-
-        await connection.StartAsync(TestContext.Current.CancellationToken);
-
-        _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
+        using var lifetime = await session.CreateUdpConnection(simulatorIPEndPoint.Port, "127.0.0.1", port, cancellationToken: TestContext.Current.CancellationToken);
 
         await using var simulator =
             new FakeMavLinkVehicle2(
@@ -306,6 +298,7 @@ public class DomainVehicleServiceSimulatorTests
                 2); // MAV_RESULT_DENIED
 
         await simulator.StartAsync(TestContext.Current.CancellationToken);
+        await WaitForRegisteredVehicle();
 
         await EventuallyAsync(
             () => vehicleService.GetVehicleState(vehicleId),
@@ -317,15 +310,17 @@ public class DomainVehicleServiceSimulatorTests
         var response = await vehicleService.ArmAsync(vehicleId, TestContext.Current.CancellationToken);
 
         Assert.Equal(VehicleCommandResult.Denied, response.Result);
+        Assert.Equal("MAVLink ACK result 2.", response.Message);
 
         var state = vehicleService.GetVehicleState(vehicleId);
+        Assert.NotNull(state);
         Assert.False(state!.IsArmed);
     }
 
     /// <summary>
     /// Tests that the vehicle service correctly returns a denied result when the vehicle is offline.
     /// </summary>
-    [Fact(Skip = "Legacy smoke harness must be migrated to establish IVehicleConnectionSession before command routing.")]
+    [Fact]
     public async Task Should_Deny_Arm_When_Vehicle_Is_Offline()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
@@ -351,32 +346,23 @@ public class DomainVehicleServiceSimulatorTests
         Assert.Equal(VehicleCommandResult.Denied, response.Result);
     }
 
-    /// <summary>
-    /// Tests that the vehicle service correctly returns a denied result when attempting to set guided mode while the vehicle is not armed.
-    /// </summary>
-    [Fact(Skip = "Legacy smoke harness must be migrated to establish IVehicleConnectionSession before command routing.")]
-    public async Task Should_Deny_Guided_Mode_When_Vehicle_Is_Not_Armed()
+    [Fact]
+    public async Task Should_Set_Guided_Mode_When_Vehicle_Is_Not_Armed()
     {
-        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
-        var vehicleId = new VehicleId(1, 1);
-
-        await registry.RegisterOrUpdateHeartbeatAsync(
-            vehicleId,
-            simulatorIPEndPoint.ToTransportEndPoint("udp"),
-            0,
-            2,
-            3,
-            0,
-            4,
-            3,
-            DateTimeOffset.UtcNow, TestContext.Current.CancellationToken);
-
-        var response = await vehicleService.SetModeAsync(vehicleId, VehicleMode.Guided, TestContext.Current.CancellationToken);
-
-        Assert.Equal(VehicleCommandResult.Denied, response.Result);
+        var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
+        using var lifetime = await session.CreateUdpConnection(simulatorIPEndPoint.Port, "127.0.0.1", port, cancellationToken: TestContext.Current.CancellationToken);
+        await using var simulator = new FakeMavLinkVehicle2(
+            serviceProvider.GetRequiredService<IMavLinkFrameParser>(),
+            serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>(),
+            "127.0.0.1", simulatorIPEndPoint.Port, port, TimeSpan.FromMilliseconds(100));
+        await simulator.StartAsync(TestContext.Current.CancellationToken);
+        var state = await WaitForRegisteredVehicle();
+        Assert.False(state.IsArmed);
+        var service = serviceProvider.GetRequiredService<IVehicleService>();
+        var response = await service.SetModeAsync(state.VehicleId, VehicleMode.Guided, TestContext.Current.CancellationToken);
+        Assert.Equal(VehicleCommandResult.Accepted, response.Result);
+        Assert.False(service.GetVehicleState(state.VehicleId)!.IsArmed);
     }
-
     private async Task<VehicleState> WaitForRegisteredVehicle()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -392,6 +378,7 @@ public class DomainVehicleServiceSimulatorTests
                 testVehicle = vehicles.First();
                 logger.LogTrace("Vehicle: {VehicleId}, State: {ConnectionState}, Mode: {Mode}", testVehicle.VehicleId, testVehicle.ConnectionState, testVehicle.Mode);
                 Assert.Equal(VehicleConnectionState.Online, testVehicle.ConnectionState);
+                Assert.Equal(VehicleLandedState.OnGround, testVehicle.Flight.LandedState);
                 ts.TrySetResult();
             },
             TimeSpan.FromSeconds(5),
@@ -427,4 +414,5 @@ public class DomainVehicleServiceSimulatorTests
 
         throw lastException ?? new TimeoutException();
     }
+    public ValueTask DisposeAsync() => serviceProvider.DisposeAsync();
 }
