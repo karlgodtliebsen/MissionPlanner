@@ -40,7 +40,17 @@
     <File Path="../docs/VEHICLE_CONNECTION.md" />
     <File Path="../docs/VEHICLE_SCRIPTS.md" />
   </Folder>
-  <Folder Name="/Host/" />
+  <Folder Name="/Host/">
+    <Project Path="Hosts/MissionPlanner/MissionPlanner.Android/MissionPlanner.Android.csproj" Id="65ab6182-0635-4917-9d55-3fd9c46feae6">
+      <Deploy />
+    </Project>
+    <Project Path="Hosts/MissionPlanner/MissionPlanner.Browser/MissionPlanner.Browser.csproj" Id="55ff2f44-3057-434b-8ac0-8df5df1bbb56" />
+    <Project Path="Hosts/MissionPlanner/MissionPlanner.Desktop/MissionPlanner.Desktop.csproj" Id="56912b2a-6fe3-4d04-901f-5487de2528a0" />
+    <Project Path="Hosts/MissionPlanner/MissionPlanner.iOS/MissionPlanner.iOS.csproj" Id="52f73ad4-229f-431f-84a1-9f6d3ea70e51">
+      <Deploy />
+    </Project>
+    <Project Path="Hosts/MissionPlanner/MissionPlanner/MissionPlanner.csproj" Id="0c625de3-e940-4ef0-9179-45ab94cfd4af" />
+  </Folder>
   <Folder Name="/Libraries/">
     <Project Path="Libraries/MissionPlanner.Library/MissionPlanner.Library.csproj" />
   </Folder>
