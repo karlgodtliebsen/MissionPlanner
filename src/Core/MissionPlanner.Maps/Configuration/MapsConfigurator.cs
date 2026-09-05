@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -41,7 +41,7 @@ public static class MapsConfigurator
         services.TryAddSingleton<IMapHttpClientFactory, MapHttpClientFactory>();
         services.TryAddSingleton<CustomMapSourceService>();
         services.TryAddSingleton<IOfflineMapPackRepository>(provider => provider.GetRequiredService<FileOfflineMapPackRepository>());
-        services.TryAddSingleton<IOfflineMapPackValidator, MbTilesOfflineMapPackValidator>();
+        services.TryAddSingleton<IOfflineMapPackValidator, UnsupportedOfflineMapPackValidator>();
         services.TryAddSingleton<IOfflineMapPackInstaller, OfflineMapPackInstaller>();
         services.TryAddSingleton<IOfflineMapPackManager, OfflineMapPackManager>();
         services.TryAddSingleton<HostedMapSourceService>();

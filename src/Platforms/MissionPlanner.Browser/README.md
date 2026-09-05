@@ -26,12 +26,13 @@ For C# debugging from a shell, leave the app running and use a second PowerShell
 in the browser project directory:
 
 ```powershell
+# Chrome:
 ./src/Platforms/MissionPlanner.Browser/Start-DebugBrowser.ps1 -Browser Chrome
-# Or:
+# Edge:
 ./src/Platforms/MissionPlanner.Browser/Start-DebugBrowser.ps1 -Browser Edge
-# Or:
+# Thorium:
 ./src/Platforms/MissionPlanner.Browser/Start-DebugBrowser.ps1 -Browser Thorium
-# Or:
+# Comet:
 ./src/Platforms/MissionPlanner.Browser/Start-DebugBrowser.ps1 -Browser Comet
 ```
 

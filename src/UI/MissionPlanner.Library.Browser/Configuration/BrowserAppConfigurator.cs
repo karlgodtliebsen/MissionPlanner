@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.App.Services;
+using MissionPlanner.App.Maps;
+using MissionPlanner.Library.Browser.Maps;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Maps.Custom;
 using MissionPlanner.Maps.Http;
@@ -17,6 +19,9 @@ public static class BrowserAppConfigurator
 {
     public static IServiceCollection AddBrowserOnlyServices(this IServiceCollection services)
     {
+        services.TryAddSingleton<IOfflineMapPackInstaller, BrowserOfflineMaps>();
+        services.TryAddSingleton<IOfflineMapPackValidator, BrowserOfflineMaps>();
+        services.TryAddSingleton<IMapsuiMbTilesSourceFactory, BrowserOfflineMaps>();
         services.TryAddTransient<IMavLinkConnectionSessionFactory, BrowserConnectionSessionFactory>();
         services.TryAddTransient<ISerialPortDiscoveryService, BrowserSerialPortDiscovery>();
         services.PostConfigure<ApplicationOptions>(options =>

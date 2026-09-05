@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-    <!-- Avalonia/Skia and SQLite require native WebAssembly linking. -->
+    <!-- Avalonia/Skia require native WebAssembly linking. -->
     <WasmBuildNative>true</WasmBuildNative>
     <!-- Shared services currently use reflection-based discovery and JSON binding. -->
     <PublishTrimmed>false</PublishTrimmed>

@@ -1,7 +1,9 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using Microsoft.Data.Sqlite;
 
-namespace MissionPlanner.Maps.Offline;
+using MissionPlanner.Maps.Offline;
+
+namespace MissionPlanner.Library.Windows.Maps;
 
 /// <summary>
 /// Validates raster MBTiles pack integrity, metadata, schema, and payload.

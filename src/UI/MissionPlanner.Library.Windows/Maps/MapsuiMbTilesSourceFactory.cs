@@ -1,4 +1,4 @@
-﻿using BruTile;
+using BruTile;
 using BruTile.Predefined;
 using Mapsui.Layers;
 using Mapsui.Tiling.Layers;
@@ -6,10 +6,12 @@ using Microsoft.Data.Sqlite;
 using MissionPlanner.Maps.Offline;
 using MissionPlanner.Maps.Sources;
 
-namespace MissionPlanner.App.Maps;
+using MissionPlanner.App.Maps;
+
+namespace MissionPlanner.Library.Windows.Maps;
 
 /// <summary>Creates read-only Mapsui layers for validated raster MBTiles packs.</summary>
-public sealed class MapsuiMbTilesSourceFactory
+public sealed class MapsuiMbTilesSourceFactory : IMapsuiMbTilesSourceFactory
 {
     /// <summary>Creates a basemap layer for an installed pack.</summary>
     public ILayer Create(InstalledOfflineMapPack pack)

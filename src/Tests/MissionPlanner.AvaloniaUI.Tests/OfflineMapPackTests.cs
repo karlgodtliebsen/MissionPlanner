@@ -4,7 +4,9 @@ using Microsoft.Data.Sqlite;
 using MissionPlanner.Maps.Offline;
 using NSubstitute;
 
-namespace MissionPlanner.Core.Tests.Maps;
+using MissionPlanner.Library.Windows.Maps;
+
+namespace MissionPlanner.AvaloniaUI.Tests.Maps;
 
 public sealed class OfflineMapPackTests
 {

@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Runtime.Versioning;
 using Avalonia;
-using Avalonia.Dialogs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,13 +69,6 @@ public class MissionPlannerProgram
                 .WithDataAnnotationsValidation()
                 .WithInterFont()
                 .LogToTrace();
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-        {
-            builder.UseManagedSystemDialogs().UsePlatformDetect();
-#if DEBUG
-            builder.WithDeveloperTools();
-#endif
-        }
         return builder;
     }
 }

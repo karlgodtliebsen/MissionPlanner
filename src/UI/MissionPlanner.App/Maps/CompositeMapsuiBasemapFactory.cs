@@ -1,4 +1,4 @@
-﻿using BruTile;
+using BruTile;
 using BruTile.Predefined;
 using Mapsui.Layers;
 using Mapsui.Tiling.Layers;
@@ -9,7 +9,7 @@ using MissionPlanner.Maps.Sources;
 namespace MissionPlanner.App.Maps;
 
 /// <summary>Routes supported raster sources to the appropriate production adapter.</summary>
-public sealed class CompositeMapsuiBasemapFactory(MapsuiMbTilesSourceFactory mbTilesFactory, IMapHttpResourceFetcher resourceFetcher) : IMapsuiBasemapFactory
+public sealed class CompositeMapsuiBasemapFactory(IMapsuiMbTilesSourceFactory mbTilesFactory, IMapHttpResourceFetcher resourceFetcher) : IMapsuiBasemapFactory
 {
     /// <summary>Stable identity assigned to the single basemap slot.</summary>
     public const string BasemapLayerName = "MissionPlanner.Basemap";
@@ -53,6 +53,10 @@ public sealed class CompositeMapsuiBasemapFactory(MapsuiMbTilesSourceFactory mbT
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             return new MapBasemapCreationResult(MapBasemapCreationStatus.Cancelled, null, "Basemap creation was cancelled.");
+        }
+        catch (NotSupportedException exception)
+        {
+            return Unsupported(source, exception.Message);
         }
         catch (FileNotFoundException exception)
         {

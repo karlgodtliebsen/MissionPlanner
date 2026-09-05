@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -101,7 +101,7 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<IActiveMapSourceStore, PlannerActiveMapSourceStore>();
         services.TryAddTransient<MapsuiHostedBasemapFactory>();
-        services.TryAddTransient<MapsuiMbTilesSourceFactory>();
+        services.TryAddTransient<IMapsuiMbTilesSourceFactory, UnsupportedMapsuiMbTilesSourceFactory>();
         services.TryAddTransient<IMapsuiBasemapFactory, CompositeMapsuiBasemapFactory>();
         services.TryAddTransient<IMapHttpRuntimeSettings, PlannerMapHttpRuntimeSettings>();
 

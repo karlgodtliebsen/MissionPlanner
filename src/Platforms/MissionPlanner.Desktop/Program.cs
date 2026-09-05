@@ -16,6 +16,7 @@ internal sealed class Program
         MissionPlannerProgram.Main(args);
 
         var app = MissionPlannerProgram.BuildAvaloniaApp((sc) => sc.AddWindowsOnlyServices())
+            .UseWindowsPlatform()
             .With(new FontManagerOptions
             {
                 FontFallbacks =
