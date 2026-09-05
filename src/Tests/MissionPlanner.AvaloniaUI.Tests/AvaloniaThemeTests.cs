@@ -35,7 +35,7 @@ public sealed class AvaloniaThemeTests
     public void ApplicationAxamlContainsCurrentThemeComposition()
     {
         var appAxaml = File.ReadAllText(RepositoryPath(
-            "src", "UI", "AvaloniaUI", "MissionPlanner.AvaloniaUI.App", "App.axaml"));
+            "src", "UI", "MissionPlanner.App", "App.axaml"));
 
         Assert.Contains("<semi:SemiTheme", appAxaml, StringComparison.Ordinal);
         Assert.Contains("<semi:UrsaSemiTheme", appAxaml, StringComparison.Ordinal);

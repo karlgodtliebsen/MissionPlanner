@@ -15,6 +15,7 @@ namespace MissionPlanner.App;
 [SupportedOSPlatform("windows")]
 [SupportedOSPlatform("linux")]
 [SupportedOSPlatform("macos")]
+[SupportedOSPlatform("browser")]
 public class MissionPlannerProgram
 {
     private const string title = "MissionPlanner Next Generation";
@@ -39,6 +40,10 @@ public class MissionPlannerProgram
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp(Action<IServiceCollection> serviceAction)
+        => BuildAvaloniaAppAsync(serviceAction).GetAwaiter().GetResult();
+
+    public static async Task<AppBuilder> BuildAvaloniaAppAsync(
+        Action<IServiceCollection> serviceAction, IConfiguration? configuration = null)
     {
         IServiceProvider? serviceProvider = null;
 
@@ -53,22 +58,25 @@ public class MissionPlannerProgram
         }
         var cancellationTokenSource = new CancellationTokenSource();
         IServiceCollection services = new ServiceCollection();
-        services.AddApplicationConfiguration(configurationBuilder.Build());
         serviceAction.Invoke(services);
+        services.AddApplicationConfiguration(configuration ?? configurationBuilder.Build());
         services.AddSingleton(cancellationTokenSource);
         serviceProvider = services.BuildServiceProvider();
         DomainException.ThrowIfNull(serviceProvider);
-        serviceProvider.UseApplication();
+        await serviceProvider.UseApplicationAsync();
 
-        return AppBuilder
+        var builder = AppBuilder
             .Configure(() => new App(serviceProvider))
-                .UseManagedSystemDialogs()
                 .WithDataAnnotationsValidation()
-                .UsePlatformDetect()
                 .WithInterFont()
-#if DEBUG
-                .WithDeveloperTools()
-#endif
                 .LogToTrace();
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        {
+            builder.UseManagedSystemDialogs().UsePlatformDetect();
+#if DEBUG
+            builder.WithDeveloperTools();
+#endif
+        }
+        return builder;
     }
 }

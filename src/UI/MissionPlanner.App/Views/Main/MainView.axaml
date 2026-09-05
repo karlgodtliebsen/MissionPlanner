@@ -1,0 +1,18 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+             xmlns:navigation="clr-namespace:MissionPlanner.App.Views.Navigation"
+             xmlns:u="https://irihi.tech/ursa"
+             x:Class="MissionPlanner.App.Views.Main.MainView"
+             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+    <Grid>
+        <Grid RowDefinitions="50,*,Auto">
+            <common:TopBarView Grid.Row="0" />
+            <navigation:MainShellView Grid.Row="1" />
+            <common:StatusBarView Grid.Row="2" />
+        </Grid>
+        <!-- Dialog hosts arrange overlays independently; application content
+             must be their sibling so it receives the available layout size. -->
+        <u:OverlayDialogHost />
+    </Grid>
+</UserControl>

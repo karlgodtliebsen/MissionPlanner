@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 
@@ -7,23 +7,23 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 /// <summary>Draws one live RC channel with configured and calibration markers.</summary>
 public sealed class RadioChannelMeterView : Control
 {
-    public static readonly StyledProperty<int> ChannelNumberProperty = Register<int>(nameof(ChannelNumber));
-    public static readonly StyledProperty<string?> FunctionNameProperty = Register<string?>(nameof(FunctionName));
-    public static readonly StyledProperty<int> PwmProperty = Register(nameof(Pwm), 1500);
-    public static readonly StyledProperty<int> DisplayMinimumProperty = Register(nameof(DisplayMinimum), 800);
-    public static readonly StyledProperty<int> DisplayMaximumProperty = Register(nameof(DisplayMaximum), 2200);
-    public static readonly StyledProperty<int> ConfiguredMinimumProperty = Register(nameof(ConfiguredMinimum), 1100);
-    public static readonly StyledProperty<int> ConfiguredMaximumProperty = Register(nameof(ConfiguredMaximum), 1900);
-    public static readonly StyledProperty<int> TrimProperty = Register(nameof(Trim), 1500);
-    public static readonly StyledProperty<int> DeadZoneProperty = Register<int>(nameof(DeadZone));
-    public static readonly StyledProperty<int?> CapturedMinimumProperty = Register<int?>(nameof(CapturedMinimum));
-    public static readonly StyledProperty<int?> CapturedMaximumProperty = Register<int?>(nameof(CapturedMaximum));
-    public static readonly StyledProperty<int?> CandidateTrimProperty = Register<int?>(nameof(CandidateTrim));
-    public static readonly StyledProperty<bool> IsCapturingProperty = Register<bool>(nameof(IsCapturing));
-    public static readonly StyledProperty<bool> IsStaleProperty = Register<bool>(nameof(IsStale));
-    public static readonly StyledProperty<bool> HasSignalProperty = Register(nameof(HasSignal), true);
-    public static readonly StyledProperty<RadioChannelPresentationKind> PresentationKindProperty = Register<RadioChannelPresentationKind>(nameof(PresentationKind));
-    public static readonly StyledProperty<bool> IsReversedProperty = Register<bool>(nameof(IsReversed));
+    public static readonly StyledProperty<int> ChannelNumberProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(ChannelNumber));
+    public static readonly StyledProperty<string?> FunctionNameProperty = AvaloniaProperty.Register<RadioChannelMeterView, string?>(nameof(FunctionName));
+    public static readonly StyledProperty<int> PwmProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(Pwm), 1500);
+    public static readonly StyledProperty<int> DisplayMinimumProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(DisplayMinimum), 800);
+    public static readonly StyledProperty<int> DisplayMaximumProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(DisplayMaximum), 2200);
+    public static readonly StyledProperty<int> ConfiguredMinimumProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(ConfiguredMinimum), 1100);
+    public static readonly StyledProperty<int> ConfiguredMaximumProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(ConfiguredMaximum), 1900);
+    public static readonly StyledProperty<int> TrimProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(Trim), 1500);
+    public static readonly StyledProperty<int> DeadZoneProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(DeadZone));
+    public static readonly StyledProperty<int?> CapturedMinimumProperty = AvaloniaProperty.Register<RadioChannelMeterView, int?>(nameof(CapturedMinimum));
+    public static readonly StyledProperty<int?> CapturedMaximumProperty = AvaloniaProperty.Register<RadioChannelMeterView, int?>(nameof(CapturedMaximum));
+    public static readonly StyledProperty<int?> CandidateTrimProperty = AvaloniaProperty.Register<RadioChannelMeterView, int?>(nameof(CandidateTrim));
+    public static readonly StyledProperty<bool> IsCapturingProperty = AvaloniaProperty.Register<RadioChannelMeterView, bool>(nameof(IsCapturing));
+    public static readonly StyledProperty<bool> IsStaleProperty = AvaloniaProperty.Register<RadioChannelMeterView, bool>(nameof(IsStale));
+    public static readonly StyledProperty<bool> HasSignalProperty = AvaloniaProperty.Register<RadioChannelMeterView, bool>(nameof(HasSignal), true);
+    public static readonly StyledProperty<RadioChannelPresentationKind> PresentationKindProperty = AvaloniaProperty.Register<RadioChannelMeterView, RadioChannelPresentationKind>(nameof(PresentationKind));
+    public static readonly StyledProperty<bool> IsReversedProperty = AvaloniaProperty.Register<RadioChannelMeterView, bool>(nameof(IsReversed));
 
     static RadioChannelMeterView() => AffectsRender<RadioChannelMeterView>(
         PwmProperty, DisplayMinimumProperty, DisplayMaximumProperty, ConfiguredMinimumProperty,
@@ -78,7 +78,4 @@ public sealed class RadioChannelMeterView : Control
 
     private static void DrawTick(DrawingContext context, double x, double center, double halfHeight, string color, double thickness) =>
         context.DrawLine(new Pen(new SolidColorBrush(Color.Parse(color)), thickness), new Point(x, center - halfHeight), new Point(x, center + halfHeight));
-
-    private static StyledProperty<T> Register<T>(string name, T defaultValue = default!) =>
-        AvaloniaProperty.Register<RadioChannelMeterView, T>(name, defaultValue);
 }

@@ -363,6 +363,9 @@ public static class ApplicationConfigurator
     /// <param name="serviceProvider"></param>
     /// <returns></returns>
     public static IServiceProvider UseApplication(this IServiceProvider serviceProvider)
+        => serviceProvider.UseApplicationAsync().GetAwaiter().GetResult();
+
+    public static async Task<IServiceProvider> UseApplicationAsync(this IServiceProvider serviceProvider)
     {
         var logger = serviceProvider.GetRequiredService<ILogger<ApplicationOptions>>();
         logger.LogInformation("UseApplication - Setting up Application Operations");
@@ -372,7 +375,7 @@ public static class ApplicationConfigurator
             .UseSimulationServices();
 
         var plannerSettingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();
-        var loadResult = plannerSettingsService.InitializeAsync().AsTask().GetAwaiter().GetResult();
+        var loadResult = await plannerSettingsService.InitializeAsync();
         if (!string.IsNullOrWhiteSpace(loadResult.Message))
         {
             logger.LogInformation("Planner settings initialization: {Message}", loadResult.Message);

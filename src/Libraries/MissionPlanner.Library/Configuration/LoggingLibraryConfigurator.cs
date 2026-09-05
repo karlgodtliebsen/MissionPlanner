@@ -41,6 +41,12 @@ public static partial class LoggingLibraryConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddSerilog(this IServiceCollection services, IConfiguration configuration)
     {
+        if (OperatingSystem.IsBrowser())
+        {
+            Log.Logger = new LoggerConfiguration().MinimumLevel.Information().WriteTo.Console().CreateLogger();
+            return services;
+        }
+
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
             .Enrich.WithMachineName()

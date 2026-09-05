@@ -52,6 +52,10 @@
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
   </Folder>
+  <Folder Name="/Solution Items/actions/">
+    <File Path="../.github/workflows/dotnet-build-browser.yml" />
+    <File Path="../.github/workflows/dotnet-build.yml" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.AvaloniaUI.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj" />

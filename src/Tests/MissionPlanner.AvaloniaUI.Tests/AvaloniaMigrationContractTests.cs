@@ -30,7 +30,7 @@ public sealed class AvaloniaMigrationContractTests
             .ToArray();
 
         Assert.DoesNotContain(references, value =>
-            value!.Contains("MissionPlanner.AvaloniaUI.App", StringComparison.OrdinalIgnoreCase));
+            value!.Contains("MissionPlanner.App", StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>Verifies migrated feature ViewModels are present in the Avalonia assembly.</summary>
@@ -110,7 +110,7 @@ public sealed class AvaloniaMigrationContractTests
     [InlineData("Views/FlightPlanner/FlightPlannerPage.axaml", "MissionMapView")]
     public void RepresentativeAxamlUsesMigratedControl(string relativePath, string expectedControl)
     {
-        var pathParts = new[] { "src", "UI", "AvaloniaUI", "MissionPlanner.AvaloniaUI.App" }
+        var pathParts = new[] { "src", "UI", "MissionPlanner.App" }
             .Concat(relativePath.Split('/'))
             .ToArray();
         var content = File.ReadAllText(RepositoryPath(pathParts));
@@ -125,7 +125,7 @@ public sealed class AvaloniaMigrationContractTests
     public void MavFtpConnectionHandlerCreatesItsTokenAfterResettingThePreviousOperation()
     {
         var source = File.ReadAllText(RepositoryPath(
-            "src", "UI", "AvaloniaUI", "MissionPlanner.AvaloniaUI.App", "Views",
+            "src", "UI", "MissionPlanner.App", "Views",
             "ConfigTuning", "Tabs", "MAVFtpTabViewModel.cs"));
         var handlerStart = source.IndexOf("private async Task OnVehicleConnected", StringComparison.Ordinal);
         var handlerEnd = source.IndexOf("private async Task Start", handlerStart, StringComparison.Ordinal);

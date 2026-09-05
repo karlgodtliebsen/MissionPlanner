@@ -77,8 +77,9 @@
                          Spacing="50" Margin="0" IsVisible="{Binding IsConnected}"
                          VerticalAlignment="Center" HorizontalAlignment="Stretch"
                          >
-                <Label Content="{Binding StatusMessage}" FontSize="16"
+                <TextBlock Content="{Binding StatusMessage}" FontSize="16"
                        VerticalAlignment="Center"
+                       TextWrapping="Wrap"
                        HorizontalAlignment="Center"  />
             </StackPanel>
 

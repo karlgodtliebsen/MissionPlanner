@@ -38,6 +38,10 @@ public partial class App(IServiceProvider serviceProvider) : Application
 
 
         }
+        else if (ApplicationLifetime is ISingleViewApplicationLifetime singleView)
+        {
+            singleView.MainView = new MainView();
+        }
         base.OnFrameworkInitializationCompleted();
     }
 }

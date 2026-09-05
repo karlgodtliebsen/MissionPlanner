@@ -8,7 +8,6 @@ using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -25,7 +24,6 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     private readonly IList<IDisposable> disposables = [];
     private readonly ApplicationStateService stateService;
 
-    private readonly bool isConnectedStatusSet;
     /// <summary>
     /// Provides the public API for Channels.
     /// </summary>
@@ -413,6 +411,13 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
 
         if (SelectedChannel is null)
         {
+            return;
+        }
+
+        if (OperatingSystem.IsBrowser())
+        {
+            StatusMessage = "Direct UDP, TCP and serial connections are unavailable in a browser. Use the desktop app or a WebSocket-to-MAVLink bridge.";
+            NotificationManager?.Show(StatusMessage);
             return;
         }
 

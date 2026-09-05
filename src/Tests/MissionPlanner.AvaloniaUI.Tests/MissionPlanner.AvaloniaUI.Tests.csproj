@@ -24,5 +24,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <!-- Exercise the platform-neutral in-memory store without loading a browser-only assembly. -->
+    <Compile Include="..\..\UI\MissionPlanner.Library.Browser\BrowserPlannerSecretStore.cs" Link="Browser\BrowserPlannerSecretStore.cs" />
   </ItemGroup>
 </Project>

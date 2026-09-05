@@ -5,6 +5,10 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <!-- Avalonia/Skia and SQLite require native WebAssembly linking. -->
+    <WasmBuildNative>true</WasmBuildNative>
+    <!-- Shared services currently use reflection-based discovery and JSON binding. -->
+    <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,5 +17,18 @@
 
   <ItemGroup>
       <ProjectReference Include="..\..\UI\MissionPlanner.App\MissionPlanner.App.csproj" />
+      <ProjectReference Include="..\..\UI\MissionPlanner.Library.Browser\MissionPlanner.Library.Browser.csproj" />
+      <EmbeddedResource Include="..\..\UI\MissionPlanner.App\appsettings.json" LogicalName="MissionPlanner.Browser.appsettings.json" />
+      <!-- Explicitly include the generated asset even on the first clean build. -->
+      <Content Remove="wwwroot\browser-platform.js" />
+      <Content Include="wwwroot\browser-platform.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- Linked external content gets the host's wwwroot as its development content root.
+       Materialize the file there before discovery so development and publish agree. -->
+  <Target Name="CopyBrowserPlatformModule" BeforeTargets="AssignTargetPaths">
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\..\UI\MissionPlanner.Library.Browser\Interop\browser-platform.js"
+          DestinationFiles="$(MSBuildProjectDirectory)\wwwroot\browser-platform.js"
+          SkipUnchangedFiles="true" />
+  </Target>
 </Project>

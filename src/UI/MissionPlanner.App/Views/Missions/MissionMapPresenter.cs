@@ -91,6 +91,12 @@ internal sealed class MissionMapPresenter : IDisposable
         RenderPlanningOverlays(viewModel.PlanningOverlaySnapshot);
 
         await SwitchSourceAsync(viewModel.SelectedSourceId, lifecycleCancellation.Token);
+        // The map starts with empty overlay layers, so Mapsui cannot derive an
+        // initial extent. Fill the viewport even if vehicle/GPS location is absent
+        // or browser geolocation fails. A subsequent position overrides this.
+        Navigate(() => map.Navigator.ZoomToBox(new MRect(
+            -20037508.342789244, -20037508.342789244,
+            20037508.342789244, 20037508.342789244), MBoxFit.Fill));
     }
 
     /// <summary>
