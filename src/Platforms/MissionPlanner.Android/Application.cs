@@ -1,12 +1,11 @@
-﻿using Android.App;
-using Android.Runtime;
+﻿using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
 
-namespace MissionPlanner.Android
+namespace MissionPlanner
 {
     [Application]
-    public class Application : AvaloniaAndroidApplication<App>
+    public class Application : AvaloniaAndroidApplication<MissionPlanner.App>
     {
         protected Application(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {

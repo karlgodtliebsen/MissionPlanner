@@ -40,12 +40,9 @@
     <File Path="../docs/VEHICLE_CONNECTION.md" />
     <File Path="../docs/VEHICLE_SCRIPTS.md" />
   </Folder>
-  <Folder Name="/Host/">
-    <Project Path="Hosts/MissionPlanner.Android/MissionPlanner.Android.csproj" />
-    <Project Path="Hosts/MissionPlanner.Browser/MissionPlanner.Browser.csproj" />
-    <Project Path="Hosts/MissionPlanner.Desktop/MissionPlanner.Desktop.csproj" />
-    <Project Path="Hosts/MissionPlanner.iOS/MissionPlanner.iOS.csproj" />
-    <Project Path="Hosts/MissionPlanner/MissionPlanner/MissionPlanner.csproj" Id="d972c70e-b7f4-40fc-ba4a-9570fbb2cbd8" />
+  <Folder Name="/Platforms/">
+    <Project Path="Platforms/MissionPlanner.Browser/MissionPlanner.Browser.csproj" />
+    <Project Path="Platforms/MissionPlanner.Desktop/MissionPlanner.Desktop.csproj" />
   </Folder>
   <Folder Name="/Libraries/">
     <Project Path="Libraries/MissionPlanner.Library/MissionPlanner.Library.csproj" />
@@ -69,6 +66,7 @@
   </Folder>
   <Folder Name="/UI/">
     <Project Path="UI/MissionPlanner.App/MissionPlanner.App.csproj" />
+    <Project Path="UI/MissionPlanner.Library.Browser/MissionPlanner.Library.Browser.csproj" />
     <Project Path="UI/MissionPlanner.Library.Linux/MissionPlanner.Library.Linux.csproj" />
     <Project Path="UI/MissionPlanner.Library.MacOs/MissionPlanner.Library.MacOs.csproj" />
     <Project Path="UI/MissionPlanner.Library.Windows/MissionPlanner.Library.Windows.csproj" />
