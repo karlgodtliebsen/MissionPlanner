@@ -330,7 +330,8 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                 SelectedChannel = availablePorts[0];
             }
 
-            SelectedChannel ??= defaultChannel;
+            if (SelectedChannel is null || !Channels.Contains(SelectedChannel))
+                SelectedChannel = defaultChannel;
             Logger.LogInformation("Refreshed port list: {PortCount} ports found", availablePorts.Length);
         }
         catch (Exception ex)
@@ -414,12 +415,6 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
             return;
         }
 
-        if (OperatingSystem.IsBrowser())
-        {
-            StatusMessage = "Direct UDP, TCP and serial connections are unavailable in a browser. Use the desktop app or a WebSocket-to-MAVLink bridge.";
-            NotificationManager?.Show(StatusMessage);
-            return;
-        }
 
 
 
@@ -441,7 +436,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
             {
                 selection = "serial";
             }
-            else if (selection.Contains(":"))
+            else if (selection == "tcp" || selection.Contains(":"))
             {
                 selection = "tcp";
                 SelectedChannel = "TCP";

@@ -6,6 +6,9 @@ internal static partial class BrowserInterop
 {
     private const string Module = "MissionPlanner.Browser.Platform";
 
+    [JSImport("getBridgeUrl", Module)]
+    internal static partial string GetBridgeUrl();
+
     [JSImport("getLocation", Module)]
     [return: JSMarshalAs<JSType.Promise<JSType.String>>]
     internal static partial Task<string?> GetLocationAsync();

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><IsPackable>false</IsPackable></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <ProjectReference Include="../../Platforms/MissionPlanner.BrowserBridge/MissionPlanner.BrowserBridge.csproj" />
+    <ProjectReference Include="../../Core/MissionPlanner.Transport/MissionPlanner.Transport.csproj" />
+    <Compile Include="../../UI/MissionPlanner.Library.Browser/Transport/BrowserUdpTransport.cs" Link="BrowserUdpTransport.cs" />
+    <Using Include="Xunit" />
+  </ItemGroup>
+</Project>

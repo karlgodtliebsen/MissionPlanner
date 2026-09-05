@@ -18,21 +18,21 @@ dotnet run --configuration Debug --project src/Platforms/MissionPlanner.Browser
 
 # Or, from the browser project folder:
 
-cd src/Platforms/MissionPlanner.Browser
-dotnet run --configuration Debug --project .\MissionPlanner.Browser.csproj
+cd ./src/Platforms/MissionPlanner.Browser
+dotnet run --configuration Debug --project MissionPlanner.Browser.csproj
 ```
 
 For C# debugging from a shell, leave the app running and use a second PowerShell
 in the browser project directory:
 
 ```powershell
-.\Start-DebugBrowser.ps1 -Browser Chrome
+./src/Platforms/MissionPlanner.Browser/Start-DebugBrowser.ps1 -Browser Chrome
 # Or:
-.\Start-DebugBrowser.ps1 -Browser Edge
+./src/Platforms/MissionPlanner.Browser/Start-DebugBrowser.ps1 -Browser Edge
 # Or:
-.\Start-DebugBrowser.ps1 -Browser Thorium
+./src/Platforms/MissionPlanner.Browser/Start-DebugBrowser.ps1 -Browser Thorium
 # Or:
-.\Start-DebugBrowser.ps1 -Browser Comet
+./src/Platforms/MissionPlanner.Browser/Start-DebugBrowser.ps1 -Browser Comet
 ```
 
 Thorium is the default when `-Browser` is omitted. Edge and Chrome remain supported.
@@ -72,7 +72,7 @@ On this Windows PC, run the following in PowerShell as Administrator under the
 same account that runs Visual Studio/dotnet, and accept the certificate trust prompt:
 
 ```powershell
-& C:\Projects\MissionPlanner\src\Platforms\MissionPlanner.Browser\Setup-DevNetwork.ps1
+ ./src/Platforms/MissionPlanner.Browser/Setup-DevNetwork.ps1
 ```
 
 The setup script creates/reuses a certificate covering localhost, loopback, and
@@ -98,6 +98,48 @@ files are ignored by Git. No router port forwarding is needed.
 To remove network access, run `Remove-NetFirewallRule -Name MissionPlanner-Browser-HomeNetwork`
 as Administrator. The certificate expires after twelve months; rerun setup to
 renew it and distribute the renewed public certificate to client PCs.
+
+## Connect through the local UDP bridge
+
+From this browser project directory, run:
+
+```powershell
+./src/Platforms/MissionPlanner.Browser/Start-UdpBridge.ps1
+```
+
+Keep the shell running and open **http://127.0.0.1:7170/**. This native host serves
+the browser app and its WebSocket endpoint together. Select **UDP**, port **14550**,
+then Connect. Configure the local simulator/MAVLink sender to send to
+**127.0.0.1:14550**. This is a listening port: the relay learns the sender's UDP
+endpoint from its first packet and sends replies back to that endpoint. The
+existing `localhost:5235` / `localhost:7169` WebAssembly dev host has no bridge.
+
+The first implementation supports one browser connection and one local UDP peer.
+Close other applications listening on UDP 14550 first. The bridge binds only to
+loopback and accepts WebSocket handshakes only from its own origin. It does not
+accept arbitrary UDP destinations from browser input, change certificates, or
+open firewall ports. Access from another PC and direct browser TCP/serial are
+not included. HTTP loopback is treated as a secure context by browsers.
+
+`MissionPlanner.Library.Browser/Transport` contains the WebSocket transport,
+browser session factory and serial-discovery implementation. Browser configuration
+limits the available channels to UDP. The shared MAVLink parser, vehicle registry,
+transmission policy and telemetry pipeline are reused. `MissionPlanner.BrowserBridge`
+contains only the native hosting/UDP relay. The wire format is binary: server to
+browser messages contain four IPv4 address bytes, a two-byte big-endian sender
+port, then one UDP payload; browser to server messages contain one UDP payload.
+Reload/disconnect releases the socket. Reconnect to select a new UDP peer.
+
+For an alternate local port, start the native host directly with `--UdpPort N`
+and select that same port in the app:
+
+```powershell
+dotnet run --project ..\MissionPlanner.BrowserBridge -- --BrowserAssets "$PWD\bin\Debug\net10.0-browser\MissionPlanner.Browser.staticwebassets.runtime.json" --UdpPort 14551
+```
+
+The standalone bridge does not include the WebAssembly C# debugger proxy. Use the
+existing WebAssembly host for that debugger workflow. Browser DevTools remains
+available on the bridge host.
 
 ## Platform services
 
@@ -136,6 +178,7 @@ The same report is available as `window.missionPlannerStartupFailure` in DevTool
 
 ```powershell
 node --test src/Tests/browser-platform.test.mjs
+dotnet test src/Tests/MissionPlanner.BrowserBridge.Tests
 dotnet test src/Tests/MissionPlanner.AvaloniaUI.Tests --filter FullyQualifiedName~BrowserPlannerSecretStoreTests
 ```
 

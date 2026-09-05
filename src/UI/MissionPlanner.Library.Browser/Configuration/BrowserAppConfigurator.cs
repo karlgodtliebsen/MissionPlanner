@@ -6,6 +6,10 @@ using MissionPlanner.Maps.Custom;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Offline;
 using MissionPlanner.Maps.Terrain;
+using MissionPlanner.App.Configuration;
+using MissionPlanner.Library.Browser.Transport;
+using MissionPlanner.MavLink.Services;
+using MissionPlanner.Shared.Models.Services.Abstractions;
 
 namespace MissionPlanner.Library.Browser.Configuration;
 
@@ -13,6 +17,14 @@ public static class BrowserAppConfigurator
 {
     public static IServiceCollection AddBrowserOnlyServices(this IServiceCollection services)
     {
+        services.TryAddTransient<IMavLinkConnectionSessionFactory, BrowserConnectionSessionFactory>();
+        services.TryAddTransient<ISerialPortDiscoveryService, BrowserSerialPortDiscovery>();
+        services.PostConfigure<ApplicationOptions>(options =>
+        {
+            options.Channels.Clear();
+            options.Channels.Add("UDP");
+            options.Channel = "UDP";
+        });
         services.TryAddSingleton<IPlatformLocationService, BrowserPlatformLocationService>();
         services.TryAddSingleton<IPlannerSecretStore, BrowserPlannerSecretStore>();
         services.TryAddSingleton<IPlannerSettingsStore, BrowserPlannerSettingsStore>();

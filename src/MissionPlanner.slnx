@@ -42,6 +42,7 @@
   </Folder>
   <Folder Name="/Platforms/">
     <Project Path="Platforms/MissionPlanner.Browser/MissionPlanner.Browser.csproj" />
+    <Project Path="Platforms/MissionPlanner.BrowserBridge/MissionPlanner.BrowserBridge.csproj" />
     <Project Path="Platforms/MissionPlanner.Desktop/MissionPlanner.Desktop.csproj" />
   </Folder>
   <Folder Name="/Libraries/">
@@ -58,6 +59,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.AvaloniaUI.Tests.csproj" />
+    <Project Path="Tests/MissionPlanner.BrowserBridge.Tests/MissionPlanner.BrowserBridge.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Firmware.Tests/MissionPlanner.Firmware.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Smoke.Simulator.Tests/MissionPlanner.Smoke.Simulator.Tests.csproj" />

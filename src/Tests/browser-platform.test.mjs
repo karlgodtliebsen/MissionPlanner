@@ -10,6 +10,16 @@ const bridge = await import(`data:text/javascript;base64,${Buffer.from(source).t
 const diagnosticsSource = await readFile(new URL("../Platforms/MissionPlanner.Browser/wwwroot/startup-diagnostics.js", import.meta.url), "utf8");
 const { installStartupDiagnostics } = await import(`data:text/javascript;base64,${Buffer.from(diagnosticsSource).toString("base64")}`);
 
+test("bridge URL follows the page origin and uses secure WebSockets for HTTPS", () => {
+    const previous = globalThis.location;
+    try {
+        globalThis.location = { href: 'http://127.0.0.1:7170/nested/?anything=1' };
+        assert.equal(bridge.getBridgeUrl(), 'ws://127.0.0.1:7170/bridge/udp');
+        globalThis.location = { href: 'https://localhost:7171/' };
+        assert.equal(bridge.getBridgeUrl(), 'wss://localhost:7171/bridge/udp');
+    } finally { globalThis.location = previous; }
+});
+
 test("bootstrap imports the bridge from the app directory before managed startup", async () => {
     const root = await mkdtemp(join(tmpdir(), "missionplanner-bootstrap-"));
     const previousWindow = globalThis.window;

@@ -37,6 +37,5 @@ jobs:
           src/Platforms/MissionPlanner.Browser/MissionPlanner.Browser.csproj
           --configuration Release
           --no-restore
-          -p:Platform=x64
 
   
