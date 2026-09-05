@@ -40,6 +40,7 @@
     <File Path="../docs/VEHICLE_CONNECTION.md" />
     <File Path="../docs/VEHICLE_SCRIPTS.md" />
   </Folder>
+  <Folder Name="/Host/" />
   <Folder Name="/Libraries/">
     <Project Path="Libraries/MissionPlanner.Library/MissionPlanner.Library.csproj" />
   </Folder>
@@ -60,8 +61,10 @@
     <Project Path="Tools/MissionPlanner.MavLink.Generator/MissionPlanner.MavLink.Generator.csproj" />
     <Project Path="Tools/MissionPlanner.Simulator/MissionPlanner.Simulator.csproj" />
   </Folder>
-  <Folder Name="/UI/" />
-  <Folder Name="/UI/Avalonia/">
-    <Project Path="UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App/MissionPlanner.AvaloniaUI.App.csproj" />
+  <Folder Name="/UI/">
+    <Project Path="UI/MissionPlanner.AvaloniaUI.App/MissionPlanner.AvaloniaUI.App.csproj" />
+    <Project Path="UI/MissionPlanner.Library.Linux/MissionPlanner.Library.Linux.csproj" />
+    <Project Path="UI/MissionPlanner.Library.MacOs/MissionPlanner.Library.MacOs.csproj" />
+    <Project Path="UI/MissionPlanner.Library.Windows/MissionPlanner.Library.Windows.csproj" />
   </Folder>
 </Solution>

@@ -45,11 +45,6 @@ public partial class MainShellViewModel : ObservableObject
         get; set;
     }
 
-    //partial void OnIsNavigationOpenChanged(bool oldValue, bool newValue)
-    //{
-    //    IsNavigationCollapsed = !newValue;
-    //}
-
     [ObservableProperty]
     public partial NavigationMenuItemViewModel? SelectedMenuItem
     {

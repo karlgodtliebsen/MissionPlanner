@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\UI\AvaloniaUI\MissionPlanner.AvaloniaUI.App\MissionPlanner.AvaloniaUI.App.csproj" />
+    <ProjectReference Include="..\..\UI\MissionPlanner.AvaloniaUI.App\MissionPlanner.AvaloniaUI.App.csproj" />
     <ProjectReference Include="..\MissionPlanner.Test.Support\MissionPlanner.Test.Support.csproj" />
   </ItemGroup>
 
