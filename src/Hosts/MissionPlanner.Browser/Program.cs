@@ -1,25 +1,20 @@
-﻿using System.Runtime.Versioning;
-using System.Threading.Tasks;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Browser;
-using MissionPlanner;
+using MissionPlanner.App;
 
 internal sealed partial class Program
 {
-    //private static Task Main(string[] args) => BuildAvaloniaApp()
-    //        .WithInterFont()
-    //        .StartBrowserAppAsync("out");
 
-
-    private static Task private void Main(string[] args)
+    public static void Main(string[] args)
     {
-        MissionPlanner.AvaloniaUI.App.Program.Main(args);
+        MissionPlannerProgram.Main(args);
+        /*sc.AddWindowsOnlyServices()*/
 
-        return Task.CompletedTask;
+        var app = MissionPlannerProgram.BuildAvaloniaApp((sc) => { });
+
+        app
+            .With(new Win32PlatformOptions())
+            .StartBrowserAppAsync("out");
     }
 
-
-
-    //public static AppBuilder BuildAvaloniaApp()
-    //    => AppBuilder.Configure<App>();
 }
