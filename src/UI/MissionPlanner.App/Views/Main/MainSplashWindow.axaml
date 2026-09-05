@@ -1,0 +1,27 @@
+<u:SplashWindow
+    x:Class="MissionPlanner.App.Views.Main.MainSplashWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:iri="https://irihi.tech/shared"
+    xmlns:u="https://irihi.tech/ursa"
+    Title="MissionPlanner Next Generation"
+    Width="400"
+    Height="400">
+    <Grid
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        ColumnDefinitions="Auto, Auto"
+        RowDefinitions="Auto, Auto">
+
+        <StackPanel Grid.Row="0" Grid.Column="1">
+            <TextBlock
+                Classes="H2"
+                Text="MissionPlanner"
+                Theme="{DynamicResource TitleTextBlock}" 
+                />
+            <TextBlock FontWeight="Bold" Text="ArduPilot MissionPlanner Next Generation" />
+
+        </StackPanel>
+
+    </Grid>
+</u:SplashWindow>

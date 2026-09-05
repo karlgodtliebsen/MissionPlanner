@@ -1,0 +1,50 @@
+<ursa:UrsaWindow
+    x:Class="MissionPlanner.App.Utilities.Dialogs.ViewDialogWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ursa="https://irihi.tech/ursa"
+    xmlns:vm="using:MissionPlanner.App.Utilities.Dialogs"
+    x:DataType="vm:ViewDialogViewModel"
+    CanResize="True"
+    WindowStartupLocation="CenterOwner"
+    ShowInTaskbar="False">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Label Content="{Binding Title}" FontSize="22" HorizontalAlignment="Center" Margin="25"></Label>
+        <ContentControl
+            Grid.Row="1"
+            Margin="16"
+            Content="{Binding Content}"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"/>
+
+        <Border
+            Classes="SectionCard"
+            Grid.Row="2"
+            Padding="16,10">
+
+            <StackPanel
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Spacing="8">
+
+                <Button
+                    Classes="Secondary"
+                    MinWidth="90"
+                    Content="{Binding CloseText}"
+                    Command="{Binding CancelCommand}"
+                    IsVisible="{Binding ShowCloseButton}"/>
+
+                <Button
+                    Classes="Primary"
+                    MinWidth="90"
+                    Content="{Binding OkText}"
+                    Command="{Binding OkCommand}"
+                    IsVisible="{Binding ShowOkButton}"/>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+</ursa:UrsaWindow>

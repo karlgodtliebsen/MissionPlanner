@@ -1,0 +1,55 @@
+<UserControl
+    x:Class="MissionPlanner.App.Utilities.Dialogs.OverlayViewDialog"
+    xmlns="https://github.com/avaloniaui"   
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:MissionPlanner.App.Utilities.Dialogs"
+    xmlns:dialogs="clr-namespace:MissionPlanner.App.Utilities.Dialogs"
+    x:DataType="dialogs:OverlayViewDialogViewModel">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <TextBlock
+            Grid.Row="0"
+            Margin="16,12"
+            Text="{Binding Title}"
+            FontSize="18"
+            FontWeight="SemiBold"/>
+
+        <ContentControl
+            Grid.Row="1"
+            Margin="16"
+            Content="{Binding Content}"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"/>
+
+        <Border
+            Classes="SectionCard"
+            Grid.Row="2"
+            Padding="16,10">
+
+            <StackPanel
+                Orientation="Horizontal"
+                HorizontalAlignment="Right"
+                Spacing="8">
+
+                <Button
+                    MinWidth="90"
+                    Classes="Secondary"
+                    Content="{Binding CloseText}"
+                    Command="{Binding CancelCommand}"
+                    IsVisible="{Binding ShowCloseButton}"/>
+
+                <Button
+                    MinWidth="90"
+                    Classes="Primary"
+                    Content="{Binding OkText}"
+                    Command="{Binding OkCommand}"
+                    IsVisible="{Binding ShowOkButton}"/>
+
+            </StackPanel>
+
+        </Border>
+
+    </Grid>
+
+</UserControl>

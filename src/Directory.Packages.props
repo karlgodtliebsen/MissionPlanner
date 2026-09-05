@@ -61,6 +61,10 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageVersion>
+        <PackageVersion Include="Avalonia.iOS" Version="12.1.1" />
+        <PackageVersion Include="Avalonia.Browser" Version="12.1.1" />
+        <PackageVersion Include="Avalonia.Android" Version="12.1.1" />
+        <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.15" />
     <PackageVersion Include="Irihi.Ursa" Version="2.2.0" />
     <PackageVersion Include="Irihi.Ursa.Themes.Semi" Version="2.2.0" />
     <PackageVersion Include="Semi.Avalonia" Version="12.1.0.1" />

@@ -1,0 +1,39 @@
+﻿<utilities:WindowBase
+    x:TypeArguments="main:MainViewModel" xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:navigation="clr-namespace:MissionPlanner.App.Views.Navigation"
+    xmlns:main="clr-namespace:MissionPlanner.App.Views.Main"
+    xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    x:Class="MissionPlanner.App.Views.Main.MainWindow"
+    x:DataType="main:MainViewModel"
+    Icon="/Resources/AppIcon/mpdesktop.png"
+    TitleBarMargin="0,0,138,0"
+    Title="MissionPlanner Next Generation">
+
+    <u:UrsaWindow.TitleBarContent>
+        <common:TopBarView />
+    </u:UrsaWindow.TitleBarContent>
+
+        <Grid RowDefinitions="50,*,Auto">
+
+            <!-- Row 0 reserves the height occupied by the Ursa title-bar content. -->
+            <u:Divider Grid.Row="0"
+                       VerticalAlignment="Bottom"
+                       HorizontalAlignment="Stretch"
+                       Orientation="Horizontal" />
+
+            <!--
+            Everything navigable lives here.
+            Includes the right-side DrawerPage.
+            -->
+            <navigation:MainShellView
+                Grid.Row="1" />
+
+            <!-- Persistent application status -->
+            <common:StatusBarView Grid.Row="2" />
+
+        </Grid>
+
+</utilities:WindowBase>

@@ -1,0 +1,85 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:imaging="clr-namespace:Avalonia.Media.Imaging;assembly=Avalonia.Base"
+    xmlns:navigation="clr-namespace:MissionPlanner.App.Views.Navigation"
+    xmlns:u="https://irihi.tech/ursa"
+    x:Class="MissionPlanner.App.Views.Navigation.MainShellView"
+    x:DataType="navigation:MainShellViewModel"
+    x:CompileBindings="True"
+    d:DesignWidth="1200"
+    d:DesignHeight="700"
+    mc:Ignorable="d">
+
+
+    <DrawerPage
+        x:Name="MainDrawer"
+        DrawerPlacement="Left"
+        DrawerLength="300"
+        DrawerBehavior="Flyout"
+        DrawerLayoutBehavior="Overlay"
+        DrawerBreakpointLength="900"
+        IsOpen="{Binding IsNavigationOpen, Mode=TwoWay}"
+        Content="{Binding Content}">
+
+        <DrawerPage.DrawerIcon>
+            <PathIcon Data="M3,6 H21 V8 H3 Z M3,11 H21 V13 H3 Z M3,16 H21 V18 H3 Z" />
+        </DrawerPage.DrawerIcon>
+
+        <DrawerPage.DrawerHeader>
+            <DockPanel Margin="8,16,8,8" HorizontalAlignment="Center" VerticalSpacing="15">
+                <Panel DockPanel.Dock="Top" Width="52" Height="52"
+                       Background="Transparent" u:NavMenu.CanToggle="True">
+                    <Image Source="/Resources/AppIcon/mpdesktop.png" />
+                </Panel>
+
+                <TextBlock DockPanel.Dock="Top" Margin="16,0,0,0" VerticalAlignment="Center"
+                           FontSize="22" FontWeight="SemiBold"
+                           Text="MissionPlanner" />
+                <TextBlock DockPanel.Dock="Top" Margin="16,0,0,0" VerticalAlignment="Center"
+                           FontSize="18" FontWeight="SemiLight" 
+                           Text="Next Generation" />
+            </DockPanel>
+        </DrawerPage.DrawerHeader>
+        <DrawerPage.Drawer>
+            <Border DockPanel.Dock="Left" Padding="8,10,8,5" VerticalAlignment="Stretch"
+                    Theme="{DynamicResource CardBorder}">
+                <u:NavMenu
+                    IsVisible="{Binding IsNavigationOpen }"
+                    x:Name="NavigationMenu"
+                    ExpandWidth="280"
+                    HeaderBinding="{Binding Header}"
+                    IconBinding="{Binding Icon}"
+                    SubMenuBinding="{Binding Children}"
+                    ItemsSource="{Binding MenuItems}"
+                    SelectedItem="{Binding SelectedMenuItem, Mode=TwoWay}"
+                    IsHorizontalCollapsed="{Binding IsNavigationCollapsed, Mode=TwoWay}">
+
+                    <u:NavMenu.IconTemplate>
+                    <DataTemplate x:DataType="imaging:Bitmap">
+                            <Image Width="20" Height="20" Source="{Binding}" />
+                        </DataTemplate>
+                    </u:NavMenu.IconTemplate>
+
+                    <u:NavMenu.HeaderTemplate>
+                        <DataTemplate x:DataType="navigation:NavigationMenuItemViewModel">
+                            <TextBlock HorizontalAlignment="Left" Text="{Binding Header}"
+                                       TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Header}" />
+                        </DataTemplate>
+                    </u:NavMenu.HeaderTemplate>
+                    <u:NavMenu.Footer>
+                        <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                Classes="Tertiary Light" Content="Exit"
+                                Command="{Binding ExitCommand}"
+                                Theme="{DynamicResource BorderlessIconButton}" />
+                    </u:NavMenu.Footer>
+
+                </u:NavMenu>
+            </Border>
+        </DrawerPage.Drawer>
+
+    </DrawerPage>
+
+</UserControl>

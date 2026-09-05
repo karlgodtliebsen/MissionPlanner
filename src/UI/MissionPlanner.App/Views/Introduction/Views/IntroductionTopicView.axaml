@@ -1,0 +1,39 @@
+<UserControl
+                xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:models="clr-namespace:MissionPlanner.App.Views.Introduction.Models"
+                xmlns:views="clr-namespace:MissionPlanner.App.Views.Introduction.Views"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                x:Class="MissionPlanner.App.Views.Introduction.Views.IntroductionTopicView"
+                x:DataType="models:IntroductionTopic">
+    <ScrollViewer>
+        <StackPanel Margin="24,18,28,32" Spacing="18" MaxWidth="1180" HorizontalAlignment="Center">
+            <TextBlock Text="{Binding Title}" FontSize="30" FontWeight="Bold" TextWrapping="Wrap" />
+            <views:IntroductionMarkdownView Markdown="{Binding Markdown}" />
+            <ItemsControl ItemsSource="{Binding Images}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:IntroductionImage">
+                        <views:IntroductionImageView Margin="0,0,0,18" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding Callouts}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:IntroductionCallout">
+                        <views:IntroductionCalloutView Margin="0,0,0,8" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding Actions}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:IntroductionAction">
+                        <Button Content="{Binding Label}" Margin="0,0,8,8" Padding="14,8" Click="OnActionClicked" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

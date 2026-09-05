@@ -1,0 +1,76 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:BatterySetupViewModel"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                               x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BatterySetupView"
+                               x:DataType="sections:BatterySetupViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Visible">
+        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+            <TextBlock Text="Battery monitors and failsafe" FontSize="18" FontWeight="Bold" />
+            <TextBlock Text="{Binding Status}" FontStyle="Italic" />
+            <Button Content="Refresh battery values" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+            <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+<TextBlock Text="{Binding .}" Classes="Warning" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding Instances}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="sections:BatteryInstanceViewModel">
+                        <Border Padding="12" Classes="SectionCard">
+                            <StackPanel Orientation="Vertical" Spacing="6">
+                                <TextBlock Text="{Binding Header}" FontWeight="Bold" FontSize="16" />
+                                <TextBlock Text="{Binding LiveReadings}" />
+                                <TextBlock Text="Remaining percentage is an estimate, not a measured capacity truth." Opacity="0.7" FontSize="12" />
+                                <Grid ColumnDefinitions="140,*,Auto" RowSpacing="6" ColumnSpacing="8" IsVisible="{Binding SupportsCapacity}">
+                                    <TextBlock Text="Capacity (mAh)" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Value="{Binding Capacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2" Content="Write" Command="{Binding ApplyCapacityCommand}" />
+                                </Grid>
+                                <StackPanel Orientation="Vertical" IsVisible="{Binding SupportsVoltageFailsafe}" Spacing="4">
+                                    <TextBlock Text="Voltage failsafe (V)" FontWeight="Bold" />
+                                    <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
+                                        <TextBlock Text="Low" VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Column="1" Value="{Binding LowVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                        <TextBlock Grid.Column="2" Text="Critical" VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Column="3" Value="{Binding CriticalVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                        <Button Grid.Column="4" Content="Write" Command="{Binding ApplyVoltageFailsafeCommand}" />
+                                    </Grid>
+                                </StackPanel>
+                                <StackPanel Orientation="Vertical" IsVisible="{Binding SupportsCapacityFailsafe}" Spacing="4">
+                                    <TextBlock Text="Capacity failsafe (mAh)" FontWeight="Bold" />
+                                    <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
+                                        <TextBlock Text="Low" VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Column="1" Value="{Binding LowCapacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                        <TextBlock Grid.Column="2" Text="Critical" VerticalAlignment="Center" />
+                                        <NumericUpDown Grid.Column="3" Value="{Binding CriticalCapacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                        <Button Grid.Column="4" Content="Write" Command="{Binding ApplyCapacityFailsafeCommand}" />
+                                    </Grid>
+                                </StackPanel>
+                                <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsVoltageCalibration}">
+                                    <TextBlock Text="Measured voltage (V)" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Value="{Binding ReferenceVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2" Content="Calibrate voltage" Command="{Binding CalibrateVoltageCommand}" />
+                                </Grid>
+                                <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsCurrentCalibration}">
+                                    <TextBlock Text="Measured current (A)" VerticalAlignment="Center" />
+                                    <NumericUpDown Grid.Column="1" Value="{Binding ReferenceCurrent, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                    <Button Grid.Column="2" Content="Calibrate current" Command="{Binding CalibrateCurrentCommand}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</utilities:UserControlViewBase>

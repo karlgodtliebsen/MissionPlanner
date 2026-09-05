@@ -1,0 +1,23 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:FftSetupViewModel"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                               x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.FftSetupView"
+                               x:DataType="sections:FftSetupViewModel">
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+            <TextBlock Text="FFT Setup and Analysis" FontSize="24" FontWeight="Bold" />
+            <TextBlock Text="FFT/log settings are available only when INS_LOG_BAT or FFT parameters are reported. Log acquisition remains owned by DataFlash Logs." />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+            <NumericUpDown  PlaceholderText="Sample rate Hz" Value="{Binding SampleRateHz}" Minimum="0" FormatString="F0" />
+            <TextBox AcceptsReturn="True" PlaceholderText="Paste comma/newline-separated samples from an existing log artifact" Text="{Binding SamplesText}" Height="180" />
+            <Button Content="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Left" />
+        </StackPanel>
+    </ScrollViewer>
+</utilities:UserControlViewBase>

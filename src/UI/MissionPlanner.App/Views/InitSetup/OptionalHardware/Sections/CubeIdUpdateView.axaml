@@ -1,0 +1,21 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:CubeIdUpdateViewModel"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                               x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CubeIdUpdateView"
+                               x:DataType="sections:CubeIdUpdateViewModel">
+    <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+        <TextBlock Text="CubeID Firmware Update" FontSize="24" FontWeight="Bold" />
+        <TextBlock Text="The target component identity is retained; an autopilot component cannot consume CubeID acknowledgements." />
+        <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+        <TextBox PlaceholderText="Local firmware .bin path" Text="{Binding FirmwarePath}" />
+        <Button Content="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" />
+        <TextBlock Text="{Binding FirmwareSummary}" />
+    </StackPanel>
+</utilities:UserControlViewBase>

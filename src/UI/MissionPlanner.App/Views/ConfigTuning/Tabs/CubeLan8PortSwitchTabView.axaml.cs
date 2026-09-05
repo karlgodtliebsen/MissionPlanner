@@ -1,0 +1,13 @@
+﻿using MissionPlanner.App.Utilities;
+
+namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
+
+/// <summary>Displays the CubeLan8PortSwitchTabView configuration workflow.</summary>
+public partial class CubeLan8PortSwitchTabView : NavigationViewBase<CubeLan8PortSwitchTabViewModel>
+{
+    /// <summary>Initializes the CubeLan8PortSwitchTabView.</summary>
+    public CubeLan8PortSwitchTabView()
+    {
+        InitializeComponent();
+    }
+}

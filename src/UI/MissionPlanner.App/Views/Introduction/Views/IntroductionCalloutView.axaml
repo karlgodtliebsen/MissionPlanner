@@ -1,0 +1,22 @@
+<UserControl
+            xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+            xmlns:models="clr-namespace:MissionPlanner.App.Views.Introduction.Models"
+            x:Class="MissionPlanner.App.Views.Introduction.Views.IntroductionCalloutView"
+            x:DataType="models:IntroductionCallout">
+
+    <Border Padding="12" Classes="SectionCard">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Width="32" Height="32" VerticalAlignment="Top" Classes="SectionCard">
+                <TextBlock Text="{Binding Number}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Grid.Column="1" Spacing="3">
+                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" />
+                <TextBlock Text="{Binding Text}" FontSize="14" TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

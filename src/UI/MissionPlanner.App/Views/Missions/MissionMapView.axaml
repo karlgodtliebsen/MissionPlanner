@@ -1,0 +1,131 @@
+<utilities:UserControlViewBase
+            xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:u="https://irihi.tech/ursa"
+            xmlns:mapsui="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
+            xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+            xmlns:missions1="clr-namespace:MissionPlanner.App.Views.Missions"
+            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+            x:Class="MissionPlanner.App.Views.Missions.MissionMapView"
+            x:DataType="missions1:MissionMapViewModel"
+    >
+
+    <Grid RowDefinitions="*,Auto">
+
+        <mapsui:MapControl x:Name="MissionMap">
+            <mapsui:MapControl.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Mission items">
+                        <MenuItem Header="Delete waypoint" Command="{Binding DeleteWaypointCommand}" IsEnabled="{Binding HasMissionItems}" />
+                        <MenuItem Header="Insert waypoint here" Command="{Binding InsertWaypointCommand}" />
+                        <MenuItem Header="Insert waypoint at vehicle" Command="{Binding InsertWaypointAtVehicleCommand}" />
+                        <MenuItem Header="Insert spline waypoint" Command="{Binding InsertSplineWaypointCommand}" />
+                        <Separator />
+                        <MenuItem Header="Return to launch" Command="{Binding AddReturnToLaunchCommand}" />
+                        <MenuItem Header="Land" Command="{Binding AddLandCommand}" />
+                        <MenuItem Header="Takeoff" Command="{Binding AddTakeoffCommand}" />
+                        <MenuItem Header="Clear mission" Command="{Binding ClearMissionCommand}" />
+                    </MenuItem>
+                    <MenuItem Header="Map tools">
+                        <MenuItem Header="Zoom in" Click="OnZoomInClicked" />
+                        <MenuItem Header="Zoom out" Click="OnZoomOutClicked" />
+                        <MenuItem Header="Zoom to vehicle" Click="OnZoomToVehicleClicked" />
+                        <MenuItem Header="Center on my location" Click="OnCenterOnMyLocationClicked" />
+                        <MenuItem Header="Follow vehicle" Click="OnToggleFollowVehicleClicked" />
+                        <MenuItem Header="Elevation graph" Command="{Binding ShowElevationGraphCommand}" IsEnabled="{Binding HasMissionRoute}" />
+                    </MenuItem>
+                    <MenuItem Header="Import / export">
+                        <MenuItem Header="Load waypoint file" Command="{Binding LoadWpFileCommand}" />
+                        <MenuItem Header="Load and append" Command="{Binding LoadAndAppendCommand}" />
+                        <MenuItem Header="Save waypoint file" Command="{Binding SaveWpFileCommand}" />
+                    </MenuItem>
+                </ContextMenu>
+            </mapsui:MapControl.ContextMenu>
+           
+        </mapsui:MapControl>
+
+        <StackPanel Grid.Row="0"
+                    Opacity="0.75"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Margin="0,0,12,0"
+                    Spacing="6">
+            <Button Width="38" Height="38" Padding="0" FontSize="20" Content="+" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+                    ToolTip.Tip="Zoom in" Click="OnZoomInClicked" />
+            <Button Width="38" Height="38" Padding="0" FontSize="20" Content="−" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+                    ToolTip.Tip="Zoom out" Click="OnZoomOutClicked" />
+            <Button Width="38" Height="38" Padding="0" FontSize="25" Content="◎" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+                    ToolTip.Tip="Center on my location" Click="OnCenterOnMyLocationClicked" />
+            <Button Width="38" Height="38" Padding="0" FontWeight="SemiBold"  CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+                    ToolTip.Tip="Reset map rotation to north" Click="OnResetNorthClicked">
+                <StackPanel Spacing="-5" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="▲" FontSize="15" HorizontalAlignment="Center" Foreground="Black"/>
+                    <TextBlock Text="N" FontSize="17" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="Black"/>
+                </StackPanel>
+            </Button>
+        </StackPanel>
+
+        <Border Grid.Row="0" IsVisible="{Binding IsElevationProfileVisible}" MinHeight="190"
+                VerticalAlignment="Bottom" Margin="12" Padding="6"
+                >
+            <Grid RowDefinitions="Auto,*">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Label Content="Elevation profile — terrain / planned MSL"  />
+                    <Button Content="Close" Command="{Binding CloseElevationGraphCommand}" Padding="8,2" />
+                </StackPanel>
+
+                <missions1:MissionElevationProfileView Grid.Row="1" Profile="{Binding ElevationProfile}" />
+            </Grid>
+        </Border>
+
+        <Button Grid.Row="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="8"
+                Padding="8,4"
+                MaxWidth="520"
+                FontSize="11"
+                Content="{Binding AttributionText}"
+                IsVisible="{Binding IsAttributionVisible}"
+                Click="OnAttributionClicked" />
+
+        <!-- Application chrome colors come from semantic DynamicResource values. -->
+
+        <!-- Bottom status bar (mirrors Controls.Status) -->
+        <Border Grid.Row="1" BorderThickness="1" MinHeight="34" Padding="6,2">
+            <StackPanel Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Spacing="8">
+                <ComboBox
+                    MinWidth="72"
+                    ItemsSource="{Binding MapStyles}"
+                    SelectedItem="{Binding SelectedMapStyle}"
+                    DisplayMemberBinding="{Binding .}"
+                    />
+
+                <TextBlock Text="•" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding MapFreshness}" VerticalAlignment="Center" />
+                <TextBlock Text="•" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding PointerCoordinateText}" VerticalAlignment="Center" />
+                <TextBlock
+                    IsVisible="{Binding HasAltitudeMessage}"
+                    Text="{Binding PointerAltitude, StringFormat='Alt: {0:F1} m'}"
+                    VerticalAlignment="Center" />
+                <TextBlock
+                    IsVisible="{Binding HasPointerAltitudeStatus}"
+                    Text="{Binding PointerAltitudeStatusText}"
+                    VerticalAlignment="Center" />
+                <TextBlock Text="•" VerticalAlignment="Center" IsVisible="{Binding HasStatusMessage}"/>
+                <TextBlock
+                    IsVisible="{Binding HasStatusMessage}"
+                    Text="{Binding StatusMessage}"
+                    VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Grid>
+
+
+</utilities:UserControlViewBase>

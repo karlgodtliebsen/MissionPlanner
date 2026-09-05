@@ -1,0 +1,20 @@
+<UserControl
+            xmlns="https://github.com/avaloniaui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:models="clr-namespace:MissionPlanner.App.Views.Introduction.Models"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+            x:Class="MissionPlanner.App.Views.Introduction.Views.IntroductionImageView"
+            x:DataType="models:IntroductionImage">
+    <StackPanel Spacing="5">
+        <Border Classes="SectionCard">
+            <Grid>
+                <Image x:Name="ScreenshotImage" Height="{Binding Height}" Stretch="Uniform" />
+        <ProgressBar x:Name="LoadingIndicator" IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="False" Width="140" />
+            </Grid>
+        </Border>
+        <TextBlock Text="{Binding Caption}" FontSize="12" Opacity="0.72"
+                   HorizontalAlignment="Center" TextWrapping="Wrap" />
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,58 @@
+﻿<utilities:UserControlViewBase x:TypeArguments="dockView:MissionItemListDockViewModel" 
+                    xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+
+                    xmlns:dockView="clr-namespace:MissionPlanner.App.Views.Missions.DockView"
+                    xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
+                    xmlns:data="https://github.com/avaloniaui"
+                    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+
+                    x:Class="MissionPlanner.App.Views.Missions.DockView.MissionItemListDockView"
+                    x:DataType="dockView:MissionItemListDockViewModel"
+                    MinWidth="{data:Binding CalculatedWidth}"
+>
+
+
+    <Grid RowDefinitions="Auto,*" RowSpacing="6"  HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Margin="2,0,0,0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <Button Width="25" Height="25"  HorizontalAlignment="Center"  VerticalAlignment="Center" Margin="0" 
+                x:DataType="dockView:MissionItemListDockViewModel" FontSize="8"
+                Content="Editor"  Command="{Binding EditCommand}"
+                IsVisible="{Binding IsExpanded}"
+                >
+            </Button>
+            <Button 
+                Width="25" Height="25"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" 
+                IsVisible="{Binding IsExpanded}"
+                BorderThickness="0"
+                BorderBrush="Transparent"
+                Background="Transparent"
+                
+                Command="{Binding ExpandCommand}"/>
+<!--                ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_right}, FontFamily=MaterialSharp}"
+-->
+
+
+            <Button
+                Width="25" Height="25"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" 
+                IsVisible="{Binding IsExpanded, Converter={StaticResource InvertedBoolConverter}}"
+                BorderBrush="Transparent"
+                BorderThickness="0"
+                Background="Transparent"
+                
+                Command="{Binding ExpandCommand}"/>
+
+<!--                ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_left}, FontFamily=MaterialSharp}"
+-->
+        </StackPanel>
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsVisible="{Binding IsExpanded}">
+            <missions:MissionItemListView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ShowAllRows="False"></missions:MissionItemListView>
+        </Grid>
+    </Grid>
+</utilities:UserControlViewBase>
+
+    
+    

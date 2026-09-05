@@ -1,0 +1,302 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Utilities;
+using MissionPlanner.Core.Replay;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
+
+namespace MissionPlanner.App.Views.FlightData.Tabs;
+
+/// <summary>Projects isolated, read-only telemetry-log playback into the Flight Data workspace.</summary>
+public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
+{
+    private readonly IReplaySessionManager replaySessionManager;
+    private readonly IActiveVehicleContext activeVehicle;
+    private readonly IFileOpenService fileOpenService;
+
+    private CancellationTokenSource? operationCancellation;
+
+
+    /// <summary>Initializes the telemetry-log playback view model.</summary>
+    /// <param name="replaySessionManager">Read-only replay session coordinator.</param>
+    /// <param name="activeVehicle">Active-vehicle context used by the shared tab lifecycle.</param>
+    /// <param name="fileOpenService">Avalonia file-selection boundary.</param>
+    /// <param name="logger">Structured workflow logger.</param>
+    public TelemetryLogsTabViewModel(
+        IReplaySessionManager replaySessionManager,
+        IActiveVehicleContext activeVehicle,
+        IFileOpenService fileOpenService,
+        ILogger<TelemetryLogsTabViewModel> logger)
+        : base(logger)
+    {
+        this.replaySessionManager = replaySessionManager;
+        this.activeVehicle = activeVehicle;
+        this.fileOpenService = fileOpenService;
+        SetMessages(ReplaySessionSnapshot.Unloaded.Message);
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        replaySessionManager.Changed += OnReplayChanged;
+        ApplySnapshot(replaySessionManager.Snapshot);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
+        replaySessionManager.Changed -= OnReplayChanged;
+    }
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        Deactivate();
+        base.Dispose();
+    }
+
+
+    /// <summary>Gets replay-only vehicle states; these vehicles never enter the live registry.</summary>
+    public ObservableRangeCollection<VehicleState> ReplayVehicles
+    {
+        get;
+    } = [];
+
+    /// <summary>Gets the prominent source and safety label.</summary>
+    [ObservableProperty]
+    public partial string SourceModeLabel
+    {
+        get;
+        private set;
+    } = "LIVE / SIMULATION";
+
+    /// <summary>Gets the current replay lifecycle label.</summary>
+    [ObservableProperty]
+    public partial string ReplayStateLabel
+    {
+        get;
+        private set;
+    } = "Unloaded";
+
+    /// <summary>Gets the loaded telemetry-log display name.</summary>
+    [ObservableProperty]
+    public partial string SourceName
+    {
+        get;
+        private set;
+    } = "No telemetry log loaded";
+
+    /// <summary>Gets whether a background file or playback operation is pending.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(LoadCommand), nameof(PlayPauseCommand), nameof(SeekCommand), nameof(CloseReplayCommand), nameof(ApplySpeedCommand))]
+    public override partial bool IsBusy
+    {
+        get;
+        set;
+    }
+
+    /// <summary>Gets whether a replay is loaded and every outbound MAVLink send is prohibited.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanLoad), nameof(CanControlReplay))]
+    [NotifyCanExecuteChangedFor(nameof(LoadCommand), nameof(PlayPauseCommand), nameof(SeekCommand), nameof(CloseReplayCommand), nameof(ApplySpeedCommand))]
+    public partial bool IsReplayActive
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets whether the replay clock is currently advancing.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PlayPauseText))]
+    public partial bool IsPlaying
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets playback progress from zero through one.</summary>
+    [ObservableProperty]
+    public new partial double Progress
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets or sets the requested seek position in recorded seconds.</summary>
+    [ObservableProperty]
+    public partial double SeekSeconds
+    {
+        get;
+        set;
+    }
+
+    /// <summary>Gets the total recorded duration in seconds.</summary>
+    [ObservableProperty]
+    public partial double DurationSeconds
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>Gets or sets the requested playback speed multiplier.</summary>
+    [ObservableProperty]
+    public partial double PlaybackSpeed { get; set; } = 1;
+
+    /// <summary>Gets a readable current recorded timestamp.</summary>
+    [ObservableProperty]
+    public partial string ReplayTimeText
+    {
+        get;
+        private set;
+    } = "--";
+
+    /// <summary>Gets decoded and rejected frame statistics.</summary>
+    [ObservableProperty]
+    public partial string FrameStatistics { get; private set; } = "0 decoded · 0 rejected";
+
+    /// <summary>Gets the play/pause button label.</summary>
+    public string PlayPauseText => IsPlaying ? "Pause" : "Play";
+
+    /// <summary>Gets whether a new log can be loaded.</summary>
+    public bool CanLoad => !IsBusy;
+
+    /// <summary>Gets whether the loaded replay can be controlled.</summary>
+    public bool CanControlReplay => IsReplayActive && !IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanLoad))]
+    private async Task LoadAsync()
+    {
+        operationCancellation = new CancellationTokenSource();
+
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
+        {
+            var file = await fileOpenService.OpenAsync(
+                "Select a Mission Planner telemetry log (.tlog)",
+                ["*.tlog"],
+                cancellationToken);
+            if (file is null)
+            {
+                SetMessages("Telemetry-log selection cancelled.");
+                return;
+            }
+
+            var selectedStream = file.Content;
+            var ownedStream = selectedStream;
+            if (!selectedStream.CanSeek)
+            {
+                var temporaryPath = Path.Combine(Path.GetTempPath(), $"missionplanner-replay-{Guid.NewGuid():N}.tlog");
+                var temporaryStream = new FileStream(
+                    temporaryPath,
+                    FileMode.CreateNew,
+                    FileAccess.ReadWrite,
+                    FileShare.Read,
+                    65_536,
+                    FileOptions.Asynchronous | FileOptions.DeleteOnClose);
+                await selectedStream.CopyToAsync(temporaryStream, cancellationToken);
+                await selectedStream.DisposeAsync();
+                temporaryStream.Position = 0;
+                ownedStream = temporaryStream;
+            }
+
+            await replaySessionManager.LoadAsync(ownedStream, file.FileName, cancellationToken);
+        });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanControlReplay))]
+    private async Task PlayPauseAsync()
+    {
+        operationCancellation = new CancellationTokenSource();
+
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
+        {
+            if (replaySessionManager.Snapshot.State == ReplaySessionState.Playing)
+            {
+                await replaySessionManager.PauseAsync(cancellationToken);
+            }
+            else
+            {
+                await replaySessionManager.PlayAsync(cancellationToken);
+            }
+        });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanControlReplay))]
+    private async Task SeekAsync()
+    {
+        operationCancellation = new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, (cancellationToken) => replaySessionManager.SeekAsync(TimeSpan.FromSeconds(SeekSeconds), cancellationToken));
+    }
+
+    [RelayCommand(CanExecute = nameof(CanControlReplay))]
+    private async Task ApplySpeedAsync()
+    {
+        operationCancellation = new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, (_) =>
+        {
+            replaySessionManager.SetSpeed(PlaybackSpeed);
+            return Task.CompletedTask;
+        });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanControlReplay))]
+    private async Task CloseReplayAsync()
+    {
+        operationCancellation = new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, replaySessionManager.CloseAsync);
+    }
+
+    private void OnReplayChanged(ReplaySessionChangedEventArgs args)
+    {
+        Dispatcher.Dispatch(() => ApplySnapshot(args.Snapshot));
+    }
+
+    private void ApplySnapshot(ReplaySessionSnapshot snapshot)
+    {
+        IsReplayActive = snapshot.IsTransmissionProhibited;
+        IsPlaying = snapshot.State == ReplaySessionState.Playing;
+        SourceModeLabel = IsReplayActive ? "REPLAY · READ ONLY · SENDS DISABLED" : "LIVE / SIMULATION";
+        ReplayStateLabel = snapshot.State.ToString();
+        SourceName = snapshot.Index?.SourceName ?? "No telemetry log loaded";
+        SetMessages(snapshot.Failure ?? snapshot.Message);
+        Progress = snapshot.Progress;
+        DurationSeconds = snapshot.Clock?.Duration.TotalSeconds ?? 0;
+        SeekSeconds = snapshot.Clock?.Elapsed.TotalSeconds ?? 0;
+        PlaybackSpeed = snapshot.Clock?.Speed ?? PlaybackSpeed;
+        ReplayTimeText = snapshot.Clock is null
+            ? "--"
+            : $"{snapshot.Clock.LogTime:O} · {snapshot.Clock.Elapsed:g} / {snapshot.Clock.Duration:g}";
+        FrameStatistics = $"{snapshot.DecodedFrames} decoded · {snapshot.RejectedFrames} rejected";
+
+        ReplayVehicles.ReplaceRange(snapshot.Vehicles);
+
+        OnPropertyChanged(nameof(CanLoad));
+        OnPropertyChanged(nameof(CanControlReplay));
+        LoadCommand.NotifyCanExecuteChanged();
+        PlayPauseCommand.NotifyCanExecuteChanged();
+        SeekCommand.NotifyCanExecuteChanged();
+        CloseReplayCommand.NotifyCanExecuteChanged();
+        ApplySpeedCommand.NotifyCanExecuteChanged();
+    }
+
+    private sealed class CallbackDisposable(Action callback) : IDisposable
+    {
+        private bool disposed;
+
+        public void Dispose()
+        {
+            if (disposed)
+            {
+                return;
+            }
+
+            disposed = true;
+            callback();
+        }
+    }
+}

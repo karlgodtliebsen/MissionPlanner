@@ -1,15 +1,17 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Xml.Linq;
-using MissionPlanner.AvaloniaUI.App.Controls;
-using MissionPlanner.AvaloniaUI.App.Maps;
-using MissionPlanner.AvaloniaUI.App.Models;
-using MissionPlanner.AvaloniaUI.App.Presentation;
-using MissionPlanner.AvaloniaUI.App.Utilities;
-using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
-using MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs;
-using MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware;
-using MissionPlanner.AvaloniaUI.App.Views.Missions;
-using MissionPlanner.AvaloniaUI.App.Views.Navigation;
+using MissionPlanner.App.Controls;
+using MissionPlanner.App.Maps;
+using MissionPlanner.App.Models;
+using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Utilities;
+using MissionPlanner.App.Utilities.Dialogs;
+using MissionPlanner.App.Views.ConfigTuning.Tabs;
+using MissionPlanner.App.Views.FlightData.Tabs;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware;
+using MissionPlanner.App.Views.Missions;
+using MissionPlanner.App.Views.Navigation;
+
 
 namespace MissionPlanner.AvaloniaUI.Tests;
 

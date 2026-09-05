@@ -1,0 +1,40 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:CompassMotorCalibrationViewModel"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+                               xmlns:optionalHardware="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware;assembly=MissionPlanner.Core"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                               x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CompassMotorCalibrationView"
+                               x:DataType="sections:CompassMotorCalibrationViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Visible">
+        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+            <TextBlock Text="Compass / Motor Calibration" FontSize="20" FontWeight="Bold" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+           
+            <TextBlock Text="Remove ALL propellers. CompassMot may spin motors." Classes="Warning" FontWeight="Bold" />
+           
+<!--            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+-->            
+            <TextBlock Text="{Binding ErrorMessage}" 
+                       IsVisible="{Binding HasError}" 
+                       Classes="Danger" />
+            <TextBlock Text="{Binding Instruction}" />
+            <TextBlock Text="{Binding Compensation}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Start CompassMot" Command="{Binding StartCommand}" />
+                <Button Content="Stop" Foreground="{DynamicResource Warning}" Command="{Binding StopCommand}" />
+            </StackPanel>
+            <ItemsControl ItemsSource="{Binding Samples}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="optionalHardware:CompassMotorCalibrationSample">
+                        <TextBlock Text="{Binding ThrottlePercent, StringFormat='Throttle {0:0.0}%'}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</utilities:UserControlViewBase>

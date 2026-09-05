@@ -28,12 +28,12 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore Windows application
-        run: dotnet restore src/UI/MissionPlanner.AvaloniaUI.App/MissionPlanner.AvaloniaUI.App.csproj
+        run: dotnet restore src/UI/MissionPlanner.App/MissionPlanner.App.csproj
 
       - name: Build Windows application
         run: >-
           dotnet build
-          src/UI/MissionPlanner.AvaloniaUI.App/MissionPlanner.AvaloniaUI.App.csproj
+          src/UI/MissionPlanner.App/MissionPlanner.App.csproj
           --configuration Release
           --no-restore
           -p:Platform=x64
