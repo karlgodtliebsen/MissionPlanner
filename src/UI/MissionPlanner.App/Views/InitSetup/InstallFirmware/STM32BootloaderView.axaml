@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.STM32BootloaderView"
+             x:DataType="local:InstallFirmwareViewModel"
+             >
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowDefinitions="*" RowSpacing="10">
+        <Border Grid.Row="0" Padding="16" Classes="SectionCard">
+
+            <Grid  RowDefinitions="Auto,*,Auto">
+
+                <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10" HorizontalAlignment="Left">
+                    <Button Content="Refresh devices" Command="{Binding RefreshCatalogCommand}" />
+                    <Button Content="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
+                    <Button Content="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
+                    <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomBlWithFirmwareCommand}" />
+                    <Button HorizontalAlignment="Left" Content="Install ArduPilot + Bootloader through STM32 DFU" Command="{Binding InstallDfuFirmwareCommand}" />
+                    <Button Content="Clear" Command="{Binding ClearCustomFirmwareCommand}" />
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Spacing="10" Grid.Row="1" >
+                    <TextBlock Text="Initial installation for (STM32 DFU)" FontWeight="Bold" FontSize="18" />
+                    <TextBlock Text="Use this only when the controller does not yet contain the ArduPilot serial bootloader. Select an official target or load a local *_with_bl.hex file." />
+                    <TextBlock Text="1. Disconnect the controller. Hold its BOOT/DFU button (or bridge its documented BOOT pads) while reconnecting USB. Some boards require BOOT plus RESET." />
+                    <TextBlock Text="2. Release BOOT after Windows shows STM32 Bootloader. It is a USB DFU device, not a COM port." />
+                    <TextBlock Text="3. Install STM32CubeProgrammer and its bundled driver if the device is not ready, then refresh the catalogue." />
+                    <TextBlock Text="4. Confirm the exact platform and board ID. Mission Planner will download the matching official *_with_bl.hex, validate it, program it, and verify it." />
+
+                    <StackPanel Orientation="Vertical" IsVisible="{Binding HasLocalDfuFirmware}" Spacing="10" Margin="0,10,0,10">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="{Binding LocalDfuFirmwareName, StringFormat='Selected local image: {0}'}"  Classes="Warning"  VerticalAlignment="Center" />
+                            <Button Content="✕" Command="{Binding ClearLocalDfuFirmwareCommand}" Padding="8,2"
+                                    ToolTip.Tip="Clear the local HEX selection"
+                                    VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="10">
+                            <TextBlock Text="Local HEX mode is active." TextWrapping="Wrap" Classes="Warning" />
+                            <TextBlock Text="This file takes precedence over any firmware row selected in the catalogue." TextWrapping="Wrap"  Classes="Warning" />
+                            <TextBlock Text="Clear the local HEX selection to return to catalogue installation." TextWrapping="Wrap" Classes="Warning" />
+                        </WrapPanel>
+                        <TextBox PlaceholderText="Exact ArduPilot platform (for example omnibusf4)" Text="{Binding LocalDfuPlatform, Mode=TwoWay}" />
+                        <TextBlock Text="Intel HEX does not contain the APJ board metadata used for catalogue matching. Enter the exact platform that was used to produce this custom build." TextWrapping="Wrap" Classes="Warning" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,10">
+                        <ComboBox Width="600" ToolTip.Tip="Select STM32 DFU device" ItemsSource="{Binding DfuDevices}" SelectedItem="{Binding SelectedDfuDevice}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding DfuStatus}" />
+                </StackPanel>
+
+                <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Margin="0,10,0,10" Text="Warning: this erases the current firmware. Keep USB power connected until programming and verification complete." Classes="Warning" />
+
+            </Grid>
+
+        </Border>
+    </Grid>
+</UserControl>

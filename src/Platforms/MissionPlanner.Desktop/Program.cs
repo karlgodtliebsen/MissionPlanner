@@ -13,7 +13,7 @@ internal sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        MissionPlannerProgram.Main(args);
+        MissionPlannerProgram.Start(args);
 
         var app = MissionPlannerProgram.BuildAvaloniaApp((sc) => sc.AddWindowsOnlyServices())
             .UseWindowsPlatform()

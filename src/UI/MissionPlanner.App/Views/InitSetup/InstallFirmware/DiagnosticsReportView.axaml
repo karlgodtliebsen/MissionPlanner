@@ -7,8 +7,8 @@
              x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.DiagnosticsReportView"
              x:DataType="local:InstallFirmwareViewModel">
 
-    <Border  Padding="20" Classes="SectionCard" >
-        <StackPanel Orientation="Horizontal" Spacing="10">
+    <Border Padding="20" Classes="SectionCard" >
+        <StackPanel Orientation="Vertical" Spacing="10">
             <Button Content="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}"
                     HorizontalAlignment="Center" VerticalAlignment="Center" />
             <SelectableTextBlock Text="{Binding LastDiagnosticReport}" HorizontalAlignment="Center" VerticalAlignment="Center" />

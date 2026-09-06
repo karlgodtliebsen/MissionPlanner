@@ -10,9 +10,25 @@ namespace MissionPlanner.App;
 /// <summary>
 /// The main application class for the Avalonia UI.
 /// </summary>
-/// <param name="serviceProvider">The service provider for dependency injection.</param>
-public partial class App(IServiceProvider serviceProvider) : Application
+public partial class App : Application
 {
+    /// <summary>
+    /// Design time support constructor for the Avalonia UI application.
+    /// </summary>
+    public App()
+    {
+    }
+
+    /// <summary>
+    /// The main application class for the Avalonia UI.
+    /// </summary>
+    /// <param name="serviceProvider">The service provider for dependency injection.</param>
+    public App(IServiceProvider serviceProvider)
+    {
+        ServiceProvider = serviceProvider;
+    }
+
+
     /// <inheritdoc />
     public override void Initialize()
     {
@@ -22,7 +38,10 @@ public partial class App(IServiceProvider serviceProvider) : Application
     /// <summary>
     /// Gets the service provider for dependency injection.
     /// </summary>
-    public IServiceProvider ServiceProvider { get; } = serviceProvider;
+    public IServiceProvider ServiceProvider
+    {
+        get;
+    }
 
     /// <inheritdoc />
     public override void OnFrameworkInitializationCompleted()

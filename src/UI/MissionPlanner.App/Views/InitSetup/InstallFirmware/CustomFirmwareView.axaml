@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.CustomFirmwareView"
+             x:DataType="local:InstallFirmwareViewModel"
+             
+             >
+                            <Grid RowDefinitions="Auto,*,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                                <local:DetectedDeviceView  Grid.Row="0"  Grid.Column="0" Grid.ColumnSpan="2"  ></local:DetectedDeviceView>
+                                <Border Grid.Row="1"  IsVisible="{Binding HasDfuBootLoader, Converter={StaticResource InvertedBoolConverter}}" Padding="16" Classes="SectionCard">
+                                    <Grid RowDefinitions="Auto,*" RowSpacing="20">
+                                        <StackPanel Orientation="Horizontal"  Spacing="10">
+                                            <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}"
+                                                    />
+                                            <Button Content="✕"
+                                                    ToolTip.Tip="Clear Custom Firmware"
+                                                    Padding="8,2"
+                                                    VerticalAlignment="Center"
+                                                    Command="{Binding ClearCustomFirmwareCommand}" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="4" IsVisible="{Binding HasCustomFirmware}">
+                                            <TextBlock Text="Local / custom firmware" FontWeight="Bold" FontSize="18" />
+                                            <TextBlock Text="{Binding CustomFirmwareName}" />
+                                            <TextBlock Text="{Binding CustomFirmwareDescription}" />
+                                            <TextBlock Text="{Binding CustomFirmwarePlatform, StringFormat='Platform: {0}'}" />
+                                            <TextBlock Text="{Binding CustomFirmwareBoardId, StringFormat='Board ID: {0}'}" />
+                                            <TextBlock Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
+                                            <TextBlock Text="{Binding CustomFirmwareBuild, StringFormat='Build: {0}'}"  Classes="Warning" />
+                                            <TextBlock Margin="0,8,0,0" Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
+                                            <WrapPanel Orientation="Horizontal" ItemSpacing="5">
+                                                <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
+                                                <TextBlock Text="Require exact board ID match"  Classes="Warning" />
+                                            </WrapPanel>
+                                            <Border Classes="SectionCard" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12"
+                                                    BorderBrush="{DynamicResource Warning}">
+                                                <TextBlock Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply."
+                                                           Classes="Warning" FontWeight="Bold" TextWrapping="Wrap" />
+                                            </Border>
+                                        </StackPanel>
+
+                                    </Grid>
+                                </Border>
+                                <local:ValidatedPackageView  Grid.Row="2" IsVisible="{Binding HasPreparedFirmware}" />
+                                <local:DiagnosticsReportView Grid.Row="3" IsVisible="{Binding HasDiagnosticReport}" />
+                            </Grid>
+
+</UserControl>

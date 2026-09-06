@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Runtime.Versioning;
 using Avalonia;
+using Avalonia.Media;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +16,7 @@ namespace MissionPlanner.App;
 [SupportedOSPlatform("linux")]
 [SupportedOSPlatform("macos")]
 [SupportedOSPlatform("browser")]
-public class MissionPlannerProgram
+public static class MissionPlannerProgram
 {
     private const string title = "MissionPlanner Next Generation";
     private const string appName = "MissionPlanner";
@@ -24,7 +25,7 @@ public class MissionPlannerProgram
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     //[STAThread]
-    public static void Main(string[] args)
+    public static void Start(string[] args)
     {
         var ci = new CultureInfo("en-US");
         CultureInfo.DefaultThreadCurrentUICulture = ci;
@@ -39,7 +40,9 @@ public class MissionPlannerProgram
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp(Action<IServiceCollection> serviceAction)
-        => BuildAvaloniaAppAsync(serviceAction).GetAwaiter().GetResult();
+    {
+        return BuildAvaloniaAppAsync(serviceAction).GetAwaiter().GetResult();
+    }
 
     public static async Task<AppBuilder> BuildAvaloniaAppAsync(
         Action<IServiceCollection> serviceAction, IConfiguration? configuration = null)
@@ -72,3 +75,38 @@ public class MissionPlannerProgram
         return builder;
     }
 }
+
+// Avalonia Main Entry. Don't remove; used by visual designer.
+public class Program
+{
+    // Initialization code. Don't use any Avalonia, third-party APIs or any
+    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+    // yet and stuff might break.
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        BuildAvaloniaApp()
+            .With(new FontManagerOptions
+            {
+                FontFallbacks =
+                [
+                    new FontFallback
+                    {
+                        FontFamily = new FontFamily("Microsoft YaHei")
+                    }
+                ]
+            })
+            .StartWithClassicDesktopLifetime(args);
+    }
+
+
+    // Avalonia configuration, don't remove; also used by visual designer.
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        return AppBuilder
+            .Configure(() => new App())
+            .WithInterFont()
+            .LogToTrace();
+    }
+}
+

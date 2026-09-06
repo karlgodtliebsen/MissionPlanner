@@ -144,21 +144,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [ObservableProperty]
     public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FilteredFirmwareChoices { get; private set; } = [];
 
-    ///// <summary>
-    ///// 
-    ///// </summary>
-    //[ObservableProperty]
-    //public partial HorizontalAlignment ContextWidth
-    //{
-    //    get;
-    //    private set;
-    //} = HorizontalAlignment.Center;
-
-    //partial void OnIsVehicleConnectedChanged(bool oldValue, bool newValue)
-    //{
-    //    ContextWidth = newValue ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
-    //}
-
     [ObservableProperty]
     public partial bool IsVehicleConnected
     {
@@ -241,7 +226,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     /// <summary>Gets concise help that remains available offline.</summary>
     public IReadOnlyList<FirmwareSupportSection> SupportSections { get; } = FirmwareSupportContent.Sections;
-
     /// <summary>Gets curated official and fallback support destinations.</summary>
     public IReadOnlyList<FirmwareSupportLink> SupportLinks
     {
@@ -436,6 +420,12 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         get;
         private set;
     }
+    [ObservableProperty]
+    public partial bool IsFirmwareValidated
+    {
+        get;
+        private set;
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPowerCritical))]
@@ -499,6 +489,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
         active = true;
         SelectedIndex = 0;
+        IsFirmwareValidated = false;
         await Task.Yield();
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
@@ -539,6 +530,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         active = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         CancelRefresh();
+        IsFirmwareValidated = false;
         IsVehicleConnected = false;
         var current = lifetime;
         lifetime = null;
@@ -655,8 +647,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         SelectedVersion = null;
         SelectedManufacturer = null;
         SelectedFirmware = null;
+        IsFirmwareValidated = false;
         SelectedChannel = FirmwareReleaseChannel.Stable;
-        await RefreshSafelyAsync(true, lifetime?.Token ?? cancellationToken, true);
+        FilteredFirmwareChoices.ReplaceRange(FirmwareChoices.ToList());
     }
 
 
@@ -672,6 +665,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         SelectedFirmware = item;
         PreparedFirmware = null;
         CustomPackage = null;
+        IsFirmwareValidated = false;
     }
 
 
@@ -782,6 +776,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         CustomFirmwareBoardId = 0;
         CustomFirmwareImageSize = 0;
         RequireExactBoardIdMatch = true;
+        IsFirmwareValidated = false;
         SetMessages("Local firmware selection cleared.");
         UpdateContextHelp();
     }
@@ -859,7 +854,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private bool CanStartInstall()
     {
-        return SelectedDevice is not null && CanInstall && (SelectedFirmware is not null || CustomPackage is not null) && !IsOperationInProgress;
+        return IsFirmwareValidated != false && SelectedDevice is not null && CanInstall && (SelectedFirmware is not null || CustomPackage is not null) && !IsOperationInProgress;
     }
 
     private bool CanStartDfuInstall()
@@ -999,8 +994,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private async Task RefreshAsync(bool forceRefresh, CancellationToken cancellationToken, bool allOptions = false)
     {
-
-
         // Do not use IsDisconnectedMode here. ApplyMode updates that UI property through
         // the dispatcher, so it may still contain the previous value during activation.
         if (!OperatingSystem.IsWindows() || activeVehicle.IsOnline || IsOperationInProgress)
@@ -1020,6 +1013,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         {
             await DispatchAsync(() =>
             {
+                IsFirmwareValidated = false;
                 IsCatalogRefreshRunning = true;
                 SetMessages("Loading firmware catalogue…");
                 NotificationManager?.Show(StatusMessage!);
@@ -1145,6 +1139,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         isClearing = true;
         try
         {
+            IsFirmwareValidated = false;
             SelectedFrameType = null;
             SelectedVersion = null;
             SelectedManufacturer = null;
@@ -1354,6 +1349,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [RelayCommand]
     private async Task DownloadAndValidateAsync(CancellationToken cancellationToken)
     {
+        IsFirmwareValidated = false;
         if (SelectedFirmware is null || IsOperationInProgress)
         {
             return;
@@ -1366,6 +1362,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             await ShowOperationDialogAsync("Downloading firmware", ownedCancellation);
             PreparedFirmware = await preparationService.PrepareAsync(new FirmwarePreparationRequest(SelectedFirmware.Entry), CreateProgress(), ownedCancellation.Token);
             SetMessages(PreparedFirmware.WasCacheHit ? "Validated cached firmware package." : "Firmware downloaded and validated.");
+            IsFirmwareValidated = true;
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
