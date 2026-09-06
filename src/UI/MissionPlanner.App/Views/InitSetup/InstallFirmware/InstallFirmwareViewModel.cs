@@ -41,6 +41,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IUserConfirmationService confirmation;
     private readonly IDialogService dialogService;
+    private readonly FirmwareDialogCoordinator firmwareDialogs;
     private readonly IExternalLinkLauncher externalLinkLauncher;
     private readonly IDeviceManagerLauncher deviceManagerLauncher;
     private readonly ITextClipboardService clipboard;
@@ -81,6 +82,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="clipboard">Copies firmware URLs and diagnostic reports.</param>
     /// <param name="dialogService">Displays the cancellable firmware-operation progress dialog.</param>
     /// <param name="logger"></param>
+    /// <param name="firmwareDialogs">Sequences operator confirmations and firmware progress windows.</param>
     public InstallFirmwareViewModel(
         IFirmwareCatalogService catalogService,
         IFirmwareInstallationService installationService,
@@ -98,7 +100,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         IFirmwareSupportLinkProvider supportLinkProvider,
         IExternalLinkLauncher externalLinkLauncher,
         IDeviceManagerLauncher deviceManagerLauncher, ITextClipboardService clipboard, IDialogService dialogService,
-        ILogger<InstallFirmwareViewModel> logger) : base(logger)
+        ILogger<InstallFirmwareViewModel> logger, FirmwareDialogCoordinator firmwareDialogs) : base(logger)
     {
         this.catalogService = catalogService;
         this.installationService = installationService;
@@ -118,6 +120,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         this.deviceManagerLauncher = deviceManagerLauncher;
         this.clipboard = clipboard;
         this.dialogService = dialogService;
+        this.firmwareDialogs = firmwareDialogs;
     }
 
     /// <summary>Gets the message displayed by the active firmware progress dialog.</summary>
@@ -667,7 +670,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             {
                 SetMessages("Only .apj and .px4 application packages are supported here. Use the separate DFU/legacy workflow for *_with_bl.hex.");
                 NotificationManager!.Show(StatusMessage ?? "");
-                //throw new NotSupportedException("Only .apj and .px4 application packages are supported here. Use the separate DFU/legacy workflow for *_with_bl.hex.");
+                return;
             }
 
             await using var stream = await file.OpenReadAsync(cancellationToken);
@@ -712,17 +715,23 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
             if (!extension.Equals(".hex", StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotSupportedException("Only .hex firmware packages are supported by the modern bootloader workflow.");
+                SetMessages("Only .hex firmware packages are supported by the modern bootloader workflow.");
+                NotificationManager!.Show(StatusMessage ?? "");
+                return;
             }
 
             if (!file.FileName.EndsWith("_with_bl.hex", StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotSupportedException("For STM32 DFU installation, select a combined application-and-bootloader file named *_with_bl.hex.");
+                SetMessages("For STM32 DFU installation, select a combined application-and-bootloader file named *_with_bl.hex.");
+                NotificationManager!.Show(StatusMessage ?? "");
+                return;
             }
 
             if (string.IsNullOrWhiteSpace(file.LocalPath) || !File.Exists(file.LocalPath))
             {
-                throw new NotSupportedException("The selected HEX file does not expose a local path required by STM32CubeProgrammer.");
+                SetMessages("The selected HEX file does not expose a local path required by STM32CubeProgrammer.");
+                NotificationManager!.Show(StatusMessage ?? "");
+                return;
             }
 
             LocalDfuFirmwarePath = Path.GetFullPath(file.LocalPath);
@@ -737,6 +746,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             Logger.LogWarning(exception, "Custom firmware selection failed.");
             CustomPackage = null;
             SetMessages(exception);
+            NotificationManager!.Show(ErrorMessage ?? "");
         }
     }
 
@@ -776,7 +786,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         try
         {
             SetOperation(true, FirmwareOperationState.Downloading);
-            await ShowOperationDialogAsync("Installing firmware", ownedCancellation);
+            await ShowOperationDialogAsync("Installing firmware", ownedCancellation, deferUntilConfirmed: true);
             var target = SelectedFirmware?.Entry.Target;
             var prepared = PreparedFirmware is not null && ReferenceEquals(PreparedFirmware.ManifestEntry, SelectedFirmware?.Entry) ? PreparedFirmware : null;
             var request = new FirmwareInstallationRequest(
@@ -805,6 +815,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 : result.Failure?.TechnicalDetail is { Length: > 0 } detail
                     ? $"Firmware installation {result.State}: {detail}"
                     : $"Firmware installation {result.State}");
+            NotificationManager!.Show(StatusMessage ?? "");
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
@@ -815,6 +826,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             Debug.Print("Firmware installation failed.\n{0}", exception.ToString());
             Logger.LogError(exception, "Firmware installation failed.");
             SetMessages(exception);
+            NotificationManager!.Show(ErrorMessage ?? "");
         }
         finally
         {
@@ -879,7 +891,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         try
         {
             SetOperation(true, FirmwareOperationState.Downloading);
-            await ShowOperationDialogAsync("Installing ArduPilot through STM32 DFU", ownedCancellation);
+            await ShowOperationDialogAsync("Installing ArduPilot through STM32 DFU", ownedCancellation, deferUntilConfirmed: true);
             var progress = new Progress<DfuProgress>(value => Dispatcher.Dispatch(() =>
             {
                 ProgressMessage = DfuStageText(value);
@@ -1150,19 +1162,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             Debug.Print($"Filter Manufacturer {manufacturer} found {choices.Count} items");
         }
 
-        // Replace the bound collection rather than issuing a range/reset notification.
-        // Avalonia's DataGrid did not reliably refresh its rows when the existing
-        // ObservableRangeCollection instance was cleared and repopulated.
-
-        //FilteredFirmwareChoices = new ObservableRangeCollection<FirmwareCatalogItemViewModel>(choices);
-
-        //Debug.Print($"Clear FilteredFirmwareChoices");
-        //FilteredFirmwareChoices.Clear();
-        //Debug.Print($"Adding items to FilteredFirmwareChoices");
-        //FilteredFirmwareChoices.AddRange(choices);
-        //Debug.Print($"Added items {choices.Count} to FilteredFirmwareChoices and it holds {FilteredFirmwareChoices.Count}");
-
-        //FilteredFirmwareChoices = new ObservableRangeCollection<FirmwareCatalogItemViewModel>(choices);
         FilteredFirmwareChoices.ReplaceRange(choices);
         SetMessages($"Found {choices.Count} after Applying Filter and Collection Now Holds {FilteredFirmwareChoices.Count}");
     }
@@ -1393,28 +1392,30 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private void OnActiveVehicleChanged(Core.Vehicles.ActiveVehicleChangedEventArgs e)
     {
-        IsVehicleConnected = e.Current.IsOnline;
-        //if (e.Current.IsOnline)
-        //{
-        //    // The disconnected catalogue/device scan is no longer relevant once a vehicle
-        //    // becomes active. Cancel it before queuing UI work for the connected mode.
-        //    CancelRefresh();
-        //}
-        if (!active)
+        Dispatcher.Dispatch(() =>
         {
-            return;
-        }
-        var visibleMode = ApplyMode();
-        if (visibleMode == FirmwarePageMode.Disconnected && lifetime is { } currentLifetime)
-        {
-            RefreshSafelyAsync(false, currentLifetime.Token).SafeFireAndForget();
-            return;
-        }
+            if (!active)
+            {
+                return;
+            }
 
-        ResetBusy();
+            IsVehicleConnected = e.Current.IsOnline;
+            var visibleMode = ApplyMode();
+            // Disconnecting to enter the bootloader is part of the active flash
+            // operation; do not start a competing device/catalogue refresh.
+            if (IsOperationInProgress)
+            {
+                return;
+            }
+            if (visibleMode == FirmwarePageMode.Disconnected && lifetime is { } currentLifetime)
+            {
+                RefreshSafelyAsync(false, currentLifetime.Token).SafeFireAndForget();
+                return;
+            }
+
+            ResetBusy();
+        });
     }
-
-
 
     private void SetOperation(bool operationActive, FirmwareOperationState? stage)
     {
@@ -1516,18 +1517,18 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }));
     }
 
-    private async Task ShowOperationDialogAsync(string title, CancellationTokenSource cancellation)
+    private async Task ShowOperationDialogAsync(string title, CancellationTokenSource cancellation, bool deferUntilConfirmed = false)
     {
         CloseOperationDialog();
         ProgressMessage = title + "…";
 
-        progressDialog = await dialogService.DisplayProgressCancellableAsync(
+        progressDialog = await firmwareDialogs.BeginAsync(() => dialogService.DisplayProgressCancellableAsync(
             () => ProgressMessage,
             new DialogOptions()
             {
                 Title = ProgressMessage
             },
-            cancellationToken: cancellation.Token);
+            cancellationToken: cancellation.Token), deferUntilConfirmed, cancellation.Token);
     }
 
     private void CloseOperationDialog()

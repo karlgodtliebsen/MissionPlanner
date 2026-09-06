@@ -7,11 +7,22 @@ using MissionPlanner.Firmware.Model;
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 /// <summary>Presents firmware-domain safety interactions through the shared resilient dialog service.</summary>
-public sealed class FirmwareInteractionService(IUserConfirmationService confirmation) :
+public sealed class FirmwareInteractionService(IUserConfirmationService userConfirmation, FirmwareDialogCoordinator dialogs) :
     IFirmwareUserInteraction,
     IBootloaderEntryInteraction,
     IDfuUserInteraction
 {
+    private readonly IUserConfirmationService confirmation = new CoordinatedConfirmation(userConfirmation, dialogs);
+
+    private sealed class CoordinatedConfirmation(IUserConfirmationService inner, FirmwareDialogCoordinator coordinator) : IUserConfirmationService
+    {
+        public Task<bool> ConfirmAsync(string title, string message, string acceptText, CancellationToken cancellationToken = default) =>
+            coordinator.ConfirmAsync(() => inner.ConfirmAsync(title, message, acceptText, cancellationToken), cancellationToken);
+
+        public Task<bool> ConfirmPhraseAsync(string title, string message, string requiredPhrase, CancellationToken cancellationToken = default) =>
+            coordinator.ConfirmAsync(() => inner.ConfirmPhraseAsync(title, message, requiredPhrase, cancellationToken), cancellationToken);
+    }
+
     /// <inheritdoc />
     public Task<bool> ConfirmInstallationAsync(FirmwareInstallationConfirmation request, CancellationToken cancellationToken = default)
     {

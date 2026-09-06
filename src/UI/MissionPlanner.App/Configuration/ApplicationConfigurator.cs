@@ -150,6 +150,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IFirmwareFilePicker, AvaloniaFirmwareFilePicker>();
         services.TryAddTransient<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
         services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
+        services.TryAddSingleton<FirmwareDialogCoordinator>();
         services.TryAddTransient<IFirmwareUserInteraction, FirmwareInteractionService>();
         services.TryAddTransient<IBootloaderEntryInteraction, FirmwareInteractionService>();
         services.TryAddTransient<IDfuUserInteraction, FirmwareInteractionService>();

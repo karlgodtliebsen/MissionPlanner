@@ -39,7 +39,7 @@
                         <Expander.Header>
                             <TextBlock Text="Firmware List" Padding="10" />
                         </Expander.Header>
-                        
+
                         <Grid RowDefinitions="*,Auto,Auto">
                             <Border Grid.Row="0"  Padding="14" Classes="SectionCard">
                                 <StackPanel Spacing="16">
@@ -166,10 +166,10 @@
                                         <TextBlock Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
                                         <TextBlock Text="{Binding CustomFirmwareBuild, StringFormat='Build: {0}'}"  Classes="Warning" />
                                         <TextBlock Margin="0,8,0,0" Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
-                                       <WrapPanel Orientation="Horizontal" ItemSpacing="5">
-                                        <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
-                                        <TextBlock Text="Require exact board ID match"  Classes="Warning" />
-                                       </WrapPanel>
+                                        <WrapPanel Orientation="Horizontal" ItemSpacing="5">
+                                            <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
+                                            <TextBlock Text="Require exact board ID match"  Classes="Warning" />
+                                        </WrapPanel>
                                         <Border Classes="SectionCard" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12"
                                                 BorderBrush="{DynamicResource Warning}">
                                             <TextBlock Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply."
@@ -244,8 +244,8 @@
                     </Expander>
 
                     <Expander  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                              IsVisible="{Binding HasDevice}"
-                              IsExpanded="{Binding HasDevice}">
+                               IsVisible="{Binding HasDevice}"
+                               IsExpanded="{Binding HasDevice}">
                         <Expander.Header>
                             <TextBlock Text="Flash Firmware" Padding="10" />
                         </Expander.Header>
@@ -272,8 +272,8 @@
                     </Expander>
 
                     <Expander  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                              IsVisible="{Binding HasDfuBootLoader}"
-                              IsExpanded="{Binding HasDfuBootLoader}">
+                               IsVisible="{Binding HasDfuBootLoader}"
+                               IsExpanded="{Binding HasDfuBootLoader}">
                         <Expander.Header>
                             <TextBlock Text="STM32 Bootloader" Padding="10" />
                         </Expander.Header>

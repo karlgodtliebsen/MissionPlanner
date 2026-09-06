@@ -53,9 +53,13 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         where TView : UserControl, new()
         where TViewModel : DialogViewModelBase
     {
-        model.Title = options.Title ?? "";
-        await OverlayDialog.ShowCustomAsync<TView, TViewModel, bool>(model, overLayHost, options: options, token: cancellationToken);
-        return model;
+        return await dispatcher.DispatchAsync(async () =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            model.Title = options.Title ?? "";
+            await OverlayDialog.ShowCustomAsync<TView, TViewModel, bool>(model, overLayHost, options: options, token: cancellationToken);
+            return model;
+        });
     }
 
     /// <inheritdoc/>
@@ -63,8 +67,11 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         where TView : UserControl, new()
         where TViewModel : DialogViewModelBase
     {
-        model.Title = options.Title ?? "";
-        OverlayDialog.ShowCustom<TView, TViewModel>(model, overLayHost, options: options);
+        dispatcher.Dispatch(() =>
+        {
+            model.Title = options.Title ?? "";
+            OverlayDialog.ShowCustom<TView, TViewModel>(model, overLayHost, options: options);
+        });
         return model;
     }
 
@@ -88,16 +95,24 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
     /// <inheritdoc/>
     public async Task<bool> ConfirmAsync(OverlayDialogOptions options, string message, CancellationToken cancellationToken = default)
     {
-        var result = await ShowOverlayDialogAsync<ConfirmDialogView, ConfirmDialogViewModel>(new ConfirmDialogViewModel(message), options, cancellationToken: cancellationToken);
-        return result.Confirmation;
+        return await dispatcher.DispatchAsync(async () =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = await ShowOverlayDialogAsync<ConfirmDialogView, ConfirmDialogViewModel>(new ConfirmDialogViewModel(message), options, cancellationToken: cancellationToken);
+            return result.Confirmation;
+        });
     }
 
     /// <inheritdoc/>
     public async Task<string?> PromptAsync(OverlayDialogOptions options, string? message, string? initialValue = null, CancellationToken cancellationToken = default)
     {
-        var viewModel = new PromptInputDialogViewModel(initialValue, message);
-        var result = await ShowOverlayDialogAsync<PromptInputDialogView, PromptInputDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
-        return result.Confirmation ? result.PromptText : null;
+        return await dispatcher.DispatchAsync(async () =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var viewModel = new PromptInputDialogViewModel(initialValue, message);
+            var result = await ShowOverlayDialogAsync<PromptInputDialogView, PromptInputDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
+            return result.Confirmation ? result.PromptText : null;
+        });
     }
     /// <inheritdoc/>
     public Task<string?> PromptAsync(string title, string message, string initialValue, string accept = "OK", string cancel = "Cancel", string clear = "Clear", CancellationToken cancellationToken = default)

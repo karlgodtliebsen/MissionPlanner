@@ -29,37 +29,4 @@ internal sealed class Program
             .With(new Win32PlatformOptions())
             .StartWithClassicDesktopLifetime(args);
     }
-
-
-    //    app.StartWithClassicDesktopLifetime(args, lifetimeBuilder =>
-    //    {
-    //        lifetimeBuilder.ShutdownMode = ShutdownMode.OnLastWindowClose;
-    //        GC.Collect();
-    //        GC.WaitForPendingFinalizers();
-    //    });
-
-    //    app.StartWithClassicDesktopLifetime(args, lifetimeBuilder =>
-    //    {
-    //        lifetimeBuilder.ShutdownMode = ShutdownMode.OnLastWindowClose;
-    //        lifetimeBuilder.Exit += async (_, exit) =>
-    //        {
-    //            //exit.ApplicationExitCode = 0;
-    //            Log.Logger.Information("Shutting Down {title}", title);
-
-    //            await cancellationTokenSource.CancelAsync();
-
-    //            try
-    //            {
-    //                await host.StopAsync(cancellationTokenSource.Token);
-    //            }
-    //            catch (Exception ex)
-    //            {
-    //                Log.Logger.Error(ex, "Error during host shutdown");
-    //            }
-
-    //            GC.Collect();
-    //            GC.WaitForPendingFinalizers();
-    //        };
-    //    });
-
 }
