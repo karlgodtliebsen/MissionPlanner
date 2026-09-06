@@ -1,4 +1,4 @@
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -211,6 +211,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<INavigationService, AvaloniaNavigationService>();
 
         services.TryAddSingleton<MainShellViewModel>();
+        services.TryAddTransient<FirmwareCatalogViewModel>();
 
         services.TryAddTransient<FlightDataMissionMapViewModel>();
         services.TryAddTransient<FlightDataViewModel>();
@@ -364,7 +365,9 @@ public static class ApplicationConfigurator
     /// <param name="serviceProvider"></param>
     /// <returns></returns>
     public static IServiceProvider UseApplication(this IServiceProvider serviceProvider)
-        => serviceProvider.UseApplicationAsync().GetAwaiter().GetResult();
+    {
+        return serviceProvider.UseApplicationAsync().GetAwaiter().GetResult();
+    }
 
     public static async Task<IServiceProvider> UseApplicationAsync(this IServiceProvider serviceProvider)
     {
