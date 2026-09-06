@@ -1,18 +1,20 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<view:UserControlViewBase x:TypeArguments="local:SelectedFirmwareViewModel"
+             xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SelectedFirmwareView"
-             x:DataType="local:InstallFirmwareViewModel"
+             x:DataType="local:SelectedFirmwareViewModel"
              >
     <Border  Padding="20" Classes="SectionCard">
-        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+              RowSpacing="10">
             <TextBlock Text="Selected firmware" Classes="H3" Margin="0,0,0,10"/>
 
-            <TextBlock Grid.Row="1" Text="Platform" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmware.Platform,FallbackValue='', TargetNullValue=''}" />
             <TextBlock Grid.Row="1" Text="Platform" />
             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmware.Platform,FallbackValue='', TargetNullValue=''}" />
 
@@ -46,12 +48,29 @@
             <TextBlock Grid.Row="11" Text="Bootloader aliases" />
             <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SelectedFirmware.BootloaderAliases,FallbackValue='', TargetNullValue=''}" />
 
-            <StackPanel Orientation="Horizontal" Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" Spacing="10">
-                <Button Content="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
-                <Button Content="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
+            <StackPanel Orientation="Horizontal" Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" Spacing="10" HorizontalAlignment="Center">
+                <Button ToolTip.Tip="Download &amp; Validate" 
+                        Command="{Binding DownloadAndValidateCommand}"
+                        Width="100"
+                        Classes="Primary"
+                        Padding="8,2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                >
+                    <avalonia:MaterialIcon Kind="Download" Width="30" Height="30" />
+                </Button>
+                <Button ToolTip.Tip="Copy Download URL"  
+                        Width="100"
+                        Classes="Primary"
+                        Padding="8,2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Command="{Binding CopyDownloadUrlCommand}" >
+                    <avalonia:MaterialIcon Kind="Copyright" Width="30" Height="30" />
+                </Button>
             </StackPanel>
 
         </Grid>
     </Border>
 
-</UserControl>
+</view:UserControlViewBase>

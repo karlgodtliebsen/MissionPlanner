@@ -1,11 +1,13 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<view:UserControlViewBase x:TypeArguments="local:STM32BootloaderViewModel"
+             xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.STM32BootloaderView"
-             x:DataType="local:InstallFirmwareViewModel"
+             x:DataType="local:STM32BootloaderViewModel"
              >
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowDefinitions="*" RowSpacing="10">
         <Border Grid.Row="0" Padding="16" Classes="SectionCard">
@@ -15,10 +17,10 @@
                 <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10" HorizontalAlignment="Left">
                     <Button Content="Refresh devices" Command="{Binding RefreshCatalogCommand}" />
                     <Button Content="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
-                    <Button Content="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
+                    <Button Content="Copy Download URL" Command="{Binding Selected.CopyDownloadUrlCommand}" />
                     <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomBlWithFirmwareCommand}" />
                     <Button HorizontalAlignment="Left" Content="Install ArduPilot + Bootloader through STM32 DFU" Command="{Binding InstallDfuFirmwareCommand}" />
-                    <Button Content="Clear" Command="{Binding ClearCustomFirmwareCommand}" />
+                    <Button Content="Clear" Command="{Binding ClearLocalDfuFirmwareCommand}" />
                 </StackPanel>
                 <StackPanel Orientation="Vertical" Spacing="10" Grid.Row="1" >
                     <TextBlock Text="Initial installation for (STM32 DFU)" FontWeight="Bold" FontSize="18" />
@@ -55,4 +57,4 @@
 
         </Border>
     </Grid>
-</UserControl>
+</view:UserControlViewBase>

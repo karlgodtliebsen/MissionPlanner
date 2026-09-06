@@ -104,7 +104,7 @@ public sealed class AvaloniaMigrationContractTests
     /// <summary>Verifies representative migrated pages contain complete current controls.</summary>
     [Theory]
     [InlineData("Views/ConfigTuning/Tabs/FullParametersListTabView.axaml", "VirtualizedItemsGrid")]
-    [InlineData("Views/InitSetup/InstallFirmware/InstallFirmwarePage.axaml", "VirtualizedItemsGrid")]
+    [InlineData("Views/InitSetup/InstallFirmware/FirmwareCatalogueView.axaml", "VirtualizedItemsGrid")]
     [InlineData("Views/Navigation/MainShellView.axaml", "u:NavMenu")]
     [InlineData("Views/FlightData/FlightDataPage.axaml", "FlightDataMissionMapView")]
     [InlineData("Views/FlightPlanner/FlightPlannerPage.axaml", "MissionMapView")]

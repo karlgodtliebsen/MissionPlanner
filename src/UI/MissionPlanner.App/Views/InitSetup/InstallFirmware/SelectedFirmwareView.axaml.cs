@@ -1,11 +1,9 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
-public partial class SelectedFirmwareView : UserControl
+/// <summary>Displays the selected firmware panel.</summary>
+public partial class SelectedFirmwareView : UserControlViewBase<SelectedFirmwareViewModel>
 {
+    /// <summary>Initializes the view.</summary>
     public SelectedFirmwareView()
     {
         InitializeComponent();

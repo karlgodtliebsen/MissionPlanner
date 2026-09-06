@@ -12,45 +12,64 @@
 
     <ContentPage Header="Install Firmware" >
         <Grid RowDefinitions="*,32" HorizontalAlignment="Stretch">
-            <ScrollViewer Grid.Row="0"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <StackPanel Orientation="Vertical" Margin="25" Spacing="20" HorizontalAlignment="Stretch">
-                    <Border IsVisible="{Binding IsConnectedMode}" Padding="24" Classes="SectionCard">
-                        <StackPanel Orientation="Vertical" Spacing="14">
-                            <TextBlock Text="A vehicle is connected" Classes="Title"  />
-                            <TextBlock Text="Application firmware cannot be installed while Mission Planner owns the active connection. Disconnect the vehicle first to browse or install firmware." />
-                            <TextBlock Text="Embedded bootloader update is available only for a supported, disarmed ArduPilot vehicle. Keep power connected and reboot after an accepted update." />
-                            <Button Content="Update Bootloader" Command="{Binding UpdateBootloaderCommand}" IsEnabled="{Binding CanUpdateBootloader}" HorizontalAlignment="Left" />
-                        </StackPanel>
-                    </Border>
 
-                    <Border IsVisible="{Binding IsUnsupportedMode}" Padding="24" Classes="SectionCard">
-                        <TextBlock Text="Direct firmware installation is not available on this platform." Classes="Title"  />
-                    </Border>
-                    <Border Padding="14" Classes="SectionCard">
-                        <StackPanel Orientation="Vertical" Spacing="4">
-                            <TextBlock Text="{Binding ContextHelp.Title}" Classes="H4" />
-                            <TextBlock Text="{Binding ContextHelp.Content}" Classes="H5 Warning"/>
-                        </StackPanel>
-                    </Border>
+            <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="25" RowSpacing="20" HorizontalAlignment="Stretch">
 
-                    <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TabIndex="0" SelectedIndex="{Binding SelectedIndex,Mode=TwoWay}">
-                        <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                            <local:FirmwareCatalogueView />
-                        </TabItem>
+                <Border Grid.Row="0" IsVisible="{Binding IsConnectedMode}" Padding="24" Classes="SectionCard">
+                    <StackPanel Orientation="Vertical" Spacing="14">
+                        <TextBlock Text="A vehicle is connected" Classes="Title"  />
+                        <TextBlock Text="Application firmware cannot be installed while Mission Planner owns the active connection. Disconnect the vehicle first to browse or install firmware." />
+                        <TextBlock Text="Embedded bootloader update is available only for a supported, disarmed ArduPilot vehicle. Keep power connected and reboot after an accepted update." />
+                        <Button Content="Update Bootloader" 
+                                Command="{Binding UpdateBootloaderCommand}" 
+                                IsEnabled="{Binding CanUpdateBootloader}" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
 
-                        <TabItem Header="Custom Firmware" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                            <local:CustomFirmwareView />
-                        </TabItem>
-                        <TabItem Header="STM32 Bootloader" IsEnabled="{Binding HasDfuBootLoader}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                            <local:STM32BootloaderView/>
-                        </TabItem>
-                        <TabItem Header="Help &amp; Support" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                            <local:HelpView />
-                        </TabItem>
-                    </TabControl>
+                <Border Grid.Row="1" IsVisible="{Binding IsUnsupportedMode}" Padding="24" Classes="SectionCard">
+                    <TextBlock Text="Direct firmware installation is not available on this platform." Classes="Title"  />
+                </Border>
+                <Border Grid.Row="2" Padding="14" Classes="SectionCard">
+                    <StackPanel Orientation="Vertical" Spacing="4">
+                        <TextBlock Text="{Binding ContextHelp.Title}" Classes="H4" />
+                        <TextBlock Text="{Binding ContextHelp.Content}" Classes="H5 Warning"/>
+                    </StackPanel>
+                </Border>
 
-                </StackPanel>
-            </ScrollViewer>
+                <TabControl Grid.Row="3" x:Name="MainTabControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" TabIndex="0" >
+                    <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                        <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <local:FirmwareCatalogueView DataContext="{Binding Catalogue}" />
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="Custom Firmware" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                        <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <local:CustomFirmwareView DataContext="{Binding Custom}" />
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="STM32 Bootloader" IsEnabled="{Binding HasDfuBootLoader}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                        <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <local:STM32BootloaderView DataContext="{Binding Dfu}"/>
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="Help &amp; Support" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                        <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <local:HelpView DataContext="{Binding Help}" />
+                        </ScrollViewer>
+                    </TabItem>
+                </TabControl>
+
+            </Grid>
+
 
             <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="12,6"
                         Spacing="10" >

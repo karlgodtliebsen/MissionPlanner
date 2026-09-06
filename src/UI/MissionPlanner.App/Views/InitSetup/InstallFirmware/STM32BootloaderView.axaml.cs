@@ -1,11 +1,9 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
-public partial class STM32BootloaderView : UserControl
+/// <summary>Displays the dfu firmware panel.</summary>
+public partial class STM32BootloaderView : UserControlViewBase<STM32BootloaderViewModel>
 {
+    /// <summary>Initializes the view.</summary>
     public STM32BootloaderView()
     {
         InitializeComponent();

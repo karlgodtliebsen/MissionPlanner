@@ -1,11 +1,14 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<view:UserControlViewBase x:TypeArguments="local:DetectedDeviceViewModel"
+             xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.DetectedDeviceView"
-             x:DataType="local:InstallFirmwareViewModel"
+             x:DataType="local:DetectedDeviceViewModel"
              >
     <Border  Padding="20" Classes="SectionCard">
 
@@ -14,9 +17,20 @@
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <ComboBox ItemsSource="{Binding DetectedDevices}"
                           SelectedItem="{Binding SelectedDevice}" ToolTip.Tip="Select flight controller" />
-                <Button Content="Install Validated Firmware" Command="{Binding InstallCommand}" />
+
+                <Button ToolTip.Tip="Install Validated Firmware" 
+                        Width="100"
+                        Classes="Primary"
+                        Padding="8,2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Command="{Binding InstallCommand}" 
+                       
+                >
+                    <avalonia:MaterialIcon Kind="AddCircle" Width="30" Height="30" />
+                </Button>
             </StackPanel>
             <SelectableTextBlock Text="{Binding DeviceStatus}" />
         </StackPanel>
     </Border>
-</UserControl>
+</view:UserControlViewBase>

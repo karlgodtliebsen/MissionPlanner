@@ -1,46 +1,49 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.HelpView"
-             x:DataType="local:InstallFirmwareViewModel"
-             >
-                         <Border Padding="20" Classes="SectionCard">
-                                <StackPanel Orientation="Vertical" Spacing="25">
-                                    <TextBlock Text="Firmware Help &amp; Support" FontSize="18" FontWeight="Bold" />
-                                    <TextBlock Text="These essential instructions are embedded and remain available offline. External links provide additional official detail." />
+<view:UserControlViewBase x:TypeArguments="local:FirmwareHelpViewModel"
+                          xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
+                          xmlns="https://github.com/avaloniaui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                          xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+                          mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                          x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.HelpView"
+                          x:DataType="local:FirmwareHelpViewModel"
+                          >
+    <Border Padding="20" Classes="SectionCard">
+        <StackPanel Orientation="Vertical" Spacing="25">
+            <TextBlock Text="Firmware Help &amp; Support" FontSize="18" FontWeight="Bold" />
+            <TextBlock Text="These essential instructions are embedded and remain available offline. External links provide additional official detail." />
 
-                                    <ItemsControl ItemsSource="{Binding SupportSections}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="local:FirmwareSupportSection">
-                                                <StackPanel Orientation="Vertical" Spacing="4" Margin="0,10,0,0">
-                                                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold" />
-                                                    <TextBlock Text="{Binding Content}" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+            <ItemsControl ItemsSource="{Binding SupportSections}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:FirmwareSupportSection">
+                        <StackPanel Orientation="Vertical" Spacing="4" Margin="0,10,0,0">
+                            <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold" />
+                            <TextBlock Text="{Binding Content}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
-                                    <TextBlock Text="Official documentation and tools" FontSize="18" FontWeight="Bold" />
+            <TextBlock Text="Official documentation and tools" FontSize="18" FontWeight="Bold" />
 
-                                    <ItemsControl ItemsSource="{Binding SupportLinks}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="local:FirmwareSupportLink">
-                                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12"  RowSpacing="25">
-                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" />
-                                                    <TextBlock Grid.Row="1" Text="{Binding Description}" />
-                                                    <Button Grid.Column="1" Grid.RowSpan="2" Content="Open"
-                                                            Command="{Binding $parent[ItemsControl].((local:InstallFirmwareViewModel)DataContext).OpenSupportLinkCommand}"
-                                                            CommandParameter="{Binding .}" />
-                                                </Grid>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+            <ItemsControl ItemsSource="{Binding SupportLinks}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:FirmwareSupportLink">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12"  RowSpacing="25">
+                            <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                            <TextBlock Grid.Row="1" Text="{Binding Description}" />
+                            <Button Grid.Column="1" Grid.RowSpan="2" Content="Open"
+                                    Command="{Binding $parent[ItemsControl].((local:FirmwareHelpViewModel)DataContext).OpenSupportLinkCommand}"
+                                    CommandParameter="{Binding .}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
-                                    <Button Content="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}"
-                                            IsVisible="{Binding CanOpenDeviceManager}" HorizontalAlignment="Left" />
-                                </StackPanel>
-                            </Border>
-</UserControl>
+            <Button Content="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}"
+                    IsVisible="{Binding CanOpenDeviceManager}" HorizontalAlignment="Left" />
+        </StackPanel>
+    </Border>
+
+</view:UserControlViewBase>

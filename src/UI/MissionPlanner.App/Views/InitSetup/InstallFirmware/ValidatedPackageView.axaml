@@ -1,11 +1,14 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+<view:UserControlViewBase x:TypeArguments="local:ValidatedPackageViewModel"
+             xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.ValidatedPackageView"
-             x:DataType="local:InstallFirmwareViewModel">
+             x:DataType="local:ValidatedPackageViewModel">
     <Border  Padding="20" Classes="SectionCard">
         <StackPanel Orientation="Vertical" Spacing="10">
             <TextBlock Text="Validated package"  Classes="H3" Margin="0,0,0,10"/>
@@ -63,7 +66,17 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
-            <Button Content="Install Validated Firmware" Command="{Binding InstallCommand}" />
+            <Button ToolTip.Tip="Install Validated Firmware" 
+                    Width="100"
+                    Classes="Primary"
+                    Padding="8,2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Command="{Binding InstallCommand}"  >
+                <avalonia:MaterialIcon Kind="AddCircle" Width="30" Height="30" />
+            </Button>
+
+
         </StackPanel>
     </Border>
-</UserControl>
+</view:UserControlViewBase>

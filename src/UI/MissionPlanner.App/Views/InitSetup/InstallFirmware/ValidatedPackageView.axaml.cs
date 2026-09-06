@@ -1,11 +1,9 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
-public partial class ValidatedPackageView : UserControl
+/// <summary>Displays the validated firmware panel.</summary>
+public partial class ValidatedPackageView : UserControlViewBase<ValidatedPackageViewModel>
 {
+    /// <summary>Initializes the view.</summary>
     public ValidatedPackageView()
     {
         InitializeComponent();

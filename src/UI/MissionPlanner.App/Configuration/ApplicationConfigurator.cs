@@ -211,7 +211,14 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<INavigationService, AvaloniaNavigationService>();
 
         services.TryAddSingleton<MainShellViewModel>();
-        services.TryAddTransient<FirmwareCatalogViewModel>();
+        services.TryAddSingleton<FirmwareCatalogViewModel>();
+        services.TryAddSingleton<CustomFirmwareViewModel>();
+        services.TryAddSingleton<STM32BootloaderViewModel>();
+        services.TryAddSingleton<DetectedDeviceViewModel>();
+        services.TryAddSingleton<SelectedFirmwareViewModel>();
+        services.TryAddSingleton<ValidatedPackageViewModel>();
+        services.TryAddSingleton<DiagnosticsReportViewModel>();
+        services.TryAddSingleton<FirmwareHelpViewModel>();
 
         services.TryAddTransient<FlightDataMissionMapViewModel>();
         services.TryAddTransient<FlightDataViewModel>();
@@ -351,7 +358,7 @@ public static class ApplicationConfigurator
         domainFactory.Add<ErrorView>();
         domainFactory.Add<ConnectPopupView>();
         domainFactory.Add<IDialogService, AvaloniaDialogService>();
-
+        domainFactory.Add<DiagnosticsReportViewModel>();
         domainFactory.Add<ParameterComparisonViewModel>();
         domainFactory.Add<MissionItemListViewPage>();
         domainFactory.Add<MissionMapPresenter>();

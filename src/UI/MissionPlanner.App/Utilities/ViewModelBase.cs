@@ -64,6 +64,14 @@ public partial class ViewModelBase : ObservableObject, IDisposable
         eventHub = ServiceHelper.GetRequiredService<IDomainEventHub>();
     }
 
+    /// <summary>Initializes a ViewModel with explicit services for composition and testing.</summary>
+    protected ViewModelBase(ILogger logger, IUiDispatcher dispatcher, IDomainEventHub eventHub)
+    {
+        Logger = logger;
+        Dispatcher = dispatcher;
+        this.eventHub = eventHub;
+    }
+
     /// <inheritdoc />
     protected ViewModelBase()
     {

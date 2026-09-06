@@ -28,6 +28,7 @@
                     Width="100"
                     Classes="Primary"
                     Padding="5"
+                    ToolTip.Tip="Cancel"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Command="{Binding CancelCommand}"
@@ -36,6 +37,7 @@
                 </Button>
                 <Button
                     Width="100"
+                    ToolTip.Tip="OK"
                     Classes="Primary"
                     Padding="5"
                     HorizontalAlignment="Center"

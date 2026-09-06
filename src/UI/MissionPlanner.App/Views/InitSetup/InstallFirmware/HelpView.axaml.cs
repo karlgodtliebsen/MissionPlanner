@@ -1,11 +1,9 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
-public partial class HelpView : UserControl
+/// <summary>Displays the help firmware panel.</summary>
+public partial class HelpView : UserControlViewBase<FirmwareHelpViewModel>
 {
+    /// <summary>Initializes the view.</summary>
     public HelpView()
     {
         InitializeComponent();

@@ -1,25 +1,21 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Avalonia;
 using Avalonia.Controls.Notifications;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.Navigation;
-using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
-using Semi.Avalonia;
 using Notification = Ursa.Controls.Notification;
 using WindowNotificationManager = Ursa.Controls.WindowNotificationManager;
 
@@ -268,8 +264,8 @@ public partial class TopBarViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanOpenConnection))]
     private async Task Connect()
     {
-        var options = AvaloniaDialogService.CreateDialogOptions("Connect Vehicle", "Ok", null);
         var dialogService = serviceFactory.Create<IDialogService>();
+        var options = dialogService.CreateOptions("Connect Vehicle", "Ok", null);
         var viewModel = serviceFactory.Create<ConnectPopupViewModel>();
         var result = await dialogService.ShowOverlayDialogAsync<ConnectPopupView, ConnectPopupViewModel>(viewModel, options);
     }
@@ -301,7 +297,10 @@ public partial class TopBarViewModel : ViewModelBase
 
     private async Task PersistThemeAsync(ThemeItem theme)
     {
-        settingsService.Current.Appearance = settingsService.Current.Appearance with { ThemeId = theme.Id };
+        settingsService.Current.Appearance = settingsService.Current.Appearance with
+        {
+            ThemeId = theme.Id
+        };
         var result = await settingsService.SaveAsync(settingsService.Current);
         if (!result.Success)
         {
@@ -310,7 +309,10 @@ public partial class TopBarViewModel : ViewModelBase
         }
     }
 
-    private void OnThemeChanged(object? sender, ThemeItem theme) => SetSelectedTheme(theme);
+    private void OnThemeChanged(object? sender, ThemeItem theme)
+    {
+        SetSelectedTheme(theme);
+    }
 
     private void SetSelectedTheme(ThemeItem theme)
     {
