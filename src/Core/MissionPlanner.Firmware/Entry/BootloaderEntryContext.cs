@@ -7,4 +7,8 @@ namespace MissionPlanner.Firmware.Entry;
 public sealed record BootloaderEntryContext(
     BootloaderDiscoveryRequest DiscoveryRequest,
     SerialDeviceDescriptor? ApplicationDevice = null,
-    bool HasActiveMissionPlannerSession = false);
+    bool HasActiveMissionPlannerSession = false)
+{
+    /// <summary>Reports ordered entry stages to the owning firmware operation.</summary>
+    public Action<FirmwareProgress>? Progress { get; init; }
+}

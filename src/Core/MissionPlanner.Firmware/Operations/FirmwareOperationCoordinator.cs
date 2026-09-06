@@ -159,6 +159,15 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
             Add(map, FirmwareOperationState.Verifying, FirmwareOperationState.Rebooting);
             Add(map, FirmwareOperationState.Rebooting, FirmwareOperationState.WaitingForApplication, FirmwareOperationState.Completed);
             Add(map, FirmwareOperationState.WaitingForApplication, FirmwareOperationState.Completed);
+            map[FirmwareOperationState.EnteringBootloader].UnionWith([
+                FirmwareOperationState.CheckingForBootloader, FirmwareOperationState.RequestingBootloaderReboot,
+                FirmwareOperationState.ManualBootloaderReconnectRequired]);
+            Add(map, FirmwareOperationState.CheckingForBootloader, FirmwareOperationState.RequestingBootloaderReboot,
+                FirmwareOperationState.ManualBootloaderReconnectRequired, FirmwareOperationState.IdentifyingBootloader);
+            Add(map, FirmwareOperationState.RequestingBootloaderReboot, FirmwareOperationState.WaitingForBootloader);
+            Add(map, FirmwareOperationState.WaitingForBootloader, FirmwareOperationState.IdentifyingBootloader,
+                FirmwareOperationState.ManualBootloaderReconnectRequired);
+            Add(map, FirmwareOperationState.ManualBootloaderReconnectRequired, FirmwareOperationState.WaitingForBootloader);
 
             foreach (var state in Enum.GetValues<FirmwareOperationState>().Where(state => !IsTerminal(state)))
             {

@@ -231,8 +231,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <summary>Gets release channels.</summary>
     public IReadOnlyList<FirmwareReleaseChannel> Channels { get; } = [FirmwareReleaseChannel.Stable, FirmwareReleaseChannel.Beta, FirmwareReleaseChannel.Latest];
 
-    /// <summary>Gets operation progress.</summary>
-    public FirmwareProgressViewModel OperationProgress { get; } = new();
+    /// <summary>Gets whether disconnecting power could interrupt a flash write or verification.</summary>
+    public bool IsPowerCritical => CurrentOperationState is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying;
 
     /// <summary>Gets concise help that remains available offline.</summary>
     public IReadOnlyList<FirmwareSupportSection> SupportSections { get; } = FirmwareSupportContent.Sections;
@@ -433,6 +433,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsPowerCritical))]
     public partial FirmwareOperationState? CurrentOperationState
     {
         get;
@@ -492,23 +493,22 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             return;
         }
         active = true;
+        await Task.Yield();
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
         SetBusy();
         activeVehicle.Changed += OnActiveVehicleChanged;
         SetMessages("Ready");
-        OperationProgress.Stage = "Ready";
-        OperationProgress.Progress = 0;
-        OperationProgress.HasStage = false;
-        OperationProgress.IsPowerCritical = false;
-        OperationProgress.TechnicalDetail = null;
+        ProgressMessage = "Ready";
         LastDiagnosticReport = null;
+        await Task.Yield();
         var visibleMode = ApplyMode();
         if (visibleMode == FirmwarePageMode.Disconnected)
         {
             IsVehicleConnected = false;
             await RefreshSafelyAsync(false, lifetime.Token);
         }
+        await Task.Yield();
     }
 
     /// <inheritdoc />
@@ -634,15 +634,29 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private Task RefreshCatalogAsync()
+    private Task RefreshCatalogAsync(CancellationToken cancellationToken)
     {
-        return RefreshSafelyAsync(true, lifetime?.Token ?? CancellationToken.None);
+        return RefreshSafelyAsync(true, lifetime?.Token ?? cancellationToken);
+    }
+    [RelayCommand]
+    private async Task ClearCatalogueFirmwareAsync(CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        PreparedFirmware = null;
+        CustomPackage = null;
+        SelectedFrameType = null;
+        SelectedVersion = null;
+        SelectedManufacturer = null;
+        SelectedFirmware = null;
+        SelectedChannel = FirmwareReleaseChannel.Stable;
+        await RefreshSafelyAsync(true, lifetime?.Token ?? cancellationToken, true);
     }
 
+
     [RelayCommand]
-    private Task ShowAllOptionsAsync()
+    private async Task ShowAllOptionsAsync(CancellationToken cancellationToken)
     {
-        return RefreshSafelyAsync(true, lifetime?.Token ?? CancellationToken.None, true);
+        await RefreshSafelyAsync(true, lifetime?.Token ?? cancellationToken, true);
     }
 
     [RelayCommand]
@@ -806,7 +820,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             var progress = CreateProgress();
             var result = await installationService.InstallAsync(request, progress, ownedCancellation.Token);
             LastDiagnosticReport = result.DiagnosticReport?.CreateReport();
-
 
             SetMessages(result.State == FirmwareOperationState.Completed
                 ? result.ApplicationDevice is null
@@ -979,14 +992,23 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private async Task RefreshAsync(bool forceRefresh, CancellationToken cancellationToken, bool allOptions = false)
     {
+
+
         // Do not use IsDisconnectedMode here. ApplyMode updates that UI property through
         // the dispatcher, so it may still contain the previous value during activation.
         if (!OperatingSystem.IsWindows() || activeVehicle.IsOnline || IsOperationInProgress)
         {
             return;
         }
+        if (Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
+        {
+            return;
+        }
         Debug.Print("InstallFirmware RefreshAsync");
-        var (version, refreshToken) = BeginRefresh(cancellationToken);
+        var (version, refreshCancellationToken) = BeginRefresh(cancellationToken);
+        using var ownedCancellation = BeginOperationCancellation(refreshCancellationToken);
+        var refreshToken = ownedCancellation.Token;
+
         try
         {
             await DispatchAsync(() =>
@@ -995,8 +1017,12 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 SetMessages("Loading firmware catalogue…");
                 NotificationManager?.Show(StatusMessage!);
             });
-            var channel = SelectedChannel;
 
+            SetOperation(true, FirmwareOperationState.LoadingCatalog);
+            await ShowOperationDialogAsync("Loading firmware catalogue", ownedCancellation);
+
+            var channel = SelectedChannel;
+            await Task.Yield();
             // Both manifest parsing and Windows device discovery can perform substantial
             // synchronous work before their returned tasks complete. Run them away from the
             // UI context and concurrently so opening the Connect dialog remains responsive.
@@ -1012,6 +1038,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             var dfuDevices = await dfuDevicesTask.ConfigureAwait(false);
             var dfuTool = await dfuToolTask.ConfigureAwait(false);
             Debug.Print("InstallFirmware RefreshAsync Completed task 1 & 2");
+            await Task.Yield();
 
 
             var entries = catalog.Entries.Where(entry =>
@@ -1023,6 +1050,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
             Debug.Print($"InstallFirmware RefreshAsync Completed task 3 with entries count: {entries.Length}");
 
+            await Task.Yield();
 
             refreshToken.ThrowIfCancellationRequested();
             if (!IsLatestRefresh(version))
@@ -1086,10 +1114,13 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         {
             await DispatchAsync(() =>
             {
-                if (IsLatestRefresh(version))
-                {
-                    IsCatalogRefreshRunning = false;
-                }
+                // CancelRefresh invalidates the version, but this operation still owns
+                // the refresh flag and dialog until its finally block completes.
+                IsCatalogRefreshRunning = false;
+                CloseOperationDialog();
+                EndOperationCancellation(ownedCancellation);
+                SetOperation(false, null);
+                Interlocked.Exchange(ref operationRunning, 0);
             });
         }
     }
@@ -1458,7 +1489,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             CanInstall = state.CanInstallApplicationFirmware;
             CanUpdateBootloader = state.CanUpdateEmbeddedBootloader;
         });
-
+        Task.Yield();
         return visibleMode;
     }
 
@@ -1467,12 +1498,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         Dispatcher.Dispatch(() =>
             {
                 CurrentOperationState = progress.State;
-                OperationProgress.Stage = StageText(progress);
-                OperationProgress.Progress = (progress.Percentage ?? 0) / 100d;
-                OperationProgress.HasStage = progress.Percentage.HasValue;
-                OperationProgress.IsPowerCritical = progress.State is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying;
-                OperationProgress.TechnicalDetail = progress.TechnicalDetail;
-                SetMessages(OperationProgress.Stage);
+                SetMessages(StageText(progress));
             });
     }
 
@@ -1577,6 +1603,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         {
             FirmwareOperationState.Downloading => "Downloading firmware",
             FirmwareOperationState.WaitingForDevice => "Waiting for flight controller",
+            FirmwareOperationState.CheckingForBootloader => "Checking for an ArduPilot bootloader",
+            FirmwareOperationState.RequestingBootloaderReboot => "Requesting ArduPilot reboot to bootloader",
+            FirmwareOperationState.WaitingForBootloader => "Waiting for the ArduPilot bootloader",
+            FirmwareOperationState.ManualBootloaderReconnectRequired => "Automatic bootloader entry failed; reset or reconnect the controller",
             FirmwareOperationState.IdentifyingBootloader => "Identifying bootloader",
             FirmwareOperationState.CheckingCompatibility => "Checking compatibility",
             FirmwareOperationState.Erasing => "Erasing flash — do not disconnect power",

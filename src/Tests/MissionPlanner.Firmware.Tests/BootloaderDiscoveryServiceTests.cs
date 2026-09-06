@@ -132,6 +132,65 @@ public sealed class BootloaderDiscoveryServiceTests
         await act.Should().ThrowAsync<FirmwareDeviceNotFoundException>();
     }
 
+    [Fact]
+    public async Task SelectedUsbSerialSurvivesPidAndComChangeAndRejectsUnrelatedBootloader()
+    {
+        var selected = new SerialDeviceDescriptor("COM11", "application-instance", new UsbIdentifier(1, 1), "FC-123");
+        var unrelated = new SerialDeviceDescriptor("COM11", "unrelated-instance", new UsbIdentifier(1, 2), "OTHER-FC");
+        var bootloader = new SerialDeviceDescriptor("COM14", "bootloader-instance", new UsbIdentifier(1, 2), "FC-123");
+        var ports = new FakePortFactory();
+        var clients = new FakeClientFactory(new Dictionary<string, BootloaderIdentity>
+        {
+            ["COM11"] = new(50, 4, 1024),
+            ["COM14"] = new(50, 4, 1024)
+        });
+        var service = CreateService(new FakeCatalog(unrelated), new FakeMonitor(unrelated, bootloader), ports, clients);
+        await using var found = await service.FindAsync(new BootloaderDiscoveryRequest(selected), cancellationToken: TestContext.Current.CancellationToken);
+        found.Device.Should().Be(bootloader);
+        ports.Opened.Should().Equal("COM14");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task IdentificationDeadlineAndCancellationReleaseOwnedPort(bool cancel)
+    {
+        var device = Device("COM11", "selected");
+        var ports = new FakePortFactory();
+        using var cancellation = new CancellationTokenSource();
+        var clients = new CancelledClientFactory(cancel ? cancellation : null);
+        var service = CreateService(new FakeCatalog(device), new WaitingMonitor(), ports, clients);
+        var find = () => service.FindAsync(new BootloaderDiscoveryRequest(device, Timeout: TimeSpan.FromMilliseconds(20)), cancellationToken: cancellation.Token);
+        if (cancel)
+        {
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(find);
+        }
+        else
+        {
+            await Assert.ThrowsAsync<FirmwareDeviceNotFoundException>(find);
+        }
+        ports.Ports["COM11"].Disposed.Should().BeTrue();
+    }
+
+    private sealed class CancelledClientFactory(CancellationTokenSource? cancellation) : IArduPilotBootloaderClientFactory
+    {
+        public IArduPilotBootloaderClient Create(IFirmwareSerialPort port) => new Client(port, cancellation);
+        private sealed class Client(IFirmwareSerialPort port, CancellationTokenSource? cancellation) : IArduPilotBootloaderClient
+        {
+            public async Task<BootloaderIdentity> IdentifyAsync(CancellationToken cancellationToken = default)
+            {
+                cancellation?.Cancel();
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                throw new InvalidOperationException("Should have been cancelled");
+            }
+            public Task EraseAsync(CancellationToken cancellationToken = default) => throw new NotSupportedException();
+            public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+            public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+            public Task RebootAsync(CancellationToken cancellationToken = default) => throw new NotSupportedException();
+            public ValueTask DisposeAsync() => port.DisposeAsync();
+        }
+    }
+
     private static BootloaderDiscoveryService CreateService(
         IFirmwareSerialDeviceCatalog catalog,
         IFirmwareDeviceMonitor monitor,

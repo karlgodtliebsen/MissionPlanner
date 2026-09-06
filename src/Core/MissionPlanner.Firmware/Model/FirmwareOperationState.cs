@@ -52,5 +52,17 @@ public enum FirmwareOperationState
     Cancelled,
 
     /// <summary>The operation failed.</summary>
-    Failed
+    Failed,
+
+    /// <summary>Probing the selected device for an existing ArduPilot bootloader.</summary>
+    CheckingForBootloader,
+
+    /// <summary>Requesting ArduPilot bootloader reboot through temporary MAVLink access.</summary>
+    RequestingBootloaderReboot,
+
+    /// <summary>Waiting for the selected physical controller's ArduPilot bootloader.</summary>
+    WaitingForBootloader,
+
+    /// <summary>Automatic entry failed and an operator reset or reconnect is required.</summary>
+    ManualBootloaderReconnectRequired
 }

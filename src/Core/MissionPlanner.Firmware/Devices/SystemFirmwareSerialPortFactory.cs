@@ -17,6 +17,7 @@ public sealed class SystemFirmwareSerialPortFactory : IFirmwareSerialPortFactory
         try
         {
             await Task.Run(port.Open, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
             return new OwnedSerialPort(port);
         }
         catch

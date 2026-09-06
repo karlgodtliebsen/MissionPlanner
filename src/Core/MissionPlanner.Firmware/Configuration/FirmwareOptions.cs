@@ -50,6 +50,9 @@ public sealed class FirmwareOptions
     /// <summary>Gets or sets the overall bootloader discovery timeout.</summary>
     public TimeSpan BootloaderDiscoveryTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
+    /// <summary>Gets or sets the initial bounded check for an already-running bootloader before MAVLink reboot.</summary>
+    public TimeSpan BootloaderInitialProbeTimeout { get; set; } = TimeSpan.FromSeconds(2);
+
     /// <summary>Gets or sets how often unchanged serial ports are re-probed during discovery.</summary>
     public TimeSpan BootloaderDiscoveryPollInterval { get; set; } = TimeSpan.FromMilliseconds(200);
 

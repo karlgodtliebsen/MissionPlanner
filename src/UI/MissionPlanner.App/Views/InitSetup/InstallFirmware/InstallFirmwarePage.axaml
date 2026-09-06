@@ -29,7 +29,7 @@
                     <Border Padding="14" Classes="SectionCard">
                         <StackPanel Orientation="Vertical" Spacing="4">
                             <TextBlock Text="{Binding ContextHelp.Title}" Classes="H4" />
-                            <TextBlock Text="{Binding ContextHelp.Content}" Classes="H5"/>
+                            <TextBlock Text="{Binding ContextHelp.Content}" Classes="H5 Warning"/>
                         </StackPanel>
                     </Border>
 
@@ -37,24 +37,26 @@
                               IsExpanded="True"
                               IsVisible="{Binding IsDisconnectedMode}" >
                         <Expander.Header>
-                            <TextBlock Text="Firmware List" Padding="10" />
+                            <TextBlock Text="Select Firmware" Padding="10" />
                         </Expander.Header>
 
                         <Grid RowDefinitions="*,Auto,Auto">
                             <Border Grid.Row="0"  Padding="14" Classes="SectionCard">
                                 <StackPanel Spacing="16">
                                     <StackPanel Orientation="Horizontal"  Spacing="10">
-                                        <Button Content="Refresh catalogue"  ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}" />
-                                        <Button Content="All Options" ToolTip.Tip="Includes Beta Versions" Command="{Binding ShowAllOptionsCommand}" />
-                                        <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" IsVisible="{Binding HasDfuBootLoader, Converter={StaticResource InvertedBoolConverter}}" />
+                                        <Button Content="Refresh Firmware catalogue"  ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}" />
+                                        <Button Content="All Version Options" ToolTip.Tip="Includes Beta Versions" Command="{Binding ShowAllOptionsCommand}" />
+                                        <Button Content="✕"
+                                                Padding="8,2"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding ClearCatalogueFirmwareCommand}" />
                                     </StackPanel>
-                                    <ProgressBar IsIndeterminate="True"  IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
                                     <StackPanel Orientation="Horizontal"  Spacing="10">
                                         <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release"  ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="250"/>
                                         <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
                                         <ComboBox ItemsSource="{Binding FrameTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
                                         <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
-                                        <Button  Content="✕" ToolTip.Tip="Clear all filters" Command="{Binding ClearCommand}" Padding="8,2"
+                                        <Button  Content="✕" ToolTip.Tip="Clear all Settings" Command="{Binding ClearCommand}" Padding="8,2"
                                                  VerticalAlignment="Center"/>
                                     </StackPanel>
                                     <controls:VirtualizedItemsGrid
@@ -112,8 +114,8 @@
                                     </controls:VirtualizedItemsGrid>
 
                                     <Border  IsVisible="{Binding HasSelectedFirmware}" Padding="16" Classes="SectionCard">
-                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                                            <TextBlock Text="Selected firmware" FontWeight="Bold" FontSize="18" />
+                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
+                                            <TextBlock Text="Selected firmware" FontWeight="Bold" FontSize="18" Margin="0,0,0,10"/>
 
                                             <TextBlock Grid.Row="1" Text="Platform" />
                                             <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmware.Platform,FallbackValue='', TargetNullValue=''}" />
@@ -155,9 +157,19 @@
                             </Border>
 
 
-                            <Border Grid.Row="1"  IsVisible="{Binding HasCustomFirmware}" Padding="16" Classes="SectionCard">
-                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20">
-                                    <StackPanel Orientation="Vertical" Spacing="4">
+                            <Border Grid.Row="1"  IsVisible="{Binding HasDfuBootLoader, Converter={StaticResource InvertedBoolConverter}}" Padding="16" Classes="SectionCard">
+                                <Grid RowDefinitions="Auto,*" RowSpacing="20">
+                                    <StackPanel Orientation="Horizontal"  Spacing="10">
+                                        <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" 
+                                                 />
+                                        <Button Content="✕"
+                                                ToolTip.Tip="Clear Custom Firmware"
+                                                Padding="8,2"
+                                                VerticalAlignment="Center"
+                                                Command="{Binding ClearCustomFirmwareCommand}" />
+                                    </StackPanel>
+                                    
+                                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="4" IsVisible="{Binding HasCustomFirmware}">
                                         <TextBlock Text="Local / custom firmware" FontWeight="Bold" FontSize="18" />
                                         <TextBlock Text="{Binding CustomFirmwareName}" />
                                         <TextBlock Text="{Binding CustomFirmwareDescription}" />
@@ -176,6 +188,7 @@
                                                        Classes="Warning" FontWeight="Bold" TextWrapping="Wrap" />
                                         </Border>
                                     </StackPanel>
+
                                 </Grid>
                             </Border>
 
@@ -262,8 +275,6 @@
                                     <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Center" Spacing="6">
                                         <Button Content="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
                                         <Button Content="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
-                                        <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
-                                        <Button Content="Clear" Command="{Binding ClearCustomFirmwareCommand}" />
                                         <Button Content="Install Validated Firmware" Command="{Binding InstallCommand}" />
                                     </StackPanel>
                                 </Grid>
@@ -328,18 +339,19 @@
 
                     <Expander HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsVisible="{Binding HasDiagnosticReport}" IsExpanded="{Binding HasDiagnosticReport}">
                         <Expander.Header>
-                            <TextBlock Text="Diagnostics" Padding="10" />
+                            <TextBlock Text="Diagnostics Report" Padding="10" />
                         </Expander.Header>
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ColumnDefinitions="*,Auto" ColumnSpacing="10">
                             <StackPanel Orientation="Vertical" IsVisible="{Binding HasDiagnosticReport}" Spacing="6">
                                 <Border Padding="14" Classes="SectionCard">
                                     <StackPanel Orientation="Vertical" Spacing="4">
-                                        <TextBlock Text="Diagnostic report" FontWeight="Bold" FontSize="18" />
                                         <SelectableTextBlock Text="{Binding LastDiagnosticReport}" />
                                     </StackPanel>
                                 </Border>
-                                <Button Content="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}" HorizontalAlignment="Left" />
                             </StackPanel>
+                            <Button Grid.Column="1" Content="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}" 
+                                    Margin="0,0,50,0"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Grid>
                     </Expander>
 
@@ -384,27 +396,27 @@
                             </StackPanel>
                         </Border>
                     </Expander>
-
-
-
                 </StackPanel>
             </ScrollViewer>
 
             <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="12,6"
                         Spacing="10" >
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                            IsVisible="{Binding IsCancellationDeferred}">
+                    <TextBlock Text="Firmware Operation Status:" FontSize="16" VerticalAlignment="Center" />
+                    <TextBlock Text="  •  " FontSize="16"  VerticalAlignment="Center" />
+                    <TextBlock Text="Cancellation is deferred until verification and vehicle reboot reach a safe boundary. Keep power connected." Classes="Warning"
+                               IsVisible="{Binding IsCancellationDeferred}" />
+                </StackPanel>
+               
 
-                <TextBlock Text="•" FontSize="16" IsVisible="{Binding IsCancellationDeferred}" VerticalAlignment="Center" />
-                <TextBlock Text="Cancellation is deferred until verification and vehicle reboot reach a safe boundary. Keep power connected." Classes="Warning" IsVisible="{Binding IsCancellationDeferred}" />
-
-                <TextBlock Text="•" FontSize="16" IsVisible="{Binding OperationProgress.HasStage}" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding OperationProgress.Stage}" />
-
-                <TextBlock Text="•" FontSize="16" IsVisible="{Binding OperationProgress.HasTechnicalDetail}" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding OperationProgress.TechnicalDetail}" />
-
-                <TextBlock Text="•" FontSize="16" IsVisible="{Binding OperationProgress.IsPowerCritical}" VerticalAlignment="Center" />
-                <TextBlock Text="Do not disconnect power while flash memory is being changed." Classes="Warning" IsVisible="{Binding OperationProgress.IsPowerCritical}" />
-
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                            IsVisible="{Binding IsPowerCritical}">
+                    <TextBlock Text="Firmware Operation Status:" FontSize="16" VerticalAlignment="Center" />
+                    <TextBlock Text="  •  " FontSize="16" VerticalAlignment="Center" />
+                    <TextBlock Text="Do not disconnect power while flash memory is being changed." Classes="Warning"
+                               IsVisible="{Binding IsPowerCritical}" />
+                </StackPanel>
             </StackPanel>
 
         </Grid>

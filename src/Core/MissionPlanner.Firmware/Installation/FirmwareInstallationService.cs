@@ -84,7 +84,10 @@ public sealed class FirmwareInstallationService(
             Transition(FirmwareOperationState.ValidatingPackage, "installation.package-validated");
             Transition(FirmwareOperationState.WaitingForDevice, "installation.waiting-for-device");
             Transition(FirmwareOperationState.EnteringBootloader, "installation.entering-bootloader");
-            var entry = await entryService.EnterAsync(request.EntryContext, cancellationToken).ConfigureAwait(false);
+            var entry = await entryService.EnterAsync(request.EntryContext with
+            {
+                Progress = value => Transition(value.State, value.MessageCode, value.TechnicalDetail)
+            }, cancellationToken).ConfigureAwait(false);
             DiscoveredBootloader found;
             if (entry is { Outcome: BootloaderEntryOutcome.BootloaderIdentified, Bootloader: not null }) found = entry.Bootloader;
             else

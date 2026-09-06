@@ -1,10 +1,12 @@
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Exceptions;
+using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 
 namespace MissionPlanner.Firmware.Entry;
 
 /// <summary>Directly probes devices that may already be running a bootloader.</summary>
-public sealed class AlreadyInBootloaderEntryStrategy(IBootloaderDiscoveryService discovery) : IBootloaderEntryStrategy
+public sealed class AlreadyInBootloaderEntryStrategy(IBootloaderDiscoveryService discovery, IOptions<FirmwareOptions>? options = null) : IBootloaderEntryStrategy
 {
     /// <inheritdoc />
     public int Priority => 100;
@@ -13,20 +15,18 @@ public sealed class AlreadyInBootloaderEntryStrategy(IBootloaderDiscoveryService
     public async Task<BootloaderEntryResult> TryEnterAsync(BootloaderEntryContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
-        if (context.ApplicationDevice is not null)
+        cancellationToken.ThrowIfCancellationRequested();
+        if (context.HasActiveMissionPlannerSession)
         {
-            // The selected port was positively identified as the running application device.
-            // Probing it with the bootloader protocol starts a native SerialPort read on Windows;
-            // if the application does not answer, that timed-out read can retain exclusive COM
-            // ownership and prevent the following MAVLink reboot strategy from opening the port.
             return new BootloaderEntryResult(
                 BootloaderEntryOutcome.NotApplicable,
-                "entry.application-device-not-probed-as-bootloader");
+                "entry.port-owned-by-vehicle-session");
         }
 
+        context.Progress?.Invoke(new(Model.FirmwareOperationState.CheckingForBootloader, null, "entry.checking-for-bootloader"));
         try
         {
-            var request = context.DiscoveryRequest with { Timeout = TimeSpan.FromMilliseconds(250) };
+            var request = context.DiscoveryRequest with { Timeout = (options?.Value ?? new FirmwareOptions()).BootloaderInitialProbeTimeout };
             var found = await discovery.FindAsync(request, cancellationToken: cancellationToken).ConfigureAwait(false);
             return new BootloaderEntryResult(BootloaderEntryOutcome.BootloaderIdentified, "entry.already-in-bootloader", found);
         }

@@ -70,7 +70,7 @@ public sealed class FirmwareInteractionService(IUserConfirmationService userConf
 
     private static string Message(string code) => code switch
     {
-        FirmwareInteractionCodes.ManualBootloaderReconnect => "Click Continue, then immediately unplug and reconnect the flight controller or press its hardware reset button. Mission Planner will watch for the ArduPilot bootloader.",
+        FirmwareInteractionCodes.ManualBootloaderReconnect => "The flight controller did not enter the ArduPilot bootloader automatically. Click Continue, then press the flight controller's RESET button or unplug and reconnect its USB cable. Mission Planner will watch for the ArduPilot bootloader.",
         FirmwareInteractionCodes.ReconnectAfterReboot => "The controller has rebooted. Wait for ArduPilot to reappear before reconnecting Mission Planner.",
         _ => "Mission Planner requires an additional firmware action. Copy the diagnostic report if this message persists."
     };

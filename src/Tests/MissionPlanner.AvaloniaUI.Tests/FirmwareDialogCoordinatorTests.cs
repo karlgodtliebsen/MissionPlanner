@@ -77,6 +77,22 @@ public sealed class FirmwareDialogCoordinatorTests
         }, cancellation.Token));
     }
 
+    [Fact]
+    public async Task RefreshProgressOpensWithoutConfirmationAndClosesWhenOperationEnds()
+    {
+        var coordinator = Create();
+        var events = new List<string>();
+        using (await coordinator.BeginAsync(() =>
+        {
+            events.Add("opened");
+            return Task.FromResult<IDisposable>(new Handle(() => events.Add("closed")));
+        }, false, CancellationToken.None))
+        {
+            Assert.Equal(new[] { "opened" }, events);
+        }
+        Assert.Equal(new[] { "opened", "closed" }, events);
+    }
+
     private sealed class Handle(Action close) : IDisposable
     {
         public void Dispose() => close();

@@ -17,7 +17,6 @@ namespace MissionPlanner.Core.Firmware;
 /// Uses a one-shot isolated serial stream to request bootloader reboot without creating a
 /// Mission Planner vehicle session or publishing messages into the application event hub.
 /// </summary>
-// </summary>
 public sealed class TemporaryMavLinkBootloaderGateway(
     IFirmwareSerialPortFactory serialPortFactory,
     IMavLinkFrameParser frameParser,
@@ -30,12 +29,18 @@ public sealed class TemporaryMavLinkBootloaderGateway(
     public async Task<bool> RebootToBootloaderAsync(SerialDeviceDescriptor applicationDevice, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(applicationDevice);
+        cancellationToken.ThrowIfCancellationRequested();
         frameParser.Reset();
 
-        await using var port = await serialPortFactory.OpenAsync(new SerialPortOpenOptions(applicationDevice.PortName, options.Value.BootloaderBaudRate), cancellationToken).ConfigureAwait(false);
+        logger.LogInformation("Attempting temporary MAVLink bootloader reboot on application serial endpoint {PortName} ({DeviceIdentity}).",
+            applicationDevice.PortName, applicationDevice.StableIdentity);
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(options.Value.BootloaderPortOpenTimeout + options.Value.TemporaryMavLinkHeartbeatTimeout + options.Value.BootloaderCommandTimeout);
+        await using var port = await serialPortFactory.OpenAsync(new SerialPortOpenOptions(applicationDevice.PortName, options.Value.BootloaderBaudRate), deadline.Token).ConfigureAwait(false);
         var endpoint = new TransportEndPoint("temporary-firmware", applicationDevice.PortName);
 
-        var heartbeat = await ReadMessageAsync<HeartbeatMessage>(port.Stream, endpoint, options.Value.TemporaryMavLinkHeartbeatTimeout, cancellationToken).ConfigureAwait(false);
+        var heartbeat = await ReadMessageAsync<HeartbeatMessage>(port.Stream, endpoint, options.Value.TemporaryMavLinkHeartbeatTimeout, cancellationToken,
+            message => message.Autopilot == 3 && message.ComponentId == 1).ConfigureAwait(false);
         if (heartbeat is null)
         {
             logger.LogDebug("No MAVLink heartbeat was detected on temporary firmware port {PortName}.", applicationDevice.PortName);
@@ -46,8 +51,15 @@ public sealed class TemporaryMavLinkBootloaderGateway(
             (float)RebootShutdownAction.RebootToBootloader, 0, 0, 0, 0, 0, 0
         ]);
 
-        await port.Stream.WriteAsync(packet, cancellationToken).ConfigureAwait(false);
-        await port.Stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await port.Stream.WriteAsync(packet, deadline.Token).AsTask().WaitAsync(deadline.Token).ConfigureAwait(false);
+            await port.Stream.FlushAsync(deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException("Temporary MAVLink reboot write timed out; bootloader discovery must determine whether the device reset.");
+        }
         // Do not wait for COMMAND_ACK here. ArduPilot commonly resets the USB serial device
         // before sending it, and SerialPort.BaseStream.ReadAsync can leave a native Windows read
         // pending after a managed timeout. That pending read retains exclusive ownership of the

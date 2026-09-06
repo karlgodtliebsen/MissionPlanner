@@ -67,6 +67,41 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
         factory.PortDisposed.Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SilentApplicationPortIsReleasedOnTimeoutOrCancellation(bool cancel)
+    {
+        var stream = new ScriptedStream();
+        var factory = new FakePortFactory(stream);
+        var gateway = new TemporaryMavLinkBootloaderGateway(factory, new MarkerParser(), new MarkerDecoder(MavResult.Accepted),
+            new FakeEncoder(), Options.Create(new FirmwareOptions { TemporaryMavLinkHeartbeatTimeout = TimeSpan.FromMilliseconds(40) }),
+            NullLogger<TemporaryMavLinkBootloaderGateway>.Instance);
+        using var cancellation = new CancellationTokenSource();
+        if (cancel)
+        {
+            cancellation.CancelAfter(TimeSpan.FromMilliseconds(10));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => gateway.RebootToBootloaderAsync(new SerialDeviceDescriptor("COM11"), cancellation.Token));
+        }
+        else
+        {
+            (await gateway.RebootToBootloaderAsync(new SerialDeviceDescriptor("COM11"), cancellation.Token)).Should().BeFalse();
+        }
+        factory.PortDisposed.Should().BeTrue();
+        stream.Written.Length.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task DisappearanceWhileSendingRebootStillReleasesTemporaryPort()
+    {
+        var stream = new ScriptedStream([1]) { DisappearOnWrite = true };
+        var factory = new FakePortFactory(stream);
+        var gateway = new TemporaryMavLinkBootloaderGateway(factory, new MarkerParser(), new MarkerDecoder(MavResult.Accepted),
+            new FakeEncoder(), Options.Create(new FirmwareOptions()), NullLogger<TemporaryMavLinkBootloaderGateway>.Instance);
+        await Assert.ThrowsAsync<IOException>(() => gateway.RebootToBootloaderAsync(new SerialDeviceDescriptor("COM11"), TestContext.Current.CancellationToken));
+        factory.PortDisposed.Should().BeTrue();
+    }
+
     private sealed class FakePortFactory(Stream stream) : IFirmwareSerialPortFactory
     {
         public bool PortDisposed { get; private set; }
@@ -85,6 +120,7 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
             public ValueTask DisposeAsync()
             {
                 dispose();
+                stream.Dispose();
                 return ValueTask.CompletedTask;
             }
         }
@@ -138,6 +174,8 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
 
     private sealed class ScriptedStream(params byte[][] reads) : Stream
     {
+        private readonly TaskCompletionSource closed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public bool DisappearOnWrite { get; init; }
         private readonly Queue<byte[]> reads = new(reads);
         public MemoryStream Written { get; } = new();
         public override bool CanRead => true;
@@ -162,7 +200,7 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
             if (reads.Count == 0)
             {
                 // Models SerialPort.BaseStream on Windows, where cancellation may be ignored.
-                await Task.Delay(Timeout.InfiniteTimeSpan);
+                await closed.Task;
                 return 0;
             }
 
@@ -178,7 +216,17 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
 
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
+            if (DisappearOnWrite)
+            {
+                throw new IOException("USB device disappeared while sending reboot");
+            }
             return Written.WriteAsync(buffer, cancellationToken);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            closed.TrySetResult();
+            base.Dispose(disposing);
         }
 
         public override long Seek(long offset, SeekOrigin origin)

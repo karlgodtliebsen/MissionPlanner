@@ -64,10 +64,18 @@ public sealed class BootloaderDiscoveryService(
                         var change = changes.Current;
                         nextChange = changes.MoveNextAsync().AsTask();
                         if (change.Kind != FirmwareDeviceChangeKind.Arrived)
+                        {
+                            if (IsSelected(change.Device, request.SelectedDevice))
+                            {
+                                logger.LogInformation("Application serial device {PortName} disappeared during bootloader discovery.", change.Device.PortName);
+                            }
                             continue;
+                        }
 
                         progress?.Report(new FirmwareProgress(FirmwareOperationState.WaitingForDevice, null, "discovery.device-arrived", technicalDetail: change.Device.PortName));
-                        var arrived = await ProbeAsync(change.Device, request, probed, probeFailures, deadline.Token).ConfigureAwait(false);
+                        var arrived = IsCandidate(change.Device, request)
+                            ? await ProbeAsync(change.Device, request, probed, probeFailures, deadline.Token).ConfigureAwait(false)
+                            : null;
                         if (arrived is not null)
                             return arrived;
                         continue;
@@ -129,8 +137,10 @@ public sealed class BootloaderDiscoveryService(
 
         IFirmwareSerialPort? port = null;
         IArduPilotBootloaderClient? client = null;
+        var transferred = false;
         try
         {
+            logger.LogDebug("Probing ArduPilot bootloader candidate {PortName} ({DeviceIdentity}).", candidate.PortName, candidate.StableIdentity);
             using var openDeadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             openDeadline.CancelAfter(options.Value.BootloaderPortOpenTimeout);
             port = await portFactory.OpenAsync(new SerialPortOpenOptions(candidate.PortName, request.BaudRate ?? options.Value.BootloaderBaudRate), openDeadline.Token).ConfigureAwait(false);
@@ -138,6 +148,7 @@ public sealed class BootloaderDiscoveryService(
             port = null;
             var identity = await client.IdentifyAsync(cancellationToken).ConfigureAwait(false);
             logger.LogInformation("Discovered bootloader board {BoardId} on {PortName} ({OsDeviceId}).", identity.BoardId, candidate.PortName, candidate.OsDeviceId);
+            transferred = true;
             return new DiscoveredBootloader(candidate, identity, client);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -151,13 +162,21 @@ public sealed class BootloaderDiscoveryService(
             logger.LogDebug(exception, "Rejected non-bootloader serial candidate {PortName}.", candidate.PortName);
         }
 
-        if (client is not null)
+        finally
         {
-            await client.DisposeAsync().ConfigureAwait(false);
-        }
-        else if (port is not null)
-        {
-            await port.DisposeAsync().ConfigureAwait(false);
+            // Cancellation during IdentifyAsync must also release the native COM handle
+            // before the temporary MAVLink strategy or another probe can own the port.
+            if (!transferred)
+            {
+                if (client is not null)
+                {
+                    await client.DisposeAsync().ConfigureAwait(false);
+                }
+                else if (port is not null)
+                {
+                    await port.DisposeAsync().ConfigureAwait(false);
+                }
+            }
         }
 
         return null;
@@ -179,7 +198,7 @@ public sealed class BootloaderDiscoveryService(
 
     private static IEnumerable<SerialDeviceDescriptor> Rank(IEnumerable<SerialDeviceDescriptor> devices, BootloaderDiscoveryRequest request, bool newlyArrived)
     {
-        return devices.OrderByDescending(device => newlyArrived)
+        return devices.Where(device => IsCandidate(device, request)).OrderByDescending(device => newlyArrived)
             .ThenByDescending(device => IsSelected(device, request.SelectedDevice))
             .ThenByDescending(device => request.ExpectedUsbIdentifiers?.Contains(device.UsbIdentifier ?? default) == true)
             .ThenByDescending(device => MatchesHint(device, request.BootloaderHints))
@@ -188,10 +207,25 @@ public sealed class BootloaderDiscoveryService(
 
     private static bool IsSelected(SerialDeviceDescriptor device, SerialDeviceDescriptor? selected)
     {
-        return selected is not null &&
-               ((selected.StableIdentity is not null && string.Equals(device.StableIdentity, selected.StableIdentity, StringComparison.OrdinalIgnoreCase)) ||
-                string.Equals(device.PortName, selected.PortName, StringComparison.OrdinalIgnoreCase));
+        if (selected is null)
+        {
+            return false;
+        }
+        // USB product IDs and OS instance IDs can change between application and bootloader.
+        // A supplied serial number takes precedence over the transient COM name.
+        if (selected.UsbSerialNumber is not null && device.UsbSerialNumber is not null)
+        {
+            return string.Equals(device.UsbSerialNumber, selected.UsbSerialNumber, StringComparison.OrdinalIgnoreCase);
+        }
+        if (selected.StableIdentity is not null && device.StableIdentity is not null)
+        {
+            return string.Equals(device.StableIdentity, selected.StableIdentity, StringComparison.OrdinalIgnoreCase);
+        }
+        return string.Equals(device.PortName, selected.PortName, StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool IsCandidate(SerialDeviceDescriptor device, BootloaderDiscoveryRequest request) =>
+        request.SelectedDevice is null || IsSelected(device, request.SelectedDevice);
 
     private static bool MatchesHint(SerialDeviceDescriptor device, IReadOnlyCollection<string>? hints)
     {

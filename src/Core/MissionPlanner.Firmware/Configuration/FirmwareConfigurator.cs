@@ -90,6 +90,7 @@ public static class FirmwareConfigurator
             .Validate(value => value.BootloaderSynchronizationTimeout > TimeSpan.Zero, "BootloaderSynchronizationTimeout must be positive.")
             .Validate(value => value.BootloaderBaudRate > 0, "BootloaderBaudRate must be positive.")
             .Validate(value => value.TemporaryMavLinkHeartbeatTimeout > TimeSpan.Zero, "TemporaryMavLinkHeartbeatTimeout must be positive.")
+            .Validate(value => value.BootloaderInitialProbeTimeout > TimeSpan.Zero, "BootloaderInitialProbeTimeout must be positive.")
             .Validate(value => value.TemporaryMavLinkCommandAckTimeout > TimeSpan.Zero, "TemporaryMavLinkCommandAckTimeout must be positive.")
             .Validate(value => value.MaximumArtifactBytes > 0, "MaximumArtifactBytes must be positive.")
             .Validate(value => value.ArtifactCacheQuotaBytes > 0, "ArtifactCacheQuotaBytes must be positive.")
