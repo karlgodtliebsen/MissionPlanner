@@ -145,12 +145,11 @@ public sealed class UdpMavLinkTransport : IUdpMavLinkTransport
         cancellationToken.ThrowIfCancellationRequested();
 
         isConnected = false;
-        if (udpClient is not null)
-        {
-            udpClient.Close();
-            udpClient.Dispose();
-            udpClient = null!;
-        }
+        // Shutdown and the cancelled receive loop can both disconnect.
+        // Transfer ownership once rather than dereferencing a field another
+        // caller may clear between Close and Dispose.
+        var clientToClose = Interlocked.Exchange(ref udpClient, null!);
+        clientToClose?.Dispose();
 
         var localPort = endpoint.LocalPort;
         var localHost = endpoint.LocalHost;

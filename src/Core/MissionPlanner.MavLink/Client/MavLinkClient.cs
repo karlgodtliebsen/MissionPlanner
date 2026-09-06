@@ -200,6 +200,11 @@ public sealed class MavLinkClient : IMavLinkClient
 
             await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
 
+            // SerialPort.BaseStream reads may ignore cancellation on Windows.
+            // Close the transport before joining the reader so a silent port
+            // cannot hold up disconnect (and every subsequent connection).
+            await transport.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
+
             if (receiveTask is not null)
             {
                 try

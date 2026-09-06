@@ -6,7 +6,6 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware;
@@ -289,7 +288,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     /// <summary>Gets whether parsed custom metadata is available.</summary>
     public bool HasCustomFirmware => CustomPackage is not null;
-
 
     /// <summary>Gets whether the current non-terminal work accepts a cancellation request.</summary>
     public bool CanRequestCancellation => IsCatalogRefreshRunning || IsOperationInProgress;
@@ -667,7 +665,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             var extension = Path.GetExtension(file.FileName);
             if (!extension.Equals(".apj", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".px4", StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotSupportedException("Only .apj and .px4 application packages are supported here. Use the separate DFU/legacy workflow for *_with_bl.hex.");
+                SetMessages("Only .apj and .px4 application packages are supported here. Use the separate DFU/legacy workflow for *_with_bl.hex.");
+                NotificationManager!.Show(StatusMessage ?? "");
+                //throw new NotSupportedException("Only .apj and .px4 application packages are supported here. Use the separate DFU/legacy workflow for *_with_bl.hex.");
             }
 
             await using var stream = await file.OpenReadAsync(cancellationToken);
@@ -685,6 +685,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             SelectedFirmware = null;
             selectedFirmwareTarget = null;
             SetMessages("Local firmware parsed and validated. Verify its board ID, then install it using the custom firmware panel.");
+            NotificationManager!.Show(StatusMessage ?? "");
             UpdateContextHelp();
         }
         catch (Exception exception)
@@ -692,6 +693,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             Logger.LogWarning(exception, "Custom firmware selection failed.");
             CustomPackage = null;
             SetMessages(exception);
+            NotificationManager!.Show(ErrorMessage ?? "");
         }
     }
 
@@ -1391,13 +1393,13 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private void OnActiveVehicleChanged(Core.Vehicles.ActiveVehicleChangedEventArgs e)
     {
-        IsVehicleConnected = !e.Current.IsOnline;
-        if (e.Current.IsOnline)
-        {
-            // The disconnected catalogue/device scan is no longer relevant once a vehicle
-            // becomes active. Cancel it before queuing UI work for the connected mode.
-            CancelRefresh();
-        }
+        IsVehicleConnected = e.Current.IsOnline;
+        //if (e.Current.IsOnline)
+        //{
+        //    // The disconnected catalogue/device scan is no longer relevant once a vehicle
+        //    // becomes active. Cancel it before queuing UI work for the connected mode.
+        //    CancelRefresh();
+        //}
         if (!active)
         {
             return;

@@ -363,6 +363,22 @@ public class DomainVehicleServiceSimulatorTests : IAsyncDisposable
         Assert.Equal(VehicleCommandResult.Accepted, response.Result);
         Assert.False(service.GetVehicleState(state.VehicleId)!.IsArmed);
     }
+    [Fact]
+    public async Task ConnectionServiceConnectsAndDisconnectsUdpVehicle()
+    {
+        await using var simulator = new FakeMavLinkVehicle2(
+            serviceProvider.GetRequiredService<IMavLinkFrameParser>(),
+            serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>(),
+            "127.0.0.1", simulatorIPEndPoint.Port, port, TimeSpan.FromMilliseconds(100));
+        await simulator.StartAsync(TestContext.Current.CancellationToken);
+        var service = serviceProvider.GetRequiredService<IVehicleConnectionService>();
+        var result = await service.ConnectUdpAsync(simulatorIPEndPoint.Port, "127.0.0.1", port, TestContext.Current.CancellationToken);
+        Assert.True(result.Success, result.ErrorMessage);
+        Assert.True(service.IsConnected);
+        await service.DisconnectAsync(TestContext.Current.CancellationToken);
+        Assert.False(service.IsConnected);
+    }
+
     private async Task<VehicleState> WaitForRegisteredVehicle()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
