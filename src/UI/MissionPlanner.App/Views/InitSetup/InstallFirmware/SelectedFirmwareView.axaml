@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SelectedFirmwareView"
+             x:DataType="local:InstallFirmwareViewModel"
+             >
+    <Border  Padding="20" Classes="SectionCard">
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
+            <TextBlock Text="Selected firmware" Classes="H3" Margin="0,0,0,10"/>
+
+            <TextBlock Grid.Row="1" Text="Platform" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmware.Platform,FallbackValue='', TargetNullValue=''}" />
+            <TextBlock Grid.Row="1" Text="Platform" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmware.Platform,FallbackValue='', TargetNullValue=''}" />
+
+            <TextBlock Grid.Row="2" Text="Firmware board ID" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedFirmware.BoardId,FallbackValue='', TargetNullValue=''}" />
+
+            <TextBlock Grid.Row="3" Text="Version" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedFirmware.Version,FallbackValue='', TargetNullValue=''}" />
+
+            <TextBlock Grid.Row="4" Text="Channel" />
+            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedFirmware.Channel,FallbackValue='', TargetNullValue=''}" />
+
+            <TextBlock Grid.Row="5" Text="Vehicle" />
+            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedFirmware.VehicleType,FallbackValue='', TargetNullValue=''}" />
+
+            <TextBlock Grid.Row="6" Text="Manufacturer" />
+            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedFirmware.Manufacturer,FallbackValue='', TargetNullValue=''}" />
+
+            <TextBlock Grid.Row="7" Text="Git SHA" />
+            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedFirmware.GitSha,FallbackValue='', TargetNullValue=''}" />
+
+            <TextBlock Grid.Row="8" Text="Format" />
+            <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding SelectedFirmware.Format,FallbackValue='', TargetNullValue=''}" />
+
+            <TextBlock Grid.Row="9" Text="Source" />
+            <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding SelectedFirmware.ArtifactUrl,FallbackValue='', TargetNullValue=''}" TextWrapping="Wrap" />
+
+            <TextBlock Grid.Row="10" Text="USB IDs" />
+            <TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding SelectedFirmware.UsbIdentifiers,FallbackValue='', TargetNullValue=''}" />
+
+            <TextBlock Grid.Row="11" Text="Bootloader aliases" />
+            <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SelectedFirmware.BootloaderAliases,FallbackValue='', TargetNullValue=''}" />
+
+            <StackPanel Orientation="Horizontal" Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" Spacing="10">
+                <Button Content="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
+                <Button Content="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
+            </StackPanel>
+
+        </Grid>
+    </Border>
+
+</UserControl>

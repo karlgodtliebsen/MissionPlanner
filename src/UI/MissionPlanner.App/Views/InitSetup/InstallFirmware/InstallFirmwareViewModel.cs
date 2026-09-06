@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using AsyncAwaitBestPractices;
-using Avalonia.Layout;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -127,6 +126,12 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [ObservableProperty]
     public partial string ProgressMessage { get; private set; } = string.Empty;
 
+    [ObservableProperty]
+    public partial int SelectedIndex
+    {
+        get; private set;
+    }
+
     ///
     /// <summary>Gets catalogue choices.
     /// </summary>
@@ -139,20 +144,20 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [ObservableProperty]
     public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FilteredFirmwareChoices { get; private set; } = [];
 
-    /// <summary>
-    /// 
-    /// </summary>
-    [ObservableProperty]
-    public partial HorizontalAlignment ContextWidth
-    {
-        get;
-        private set;
-    } = HorizontalAlignment.Center;
+    ///// <summary>
+    ///// 
+    ///// </summary>
+    //[ObservableProperty]
+    //public partial HorizontalAlignment ContextWidth
+    //{
+    //    get;
+    //    private set;
+    //} = HorizontalAlignment.Center;
 
-    partial void OnIsVehicleConnectedChanged(bool oldValue, bool newValue)
-    {
-        ContextWidth = newValue ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
-    }
+    //partial void OnIsVehicleConnectedChanged(bool oldValue, bool newValue)
+    //{
+    //    ContextWidth = newValue ? HorizontalAlignment.Center : HorizontalAlignment.Stretch;
+    //}
 
     [ObservableProperty]
     public partial bool IsVehicleConnected
@@ -493,13 +498,14 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             return;
         }
         active = true;
+        SelectedIndex = 0;
         await Task.Yield();
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
         SetBusy();
         activeVehicle.Changed += OnActiveVehicleChanged;
         SetMessages("Ready");
-        ProgressMessage = "Ready";
+        //ProgressMessage = "Ready";
         LastDiagnosticReport = null;
         await Task.Yield();
         var visibleMode = ApplyMode();
@@ -508,6 +514,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             IsVehicleConnected = false;
             await RefreshSafelyAsync(false, lifetime.Token);
         }
+
         await Task.Yield();
     }
 

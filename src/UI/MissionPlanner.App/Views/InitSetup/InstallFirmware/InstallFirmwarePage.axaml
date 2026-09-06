@@ -11,9 +11,9 @@
                               x:DataType="local:InstallFirmwareViewModel">
 
     <ContentPage Header="Install Firmware" >
-        <Grid RowDefinitions="*,32" HorizontalAlignment="{Binding ContextWidth,Mode=OneWay}">
-            <ScrollViewer Grid.Row="0"  HorizontalAlignment="{Binding ContextWidth,Mode=OneWay}" VerticalAlignment="Stretch">
-                <StackPanel Orientation="Vertical" Margin="25" Spacing="20" HorizontalAlignment="{Binding ContextWidth,Mode=OneWay}">
+        <Grid RowDefinitions="*,32" HorizontalAlignment="Stretch">
+            <ScrollViewer Grid.Row="0"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <StackPanel Orientation="Vertical" Margin="25" Spacing="20" HorizontalAlignment="Stretch">
                     <Border IsVisible="{Binding IsConnectedMode}" Padding="24" Classes="SectionCard">
                         <StackPanel Orientation="Vertical" Spacing="14">
                             <TextBlock Text="A vehicle is connected" Classes="Title"  />
@@ -33,384 +33,260 @@
                         </StackPanel>
                     </Border>
 
-                    <Expander HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                              IsExpanded="True"
-                              IsVisible="{Binding IsDisconnectedMode}" >
-                        <Expander.Header>
-                            <TextBlock Text="Select Firmware" Padding="10" />
-                        </Expander.Header>
-
-                        <Grid RowDefinitions="*,Auto,Auto">
-                            <Border Grid.Row="0"  Padding="14" Classes="SectionCard">
-                                <StackPanel Spacing="16">
-                                    <StackPanel Orientation="Horizontal"  Spacing="10">
-                                        <Button Content="Refresh Firmware catalogue"  ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}" />
-                                        <Button Content="All Version Options" ToolTip.Tip="Includes Beta Versions" Command="{Binding ShowAllOptionsCommand}" />
-                                        <Button Content="✕"
-                                                Padding="8,2"
-                                                VerticalAlignment="Center"
-                                                Command="{Binding ClearCatalogueFirmwareCommand}" />
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal"  Spacing="10">
-                                        <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release"  ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="250"/>
-                                        <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
-                                        <ComboBox ItemsSource="{Binding FrameTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
-                                        <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
-                                        <Button  Content="✕" ToolTip.Tip="Clear all Settings" Command="{Binding ClearCommand}" Padding="8,2"
-                                                 VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                    <controls:VirtualizedItemsGrid
-                                        IsVisible="{Binding IsVehicleConnected,Converter={StaticResource InvertedBoolConverter}}"
-                                        Height="400"
-                                        ItemsSource="{Binding FilteredFirmwareChoices}"
-                                        ColumnWidths="250,100,*,2*,100,*"
-                                        ColumnSpacing="6"
-                                        RowMinHeight="48"
-                                        ShowHeader="True"
-                                        ShowSearchBar="True"
-                                        SearchWatermark="Search firmware..."
-                                        SearchMemberPaths="VehicleType,FirmwareVersion.Value,FirmwareVersion.SemanticVersion,Platform,Manufacturer,BoardId,MatchReason"
-                                        ShowPagination="False"
-                                        SelectionMode="Single"
-                                        SelectionColumnWidth="30"
-                                        SelectedItem="{Binding SelectedFirmware, Mode=OneWayToSource}">
-
-                                        <controls:VirtualizedItemsGrid.EmptyView>
-                                            <TextBlock Text="No firmware releases match the current filters."
-                                                       HorizontalAlignment="Center"
-                                                       VerticalAlignment="Center"
-                                                       Margin="20"
-                                                       Opacity="0.7" />
-                                        </controls:VirtualizedItemsGrid.EmptyView>
-
-                                        <controls:VirtualizedItemsGrid.HeaderTemplate>
-                                            <DataTemplate>
-                                                <controls:VirtualizedItemsGridRow>
-                                                    <TextBlock Grid.Column="0" Text="Version information" Classes="DataGridColumn" />
-                                                    <TextBlock Grid.Column="1" Text="Vehicle type" Classes="DataGridColumn" />
-                                                    <TextBlock Grid.Column="2" Text="Platform" Classes="DataGridColumn" />
-                                                    <TextBlock Grid.Column="3" Text="Manufacturer" Classes="DataGridColumn" />
-                                                    <TextBlock Grid.Column="4" Text="Board ID" Classes="DataGridColumn" />
-                                                    <TextBlock Grid.Column="5" Text="Match reason" Classes="DataGridColumn" />
-                                                </controls:VirtualizedItemsGridRow>
-                                            </DataTemplate>
-                                        </controls:VirtualizedItemsGrid.HeaderTemplate>
-
-                                        <controls:VirtualizedItemsGrid.RowTemplate>
-                                            <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                                <controls:VirtualizedItemsGridRow>
-                                                    <StackPanel Grid.Column="0" Orientation="Vertical" Classes="DataGridRow" HorizontalAlignment="Center">
-                                                        <TextBlock Text="{Binding FirmwareVersion.Value, StringFormat='Version: {0}'}" />
-                                                        <TextBlock Text="{Binding FirmwareVersion.SemanticVersion, StringFormat='Semantic version: {0}'}" />
-                                                    </StackPanel>
-                                                    <TextBlock Grid.Column="1" Text="{Binding VehicleType}" Classes="DataGridRow" />
-                                                    <TextBlock Grid.Column="2" HorizontalAlignment="Center" Text="{Binding Platform}" Classes="DataGridRow" />
-                                                    <TextBlock Grid.Column="3" HorizontalAlignment="Center" Text="{Binding Manufacturer}" Classes="DataGridRow" />
-                                                    <TextBlock Grid.Column="4" HorizontalAlignment="Center" Text="{Binding BoardId}" Classes="DataGridRow" />
-                                                    <TextBlock Grid.Column="5" HorizontalAlignment="Center" Text="{Binding MatchReason}" Classes="DataGridRow" />
-                                                </controls:VirtualizedItemsGridRow>
-                                            </DataTemplate>
-                                        </controls:VirtualizedItemsGrid.RowTemplate>
-                                    </controls:VirtualizedItemsGrid>
-
-                                    <Border  IsVisible="{Binding HasSelectedFirmware}" Padding="16" Classes="SectionCard">
-                                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
-                                            <TextBlock Text="Selected firmware" FontWeight="Bold" FontSize="18" Margin="0,0,0,10"/>
-
-                                            <TextBlock Grid.Row="1" Text="Platform" />
-                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmware.Platform,FallbackValue='', TargetNullValue=''}" />
-                                            <TextBlock Grid.Row="1" Text="Platform" />
-                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmware.Platform,FallbackValue='', TargetNullValue=''}" />
-
-                                            <TextBlock Grid.Row="2" Text="Firmware board ID" />
-                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedFirmware.BoardId,FallbackValue='', TargetNullValue=''}" />
-
-                                            <TextBlock Grid.Row="3" Text="Version" />
-                                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedFirmware.Version,FallbackValue='', TargetNullValue=''}" />
-
-                                            <TextBlock Grid.Row="4" Text="Channel" />
-                                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedFirmware.Channel,FallbackValue='', TargetNullValue=''}" />
-
-                                            <TextBlock Grid.Row="5" Text="Vehicle" />
-                                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedFirmware.VehicleType,FallbackValue='', TargetNullValue=''}" />
-
-                                            <TextBlock Grid.Row="6" Text="Manufacturer" />
-                                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedFirmware.Manufacturer,FallbackValue='', TargetNullValue=''}" />
-
-                                            <TextBlock Grid.Row="7" Text="Git SHA" />
-                                            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedFirmware.GitSha,FallbackValue='', TargetNullValue=''}" />
-
-                                            <TextBlock Grid.Row="8" Text="Format" />
-                                            <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding SelectedFirmware.Format,FallbackValue='', TargetNullValue=''}" />
-
-                                            <TextBlock Grid.Row="9" Text="Source" />
-                                            <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding SelectedFirmware.ArtifactUrl,FallbackValue='', TargetNullValue=''}" TextWrapping="Wrap" />
-
-                                            <TextBlock Grid.Row="10" Text="USB IDs" />
-                                            <TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding SelectedFirmware.UsbIdentifiers,FallbackValue='', TargetNullValue=''}" />
-
-                                            <TextBlock Grid.Row="11" Text="Bootloader aliases" />
-                                            <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SelectedFirmware.BootloaderAliases,FallbackValue='', TargetNullValue=''}" />
-                                        </Grid>
-                                    </Border>
-                                </StackPanel>
-                            </Border>
-
-
-                            <Border Grid.Row="1"  IsVisible="{Binding HasDfuBootLoader, Converter={StaticResource InvertedBoolConverter}}" Padding="16" Classes="SectionCard">
-                                <Grid RowDefinitions="Auto,*" RowSpacing="20">
-                                    <StackPanel Orientation="Horizontal"  Spacing="10">
-                                        <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" 
-                                                 />
-                                        <Button Content="✕"
-                                                ToolTip.Tip="Clear Custom Firmware"
-                                                Padding="8,2"
-                                                VerticalAlignment="Center"
-                                                Command="{Binding ClearCustomFirmwareCommand}" />
-                                    </StackPanel>
-                                    
-                                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="4" IsVisible="{Binding HasCustomFirmware}">
-                                        <TextBlock Text="Local / custom firmware" FontWeight="Bold" FontSize="18" />
-                                        <TextBlock Text="{Binding CustomFirmwareName}" />
-                                        <TextBlock Text="{Binding CustomFirmwareDescription}" />
-                                        <TextBlock Text="{Binding CustomFirmwarePlatform, StringFormat='Platform: {0}'}" />
-                                        <TextBlock Text="{Binding CustomFirmwareBoardId, StringFormat='Board ID: {0}'}" />
-                                        <TextBlock Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
-                                        <TextBlock Text="{Binding CustomFirmwareBuild, StringFormat='Build: {0}'}"  Classes="Warning" />
-                                        <TextBlock Margin="0,8,0,0" Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
-                                        <WrapPanel Orientation="Horizontal" ItemSpacing="5">
-                                            <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
-                                            <TextBlock Text="Require exact board ID match"  Classes="Warning" />
-                                        </WrapPanel>
-                                        <Border Classes="SectionCard" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12"
-                                                BorderBrush="{DynamicResource Warning}">
-                                            <TextBlock Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply."
-                                                       Classes="Warning" FontWeight="Bold" TextWrapping="Wrap" />
-                                        </Border>
-                                    </StackPanel>
-
-                                </Grid>
-                            </Border>
-
-                            <Border Grid.Row="2"  IsVisible="{Binding HasPreparedFirmware}" Padding="12" Classes="SectionCard">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock Text="Validated package" FontWeight="Bold" FontSize="18" />
-
-                                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                                        <TextBlock Grid.Row="0" Text="Package board ID" />
-                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PreparedFirmware.PackageBoardId,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="1" Text="Description" />
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PreparedFirmware.Package.Description,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="2" Text="Platform summary" />
-                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PreparedFirmware.Package.Summary,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="3" Text="Package version" />
-                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding PreparedFirmware.Package.Version,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="4" Text="Package build" />
-                                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding PreparedFirmware.Package.GitIdentity,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="5" Text="Internal image" />
-                                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding PreparedFirmware.InternalImageSize,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="6" Text="External image" />
-                                        <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding PreparedFirmware.ExternalImageSize,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="7" Text="SHA-256" />
-                                        <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding PreparedFirmware.Sha256,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="8" Text="Downloaded bytes" />
-                                        <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding PreparedFirmware.ArtifactMetadata.Size,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="9" Text="Downloaded at" />
-                                        <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding PreparedFirmware.ArtifactMetadata.DownloadedAt,FallbackValue='', TargetNullValue=''}" />
-
-                                        <TextBlock Grid.Row="10" Text="Source" />
-                                        <TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding PreparedFirmware.ArtifactMetadata.SourceUri,FallbackValue='', TargetNullValue=''}" TextWrapping="Wrap" />
-
-                                        <TextBlock Grid.Row="11" Text="Cache ID" />
-                                        <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding PreparedFirmware.CacheIdentity,FallbackValue='', TargetNullValue=''}" TextWrapping="Wrap" />
-
-                                        <TextBlock Grid.Row="12" Text="Cache hit" />
-                                        <TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding PreparedFirmware.WasCacheHit,FallbackValue='', TargetNullValue=''}" />
-                                    </Grid>
-                                    <Grid MaxHeight="250">
-                                        <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding PreparedFirmware.Warnings}" Margin="0,10,0,10" MaxHeight="250" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent">
-
-                                            <DataGrid.Columns>
-                                                <DataGridTemplateColumn Width="*" Header="VehicleType">
-                                                    <DataGridTemplateColumn.CellTemplate>
-                                                        <DataTemplate x:DataType="x:String">
-                                                            <TextBlock Text="{Binding ., StringFormat='Warning: {0}'}" />
-                                                        </DataTemplate>
-                                                    </DataGridTemplateColumn.CellTemplate>
-                                                </DataGridTemplateColumn>
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                    </Grid>
-
-                                </StackPanel>
-                            </Border>
-                        </Grid>
-                    </Expander>
-
-                    <Expander  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               IsVisible="{Binding HasDevice}"
-                               IsExpanded="{Binding HasDevice}">
-                        <Expander.Header>
-                            <TextBlock Text="Flash Firmware" Padding="10" />
-                        </Expander.Header>
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowDefinitions="*" RowSpacing="10">
-
-                            <Border Grid.Row="0" Padding="14" Classes="SectionCard">
-                                <Grid ColumnDefinitions="2*,*" ColumnSpacing="10">
-                                    <StackPanel Orientation="Vertical" Spacing="10" Grid.Column="0">
-                                        <TextBlock Text="Detected device" FontWeight="Bold" FontSize="18" />
-                                        <ComboBox ItemsSource="{Binding DetectedDevices}" SelectedItem="{Binding SelectedDevice}" ToolTip.Tip="Select flight controller" />
-                                        <SelectableTextBlock Text="{Binding DeviceStatus}" />
-                                    </StackPanel>
-
-                                    <StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Center" Spacing="6">
-                                        <Button Content="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
-                                        <Button Content="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
-                                        <Button Content="Install Validated Firmware" Command="{Binding InstallCommand}" />
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </Expander>
-
-                    <Expander  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                               IsVisible="{Binding HasDfuBootLoader}"
-                               IsExpanded="{Binding HasDfuBootLoader}">
-                        <Expander.Header>
-                            <TextBlock Text="STM32 Bootloader" Padding="10" />
-                        </Expander.Header>
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowDefinitions="*" RowSpacing="10">
-                            <Border Grid.Row="0" Padding="16" Classes="SectionCard">
-
-                                <Grid ColumnDefinitions="2*,*" RowDefinitions="*,Auto">
-                                    <StackPanel Orientation="Vertical" Spacing="10" Grid.Column="0">
-                                        <TextBlock Text="Initial installation for (STM32 DFU)" FontWeight="Bold" FontSize="18" />
-                                        <TextBlock Text="Use this only when the controller does not yet contain the ArduPilot serial bootloader. Select an official target or load a local *_with_bl.hex file." />
-                                        <TextBlock Text="1. Disconnect the controller. Hold its BOOT/DFU button (or bridge its documented BOOT pads) while reconnecting USB. Some boards require BOOT plus RESET." />
-                                        <TextBlock Text="2. Release BOOT after Windows shows STM32 Bootloader. It is a USB DFU device, not a COM port." />
-                                        <TextBlock Text="3. Install STM32CubeProgrammer and its bundled driver if the device is not ready, then refresh the catalogue." />
-                                        <TextBlock Text="4. Confirm the exact platform and board ID. Mission Planner will download the matching official *_with_bl.hex, validate it, program it, and verify it." />
-
-                                        <StackPanel Orientation="Vertical" IsVisible="{Binding HasLocalDfuFirmware}" Spacing="10" Margin="0,10,0,10">
-                                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                                <TextBlock Text="{Binding LocalDfuFirmwareName, StringFormat='Selected local image: {0}'}"  Classes="Warning"  VerticalAlignment="Center" />
-                                                <Button Content="✕" Command="{Binding ClearLocalDfuFirmwareCommand}" Padding="8,2"
-                                                        ToolTip.Tip="Clear the local HEX selection"
-                                                        VerticalAlignment="Center"/>
-                                            </StackPanel>
-                                            <WrapPanel Orientation="Horizontal" ItemSpacing="10">
-                                                <TextBlock Text="Local HEX mode is active." TextWrapping="Wrap" Classes="Warning" />
-                                                <TextBlock Text="This file takes precedence over any firmware row selected in the catalogue." TextWrapping="Wrap"  Classes="Warning" />
-                                                <TextBlock Text="Clear the local HEX selection to return to catalogue installation." TextWrapping="Wrap" Classes="Warning" />
-                                            </WrapPanel>
-                                            <TextBox PlaceholderText="Exact ArduPilot platform (for example omnibusf4)" Text="{Binding LocalDfuPlatform, Mode=TwoWay}" />
-                                            <TextBlock Text="Intel HEX does not contain the APJ board metadata used for catalogue matching. Enter the exact platform that was used to produce this custom build." TextWrapping="Wrap" Classes="Warning" />
+                    <TabControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TabIndex="0" SelectedIndex="{Binding SelectedIndex,Mode=TwoWay}">
+                        <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Grid RowDefinitions="Auto,*,Auto,Auto" ColumnDefinitions="*,Auto">
+                                <local:DetectedDeviceView  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"  ></local:DetectedDeviceView>
+                                <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Padding="20" Classes="SectionCard">
+                                    <StackPanel Spacing="16" Orientation="Vertical">
+                                        <TextBlock Text="Select Firmware" Classes="H3" />
+                                        <StackPanel Orientation="Horizontal" Spacing="10">
+                                            <Button Content="Refresh Firmware catalogue" ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}" />
+                                            <Button Content="All Version Options" ToolTip.Tip="Includes Beta Versions" Command="{Binding ShowAllOptionsCommand}" />
+                                            <Button Content="✕"
+                                                    Padding="8,2"
+                                                    VerticalAlignment="Center"
+                                                    Command="{Binding ClearCatalogueFirmwareCommand}" />
                                         </StackPanel>
-                                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,10">
-                                            <ComboBox Width="600" ToolTip.Tip="Select STM32 DFU device" ItemsSource="{Binding DfuDevices}" SelectedItem="{Binding SelectedDfuDevice}" />
+                                        <StackPanel Orientation="Horizontal"  Spacing="10">
+                                            <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release"  ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="250"/>
+                                            <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
+                                            <ComboBox ItemsSource="{Binding FrameTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
+                                            <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
+                                            <Button  Content="✕" ToolTip.Tip="Clear all Settings" Command="{Binding ClearCommand}" Padding="8,2"
+                                                     VerticalAlignment="Center"/>
                                         </StackPanel>
-                                        <TextBlock Text="{Binding DfuStatus}" />
-                                    </StackPanel>
+                                        <controls:VirtualizedItemsGrid
+                                            IsVisible="{Binding IsVehicleConnected,Converter={StaticResource InvertedBoolConverter}}"
+                                            Height="400"
+                                            ItemsSource="{Binding FilteredFirmwareChoices}"
+                                            ColumnWidths="250,100,*,2*,100,*"
+                                            ColumnSpacing="6"
+                                            RowMinHeight="48"
+                                            ShowHeader="True"
+                                            ShowSearchBar="True"
+                                            SearchWatermark="Search firmware..."
+                                            SearchMemberPaths="VehicleType,FirmwareVersion.Value,FirmwareVersion.SemanticVersion,Platform,Manufacturer,BoardId,MatchReason"
+                                            ShowPagination="False"
+                                            SelectionMode="Single"
+                                            SelectionColumnWidth="30"
+                                            SelectedItem="{Binding SelectedFirmware, Mode=OneWayToSource}">
 
-                                    <TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,10" Text="Warning: this erases the current firmware. Keep USB power connected until programming and verification complete." Classes="Warning" />
+                                            <controls:VirtualizedItemsGrid.EmptyView>
+                                                <TextBlock Text="No firmware releases match the current filters."
+                                                           HorizontalAlignment="Center"
+                                                           VerticalAlignment="Center"
+                                                           Margin="20"
+                                                           Opacity="0.7" />
+                                            </controls:VirtualizedItemsGrid.EmptyView>
 
-                                    <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center" Spacing="10" HorizontalAlignment="Left">
-                                        <Button Content="Refresh devices" Command="{Binding RefreshCatalogCommand}" />
-                                        <Button Content="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
-                                        <Button Content="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
-                                        <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomBlWithFirmwareCommand}" />
-                                        <Button HorizontalAlignment="Left" Content="Install ArduPilot + Bootloader through STM32 DFU" Command="{Binding InstallDfuFirmwareCommand}" />
-                                        <Button Content="Clear" Command="{Binding ClearCustomFirmwareCommand}" />
-                                    </StackPanel>
-                                </Grid>
+                                            <controls:VirtualizedItemsGrid.HeaderTemplate>
+                                                <DataTemplate>
+                                                    <controls:VirtualizedItemsGridRow>
+                                                        <TextBlock Grid.Column="0" Text="Version information" Classes="DataGridColumn" />
+                                                        <TextBlock Grid.Column="1" Text="Vehicle type" Classes="DataGridColumn" />
+                                                        <TextBlock Grid.Column="2" Text="Platform" Classes="DataGridColumn" />
+                                                        <TextBlock Grid.Column="3" Text="Manufacturer" Classes="DataGridColumn" />
+                                                        <TextBlock Grid.Column="4" Text="Board ID" Classes="DataGridColumn" />
+                                                        <TextBlock Grid.Column="5" Text="Match reason" Classes="DataGridColumn" />
+                                                    </controls:VirtualizedItemsGridRow>
+                                                </DataTemplate>
+                                            </controls:VirtualizedItemsGrid.HeaderTemplate>
 
-                            </Border>
-                        </Grid>
-                    </Expander>
-
-                    <Expander HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsVisible="{Binding HasDiagnosticReport}" IsExpanded="{Binding HasDiagnosticReport}">
-                        <Expander.Header>
-                            <TextBlock Text="Diagnostics Report" Padding="10" />
-                        </Expander.Header>
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                            <StackPanel Orientation="Vertical" IsVisible="{Binding HasDiagnosticReport}" Spacing="6">
-                                <Border Padding="14" Classes="SectionCard">
-                                    <StackPanel Orientation="Vertical" Spacing="4">
-                                        <SelectableTextBlock Text="{Binding LastDiagnosticReport}" />
+                                            <controls:VirtualizedItemsGrid.RowTemplate>
+                                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                                    <controls:VirtualizedItemsGridRow>
+                                                        <StackPanel Grid.Column="0" Orientation="Vertical" Classes="DataGridRow" HorizontalAlignment="Center">
+                                                            <TextBlock Text="{Binding FirmwareVersion.Value, StringFormat='Version: {0}'}" />
+                                                            <TextBlock Text="{Binding FirmwareVersion.SemanticVersion, StringFormat='Semantic version: {0}'}" />
+                                                        </StackPanel>
+                                                        <TextBlock Grid.Column="1" Text="{Binding VehicleType}" Classes="DataGridRow" />
+                                                        <TextBlock Grid.Column="2" HorizontalAlignment="Center" Text="{Binding Platform}" Classes="DataGridRow" />
+                                                        <TextBlock Grid.Column="3" HorizontalAlignment="Center" Text="{Binding Manufacturer}" Classes="DataGridRow" />
+                                                        <TextBlock Grid.Column="4" HorizontalAlignment="Center" Text="{Binding BoardId}" Classes="DataGridRow" />
+                                                        <TextBlock Grid.Column="5" HorizontalAlignment="Center" Text="{Binding MatchReason}" Classes="DataGridRow" />
+                                                    </controls:VirtualizedItemsGridRow>
+                                                </DataTemplate>
+                                            </controls:VirtualizedItemsGrid.RowTemplate>
+                                        </controls:VirtualizedItemsGrid>
                                     </StackPanel>
                                 </Border>
-                            </StackPanel>
-                            <Button Grid.Column="1" Content="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}" 
-                                    Margin="0,0,50,0"
-                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Grid>
-                    </Expander>
+                                <local:SelectedFirmwareView Grid.Row="2" Grid.Column="0"  IsVisible="{Binding HasSelectedFirmware}" />
+                                <local:ValidatedPackageView  Grid.Row="2" Grid.Column="1"   IsVisible="{Binding HasPreparedFirmware}" />
+                          
+                                <local:DiagnosticsReportView Grid.Row="3"  Grid.Column="0" Grid.ColumnSpan="2" IsVisible="{Binding HasDiagnosticReport}" />
+                            </Grid>
+                        </TabItem>
 
-                    <Expander Grid.Row="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <Expander.Header>
-                            <TextBlock Text="Help &amp; Support" Padding="10" />
-                        </Expander.Header>
-                        <Border Padding="20" Classes="SectionCard">
-                            <StackPanel Orientation="Vertical" Spacing="25">
-                                <TextBlock Text="Firmware Help &amp; Support" FontSize="18" FontWeight="Bold" />
-                                <TextBlock Text="These essential instructions are embedded and remain available offline. External links provide additional official detail." />
+                        <TabItem Header="Custom Firmware" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Grid RowDefinitions="Auto,*,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                                <local:DetectedDeviceView  Grid.Row="0"  Grid.Column="0" Grid.ColumnSpan="2"  ></local:DetectedDeviceView>
+                                <Border Grid.Row="1"  IsVisible="{Binding HasDfuBootLoader, Converter={StaticResource InvertedBoolConverter}}" Padding="16" Classes="SectionCard">
+                                    <Grid RowDefinitions="Auto,*" RowSpacing="20">
+                                        <StackPanel Orientation="Horizontal"  Spacing="10">
+                                            <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}"
+                                                    />
+                                            <Button Content="✕"
+                                                    ToolTip.Tip="Clear Custom Firmware"
+                                                    Padding="8,2"
+                                                    VerticalAlignment="Center"
+                                                    Command="{Binding ClearCustomFirmwareCommand}" />
+                                        </StackPanel>
 
-                                <ItemsControl ItemsSource="{Binding SupportSections}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="local:FirmwareSupportSection">
-                                            <StackPanel Orientation="Vertical" Spacing="4" Margin="0,10,0,0">
-                                                <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold" />
-                                                <TextBlock Text="{Binding Content}" />
+                                        <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="4" IsVisible="{Binding HasCustomFirmware}">
+                                            <TextBlock Text="Local / custom firmware" FontWeight="Bold" FontSize="18" />
+                                            <TextBlock Text="{Binding CustomFirmwareName}" />
+                                            <TextBlock Text="{Binding CustomFirmwareDescription}" />
+                                            <TextBlock Text="{Binding CustomFirmwarePlatform, StringFormat='Platform: {0}'}" />
+                                            <TextBlock Text="{Binding CustomFirmwareBoardId, StringFormat='Board ID: {0}'}" />
+                                            <TextBlock Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
+                                            <TextBlock Text="{Binding CustomFirmwareBuild, StringFormat='Build: {0}'}"  Classes="Warning" />
+                                            <TextBlock Margin="0,8,0,0" Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
+                                            <WrapPanel Orientation="Horizontal" ItemSpacing="5">
+                                                <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
+                                                <TextBlock Text="Require exact board ID match"  Classes="Warning" />
+                                            </WrapPanel>
+                                            <Border Classes="SectionCard" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12"
+                                                    BorderBrush="{DynamicResource Warning}">
+                                                <TextBlock Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply."
+                                                           Classes="Warning" FontWeight="Bold" TextWrapping="Wrap" />
+                                            </Border>
+                                        </StackPanel>
+
+                                    </Grid>
+                                </Border>
+                                <local:ValidatedPackageView  Grid.Row="2" IsVisible="{Binding HasPreparedFirmware}" />
+                                <local:DiagnosticsReportView Grid.Row="3" IsVisible="{Binding HasDiagnosticReport}" />
+                            </Grid>
+                        </TabItem>
+
+                        <TabItem Header="STM32 Bootloader" IsEnabled="{Binding HasDfuBootLoader}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowDefinitions="*" RowSpacing="10">
+                                <Border Grid.Row="0" Padding="16" Classes="SectionCard">
+
+                                    <Grid  RowDefinitions="Auto,*,Auto">
+
+                                        <StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center" Spacing="10" HorizontalAlignment="Left">
+                                            <Button Content="Refresh devices" Command="{Binding RefreshCatalogCommand}" />
+                                            <Button Content="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
+                                            <Button Content="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
+                                            <Button Content="Load Local / Custom Firmware" Command="{Binding LoadCustomBlWithFirmwareCommand}" />
+                                            <Button HorizontalAlignment="Left" Content="Install ArduPilot + Bootloader through STM32 DFU" Command="{Binding InstallDfuFirmwareCommand}" />
+                                            <Button Content="Clear" Command="{Binding ClearCustomFirmwareCommand}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Vertical" Spacing="10" Grid.Row="1" >
+                                            <TextBlock Text="Initial installation for (STM32 DFU)" FontWeight="Bold" FontSize="18" />
+                                            <TextBlock Text="Use this only when the controller does not yet contain the ArduPilot serial bootloader. Select an official target or load a local *_with_bl.hex file." />
+                                            <TextBlock Text="1. Disconnect the controller. Hold its BOOT/DFU button (or bridge its documented BOOT pads) while reconnecting USB. Some boards require BOOT plus RESET." />
+                                            <TextBlock Text="2. Release BOOT after Windows shows STM32 Bootloader. It is a USB DFU device, not a COM port." />
+                                            <TextBlock Text="3. Install STM32CubeProgrammer and its bundled driver if the device is not ready, then refresh the catalogue." />
+                                            <TextBlock Text="4. Confirm the exact platform and board ID. Mission Planner will download the matching official *_with_bl.hex, validate it, program it, and verify it." />
+
+                                            <StackPanel Orientation="Vertical" IsVisible="{Binding HasLocalDfuFirmware}" Spacing="10" Margin="0,10,0,10">
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <TextBlock Text="{Binding LocalDfuFirmwareName, StringFormat='Selected local image: {0}'}"  Classes="Warning"  VerticalAlignment="Center" />
+                                                    <Button Content="✕" Command="{Binding ClearLocalDfuFirmwareCommand}" Padding="8,2"
+                                                            ToolTip.Tip="Clear the local HEX selection"
+                                                            VerticalAlignment="Center"/>
+                                                </StackPanel>
+                                                <WrapPanel Orientation="Horizontal" ItemSpacing="10">
+                                                    <TextBlock Text="Local HEX mode is active." TextWrapping="Wrap" Classes="Warning" />
+                                                    <TextBlock Text="This file takes precedence over any firmware row selected in the catalogue." TextWrapping="Wrap"  Classes="Warning" />
+                                                    <TextBlock Text="Clear the local HEX selection to return to catalogue installation." TextWrapping="Wrap" Classes="Warning" />
+                                                </WrapPanel>
+                                                <TextBox PlaceholderText="Exact ArduPilot platform (for example omnibusf4)" Text="{Binding LocalDfuPlatform, Mode=TwoWay}" />
+                                                <TextBlock Text="Intel HEX does not contain the APJ board metadata used for catalogue matching. Enter the exact platform that was used to produce this custom build." TextWrapping="Wrap" Classes="Warning" />
                                             </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,10">
+                                                <ComboBox Width="600" ToolTip.Tip="Select STM32 DFU device" ItemsSource="{Binding DfuDevices}" SelectedItem="{Binding SelectedDfuDevice}" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding DfuStatus}" />
+                                        </StackPanel>
 
-                                <TextBlock Text="Official documentation and tools" FontSize="18" FontWeight="Bold" />
+                                        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Margin="0,10,0,10" Text="Warning: this erases the current firmware. Keep USB power connected until programming and verification complete." Classes="Warning" />
 
-                                <ItemsControl ItemsSource="{Binding SupportLinks}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="local:FirmwareSupportLink">
-                                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12"  RowSpacing="25">
-                                                <TextBlock Text="{Binding Title}" FontWeight="Bold" />
-                                                <TextBlock Grid.Row="1" Text="{Binding Description}" />
-                                                <Button Grid.Column="1" Grid.RowSpan="2" Content="Open"
-                                                        Command="{Binding $parent[ItemsControl].((local:InstallFirmwareViewModel)DataContext).OpenSupportLinkCommand}"
-                                                        CommandParameter="{Binding .}" />
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                    </Grid>
 
-                                <Button Content="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}"
-                                        IsVisible="{Binding CanOpenDeviceManager}" HorizontalAlignment="Left" />
-                            </StackPanel>
-                        </Border>
+                                </Border>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="Help &amp; Support" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <Border Padding="20" Classes="SectionCard">
+                                <StackPanel Orientation="Vertical" Spacing="25">
+                                    <TextBlock Text="Firmware Help &amp; Support" FontSize="18" FontWeight="Bold" />
+                                    <TextBlock Text="These essential instructions are embedded and remain available offline. External links provide additional official detail." />
+
+                                    <ItemsControl ItemsSource="{Binding SupportSections}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="local:FirmwareSupportSection">
+                                                <StackPanel Orientation="Vertical" Spacing="4" Margin="0,10,0,0">
+                                                    <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding Content}" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <TextBlock Text="Official documentation and tools" FontSize="18" FontWeight="Bold" />
+
+                                    <ItemsControl ItemsSource="{Binding SupportLinks}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="local:FirmwareSupportLink">
+                                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12"  RowSpacing="25">
+                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                                                    <TextBlock Grid.Row="1" Text="{Binding Description}" />
+                                                    <Button Grid.Column="1" Grid.RowSpan="2" Content="Open"
+                                                            Command="{Binding $parent[ItemsControl].((local:InstallFirmwareViewModel)DataContext).OpenSupportLinkCommand}"
+                                                            CommandParameter="{Binding .}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Button Content="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}"
+                                            IsVisible="{Binding CanOpenDeviceManager}" HorizontalAlignment="Left" />
+                                </StackPanel>
+                            </Border>
+                        </TabItem>
+                    </TabControl>
+
+                    <!--IsExpanded="{Binding HasDevice}"-->
+
+                    <!--IsExpanded="{Binding HasDfuBootLoader}"-->
+                    <!--
+                    <Expander HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsVisible="{Binding HasDiagnosticReport}" IsExpanded="{Binding HasDiagnosticReport}">
+                    <Expander.Header>
+                    <TextBlock Text="Diagnostics Report" Padding="10" />
+                    </Expander.Header>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <StackPanel Orientation="Vertical" IsVisible="{Binding HasDiagnosticReport}" Spacing="6">
+                    <Border Padding="14" Classes="SectionCard">
+                    <StackPanel Orientation="Vertical" Spacing="4">
+                    <SelectableTextBlock Text="{Binding LastDiagnosticReport}" />
+                    </StackPanel>
+                    </Border>
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}"
+                    Margin="0,0,50,0"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Grid>
                     </Expander>
+                    -->
                 </StackPanel>
             </ScrollViewer>
 
             <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="12,6"
                         Spacing="10" >
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             IsVisible="{Binding IsCancellationDeferred}">
                     <TextBlock Text="Firmware Operation Status:" FontSize="16" VerticalAlignment="Center" />
                     <TextBlock Text="  •  " FontSize="16"  VerticalAlignment="Center" />
                     <TextBlock Text="Cancellation is deferred until verification and vehicle reboot reach a safe boundary. Keep power connected." Classes="Warning"
                                IsVisible="{Binding IsCancellationDeferred}" />
                 </StackPanel>
-               
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             IsVisible="{Binding IsPowerCritical}">
                     <TextBlock Text="Firmware Operation Status:" FontSize="16" VerticalAlignment="Center" />
                     <TextBlock Text="  •  " FontSize="16" VerticalAlignment="Center" />
