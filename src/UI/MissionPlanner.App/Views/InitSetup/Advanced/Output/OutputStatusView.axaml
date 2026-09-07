@@ -1,0 +1,24 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Output.OutputStatusView"
+    x:TypeArguments="local:OutputStatusViewModel" x:DataType="local:OutputStatusViewModel">
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="{Binding Snapshot.State}" Classes="H4" />
+                    <SelectableTextBlock Text="{Binding Snapshot.Endpoint}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Snapshot.Frames, StringFormat='Batches / frames written: {0}'}" />
+                    <TextBlock Text="{Binding Snapshot.Bytes, StringFormat='Bytes written: {0}'}" />
+                    <TextBlock Text="{Binding Snapshot.DroppedFrames, StringFormat='Dropped batches / frames: {0}'}" />
+                    <TextBlock Text="{Binding Snapshot.DroppedBytes, StringFormat='Dropped bytes: {0}'}" />
+                    <TextBlock Text="{Binding Snapshot.LastWrite, StringFormat='Last successful write: {0}'}" TextWrapping="Wrap" />
+                    <SelectableTextBlock Text="{Binding Snapshot.Error}" TextWrapping="Wrap" Classes="Warning" />
+                    <TextBlock Text="Queues drop newest batches when full. Failed writes are counted as dropped and are never retried because partial delivery is possible. Reconnect attempts apply to the whole session." TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</utilities:UserControlViewBase>

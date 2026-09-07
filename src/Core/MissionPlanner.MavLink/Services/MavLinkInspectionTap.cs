@@ -26,6 +26,7 @@ public sealed class MavLinkInspectionLease : IDisposable
     private readonly Action<MavLinkInspectionLease> release;
     private readonly Channel<MavLinkInspectionObservation> channel;
     private long dropped;
+    private long droppedBytes;
     private int disposed;
 
     internal MavLinkInspectionLease(Action<MavLinkInspectionLease> release, int capacity)
@@ -44,12 +45,15 @@ public sealed class MavLinkInspectionLease : IDisposable
     public ChannelReader<MavLinkInspectionObservation> Reader => channel.Reader;
     /// <summary>Gets observations dropped when this observer's queue was full.</summary>
     public long Dropped => Interlocked.Read(ref dropped);
+    /// <summary>Gets bytes omitted when this observer's queue was full.</summary>
+    public long DroppedBytes => Interlocked.Read(ref droppedBytes);
 
     internal void Offer(MavLinkInspectionObservation observation)
     {
         if (Volatile.Read(ref disposed) == 0 && !channel.Writer.TryWrite(observation))
         {
             Interlocked.Increment(ref dropped);
+            Interlocked.Add(ref droppedBytes, observation.Frame.RawBytes.Length);
         }
     }
 

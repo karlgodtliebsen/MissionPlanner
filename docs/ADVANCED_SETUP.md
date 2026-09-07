@@ -196,3 +196,35 @@ Browser session isolation, and ten page lifecycle cycles. This is automated prot
 not a claim of physical-autopilot or interactive UI validation.
 
 ADV-04 verification: Desktop, Browser and full solution builds passed with `--no-restore -p:UsedAvaloniaProducts= -v quiet`. `src/Tests/Run-AllTests.ps1` passed 900 .NET tests and 7 JavaScript tests, with 29 existing skips. Results: `TestResults/all-tests/20260907-034920-011`. Existing unrelated compiler warnings remain; no new CS1591/CS1587 warnings.
+
+## ADV-05 MAVLink Output / Mirror
+
+Shared output profiles, exclusive endpoint ownership and BoundedOutputSession provide reusable
+byte/text output for subsequent tools. The pump uses a drop-newest queue (256 batches by default),
+one writer, cancellable native-handle abort, configurable 1–10 second connect/write deadlines,
+and a total reconnect budget of 0–5 attempts separated by 1–30 seconds. Failed batches are dropped
+rather than retried because a partial write may already have reached the destination. Closing joins
+the writer and observer before releasing endpoint ownership; counters include shutdown discards.
+
+WindowsOutputSinkFactory lives in MissionPlanner.Library.Windows and implements output-only
+Serial, UDP and TCP clients. Serial reuses the existing firmware serial-port factory; sockets
+remain entirely inside the Windows adapter. The active vehicle's serial port and observed remote
+network endpoints are rejected. No listener or output-to-vehicle reader is created. The Browser
+adapter refuses output with an explicit missing audited-bridge reason; the current BrowserBridge
+vehicle transport is not treated as an output authorization.
+
+Mirror uses the existing authoritative tap and preserves accepted bytes including MAVLink 1/2,
+unknown dialect candidates and signatures. Direction selection supports inbound, outbound or both;
+both requires explicit loop-warning confirmation. A bounded 4,096-entry fingerprint cache suppresses
+byte-identical copies for 30 seconds to interrupt reflected streams. This also suppresses legitimate
+identical retransmissions during that interval, and these omissions are counted. This is deliberate
+loop protection rather than a promise to distinguish arbitrary external routing loops. Secret-bearing
+SETUP_SIGNING remains excluded by the upstream privacy boundary introduced in ADV-04.
+
+Endpoint editing and output status have dedicated reusable viewmodels/views; MirrorViewModel owns
+start/stop and active-only child event subscriptions. Tests cover exact bytes/order/directions,
+overflow accounting, blocked-write abort, fake-clock write timeout/backoff, endpoint ownership,
+connection closure and ten restarts, Browser refusal, active-serial protection, and a Windows UDP
+loopback datagram. No physical serial port or vehicle was opened.
+
+ADV-05 verification: Desktop, Browser and full solution builds passed with `--no-restore -p:UsedAvaloniaProducts= -v quiet`. `src/Tests/Run-AllTests.ps1` passed 915 .NET tests and 7 JavaScript tests, with 29 existing skips. Results: `TestResults/all-tests/20260907-040522-963`. No interactive UI verification was performed.

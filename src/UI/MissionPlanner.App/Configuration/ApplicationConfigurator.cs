@@ -272,6 +272,15 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.AdvancedAvailabilityService>();
         services.TryAddSingleton<AdvancedToolRegistry>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Proximity.ProximityOptions>();
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Output.OutputEndpointOwners>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Output.BoundedOutputSession>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Output.MirrorSession>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Output.OutputEndpointViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Output.OutputStatusViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Output.MirrorViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Output.MirrorPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Mirror,
+            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Output.MirrorPage>()));
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Signing.SigningKeyRepository>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Signing.SigningSetupOptions>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Signing.SigningSetupService>();

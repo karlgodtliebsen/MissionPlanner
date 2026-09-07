@@ -1,0 +1,31 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Output.OutputEndpointView"
+    x:TypeArguments="local:OutputEndpointViewModel" x:DataType="local:OutputEndpointViewModel">
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard">
+                <StackPanel Spacing="12" IsEnabled="{Binding !Locked}">
+                    <TextBlock Text="Output endpoint" Classes="H4" />
+                    <TextBlock Text="{Binding Validation}" TextWrapping="Wrap" />
+                    <TextBlock Text="Transport" />
+                    <ComboBox ItemsSource="{Binding Kinds}" SelectedItem="{Binding Kind}" HorizontalAlignment="Stretch" AutomationProperties.Name="Output transport" />
+                    <TextBlock Text="Serial port name or destination host" />
+                    <TextBox Text="{Binding Address}" MaxLength="253" AutomationProperties.Name="Output address" />
+                    <TextBlock Text="Network destination port (UDP / TCP)" />
+                    <NumericUpDown Value="{Binding Port}" Minimum="1" Maximum="65535" AutomationProperties.Name="Output destination port" />
+                    <TextBlock Text="Serial baud rate" />
+                    <NumericUpDown Value="{Binding BaudRate}" Minimum="1200" Maximum="4000000" Increment="9600" AutomationProperties.Name="Output baud rate" />
+                    <TextBlock Text="Total reconnect attempts (0 disables retries)" />
+                    <NumericUpDown Value="{Binding ReconnectAttempts}" Minimum="0" Maximum="5" AutomationProperties.Name="Output reconnect attempts" />
+                    <TextBlock Text="Reconnect delay (seconds)" />
+                    <NumericUpDown Value="{Binding ReconnectDelaySeconds}" Minimum="1" Maximum="30" AutomationProperties.Name="Output reconnect delay" />
+                    <TextBlock Text="Connect / write timeout (seconds)" />
+                    <NumericUpDown Value="{Binding WriteTimeoutSeconds}" Minimum="1" Maximum="10" AutomationProperties.Name="Output write timeout" />
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</utilities:UserControlViewBase>

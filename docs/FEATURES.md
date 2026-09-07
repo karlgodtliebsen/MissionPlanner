@@ -907,6 +907,9 @@ MAVLink 2 Signing provides confirmed key import/export, staged SETUP_SIGNING wit
 vehicle evidence, outbound signatures and inbound replay/authentication checks. Windows uses
 the existing credential vault; Browser retains session-only keys. Secret setup packets are
 excluded from diagnostic taps and domain delivery. Unsigned traffic remains accepted.
+MAVLink Output / Mirror forwards byte-exact selected traffic through bounded, exclusive output
+sessions. Windows supplies Serial/UDP/TCP client adapters; Browser explicitly requires an audited
+output bridge. Reconnect limits, write deadlines, drop counters and reflection suppression are visible.
 MAVLink Inspector provides bounded live statistics, signed/raw details, filters, display freeze,
 clipboard and snapshot export on Desktop and Browser. Independent observer queues preserve
 normal pipeline delivery and visibly count dropped observations. Unknown-dialect candidates
