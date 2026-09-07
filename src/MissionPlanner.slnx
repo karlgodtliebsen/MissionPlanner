@@ -61,17 +61,12 @@
   </Folder>
   <Folder Name="/UI/">
     <Project Path="UI/MissionPlanner.App/MissionPlanner.App.csproj" Id="ff20c388-4a20-4f5d-a4ef-dd949c6ed9d9" />
-    <Project Path="UI/MissionPlanner.Droid/MissionPlanner.Droid.csproj" Id="e2e925ba-c006-4814-b4bd-1075bfe650f9" />
-    <Project Path="UI/MissionPlanner.Mac/MissionPlanner.Mac.csproj" Id="a282031d-f6ae-4b39-b361-b3297dfacb77" />
     <Project Path="UI/MissionPlanner.WinUI/MissionPlanner.WinUI.csproj" Id="1004b0a3-a412-4c8b-bc07-11f327aafe6a">
       <Platform Project="x64" />
     </Project>
   </Folder>
   <Folder Name="/UI/UraniumUI/">
     <Project Path="UI/UraniumUI/UraniumUI.Material.Controls.Extensions/UraniumUI.Material.Controls.Extensions.csproj" />
-    <Project Path="UI/UraniumUI/UraniumUI.Material.Extensions.Samples/UraniumUI.Material.Extensions.Samples.csproj">
-      <Deploy />
-    </Project>
     <Project Path="UI/UraniumUI/UraniumUI.Material.VirtualizedDataGrid/UraniumUI.Material.VirtualizedDataGrid.csproj" />
   </Folder>
   <Folder Name="/UI/UraniumUI/Tests/">
