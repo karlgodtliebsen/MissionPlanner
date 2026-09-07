@@ -1,5 +1,6 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Media;
+using Avalonia.Controls;
 using MissionPlanner.App;
 using MissionPlanner.Library.Windows.Configuration;
 
@@ -15,7 +16,16 @@ internal sealed class Program
     {
         MissionPlannerProgram.Start(args);
 
-        var app = MissionPlannerProgram.BuildAvaloniaApp((sc) => sc.AddWindowsOnlyServices())
+        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
+
+    // The previewer discovers this method on the executable's entry-point class.
+    // Design mode loads resources without starting runtime services.
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        var app = (Design.IsDesignMode
+                ? MissionPlanner.App.Program.BuildAvaloniaApp()
+                : MissionPlannerProgram.BuildAvaloniaApp(sc => sc.AddWindowsOnlyServices()))
             .UseWindowsPlatform()
             .With(new FontManagerOptions
             {
@@ -25,8 +35,6 @@ internal sealed class Program
                 ]
             });
 
-        app
-            .With(new Win32PlatformOptions())
-            .StartWithClassicDesktopLifetime(args);
+        return app.With(new Win32PlatformOptions());
     }
 }

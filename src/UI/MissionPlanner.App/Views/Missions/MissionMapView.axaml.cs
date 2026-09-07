@@ -1,4 +1,4 @@
-﻿using Mapsui;
+using Mapsui;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Services;
 using MissionPlanner.App.Utilities;
@@ -13,13 +13,25 @@ namespace MissionPlanner.App.Views.Missions;
 public partial class MissionMapView : UserControlViewBase, IDisposable
 {
     private MissionMapViewModel? viewModel;
-    private readonly IDomainFactory domainFactory;
-    private readonly IPlatformLocationService locationService;
+    private readonly IDomainFactory domainFactory = null!;
+    private readonly IPlatformLocationService locationService = null!;
     private MissionMapPresenter? presenter;
     private readonly SemaphoreSlim lifecycleGate = new(1, 1);
     private CancellationTokenSource? operationCancellation;
     private bool disposed;
     private bool isActive;
+
+    /// <summary>Creates a XAML map control, resolving runtime services only outside the designer.</summary>
+    public MissionMapView()
+    {
+        InitializeComponent();
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            return;
+        }
+        domainFactory = ServiceHelper.GetRequiredService<IDomainFactory>();
+        locationService = ServiceHelper.GetRequiredService<IPlatformLocationService>();
+    }
 
     /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
     public MissionMapView(IServiceProvider sp)
@@ -43,6 +55,10 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
     /// <param name="vModel">The view model to associate with the view.</param>
     public async Task ActivateAsync(MissionMapViewModel vModel)
     {
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            return;
+        }
         await lifecycleGate.WaitAsync();
         try
         {

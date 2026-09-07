@@ -1,7 +1,8 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Utilities.Dialogs;
 
 namespace MissionPlanner.App.Utilities;
@@ -16,18 +17,22 @@ public partial class NavigationViewBase<TViewModel> : NavigationPage/*, ITabItem
     /// <summary>
     /// The logger instance used for logging within the NavigationViewBase class. 
     /// </summary>
-    protected ILogger Logger;
+    protected ILogger Logger = NullLogger.Instance;
 
     /// <summary>The view model associated with this View.</summary>
     protected TViewModel ViewModel
     {
         get;
         private set;
-    }
+    } = null!;
 
     /// <inheritdoc />
     public NavigationViewBase()
     {
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
         Logger = ServiceHelper.GetRequiredService<ILogger<TViewModel>>();
         DataContext = ViewModel;
@@ -37,6 +42,10 @@ public partial class NavigationViewBase<TViewModel> : NavigationPage/*, ITabItem
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         NotificationHelper.SetupManagers(this, ViewModel);
         ViewModel.ActivateAsync().SafeFireAndForget();
     }
@@ -45,6 +54,11 @@ public partial class NavigationViewBase<TViewModel> : NavigationPage/*, ITabItem
     /// <inheritdoc />
     protected override void OnUnloaded(RoutedEventArgs e)
     {
+        if (Design.IsDesignMode)
+        {
+            base.OnUnloaded(e);
+            return;
+        }
         ViewModel.DeactivateAsync().SafeFireAndForget();
         base.OnUnloaded(e);
     }
@@ -57,12 +71,16 @@ public partial class NavigationViewBase : NavigationPage
     /// <summary>
     /// The logger instance used for logging within the NavigationViewBase class. 
     /// </summary>
-    protected ILogger Logger;
+    protected ILogger Logger = NullLogger.Instance;
 
 
     /// <inheritdoc />
     public NavigationViewBase()
     {
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         Logger = ServiceHelper.GetRequiredService<ILogger<NavigationViewBase>>();
 
     }

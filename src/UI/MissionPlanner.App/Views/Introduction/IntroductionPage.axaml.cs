@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
@@ -11,13 +11,17 @@ namespace MissionPlanner.App.Views.Introduction;
 public partial class IntroductionPage : NavigationViewBase<IntroductionViewModel>
 {
     private const double CompactWidth = 820;
-    private readonly INavigationService navigationService;
-    private readonly IExternalLinkLauncher externalLinkLauncher;
+    private readonly INavigationService navigationService = null!;
+    private readonly IExternalLinkLauncher externalLinkLauncher = null!;
 
     /// <summary>Initializes the Introduction page.</summary>
     public IntroductionPage()
     {
         InitializeComponent();
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         navigationService = ServiceHelper.GetRequiredService<INavigationService>();
         externalLinkLauncher = ServiceHelper.GetRequiredService<IExternalLinkLauncher>();
         SizeChanged += OnPageSizeChanged;
@@ -35,6 +39,10 @@ public partial class IntroductionPage : NavigationViewBase<IntroductionViewModel
 
     private async void OnActionRequested(object? sender, IntroductionActionRequestedEventArgs args)
     {
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         try
         {
             switch (args.Action.Kind)

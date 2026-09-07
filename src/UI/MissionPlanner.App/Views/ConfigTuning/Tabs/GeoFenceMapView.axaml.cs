@@ -1,4 +1,4 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Mapsui;
@@ -27,12 +27,12 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
     private const double WebMercatorInitialResolution = 156543.03392804097;
     private readonly Mapsui.Map map = new();
     private readonly MemoryLayer geometryLayer = new() { Name = "Fence geometry", Features = [] };
-    private readonly MapBasemapController basemapController;
-    private readonly IPlannerSettingsService settingsService;
-    private readonly IActiveVehicleContext activeVehicle;
-    private readonly IPlatformLocationService locationService;
-    private readonly ITerrainElevationService terrainElevationService;
-    private readonly IMapAttributionCoordinator attributionCoordinator;
+    private readonly MapBasemapController basemapController = null!;
+    private readonly IPlannerSettingsService settingsService = null!;
+    private readonly IActiveVehicleContext activeVehicle = null!;
+    private readonly IPlatformLocationService locationService = null!;
+    private readonly ITerrainElevationService terrainElevationService = null!;
+    private readonly IMapAttributionCoordinator attributionCoordinator = null!;
     private CancellationTokenSource? mapLifecycleCancellation;
     private long pointerGeneration;
     private Action? pendingNavigation;
@@ -42,6 +42,10 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
     public GeoFenceMapView()
     {
         InitializeComponent();
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         settingsService = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
         activeVehicle = ServiceHelper.GetRequiredService<IActiveVehicleContext>();
         locationService = ServiceHelper.GetRequiredService<IPlatformLocationService>();
@@ -60,7 +64,7 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
 
     public void Dispose()
     {
-        if (disposed)
+        if (Design.IsDesignMode || disposed)
         {
             return;
         }
@@ -74,7 +78,7 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        if (disposed || mapActive)
+        if (Design.IsDesignMode || disposed || mapActive)
         {
             return;
         }

@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
@@ -15,9 +15,20 @@ public partial class InstallFirmwarePage : NavigationViewBase<InstallFirmwareVie
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         var item = MainTabControl.Items.First();
         MainTabControl.SelectedItem = item;
         MainTabControl.SelectionChanged += MainTabControl_SelectionChanged;
+    }
+
+    /// <inheritdoc />
+    protected override void OnUnloaded(RoutedEventArgs e)
+    {
+        MainTabControl.SelectionChanged -= MainTabControl_SelectionChanged;
+        base.OnUnloaded(e);
     }
 
     private void MainTabControl_SelectionChanged(object? sender, SelectionChangedEventArgs e)

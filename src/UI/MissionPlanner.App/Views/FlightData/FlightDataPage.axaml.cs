@@ -1,4 +1,4 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using Avalonia.Interactivity;
 
 namespace MissionPlanner.App.Views.FlightData;
@@ -21,6 +21,10 @@ public partial class FlightDataPage : NavigationViewBase<FlightDataViewModel>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            return;
+        }
         MapLoadingIndicator.IsVisible = true;
         ViewModel.Map.ActivateAsync().SafeFireAndForget();
         MapView.ActivateAsync(ViewModel.Map).SafeFireAndForget();
@@ -31,6 +35,11 @@ public partial class FlightDataPage : NavigationViewBase<FlightDataViewModel>
     /// <inheritdoc />
     protected override void OnUnloaded(RoutedEventArgs e)
     {
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            base.OnUnloaded(e);
+            return;
+        }
         MapView.DeactivateAsync().SafeFireAndForget();
         ViewModel.Map.Deactivate();
         base.OnUnloaded(e);

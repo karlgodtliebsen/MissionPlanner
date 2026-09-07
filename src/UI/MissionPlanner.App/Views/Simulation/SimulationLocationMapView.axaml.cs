@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Mapsui;
@@ -14,7 +14,7 @@ namespace MissionPlanner.App.Views.Simulation;
 /// <summary>Hosts the Mapsui location picker used to choose the SITL start position.</summary>
 public partial class SimulationLocationMapView : UserControl, IDisposable
 {
-    private readonly IPlatformLocationService locationService;
+    private readonly IPlatformLocationService locationService = null!;
     private readonly Map map = new();
     private readonly MemoryLayer markerLayer = new() { Name = "SITL start", Features = [] };
     private SimulationViewModel? viewModel;
@@ -24,6 +24,10 @@ public partial class SimulationLocationMapView : UserControl, IDisposable
     public SimulationLocationMapView()
     {
         InitializeComponent();
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         locationService = ServiceHelper.GetRequiredService<IPlatformLocationService>();
         map.Layers.Add(OpenStreetMap.CreateTileLayer());
         map.Layers.Add(markerLayer);
@@ -36,6 +40,10 @@ public partial class SimulationLocationMapView : UserControl, IDisposable
     /// <summary>Centers the map on the current platform location without changing the selected start position.</summary>
     public async Task CenterOnMyLocationAsync(CancellationToken cancellationToken = default)
     {
+        if (Design.IsDesignMode)
+        {
+            return;
+        }
         ObjectDisposedException.ThrowIf(disposed, this);
         var location = await locationService.GetLocationAsync(cancellationToken);
         if (location is not null && !disposed)

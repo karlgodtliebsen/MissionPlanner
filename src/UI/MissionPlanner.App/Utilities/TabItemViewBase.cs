@@ -1,4 +1,4 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using Avalonia.Interactivity;
 using MissionPlanner.App.Utilities.Dialogs;
 
@@ -15,6 +15,10 @@ public class TabItemViewBase<TViewModel> : UserControlViewBase<TViewModel> where
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            return;
+        }
         NotificationHelper.SetupManagers(this, ViewModel);
         ViewModel.ActivateAsync().SafeFireAndForget();
     }
@@ -23,6 +27,11 @@ public class TabItemViewBase<TViewModel> : UserControlViewBase<TViewModel> where
     /// <inheritdoc />
     protected override void OnUnloaded(RoutedEventArgs e)
     {
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            base.OnUnloaded(e);
+            return;
+        }
         ViewModel.DeactivateAsync().SafeFireAndForget();
         base.OnUnloaded(e);
     }

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.Versioning;
 using Avalonia;
@@ -76,7 +76,8 @@ public static class MissionPlannerProgram
     }
 }
 
-// Avalonia Main Entry. Don't remove; used by visual designer.
+// Shared resource-only builder used by the Desktop preview host. This project is
+// a library: the previewer discovers BuildAvaloniaApp on the Desktop entry point.
 public class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any

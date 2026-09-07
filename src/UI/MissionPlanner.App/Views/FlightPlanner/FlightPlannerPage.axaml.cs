@@ -1,4 +1,4 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using Avalonia.Interactivity;
 using Microsoft.Extensions.Logging;
 
@@ -19,6 +19,10 @@ public partial class FlightPlannerPage : NavigationViewBase<FlightPlannerViewMod
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            return;
+        }
         mapActivationCancellation?.Cancel();
         mapActivationCancellation?.Dispose();
         mapActivationCancellation = new CancellationTokenSource();
@@ -28,6 +32,11 @@ public partial class FlightPlannerPage : NavigationViewBase<FlightPlannerViewMod
     /// <inheritdoc />
     protected override void OnUnloaded(RoutedEventArgs e)
     {
+        if (Avalonia.Controls.Design.IsDesignMode)
+        {
+            base.OnUnloaded(e);
+            return;
+        }
         mapActivationCancellation?.Cancel();
         mapActivationCancellation?.Dispose();
         mapActivationCancellation = null;

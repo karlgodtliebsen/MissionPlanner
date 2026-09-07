@@ -110,3 +110,33 @@ panel.
 - Bindings compile and UI state is updated on the Avalonia dispatcher.
 - Colors and states use shared styles and semantic resources.
 - The solution builds and relevant tests and runtime navigation paths are exercised.
+# Visual Studio preview host
+
+`MissionPlanner.App` is a shared library, so adding a `Main` method there does not
+give its assembly an executable entry point. Select `MissionPlanner.Desktop` as
+the Avalonia preview host (or Visual Studio startup project), build it, and reopen
+the AXAML editor. The Browser executable is not the Windows designer host.
+
+The Desktop entry-point class exposes a parameterless `BuildAvaloniaApp()`.
+In `Design.IsDesignMode` it uses the shared resource-only builder, including the
+normal Semi/Ursa application styles, and does not build or start runtime services.
+Shared view bases skip dependency injection, activation and notification-manager
+creation in design mode. Supply `Design.DataContext` for sample data if desired;
+runtime ViewModels are deliberately not activated by the designer. View-specific
+loaded handlers that call their ViewModel must also guard design mode.
+
+Verified with Avalonia 12.1.1's standalone designer host: compiled `HelpView`,
+`FirmwareCatalogueView`, `InstallFirmwarePage`, `MainView`, `FlightDataPage`,
+`FlightPlannerPage`, `GeoFenceMapView`, `SimulationLocationMapView`, and
+`IntroductionPage` loaded through temporary AXAML wrappers with no
+`UpdateXamlResultMessage` error, including unload/reload. This checks designer
+startup and view construction; Visual Studio extension selection remains an IDE
+setting. See the [Avalonia previewer protocol](https://github.com/AvaloniaUI/Avalonia/wiki/XAML-previewer-protocol).
+
+Verification (2026-09-07): `dotnet build` for `src/MissionPlanner.slnx`,
+`src/Platforms/MissionPlanner.Desktop/MissionPlanner.Desktop.csproj`, and
+`src/Platforms/MissionPlanner.Browser/MissionPlanner.Browser.csproj` with
+`--no-restore -p:UsedAvaloniaProducts= -v quiet` all passed. Running
+`src/Tests/Run-AllTests.ps1` passed 930 .NET and 7 JavaScript tests; the 29 existing
+skips were unchanged. The isolated `DesignPreviewTests` regression exercises all
+view-base families without a runtime service provider.
