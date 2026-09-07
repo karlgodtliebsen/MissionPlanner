@@ -25,7 +25,7 @@ public sealed class InspectorAggregator(IMavLinkMessageDefinitionRegistry defini
         var key = new InspectorKey(observation.Direction.ToString(), frame.SystemId, frame.ComponentId, frame.MessageId);
         lock (sync)
         {
-            if (frame.RawBytes.Length > 280)
+            if (frame.RawBytes.Length > 280 || frame.MessageId == 256)
             {
                 omitted++;
                 return;
@@ -141,7 +141,7 @@ public sealed class InspectorAggregator(IMavLinkMessageDefinitionRegistry defini
             }
         }
         var verification = (latest.CrcVerified ? "CRC verified" : "CRC unverified")
-            + (signed ? "; signature present, authentication unverified" : "; unsigned");
+            + (signed ? $"; signature present, authentication {latest.Signature.ToString().ToLowerInvariant()}" : "; unsigned");
         return new(entry.Key, entry.Name, entry.Count, entry.Bytes, entry.FirstSeen, entry.LastSeen,
             count / 5d, bytes / 5d, latest.Frame.Payload.Length, latest.Frame.Sequence, verification);
     }

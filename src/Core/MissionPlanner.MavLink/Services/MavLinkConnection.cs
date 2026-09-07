@@ -34,6 +34,8 @@ public sealed class MavLinkConnection : IMavLinkConnection
 
     /// <inheritdoc />
     public MavLinkInspectionTap? Inspection { get; }
+    /// <inheritdoc />
+    public MissionPlanner.MavLink.Signing.MavLinkSigningSession? Signing { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MavLinkConnection"/> class.
@@ -46,6 +48,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     /// <param name="logger">The logger.</param>
     /// <param name="transmissionPolicy">Optional application safety policy for outbound frames.</param>
     /// <param name="inspection">Optional connection-owned bounded traffic observers.</param>
+    /// <param name="signing">Optional connection-owned signing and verification.</param>
     /// <exception cref="ArgumentNullException"></exception>
     public MavLinkConnection(
         IMavLinkClient client,
@@ -55,7 +58,8 @@ public sealed class MavLinkConnection : IMavLinkConnection
         IOptions<MavLinkConnectionPipelineOptions> options,
         ILogger<MavLinkConnection> logger,
         IMavLinkTransmissionPolicy? transmissionPolicy = null,
-        MavLinkInspectionTap? inspection = null)
+        MavLinkInspectionTap? inspection = null,
+        MissionPlanner.MavLink.Signing.MavLinkSigningSession? signing = null)
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
         this.frameParser = frameParser ?? throw new ArgumentNullException(nameof(frameParser));
@@ -64,6 +68,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.transmissionPolicy = transmissionPolicy;
         Inspection = inspection;
+        Signing = signing;
         this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.options.Validate();
     }
@@ -112,10 +117,25 @@ public sealed class MavLinkConnection : IMavLinkConnection
     {
         ThrowIfDisposed();
         transmissionPolicy?.ThrowIfTransmissionProhibited();
-        await client.SendAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
-        if (Inspection?.HasObservers == true)
+        var original = data;
+        try
         {
-            ObserveOutbound(data.Span, endPoint);
+            if (Signing is not null)
+            {
+                data = await Signing.SignAsync(data, cancellationToken).ConfigureAwait(false);
+            }
+            await client.SendAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
+            if (Inspection?.HasObservers == true)
+            {
+                ObserveOutbound(data.Span, endPoint);
+            }
+        }
+        finally
+        {
+            if (!data.Equals(original) && System.Runtime.InteropServices.MemoryMarshal.TryGetArray(data, out var owned))
+            {
+                System.Security.Cryptography.CryptographicOperations.ZeroMemory(owned.AsSpan());
+            }
         }
     }
 
@@ -135,8 +155,13 @@ public sealed class MavLinkConnection : IMavLinkConnection
             {
                 return;
             }
+            var id = v2 ? (uint)(bytes[7] | bytes[8] << 8 | bytes[9] << 16) : bytes[5];
+            if (id == 256)
+            {
+                bytes = bytes[length..];
+                continue;
+            }
             var raw = bytes[..length].ToArray();
-            var id = v2 ? (uint)(raw[7] | raw[8] << 8 | raw[9] << 16) : raw[5];
             var frame = new MavLinkFrame(raw[v2 ? 5 : 3], raw[v2 ? 6 : 4], endpoint, id,
                 raw[v2 ? 4 : 2], raw.AsMemory(header, raw[1]), raw, DateTimeOffset.UtcNow);
             Inspection!.Publish(new(MavLinkTrafficDirection.Outbound, frame, null, false));
@@ -174,10 +199,22 @@ public sealed class MavLinkConnection : IMavLinkConnection
 
                     foreach (var frame in frames)
                     {
+                        // SETUP_SIGNING contains a secret key, never publish it into diagnostic or domain channels.
+                        if (frame.MessageId == 256)
+                        {
+                            continue;
+                        }
+                        var signature = Signing?.Verify(frame.RawBytes.Span)
+                            ?? MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Unverified;
                         var decoded = messageDecoder.TryDecode(frame, out var message);
                         if (Inspection?.HasObservers == true)
                         {
-                            Inspection.Publish(new(MavLinkTrafficDirection.Inbound, frame, message, true));
+                            Inspection.Publish(new(MavLinkTrafficDirection.Inbound, frame, message, true) { Signature = signature });
+                        }
+                        if (signature is MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Invalid
+                            or MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Replay)
+                        {
+                            continue;
                         }
                         if (!decoded || message is null)
                         {
@@ -244,6 +281,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         try
         {
             Inspection?.CloseObservers();
+            Signing?.Dispose();
             if (inspectionAttached && frameParser is MavLinkV2FrameParser inspectable)
             {
                 inspectable.UnknownFrameObserved -= UnknownFrameObserved;
@@ -303,6 +341,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         }
 
         await StopAsync().ConfigureAwait(false);
+        Signing?.Dispose();
         await client.DisposeAsync().ConfigureAwait(false);
         disposed = true;
     }

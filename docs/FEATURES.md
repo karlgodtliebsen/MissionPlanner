@@ -903,6 +903,10 @@ notifications are performed.
 Proximity Viewer combines DISTANCE_SENSOR and OBSTACLE_DISTANCE observations in a bounded,
 vehicle-relative radar and virtualized diagnostics table on Desktop and Browser. Sensor identity,
 quality, freshness and unsupported frames remain visible; it sends no avoidance or rate commands.
+MAVLink 2 Signing provides confirmed key import/export, staged SETUP_SIGNING with verified
+vehicle evidence, outbound signatures and inbound replay/authentication checks. Windows uses
+the existing credential vault; Browser retains session-only keys. Secret setup packets are
+excluded from diagnostic taps and domain delivery. Unsigned traffic remains accepted.
 MAVLink Inspector provides bounded live statistics, signed/raw details, filters, display freeze,
 clipboard and snapshot export on Desktop and Browser. Independent observer queues preserve
 normal pipeline delivery and visibly count dropped observations. Unknown-dialect candidates

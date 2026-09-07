@@ -154,3 +154,45 @@ results are recorded below. No hardware or interactive rendering checks were per
 
 Full ADV-03 suite: 886 .NET tests and 7 JavaScript tests passed; 29 existing skips unchanged.
 Results: `TestResults/all-tests/20260907-032437-861`.
+
+## ADV-04 MAVLink 2 Signing
+
+The connection-owned signing service stages a candidate key, verifies a new signed frame from
+the selected system/component, reserves timestamps in the secret store, then enables outbound
+signing. SETUP_SIGNING has no general command ACK: the workflow requires actual signed evidence
+within a bounded 15-second wait. Timeout/cancellation preserves the previous local configuration
+and explicitly reports that the vehicle may already have changed. Existing per-vehicle operation
+ownership prevents competing setup operations. No hardware configuration was performed in tests.
+
+Protocol behavior follows the [MAVLink signing specification](https://mavlink.io/en/guide/message_signing.html).
+The SHA-256/48 signature includes the signed header, payload, CRC, link ID and 48-bit timestamp.
+Replay state is bounded by system/component/link; duplicate and excessively old timestamps are
+rejected. The clock never wraps. One-minute future timestamp reservations are saved before use,
+so a restored key starts beyond previously usable timestamps even after an abrupt process exit.
+Invalid/replayed signed frames remain labelled in Inspector but do not update normal vehicle
+state or Proximity. Unsigned traffic is accepted; enforcing signed-only traffic is out of scope.
+
+Windows reuses SecurePlannerSecretStore (credential vault) and Browser reuses
+BrowserPlannerSecretStore (application memory only). Key recovery and timestamp documents never
+enter ordinary preferences or browser local storage. Saved keys load for review, without automatic
+vehicle or local signing activation. Keys are generated securely, shown only as fingerprints, and
+imported/exported only after explicit confirmation. Export deliberately creates an unencrypted
+64-hex-character file; the dialog explains its sensitivity. Previous prepared credential entries
+remain available in the vault for recovery. Browser reload loses its session store.
+
+SigningKeyViewModel owns mutable selection bytes and exposes only fingerprint change events.
+SigningViewModel subscribes/unsubscribes on activation/deactivation, cancels pending setup and
+clears the selection on close. Verified signing belongs to the connection and continues after
+closing the page. Connection shutdown erases key and replay state. Mutable protocol/key copies
+are cleared where practical; immutable strings required by the existing credential-store API
+cannot be deterministically erased. SETUP_SIGNING is excluded from all diagnostic taps and from
+domain publication, including inbound packets.
+
+Interoperability uses the public test key in `Fixtures/mavlink-signing.json`, independently
+generated with pinned pymavlink 2.4.49 by `scripts/generate-signing-fixture.py`. The tests mutate
+every signed byte, exercise replay/source separation, timestamp boundaries/reservations, storage
+failure, verified setup, wrong-key/timeout/disconnect/cancellation, pipeline rejection, redaction,
+Browser session isolation, and ten page lifecycle cycles. This is automated protocol verification,
+not a claim of physical-autopilot or interactive UI validation.
+
+ADV-04 verification: Desktop, Browser and full solution builds passed with `--no-restore -p:UsedAvaloniaProducts= -v quiet`. `src/Tests/Run-AllTests.ps1` passed 900 .NET tests and 7 JavaScript tests, with 29 existing skips. Results: `TestResults/all-tests/20260907-034920-011`. Existing unrelated compiler warnings remain; no new CS1591/CS1587 warnings.

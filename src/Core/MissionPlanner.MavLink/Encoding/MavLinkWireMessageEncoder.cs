@@ -28,6 +28,10 @@ public sealed class MavLinkWireMessageEncoder(IMavLinkCrcExtraProvider crcExtraP
         packet[8] = (byte)(message.MessageId >> 8);
         packet[9] = (byte)(message.MessageId >> 16);
         payload.CopyTo(packet.AsSpan(10));
+        if (message.MessageId == 256)
+        {
+            System.Security.Cryptography.CryptographicOperations.ZeroMemory(payload);
+        }
 
         if (!crcExtraProvider.TryGetCrcExtra(message.MessageId, out var crcExtra))
         {

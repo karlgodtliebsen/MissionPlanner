@@ -14,7 +14,11 @@ public enum MavLinkTrafficDirection
 
 /// <summary>Immutable inspection observation retaining exact bytes and an already-decoded message when available.</summary>
 public sealed record MavLinkInspectionObservation(MavLinkTrafficDirection Direction, MavLinkFrame Frame,
-    MavLinkMessage? Message, bool CrcVerified);
+    MavLinkMessage? Message, bool CrcVerified)
+{
+    /// <summary>Gets authentication evidence independently of CRC validation.</summary>
+    public MissionPlanner.MavLink.Signing.MavLinkSignatureStatus Signature { get; init; } = MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Unverified;
+}
 
 /// <summary>A bounded observer lease. Disposing it never disposes the vehicle connection.</summary>
 public sealed class MavLinkInspectionLease : IDisposable
@@ -94,6 +98,10 @@ public sealed class MavLinkInspectionTap
     /// <summary>Offers an observation without awaiting or blocking on any consumer.</summary>
     public void Publish(MavLinkInspectionObservation observation)
     {
+        if (observation.Frame.MessageId == 256)
+        {
+            return; // SETUP_SIGNING contains secret material and is never diagnostic traffic.
+        }
         foreach (var observer in Volatile.Read(ref observers))
         {
             observer.Offer(observation);

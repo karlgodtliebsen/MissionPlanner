@@ -272,6 +272,14 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.AdvancedAvailabilityService>();
         services.TryAddSingleton<AdvancedToolRegistry>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Proximity.ProximityOptions>();
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Signing.SigningKeyRepository>();
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Signing.SigningSetupOptions>();
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Signing.SigningSetupService>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningKeyViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Signing,
+            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningPage>()));
         services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Proximity.ProximityAggregator>();
         services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Proximity.ProximitySession>();
         services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityRadarViewModel>();

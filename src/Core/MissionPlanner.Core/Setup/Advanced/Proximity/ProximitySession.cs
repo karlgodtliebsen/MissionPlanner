@@ -64,7 +64,9 @@ public sealed class ProximitySession(IVehicleConnectionSession connection, IActi
             await foreach (var observation in observer.Reader.ReadAllAsync(token).ConfigureAwait(false))
             {
                 if (observation.Direction != MavLinkTrafficDirection.Inbound || !observation.CrcVerified
-                    || observation.Message is null || observation.Frame.SystemId != systemId)
+                    || observation.Message is null || observation.Frame.SystemId != systemId
+                    || observation.Signature is MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Invalid
+                        or MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Replay)
                 {
                     continue;
                 }

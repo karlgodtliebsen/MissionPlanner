@@ -31,6 +31,8 @@ public static class MavLinkConfigurator
         services.TryAddSingleton<IMavLinkClient, MavLinkClient>();
         services.TryAddSingleton<IMavLinkConnection, MavLinkConnection>();
         services.TryAddTransient<MavLinkInspectionTap>();
+        services.TryAddSingleton(TimeProvider.System);
+        services.TryAddTransient<MissionPlanner.MavLink.Signing.MavLinkSigningSession>();
         services.TryAddSingleton<IMavLinkMessageDefinitionRegistry, MavLinkMessageDefinitionRegistry>();
         services.TryAddTransient<IMavLinkCrcExtraProvider, CommonMavLinkCrcExtraProvider>();
         services.TryAddTransient<IMavLinkFrameParser, MavLinkV2FrameParser>();

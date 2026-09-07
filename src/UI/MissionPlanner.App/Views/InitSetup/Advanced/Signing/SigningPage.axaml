@@ -1,0 +1,32 @@
+<utilities:NavigationViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Signing"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningPage"
+    x:TypeArguments="local:SigningViewModel" x:DataType="local:SigningViewModel">
+    <ContentPage Header="MAVLink 2 Signing">
+        <Grid RowDefinitions="Auto,*" Margin="24" RowSpacing="14">
+            <TextBlock Text="MAVLink signing" Classes="Title" />
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="{Binding Storage}" TextWrapping="Wrap" Classes="Warning" />
+                    <local:SigningKeyView DataContext="{Binding Keys}" />
+                    <Border Classes="SectionCard">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Vehicle setup" Classes="H4" />
+                            <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                            <Button Content="Configure signing…" Command="{Binding ConfigureCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" />
+                            <TextBlock Text="Closing this page cancels pending setup. Verified connection signing continues until disconnection. It does not enforce a signed-only policy." TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <Border Classes="SectionCard">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="Connection diagnostics" Classes="H4" />
+                            <SelectableTextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </ContentPage>
+</utilities:NavigationViewBase>
