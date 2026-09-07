@@ -271,6 +271,17 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.IAdvancedPlatformCapabilities, MissionPlanner.Core.Setup.Advanced.AdvancedPlatformCapabilitySource>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.AdvancedAvailabilityService>();
         services.TryAddSingleton<AdvancedToolRegistry>();
+        services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Warnings.WarningSources>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Warnings.WarningEngine>();
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Warnings.WarningRuleRepository>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleListViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleEditorViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningStatusViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Warnings,
+            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerPage>()));
         services.TryAddTransient<AdvancedPage>();
         services.TryAddTransient<InstallFirmwareViewModel>();
         services.TryAddTransient<OptionalHardwareViewModel>();

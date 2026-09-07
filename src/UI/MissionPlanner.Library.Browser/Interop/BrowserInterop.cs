@@ -21,4 +21,13 @@ internal static partial class BrowserInterop
 
     [JSImport("clearSettings", Module)]
     internal static partial void ClearSettings();
+
+    [JSImport("readWarningRules", Module)]
+    internal static partial string? ReadWarningRules();
+
+    [JSImport("writeWarningRules", Module)]
+    internal static partial void WriteWarningRules(string document);
+
+    [JSImport("quarantineWarningRules", Module)]
+    internal static partial void QuarantineWarningRules(string document);
 }

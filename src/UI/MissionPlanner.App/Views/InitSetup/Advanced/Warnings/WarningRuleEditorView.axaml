@@ -1,0 +1,56 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
+    xmlns:telemetry="clr-namespace:MissionPlanner.Core.Setup.Advanced.Warnings;assembly=MissionPlanner.Core"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleEditorView"
+    x:TypeArguments="local:WarningRuleEditorViewModel" x:DataType="local:WarningRuleEditorViewModel">
+    <Border Classes="SectionCard" Padding="18">
+        <StackPanel Spacing="10" MaxWidth="850" HorizontalAlignment="Stretch">
+            <TextBlock Text="Rule editor" Classes="H4" />
+            <TextBlock Text="Name" />
+            <TextBox Text="{Binding Name}" AutomationProperties.Name="Rule name" />
+            <TextBlock Text="{Binding NameError}" Classes="Warning" TextWrapping="Wrap" />
+            <CheckBox Content="Enabled" IsChecked="{Binding Enabled}" />
+            <TextBlock Text="Telemetry source (native units)" />
+            <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding Source}" HorizontalAlignment="Stretch"
+                      AutomationProperties.Name="Telemetry source">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="telemetry:WarningSourceDescriptor">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
+                            <TextBlock Text="{Binding Label}" />
+                            <TextBlock Text="{Binding UnitKind}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <TextBlock Text="{Binding SourceError}" Classes="Warning" TextWrapping="Wrap" />
+            <TextBlock Text="Comparison" />
+            <ComboBox ItemsSource="{Binding Comparisons}" SelectedItem="{Binding Comparison}"
+                      AutomationProperties.Name="Comparison operator" HorizontalAlignment="Stretch" />
+            <TextBlock Text="Threshold / lower bound" />
+            <NumericUpDown Value="{Binding Threshold}" AutomationProperties.Name="Threshold / lower bound" />
+            <TextBlock Text="Upper bound (range operators only)" />
+            <NumericUpDown Value="{Binding UpperThreshold}" AutomationProperties.Name="Upper bound (range operators only)" />
+            <TextBlock Text="Clear hysteresis (native units)" />
+            <NumericUpDown Value="{Binding Hysteresis}" AutomationProperties.Name="Clear hysteresis (native units)" />
+            <TextBlock Text="{Binding ThresholdError}" Classes="Warning" TextWrapping="Wrap" />
+            <TextBlock Text="Activation delay (seconds)" />
+            <NumericUpDown Value="{Binding DelaySeconds}" AutomationProperties.Name="Activation delay (seconds)" />
+            <TextBlock Text="Repeat interval (seconds)" />
+            <NumericUpDown Value="{Binding CooldownSeconds}" AutomationProperties.Name="Repeat interval (seconds)" />
+            <TextBlock Text="{Binding TimingError}" Classes="Warning" TextWrapping="Wrap" />
+            <TextBlock Text="Severity" />
+            <ComboBox ItemsSource="{Binding Severities}" SelectedItem="{Binding Severity}" AutomationProperties.Name="Severity" />
+            <CheckBox Content="Allow acknowledgement to suppress repeats until cleared" IsChecked="{Binding RequiresAcknowledgement}" />
+            <TextBlock Text="Message template: use {name} and {value}" />
+            <TextBox Text="{Binding Message}" AutomationProperties.Name="Warning message" />
+            <TextBlock Text="{Binding MessageError}" Classes="Warning" TextWrapping="Wrap" />
+            <Button Content="Save rule" Command="{Binding SaveCommand}" HorizontalAlignment="Left" />
+            <TextBlock Text="Preview input (does not affect the live warning)" />
+            <NumericUpDown Value="{Binding PreviewValue}" AutomationProperties.Name="Preview value" />
+            <Button Content="Test comparison" Command="{Binding PreviewCommand}" HorizontalAlignment="Left" />
+            <TextBlock Text="{Binding PreviewResult}" TextWrapping="Wrap" />
+        </StackPanel>
+    </Border>
+</utilities:UserControlViewBase>

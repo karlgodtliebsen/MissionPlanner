@@ -894,6 +894,12 @@ Setup Advanced now has a thirteen-tool capability-aware catalogue with explicit 
 reasons, platform adapters, child route registration, and activation cleanup contracts.
 Individual tool implementations are tracked separately; see [Advanced Setup](ADVANCED_SETUP.md).
 
+Warning Manager is implemented for Windows and Browser with validated persisted rules,
+native-unit telemetry sources, delayed/hysteretic threshold evaluation, independent
+acknowledgement and cooldown, corrupt-document recovery, and separate list/editor/live-status
+panels. Visual evaluation is scoped to the open page; no automatic vehicle changes or speech
+notifications are performed.
+
 ## Mission map geospatial imports
 
 * KML and bounded KMZ can be loaded as a replaceable, non-mission overlay.

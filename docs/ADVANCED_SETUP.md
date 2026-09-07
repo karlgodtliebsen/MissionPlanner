@@ -37,6 +37,41 @@ for disposal. Tests cover ten complete lifetime cycles and cleanup failure.
 
 ## Verification record
 
+### Warning Manager (ADV-01)
+
+The Warning Manager route now opens a working page with singleton list, editor and live
+status child ViewModels. Parent `ActivateAsync`/`DeactivateAsync` attach and detach their
+`Action<T>` events. Saves validate the entire next rule set and only update the saved list
+after persistence succeeds. Preview does not modify rules or evaluation state. Editing,
+duplication, deletion, enable/disable and acknowledgement are supported.
+
+Rules use numeric fields from the existing `ITelemetryFieldCatalog`, with explicit native
+units and a three-second freshness limit. Text/Boolean/enum fields are not numeric sources.
+Ranges include both endpoints. Hysteresis expands the hold region; outside-range hysteresis
+must be less than half the range width. Missing, non-finite, future-dated, stale, disconnected,
+and disabled samples have defined states. Acknowledgement suppresses repeats for one rule
+until it clears. Switching vehicles resets evaluation and acknowledgement state.
+
+Visual evaluation runs at four updates per second while the page is open. Closing cancels
+the timer and pending persistence and detaches all child events. Speech/system notifications
+are deliberately not enabled and the page states this explicitly. Rules never issue vehicle
+commands. The live panel retains cleared/unavailable states instead of inventing values.
+
+Windows stores `advanced-warnings.json` under the existing per-user `MissionPlanner Next Gen`
+application-data directory using temporary-file replacement. Browser uses the independent
+origin-local `MissionPlanner.Advanced.WarningRules` local-storage key. Both preserve one
+recovery copy of malformed documents. The shared versioned repository skips individually
+invalid/duplicate records while retaining valid rules, limits documents to 256 Ki characters
+and 256 rules, and reports storage failures. Import/export reuse `IFileOpenService` and
+`IFileSaveService`; imports validate before merging by stable rule ID and reject invalid files
+without replacing saved rules. `BrowserPlanningFileService` supplies those existing interfaces
+through the browser's single-view storage provider, without requiring a desktop Window.
+
+ADV-01 tests cover all operators, timing, hysteresis, acknowledgement isolation, missing/stale
+inputs, invalid rules, serialization/corrupt recovery, preview isolation, ten navigation cycles,
+and cancellation during a pending load. Browser JavaScript tests verify separate storage keys,
+limits, recovery, and quota failure propagation.
+
 Commands run from repository root, with `-p:UsedAvaloniaProducts=` to avoid optional product
 license checks during automated builds:
 
@@ -49,3 +84,13 @@ The Firmware panel test fixture needed its newly introduced `IDomainFactory` dep
 registered; no production firmware behavior was changed. No hardware commands were sent.
 Interactive screen-reader, theme, and resize verification remains for the final ADV-14 audit.
 
+
+ADV-01 verification: Desktop, Browser, and `src/MissionPlanner.slnx` builds passed
+with `--no-restore -p:UsedAvaloniaProducts= -v quiet`. The full `src/Tests/Run-AllTests.ps1`
+run passed 870 .NET tests and 7 JavaScript tests, with the same 29 skips.
+Results: `TestResults/all-tests/20260907-024555-616`. Existing unrelated compiler warnings
+remain; no new CS1591/CS1587 warnings were reported. Hardware and interactive UI testing
+were not performed.
+
+The import/export follow-up passed all 45 UI tests (one additional file-service integration
+test), Browser build and full solution build. These checks follow the 870-test full run above.

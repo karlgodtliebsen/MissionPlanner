@@ -7,6 +7,29 @@ import test from "node:test";
 
 const source = await readFile(new URL("../UI/MissionPlanner.Library.Browser/Interop/browser-platform.js", import.meta.url), "utf8");
 const bridge = await import(`data:text/javascript;base64,${Buffer.from(source).toString("base64")}`);
+
+test("warning storage is isolated, bounded and preserves corrupt recovery without masking failures", () => {
+    const previous = globalThis.localStorage;
+    const values = new Map();
+    try {
+        globalThis.localStorage = {
+            getItem: key => values.get(key) ?? null,
+            setItem: (key, value) => values.set(key, value)
+        };
+        bridge.writeSettings("planner");
+        bridge.writeWarningRules("rules");
+        bridge.quarantineWarningRules("corrupt");
+        assert.equal(bridge.readSettings(), "planner");
+        assert.equal(bridge.readWarningRules(), "rules");
+        assert.equal(values.get("MissionPlanner.Advanced.WarningRules.recovery"), "corrupt");
+        assert.throws(() => bridge.writeWarningRules("x".repeat(262145)), RangeError);
+        assert.equal(bridge.readWarningRules(), "rules");
+        globalThis.localStorage.setItem = () => { throw new Error("quota"); };
+        assert.throws(() => bridge.writeWarningRules("new"), /quota/);
+    } finally {
+        globalThis.localStorage = previous;
+    }
+});
 const diagnosticsSource = await readFile(new URL("../Platforms/MissionPlanner.Browser/wwwroot/startup-diagnostics.js", import.meta.url), "utf8");
 const { installStartupDiagnostics } = await import(`data:text/javascript;base64,${Buffer.from(diagnosticsSource).toString("base64")}`);
 

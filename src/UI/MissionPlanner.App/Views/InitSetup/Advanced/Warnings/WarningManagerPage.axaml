@@ -1,0 +1,33 @@
+<utilities:NavigationViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerPage"
+    x:TypeArguments="local:WarningManagerViewModel" x:DataType="local:WarningManagerViewModel">
+    <ContentPage Header="Warning Manager">
+        <Grid RowDefinitions="Auto,Auto,*" Margin="24" RowSpacing="14">
+            <TextBlock Text="Visual warnings run while this page is open. Sources use native telemetry units. Values older than three seconds are unavailable. No speech or system notifications are enabled."
+                       TextWrapping="Wrap" Classes="Warning" />
+            <StackPanel Grid.Row="1" Spacing="10">
+                <WrapPanel IsEnabled="{Binding !IsBusy}">
+                    <Button Content="Import rules (merge by ID)" Command="{Binding ImportCommand}" Margin="0,0,8,8" />
+                    <Button Content="Export rules" Command="{Binding ExportCommand}" Margin="0,0,8,8" />
+                </WrapPanel>
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+            </StackPanel>
+            <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <TabItem Header="Rules">
+                    <Grid RowDefinitions="Auto,*" RowSpacing="12">
+                        <local:WarningRuleListView DataContext="{Binding Rules}" IsEnabled="{Binding !IsBusy}" />
+                        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <local:WarningRuleEditorView DataContext="{Binding Editor}" IsEnabled="{Binding !IsBusy}" />
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Live status">
+                    <local:WarningStatusView DataContext="{Binding Status}" />
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </ContentPage>
+</utilities:NavigationViewBase>

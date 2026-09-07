@@ -28,6 +28,18 @@ public sealed class AdvancedToolLifetime : IAsyncDisposable
         });
     }
 
+    /// <summary>Requests cancellation while activation is still registering its cleanup.</summary>
+    public void Cancel()
+    {
+        lock (sync)
+        {
+            if (disposal is null)
+            {
+                cancellation.Cancel();
+            }
+        }
+    }
+
     /// <summary>Registers cleanup for owned sinks, operation tasks, and transient secrets.</summary>
     public void OnClosing(Func<ValueTask> action)
     {

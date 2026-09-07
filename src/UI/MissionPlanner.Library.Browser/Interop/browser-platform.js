@@ -18,6 +18,17 @@ export function readSettings() { return localStorage.getItem(settingsKey); }
 export function writeSettings(document) { localStorage.setItem(settingsKey, document); }
 export function clearSettings() { localStorage.removeItem(settingsKey); }
 
+const warningRulesKey = "MissionPlanner.Advanced.WarningRules";
+export function readWarningRules() { return localStorage.getItem(warningRulesKey); }
+export function writeWarningRules(document) {
+    if (document.length > 262144) throw new RangeError("Warning rules exceed the storage limit.");
+    localStorage.setItem(warningRulesKey, document);
+}
+export function quarantineWarningRules(document) {
+    if (document.length > 262144) throw new RangeError("Warning recovery exceeds the storage limit.");
+    localStorage.setItem(warningRulesKey + ".recovery", document);
+}
+
 export function getBridgeUrl() {
     const url = new URL('/bridge/udp', globalThis.location.href);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';

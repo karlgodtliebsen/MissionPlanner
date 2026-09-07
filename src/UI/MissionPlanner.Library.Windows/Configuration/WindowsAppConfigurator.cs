@@ -14,6 +14,7 @@ public static class WindowsAppConfigurator
     public static IServiceCollection AddWindowsOnlyServices(this IServiceCollection services)
     {
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.IAdvancedPlatformCapabilities, WindowsAdvancedCapabilities>();
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Warnings.IWarningRuleStore, WindowsWarningRuleStore>();
         services.TryAddTransient<IMapsuiMbTilesSourceFactory, MapsuiMbTilesSourceFactory>();
         services.TryAddSingleton<IOfflineMapPackValidator, MbTilesOfflineMapPackValidator>();
         services.TryAddSingleton<IPlatformLocationService, WindowsPlatformLocationService>();
