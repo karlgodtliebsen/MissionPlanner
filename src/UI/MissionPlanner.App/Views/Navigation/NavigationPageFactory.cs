@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.FlightData;
@@ -76,6 +76,9 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
 
             MissionPlannerRoutes.Help =>
                 services.GetRequiredService<HelpPage>(),
+
+            _ when route.StartsWith("SetupAdvanced/", StringComparison.Ordinal) =>
+                services.GetRequiredService<AdvancedToolRegistry>().Create(route),
 
             _ => throw new ArgumentOutOfRangeException(
                 nameof(route),

@@ -19,6 +19,7 @@ public static class BrowserAppConfigurator
 {
     public static IServiceCollection AddBrowserOnlyServices(this IServiceCollection services)
     {
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.IAdvancedPlatformCapabilities, BrowserAdvancedCapabilities>();
         services.TryAddSingleton<IOfflineMapPackInstaller, BrowserOfflineMaps>();
         services.TryAddSingleton<IOfflineMapPackValidator, BrowserOfflineMaps>();
         services.TryAddSingleton<IMapsuiMbTilesSourceFactory, BrowserOfflineMaps>();

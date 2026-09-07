@@ -888,6 +888,12 @@ Completed
 
 # MAVLINK DIALECT COVERAGE
 
+## Advanced Setup foundation
+
+Setup Advanced now has a thirteen-tool capability-aware catalogue with explicit disabled
+reasons, platform adapters, child route registration, and activation cleanup contracts.
+Individual tool implementations are tracked separately; see [Advanced Setup](ADVANCED_SETUP.md).
+
 ## Mission map geospatial imports
 
 * KML and bounded KMZ can be loaded as a replaceable, non-mission overlay.

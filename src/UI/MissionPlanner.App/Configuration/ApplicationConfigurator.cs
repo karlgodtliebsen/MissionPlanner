@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -268,6 +268,9 @@ public static class ApplicationConfigurator
         services.TryAddTransient<DataFlashLogsTabViewModel>();
 
         services.TryAddTransient<AdvancedViewModel>();
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.IAdvancedPlatformCapabilities, MissionPlanner.Core.Setup.Advanced.AdvancedPlatformCapabilitySource>();
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.AdvancedAvailabilityService>();
+        services.TryAddSingleton<AdvancedToolRegistry>();
         services.TryAddTransient<AdvancedPage>();
         services.TryAddTransient<InstallFirmwareViewModel>();
         services.TryAddTransient<OptionalHardwareViewModel>();
