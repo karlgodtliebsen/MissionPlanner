@@ -228,3 +228,39 @@ connection closure and ten restarts, Browser refusal, active-serial protection, 
 loopback datagram. No physical serial port or vehicle was opened.
 
 ADV-05 verification: Desktop, Browser and full solution builds passed with `--no-restore -p:UsedAvaloniaProducts= -v quiet`. `src/Tests/Run-AllTests.ps1` passed 915 .NET tests and 7 JavaScript tests, with 29 existing skips. Results: `TestResults/all-tests/20260907-040522-963`. No interactive UI verification was performed.
+
+## ADV-06 NMEA Output
+
+GGA and RMC formatting uses primary receiver coordinates in authoritative VehicleGpsState, distinct
+from fused vehicle position. GGA includes measured MSL altitude, HDOP and available geoid separation;
+GPS_STATUS supplies actual satellites used when its list is complete. Visible satellites are not
+substituted for satellites used. Absent/ambiguous measurements remain blank. UTC fields are the host
+reception timestamp of the GPS receiver message, explicitly identified in the UI, rather than a claim
+of precise GNSS fix time. Fixes older than three seconds or with future timestamps emit GGA quality 0
+and RMC void with blank position/motion fields.
+
+The existing NavigationTelemetryHandler now maps MAVLink fix-type values correctly (wire 3 is 3D,
+wire 6 is RTK fixed). The old GPS2 test expectation reflected the previous offset mapping and was
+corrected. Receiver coordinates/geoid separation and independently timestamped satellite usage flow
+through the existing handler and immutable Core observations; no new decoder or parallel message
+subscription was added. GPS_STATUS's promotion catalog entry was regenerated through the established
+generator, and generation verification passed. Updating primary GPS also preserves receiver 2 state.
+
+Formatting follows the field definitions in [Trimble's GGA reference](https://receiverhelp.trimble.com/oem-gnss/nmea0183-messages-gga.html)
+and [RMC reference](https://receiverhelp.trimble.com/oem-gnss/nmea0183-messages-rmc.html): degrees/minutes
+with rounding carry, invariant decimals, knots, XOR checksum, uppercase hex and CRLF. No VTG sentence
+or invented magnetic variation is emitted. Unclassified static/PPP fix modes conservatively emit
+invalid status instead of claiming an unsupported quality classification.
+
+A single TimeProvider-backed periodic timer coalesces current state at the selected 1–10 Hz rate.
+NmeaSession reuses BoundedOutputSession, endpoint ownership and Windows/Browser adapters from ADV-05.
+It stops on connection cancellation, endpoint failure, explicit stop or page exit. Sentence counts
+derive from complete batch outcomes; failed/partial writes count as dropped. Separate settings,
+preview, endpoint and output-status views/viewmodels avoid a monolithic page. Browser output remains
+explicitly unavailable without an audited bridge.
+
+Tests include golden strings for all hemispheres under Danish culture, UTC midnight, degree/minute
+carry, missing measurements, stale/future fixes, five wire fix-type mappings, satellite usage/geoid
+promotion, fake-clock scheduling, endpoint failure and ten scheduler/page lifecycle cycles.
+
+ADV-06 verification: Desktop, Browser and full solution builds passed with `--no-restore -p:UsedAvaloniaProducts= -v quiet`. `scripts/Generate-MavLinkDialect.ps1 -Mode Verify -SkipTests` passed. `src/Tests/Run-AllTests.ps1` passed 929 .NET tests and 7 JavaScript tests, with 29 existing skips. Results: `TestResults/all-tests/20260907-042422-010`. No physical vehicle or interactive UI test was performed.

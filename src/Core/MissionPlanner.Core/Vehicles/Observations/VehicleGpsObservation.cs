@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
 
@@ -27,4 +27,14 @@ public sealed record VehicleGpsObservation(
     double? HorizontalAccuracyMeters,
     double? VerticalAccuracyMeters,
     DateTimeOffset ObservedAt,
-    int ReceiverIndex = 0) : IVehicleObservation;
+    int ReceiverIndex = 0) : IVehicleObservation
+{
+    /// <summary>Gets the receiver latitude, separately from fused vehicle position.</summary>
+    public double? LatitudeDegrees { get; init; }
+    /// <summary>Gets the receiver longitude.</summary>
+    public double? LongitudeDegrees { get; init; }
+    /// <summary>Gets the receiver MSL altitude.</summary>
+    public double? AltitudeMslMeters { get; init; }
+    /// <summary>Gets ellipsoid minus MSL altitude when the extension is available.</summary>
+    public double? GeoidSeparationMeters { get; init; }
+}

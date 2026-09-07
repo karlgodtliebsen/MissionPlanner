@@ -910,6 +910,9 @@ excluded from diagnostic taps and domain delivery. Unsigned traffic remains acce
 MAVLink Output / Mirror forwards byte-exact selected traffic through bounded, exclusive output
 sessions. Windows supplies Serial/UDP/TCP client adapters; Browser explicitly requires an audited
 output bridge. Reconnect limits, write deadlines, drop counters and reflection suppression are visible.
+NMEA Output reuses those endpoints for scheduled GGA/RMC batches at 1–10 Hz, with live preview,
+sentence/drop accounting, invariant formatting and explicit stale/no-fix output. Receiver positions,
+available geoid separation and actual satellite usage are retained by the existing GPS state handler.
 MAVLink Inspector provides bounded live statistics, signed/raw details, filters, display freeze,
 clipboard and snapshot export on Desktop and Browser. Independent observer queues preserve
 normal pipeline delivery and visibly count dropped observations. Unknown-dialect candidates

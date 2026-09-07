@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Firmware;
@@ -260,7 +260,16 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
                 observation.CourseDegrees,
                 observation.HorizontalAccuracyMeters,
                 observation.VerticalAccuracyMeters,
-                observation.ObservedAt),
+                observation.ObservedAt)
+            {
+                LatitudeDegrees = observation.LatitudeDegrees,
+                LongitudeDegrees = observation.LongitudeDegrees,
+                AltitudeMslMeters = observation.AltitudeMslMeters,
+                GeoidSeparationMeters = observation.GeoidSeparationMeters,
+                SatellitesUsed = state.Gps.SatellitesUsed,
+                SatelliteUsageObservedAt = state.Gps.SatelliteUsageObservedAt,
+                SecondaryReceiver = state.Gps.SecondaryReceiver
+            },
             Motion = state.Motion with
             {
                 GroundSpeedMetersPerSecond = observation.GroundSpeedMetersPerSecond
@@ -269,6 +278,13 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
             },
             Position = state.Position with { HeadingDegrees = observation.CourseDegrees ?? state.Position.HeadingDegrees, ObservedAt = observation.ObservedAt }
         };
+    }
+
+    /// <summary>Updates explicitly reported satellite usage without refreshing unrelated GPS measurements.</summary>
+    public void ApplySatelliteUsage(VehicleGpsSatelliteUsageObservation observation)
+    {
+        if (state.Gps.SatelliteUsageObservedAt > observation.ObservedAt) { return; }
+        state = state with { Gps = state.Gps with { SatellitesUsed = observation.SatellitesUsed, SatelliteUsageObservedAt = observation.ObservedAt } };
     }
 
     /// <summary>

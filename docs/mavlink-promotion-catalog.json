@@ -184,14 +184,13 @@
     {
       "MessageId": 25,
       "Name": "GPS_STATUS",
-      "Category": "DiagnosticRawTelemetry",
-      "Owner": "MAVLink inspector / telemetry log",
-      "ObservationType": null,
-      "IntendedUpdateFrequency": "source-defined",
-      "StaleTimeout": null,
+      "Category": "VehicleStateTelemetry",
+      "Owner": "NavigationTelemetryHandler",
+      "ObservationType": "VehicleGpsSatelliteUsageObservation",
+      "IntendedUpdateFrequency": "1 Hz",
+      "StaleTimeout": "PT3S",
       "UiConsumers": [
-        "MAVLink inspector",
-        "Telemetry logs"
+        "NMEA output"
       ]
     },
     {

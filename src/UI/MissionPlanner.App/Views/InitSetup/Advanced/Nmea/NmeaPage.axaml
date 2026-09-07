@@ -1,0 +1,26 @@
+<utilities:NavigationViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Nmea"
+    xmlns:output="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPage"
+    x:TypeArguments="local:NmeaViewModel" x:DataType="local:NmeaViewModel">
+    <ContentPage Header="NMEA Output">
+        <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14" Margin="24">
+            <StackPanel Spacing="8">
+                <TextBlock Text="NMEA navigation output" Classes="Title" />
+                <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+            </StackPanel>
+            <WrapPanel Grid.Row="1">
+                <Button Content="Start NMEA" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" />
+                <Button Content="Stop NMEA" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" />
+            </WrapPanel>
+            <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <TabItem Header="Sentences"><local:NmeaOptionsView DataContext="{Binding Settings}" /></TabItem>
+                <TabItem Header="Live preview"><local:NmeaPreviewView DataContext="{Binding Preview}" /></TabItem>
+                <TabItem Header="Output endpoint"><output:OutputEndpointView DataContext="{Binding Endpoint}" /></TabItem>
+                <TabItem Header="Output status"><output:OutputStatusView DataContext="{Binding Status}" /></TabItem>
+            </TabControl>
+        </Grid>
+    </ContentPage>
+</utilities:NavigationViewBase>

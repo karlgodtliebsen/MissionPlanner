@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
@@ -24,6 +24,7 @@ public sealed class NavigationTelemetryHandler(
     [
         typeof(GlobalPositionIntMessage),
         typeof(GpsRawIntMessage),
+        typeof(GpsStatusMessage),
         typeof(Gps2RawMessage),
         typeof(LocalPositionNedMessage),
         typeof(NavControllerOutputMessage),
@@ -70,7 +71,21 @@ public sealed class NavigationTelemetryHandler(
                     gps.CourseOverGround == ushort.MaxValue ? null : gps.CourseOverGround / 100.0,
                     gps.HorizontalAccuracy is null or uint.MaxValue ? null : gps.HorizontalAccuracy / 1000.0,
                     gps.VerticalAccuracy is null or uint.MaxValue ? null : gps.VerticalAccuracy / 1000.0,
-                    gps.ReceivedAt));
+                    gps.ReceivedAt)
+                {
+                    LatitudeDegrees = gps.Latitude,
+                    LongitudeDegrees = gps.Longitude,
+                    AltitudeMslMeters = gps.Altitude,
+                    GeoidSeparationMeters = gps.AltitudeEllipsoid is { } ellipsoid && ellipsoid != 0 && double.IsFinite(ellipsoid)
+                        && double.IsFinite(gps.Altitude) ? ellipsoid - gps.Altitude : null
+                });
+                break;
+
+            case GpsStatusMessage satellites:
+                var used = satellites.SatellitesVisible <= 20 && satellites.SatelliteUsed is { Length: 20 }
+                    && satellites.SatelliteUsed.Take(satellites.SatellitesVisible).All(value => value <= 1)
+                    ? satellites.SatelliteUsed.Take(satellites.SatellitesVisible).Count(value => value == 1) : (int?)null;
+                vehicle.ApplySatelliteUsage(new(used, satellites.ReceivedAt));
                 break;
 
             case Gps2RawMessage gps2:
@@ -148,16 +163,15 @@ public sealed class NavigationTelemetryHandler(
     {
         return value switch
         {
-            0 => GpsFixType.Unknown,
-            1 => GpsFixType.NoGps,
-            2 => GpsFixType.NoFix,
-            3 => GpsFixType.Fix2D,
-            4 => GpsFixType.Fix3D,
-            5 => GpsFixType.DifferentialGps,
-            6 => GpsFixType.RtkFloat,
-            7 => GpsFixType.RtkFixed,
-            8 => GpsFixType.Static,
-            9 => GpsFixType.Ppp,
+            0 => GpsFixType.NoGps,
+            1 => GpsFixType.NoFix,
+            2 => GpsFixType.Fix2D,
+            3 => GpsFixType.Fix3D,
+            4 => GpsFixType.DifferentialGps,
+            5 => GpsFixType.RtkFloat,
+            6 => GpsFixType.RtkFixed,
+            7 => GpsFixType.Static,
+            8 => GpsFixType.Ppp,
             var _ => GpsFixType.Unknown
         };
     }

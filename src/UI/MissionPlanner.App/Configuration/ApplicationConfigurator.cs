@@ -273,6 +273,13 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<AdvancedToolRegistry>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Proximity.ProximityOptions>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Output.OutputEndpointOwners>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Nmea.NmeaSession>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaOptionsViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPreviewViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Nmea,
+            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPage>()));
         services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Output.BoundedOutputSession>();
         services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Output.MirrorSession>();
         services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Output.OutputEndpointViewModel>();

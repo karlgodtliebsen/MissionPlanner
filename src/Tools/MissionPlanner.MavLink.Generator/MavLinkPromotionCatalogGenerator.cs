@@ -16,6 +16,7 @@ public static class MavLinkPromotionCatalogGenerator
             ["SYS_STATUS"] = State("PowerTelemetryHandler", "VehicleSystemHealthObservation", "1 Hz", "PT5S", "HUD", "Power status", "Health status"),
             ["PARAM_VALUE"] = Workflow("ControlMessageHandler / VehicleParameterStreamService", "request/response", "Full Parameter List"),
             ["GPS_RAW_INT"] = State("NavigationTelemetryHandler", "VehicleGpsObservation", "1-10 Hz", "PT3S", "HUD", "GPS status"),
+            ["GPS_STATUS"] = State("NavigationTelemetryHandler", "VehicleGpsSatelliteUsageObservation", "1 Hz", "PT3S", "NMEA output"),
             ["ATTITUDE"] = State("FlightTelemetryHandler", "VehicleAttitudeObservation", "10-100 Hz", "PT1S", "HUD"),
             ["ATTITUDE_QUATERNION"] = State("FlightTelemetryHandler", "VehicleAttitudeObservation", "10-100 Hz", "PT1S", "HUD"),
             ["SCALED_PRESSURE"] = State("SensorTelemetryHandler", "VehiclePressureObservation", "1-20 Hz", "PT3S", "Sensor status"),

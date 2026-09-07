@@ -27,6 +27,18 @@ public sealed record VehicleGpsState(
     DateTimeOffset? ObservedAt,
     VehicleGpsReceiverState? SecondaryReceiver = null)
 {
+    /// <summary>Gets primary receiver latitude, not the fused vehicle position.</summary>
+    public double? LatitudeDegrees { get; init; }
+    /// <summary>Gets primary receiver longitude.</summary>
+    public double? LongitudeDegrees { get; init; }
+    /// <summary>Gets primary receiver MSL altitude.</summary>
+    public double? AltitudeMslMeters { get; init; }
+    /// <summary>Gets measured ellipsoid minus MSL altitude, when available.</summary>
+    public double? GeoidSeparationMeters { get; init; }
+    /// <summary>Gets the number of satellites actually used, when GPS_STATUS supplies a complete list.</summary>
+    public int? SatellitesUsed { get; init; }
+    /// <summary>Gets when satellite usage was observed, independently of GPS_RAW_INT freshness.</summary>
+    public DateTimeOffset? SatelliteUsageObservedAt { get; init; }
     /// <summary>
     /// Provides the public API for Empty.
     /// </summary>

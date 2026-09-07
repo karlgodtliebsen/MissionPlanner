@@ -52,7 +52,7 @@ public sealed class CoreVehicleStateTelemetryTests
         await handler.HandleAsync(message, TestContext.Current.CancellationToken);
 
         var gps2 = Assert.IsType<VehicleGpsReceiverState>(session.State.Gps.SecondaryReceiver);
-        Assert.Equal(GpsFixType.RtkFloat, gps2.FixType);
+        Assert.Equal(GpsFixType.RtkFixed, gps2.FixType); // MAVLink fix type 6 is RTK fixed.
         Assert.Null(gps2.SatellitesVisible);
         Assert.Equal(1.25, gps2.HorizontalDilution);
         Assert.Null(gps2.VerticalDilution);
