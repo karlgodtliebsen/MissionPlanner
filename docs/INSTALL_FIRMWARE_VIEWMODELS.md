@@ -9,6 +9,7 @@ The panel ViewModels inherit `ViewModelBase` and are registered as singletons in
 
 | ViewModel | Responsibility |
 | --- | --- |
+| `FirmwareLandingViewModel` | Read-only connection, serial and DFU summaries and next-step guidance. Observes existing discovery models only while active; never starts a scan. |
 | `FirmwareCatalogViewModel` | Catalogue service calls, activation/refresh/cancellation and its progress dialog; recommendations, release channel, filters and selected release. |
 | `DetectedDeviceViewModel` | Serial discovery through the injected platform catalogue, USB/board matching, retained device selection and install requests. |
 | `CustomFirmwareViewModel` | Local APJ/PX4 picking, package validation and metadata, exact-board-match option. |
@@ -42,8 +43,10 @@ the compiled AXAML bindings.
 
 ## Panel-owned loading
 
-Opening the page no longer fetches a manifest or enumerates devices. Each panel starts its
-own read work in `ActivateAsync` and cancels and joins that work in `DeactivateAsync`.
+Opening the page starts serial and DFU discovery through the child ViewModels, without
+fetching a manifest. The page retains discovery ownership until it closes, so unloading a
+workflow tab does not stop discovery. Page deactivation releases ownership and cancels and
+joins both children. Catalogue loading still follows its own panel activation.
 The internal, UI-context `FirmwarePanelLoader` coalesces duplicate requests, owns cancellation
 tokens, and waits for a previous activation to finish before starting another. Results are
 checked for cancellation before updating observable state. A channel change cancels the
@@ -53,8 +56,12 @@ and allow retry. Refresh no longer masquerades as an installation operation in t
 The catalogue observes the shared device panel's `Action<IReadOnlyList<SerialDeviceDescriptor>>`
 event only while active. New manifest data updates device-match evidence without another
 serial scan. The catalogue does not refresh DFU devices, and the DFU panel does not download
-the manifest. The disconnected DFU tab can be opened before a device has been discovered,
-so activation can perform discovery. The device panel has its own Refresh devices command.
+the manifest. A detected DFU device enables only the STM32 workflow; otherwise a discovered
+serial port enables catalogue and custom firmware. No devices, a connected vehicle, an
+unsupported platform, or an installation in progress disables all three workflow tabs.
+Information and Help remain accessible. After attaching or changing hardware, the page's
+Refresh devices command scans both device types, including when every workflow tab is disabled.
+Serial discovery provides candidates; board compatibility remains an installation validation.
 
 Panel unload preserves selections and cached catalogue choices. The page no longer forwards
 TabControl selection events to a global reset routine. The parent still invalidates validation

@@ -90,8 +90,8 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
     /// <inheritdoc />
     public override async Task ActivateAsync()
     {
-        if (!await loader.ActivateAsync()) { return; }
         viewLifetime ??= new CancellationTokenSource();
+        if (!await loader.ActivateAsync()) { return; }
         activeVehicle.Changed += VehicleChanged;
         await RefreshAsync();
     }
@@ -103,6 +103,7 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
         viewLifetime = null;
         previous?.Cancel();
         previous?.Dispose();
+        if (DiscoveryOwnedByPage) { return; }
         activeVehicle.Changed -= VehicleChanged;
         await loader.DeactivateAsync();
     }

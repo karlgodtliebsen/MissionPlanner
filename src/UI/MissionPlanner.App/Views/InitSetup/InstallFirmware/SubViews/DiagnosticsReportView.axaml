@@ -9,46 +9,50 @@
     xmlns:subViews="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
     x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.DiagnosticsReportView"
-    x:DataType="subViews:DiagnosticsReportViewModel">
+    x:DataType="subViews:DiagnosticsReportViewModel"
+    MinHeight="400"
+    MinWidth="600"
+    >
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border Padding="20" Classes="SectionCard" >
 
-    <Border Padding="20" Classes="SectionCard" >
+            <StackPanel Orientation="Vertical" Spacing="20">
+                <TextBlock Text="{Binding Title}" Classes="H3" HorizontalAlignment="Center"/>
 
-        <StackPanel Orientation="Vertical" Spacing="20">
-            <TextBlock Text="{Binding Title}" Classes="H3" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding StatusMessage}" Classes="H4" HorizontalAlignment="Center"
+                           IsVisible="{Binding HasStatusMessage}"/>
 
-            <TextBlock Text="{Binding StatusMessage}" Classes="H4" HorizontalAlignment="Center" 
-                       IsVisible="{Binding HasStatusMessage}"/>
-            
-            <SelectableTextBlock Text="{Binding LastDiagnosticReport}" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                                 IsVisible="{Binding HasDiagnosticReport}"
-                                 />
+                <SelectableTextBlock Text="{Binding LastDiagnosticReport}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                     IsVisible="{Binding HasDiagnosticReport}"
+                                     />
 
-            <StackPanel Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Copy diagnostic report" 
+                <StackPanel Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center">
+                    <Button ToolTip.Tip="Copy diagnostic report"
+                            Width="100"
+                            Classes="Primary"
+                            Padding="8,2"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding HasDiagnosticReport}"
+                            Command="{Binding CopyDiagnosticReportCommand}"
+                            >
+                        <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
+                    </Button>
+                    <!--Content="Copy diagnostic report"-->
+                    <Button
                         Width="100"
                         Classes="Primary"
                         Padding="8,2"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        IsVisible="{Binding HasDiagnosticReport}"
-                        Command="{Binding CopyDiagnosticReportCommand}"
+                        ToolTip.Tip="OK"
+                        Command="{Binding OKCommand}"
                         >
-                    <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
-                </Button>
-                <!--Content="Copy diagnostic report"-->
-                <Button
-                    Width="100"
-                    Classes="Primary"
-                    Padding="8,2"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    ToolTip.Tip="OK"
-                    Command="{Binding OKCommand}"
-                    >
-                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                </Button>
+                        <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                    </Button>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
 
-    </Border>
+        </Border>
+    </Grid>
 </subViews:DiagnosticsReportView>

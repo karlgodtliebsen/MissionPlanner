@@ -19,8 +19,9 @@ public sealed partial class ProgressDialogViewModel : ObservableObject, IDisposa
     [ObservableProperty]
     public partial string Message
     {
-        get; private set;
-    }
+        get;
+        private set;
+    } = "The Message";
 
     public void Dispose()
     {

@@ -138,6 +138,7 @@ public sealed class FirmwarePanelViewModelTests
         services.AddSingleton<ValidatedPackageViewModel>();
         services.AddSingleton<DiagnosticsReportViewModel>();
         services.AddSingleton<FirmwareHelpViewModel>();
+        services.AddSingleton<FirmwareLandingViewModel>();
         services.AddTransient<InstallFirmwareViewModel>();
         return services.BuildServiceProvider();
     }

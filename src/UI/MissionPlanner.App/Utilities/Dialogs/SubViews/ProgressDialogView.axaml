@@ -6,9 +6,22 @@
              xmlns:subViews="clr-namespace:MissionPlanner.App.Utilities.Dialogs.SubViews"
              x:Class="MissionPlanner.App.Utilities.Dialogs.SubViews.ProgressDialogView"
              x:DataType="subViews:ProgressDialogViewModel"
-             mc:Ignorable="d">
-    <StackPanel Spacing="14">
-        <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" />
-        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
-    </StackPanel>
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+             MinHeight="400"
+             MinWidth="600"
+             Margin="25"
+             Padding="25"
+             >
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <StackPanel Orientation="Vertical" Spacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+            
+            <TextBlock Text="{Binding Message}"
+                       TextWrapping="Wrap" Classes="H3" />
+
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch"/>
+
+        </StackPanel>
+    </Grid>
 </UserControl>

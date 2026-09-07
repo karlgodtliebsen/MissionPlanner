@@ -1,8 +1,10 @@
-<utilities:UserControlViewBase  xmlns="https://github.com/avaloniaui"
+<utilities:UserControlViewBase x:TypeArguments="local:FirmwareLandingViewModel" xmlns="https://github.com/avaloniaui"
                                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                 xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                                xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+                                x:DataType="local:FirmwareLandingViewModel"
                                 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                 x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.LandingView"
                                 Margin="25,0,25,0"
@@ -10,9 +12,37 @@
                                 >
 
 
-    <Border Grid.Row="0" Padding="16" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center">
-
-      <TextBlock>Welcome to Avalonia!</TextBlock>
-
-    </Border>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="16" Margin="0,16">
+            <TextBlock Text="Controller status" Classes="Title" />
+            <TextBlock Text="Review the connection and detected devices before choosing a firmware workflow." TextWrapping="Wrap" />
+            <Border Padding="20" Classes="SectionCard">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Vehicle connection" Classes="H4" />
+                    <TextBlock Text="{Binding ConnectionSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ConnectionDetail}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Border Padding="20" Classes="SectionCard">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Serial devices" Classes="H4" />
+                    <TextBlock Text="{Binding SerialSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding SerialDetail}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Border Padding="20" Classes="SectionCard">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="STM32 DFU devices" Classes="H4" />
+                    <TextBlock Text="{Binding DfuSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding DfuDetail}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <Border Padding="20" Classes="SectionCard">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="What to do next" Classes="H4" />
+                    <TextBlock Text="{Binding NextStep}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
 </utilities:UserControlViewBase>

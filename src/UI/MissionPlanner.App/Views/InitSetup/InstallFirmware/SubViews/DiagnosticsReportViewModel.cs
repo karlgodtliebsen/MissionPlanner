@@ -10,11 +10,8 @@ public sealed partial class DiagnosticsReportViewModel : DialogViewModelBase
 {
     private readonly ITextClipboardService clipboard;
     /// <summary>Initializes the diagnostics panel.</summary>
-    public DiagnosticsReportViewModel(
-        string report,
-        string message,
-        ITextClipboardService clipboard,
-        ILogger<DiagnosticsReportViewModel> logger) //: base(logger, dispatcher, eventHub)
+    public DiagnosticsReportViewModel(string report, string message, ITextClipboardService clipboard,
+        ILogger<DiagnosticsReportViewModel> logger)
     {
         this.clipboard = clipboard;
         this.LastDiagnosticReport = report;

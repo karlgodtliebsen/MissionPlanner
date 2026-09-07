@@ -225,6 +225,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ValidatedPackageViewModel>();
         services.TryAddSingleton<DiagnosticsReportViewModel>();
         services.TryAddSingleton<FirmwareHelpViewModel>();
+        services.TryAddSingleton<FirmwareLandingViewModel>();
 
         services.TryAddTransient<FlightDataMissionMapViewModel>();
         services.TryAddTransient<FlightDataViewModel>();

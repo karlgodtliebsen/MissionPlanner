@@ -13,6 +13,7 @@ public sealed partial class DetectedDeviceViewModel
     private readonly IFirmwareSerialDeviceCatalog deviceCatalog;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly FirmwarePanelLoader loader = new();
+    internal bool DiscoveryOwnedByPage { get; set; }
     private IReadOnlyList<FirmwareManifestEntry> entries = [];
     /// <summary>Gets the latest device descriptors for catalogue recommendations.</summary>
     public IReadOnlyList<SerialDeviceDescriptor> Descriptors { get; private set; } = [];
@@ -41,6 +42,7 @@ public sealed partial class DetectedDeviceViewModel
     /// <inheritdoc />
     public override async Task DeactivateAsync()
     {
+        if (DiscoveryOwnedByPage) { return; }
         activeVehicle.Changed -= VehicleChanged;
         await loader.DeactivateAsync();
     }

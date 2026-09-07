@@ -12,7 +12,7 @@
                VerticalAlignment="Center"
                Margin="50"
                >
-    <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="50">
+    <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Center"  Padding="50">
         <StackPanel    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="50">
             <TextBlock Text="{Binding Title}" TextAlignment="Center" Classes="Title Danger"
                         HorizontalAlignment="Center" VerticalAlignment="Center" />

@@ -217,15 +217,16 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         {
             cancellationToken.ThrowIfCancellationRequested();
             var owner = windowProvider.ActiveWindow ?? throw new InvalidOperationException("No active window is available.");
-            var contentViewModel = new SubViews.ProgressDialogViewModel(message);
+            var contentViewModel = new ProgressDialogViewModel(message);
             var effectiveOptions = Compact(options) with
             {
-                Height = 180,
+                Height = options.Height,
+                Width = options.Width,
                 ShowOkButton = false,
                 ShowCloseButton = false,
                 CanResize = false
             };
-            var dialog = CreateWindow(new SubViews.ProgressDialogView(contentViewModel), effectiveOptions);
+            var dialog = CreateWindow(new ProgressDialogView(contentViewModel), effectiveOptions);
             var registration = cancellationToken.Register(() => dispatcher.Dispatch(() => dialog.Close(false)));
             Register(dialog);
             _ = dialog.ShowDialog<bool>(owner).ContinueWith(_ =>
@@ -243,7 +244,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         return options with
         {
             Width = options.Width is null or 800 ? 460 : options.Width,
-            Height = options.Height is null or 600 ? 220 : options.Height,
+            Height = options.Height is null or 600 ? 300 : options.Height,
             CanResize = false
         };
     }

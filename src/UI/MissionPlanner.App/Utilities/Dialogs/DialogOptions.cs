@@ -10,9 +10,9 @@ public sealed record DialogOptions
 
     public string Title { get; init; } = string.Empty;
 
-    public double? Width { get; init; } = 800;
+    public double? Width { get; init; } = 460;
 
-    public double? Height { get; init; } = 600;
+    public double? Height { get; init; } = 300;
 
     public string OkText { get; init; } = "OK";
 
@@ -24,6 +24,7 @@ public sealed record DialogOptions
     {
         get; init;
     }
+
 
     public bool ShowOkButton { get; init; } = true;
 

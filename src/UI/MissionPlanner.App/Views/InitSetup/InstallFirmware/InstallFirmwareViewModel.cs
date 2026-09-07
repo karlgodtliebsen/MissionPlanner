@@ -1,5 +1,4 @@
-using System.Diagnostics;
-using AsyncAwaitBestPractices;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -11,7 +10,6 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Connected;
-using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Entry;
@@ -213,19 +211,20 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
 
     /// <summary>
-    /// Observes connection and panel state; visible child panels own data loading.
+    /// Observes connection state and starts child-owned discovery before enabling workflow tabs.
     /// </summary>
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         if (active)
         {
-            return Task.CompletedTask;
+            return;
         }
         if (disposed)
         {
-            return Task.CompletedTask;
+            return;
         }
         active = true;
+        discoveryInitialized = false;
         Validated.IsFirmwareValidated = false;
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
@@ -236,11 +235,17 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         //SetBusy();
         SetMessages("Ready");
         ApplyMode();
-        return Task.CompletedTask;
+        Devices.DiscoveryOwnedByPage = Dfu.DiscoveryOwnedByPage = true;
+        await Task.WhenAll(Devices.ActivateAsync(), Dfu.ActivateAsync());
+        discoveryInitialized = true;
+        UpdatePanelCapabilities();
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync() => DeactivatePanelsAsync();
+    public override Task DeactivateAsync()
+    {
+        return DeactivatePanelsAsync();
+    }
 
     private async Task DeactivatePanelsAsync()
     {
@@ -254,6 +259,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
 
         active = false;
+        Devices.DiscoveryOwnedByPage = Dfu.DiscoveryOwnedByPage = false;
+        CanUseSerialFirmware = CanUseDfuFirmware = false;
         UnsubscribePanels();
         activeVehicle.Changed -= OnActiveVehicleChanged;
         var cleanup = Task.WhenAll(Catalogue.DeactivateAsync(), Devices.DeactivateAsync(), Dfu.DeactivateAsync(), Custom.DeactivateAsync());
@@ -454,7 +461,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 : result.Failure?.Message ?? $"STM32 DFU installation {result.State}.");
 
             options = dialogService.CreateOptions("Firmware installation completed.", "Ok", null);
-            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string>(diagnosticReport ?? "");
+            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(diagnosticReport ?? "", "");
             dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
 
         }
@@ -464,13 +471,12 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
         catch (Exception exception)
         {
-
             message = $"Initial STM32 DFU installation failed: {exception.Message}";
             Logger.LogError(exception, "Initial STM32 DFU installation failed.");
             SetMessages(exception);
             options = dialogService.CreateOptions("Initial STM32 DFU installation failed.", "Ok", null);
-            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string>(message ?? "");
-            dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
+            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(message ?? "", exception.Message);
+            dialogService.ShowOverlayDialog<DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
 
         }
         finally
@@ -935,6 +941,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         {
             return;
         }
+        var available = discoveryInitialized && IsDisconnectedMode && !activeVehicle.IsOnline && !IsOperationInProgress;
+        CanUseDfuFirmware = available && Dfu.DfuDevices.Count > 0;
+        CanUseSerialFirmware = available && Dfu.DfuDevices.Count == 0
+            && Devices.Descriptors.Any(device => !string.IsNullOrWhiteSpace(device.PortName));
         Devices.CanInstall = CanStartInstall();
         Validated.CanInstall = CanStartInstall();
         Dfu.CanInstallDfu = CanStartDfuInstall();
@@ -943,4 +953,28 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     /// <summary>Gets whether the DFU tab has a selected device.</summary>
     public bool HasDfuBootLoader => Dfu.HasDfuBootLoader;
+
+    private bool discoveryInitialized;
+
+    /// <summary>Gets whether a serial controller is available for catalogue or custom firmware.</summary>
+    [ObservableProperty]
+    public partial bool CanUseSerialFirmware
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets whether a detected DFU controller can use the STM32 workflow.</summary>
+    [ObservableProperty]
+    public partial bool CanUseDfuFirmware
+    {
+        get; private set;
+    }
+
+    /// <summary>Refreshes both device types even when their workflow tabs are disabled.</summary>
+    [RelayCommand]
+    private async Task RefreshDevicesAsync(CancellationToken cancellationToken)
+    {
+        await Task.WhenAll(Devices.RefreshAsync(cancellationToken), Dfu.RefreshAsync(cancellationToken));
+        UpdatePanelCapabilities();
+    }
 }

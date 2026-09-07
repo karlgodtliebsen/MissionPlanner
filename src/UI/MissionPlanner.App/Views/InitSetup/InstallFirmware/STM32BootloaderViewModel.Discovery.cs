@@ -13,6 +13,7 @@ public sealed partial class STM32BootloaderViewModel
     private readonly IDfuToolLocator toolLocator;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly FirmwarePanelLoader loader = new();
+    internal bool DiscoveryOwnedByPage { get; set; }
     /// <summary>Gets whether DFU discovery is running.</summary>
     [ObservableProperty] public partial bool IsRefreshing { get; private set; }
     /// <summary>Gets or sets the parent's exclusive installation interlock.</summary>

@@ -33,6 +33,8 @@
                     <StackPanel Orientation="Vertical" Spacing="4">
                         <TextBlock Text="{Binding ContextHelp.Title}" Classes="H4" />
                         <TextBlock Text="{Binding ContextHelp.Content}" Classes="H5 Warning"/>
+                        <Button Content="Refresh devices" Command="{Binding RefreshDevicesCommand}"
+                                IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Left" />
                     </StackPanel>
                 </Border>
 
@@ -42,21 +44,21 @@
                     <TabItem Header="Information"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                             <local:LandingView  />
                     </TabItem>
-                    <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding !IsConnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                    <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding CanUseSerialFirmware}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                         <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <local:FirmwareCatalogueView DataContext="{Binding Catalogue}" />
                         </ScrollViewer>
                     </TabItem>
-                    <TabItem Header="Custom Firmware" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                    <TabItem Header="Custom Firmware" IsEnabled="{Binding CanUseSerialFirmware}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                         <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <local:CustomFirmwareView DataContext="{Binding Custom}" />
                         </ScrollViewer>
                     </TabItem>
-                    <TabItem Header="STM32 Bootloader" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                    <TabItem Header="STM32 Bootloader" IsEnabled="{Binding CanUseDfuFirmware}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                         <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
