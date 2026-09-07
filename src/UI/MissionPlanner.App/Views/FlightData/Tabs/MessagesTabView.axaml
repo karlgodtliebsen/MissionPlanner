@@ -17,7 +17,9 @@
         <ListBox x:Name="MessageCollection" Grid.Row="1" ItemsSource="{Binding Items}"
                  SelectedItem="{Binding SelectedMessage}"><ListBox.ItemTemplate>
                      <DataTemplate><StackPanel Margin="4">
-                         <TextBlock Text="{Binding Text}" TextWrapping="Wrap"/>
+                         <TextBlock Text="{Binding SeverityDisplay}" TextWrapping="Wrap"/>
+                         <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap"/>
+                         <TextBlock Text="{Binding Details}" FontSize="11" Opacity="0.7"/>
                          <TextBlock Text="{Binding Source}" FontSize="11" Opacity="0.7"/>
                      </StackPanel></DataTemplate>
                  </ListBox.ItemTemplate>

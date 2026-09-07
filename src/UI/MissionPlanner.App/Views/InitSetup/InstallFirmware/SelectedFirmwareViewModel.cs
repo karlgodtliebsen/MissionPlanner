@@ -1,10 +1,9 @@
-using MissionPlanner.App.Utilities.Dispatching;
-using MissionPlanner.Library.EventHub.Abstractions;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 /// <summary>Owns selected panel state and commands.</summary>
@@ -20,12 +19,22 @@ public sealed partial class SelectedFirmwareViewModel : ViewModelBase
     {
         this.clipboard = clipboard;
     }
-    /// <summary>Gets the catalogue selection displayed by this panel.</summary>
+
+    /// <summary>
+    /// Gets the catalogue selection displayed by this panel.
+    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedFirmware))]
-    public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
-    /// <summary>Gets whether a release is selected.</summary>
+    public partial FirmwareCatalogItemViewModel? SelectedFirmware
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// Gets whether a release is selected.
+    /// </summary>
     public bool HasSelectedFirmware => SelectedFirmware is not null;
+
     [RelayCommand]
     private Task CopyDownloadUrlAsync()
     {
@@ -33,10 +42,15 @@ public sealed partial class SelectedFirmwareViewModel : ViewModelBase
             ? Task.CompletedTask
             : clipboard.SetTextAsync(SelectedFirmware.Entry.Artifact.DownloadUri.AbsoluteUri);
     }
-    /// <summary>Notifies the active parent about panel changes.</summary>
-    public event Action<FirmwarePanelRequest>? OperationRequested;
-    [RelayCommand]
-    private Task DownloadAndValidateAsync(CancellationToken cancellationToken) =>
-        FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Download, cancellationToken);
 
+    /// <summary>
+    /// Notifies the active parent about panel changes.
+    /// </summary>
+    public event Action<FirmwarePanelRequest>? OperationRequested;
+
+    [RelayCommand]
+    private Task DownloadAndValidateAsync(CancellationToken cancellationToken)
+    {
+        return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Download, cancellationToken);
+    }
 }

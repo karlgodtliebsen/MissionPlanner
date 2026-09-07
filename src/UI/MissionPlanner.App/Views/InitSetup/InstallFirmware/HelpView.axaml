@@ -8,6 +8,7 @@
                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                           x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.HelpView"
                           x:DataType="local:FirmwareHelpViewModel"
+                          Margin="25,0,25,0"
                           >
     <Border Padding="20" Classes="SectionCard">
         <StackPanel Orientation="Vertical" Spacing="25">

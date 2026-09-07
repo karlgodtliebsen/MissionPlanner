@@ -25,57 +25,69 @@
             <StackPanel Orientation="Horizontal" Grid.Row="0" Height="50"
                         HorizontalAlignment="Center" VerticalAlignment="Center" Margin="8,0" Spacing="12" >
                 <Button
-                    Content="Load from file"
+                    ToolTip.Tip="Load from file"
                     VerticalAlignment="Center"
-                    Command="{Binding LoadFromFileCommand}" />
+                    Command="{Binding LoadFromFileCommand}" >
+                    <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
+                </Button>
                 <Button
-                    Content="Save to file"
+                    ToolTip.Tip="Save to file"
                     VerticalAlignment="Center"
-                    Command="{Binding SaveToFileCommand}" />
+                    Command="{Binding SaveToFileCommand}"  >
+                    <avalonia:MaterialIcon Kind="ContentSaveEdit" Width="30" Height="30" />
+                </Button>
                 <Button
-                    Content="Load from json file"
+                    ToolTip.Tip="Load from json file"
                     VerticalAlignment="Center"
-                    Command="{Binding LoadFromJsonFileCommand}" />
-
+                    Command="{Binding LoadFromJsonFileCommand}" >
+                    <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
+                </Button>
                 <Button
-                    Content="Save to json file"
+                    ToolTip.Tip="Save to json file"
                     VerticalAlignment="Center"
-                    Command="{Binding SaveToJsonFileCommand}" />
+                    Command="{Binding SaveToJsonFileCommand}"  >
+                    <avalonia:MaterialIcon Kind="ContentSaveEdit" Width="30" Height="30" />
+                </Button>
                 <Button
-                    Content="Use Text Editor"
+                    ToolTip.Tip="Use Text Editor"
                     VerticalAlignment="Center"
-                    Command="{Binding LoadFromEditorCommand}" />
-
+                    Command="{Binding LoadFromEditorCommand}"  >
+                    <avalonia:MaterialIcon Kind="CheckMultiple" Width="30" Height="30" />
+                </Button>
                 <Button
-                    Content="Apply modified"
+                    ToolTip.Tip="Apply modified"
                     VerticalAlignment="Center"
-                    Command="{Binding WriteParametersCommand}" />
-
+                    Command="{Binding WriteParametersCommand}"  >
+                    <avalonia:MaterialIcon Kind="CheckMultiple" Width="30" Height="30" />
+                </Button>
                 <Button
                     Content="Retry failed"
                     VerticalAlignment="Center"
                     Command="{Binding RetryFailedCommand}" />
 
                 <Button
-                    Content="Refresh parameters"
+                    ToolTip.Tip="Refresh parameters"
                     VerticalAlignment="Center"
-                    Command="{Binding RefreshParametersCommand}" />
-
+                    Command="{Binding RefreshParametersCommand}" >
+                    <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
+                </Button>
                 <Button
-                    Content="Clear parameters"
+                    ToolTip.Tip="Clear parameters"
                     VerticalAlignment="Center"
-                    Command="{Binding ClearParametersCommand}" />
-
+                    Command="{Binding ClearParametersCommand}" >
+                    <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                </Button>
                 <Button
                     Content="Compare parameters"
                     VerticalAlignment="Center"
                     Command="{Binding CompareParametersCommand}" />
 
                 <Button
-                    Content="Cancel"
+                    ToolTip.Tip="Cancel"
                     VerticalAlignment="Center"
-                    Command="{Binding CancelLoadCommand}" />
-
+                    Command="{Binding CancelLoadCommand}">
+                    <avalonia:MaterialIcon Kind="Cancel" Width="30" Height="30" />
+                </Button>
                 <Button
                     Content="Parameter profiles"
                     VerticalAlignment="Center"

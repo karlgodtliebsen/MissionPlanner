@@ -2,7 +2,8 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
-    xmlns:u="https://irihi.tech/ursa">
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
     <ControlTheme x:Key="{x:Type controls:VirtualizedItemsGrid}"
                   TargetType="controls:VirtualizedItemsGrid">
@@ -25,9 +26,10 @@
                             <Button x:Name="PART_ClearSearchButton"
                                     Grid.Column="1"
                                     ToolTip.Tip="Clear search filters" 
-                                    Content="✕"
                                     Padding="8,2"
-                                    VerticalAlignment="Center" />
+                                    VerticalAlignment="Center"  >
+                                <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                            </Button>
                         </Grid>
                     </Border>
                     <Label Grid.Row="1" Margin="0,0,10,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" Content="{Binding FilteredItemCount,StringFormat=Number of Rows: {0}, RelativeSource={RelativeSource TemplatedParent}}" ></Label>

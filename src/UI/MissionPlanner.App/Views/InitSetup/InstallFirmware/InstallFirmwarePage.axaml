@@ -38,6 +38,10 @@
 
                 <TabControl Grid.Row="3" x:Name="MainTabControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" TabIndex="0" >
+
+                    <TabItem Header="Information"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                            <local:LandingView  />
+                    </TabItem>
                     <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                         <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"

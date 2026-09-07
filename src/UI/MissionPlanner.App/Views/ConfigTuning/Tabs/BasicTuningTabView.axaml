@@ -6,6 +6,7 @@
                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.BasicTuningTabView"
                               x:DataType="tabs:BasicTuningTabViewModel">
@@ -50,9 +51,15 @@
                                             <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="6">
-                                            <Button  Content="Refresh" Command="{Binding RefreshCommand}" />
-                                            <Button  Content="Revert group" Command="{Binding RevertCommand}" />
-                                            <Button  Content="Apply group" Command="{Binding ApplyCommand}" />
+                                            <Button  ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" >
+                                                <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
+                                            </Button>
+                                            <Button  ToolTip.Tip="Revert group" Command="{Binding RevertCommand}" >
+                                                <avalonia:MaterialIcon Kind="Reverse" Width="30" Height="30" />
+                                            </Button>
+                                            <Button  ToolTip.Tip="Apply group" Command="{Binding ApplyCommand}" >
+                                                <avalonia:MaterialIcon Kind="CheckMultiple" Width="30" Height="30" />
+                                            </Button>
                                         </StackPanel>
                                     </Grid>
 

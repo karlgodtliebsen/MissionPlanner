@@ -6,31 +6,41 @@
                             xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
                             xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                             xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
+                            xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                             x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.FirmwareCatalogueView"
-                            x:DataType="local:FirmwareCatalogViewModel">
+                            x:DataType="local:FirmwareCatalogViewModel" Margin="25,0,25,0">
 
     <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
-        <local:DetectedDeviceView DataContext="{Binding Devices}"  Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"  ></local:DetectedDeviceView>
-        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Padding="20" Classes="SectionCard">
+        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"  Padding="20" Classes="SectionCard">
             <StackPanel Spacing="16" Orientation="Vertical">
                 <TextBlock Text="Select Firmware" Classes="H3" />
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Button Content="Refresh Firmware catalogue" ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}" />
-                    <Button Content="All Version Options" ToolTip.Tip="Includes Beta Versions" Command="{Binding ShowAllOptionsCommand}" />
-                    <Button Content="✕"
-                            ToolTip.Tip="Clear all Settings"
-                            Padding="8,2"
-                            VerticalAlignment="Center"
-                            Command="{Binding ClearCatalogueFirmwareCommand}" />
+                    <Button ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}"  >
+                        <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                    </Button>
+                    <Button ToolTip.Tip="All Version Options" 
+                             Command="{Binding ShowAllOptionsCommand}"  >
+                        <avalonia:MaterialIcon Kind="AllInclusive" Width="30" Height="30" />
+                    </Button>
+                    
+                    <Button 
+                        ToolTip.Tip="Clear all Settings"
+                        Padding="8,2"
+                        VerticalAlignment="Center"
+                        Command="{Binding ClearCatalogueFirmwareCommand}"  >
+                        <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                    </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal"  Spacing="10">
                     <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release"  ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="250"/>
                     <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
                     <ComboBox ItemsSource="{Binding FrameTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
                     <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
-                    <Button  Content="✕" ToolTip.Tip="Clear Filters" Command="{Binding ClearCommand}" Padding="8,2"
-                             VerticalAlignment="Center"/>
+                    <Button  ToolTip.Tip="Clear Filters" Command="{Binding ClearCommand}" Padding="8,2"
+                             VerticalAlignment="Center" >
+                        <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                    </Button>
                 </StackPanel>
                 <controls:VirtualizedItemsGrid
                     IsVisible="{Binding IsVehicleConnected,Converter={StaticResource InvertedBoolConverter}}"
@@ -87,7 +97,9 @@
                 </controls:VirtualizedItemsGrid>
             </StackPanel>
         </Border>
-        <local:SelectedFirmwareView DataContext="{Binding Selected}" Grid.Row="2" Grid.Column="0"  IsVisible="{Binding HasSelectedFirmware}" />
-        <local:ValidatedPackageView DataContext="{Binding Validated}"  Grid.Row="2" Grid.Column="1"   IsVisible="{Binding HasPreparedFirmware}" />
+        <local:SelectedFirmwareView DataContext="{Binding Selected}" Grid.Row="1" Grid.Column="0"  IsVisible="{Binding HasSelectedFirmware}" />
+        <local:ValidatedPackageView DataContext="{Binding Validated}"  Grid.Row="1" Grid.Column="1"   IsVisible="{Binding HasPreparedFirmware}" />
+        <local:DetectedDeviceView DataContext="{Binding Devices}"  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"  ></local:DetectedDeviceView>
+
     </Grid>
 </view:UserControlViewBase>

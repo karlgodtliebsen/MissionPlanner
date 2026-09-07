@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ursa="https://irihi.tech/ursa"
     xmlns:vm="using:MissionPlanner.App.Utilities.Dialogs"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     x:DataType="vm:ViewDialogViewModel"
     CanResize="True"
     WindowStartupLocation="CenterOwner"
@@ -31,17 +32,21 @@
                 <Button
                     Classes="Secondary"
                     MinWidth="90"
-                    Content="{Binding CloseText}"
+                    ToolTip.Tip="{Binding CloseText}"
                     Command="{Binding CancelCommand}"
-                    IsVisible="{Binding ShowCloseButton}"/>
-
+                    IsVisible="{Binding ShowCloseButton}"
+                >
+                    <avalonia:MaterialIcon Kind="Cancel" Width="30" Height="30" />
+                </Button>
                 <Button
                     Classes="Primary"
                     MinWidth="90"
-                    Content="{Binding OkText}"
+                    ToolTip.Tip="{Binding OkText}"
                     Command="{Binding OkCommand}"
-                    IsVisible="{Binding ShowOkButton}"/>
-
+                    IsVisible="{Binding ShowOkButton}"
+                >
+                    <avalonia:MaterialIcon Kind="CheckMultiple" Width="30" Height="30" />
+                </Button>
             </StackPanel>
 
         </Border>

@@ -5,6 +5,7 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                 xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                 x:Class="MissionPlanner.App.Views.Missions.MissionItemListView"
                 x:DataType="missions:MissionMapViewModel"
@@ -402,37 +403,38 @@
                                                         VerticalAlignment="Center">
 
                                                         <Button
-                                                            Content="▲"
                                                             FontSize="10"
                                                             Padding="4,2"
                                                             Height="26"
                                                             Width="26" 
-
                                                             HorizontalAlignment="Center"
-
-
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).MoveItemUpCommand}"
-                                                            CommandParameter="{Binding .}" />
+                                                            CommandParameter="{Binding .}"  >
+                                                            <avalonia:MaterialIcon Kind="ArrowUp" Width="30" Height="30" />
+                                                        </Button>
 
                                                         <Button
-                                                            Content="▼"
+                                                           
                                                             FontSize="10"
                                                             Padding="4,2"
                                                             Height="26"
                                                             Width="26" 
                                                             HorizontalAlignment="Center"
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).MoveItemDownCommand}"
-                                                            CommandParameter="{Binding .}" />
+                                                            CommandParameter="{Binding .}">
+                                                            <avalonia:MaterialIcon Kind="ArrowDown" Width="30" Height="30" />
+                                                        </Button>
 
                                                         <Button
-                                                            Content="✕"
                                                             FontSize="10"
                                                             Padding="4,2"
                                                             Height="26"
                                                             Width="26" 
                                                             HorizontalAlignment="Center"
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).RemoveItemCommand}"
-                                                            CommandParameter="{Binding .}" />
+                                                            CommandParameter="{Binding .}"  >
+                                                            <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                                                        </Button>
 
                                                     </StackPanel>
 

@@ -5,6 +5,7 @@
                               xmlns:models="clr-namespace:MissionPlanner.App.Models"
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Name="RootPage"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
@@ -13,7 +14,11 @@
 
         <Grid Margin="16" RowDefinitions="Auto,*,Auto" RowSpacing="12" HorizontalAlignment="Center">
             <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
-                <Button Content="↑" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}" />
+                
+                <Button ToolTip.Tip="Upload" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}"  >
+                    <avalonia:MaterialIcon Kind="Upload" Width="30" Height="30" />
+                </Button>
+
                 <TextBlock Grid.Column="1" Text="{Binding CurrentPath}" FontWeight="Bold" VerticalAlignment="Center" />
                 <Button Grid.Column="2" Content="Refresh"  IsVisible="{Binding HasConnection}" Command="{Binding RefreshCommand}" />
                 <Button Grid.Column="3" Content="Open" IsVisible="{Binding HasEntries}" Command="{Binding OpenSelectedCommand}" />

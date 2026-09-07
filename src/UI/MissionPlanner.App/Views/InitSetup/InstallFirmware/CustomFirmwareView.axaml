@@ -9,16 +9,14 @@
                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                           x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.CustomFirmwareView"
                           x:DataType="local:CustomFirmwareViewModel"
-
+                          Margin="25,0,25,0"
                           >
-    <Grid RowDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-        <local:DetectedDeviceView DataContext="{Binding Devices}"  Grid.Row="0"  Grid.Column="0"  ></local:DetectedDeviceView>
-        <Border Grid.Row="1"  IsVisible="{Binding HasDfuBootLoader, Converter={StaticResource InvertedBoolConverter}}" Padding="16"
+    <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" >
+        <Border Grid.Row="0"  IsVisible="{Binding HasDfuBootLoader, Converter={StaticResource InvertedBoolConverter}}" Padding="16"
                 Classes="SectionCard">
-
             <Grid RowDefinitions="Auto,Auto,*" RowSpacing="20" HorizontalAlignment="Center">
-                <TextBlock Text="Local / custom firmware" FontWeight="Bold" FontSize="18" />
 
+                <TextBlock Grid.Row="0" Text="Use local / custom firmware" Classes="H3" />
                 <StackPanel Grid.Row="1" Orientation="Horizontal"  Spacing="10">
                     <Button ToolTip.Tip="Load Local / Custom Firmware"
                             Width="100"
@@ -28,31 +26,33 @@
                             VerticalAlignment="Center"
                             Command="{Binding LoadCustomFirmwareCommand}"
                             >
-                        <avalonia:MaterialIcon Kind="Loading" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
                     </Button>
-                    <Button Content="✕"
+                    <Button 
                             ToolTip.Tip="Clear Custom Firmware"
                             Width="100"
                             Classes="Primary"
                             Padding="8,2"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ClearCustomFirmwareCommand}" />
-
-                    <Button ToolTip.Tip="Install Validated Firmware" 
-                            Width="100"
-                            Classes="Primary"
-                            Padding="8,2"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Command="{Binding InstallCommand}" >
-                        <avalonia:MaterialIcon Kind="AddCircle" Width="30" Height="30" />
+                            Command="{Binding ClearCustomFirmwareCommand}" >
+                        <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
                     </Button>
+                    <!--
+                    <Button ToolTip.Tip="Install Validated Firmware"
+                    Width="100"
+                    Classes="Primary"
+                    Padding="8,2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Command="{Binding InstallCommand}" >
+                    <avalonia:MaterialIcon Kind="AddCircle" Width="30" Height="30" />
+                    </Button>-->
                 </StackPanel>
-
-                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"  IsVisible="{Binding HasCustomFirmware}"
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                      IsVisible="{Binding HasCustomFirmware}"
                       RowSpacing="10">
-                    <TextBlock Text="Selected custom firmware" Classes="H3" Margin="0,0,0,10"/>
+                    <TextBlock Text="Selected custom firmware" Classes="H3" Margin="0,0,0,10" HorizontalAlignment="Left" />
 
                     <TextBlock Grid.Row="1" Text="Firmware Name" />
                     <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CustomFirmwareName,FallbackValue='', TargetNullValue=''}" />
@@ -72,22 +72,34 @@
                     <TextBlock Grid.Row="6" Text="Build" />
                     <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CustomFirmwareBuild}"  Classes="Warning" />
 
-                    <TextBlock  Margin="0,8,0,0" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
+
+                    <TextBlock  Margin="0,8,0,0" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+                                Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
 
                     <WrapPanel Grid.Row="8"  Grid.Column="0" Grid.ColumnSpan="2"  Orientation="Horizontal" ItemSpacing="5">
                         <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
                         <TextBlock Text="Require exact board ID match"  Classes="Warning" />
                     </WrapPanel>
-                    <Border Grid.Row="9"  Grid.Column="0" Grid.ColumnSpan="2"  Classes="SectionCard" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12"
-                             BorderBrush="{DynamicResource Warning}">
-                        <TextBlock Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply."
-                                   Classes="Warning" FontWeight="Bold" TextWrapping="Wrap" />
+                    <Border Grid.Row="9"  Grid.Column="0" Grid.ColumnSpan="2"  Classes="SectionCard"
+                            IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12"
+                            BorderBrush="{DynamicResource Warning}">
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock MaxLines="3" Text="Advanced override:."
+                                       Classes="Warning" TextWrapping="Wrap" />
+
+                            <TextBlock MaxLines="3" Text="board-ID mismatch will be allowed for this local firmware only."
+                                       Classes="Warning" TextWrapping="Wrap" />
+                            <TextBlock MaxLines="3" Text="Use this only when you know the firmware target is electrically and bootloader compatible with this controller."
+                                       Classes="Warning" TextWrapping="Wrap" />
+                            <TextBlock MaxLines="3" Text="Flash-size, revision, bootloader and secure-boot checks still apply."
+                                       Classes="Warning" TextWrapping="Wrap" />
+
+                        </StackPanel>
                     </Border>
                 </Grid>
-
             </Grid>
         </Border>
-        <local:ValidatedPackageView DataContext="{Binding Validated}"  Grid.Row="2" IsVisible="{Binding HasPreparedFirmware}" />
+        <local:DetectedDeviceView Grid.Row="1" DataContext="{Binding Devices}"   ></local:DetectedDeviceView>
     </Grid>
 
 </view:UserControlViewBase>
