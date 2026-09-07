@@ -1,0 +1,20 @@
+<utilities:NavigationViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Proximity"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityPage"
+    x:TypeArguments="local:ProximityViewModel" x:DataType="local:ProximityViewModel">
+    <ContentPage Header="Proximity Viewer">
+        <Grid RowDefinitions="Auto,*" RowSpacing="14" Margin="24">
+            <StackPanel Spacing="8">
+                <TextBlock Text="Proximity observations" Classes="Title" />
+                <SelectableTextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
+                <TextBlock Text="Display only. Unknown, stale and unsupported readings never indicate clear space. Uses existing telemetry streams." TextWrapping="Wrap" Classes="Warning" />
+            </StackPanel>
+            <TabControl Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <TabItem Header="Radar"><local:ProximityRadarView DataContext="{Binding Radar}" /></TabItem>
+                <TabItem Header="Sensor diagnostics"><local:ProximityDiagnosticsView DataContext="{Binding Diagnostics}" /></TabItem>
+            </TabControl>
+        </Grid>
+    </ContentPage>
+</utilities:NavigationViewBase>

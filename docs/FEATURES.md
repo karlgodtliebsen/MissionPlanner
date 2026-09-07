@@ -900,6 +900,9 @@ acknowledgement and cooldown, corrupt-document recovery, and separate list/edito
 panels. Visual evaluation is scoped to the open page; no automatic vehicle changes or speech
 notifications are performed.
 
+Proximity Viewer combines DISTANCE_SENSOR and OBSTACLE_DISTANCE observations in a bounded,
+vehicle-relative radar and virtualized diagnostics table on Desktop and Browser. Sensor identity,
+quality, freshness and unsupported frames remain visible; it sends no avoidance or rate commands.
 MAVLink Inspector provides bounded live statistics, signed/raw details, filters, display freeze,
 clipboard and snapshot export on Desktop and Browser. Independent observer queues preserve
 normal pipeline delivery and visibly count dropped observations. Unknown-dialect candidates

@@ -126,3 +126,31 @@ ADV-02 verification: Desktop, Browser, and full solution builds passed with
 `--no-restore -p:UsedAvaloniaProducts= -v quiet`. `src/Tests/Run-AllTests.ps1` passed
 877 .NET tests and 7 JavaScript tests, with 29 existing skips.
 Results: `TestResults/all-tests/20260907-030648-480`. No hardware was used.
+
+## ADV-03 Proximity Viewer
+
+Core normalizes existing decoded DISTANCE_SENSOR and OBSTACLE_DISTANCE observations to meters
+and clockwise degrees from vehicle forward. Horizontal ArduPilot rotations use orientation × 45°;
+global obstacle arrays require a fresh vehicle heading. Vertical and unsupported frames remain in
+diagnostics without being projected onto the radar. See the [MAVLink field definitions](https://mavlink.io/en/messages/common.html)
+and [ArduPilot proximity orientation handling](https://github.com/ArduPilot/ardupilot/blob/master/libraries/AP_Proximity/AP_Proximity_MAV.cpp).
+
+Unknown, out-of-range, too-close and stale measurements remain distinct. OBSTACLE_DISTANCE zero
+is a usable reading only when its minimum allows zero; DISTANCE_SENSOR zero is treated as unknown.
+The nearest valid horizontal reading excludes stale/unsupported samples. The default freshness is
+two seconds, configurable through ProximityOptions. Arrays have no protocol sensor instance ID;
+their identity is system/component/sensor-type, while distance sensors also retain their sensor ID.
+
+The page owns a 256-observation queue on the existing connection tap and retains at most 64 sources
+with 72 points each. It neither re-decodes messages nor changes telemetry rates. UI snapshots update
+at four Hz; a single responsive drawing control displays distance rings and points, with a separate
+virtualized diagnostics view. Radar, diagnostics and parent coordinator have dedicated viewmodels.
+Closing the page cancels its reader/timer and clears data without disposing the shared connection.
+
+ADV-03 verification: Desktop, Browser and full solution builds passed using the same commands above.
+Core tests passed 565 tests and UI tests passed 47, including angle/units/sentinel fixtures, source
+limits, fake-clock staleness, a 1,000-sample coalescing test and ten navigation cycles. Full-suite
+results are recorded below. No hardware or interactive rendering checks were performed.
+
+Full ADV-03 suite: 886 .NET tests and 7 JavaScript tests passed; 29 existing skips unchanged.
+Results: `TestResults/all-tests/20260907-032437-861`.

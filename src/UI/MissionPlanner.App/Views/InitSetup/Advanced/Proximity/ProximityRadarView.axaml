@@ -1,0 +1,17 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Proximity"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityRadarView"
+    x:TypeArguments="local:ProximityRadarViewModel" x:DataType="local:ProximityRadarViewModel">
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10">
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <TextBlock Text="Displayed radius (m)" VerticalAlignment="Center" />
+            <NumericUpDown Value="{Binding RangeMeters}" Minimum="0.1" Maximum="1000" Increment="5"
+                           AutomationProperties.Name="Radar radius in meters" Width="140" />
+        </StackPanel>
+        <TextBlock Grid.Row="1" Text="Blue: valid · orange: too close · white outline: nearest valid. Samples beyond the displayed radius are available in diagnostics. Readings expire after 2 seconds." TextWrapping="Wrap" />
+        <local:ProximityRadarControl Grid.Row="2" Snapshot="{Binding Snapshot}" RangeMeters="{Binding RangeMeters}"
+                                     AutomationProperties.Name="Horizontal proximity radar; numeric readings in sensor diagnostics" />
+    </Grid>
+</utilities:UserControlViewBase>

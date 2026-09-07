@@ -271,6 +271,15 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.IAdvancedPlatformCapabilities, MissionPlanner.Core.Setup.Advanced.AdvancedPlatformCapabilitySource>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.AdvancedAvailabilityService>();
         services.TryAddSingleton<AdvancedToolRegistry>();
+        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Proximity.ProximityOptions>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Proximity.ProximityAggregator>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Proximity.ProximitySession>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityRadarViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityDiagnosticsViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Proximity,
+            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityPage>()));
         services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Inspector.InspectorAggregator>();
         services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Inspector.InspectorSession>();
         services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorListViewModel>();

@@ -1,0 +1,45 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Proximity"
+    xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Proximity;assembly=MissionPlanner.Core"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityDiagnosticsView"
+    x:TypeArguments="local:ProximityDiagnosticsViewModel" x:DataType="local:ProximityDiagnosticsViewModel">
+    <Grid>
+        <controls:VirtualizedItemsGrid ItemsSource="{Binding Points}" ColumnWidths="*,*,*" ColumnSpacing="12"
+            RowMinHeight="125" ShowHeader="True" ShowSearchBar="False" ShowPagination="False">
+            <controls:VirtualizedItemsGrid.HeaderTemplate>
+                <DataTemplate><controls:VirtualizedItemsGridRow>
+                    <TextBlock Text="Sensor / frame" Classes="DataGridColumn" />
+                    <TextBlock Grid.Column="1" Text="Measurement" Classes="DataGridColumn" />
+                    <TextBlock Grid.Column="2" Text="Quality / freshness" Classes="DataGridColumn" />
+                </controls:VirtualizedItemsGridRow></DataTemplate>
+            </controls:VirtualizedItemsGrid.HeaderTemplate>
+            <controls:VirtualizedItemsGrid.RowTemplate>
+                <DataTemplate x:DataType="model:ProximityPoint"><controls:VirtualizedItemsGridRow>
+                    <StackPanel>
+                        <TextBlock Text="{Binding Source}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Index, StringFormat='Array index: {0}'}" />
+                        <TextBlock Text="{Binding SensorType, StringFormat='Sensor type: {0}'}" />
+                        <TextBlock Text="{Binding Orientation}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="{Binding DistanceMeters, StringFormat='Distance: {0:F2} m'}" />
+                        <TextBlock Text="{Binding BearingDegrees, StringFormat='Bearing: {0:F1}°'}" />
+                        <TextBlock Text="{Binding MinimumMeters, StringFormat='Minimum: {0:F2} m'}" />
+                        <TextBlock Text="{Binding MaximumMeters, StringFormat='Maximum: {0:F2} m'}" />
+                        <TextBlock Text="{Binding AngularWidthDegrees, StringFormat='Width: {0:F1}°'}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="{Binding State}" FontWeight="Bold" />
+                        <TextBlock Text="{Binding Covariance, StringFormat='Covariance (cm²): {0}'}" />
+                        <TextBlock Text="{Binding Quality, StringFormat='Quality: {0}'}" />
+                        <TextBlock Text="{Binding AgeSeconds, StringFormat='Age: {0:F1} s'}" />
+                        <TextBlock Text="{Binding ObservedAt}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </controls:VirtualizedItemsGridRow></DataTemplate>
+            </controls:VirtualizedItemsGrid.RowTemplate>
+        </controls:VirtualizedItemsGrid>
+    </Grid>
+</utilities:UserControlViewBase>
