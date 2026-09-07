@@ -900,6 +900,11 @@ acknowledgement and cooldown, corrupt-document recovery, and separate list/edito
 panels. Visual evaluation is scoped to the open page; no automatic vehicle changes or speech
 notifications are performed.
 
+MAVLink Inspector provides bounded live statistics, signed/raw details, filters, display freeze,
+clipboard and snapshot export on Desktop and Browser. Independent observer queues preserve
+normal pipeline delivery and visibly count dropped observations. Unknown-dialect candidates
+are labelled unverified and are not promoted into normal vehicle processing.
+
 ## Mission map geospatial imports
 
 * KML and bounded KMZ can be loaded as a replaceable, non-mission overlay.

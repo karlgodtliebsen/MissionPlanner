@@ -271,6 +271,14 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.IAdvancedPlatformCapabilities, MissionPlanner.Core.Setup.Advanced.AdvancedPlatformCapabilitySource>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.AdvancedAvailabilityService>();
         services.TryAddSingleton<AdvancedToolRegistry>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Inspector.InspectorAggregator>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Inspector.InspectorSession>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorListViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorDetailViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.MavLinkInspectorViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.MavLinkInspectorPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Inspector,
+            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.MavLinkInspectorPage>()));
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Warnings.WarningSources>();
         services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Warnings.WarningEngine>();

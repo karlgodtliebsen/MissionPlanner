@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Transport;
+using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Services.Abstractions;
 
@@ -13,6 +13,8 @@ namespace MissionPlanner.MavLink.Services.Abstractions;
 /// </summary>
 public interface IMavLinkConnection : IAsyncDisposable
 {
+    /// <summary>Gets the connection's read-only inspection tap when implemented.</summary>
+    MavLinkInspectionTap? Inspection => null;
     /// <summary>
     /// Starts the MAVLink connection, allowing it to receive and process incoming data.
     /// </summary>

@@ -37,6 +37,33 @@ for disposal. Tests cover ten complete lifetime cycles and cleanup failure.
 
 ## Verification record
 
+### MAVLink Inspector (ADV-02)
+
+The inspector acquires a bounded observer lease from the existing connection's pipeline.
+Receive decoding remains single-pass; the tap retains the same decoded message and original
+frame bytes. Outbound observations are recorded after successful transport submission and
+read framing metadata only. Unknown-dialect candidates are exposed by the existing parser
+as CRC-unverified diagnostics and remain rejected from normal processing. Signature bytes
+are retained; the inspector explicitly does not claim authentication verification.
+
+Each of at most eight observers owns a bounded queue (default 512 observations). Full queues
+drop the newest observation and increment a visible counter; they never block telemetry.
+The aggregator retains the first 512 distinct direction/system/component/message keys until
+Clear and counts omitted new keys. Each key keeps only its latest frame and five one-second
+rate buckets. Rates divide the last five buckets by five seconds, including the current
+partial second. Decoded details are limited to 128 fields and 8192 characters per message.
+
+The page refreshes four times per second and uses a virtualized table, a separate detail
+ViewModel, text/numeric/direction filters, message-ID or descending-count sort, clear,
+clipboard copy and bounded JSON export through the existing file service. Freeze captures
+an immutable display snapshot while collection continues; exports capture current collection
+state. Closing releases the observer immediately and clears retained raw data. Reopening
+starts new statistics. Connection termination requires reopening after reconnect.
+
+Tests exercise direction/system/component/message separation, rate expiry, filters, unknown
+and signed byte preservation, a 100,000-frame stream, overflow and independent queues,
+normal decoder/event delivery alongside inspection, freeze/copy/clear, and ten page cycles.
+
 ### Warning Manager (ADV-01)
 
 The Warning Manager route now opens a working page with singleton list, editor and live
@@ -94,3 +121,8 @@ were not performed.
 
 The import/export follow-up passed all 45 UI tests (one additional file-service integration
 test), Browser build and full solution build. These checks follow the 870-test full run above.
+
+ADV-02 verification: Desktop, Browser, and full solution builds passed with
+`--no-restore -p:UsedAvaloniaProducts= -v quiet`. `src/Tests/Run-AllTests.ps1` passed
+877 .NET tests and 7 JavaScript tests, with 29 existing skips.
+Results: `TestResults/all-tests/20260907-030648-480`. No hardware was used.

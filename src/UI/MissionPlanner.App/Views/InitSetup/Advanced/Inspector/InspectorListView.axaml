@@ -1,0 +1,53 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Inspector"
+    xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Inspector;assembly=MissionPlanner.Core"
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorListView"
+    x:TypeArguments="local:InspectorListViewModel" x:DataType="local:InspectorListViewModel">
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
+        <TextBox Text="{Binding Search}" MaxLength="256" PlaceholderText="Search name, ID, or sys:1 comp:1 id:0 dir:inbound"
+                 AutomationProperties.Name="Filter inspected messages" />
+        <WrapPanel Grid.Row="1">
+            <CheckBox Content="Freeze display (continue collecting)" IsChecked="{Binding Frozen}" Margin="0,0,12,8" />
+            <CheckBox Content="Sort by count descending" IsChecked="{Binding SortByCount}" Margin="0,0,12,8" />
+            <Button Content="Clear statistics" Command="{Binding ClearCommand}" Margin="0,0,12,8" />
+        </WrapPanel>
+        <controls:VirtualizedItemsGrid Grid.Row="2" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}"
+            ColumnWidths="110,*,150" ColumnSpacing="10" RowMinHeight="80" ShowHeader="True"
+            ShowSearchBar="False" ShowPagination="False" SelectionMode="Single">
+            <controls:VirtualizedItemsGrid.HeaderTemplate>
+                <DataTemplate>
+                    <controls:VirtualizedItemsGridRow>
+                        <TextBlock Text="Identity" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="1" Text="Message" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="2" Text="Traffic" Classes="DataGridColumn" />
+                    </controls:VirtualizedItemsGridRow>
+                </DataTemplate>
+            </controls:VirtualizedItemsGrid.HeaderTemplate>
+            <controls:VirtualizedItemsGrid.RowTemplate>
+                <DataTemplate x:DataType="model:InspectorRow">
+                    <controls:VirtualizedItemsGridRow>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Key.Direction}" />
+                            <TextBlock Text="{Binding Key.SystemId, StringFormat='System: {0}'}" />
+                            <TextBlock Text="{Binding Key.ComponentId, StringFormat='Component: {0}'}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{Binding Name}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Key.MessageId, StringFormat='Message ID: {0}'}" />
+                            <TextBlock Text="{Binding Verification}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{Binding Count, StringFormat='Count: {0}'}" />
+                            <TextBlock Text="{Binding Bytes, StringFormat='Bytes: {0}'}" />
+                            <TextBlock Text="{Binding MessagesPerSecond, StringFormat='Messages/s: {0:F1}'}" />
+                            <TextBlock Text="{Binding BytesPerSecond, StringFormat='Bytes/s: {0:F1}'}" />
+                        </StackPanel>
+                    </controls:VirtualizedItemsGridRow>
+                </DataTemplate>
+            </controls:VirtualizedItemsGrid.RowTemplate>
+        </controls:VirtualizedItemsGrid>
+    </Grid>
+</utilities:UserControlViewBase>

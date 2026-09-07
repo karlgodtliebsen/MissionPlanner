@@ -1,4 +1,4 @@
-﻿using System.Threading.Channels;
+using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library;
@@ -30,6 +30,10 @@ public sealed class MavLinkConnection : IMavLinkConnection
     private Task? parseTask;
     private Task? publishTask;
     private bool disposed;
+    private bool inspectionAttached;
+
+    /// <inheritdoc />
+    public MavLinkInspectionTap? Inspection { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MavLinkConnection"/> class.
@@ -41,6 +45,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     /// <param name="options">The MAVLink connection pipeline options.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="transmissionPolicy">Optional application safety policy for outbound frames.</param>
+    /// <param name="inspection">Optional connection-owned bounded traffic observers.</param>
     /// <exception cref="ArgumentNullException"></exception>
     public MavLinkConnection(
         IMavLinkClient client,
@@ -49,7 +54,8 @@ public sealed class MavLinkConnection : IMavLinkConnection
         IEventHub eventHub,
         IOptions<MavLinkConnectionPipelineOptions> options,
         ILogger<MavLinkConnection> logger,
-        IMavLinkTransmissionPolicy? transmissionPolicy = null)
+        IMavLinkTransmissionPolicy? transmissionPolicy = null,
+        MavLinkInspectionTap? inspection = null)
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
         this.frameParser = frameParser ?? throw new ArgumentNullException(nameof(frameParser));
@@ -57,6 +63,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         this.eventHub = eventHub ?? throw new ArgumentNullException(nameof(eventHub));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.transmissionPolicy = transmissionPolicy;
+        Inspection = inspection;
         this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.options.Validate();
     }
@@ -76,6 +83,11 @@ public sealed class MavLinkConnection : IMavLinkConnection
             }
 
             frameParser.Reset();
+            if (!inspectionAttached && frameParser is MavLinkV2FrameParser inspectable)
+            {
+                inspectable.UnknownFrameObserved += UnknownFrameObserved;
+                inspectionAttached = true;
+            }
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             decodedMessages = Channel.CreateBounded<DecodedMavLinkMessage>(new BoundedChannelOptions(options.DecodedMessageChannelCapacity) { SingleWriter = true, SingleReader = true, FullMode = BoundedChannelFullMode.Wait, AllowSynchronousContinuations = false });
 
@@ -101,6 +113,43 @@ public sealed class MavLinkConnection : IMavLinkConnection
         ThrowIfDisposed();
         transmissionPolicy?.ThrowIfTransmissionProhibited();
         await client.SendAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
+        if (Inspection?.HasObservers == true)
+        {
+            ObserveOutbound(data.Span, endPoint);
+        }
+    }
+
+    private void ObserveOutbound(ReadOnlySpan<byte> bytes, TransportEndPoint endpoint)
+    {
+        // Read only framing metadata; do not run another decoder or alter transport data.
+        while (bytes.Length >= 8 && bytes[0] is 0xFD or 0xFE)
+        {
+            var v2 = bytes[0] == 0xFD;
+            var header = v2 ? 10 : 6;
+            if (bytes.Length < header)
+            {
+                return;
+            }
+            var length = header + bytes[1] + 2 + (v2 && (bytes[2] & 1) != 0 ? 13 : 0);
+            if (bytes.Length < length)
+            {
+                return;
+            }
+            var raw = bytes[..length].ToArray();
+            var id = v2 ? (uint)(raw[7] | raw[8] << 8 | raw[9] << 16) : raw[5];
+            var frame = new MavLinkFrame(raw[v2 ? 5 : 3], raw[v2 ? 6 : 4], endpoint, id,
+                raw[v2 ? 4 : 2], raw.AsMemory(header, raw[1]), raw, DateTimeOffset.UtcNow);
+            Inspection!.Publish(new(MavLinkTrafficDirection.Outbound, frame, null, false));
+            bytes = bytes[length..];
+        }
+    }
+
+    private void UnknownFrameObserved(MavLinkFrame frame)
+    {
+        if (Inspection?.HasObservers == true)
+        {
+            Inspection.Publish(new(MavLinkTrafficDirection.Inbound, frame, null, false));
+        }
     }
 
     private async Task ParseLoopAsync(CancellationToken cancellationToken)
@@ -125,7 +174,12 @@ public sealed class MavLinkConnection : IMavLinkConnection
 
                     foreach (var frame in frames)
                     {
-                        if (!messageDecoder.TryDecode(frame, out var message) || message is null)
+                        var decoded = messageDecoder.TryDecode(frame, out var message);
+                        if (Inspection?.HasObservers == true)
+                        {
+                            Inspection.Publish(new(MavLinkTrafficDirection.Inbound, frame, message, true));
+                        }
+                        if (!decoded || message is null)
                         {
                             if (logger.IsEnabled(LogLevel.Warning))
                             {
@@ -189,6 +243,12 @@ public sealed class MavLinkConnection : IMavLinkConnection
         await lifecycleLock.WaitAsync();
         try
         {
+            Inspection?.CloseObservers();
+            if (inspectionAttached && frameParser is MavLinkV2FrameParser inspectable)
+            {
+                inspectable.UnknownFrameObserved -= UnknownFrameObserved;
+                inspectionAttached = false;
+            }
             if (cancellationTokenSource is null)
             {
                 return;

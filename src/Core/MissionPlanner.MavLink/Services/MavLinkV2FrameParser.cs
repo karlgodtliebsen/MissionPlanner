@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 
@@ -10,6 +10,8 @@ namespace MissionPlanner.MavLink.Services;
 /// </summary>
 public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
 {
+    /// <summary>Observes complete unknown-dialect candidates for diagnostics only; CRC is unverified and normal delivery remains rejected.</summary>
+    public event Action<MavLinkFrame>? UnknownFrameObserved;
     private const byte MavLinkV1Magic = 0xFE;
     private const byte MavLinkV2Magic = 0xFD;
     private const int V1HeaderLength = 6;
@@ -141,6 +143,18 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
 
         if (!messageDefinitions.TryGet(messageId, out var definition))
         {
+            if (UnknownFrameObserved is { } observer)
+            {
+                try
+                {
+                    observer(new MavLinkFrame(systemId, componentId, endPoint, messageId, sequence,
+                        rawBytes.AsMemory(headerLength, payloadLength), rawBytes, receivedAt));
+                }
+                catch (Exception)
+                {
+                    logger?.LogWarning("An unknown-frame diagnostic observer failed; normal parsing continues.");
+                }
+            }
             if (logger?.IsEnabled(LogLevel.Trace) == true)
             {
                 logger.LogTrace("Skipping MAVLink frame for unknown message. MessageId={MessageId}", messageId);

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -30,6 +30,7 @@ public static class MavLinkConfigurator
     {
         services.TryAddSingleton<IMavLinkClient, MavLinkClient>();
         services.TryAddSingleton<IMavLinkConnection, MavLinkConnection>();
+        services.TryAddTransient<MavLinkInspectionTap>();
         services.TryAddSingleton<IMavLinkMessageDefinitionRegistry, MavLinkMessageDefinitionRegistry>();
         services.TryAddTransient<IMavLinkCrcExtraProvider, CommonMavLinkCrcExtraProvider>();
         services.TryAddTransient<IMavLinkFrameParser, MavLinkV2FrameParser>();
