@@ -13,28 +13,36 @@
 
         <Setter Property="Template">
             <ControlTemplate>
-                <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
                     <!-- Search -->
-                    <Border Grid.Row="0" IsVisible="{TemplateBinding ShowSearchBar}" Margin="0,5,0,5">
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                    <Border Grid.Row="0" IsVisible="{TemplateBinding ShowSearchBar}" Margin="5,5,5,5">
+                        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
                             <TextBox Grid.Column="0"
                                      Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                      PlaceholderText="{TemplateBinding SearchWatermark}"
                                      HorizontalAlignment="Stretch" />
-
-                            <Button x:Name="PART_ClearSearchButton"
+                               <Button x:Name="PART_ClearSearchButton"
                                     Grid.Column="1"
-                                    ToolTip.Tip="Clear search filters" 
+                                    ToolTip.Tip="Clear search filters"
                                     Padding="8,2"
                                     VerticalAlignment="Center"  >
                                 <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
                             </Button>
+                            <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="5"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                <Label  HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Content="{Binding FilteredItemCount,StringFormat=Matching: {0},RelativeSource={RelativeSource TemplatedParent}}" ></Label>
+                                <Label  HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Center"
+                                        Content="{Binding TotalItemCount,StringFormat=Total: {0},RelativeSource={RelativeSource TemplatedParent}}" ></Label>
+                            </StackPanel>
+
+
                         </Grid>
                     </Border>
-                    <Label Grid.Row="1" Margin="0,0,10,0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" Content="{Binding FilteredItemCount,StringFormat=Number of Rows: {0}, RelativeSource={RelativeSource TemplatedParent}}" ></Label>
                     <!-- Sticky horizontally synchronized header -->
-                    <Border Grid.Row="2"
+                    <Border Grid.Row="1"
                             Classes="SectionCard"
                             Padding="0"
                             HorizontalAlignment="Stretch"
@@ -45,7 +53,7 @@
 
                                       HorizontalScrollBarVisibility="Hidden"
                                       VerticalScrollBarVisibility="Disabled"
-                                     >
+                                      >
                             <Grid ColumnDefinitions="Auto,*" HorizontalAlignment="Left"
                                   >
                                 <Border Grid.Column="0"  Margin="8,0,0 0"
@@ -70,7 +78,7 @@
                     </Border>
                     <!-- Virtualized body. Padding is deliberately zero so the
                     body geometry stays exactly aligned with the header. -->
-                    <Border Grid.Row="3"
+                    <Border Grid.Row="2"
                             Classes="SectionCard"
                             Padding="0"
                             HorizontalAlignment="Stretch"
@@ -95,7 +103,7 @@
                             </Grid>
                         </ScrollViewer>
                     </Border>
-                    <Border Grid.Row="4"
+                    <Border Grid.Row="3"
                             Classes="SectionCard"
                             Padding="0"
                             HorizontalAlignment="Stretch"
