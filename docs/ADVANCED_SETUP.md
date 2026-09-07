@@ -18,8 +18,13 @@ until an adapter supplies permission evidence. No permission is requested merely
 the hub.
 
 The hub uses the Install Firmware `SectionCard`, heading, warning, and Ursa ContentPage
-styles. Its scroll viewport receives finite space from a star-sized Grid row. Text wraps,
-reasons are selectable, and launch buttons have feature-specific accessibility names.
+styles. Tools are organized in a TabControl with a left-hand tab list, leaving room for all
+thirteen names. The selected content receives finite space from a star-sized Grid row so
+each tool's existing scrolling and nested tabs can stretch. Text wraps and reasons are selectable.
+`AdvancedToolTabView` lazily creates the selected available page through the existing registry.
+Switching tabs unloads the previous page and triggers its existing deactivation; a loss of
+availability also removes the page. Unavailable and unfinished tools retain their tab and
+display the reason without constructing a tool. Existing direct routes remain supported.
 Each card owns a small ViewModel; the parent subscribes to its `Action<AdvancedFeatureId>`
 event only while active. Connection, active-vehicle, parameter, and platform changes refresh
 availability. Generation checks reject queued updates from an old activation.

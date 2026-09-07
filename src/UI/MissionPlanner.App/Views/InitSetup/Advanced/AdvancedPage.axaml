@@ -16,25 +16,19 @@
                 <SelectableTextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"
                                      TextWrapping="Wrap" Classes="Warning" />
             </StackPanel>
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                <ItemsControl ItemsSource="{Binding Tools}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="local:AdvancedToolCardViewModel">
-                            <Border Classes="SectionCard" Padding="20" Margin="0,0,0,12">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="{Binding Feature.Category}" Classes="H5" />
-                                    <TextBlock Text="{Binding Feature.Title}" Classes="H4" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding Feature.Description}" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding Feature.Help}" Classes="Warning" TextWrapping="Wrap" />
-                                    <SelectableTextBlock Text="{Binding Availability.Reason}" TextWrapping="Wrap" />
-                                    <Button Content="Open" Command="{Binding LaunchCommand}" HorizontalAlignment="Left"
-                                            AutomationProperties.Name="{Binding Feature.Title}" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+            <TabControl Grid.Row="1" ItemsSource="{Binding Tools}" TabStripPlacement="Left"
+                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <TabControl.ItemTemplate>
+                    <DataTemplate x:DataType="local:AdvancedToolCardViewModel">
+                        <TextBlock Text="{Binding Feature.Title}" MaxWidth="220" TextWrapping="Wrap" />
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
+                <TabControl.ContentTemplate>
+                    <DataTemplate x:DataType="local:AdvancedToolCardViewModel">
+                        <local:AdvancedToolTabView />
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
         </Grid>
     </ContentPage>
 </utilities:NavigationViewBase>
