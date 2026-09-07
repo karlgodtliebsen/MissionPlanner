@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -17,8 +18,8 @@ public sealed partial class CustomFirmwareViewModel : ViewModelBase
     public CustomFirmwareViewModel(
         IFirmwareFilePicker filePicker,
         IFirmwarePackageReader packageReader,
-        DetectedDeviceViewModel devices,
-        ValidatedPackageViewModel validated,
+        SubViews.DetectedDeviceViewModel devices,
+        SubViews.ValidatedPackageViewModel validated,
         ILogger<CustomFirmwareViewModel> logger,
         IUiDispatcher dispatcher,
         IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
@@ -29,12 +30,12 @@ public sealed partial class CustomFirmwareViewModel : ViewModelBase
         Validated = validated;
     }
     /// <summary>Gets the shared devices panel.</summary>
-    public DetectedDeviceViewModel Devices
+    public SubViews.DetectedDeviceViewModel Devices
     {
         get;
     }
     /// <summary>Gets the shared validated panel.</summary>
-    public ValidatedPackageViewModel Validated
+    public SubViews.ValidatedPackageViewModel Validated
     {
         get;
     }

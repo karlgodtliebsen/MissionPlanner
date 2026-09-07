@@ -4,41 +4,56 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
-/// <summary>Owns catalogue panel state and commands.</summary>
+/// <summary>
+/// Owns catalogue panel state and commands.
+/// </summary>
 public sealed partial class FirmwareCatalogViewModel : ViewModelBase
 {
-    /// <summary>Initializes the catalogue panel.</summary>
+    /// <summary>
+    /// Initializes the catalogue panel.
+    /// </summary>
     public FirmwareCatalogViewModel(
-        DetectedDeviceViewModel devices,
-        ValidatedPackageViewModel validated,
-    //    DiagnosticsReportViewModel diagnostics,
-        SelectedFirmwareViewModel selected,
+        SubViews.DetectedDeviceViewModel devices,
+        SubViews.ValidatedPackageViewModel validated,
+        SubViews.SelectedFirmwareViewModel selected,
+        IFirmwareCatalogService catalogService,
+        MissionPlanner.Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
+        MissionPlanner.App.Utilities.Dialogs.IDialogService dialogService,
+        FirmwareDialogCoordinator firmwareDialogs,
         ILogger<FirmwareCatalogViewModel> logger,
         IUiDispatcher dispatcher,
         IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
     {
         Devices = devices;
         Validated = validated;
-        // Diagnostics = diagnostics;
         Selected = selected;
+        this.catalogService = catalogService;
+        this.activeVehicle = activeVehicle;
+        this.dialogService = dialogService;
+        this.firmwareDialogs = firmwareDialogs;
     }
-    /// <summary>Gets the shared devices panel.</summary>
-    public DetectedDeviceViewModel Devices
+    /// <summary>
+    /// Gets the shared devices panel.
+    /// </summary>
+    public SubViews.DetectedDeviceViewModel Devices
     {
         get;
     }
-    /// <summary>Gets the shared validated panel.</summary>
-    public ValidatedPackageViewModel Validated
+    /// <summary>
+    /// Gets the shared validated panel.
+    /// </summary>
+    public SubViews.ValidatedPackageViewModel Validated
     {
         get;
     }
     /// <summary>Gets the selected release details.</summary>
-    public SelectedFirmwareViewModel Selected
+    public SubViews.SelectedFirmwareViewModel Selected
     {
         get;
     }
@@ -282,30 +297,40 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
                left.Channel == right.Channel &&
                left.Artifact.DownloadUri == right.Artifact.DownloadUri;
     }
-    /// <summary>Notifies the active parent about panel changes.</summary>
+
+    /// <summary>
+    /// Notifies the active parent about panel changes.
+    /// </summary>
     public event Action<FirmwareCatalogItemViewModel?>? SelectionChanged;
-    /// <summary>Notifies the active parent about panel changes.</summary>
+    /// <summary>
+    /// Notifies the active parent about panel changes.
+    /// </summary>
     public event Action<FirmwareReleaseChannel>? ChannelChanged;
-    /// <summary>Notifies the active parent about panel changes.</summary>
+    /// <summary>
+    /// Notifies the active parent about panel changes.
+    /// </summary>
     public event Action<bool>? FiltersChanged;
-    /// <summary>Notifies the active parent about panel changes.</summary>
-    public event Action<FirmwarePanelRequest>? OperationRequested;
     [RelayCommand]
     private Task RefreshCatalogAsync(CancellationToken cancellationToken)
     {
-        return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Refresh, cancellationToken);
+        return RefreshAsync(true, cancellationToken);
     }
 
     [RelayCommand]
-    private Task ShowAllOptionsAsync(CancellationToken cancellationToken)
+    private async Task ShowAllOptionsAsync(CancellationToken cancellationToken)
     {
-        return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Refresh, cancellationToken, true);
+        showingAllOptions = true;
+        await loader.CancelAndWaitAsync();
+        await RefreshAsync(true, cancellationToken);
     }
 
     partial void OnSelectedChannelChanged(FirmwareReleaseChannel value)
     {
         selectedFirmwareTarget = null;
+        SelectedFirmware = null;
+        showingAllOptions = false;
         ChannelChanged?.Invoke(value);
+        _ = ReloadChannelAsync();
     }
     partial void OnSelectedFirmwareChanged(FirmwareCatalogItemViewModel? value)
     {
@@ -314,6 +339,9 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
             selectedFirmwareTarget = value.Entry;
         }
         OnPropertyChanged(nameof(HasSelectedFirmware));
+        Selected.SelectedFirmware = value;
+        Validated.PreparedFirmware = null;
+        Validated.IsFirmwareValidated = false;
         SelectionChanged?.Invoke(value);
     }
     [RelayCommand]
@@ -324,7 +352,9 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         selectedFirmwareTarget = null;
         SelectedChannel = FirmwareReleaseChannel.Stable;
     }
-    /// <summary>Rebuilds catalogue recommendations from the latest snapshot.</summary>
+    /// <summary>
+    /// Rebuilds catalogue recommendations from the latest snapshot.
+    /// </summary>
     public void SetCatalogue(IReadOnlyList<FirmwareManifestEntry> entries, IReadOnlyList<SerialDeviceDescriptor> devices, bool allOptions)
     {
         availableEntries = entries;
@@ -332,7 +362,9 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         showingAllOptions = allOptions;
         ApplyTargetQuery();
     }
-    /// <summary>Clears a deliberate selection when a local file takes precedence.</summary>
+    /// <summary>
+    /// Clears a deliberate selection when a local file takes precedence.
+    /// </summary>
     public void ClearSelection()
     {
         selectedFirmwareTarget = null;

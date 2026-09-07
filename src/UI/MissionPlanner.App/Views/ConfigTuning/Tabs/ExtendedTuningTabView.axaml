@@ -130,8 +130,8 @@
                                             <Button  ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" >
                                                 <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
                                             </Button>
-                                            <Button  ToolTip.Tip="Revert group" Command="{Binding RevertCommand}" >
-                                                <avalonia:MaterialIcon Kind="Reverse" Width="30" Height="30" />
+                                            <Button ToolTip.Tip="Revert group" Command="{Binding RevertCommand}" >
+                                                <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />
                                             </Button>
                                             <Button  ToolTip.Tip="Review &amp; apply group" Command="{Binding ApplyCommand}" >
                                                 <avalonia:MaterialIcon Kind="CheckMultiple" Width="30" Height="30" />

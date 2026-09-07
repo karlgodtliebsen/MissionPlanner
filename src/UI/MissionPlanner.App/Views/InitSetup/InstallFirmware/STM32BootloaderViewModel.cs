@@ -2,27 +2,38 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
-/// <summary>Owns dfu panel state and commands.</summary>
+/// <summary>
+/// Owns dfu panel state and commands.
+/// </summary>
 public sealed partial class STM32BootloaderViewModel : ViewModelBase
 {
     private readonly IFirmwareFilePicker filePicker;
-    /// <summary>Initializes the dfu panel.</summary>
+    /// <summary>
+    /// Initializes the dfu panel.
+    /// </summary>
     public STM32BootloaderViewModel(
         IFirmwareFilePicker filePicker,
-        SelectedFirmwareViewModel selected,
+        SubViews.SelectedFirmwareViewModel selected,
+        MissionPlanner.Firmware.Dfu.IDfuDeviceCatalog deviceCatalog,
+        MissionPlanner.Firmware.Dfu.IDfuToolLocator toolLocator,
+        MissionPlanner.Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
         ILogger<STM32BootloaderViewModel> logger,
         IUiDispatcher dispatcher,
         IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
     {
         this.filePicker = filePicker;
         Selected = selected;
+        this.deviceCatalog = deviceCatalog;
+        this.toolLocator = toolLocator;
+        this.activeVehicle = activeVehicle;
     }
     /// <summary>Gets the shared selected panel.</summary>
-    public SelectedFirmwareViewModel Selected
+    public SubViews.SelectedFirmwareViewModel Selected
     {
         get;
     }
@@ -64,38 +75,42 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
         set;
     }
 
-    /// <summary>Gets whether a local combined application-and-bootloader HEX file is selected.</summary>
+    /// <summary>
+    /// Gets whether a local combined application-and-bootloader HEX file is selected.
+    /// </summary>
     public bool HasLocalDfuFirmware => !string.IsNullOrWhiteSpace(LocalDfuFirmwarePath);
 
-    /// <summary>Gets whether an STM32 DFU device is selected.</summary>
+    /// <summary>
+    /// Gets whether an STM32 DFU device is selected.
+    /// </summary>
     public bool HasDfuBootLoader => SelectedDfuDevice is not null;
 
     private CancellationTokenSource? viewLifetime;
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
+        if (!await loader.ActivateAsync()) { return; }
         viewLifetime ??= new CancellationTokenSource();
-        return Task.CompletedTask;
+        activeVehicle.Changed += VehicleChanged;
+        await RefreshAsync();
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
         var previous = viewLifetime;
         viewLifetime = null;
         previous?.Cancel();
         previous?.Dispose();
-        return Task.CompletedTask;
+        activeVehicle.Changed -= VehicleChanged;
+        await loader.DeactivateAsync();
     }
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        var previous = viewLifetime;
-        viewLifetime = null;
-        previous?.Cancel();
-        previous?.Dispose();
+        _ = DeactivateAsync();
         base.Dispose();
     }
 
@@ -172,7 +187,7 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
     [RelayCommand]
     private Task RefreshCatalogAsync(CancellationToken cancellationToken)
     {
-        return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Refresh, cancellationToken);
+        return RefreshAsync(cancellationToken);
     }
 
     [RelayCommand]

@@ -7,6 +7,7 @@
     xmlns:mapSettings="clr-namespace:MissionPlanner.Maps.Settings;assembly=MissionPlanner.Maps"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     mc:Ignorable="d"
     d:DesignWidth="1050"
     d:DesignHeight="720"
@@ -18,6 +19,20 @@
                 <TextBlock Text="MissionPlanner preferences" FontSize="24" FontWeight="Bold" />
                 <TextBlock Text="These settings belong to MissionPlanner on this device. They never write flight-controller parameters. Credentials and tokens are stored separately in platform secure storage and are never exported." />
 
+                <WrapPanel HorizontalAlignment="Right" Margin="0,10">
+                    <Button  ToolTip.Tip="Import" Command="{Binding ImportCommand}" Margin="4" >
+                        <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button  ToolTip.Tip="Export" Command="{Binding ExportCommand}" Margin="4" >
+                        <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button  ToolTip.Tip="Reset all" Command="{Binding ResetAllCommand}" Margin="4" >
+                        <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                    </Button>
+                    <Button  ToolTip.Tip="Save preferences" Command="{Binding SaveCommand}" Margin="4" >
+                        <avalonia:MaterialIcon Kind="ContentSaveCogOutline" Width="30" Height="30" />
+                    </Button>
+                </WrapPanel>
 
                 <Border Padding="14" Classes="SectionCard">
                     <StackPanel Orientation="Vertical" Spacing="8">
@@ -514,16 +529,24 @@
                     </StackPanel>
                 </Border>
 
-<TextBlock Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}"
+                <TextBlock Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}"
                            Classes="Warning" FontWeight="Bold" />
                 <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis"/>
-            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+                <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
 
-                <WrapPanel HorizontalAlignment="Right">
-                    <Button  Content="Import" Command="{Binding ImportCommand}" Margin="4" />
-                    <Button  Content="Export" Command="{Binding ExportCommand}" Margin="4" />
-                    <Button  Content="Reset all" Command="{Binding ResetAllCommand}" Margin="4" />
-                    <Button  Content="Save preferences" Command="{Binding SaveCommand}" Margin="4" />
+                <WrapPanel HorizontalAlignment="Right" Margin="0,10">
+                    <Button  ToolTip.Tip="Import" Command="{Binding ImportCommand}" Margin="4" >
+                        <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button  ToolTip.Tip="Export" Command="{Binding ExportCommand}" Margin="4" >
+                        <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button  ToolTip.Tip="Reset all" Command="{Binding ResetAllCommand}" Margin="4" >
+                        <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                    </Button>
+                    <Button  ToolTip.Tip="Save preferences" Command="{Binding SaveCommand}" Margin="4" >
+                        <avalonia:MaterialIcon Kind="ContentSaveCogOutline" Width="30" Height="30" />
+                    </Button>
                 </WrapPanel>
             </StackPanel>
         </ScrollViewer>

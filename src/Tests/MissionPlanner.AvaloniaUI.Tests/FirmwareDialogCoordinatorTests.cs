@@ -1,5 +1,5 @@
-using MissionPlanner.App.Utilities.Dispatching;
-using MissionPlanner.App.Views.InitSetup.InstallFirmware;
+﻿using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using NSubstitute;
 
 namespace MissionPlanner.AvaloniaUI.Tests;

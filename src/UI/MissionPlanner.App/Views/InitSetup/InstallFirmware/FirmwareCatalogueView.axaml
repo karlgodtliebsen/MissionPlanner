@@ -1,22 +1,25 @@
-<view:UserControlViewBase
-                            xmlns="https://github.com/avaloniaui"
-                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                            xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
-                            xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
-                            xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
-                            xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                            x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.FirmwareCatalogueView"
-                            x:DataType="local:FirmwareCatalogViewModel" Margin="25,0,25,0">
+<view:UserControlViewBase x:TypeArguments="local:FirmwareCatalogViewModel"
+                          xmlns="https://github.com/avaloniaui"
+                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                          xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+                          xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                          xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
+                          xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                          xmlns:subViews="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
+                          mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                          x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.FirmwareCatalogueView"
+                          x:DataType="local:FirmwareCatalogViewModel" Margin="25,0,25,0">
 
-    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" IsEnabled="{Binding !InstallationRunning}">
         <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"  Padding="20" Classes="SectionCard">
             <StackPanel Spacing="16" Orientation="Vertical">
                 <TextBlock Text="Select Firmware" Classes="H3" />
+                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Warning" />
                 <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Button ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}"  >
+                    <Button ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}" IsEnabled="{Binding !IsRefreshing}" >
                         <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                     </Button>
                     <Button ToolTip.Tip="All Version Options" 
@@ -97,9 +100,9 @@
                 </controls:VirtualizedItemsGrid>
             </StackPanel>
         </Border>
-        <local:SelectedFirmwareView DataContext="{Binding Selected}" Grid.Row="1" Grid.Column="0"  IsVisible="{Binding HasSelectedFirmware}" />
-        <local:ValidatedPackageView DataContext="{Binding Validated}"  Grid.Row="1" Grid.Column="1"   IsVisible="{Binding HasPreparedFirmware}" />
-        <local:DetectedDeviceView DataContext="{Binding Devices}"  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"  ></local:DetectedDeviceView>
+        <subViews:SelectedFirmwareView DataContext="{Binding Selected}" Grid.Row="1" Grid.Column="0"  IsVisible="{Binding HasSelectedFirmware}" />
+        <subViews:ValidatedPackageView DataContext="{Binding Validated}"  Grid.Row="1" Grid.Column="1"   IsVisible="{Binding HasPreparedFirmware}" />
+        <subViews:DetectedDeviceView DataContext="{Binding Devices}"  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"  ></subViews:DetectedDeviceView>
 
     </Grid>
 </view:UserControlViewBase>

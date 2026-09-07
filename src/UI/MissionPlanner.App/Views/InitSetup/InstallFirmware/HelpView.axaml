@@ -1,13 +1,14 @@
-<view:UserControlViewBase x:TypeArguments="local:FirmwareHelpViewModel"
+<view:UserControlViewBase x:TypeArguments="subViews:FirmwareHelpViewModel"
                           xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
                           xmlns="https://github.com/avaloniaui"
                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                           xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+                          xmlns:subViews="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                           x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.HelpView"
-                          x:DataType="local:FirmwareHelpViewModel"
+                          x:DataType="subViews:FirmwareHelpViewModel"
                           Margin="25,0,25,0"
                           >
     <Border Padding="20" Classes="SectionCard">
@@ -17,7 +18,7 @@
 
             <ItemsControl ItemsSource="{Binding SupportSections}">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="local:FirmwareSupportSection">
+                    <DataTemplate x:DataType="subViews:FirmwareSupportSection">
                         <StackPanel Orientation="Vertical" Spacing="4" Margin="0,10,0,0">
                             <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="Bold" />
                             <TextBlock Text="{Binding Content}" />
@@ -30,12 +31,12 @@
 
             <ItemsControl ItemsSource="{Binding SupportLinks}">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="local:FirmwareSupportLink">
+                    <DataTemplate x:DataType="subViews:FirmwareSupportLink">
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12"  RowSpacing="25">
                             <TextBlock Text="{Binding Title}" FontWeight="Bold" />
                             <TextBlock Grid.Row="1" Text="{Binding Description}" />
                             <Button Grid.Column="1" Grid.RowSpan="2" Content="Open"
-                                    Command="{Binding $parent[ItemsControl].((local:FirmwareHelpViewModel)DataContext).OpenSupportLinkCommand}"
+                                    Command="{Binding $parent[ItemsControl].((subViews:FirmwareHelpViewModel)DataContext).OpenSupportLinkCommand}"
                                     CommandParameter="{Binding .}" />
                         </Grid>
                     </DataTemplate>

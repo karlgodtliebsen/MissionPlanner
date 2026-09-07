@@ -42,7 +42,7 @@
                     <TabItem Header="Information"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                             <local:LandingView  />
                     </TabItem>
-                    <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                    <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding !IsConnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                         <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -56,7 +56,7 @@
                             <local:CustomFirmwareView DataContext="{Binding Custom}" />
                         </ScrollViewer>
                     </TabItem>
-                    <TabItem Header="STM32 Bootloader" IsEnabled="{Binding HasDfuBootLoader}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                    <TabItem Header="STM32 Bootloader" IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                         <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">

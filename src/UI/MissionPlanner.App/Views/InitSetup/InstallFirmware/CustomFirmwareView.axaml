@@ -6,6 +6,7 @@
                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                           xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
                           xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                          xmlns:subViews="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                           x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.CustomFirmwareView"
                           x:DataType="local:CustomFirmwareViewModel"
@@ -99,7 +100,7 @@
                 </Grid>
             </Grid>
         </Border>
-        <local:DetectedDeviceView Grid.Row="1" DataContext="{Binding Devices}"   ></local:DetectedDeviceView>
+        <subViews:DetectedDeviceView Grid.Row="1" DataContext="{Binding Devices}"   ></subViews:DetectedDeviceView>
     </Grid>
 
 </view:UserControlViewBase>

@@ -181,16 +181,10 @@ public partial class ViewModelBase : ObservableObject, IDisposable
     /// <param name="ex"></param>
     protected virtual void SetMessages(Exception? ex)
     {
-        string? eMsg = null;
         Dispatcher.Dispatch(() =>
         {
-            if (ex is not null)
-            {
-                ErrorMessage = ex.Message;
-            }
-
             StatusMessage = null;
-            ErrorMessage = eMsg;
+            ErrorMessage = ex?.Message;
         });
         Task.Yield();
     }

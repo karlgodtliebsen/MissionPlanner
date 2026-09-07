@@ -1,8 +1,9 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Connected;
@@ -102,7 +103,7 @@ public sealed class FirmwarePanelViewModelTests
         Assert.Equal(0, changed);
     }
 
-    private static ServiceProvider CreateServices()
+    internal static ServiceProvider CreateServices()
     {
         var services = new ServiceCollection().AddLogging();
         services.AddSingleton<IUiDispatcher>(new InlineDispatcher());

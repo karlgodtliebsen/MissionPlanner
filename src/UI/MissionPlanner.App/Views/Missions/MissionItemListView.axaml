@@ -410,7 +410,7 @@
                                                             HorizontalAlignment="Center"
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).MoveItemUpCommand}"
                                                             CommandParameter="{Binding .}"  >
-                                                            <avalonia:MaterialIcon Kind="ArrowUp" Width="30" Height="30" />
+                                                            <avalonia:MaterialIcon Kind="ArrowUpDropCircleOutline" Width="30" Height="30" />
                                                         </Button>
 
                                                         <Button
@@ -422,7 +422,7 @@
                                                             HorizontalAlignment="Center"
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).MoveItemDownCommand}"
                                                             CommandParameter="{Binding .}">
-                                                            <avalonia:MaterialIcon Kind="ArrowDown" Width="30" Height="30" />
+                                                            <avalonia:MaterialIcon Kind="ArrowDownDropCircleOutline" Width="30" Height="30" />
                                                         </Button>
 
                                                         <Button
@@ -433,7 +433,7 @@
                                                             HorizontalAlignment="Center"
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).RemoveItemCommand}"
                                                             CommandParameter="{Binding .}"  >
-                                                            <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                                                            <avalonia:MaterialIcon Kind="DeleteForeverOutline" Width="30" Height="30" />
                                                         </Button>
 
                                                     </StackPanel>

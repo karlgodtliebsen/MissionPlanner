@@ -55,10 +55,10 @@
                                                 <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
                                             </Button>
                                             <Button  ToolTip.Tip="Revert group" Command="{Binding RevertCommand}" >
-                                                <avalonia:MaterialIcon Kind="Reverse" Width="30" Height="30" />
+                                                <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />
                                             </Button>
                                             <Button  ToolTip.Tip="Apply group" Command="{Binding ApplyCommand}" >
-                                                <avalonia:MaterialIcon Kind="CheckMultiple" Width="30" Height="30" />
+                                                <avalonia:MaterialIcon Kind="WindowOpenVariant" Width="30" Height="30" />
                                             </Button>
                                         </StackPanel>
                                     </Grid>

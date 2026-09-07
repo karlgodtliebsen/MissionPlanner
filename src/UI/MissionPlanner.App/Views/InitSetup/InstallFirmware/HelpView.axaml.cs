@@ -1,7 +1,7 @@
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
+﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 /// <summary>Displays the help firmware panel.</summary>
-public partial class HelpView : UserControlViewBase<FirmwareHelpViewModel>
+public partial class HelpView : UserControlViewBase<SubViews.FirmwareHelpViewModel>
 {
     /// <summary>Initializes the view.</summary>
     public HelpView()

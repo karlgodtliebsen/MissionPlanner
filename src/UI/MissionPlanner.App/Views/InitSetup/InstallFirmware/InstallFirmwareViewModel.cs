@@ -1,15 +1,14 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using AsyncAwaitBestPractices;
-using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware;
-using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Devices;
@@ -45,38 +44,31 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         get;
     }
     /// <summary>Gets the help panel.</summary>
-    public FirmwareHelpViewModel Help
+    public SubViews.FirmwareHelpViewModel Help
     {
         get;
     }
     /// <summary>Gets the shared devices panel.</summary>
-    public DetectedDeviceViewModel Devices => Catalogue.Devices;
+    public SubViews.DetectedDeviceViewModel Devices => Catalogue.Devices;
     /// <summary>Gets the shared validated panel.</summary>
-    public ValidatedPackageViewModel Validated => Catalogue.Validated;
+    public SubViews.ValidatedPackageViewModel Validated => Catalogue.Validated;
 
     /// <summary>Gets the shared selected panel.</summary>
-    public SelectedFirmwareViewModel Selected => Catalogue.Selected;
+    public SubViews.SelectedFirmwareViewModel Selected => Catalogue.Selected;
 
-    private readonly IFirmwareCatalogService catalogService;
     private readonly IFirmwareInstallationService installationService;
     private readonly IFirmwarePreparationService preparationService;
     private readonly IDfuInstallationService dfuInstallationService;
-    private readonly IDfuDeviceCatalog dfuDeviceCatalog;
-    private readonly IDfuToolLocator dfuToolLocator;
     private readonly IEmbeddedBootloaderUpdateService bootloaderUpdateService;
-    private readonly IFirmwareSerialDeviceCatalog deviceCatalog;
     private readonly IFirmwarePageModeResolver modeResolver;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IUserConfirmationService confirmation;
     private readonly IDialogService dialogService;
     private readonly IDomainFactory domainFactory;
     private readonly FirmwareDialogCoordinator firmwareDialogs;
-    private readonly object refreshSync = new();
     private CancellationTokenSource? lifetime;
-    private CancellationTokenSource? refreshCancellation;
     private CancellationTokenSource? operationCancellation;
     private IDisposable? progressDialog;
-    private long refreshVersion;
     private int operationRunning;
 
     private bool disposed;
@@ -85,14 +77,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <summary>
     /// Initializes the firmware page.
     /// </summary>
-    /// <param name="catalogService"></param>
     /// <param name="installationService"></param>
     /// <param name="preparationService"></param>
     /// <param name="dfuInstallationService"></param>
-    /// <param name="dfuDeviceCatalog"></param>
-    /// <param name="dfuToolLocator"></param>
     /// <param name="bootloaderUpdateService"></param>
-    /// <param name="deviceCatalog"></param>
     /// <param name="modeResolver"></param>
     /// <param name="activeVehicle"></param>
     /// <param name="confirmation"></param>
@@ -107,14 +95,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="dispatcher">Marshals observable state to the UI thread.</param>
     /// <param name="eventHub">Provides base ViewModel event services.</param>
     public InstallFirmwareViewModel(
-        IFirmwareCatalogService catalogService,
         IFirmwareInstallationService installationService,
         IFirmwarePreparationService preparationService,
         IDfuInstallationService dfuInstallationService,
-        IDfuDeviceCatalog dfuDeviceCatalog,
-        IDfuToolLocator dfuToolLocator,
         IEmbeddedBootloaderUpdateService bootloaderUpdateService,
-        IFirmwareSerialDeviceCatalog deviceCatalog,
         IFirmwarePageModeResolver modeResolver,
         IActiveVehicleContext activeVehicle,
         IUserConfirmationService confirmation,
@@ -124,19 +108,15 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         FirmwareCatalogViewModel catalogue,
         CustomFirmwareViewModel custom,
         STM32BootloaderViewModel dfu,
-        FirmwareHelpViewModel help,
+        SubViews.FirmwareHelpViewModel help,
         IUiDispatcher dispatcher, IDomainEventHub eventHub,
         ILogger<InstallFirmwareViewModel> logger
         ) : base(logger, dispatcher, eventHub)
     {
-        this.catalogService = catalogService;
         this.installationService = installationService;
         this.preparationService = preparationService;
         this.dfuInstallationService = dfuInstallationService;
-        this.dfuDeviceCatalog = dfuDeviceCatalog;
-        this.dfuToolLocator = dfuToolLocator;
         this.bootloaderUpdateService = bootloaderUpdateService;
-        this.deviceCatalog = deviceCatalog;
         this.modeResolver = modeResolver;
         this.activeVehicle = activeVehicle;
         this.confirmation = confirmation;
@@ -162,12 +142,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <summary>Gets whether Shell navigation may safely leave this page.</summary>
     public bool CanNavigateAway => !IsOperationInProgress;
 
-    public event Action<SelectionChangedEventArgs>? SelectionChanged;
-
-    public void InvokeSelectionChanged(SelectionChangedEventArgs e)
-    {
-        SelectionChanged?.Invoke(e);
-    }
     [ObservableProperty]
     public partial bool IsConnectedMode
     {
@@ -196,12 +170,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         private set;
     }
 
-    [ObservableProperty]
-    public partial bool IsCatalogRefreshRunning
-    {
-        get;
-        private set;
-    }
+    /// <summary>Gets the catalogue panel's read state for page-wide cancellation controls.</summary>
+    public bool IsCatalogRefreshRunning => Catalogue.IsRefreshing;
 
     [ObservableProperty]
     public partial bool IsCancellationDeferred
@@ -243,58 +213,36 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
 
     /// <summary>
-    /// Starts observing connection state and refreshes disconnected data.
+    /// Observes connection and panel state; visible child panels own data loading.
     /// </summary>
-    public override async Task ActivateAsync()
+    public override Task ActivateAsync()
     {
         if (active)
         {
-            return;
+            return Task.CompletedTask;
         }
         if (disposed)
         {
-            return;
+            return Task.CompletedTask;
         }
         active = true;
         Validated.IsFirmwareValidated = false;
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
         SubscribePanels();
-        Selected.SelectedFirmware = Catalogue.SelectedFirmware;
-        Catalogue.IsVehicleConnected = activeVehicle.IsOnline;
         Custom.HasDevice = Devices.HasDevice;
         Custom.HasDfuBootLoader = Dfu.HasDfuBootLoader;
         activeVehicle.Changed += OnActiveVehicleChanged;
         //SetBusy();
         SetMessages("Ready");
-        var visibleMode = ApplyMode();
-        if (visibleMode == FirmwarePageMode.Disconnected)
-        {
-            Catalogue.IsVehicleConnected = false;
-            await RefreshSafelyAsync(false, true, lifetime.Token);
-        }
-
-        SelectionChanged += InstallFirmwareViewModel_SelectionChanged;
-    }
-
-    private void InstallFirmwareViewModel_SelectionChanged(SelectionChangedEventArgs obj)
-    {
-        CancelRefresh();
-        Validated.Reset();
-        Devices.Reset();
-        Dfu.Reset();
-        Catalogue.Reset();
-
-    }
-
-    /// <inheritdoc />
-    public override Task DeactivateAsync()
-    {
-        Deactivate();
+        ApplyMode();
         return Task.CompletedTask;
     }
 
-    private void Deactivate()
+    /// <inheritdoc />
+    public override Task DeactivateAsync() => DeactivatePanelsAsync();
+
+    private async Task DeactivatePanelsAsync()
     {
         if (disposed)
         {
@@ -307,57 +255,31 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
         active = false;
         UnsubscribePanels();
-        SelectionChanged -= InstallFirmwareViewModel_SelectionChanged;
-        CancelRefresh();
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        var cleanup = Task.WhenAll(Catalogue.DeactivateAsync(), Devices.DeactivateAsync(), Dfu.DeactivateAsync(), Custom.DeactivateAsync());
         Validated.Reset();
         Devices.Reset();
         Dfu.Reset();
-        Catalogue.Reset();
-        activeVehicle.Changed -= OnActiveVehicleChanged;
         Validated.IsFirmwareValidated = false;
-        Catalogue.IsVehicleConnected = false;
         var current = lifetime;
         lifetime = null;
 
         current?.Cancel();
         current?.Dispose();
+        await cleanup;
     }
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        Deactivate();
+        _ = DeactivatePanelsAsync();
         disposed = true;
-    }
-
-    private async Task RefreshSafelyAsync(bool forceRefresh, bool silentMode, CancellationToken cancellationToken, bool allOptions = false)
-    {
-        SetBusy();
-        try
-        {
-            await RefreshAsync(forceRefresh, silentMode: silentMode, allOptions, cancellationToken);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Refresh failed");
-        }
-        finally
-        {
-            ResetBusy();
-        }
-    }
-
-    partial void OnIsCatalogRefreshRunningChanged(bool value)
-    {
-        OnPropertyChanged(nameof(CanRequestCancellation));
-        CancelCommand.NotifyCanExecuteChanged();
+        base.Dispose();
     }
 
     partial void OnIsOperationInProgressChanged(bool value)
     {
+        Catalogue.InstallationRunning = Devices.InstallationRunning = Dfu.InstallationRunning = value;
         OnPropertyChanged(nameof(CanNavigateAway));
         OnPropertyChanged(nameof(CanRequestCancellation));
         InstallCommand.NotifyCanExecuteChanged();
@@ -425,14 +347,14 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             if (succeeded)
             {
                 var options = dialogService.CreateOptions("Firmware installation completed.", "Ok", null);
-                var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
-                dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+                var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
+                dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
             }
             else
             {
                 var options = dialogService.CreateOptions("Firmware installation failed.", "Ok", null);
-                var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
-                dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+                var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
+                dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
             }
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
@@ -448,8 +370,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             SetMessages(exception);
             NotificationManager!.Show(ErrorMessage ?? message);
             var options = dialogService.CreateOptions(message, "Ok", null);
-            var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(message, exception.Message);
-            dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(message, exception.Message);
+            dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
         }
         finally
         {
@@ -462,7 +384,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private bool CanStartInstall()
     {
-        return Validated.IsFirmwareValidated != false && Devices.SelectedDevice is not null && CanInstall && (Catalogue.SelectedFirmware is not null || Custom.CustomPackage is not null) && !IsOperationInProgress;
+        return Validated.IsFirmwareValidated != false && Devices.SelectedDevice is not null && CanInstall && (Catalogue.SelectedFirmware is not null || Custom.CustomPackage is not null) && !IsOperationInProgress && !ArePanelsRefreshing;
     }
 
     private bool CanStartDfuInstall()
@@ -470,7 +392,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         return
             (!string.IsNullOrWhiteSpace(Dfu.LocalDfuFirmwarePath) ? !string.IsNullOrWhiteSpace(Dfu.LocalDfuPlatform) : Catalogue.SelectedFirmware is not null)
             &&
-            Dfu.SelectedDfuDevice?.Descriptor.DriverState == DfuDriverState.PresentReady && !IsOperationInProgress;
+            Dfu.SelectedDfuDevice?.Descriptor.DriverState == DfuDriverState.PresentReady && !IsOperationInProgress && !ArePanelsRefreshing;
     }
 
     [RelayCommand(CanExecute = nameof(CanStartDfuInstall), AllowConcurrentExecutions = false)]
@@ -522,7 +444,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 new DfuInstallationRequest(platform, boardId, selectedDfuDevice.Descriptor, ConfirmationPhrase: requiredPhrase,
                     ManifestEntry: selectedFirmware?.Entry, LocalHexPath: localHexPath), progress, ownedCancellation.Token);
 
-            await RefreshDfuDevicesAsync(CancellationToken.None);
+            await Dfu.RefreshAfterInstallationAsync(CancellationToken.None);
 
             var diagnosticReport = BuildDfuDiagnosticReport(result, platform, boardId, selectedDfuDevice.Descriptor);
             SetMessages(result.State == DfuOperationState.Completed
@@ -532,8 +454,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 : result.Failure?.Message ?? $"STM32 DFU installation {result.State}.");
 
             options = dialogService.CreateOptions("Firmware installation completed.", "Ok", null);
-            var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string>(diagnosticReport ?? "");
-            dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string>(diagnosticReport ?? "");
+            dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
 
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
@@ -547,8 +469,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             Logger.LogError(exception, "Initial STM32 DFU installation failed.");
             SetMessages(exception);
             options = dialogService.CreateOptions("Initial STM32 DFU installation failed.", "Ok", null);
-            var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string>(message ?? "");
-            dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string>(message ?? "");
+            dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
 
         }
         finally
@@ -600,172 +522,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private bool CanStartBootloaderUpdate()
     {
-        return CanUpdateBootloader && !IsOperationInProgress;
-    }
-
-    private async Task RefreshAsync(bool forceRefresh, bool silentMode = false, bool allOptions = false, CancellationToken cancellationToken = default)
-    {
-        // Do not use IsDisconnectedMode here. ApplyMode updates that UI property through
-        // the dispatcher, so it may still contain the previous value during activation.
-        if (!OperatingSystem.IsWindows() || activeVehicle.IsOnline || IsOperationInProgress)
-        {
-            return;
-        }
-        if (Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
-        {
-            return;
-        }
-        Debug.Print("InstallFirmware RefreshAsync");
-        var (version, refreshCancellationToken) = BeginRefresh(cancellationToken);
-        using var ownedCancellation = BeginOperationCancellation(refreshCancellationToken);
-        var refreshToken = ownedCancellation.Token;
-
-        try
-        {
-            await DispatchAsync(() =>
-            {
-                Validated.IsFirmwareValidated = false;
-                IsCatalogRefreshRunning = true;
-                SetMessages("Loading firmware catalogue…");
-                NotificationManager?.Show(StatusMessage!);
-            });
-            if (!silentMode)
-            {
-                SetOperation(true, FirmwareOperationState.LoadingCatalog);
-                await ShowOperationDialogAsync("Loading firmware catalogue", ownedCancellation);
-            }
-
-            var channel = Catalogue.SelectedChannel;
-            await Task.Yield();
-            // Both manifest parsing and Windows device discovery can perform substantial
-            // synchronous work before their returned tasks complete. Run them away from the
-            // UI context and concurrently so opening the Connect dialog remains responsive.
-            var catalogTask = Task.Run(() => catalogService.GetCatalogAsync(new FirmwareCatalogRequest(Channel: allOptions ? null : channel, ForceRefresh: forceRefresh), refreshToken), refreshToken);
-            var devicesTask = Task.Run(() => deviceCatalog.GetDevicesAsync(refreshToken), refreshToken);
-            var dfuDevicesTask = Task.Run(() => dfuDeviceCatalog.GetDevicesAsync(refreshToken), refreshToken);
-            var dfuToolTask = Task.Run(() => dfuToolLocator.LocateAsync(refreshToken), refreshToken);
-
-            await Task.WhenAll(catalogTask, devicesTask, dfuDevicesTask, dfuToolTask).ConfigureAwait(false);
-
-            var catalog = await catalogTask.ConfigureAwait(false);
-            var devices = await devicesTask.ConfigureAwait(false);
-            var dfuDevices = await dfuDevicesTask.ConfigureAwait(false);
-            var dfuTool = await dfuToolTask.ConfigureAwait(false);
-            Debug.Print("InstallFirmware RefreshAsync Completed task 1 & 2");
-            await Task.Yield();
-
-            var entries = catalog.Entries.Where(entry =>
-                entry.Target.VehicleType != FirmwareVehicleType.Unknown
-                &&
-                entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
-
-            var deviceItems = await Task.Run(() => DetectedDeviceViewModel.CreateItems(entries, devices), refreshToken).ConfigureAwait(false);
-
-            Debug.Print($"InstallFirmware RefreshAsync Completed task 3 with entries count: {entries.Length}");
-
-            await Task.Yield();
-
-            refreshToken.ThrowIfCancellationRequested();
-            if (!IsLatestRefresh(version))
-            {
-                return;
-            }
-
-            await DispatchAsync(() =>
-            {
-                Catalogue.SetCatalogue(entries, devices, allOptions);
-                Custom.CustomPackage = null;
-
-                Devices.DetectedDevices = deviceItems;
-                Dfu.DfuDevices = dfuDevices.Select(device => new DfuDeviceItemViewModel(device)).ToArray();
-                Dfu.SelectedDfuDevice = Dfu.DfuDevices.Count == 1 ? Dfu.DfuDevices[0] : null;
-                Dfu.DfuStatus = Dfu.DfuDevices.Count == 0
-                    ? "No STM32 DFU device detected. Hold BOOT/DFU while connecting USB, or use the board's documented BOOT and RESET sequence, then refresh."
-                    : dfuTool.Availability != DfuToolAvailability.Available
-                        ? dfuTool.Diagnostic ?? "Install STM32CubeProgrammer and its bundled DFU driver before continuing."
-                        : Dfu.SelectedDfuDevice?.Descriptor.DriverState == DfuDriverState.PresentReady
-                            ? "STM32 DFU device and STM32CubeProgrammer are ready."
-                            : "Select a DFU device and resolve any indicated driver problem.";
-
-                Devices.SelectRecommendedDevice();
-                SetMessages(catalog.IsStale ? "Showing cached firmware catalogue" : $"{Catalogue.FirmwareChoices.Count} vehicle firmware choices available");
-                NotificationManager?.Show(StatusMessage!);
-                UpdateContextHelp();
-            });
-        }
-        catch (OperationCanceledException) when (refreshToken.IsCancellationRequested)
-        {
-        }
-        catch (Exception exception)
-        {
-            Debug.Print("InstallFirmware Firmware catalogue refresh failed.\n" + exception.Message);
-
-            Logger.LogError(exception, "InstallFirmware Firmware catalogue refresh failed.");
-            await DispatchAsync(() =>
-            {
-                if (IsLatestRefresh(version))
-                {
-                    SetMessages(exception);
-                    NotificationManager?.Show(ErrorMessage!);
-
-                }
-            });
-        }
-        finally
-        {
-            await DispatchAsync(() =>
-            {
-                // CancelRefresh invalidates the version, but this operation still owns
-                // the refresh flag and dialog until its finally block completes.
-                IsCatalogRefreshRunning = false;
-                if (!silentMode)
-                {
-                    CloseOperationDialog();
-                    EndOperationCancellation(ownedCancellation);
-                    SetOperation(false, null);
-                }
-
-                Interlocked.Exchange(ref operationRunning, 0);
-            });
-        }
-    }
-
-    private (long Version, CancellationToken Token) BeginRefresh(CancellationToken cancellationToken)
-    {
-        Debug.Print("InstallFirmware BeginRefresh");
-
-        (long Version, CancellationToken Token) result;
-        lock (refreshSync)
-        {
-            refreshCancellation?.Cancel();
-            refreshCancellation?.Dispose();
-            refreshCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            result = (++refreshVersion, refreshCancellation.Token);
-        }
-        Debug.Print("InstallFirmware BeginRefresh Exit");
-        return result;
-    }
-
-    private void CancelRefresh()
-    {
-        Debug.Print("InstallFirmware CancelRefresh");
-
-        lock (refreshSync)
-        {
-            refreshVersion++;
-            refreshCancellation?.Cancel();
-            refreshCancellation?.Dispose();
-            refreshCancellation = null;
-        }
-        Debug.Print("InstallFirmware CancelRefresh Exit");
-    }
-
-    private bool IsLatestRefresh(long version)
-    {
-        lock (refreshSync)
-        {
-            return version == refreshVersion;
-        }
+        return CanUpdateBootloader && !IsOperationInProgress && !ArePanelsRefreshing;
     }
 
     private async Task DispatchAsync(Action action)
@@ -790,7 +547,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private async Task DownloadAndValidateAsync(CancellationToken cancellationToken)
     {
         Validated.IsFirmwareValidated = false;
-        if (Catalogue.SelectedFirmware is null || IsOperationInProgress)
+        if (Catalogue.SelectedFirmware is null || IsOperationInProgress || ArePanelsRefreshing)
         {
             return;
         }
@@ -827,7 +584,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     {
         if (IsCatalogRefreshRunning)
         {
-            CancelRefresh();
+            Catalogue.CancelRefresh();
             SetMessages("Firmware catalogue refresh cancelled.");
         }
 
@@ -854,20 +611,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 return;
             }
 
-            Catalogue.IsVehicleConnected = e.Current.IsOnline;
-            var visibleMode = ApplyMode();
-            // Disconnecting to enter the bootloader is part of the active flash
-            // operation; do not start a competing device/catalogue refresh.
-            if (IsOperationInProgress)
-            {
-                return;
-            }
-            if (visibleMode == FirmwarePageMode.Disconnected && lifetime is { } currentLifetime)
-            {
-                RefreshSafelyAsync(false, false, currentLifetime.Token).SafeFireAndForget();
-                return;
-            }
-
+            ApplyMode();
             ResetBusy();
         });
     }
@@ -1035,32 +779,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         return detail is null ? stage : $"{stage}\n{detail}";
     }
 
-    private async Task RefreshDfuDevicesAsync(CancellationToken cancellationToken)
-    {
-        IReadOnlyList<DfuDeviceDescriptor> devices;
-        try
-        {
-            devices = await dfuDeviceCatalog.GetDevicesAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            Logger.LogWarning(exception, "Unable to refresh STM32 DFU devices after installation.");
-            return;
-        }
-
-        var selectedId = Dfu.SelectedDfuDevice?.Descriptor.ProviderId;
-        await DispatchAsync(() =>
-        {
-            Dfu.DfuDevices = devices.Select(device => new DfuDeviceItemViewModel(device)).ToArray();
-            Dfu.SelectedDfuDevice = selectedId is null
-                ? Dfu.DfuDevices.Count == 1 ? Dfu.DfuDevices[0] : null
-                : Dfu.DfuDevices.FirstOrDefault(item => string.Equals(item.Descriptor.ProviderId, selectedId, StringComparison.OrdinalIgnoreCase));
-            Dfu.DfuStatus = Dfu.DfuDevices.Count == 0
-                ? "STM32 DFU device is no longer present. The controller has left ROM bootloader mode."
-                : "STM32 DFU device is still present. Release BOOT/DFU, then reset or reconnect the controller.";
-        });
-    }
-
     private static string? SanitizeDfuProgressDetail(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -1104,7 +822,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         Dfu.SelectionChanged += OnDfuSelection;
         Dfu.LocalFirmwareChanged += OnDfuFirmware;
         Dfu.PlatformChanged += OnDfuPlatform;
-        Catalogue.OperationRequested += OnPanelOperation;
+        Catalogue.RefreshStateChanged += OnPanelRefreshState;
+        Devices.RefreshStateChanged += OnPanelRefreshState;
+        Dfu.RefreshStateChanged += OnPanelRefreshState;
         Devices.OperationRequested += OnPanelOperation;
 
         Dfu.OperationRequested += OnPanelOperation;
@@ -1123,18 +843,30 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         Dfu.SelectionChanged -= OnDfuSelection;
         Dfu.LocalFirmwareChanged -= OnDfuFirmware;
         Dfu.PlatformChanged -= OnDfuPlatform;
-        Catalogue.OperationRequested -= OnPanelOperation;
+        Catalogue.RefreshStateChanged -= OnPanelRefreshState;
+        Devices.RefreshStateChanged -= OnPanelRefreshState;
+        Dfu.RefreshStateChanged -= OnPanelRefreshState;
         Devices.OperationRequested -= OnPanelOperation;
         Dfu.OperationRequested -= OnPanelOperation;
         Validated.OperationRequested -= OnPanelOperation;
         Selected.OperationRequested -= OnPanelOperation;
     }
 
+    private bool ArePanelsRefreshing => Catalogue.IsRefreshing || Devices.IsRefreshing || Dfu.IsRefreshing;
+
+    private void OnPanelRefreshState(bool value)
+    {
+        OnPropertyChanged(nameof(IsCatalogRefreshRunning));
+        OnPropertyChanged(nameof(CanRequestCancellation));
+        CancelCommand.NotifyCanExecuteChanged();
+        UpdatePanelCapabilities();
+        UpdateContextHelp();
+    }
+
     private void OnPanelOperation(FirmwarePanelRequest request)
     {
         request.Completion = request.Action switch
         {
-            FirmwarePanelAction.Refresh => RefreshSafelyAsync(true, false, request.CancellationToken, request.AllOptions),
             FirmwarePanelAction.Download => DownloadAndValidateAsync(request.CancellationToken),
             FirmwarePanelAction.Install when CanStartInstall() => InstallAsync(request.CancellationToken),
             FirmwarePanelAction.InstallDfu when CanStartDfuInstall() => InstallDfuFirmwareAsync(request.CancellationToken),
@@ -1143,9 +875,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     private void OnCatalogueSelection(FirmwareCatalogItemViewModel? value)
     {
-        Selected.SelectedFirmware = value;
-        Validated.PreparedFirmware = null;
-        Validated.IsFirmwareValidated = false;
         if (value is not null)
         {
             Custom.CustomPackage = null;
@@ -1156,10 +885,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private void OnCatalogueChannel(FirmwareReleaseChannel value)
     {
         UpdateContextHelp();
-        if (lifetime is not null && IsDisconnectedMode)
-        {
-            RefreshSafelyAsync(false, false, lifetime.Token).SafeFireAndForget();
-        }
     }
     private void OnCatalogueFilters(bool value)
     {

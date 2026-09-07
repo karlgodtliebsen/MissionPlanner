@@ -1,4 +1,4 @@
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -22,6 +22,7 @@ using MissionPlanner.App.Views.FlightPlanner;
 using MissionPlanner.App.Views.Help;
 using MissionPlanner.App.Views.InitSetup.Advanced;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
@@ -63,6 +64,11 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
+using DetectedDeviceViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.DetectedDeviceViewModel;
+using DiagnosticsReportViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.DiagnosticsReportViewModel;
+using FirmwareHelpViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.FirmwareHelpViewModel;
+using SelectedFirmwareViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.SelectedFirmwareViewModel;
+using ValidatedPackageViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.ValidatedPackageViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
