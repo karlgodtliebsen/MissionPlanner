@@ -6,7 +6,7 @@
 | --- | --- |
 | 01 MSP protocol | Implemented; firmware tests pass |
 | 02 Identity | Implemented; automated fixtures, hardware verification pending |
-| 03 Discovery integration | Pending |
+| 03 Discovery integration | Implemented in the existing firmware serial snapshot pipeline |
 | 04 ROM DFU reboot | Pending |
 | 05 Physical correlation | Pending |
 | 06 Conversion | Pending |
@@ -48,6 +48,22 @@ Legacy prefixes and unknown tails are accepted; incomplete length-prefixed field
 Current version labels are retained separately from the three numeric firmware version bytes.
 
 ## Validation
+
+## Discovery integration
+
+The existing serial catalogue remains enumeration-only. `IFirmwareDeviceIdentityService` enriches
+that same snapshot, retaining typed `BetaflightIdentity` on each descriptor without overwriting USB
+strings. The firmware device panel invokes enrichment once per scan. Cache keys include stable OS/USB
+identity, product and arrival generation; disappearance invalidates entries. Positive and negative
+results expire after 30 seconds. The device refresh action forces re-probing; installation invalidates
+cached evidence. Ports without stable identity are not cached. `BetaflightOptions` controls bounded
+request/discovery/cache timing. Discovery obtains the existing global firmware-operation lease and
+does not probe while the normal connection owns transport resources. Browser returns the original
+snapshot without native serial probing. No second scanner or device registry was introduced.
+
+The current `FirmwareFamily` is also an ArduPilot catalogue discriminator, unlike the enum described
+in the task notes. It is unchanged: the typed Betaflight identity represents the runtime protocol
+family separately, without creating an ArduPilot catalogue target or MAVLink vehicle.
 
 Task 01: `dotnet test src/Tests/MissionPlanner.Firmware.Tests/MissionPlanner.Firmware.Tests.csproj --no-restore -v quiet`.
 Hand-authored vectors cover v1 request/reply/error, fragmented and multiple frames, noise,

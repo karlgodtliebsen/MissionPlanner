@@ -76,7 +76,10 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
         {
             ObjectDisposedException.ThrowIf(disposed, this);
             ArgumentNullException.ThrowIfNull(progress);
-            if (!Transitions.TryGetValue(State, out var allowed) || !allowed.Contains(progress.State))
+            var permitted = Kind == FirmwareOperationKind.ProbeFirmwareIdentity
+                ? State == FirmwareOperationState.Idle && progress.State is FirmwareOperationState.Completed or FirmwareOperationState.Failed or FirmwareOperationState.Cancelled
+                : Transitions.TryGetValue(State, out var allowed) && allowed.Contains(progress.State);
+            if (!permitted)
             {
                 throw new FirmwareStateTransitionException(
                     $"Firmware operation {OperationId} cannot transition from {State} to {progress.State}.");

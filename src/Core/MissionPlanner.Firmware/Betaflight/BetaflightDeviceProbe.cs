@@ -3,7 +3,8 @@ using MissionPlanner.Firmware.Betaflight.Protocol;
 namespace MissionPlanner.Firmware.Betaflight;
 
 /// <summary>Reads identity only after exact BTFL proof, tolerating unavailable optional commands.</summary>
-public sealed class BetaflightDeviceProbe(MspPortConnector connector, IBetaflightMspClient client) : IBetaflightDeviceProbe
+public sealed class BetaflightDeviceProbe(MspPortConnector connector, IBetaflightMspClient client,
+    Microsoft.Extensions.Options.IOptions<BetaflightOptions>? options = null) : IBetaflightDeviceProbe
 {
     /// <inheritdoc />
     public async Task<BetaflightProbeResult> ProbeAsync(string portName, CancellationToken cancellationToken = default)
@@ -14,7 +15,7 @@ public sealed class BetaflightDeviceProbe(MspPortConnector connector, IBetafligh
             return Failed(connection.Failure);
         }
         async Task<MspResponse> Query(ushort command) => await client.RequestAsync(port, command,
-            ReadOnlyMemory<byte>.Empty, TimeSpan.FromMilliseconds(400), cancellationToken).ConfigureAwait(false);
+            ReadOnlyMemory<byte>.Empty, options?.Value.RequestTimeout ?? TimeSpan.FromMilliseconds(400), cancellationToken).ConfigureAwait(false);
 
         var apiReply = await Query(MspCommand.ApiVersion).ConfigureAwait(false);
         if (apiReply.Failure != MspFailure.None)

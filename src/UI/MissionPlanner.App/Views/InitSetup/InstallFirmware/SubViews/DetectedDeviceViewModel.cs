@@ -16,12 +16,14 @@ public sealed partial class DetectedDeviceViewModel : ViewModelBase
     /// </summary>
     public DetectedDeviceViewModel(
         MissionPlanner.Firmware.Devices.IFirmwareSerialDeviceCatalog deviceCatalog,
+        MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService identityService,
         MissionPlanner.Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
         ILogger<DetectedDeviceViewModel> logger,
         IUiDispatcher dispatcher,
         IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
     {
         this.deviceCatalog = deviceCatalog;
+        this.identityService = identityService;
         this.activeVehicle = activeVehicle;
     }
     /// <summary>
@@ -70,6 +72,14 @@ public sealed partial class DetectedDeviceViewModel : ViewModelBase
     public void Reset()
     {
         CanInstall = false;
+    }
+
+    /// <summary>Discards cached runtime identity and probes the current devices again.</summary>
+    [RelayCommand]
+    private Task ReprobeAsync(CancellationToken cancellationToken)
+    {
+        identityService.Invalidate();
+        return RefreshAsync(cancellationToken);
     }
 
     /// <summary>

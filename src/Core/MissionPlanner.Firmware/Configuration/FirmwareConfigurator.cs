@@ -136,9 +136,14 @@ public static class FirmwareConfigurator
                 : new EmptyDfuDeviceCatalog());
         services.TryAddSingleton<IDfuDeviceMonitor, WindowsDfuDeviceMonitor>();
         services.TryAddSingleton(TimeProvider.System);
+        services.AddOptions<Betaflight.BetaflightOptions>()
+            .Validate(value => value.RequestTimeout > TimeSpan.Zero && value.RequestTimeout <= TimeSpan.FromSeconds(5), "MSP request timeout must be within five seconds.")
+            .Validate(value => value.DiscoveryTimeout > TimeSpan.Zero && value.DiscoveryTimeout <= TimeSpan.FromSeconds(30), "MSP discovery timeout must be within thirty seconds.")
+            .Validate(value => value.CacheDuration > TimeSpan.Zero && value.CacheDuration <= TimeSpan.FromMinutes(1), "MSP cache duration must be within one minute.");
         services.TryAddSingleton<Betaflight.Protocol.IBetaflightMspClient, Betaflight.Protocol.BetaflightMspClient>();
         services.TryAddSingleton<Betaflight.Protocol.MspPortConnector>();
         services.TryAddSingleton<Betaflight.IBetaflightDeviceProbe, Betaflight.BetaflightDeviceProbe>();
+        services.TryAddSingleton<Betaflight.IFirmwareDeviceIdentityService, Betaflight.FirmwareDeviceIdentityService>();
         services.AddHttpClient(FirmwareHttpClient.Name, (serviceProvider, client) =>
             {
                 var configured = serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>().Value;

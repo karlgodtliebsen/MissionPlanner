@@ -19,7 +19,7 @@
                 <Button ToolTip.Tip="Refresh devices" 
                         Padding="8,2"
                         VerticalAlignment="Center"
-                        Command="{Binding RefreshCommand}" IsEnabled="{Binding !InstallationRunning}" HorizontalAlignment="Left">
+                        Command="{Binding ReprobeCommand}" IsEnabled="{Binding !InstallationRunning}" HorizontalAlignment="Left">
                     <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                 </Button>
             </WrapPanel>

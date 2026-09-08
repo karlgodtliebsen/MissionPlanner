@@ -138,6 +138,10 @@ public sealed class FirmwarePanelViewModelTests
         services.AddSingleton<ValidatedPackageViewModel>();
         services.AddSingleton<DiagnosticsReportViewModel>();
         services.AddSingleton<FirmwareHelpViewModel>();
+        var identity = Substitute.For<MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService>();
+        identity.EnrichAsync(Arg.Any<IReadOnlyList<SerialDeviceDescriptor>>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns(call => call.Arg<IReadOnlyList<SerialDeviceDescriptor>>());
+        services.AddSingleton(identity);
         services.AddSingleton<FirmwareLandingViewModel>();
         services.AddTransient<InstallFirmwareViewModel>();
         return services.BuildServiceProvider();

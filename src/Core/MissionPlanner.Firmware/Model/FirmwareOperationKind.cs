@@ -10,5 +10,8 @@ public enum FirmwareOperationKind
     InstallApplicationAndBootloaderDfu,
 
     /// <summary>Updates an embedded bootloader through a connected application.</summary>
-    UpdateEmbeddedBootloader
+    UpdateEmbeddedBootloader,
+
+    /// <summary>Owns serial devices for non-destructive firmware identification.</summary>
+    ProbeFirmwareIdentity
 }

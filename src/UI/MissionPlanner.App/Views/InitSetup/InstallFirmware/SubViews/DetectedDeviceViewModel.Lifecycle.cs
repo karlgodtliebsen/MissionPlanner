@@ -11,6 +11,7 @@ namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 public sealed partial class DetectedDeviceViewModel
 {
     private readonly IFirmwareSerialDeviceCatalog deviceCatalog;
+    private readonly MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService identityService;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly FirmwarePanelLoader loader = new();
     internal bool DiscoveryOwnedByPage { get; set; }
@@ -28,7 +29,11 @@ public sealed partial class DetectedDeviceViewModel
     partial void OnIsRefreshingChanged(bool value) => RefreshStateChanged?.Invoke(value);
     partial void OnInstallationRunningChanged(bool value)
     {
-        if (value) { loader.Cancel(); }
+        if (value)
+        {
+            loader.Cancel();
+            identityService.Invalidate();
+        }
     }
 
     /// <inheritdoc />
@@ -67,6 +72,7 @@ public sealed partial class DetectedDeviceViewModel
                 IsRefreshing = true;
                 DeviceStatus = "Looking for flight controllers…";
                 var devices = await Task.Run(() => deviceCatalog.GetDevicesAsync(token), token);
+                devices = await identityService.EnrichAsync(devices, cancellationToken: token);
                 await Dispatcher.DispatchAsync(() =>
                 {
                     if (token.IsCancellationRequested) { return; }
