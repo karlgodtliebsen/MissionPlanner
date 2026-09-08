@@ -30,10 +30,8 @@ using MissionPlanner.App.Views.InitSetup.OptionalHardware;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 using MissionPlanner.App.Views.Introduction;
 using MissionPlanner.App.Views.Introduction.Services;
-using MissionPlanner.App.Views.Landing;
 using MissionPlanner.App.Views.Main;
 using MissionPlanner.App.Views.Missions;
-using MissionPlanner.App.Views.Missions.DockView;
 using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.App.Views.Preferences;
 using MissionPlanner.App.Views.Samples;
@@ -129,7 +127,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ParametersFileHandler>();
 
         services.TryAddTransient<MissionItemListViewPage>();
-        services.TryAddTransient<MissionItemListDockViewModel>();
         services.TryAddTransient<MissionMapPresenter>();
 
         services.TryAddTransient<IUserNotificationService, UserNotificationService>();
@@ -145,10 +142,6 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<IFileOpenService, AvaloniaMissionPlanningFileService>();
         services.TryAddTransient<IFileSaveService, AvaloniaMissionPlanningFileService>();
-
-        //services.TryAddTransient<AvaloniaMissionPlanningFileService>();
-        //services.TryAddTransient<IFileOpenService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
-        //services.TryAddTransient<IFileSaveService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
 
         services.TryAddTransient<IDeviceManagerLauncher, DeviceManagerLauncher>();
         services.TryAddTransient<IFirmwareSupportLinkProvider, FirmwareSupportLinkProvider>();
@@ -247,7 +240,6 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<HelpViewModel>();
         services.TryAddTransient<StatisticsViewModel>();
-        services.TryAddTransient<LandingPageViewModel>();
         services.TryAddTransient<IntroductionViewModel>();
 
         services.TryAddTransient<ParametersEditorViewModel>();

@@ -27,7 +27,7 @@
                                     ToolTip.Tip="Clear search filters"
                                     Padding="8,2"
                                     VerticalAlignment="Center"  >
-                                <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
                             </Button>
                             <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="5"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
                                 <Label  HorizontalAlignment="Stretch"

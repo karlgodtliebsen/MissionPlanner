@@ -128,7 +128,7 @@
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <Button  ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" >
-                                                <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
+                                                <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                                             </Button>
                                             <Button ToolTip.Tip="Revert group" Command="{Binding RevertCommand}" >
                                                 <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />

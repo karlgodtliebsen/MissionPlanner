@@ -13,25 +13,30 @@
              >
     <Border  Padding="20" Classes="SectionCard">
 
-        <StackPanel Orientation="Vertical" Spacing="10" Grid.Row="1">
-            <TextBlock Text="Detected device" Classes="H3" />
-            <Button Content="Refresh devices" Command="{Binding RefreshCommand}" IsEnabled="{Binding !InstallationRunning}" HorizontalAlignment="Left" />
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <ComboBox ItemsSource="{Binding DetectedDevices}"
-                          SelectedItem="{Binding SelectedDevice}" ToolTip.Tip="Select flight controller" />
+        <StackPanel Orientation="Vertical" Spacing="10">
+            <WrapPanel Orientation="Horizontal" ItemSpacing="25">
+                <TextBlock Text="Detected device" Classes="H3" />
+                <Button ToolTip.Tip="Refresh devices" 
+                        Padding="8,2"
+                        VerticalAlignment="Center"
+                        Command="{Binding RefreshCommand}" IsEnabled="{Binding !InstallationRunning}" HorizontalAlignment="Left">
+                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                </Button>
+            </WrapPanel>
+            <WrapPanel Orientation="Horizontal" ItemSpacing="10" VerticalAlignment="Center">
+                <ComboBox ToolTip.Tip="Select flight controller"
+                    VerticalAlignment="Center"
+                    ItemsSource="{Binding DetectedDevices}" 
+                          SelectedItem="{Binding SelectedDevice}" />
 
                 <Button ToolTip.Tip="Install Validated Firmware" 
-                        Width="100"
-                        Classes="Primary"
                         Padding="8,2"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        Command="{Binding InstallCommand}" 
-                       
-                >
-                    <avalonia:MaterialIcon Kind="AddCircle" Width="30" Height="30" />
+                        Command="{Binding InstallCommand}" >
+                    <avalonia:MaterialIcon Kind="EyeAddOutline" Width="30" Height="30" />
                 </Button>
-            </StackPanel>
+            </WrapPanel>
             <SelectableTextBlock Text="{Binding DeviceStatus}" />
         </StackPanel>
     </Border>

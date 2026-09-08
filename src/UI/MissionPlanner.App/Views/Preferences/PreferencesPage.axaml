@@ -19,17 +19,17 @@
                 <TextBlock Text="MissionPlanner preferences" FontSize="24" FontWeight="Bold" />
                 <TextBlock Text="These settings belong to MissionPlanner on this device. They never write flight-controller parameters. Credentials and tokens are stored separately in platform secure storage and are never exported." />
 
-                <WrapPanel HorizontalAlignment="Right" Margin="0,10">
-                    <Button  ToolTip.Tip="Import" Command="{Binding ImportCommand}" Margin="4" >
+                <WrapPanel HorizontalAlignment="Right" Margin="0,10" ItemSpacing="10">
+                    <Button  ToolTip.Tip="Import" Command="{Binding ImportCommand}" >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                     </Button>
-                    <Button  ToolTip.Tip="Export" Command="{Binding ExportCommand}" Margin="4" >
+                    <Button  ToolTip.Tip="Export" Command="{Binding ExportCommand}" >
                         <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
                     </Button>
-                    <Button  ToolTip.Tip="Reset all" Command="{Binding ResetAllCommand}" Margin="4" >
+                    <Button  ToolTip.Tip="Reset all" Command="{Binding ResetAllCommand}" >
                         <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
                     </Button>
-                    <Button  ToolTip.Tip="Save preferences" Command="{Binding SaveCommand}" Margin="4" >
+                    <Button  ToolTip.Tip="Save preferences" Command="{Binding SaveCommand}"  >
                         <avalonia:MaterialIcon Kind="ContentSaveCogOutline" Width="30" Height="30" />
                     </Button>
                 </WrapPanel>
@@ -39,7 +39,9 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Application appearance" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Grid.Column="1">
-                                <Button Content="Reset appearance" Command="{Binding ResetApplicationCommand}" CommandParameter="Appearance" />
+                                <Button  ToolTip.Tip="Reset appearance" Command="{Binding ResetApplicationCommand}" CommandParameter="Appearance" >
+                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                </Button>
                             </StackPanel>
                         </Grid>
                         <StackPanel Orientation="Vertical" Spacing="8">
@@ -52,9 +54,14 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Units and appearance" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <StackPanel Orientation="Horizontal" Grid.Column="1">
-                                <Button Content="Reset units" Command="{Binding ResetSectionCommand}" CommandParameter="Units" />
-                                <Button Content="Reset appearance" Command="{Binding ResetSectionCommand}" CommandParameter="Appearance" />
+                            <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5">
+                                <Button  ToolTip.Tip="Reset units" Command="{Binding ResetSectionCommand}" CommandParameter="Units" >
+                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                </Button>
+                                <Button  ToolTip.Tip="Reset appearance" Command="{Binding ResetSectionCommand}" CommandParameter="Appearance" >
+                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                </Button>
+
                             </StackPanel>
                         </Grid>
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
@@ -75,7 +82,9 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Map" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button  Grid.Column="1" Content="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Map" />
+                            <Button  Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Map" >
+                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                            </Button>
                         </Grid>
                         <TextBlock Text="Choose by source purpose. Protocol details remain in the source definition; changing source requires restart." FontSize="12" />
 
@@ -85,22 +94,25 @@
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                    <Button Content="{Binding DisplayName}"
+                                    <Button ToolTip.Tip="{Binding DisplayName}"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
-                                            CommandParameter="{Binding .}" />
+                                            CommandParameter="{Binding .}"  >
+                                        <avalonia:MaterialIcon Kind="SelectMarker" Width="30" Height="30" />
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
                         <TextBlock Text="Self-hosted/custom" FontWeight="Bold" />
-                        <ItemsControl ItemsSource="{Binding CustomMapSources}"
-                                      Height="58">
+                        <ItemsControl ItemsSource="{Binding CustomMapSources}" Height="58">
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                    <Button Content="{Binding DisplayName}"
+                                    <Button ToolTip.Tip="{Binding DisplayName}"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
-                                            CommandParameter="{Binding .}" />
+                                            CommandParameter="{Binding .}" >
+                                        <avalonia:MaterialIcon Kind="SelectMarker" Width="30" Height="30" />
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -110,9 +122,12 @@
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                    <Button Margin="0,10,0,10" Content="{Binding DisplayName}"
+                                    <Button ToolTip.Tip="{Binding DisplayName}"
+                                            Margin="0,10,0,10"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
-                                            CommandParameter="{Binding .}" />
+                                            CommandParameter="{Binding .}"  >
+                                        <avalonia:MaterialIcon Kind="SelectMarker" Width="30" Height="30" />
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -122,17 +137,18 @@
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                    <Button Content="{Binding DisplayName}"
+                                    <Button ToolTip.Tip="{Binding DisplayName}"
                                             VerticalAlignment="Center"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
-                                            CommandParameter="{Binding .}" />
-
+                                            CommandParameter="{Binding .}" >
+                                        <avalonia:MaterialIcon Kind="SelectMarker" Width="30" Height="30" />
+                                    </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
                         <Border Padding="10" Classes="SectionCard">
-                            <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+                            <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="5">
                                 <TextBlock Text="Selected source" FontWeight="Bold" />
                                 <TextBlock Grid.Column="1" Text="{Binding SelectedMapSource.DisplayName}" />
                                 <TextBlock Grid.Row="1" Text="Provider / product" />
@@ -169,22 +185,39 @@
                         </Grid>
                         <TextBlock Text="Credentials" FontWeight="Bold" />
                         <TextBlock Text="Secrets are written directly to secure storage and the input is cleared after save." FontSize="12" />
-                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6">
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="5">
                             <TextBox Text="{Binding MapCredentialInput}" PasswordChar="●" PlaceholderText="Credential for selected source" />
-                            <Button Grid.Column="1" Content="Set" Command="{Binding SaveMapCredentialCommand}" />
-                            <Button Grid.Column="2" Content="Remove" Command="{Binding RemoveMapCredentialCommand}" />
-                            <Button Grid.Column="3" Content="Test" Command="{Binding TestMapCredentialCommand}" />
+                            
+                            <Button Grid.Column="1" ToolTip.Tip="Set" Command="{Binding SaveMapCredentialCommand}"  >
+                                <avalonia:MaterialIcon Kind="ContentSave" Width="30" Height="30" />
+                            </Button>
+                            <Button Grid.Column="2" ToolTip.Tip="Remove" Command="{Binding RemoveMapCredentialCommand}"  >
+                                <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                            </Button>                    
+                            <Button Grid.Column="3" ToolTip.Tip="Test" Command="{Binding TestMapCredentialCommand}"  >
+                                <avalonia:MaterialIcon Kind="TestTubeEmpty" Width="30" Height="30" />
+                            </Button>
+
                         </Grid>
                         <Border Padding="10" BorderThickness="1" Classes="SectionCard">
                             <StackPanel Orientation="Vertical" Spacing="6">
                                 <TextBlock Text="Offline pack manager" FontWeight="Bold" />
                                 <TextBlock Text="Installed packs are validated archives, not HTTP cache entries." FontSize="12" />
                                 <ComboBox ItemsSource="{Binding InstalledMapPacks}" SelectedItem="{Binding SelectedMapPack}" />
-                                <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="6">
-                                    <Button Content="Import / install" Command="{Binding ImportMapPackCommand}" />
-                                    <Button Grid.Column="1" Content="Select" Command="{Binding SelectMapPackCommand}" />
-                                    <Button Grid.Column="2" Content="Verify" Command="{Binding VerifyMapPackCommand}" />
-                                    <Button Grid.Column="3" Content="Remove" Command="{Binding RemoveMapPackCommand}" />
+                                <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="5">
+                                    <Button Grid.Column="0" ToolTip.Tip="Import / install" Command="{Binding ImportMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
+                                    </Button>
+                                    <Button Grid.Column="1" ToolTip.Tip="Select" Command="{Binding SelectMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
+                                    </Button>
+                                    <Button Grid.Column="2" ToolTip.Tip="Verify" Command="{Binding VerifyMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="Verified" Width="30" Height="30" />
+                                    </Button>
+                                    <Button Grid.Column="3" ToolTip.Tip="Remove" Command="{Binding RemoveMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                                    </Button>
+
                                 </Grid>
                                 <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
                                     <TextBlock Text="Coverage" />
@@ -206,9 +239,13 @@
                             <StackPanel Orientation="Vertical" Spacing="6">
                                 <TextBlock Text="HTTP cache manager" FontWeight="Bold" />
                                 <TextBlock Text="{Binding MapHttpCacheSizeMiB, StringFormat='Current size: {0:F1} MiB'}" />
-                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <Button Content="Clear selected source" Command="{Binding ClearSelectedMapCacheCommand}" />
-                                    <Button Content="Clear all HTTP cache" Command="{Binding ClearAllMapCacheCommand}" />
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <Button ToolTip.Tip="Clear selected source" Command="{Binding ClearSelectedMapCacheCommand}">
+                                        <avalonia:MaterialIcon Kind="ClearNetworkOutline" Width="30" Height="30" />
+                                    </Button>
+                                    <Button   ToolTip.Tip="Clear all HTTP cache" Command="{Binding ClearAllMapCacheCommand}" >
+                                        <avalonia:MaterialIcon Kind="ClearOctagonOutline" Width="30" Height="30" />
+                                    </Button>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -219,7 +256,9 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Telemetry display" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button  Grid.Column="1" Content="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Telemetry" />
+                            <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Telemetry" >
+                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                            </Button>
                         </Grid>
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
                             <TextBlock Text="Maximum display rate (Hz)" VerticalAlignment="Center" />
@@ -246,7 +285,9 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Connection defaults" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button  Grid.Column="1" Content="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" />
+                            <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
+                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                            </Button>
                         </Grid>
                         <TextBlock Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." FontSize="12" />
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
@@ -279,7 +320,9 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Parameter cache" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button  Grid.Column="1" Content="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="ParameterCache" />
+                            <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="ParameterCache" >
+                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                            </Button>
                         </Grid>
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
                             <TextBlock Text="Policy" VerticalAlignment="Center" />
@@ -300,7 +343,9 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Confirmations" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button  Grid.Column="1" Content="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Confirmations" />
+                            <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Confirmations" >
+                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                            </Button>
                         </Grid>
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
                             <TextBlock Text="Confirm vehicle parameter writes" VerticalAlignment="Center" />
@@ -317,9 +362,13 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Logging and updates" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <StackPanel Orientation="Horizontal" Grid.Column="1">
-                                <Button  Content="Reset logging" Command="{Binding ResetSectionCommand}" CommandParameter="Logging" />
-                                <Button  Content="Reset updates" Command="{Binding ResetSectionCommand}" CommandParameter="Updates" />
+                            <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5">
+                                <Button ToolTip.Tip="Reset logging" Command="{Binding ResetSectionCommand}" CommandParameter="Logging" >
+                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                </Button>
+                                <Button ToolTip.Tip="Reset updates" Command="{Binding ResetSectionCommand}" CommandParameter="Updates" >
+                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                </Button>
                             </StackPanel>
                         </Grid>
                         <TextBlock Text="Logging changes and update-channel changes take effect after restart." FontSize="12" />
@@ -356,7 +405,11 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Accessibility" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button  Grid.Column="1" Content="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Accessibility" />
+
+                            <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Accessibility" >
+                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                            </Button>
+
                         </Grid>
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
                             <TextBlock Text="High-contrast telemetry" VerticalAlignment="Center" />
@@ -382,7 +435,10 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Legacy units and speech" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button Grid.Column="1" Content="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Legacy" />
+                            <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Legacy" >
+                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                            </Button>
+
                         </Grid>
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
                             <TextBlock Text="Distance units" VerticalAlignment="Center" />
@@ -534,17 +590,17 @@
                 <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis"/>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
 
-                <WrapPanel HorizontalAlignment="Right" Margin="0,10">
-                    <Button  ToolTip.Tip="Import" Command="{Binding ImportCommand}" Margin="4" >
+                <WrapPanel HorizontalAlignment="Right" Margin="0,10" ItemSpacing="5">
+                    <Button  ToolTip.Tip="Import" Command="{Binding ImportCommand}"  >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                     </Button>
-                    <Button  ToolTip.Tip="Export" Command="{Binding ExportCommand}" Margin="4" >
+                    <Button  ToolTip.Tip="Export" Command="{Binding ExportCommand}" >
                         <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
                     </Button>
-                    <Button  ToolTip.Tip="Reset all" Command="{Binding ResetAllCommand}" Margin="4" >
+                    <Button  ToolTip.Tip="Reset all" Command="{Binding ResetAllCommand}"  >
                         <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
                     </Button>
-                    <Button  ToolTip.Tip="Save preferences" Command="{Binding SaveCommand}" Margin="4" >
+                    <Button  ToolTip.Tip="Save preferences" Command="{Binding SaveCommand}"  >
                         <avalonia:MaterialIcon Kind="ContentSaveCogOutline" Width="30" Height="30" />
                     </Button>
                 </WrapPanel>

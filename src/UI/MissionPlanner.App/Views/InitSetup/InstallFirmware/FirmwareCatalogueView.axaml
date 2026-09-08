@@ -24,15 +24,14 @@
                     </Button>
                     <Button ToolTip.Tip="All Version Options" 
                              Command="{Binding ShowAllOptionsCommand}"  >
-                        <avalonia:MaterialIcon Kind="AllInclusive" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="AllInclusiveBoxOutline" Width="30" Height="30" />
                     </Button>
-                    
                     <Button 
                         ToolTip.Tip="Clear all Settings"
                         Padding="8,2"
                         VerticalAlignment="Center"
                         Command="{Binding ClearCatalogueFirmwareCommand}"  >
-                        <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
                     </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal"  Spacing="10">
@@ -40,9 +39,11 @@
                     <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
                     <ComboBox ItemsSource="{Binding FrameTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
                     <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
-                    <Button  ToolTip.Tip="Clear Filters" Command="{Binding ClearCommand}" Padding="8,2"
+                    <Button  ToolTip.Tip="Clear Filters" 
+                             Command="{Binding ClearCommand}"
+                             Padding="8,2"
                              VerticalAlignment="Center" >
-                        <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
                     </Button>
                 </StackPanel>
                 <controls:VirtualizedItemsGrid

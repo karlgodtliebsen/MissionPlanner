@@ -17,38 +17,20 @@
                 Classes="SectionCard">
             <Grid RowDefinitions="Auto,Auto,*" RowSpacing="20" HorizontalAlignment="Center">
 
-                <TextBlock Grid.Row="0" Text="Use local / custom firmware" Classes="H3" />
-                <StackPanel Grid.Row="1" Orientation="Horizontal"  Spacing="10">
+                <TextBlock Grid.Row="0" Text="Use local / custom firmware" Classes="H3"  HorizontalAlignment="Center"/>
+                <StackPanel Grid.Row="1" Orientation="Horizontal"  Spacing="10"  HorizontalAlignment="Center">
                     <Button ToolTip.Tip="Load Local / Custom Firmware"
-                            Width="100"
-                            Classes="Primary"
                             Padding="8,2"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
                             Command="{Binding LoadCustomFirmwareCommand}"
                             >
                         <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
                     </Button>
                     <Button 
                             ToolTip.Tip="Clear Custom Firmware"
-                            Width="100"
-                            Classes="Primary"
                             Padding="8,2"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
                             Command="{Binding ClearCustomFirmwareCommand}" >
-                        <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
                     </Button>
-                    <!--
-                    <Button ToolTip.Tip="Install Validated Firmware"
-                    Width="100"
-                    Classes="Primary"
-                    Padding="8,2"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Command="{Binding InstallCommand}" >
-                    <avalonia:MaterialIcon Kind="AddCircle" Width="30" Height="30" />
-                    </Button>-->
                 </StackPanel>
                 <Grid Grid.Row="2" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                       IsVisible="{Binding HasCustomFirmware}"

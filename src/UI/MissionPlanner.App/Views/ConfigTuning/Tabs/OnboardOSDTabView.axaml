@@ -8,6 +8,7 @@
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                               xmlns:models="clr-namespace:MissionPlanner.App.Models"
+                              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.OnboardOSDTabView"
                               x:DataType="tabs:OnboardOsdTabViewModel">
@@ -19,19 +20,30 @@
                 <TextBlock Text="Screen" VerticalAlignment="Center" />
                 <ComboBox Grid.Column="1" ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}" />
                 <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="10">
-                    <Button  Content="Apply selected screen" Command="{Binding ApplyScreenCommand}" />
-                    <Button  Content="Reset to live" Command="{Binding ResetScreenCommand}" />
-                    <Button  Content="Import layout" Command="{Binding ImportCommand}" />
-                    <Button  Content="Export layout" Command="{Binding ExportCommand}" />
+
+
+                    <Button  ToolTip.Tip="Apply selected screen" Command="{Binding ApplyScreenCommand}"  >
+                        <avalonia:MaterialIcon Kind="PlusBoxMultipleOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button  ToolTip.Tip="Reset to live" Command="{Binding ApplyScreenCommand}"  >
+                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button  ToolTip.Tip="Import layout" Command="{Binding ImportCommand}"  >
+                        <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button  ToolTip.Tip="Export layout" Command="{Binding ExportCommand}"  >
+                        <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
+                    </Button>
+
                 </StackPanel>
                 <ProgressBar IsIndeterminate="True" Grid.Column="3" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
             </Grid>
 
             <Border Grid.Row="1" Padding="10">
                 <StackPanel Orientation="Vertical" Spacing="3">
-                    <!--                    
+                    <!--
                     <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                    -->                   
+                    -->
                     <TextBlock Text="{Binding ValidationMessage}"
                                Classes="Warning"
                                IsVisible="{Binding HasValidationIssues}"
@@ -155,10 +167,49 @@
 
                             </Grid>
                             <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10" >
-                                <Button  Content="← Left" Command="{Binding MoveLeftCommand}" />
-                                <Button  Grid.Column="1" Content="↑ Up" Command="{Binding MoveUpCommand}" />
-                                <Button  Grid.Column="2" Content="↓ Down" Command="{Binding MoveDownCommand}" />
-                                <Button  Grid.Column="3" Content="Right →" Command="{Binding MoveRightCommand}" />
+                                <Button
+                                    ToolTip.Tip="Move Left"
+                                    Grid.Column="0"
+                                    Padding="4,2"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding MoveLeftCommand}"
+                                    >
+                                    <avalonia:MaterialIcon Kind="ArrowLeft" Width="30" Height="30" />
+                                </Button>
+
+                                <Button
+                                    ToolTip.Tip="Move Up"
+                                    Grid.Column="1"
+                                    Padding="4,2"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding MoveUpCommand}"
+                                    >
+                                    <avalonia:MaterialIcon Kind="ArrowUp" Width="30" Height="30" />
+                                </Button>
+
+                                <Button
+                                    ToolTip.Tip="Move Down"
+                                    Grid.Column="2"               
+                                    Padding="4,2"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding MoveDownCommand}"
+                                >
+                                    <avalonia:MaterialIcon Kind="ArrowDown" Width="30" Height="30" />
+                                </Button>
+
+                                <Button
+                                    ToolTip.Tip="Move Right"
+                                    Grid.Column="3"               
+                                    Padding="4,2"
+                                    HorizontalAlignment="Center"
+                                    Command="{Binding MoveRightCommand}"
+                                >
+                                    <avalonia:MaterialIcon Kind="ArrowRight" Width="30" Height="30" />
+                                </Button>
+
+
+
+
                             </Grid>
                             <TextBlock Text="{Binding SelectedItem.ValidationError}" Classes="Warning" FontSize="12" />
                             <ItemsControl ItemsSource="{Binding SelectedItem.AdditionalParameters}"><ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>

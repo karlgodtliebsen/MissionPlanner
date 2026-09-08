@@ -58,7 +58,7 @@
                     ToolTip.Tip="Apply modified"
                     VerticalAlignment="Center"
                     Command="{Binding WriteParametersCommand}"  >
-                    <avalonia:MaterialIcon Kind="WindowOpenVariant" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="PlusBoxMultipleOutline" Width="30" Height="30" />
                 </Button>
                 <Button
                     ToolTip.Tip="Retry failed"
@@ -71,13 +71,13 @@
                     ToolTip.Tip="Refresh parameters"
                     VerticalAlignment="Center"
                     Command="{Binding RefreshParametersCommand}" >
-                    <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                 </Button>
                 <Button
                     ToolTip.Tip="Clear parameters"
                     VerticalAlignment="Center"
                     Command="{Binding ClearParametersCommand}" >
-                    <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
                 </Button>
                 <Button
                     ToolTip.Tip="Compare parameters"

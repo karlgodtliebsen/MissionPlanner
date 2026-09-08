@@ -7,6 +7,7 @@
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
                               x:DataType="local:InstallFirmwareViewModel">
 
@@ -16,33 +17,51 @@
             <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="25" RowSpacing="20" HorizontalAlignment="Stretch">
 
                 <Border Grid.Row="0" IsVisible="{Binding IsConnectedMode}" Padding="24" Classes="SectionCard">
-                    <StackPanel Orientation="Vertical" Spacing="14">
-                        <TextBlock Text="A vehicle is connected" Classes="Title"  />
-                        <TextBlock Text="Application firmware cannot be installed while Mission Planner owns the active connection. Disconnect the vehicle first to browse or install firmware." />
-                        <TextBlock Text="Embedded bootloader update is available only for a supported, disarmed ArduPilot vehicle. Keep power connected and reboot after an accepted update." />
-                        <Button Content="Update Bootloader" 
-                                Command="{Binding UpdateBootloaderCommand}" 
-                                IsEnabled="{Binding CanUpdateBootloader}" HorizontalAlignment="Left" />
-                    </StackPanel>
+
+                    <WrapPanel Orientation="Horizontal" ItemSpacing="25">
+                        <StackPanel Orientation="Vertical" Spacing="14">
+                            <TextBlock Text="A vehicle is connected" Classes="Title"  />
+                            <TextBlock Text="Application firmware cannot be installed while Mission Planner owns the active connection. Disconnect the vehicle first to browse or install firmware." />
+                            <TextBlock Text="Embedded bootloader update is available only for a supported, disarmed ArduPilot vehicle. Keep power connected and reboot after an accepted update." />
+                        </StackPanel>
+                        <Button
+                            VerticalAlignment="Center"
+                            ToolTip.Tip="Update Bootloader"
+                            Padding="8,2"
+                            Command="{Binding UpdateBootloaderCommand}"
+                            IsEnabled="{Binding CanUpdateBootloader}"  HorizontalAlignment="Center" >
+                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                        </Button>
+                    </WrapPanel>
+
                 </Border>
 
                 <Border Grid.Row="1" IsVisible="{Binding IsUnsupportedMode}" Padding="24" Classes="SectionCard">
                     <TextBlock Text="Direct firmware installation is not available on this platform." Classes="Title"  />
                 </Border>
                 <Border Grid.Row="2" Padding="14" Classes="SectionCard">
-                    <StackPanel Orientation="Vertical" Spacing="4">
-                        <TextBlock Text="{Binding ContextHelp.Title}" Classes="H4" />
-                        <TextBlock Text="{Binding ContextHelp.Content}" Classes="H5 Warning"/>
-                        <Button Content="Refresh devices" Command="{Binding RefreshDevicesCommand}"
-                                IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Left" />
-                    </StackPanel>
+
+                    <WrapPanel Orientation="Horizontal" ItemSpacing="25">
+                        <StackPanel Orientation="Vertical" Spacing="14">
+                            <TextBlock Text="{Binding ContextHelp.Title}" Classes="H3" />
+                            <TextBlock Text="{Binding ContextHelp.Content}" Classes="H4 Warning"/>
+                        </StackPanel>
+                        <Button
+                            VerticalAlignment="Center"
+                            ToolTip.Tip="Refresh devices"
+                            Padding="8,2"
+                            Command="{Binding RefreshDevicesCommand}"
+                            IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Center" >
+                            <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                        </Button>
+                    </WrapPanel>
                 </Border>
 
                 <TabControl Grid.Row="3" x:Name="MainTabControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" TabIndex="0" >
 
                     <TabItem Header="Information"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                            <local:LandingView  />
+                        <local:LandingView  />
                     </TabItem>
                     <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding CanUseSerialFirmware}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
                         <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"

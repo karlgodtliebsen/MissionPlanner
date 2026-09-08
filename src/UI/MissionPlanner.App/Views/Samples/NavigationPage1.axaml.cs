@@ -1,6 +1,6 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 
-namespace MissionPlanner.App.Views.Common2;
+namespace MissionPlanner.App.Views.Samples;
 
 public partial class NavigationPage1 : NavigationPage
 {

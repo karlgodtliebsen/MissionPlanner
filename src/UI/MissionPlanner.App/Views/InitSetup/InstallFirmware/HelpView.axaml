@@ -6,6 +6,7 @@
                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                           xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
                           xmlns:subViews="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
+                          xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                           x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.HelpView"
                           x:DataType="subViews:FirmwareHelpViewModel"
@@ -35,16 +36,29 @@
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12"  RowSpacing="25">
                             <TextBlock Text="{Binding Title}" FontWeight="Bold" />
                             <TextBlock Grid.Row="1" Text="{Binding Description}" />
-                            <Button Grid.Column="1" Grid.RowSpan="2" Content="Open"
-                                    Command="{Binding $parent[ItemsControl].((subViews:FirmwareHelpViewModel)DataContext).OpenSupportLinkCommand}"
-                                    CommandParameter="{Binding .}" />
+
+                            <Button
+                                Grid.Column="1" Grid.RowSpan="2"
+                                ToolTip.Tip="Open"
+                                Command="{Binding $parent[ItemsControl].((subViews:FirmwareHelpViewModel)DataContext).OpenSupportLinkCommand}"
+                                CommandParameter="{Binding .}"
+                                Padding="8,2"
+                                VerticalAlignment="Center" >
+                                <avalonia:MaterialIcon Kind="OpenInBrowser" Width="30" Height="30" />
+                            </Button>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            <Button
+                ToolTip.Tip="Open Windows Device Manager"
+                Command="{Binding OpenDeviceManagerCommand}"
+                IsVisible="{Binding CanOpenDeviceManager}" 
+                Padding="8,2"
+                VerticalAlignment="Center"  HorizontalAlignment="Left"> 
+                <avalonia:MaterialIcon Kind="OpenInNew" Width="30" Height="30" />
+            </Button>
 
-            <Button Content="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}"
-                    IsVisible="{Binding CanOpenDeviceManager}" HorizontalAlignment="Left" />
         </StackPanel>
     </Border>
 

@@ -23,9 +23,6 @@
 
                 <Label Grid.Row="2" Content="{Binding HomePosition, StringFormat='Home: {0}'}"  Classes="H5" Opacity="0.8" />
 
-                <!-- Complete-mode header: info + editor settings -->
-<!--                <Label Grid.Row="3" Content="{Binding MissionSummary}" Classes="H5" />
--->
                 <Grid Grid.Row="4"
                       HorizontalAlignment="Stretch" ColumnDefinitions="Auto,100,Auto,100,Auto,100,Auto,100" VerticalAlignment="Center" ColumnSpacing="6"
                       IsVisible="{Binding #Root.ShowAllRows}">
@@ -42,17 +39,6 @@
         </Border>
         <Border x:Name="BorderItemsRepeater" Grid.Row="1"  HorizontalAlignment="Center" VerticalAlignment="Stretch"  Classes="SectionCard" Padding="20">
             <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" >
-                <!--
-                Assumptions:
-
-                Root is your MissionMapView UserControl and already has:
-                x:Name="Root"
-
-                MissionMapView.DataContext is MissionMapViewModel.
-
-                The DataTemplate DataContext is MissionItemRow.
-                -->
-
                 <ScrollViewer
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Disabled"
@@ -395,7 +381,6 @@
                                                     <!-- ================================================= -->
 
                                                     <StackPanel
-                                                       
                                                         Width="{Binding #Column14.Bounds.Width}"
                                                         Orientation="Horizontal"
                                                         Spacing="4"
@@ -403,49 +388,36 @@
                                                         VerticalAlignment="Center">
 
                                                         <Button
-                                                            FontSize="10"
+                                                            ToolTip.Tip="Move Up"
                                                             Padding="4,2"
-                                                            Height="26"
-                                                            Width="26" 
                                                             HorizontalAlignment="Center"
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).MoveItemUpCommand}"
                                                             CommandParameter="{Binding .}"  >
-                                                            <avalonia:MaterialIcon Kind="ArrowUpDropCircleOutline" Width="30" Height="30" />
+                                                            <avalonia:MaterialIcon Kind="ArrowUp" Width="20" Height="20" />
                                                         </Button>
 
                                                         <Button
-                                                           
-                                                            FontSize="10"
+                                                            ToolTip.Tip="Move Down"
                                                             Padding="4,2"
-                                                            Height="26"
-                                                            Width="26" 
                                                             HorizontalAlignment="Center"
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).MoveItemDownCommand}"
                                                             CommandParameter="{Binding .}">
-                                                            <avalonia:MaterialIcon Kind="ArrowDownDropCircleOutline" Width="30" Height="30" />
+                                                            <avalonia:MaterialIcon Kind="ArrowDown" Width="20" Height="20" />
                                                         </Button>
 
                                                         <Button
-                                                            FontSize="10"
+                                                            ToolTip.Tip="Delete"
                                                             Padding="4,2"
-                                                            Height="26"
-                                                            Width="26" 
                                                             HorizontalAlignment="Center"
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).RemoveItemCommand}"
                                                             CommandParameter="{Binding .}"  >
-                                                            <avalonia:MaterialIcon Kind="DeleteForeverOutline" Width="30" Height="30" />
+                                                            <avalonia:MaterialIcon Kind="DeleteForeverOutline" Width="20" Height="20" />
                                                         </Button>
-
                                                     </StackPanel>
-
                                                 </StackPanel>
-
                                             </Border>
-
                                         </DataTemplate>
-
                                     </ItemsRepeater.ItemTemplate>
-
                                 </ItemsRepeater>
 
                             </ScrollViewer>
@@ -453,7 +425,7 @@
                             <!-- Equivalent of VirtualizedDataGrid.EmptyView -->
                             <TextBlock
                                 Text="No mission items. Right-click the map to add waypoints."
-                                FontSize="12"
+                                Classes="H3"
                                 Opacity="0.6"
                                 Margin="0,20"
                                 HorizontalAlignment="Center"

@@ -16,8 +16,13 @@
         <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Center">
 
             <StackPanel Orientation="Horizontal"   Spacing="8">
-                <Button  Content="Import presented fields" Command="{Binding ImportCommand}" />
-                <Button  Content="Export presented fields" Command="{Binding ExportCommand}" />
+
+                <Button  ToolTip.Tip="Import presented fields" Command="{Binding ImportCommand}" Margin="4" >
+                    <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
+                </Button>
+                <Button  ToolTip.Tip="Export presented fields" Command="{Binding ExportCommand}" Margin="4" >
+                    <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
+                </Button>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
 
@@ -51,14 +56,16 @@
                                             <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="6">
-                                            <Button  ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" >
-                                                <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
+                                            <Button  ToolTip.Tip="Refresh"
+                                                     Command="{Binding RefreshCommand}" >
+                                                <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                                             </Button>
-                                            <Button  ToolTip.Tip="Revert group" Command="{Binding RevertCommand}" >
+                                            <Button  ToolTip.Tip="Revert group"
+                                                     Command="{Binding RevertCommand}" >
                                                 <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />
                                             </Button>
                                             <Button  ToolTip.Tip="Apply group" Command="{Binding ApplyCommand}" >
-                                                <avalonia:MaterialIcon Kind="WindowOpenVariant" Width="30" Height="30" />
+                                                <avalonia:MaterialIcon Kind="PlusBoxMultipleOutline" Width="30" Height="30" />
                                             </Button>
                                         </StackPanel>
                                     </Grid>

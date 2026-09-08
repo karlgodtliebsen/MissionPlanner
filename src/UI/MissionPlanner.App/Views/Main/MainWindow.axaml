@@ -16,24 +16,24 @@
         <common:TopBarView />
     </u:UrsaWindow.TitleBarContent>
 
-        <Grid RowDefinitions="50,*,Auto">
+    <Grid RowDefinitions="50,*,Auto">
 
-            <!-- Row 0 reserves the height occupied by the Ursa title-bar content. -->
-            <u:Divider Grid.Row="0"
-                       VerticalAlignment="Bottom"
-                       HorizontalAlignment="Stretch"
-                       Orientation="Horizontal" />
+        <!-- Row 0 reserves the height occupied by the Ursa title-bar content. -->
+        <u:Divider Grid.Row="0"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Stretch"
+                   Orientation="Horizontal" />
 
-            <!--
-            Everything navigable lives here.
-            Includes the right-side DrawerPage.
-            -->
-            <navigation:MainShellView
-                Grid.Row="1" />
+        <!--
+        Everything navigable lives here.
+        Includes the right-side DrawerPage.
+        -->
+        <navigation:MainShellView
+            Grid.Row="1" />
 
-            <!-- Persistent application status -->
-            <common:StatusBarView Grid.Row="2" />
+        <!-- Persistent application status -->
+        <common:StatusBarView Grid.Row="2" />
 
-        </Grid>
+    </Grid>
 
 </utilities:WindowBase>

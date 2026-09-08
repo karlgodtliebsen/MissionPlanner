@@ -28,7 +28,7 @@
                         <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
                     </Button>
                     <Button ToolTip.Tip="Clear the local HEX selection" Command="{Binding ClearLocalDfuFirmwareCommand}" >
-                        <avalonia:MaterialIcon Kind="ClearCircle" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
                     </Button>
                 </StackPanel>
                 <StackPanel Orientation="Vertical" Spacing="10" Grid.Row="1" >
