@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Compile Include="..\MissionPlanner.Test.Support\ManualTimeProvider.cs" Link="Support\ManualTimeProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>

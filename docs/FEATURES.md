@@ -1026,3 +1026,8 @@ WinForms-only features were added. “Implemented” means the service and comma
   deterministic verify/write workflows. A dedicated GitHub Actions gate detects manual or
   stale generated output, reports all 325 coverage classifications, and runs registry,
   decoder, raw-fallback, promotion, and conformance tests.
+# Betaflight firmware integration
+
+The initial MSP protocol foundation is implemented in the firmware library. Identity, DFU handoff,
+conversion UI and physical acceptance are tracked in [Betaflight conversion](BETAFLIGHT_DFU_AND_ARDUPILOT_CONVERSION.md).
+Betaflight firmware downloading/flashing is deferred.

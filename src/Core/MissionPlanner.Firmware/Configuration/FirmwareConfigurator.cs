@@ -136,6 +136,8 @@ public static class FirmwareConfigurator
                 : new EmptyDfuDeviceCatalog());
         services.TryAddSingleton<IDfuDeviceMonitor, WindowsDfuDeviceMonitor>();
         services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<Betaflight.Protocol.IBetaflightMspClient, Betaflight.Protocol.BetaflightMspClient>();
+        services.TryAddSingleton<Betaflight.Protocol.MspPortConnector>();
         services.AddHttpClient(FirmwareHttpClient.Name, (serviceProvider, client) =>
             {
                 var configured = serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>().Value;
