@@ -5,7 +5,7 @@
 | Task | Status |
 | --- | --- |
 | 01 MSP protocol | Implemented; firmware tests pass |
-| 02 Identity | Pending |
+| 02 Identity | Implemented; automated fixtures, hardware verification pending |
 | 03 Discovery integration | Pending |
 | 04 ROM DFU reboot | Pending |
 | 05 Physical correlation | Pending |
@@ -33,9 +33,19 @@ no unverified extended identity request is currently sent.
 Command IDs were checked on 2026-09-09 against the upstream
 [v1 header](https://github.com/betaflight/betaflight/blob/master/src/main/msp/msp_protocol.h) and
 [v2 header](https://github.com/betaflight/betaflight/blob/master/src/main/msp/msp_protocol_v2_betaflight.h).
-The task notes' proposed `MSP2_MCU_INFO = 0x300C` does not appear in current upstream headers
-or `msp.c`; it is deliberately not defined or sent. The identity task will use versioned
-BOARD_INFO evidence where supported. MCU identity will never imply ArduPilot board compatibility.
+The full v2 header and `msp.c` confirm `MSP2_MCU_INFO = 0x300C`; the initial search result
+missed this definition. Task 02 adds it as an optional native-v2 query. Older BOARD_INFO
+MCU IDs remain visible as raw identifiers. MCU identity never implies ArduPilot board compatibility.
+
+## Typed identity
+
+`IBetaflightDeviceProbe` opens one exclusive serial endpoint, validates API major 1 and exact
+four-byte `BTFL`, then reads available firmware/board/build/UID/name/MCU details. Another MSP
+variant is never classified as Betaflight. Optional rejection or timeout preserves proven identity
+with an incomplete-details diagnostic; caller cancellation still cancels the entire probe.
+`BetaflightBoardInfo` retains manufacturer IDs, capability bits, revision, signature and MCU ID.
+Legacy prefixes and unknown tails are accepted; incomplete length-prefixed fields are rejected.
+Current version labels are retained separately from the three numeric firmware version bytes.
 
 ## Validation
 

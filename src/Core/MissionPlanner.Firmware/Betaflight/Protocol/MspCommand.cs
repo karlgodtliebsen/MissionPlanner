@@ -21,4 +21,6 @@ public static class MspCommand
     public const ushort Status = 101;
     /// <summary>MCU unique identifier.</summary>
     public const ushort Uid = 160;
+    /// <summary>Native v2 MCU identifier and length-prefixed name.</summary>
+    public const ushort McuInfo = 0x300c;
 }

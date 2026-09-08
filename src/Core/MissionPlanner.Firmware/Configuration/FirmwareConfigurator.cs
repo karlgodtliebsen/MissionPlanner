@@ -138,6 +138,7 @@ public static class FirmwareConfigurator
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<Betaflight.Protocol.IBetaflightMspClient, Betaflight.Protocol.BetaflightMspClient>();
         services.TryAddSingleton<Betaflight.Protocol.MspPortConnector>();
+        services.TryAddSingleton<Betaflight.IBetaflightDeviceProbe, Betaflight.BetaflightDeviceProbe>();
         services.AddHttpClient(FirmwareHttpClient.Name, (serviceProvider, client) =>
             {
                 var configured = serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>().Value;
