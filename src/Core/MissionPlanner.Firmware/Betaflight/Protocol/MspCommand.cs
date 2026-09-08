@@ -19,6 +19,8 @@ public static class MspCommand
     public const ushort Reboot = 68;
     /// <summary>Controller status including arming state.</summary>
     public const ushort Status = 101;
+    /// <summary>Permanent mode identifiers, used to locate the armed bit in STATUS.</summary>
+    public const ushort BoxIds = 119;
     /// <summary>MCU unique identifier.</summary>
     public const ushort Uid = 160;
     /// <summary>Native v2 MCU identifier and length-prefixed name.</summary>

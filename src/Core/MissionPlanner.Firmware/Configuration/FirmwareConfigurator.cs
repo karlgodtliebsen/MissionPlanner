@@ -168,6 +168,7 @@ public static class FirmwareConfigurator
         services.TryAddSingleton<IArduPilotBootloaderClientFactory, ArduPilotBootloaderClientFactory>();
         services.TryAddSingleton<IBootloaderDiscoveryService, BootloaderDiscoveryService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, AlreadyInBootloaderEntryStrategy>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, Betaflight.BetaflightMspBootloaderEntryStrategy>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, TemporaryMavLinkRebootEntryStrategy>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, ManualReconnectBootloaderEntryStrategy>());
         services.TryAddSingleton<IBootloaderEntryService, BootloaderEntryService>();

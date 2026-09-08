@@ -13,5 +13,8 @@ public enum BootloaderEntryOutcome
     BootloaderIdentified,
 
     /// <summary>The strategy failed and another strategy may be attempted.</summary>
-    Failed
+    Failed,
+
+    /// <summary>ROM reboot was initiated; this is not proof of a correlated DFU endpoint.</summary>
+    DfuRebootInitiated
 }

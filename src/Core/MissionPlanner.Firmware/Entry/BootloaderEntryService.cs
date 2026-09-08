@@ -23,16 +23,20 @@ public sealed class BootloaderEntryService(
         {
             SelectedDevice = context.DiscoveryRequest.SelectedDevice ?? context.ApplicationDevice
         } };
+        if (context.Target == BootloaderEntryTarget.ArduPilotSerial && context.DiscoveryRequest.SelectedDevice?.BetaflightIdentity is not null)
+        {
+            return new(BootloaderEntryOutcome.Failed, "betaflight.requires-rom-dfu-conversion");
+        }
         logger.LogInformation("Selected firmware device {DeviceIdentity}, application endpoint {PortName}. Checking for an existing ArduPilot bootloader.",
             context.DiscoveryRequest.SelectedDevice?.StableIdentity, context.DiscoveryRequest.SelectedDevice?.PortName);
         BootloaderEntryResult? last = null;
-        foreach (var strategy in strategies.OrderBy(strategy => strategy.Priority))
+        foreach (var strategy in strategies.Where(strategy => strategy.Target == context.Target).OrderBy(strategy => strategy.Priority))
         {
             cancellationToken.ThrowIfCancellationRequested();
             var result = await strategy.TryEnterAsync(context, cancellationToken).ConfigureAwait(false);
             logger.LogInformation("Bootloader entry strategy {Strategy} returned {Outcome} ({Code}).", strategy.GetType().Name, result.Outcome, result.Code);
             last = result;
-            if (result.Outcome is BootloaderEntryOutcome.BootloaderIdentified)
+            if (result.Outcome is BootloaderEntryOutcome.BootloaderIdentified or BootloaderEntryOutcome.DfuRebootInitiated)
             {
                 return result;
             }

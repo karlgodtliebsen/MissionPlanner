@@ -7,7 +7,7 @@
 | 01 MSP protocol | Implemented; firmware tests pass |
 | 02 Identity | Implemented; automated fixtures, hardware verification pending |
 | 03 Discovery integration | Implemented in the existing firmware serial snapshot pipeline |
-| 04 ROM DFU reboot | Pending |
+| 04 ROM DFU reboot | Implemented; hardware verification pending |
 | 05 Physical correlation | Pending |
 | 06 Conversion | Pending |
 | 07 UI | Pending |
@@ -48,6 +48,19 @@ Legacy prefixes and unknown tails are accepted; incomplete length-prefixed field
 Current version labels are retained separately from the three numeric firmware version bytes.
 
 ## Validation
+
+## ROM reboot
+
+`BootloaderEntryTarget` separates the existing ArduPilot serial strategies from the Betaflight
+STM32 ROM strategy. A proven Betaflight device cannot silently fall through into serial ArduPilot
+programming. The ROM strategy requires current stable USB identity, retained full UID, and
+protocol-reported STM32 name/target evidence; legacy numeric MCU IDs without verified naming
+remain insufficient. It rechecks exact BTFL and UID on the exclusively opened port, locates ARM
+through BOXIDS and STATUS, and rejects armed or unknown status before sending semantic ROM mode 1.
+The transport is disposed before transition polling. An ACK is only reboot initiation; otherwise
+a definitely completed write plus observed removal is required. Failed writes, MSP rejection,
+stale identity, and a serial device that remains present are not success. Task 05 must still
+correlate a DFU endpoint before any programming. No physical reboot has been performed yet.
 
 ## Discovery integration
 

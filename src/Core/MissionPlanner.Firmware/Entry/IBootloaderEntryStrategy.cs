@@ -6,6 +6,9 @@ public interface IBootloaderEntryStrategy
     /// <summary>Gets ascending execution priority.</summary>
     int Priority { get; }
 
+    /// <summary>Gets the bootloader protocol this strategy enters.</summary>
+    BootloaderEntryTarget Target => BootloaderEntryTarget.ArduPilotSerial;
+
     /// <summary>Attempts the strategy without retaining temporary serial ownership.</summary>
     Task<BootloaderEntryResult> TryEnterAsync(BootloaderEntryContext context, CancellationToken cancellationToken = default);
 }

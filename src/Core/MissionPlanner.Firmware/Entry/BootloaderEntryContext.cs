@@ -11,4 +11,6 @@ public sealed record BootloaderEntryContext(
 {
     /// <summary>Reports ordered entry stages to the owning firmware operation.</summary>
     public Action<FirmwareProgress>? Progress { get; init; }
+    /// <summary>Gets the explicitly requested bootloader type.</summary>
+    public BootloaderEntryTarget Target { get; init; } = BootloaderEntryTarget.ArduPilotSerial;
 }
