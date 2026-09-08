@@ -144,6 +144,8 @@ public static class FirmwareConfigurator
         services.TryAddSingleton<Betaflight.Protocol.MspPortConnector>();
         services.TryAddSingleton<Betaflight.IBetaflightDeviceProbe, Betaflight.BetaflightDeviceProbe>();
         services.TryAddSingleton<Betaflight.IFirmwareDeviceIdentityService, Betaflight.FirmwareDeviceIdentityService>();
+        services.TryAddSingleton<Betaflight.IUsbTopologyProvider, Betaflight.UnsupportedUsbTopologyProvider>();
+        services.TryAddSingleton<Betaflight.IBetaflightDfuHandoff, Betaflight.BetaflightDfuHandoff>();
         services.AddHttpClient(FirmwareHttpClient.Name, (serviceProvider, client) =>
             {
                 var configured = serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>().Value;

@@ -8,7 +8,7 @@
 | 02 Identity | Implemented; automated fixtures, hardware verification pending |
 | 03 Discovery integration | Implemented in the existing firmware serial snapshot pipeline |
 | 04 ROM DFU reboot | Implemented; hardware verification pending |
-| 05 Physical correlation | Pending |
+| 05 Physical correlation | Implemented; Windows physical acceptance pending |
 | 06 Conversion | Pending |
 | 07 UI | Pending |
 | 08 Hardware acceptance and regression | Pending |
@@ -48,6 +48,21 @@ Legacy prefixes and unknown tails are accepted; incomplete length-prefixed field
 Current version labels are retained separately from the three numeric firmware version bytes.
 
 ## Validation
+
+## Physical DFU handoff
+
+`IBetaflightDfuHandoff` snapshots pre-existing DFU devices before reboot, then consumes the existing
+`IDfuDeviceMonitor`. Only a newly present 0483:DF11 endpoint at the exact physical USB location
+can match. Multiple matches, missing topology, device removal, and a remaining selected serial
+endpoint cannot become a firmware target. The result retains source identity and physical location.
+MCU UID is never compared to the unrelated DFU serial representation. Monitor cancellation and
+the firmware-operation lease are released on every terminal path.
+
+Windows resolves `DEVPKEY_Device_LocationPaths` through Configuration Manager in
+`MissionPlanner.Library.Windows/Firmware/WindowsUsbTopologyProvider.cs`; composite interface
+suffixes are stripped to compare physical USB ports. Browser uses the unsupported provider and
+stops before reboot. Existing Windows serial arrival timestamps now persist while the same device
+remains present instead of changing on every scan, which is essential to cache/revalidation logic.
 
 ## ROM reboot
 

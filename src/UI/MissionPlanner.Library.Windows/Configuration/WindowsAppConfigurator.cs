@@ -13,6 +13,7 @@ public static class WindowsAppConfigurator
 
     public static IServiceCollection AddWindowsOnlyServices(this IServiceCollection services)
     {
+        services.Replace(ServiceDescriptor.Singleton<MissionPlanner.Firmware.Betaflight.IUsbTopologyProvider, Firmware.WindowsUsbTopologyProvider>());
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.IAdvancedPlatformCapabilities, WindowsAdvancedCapabilities>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Output.IOutputSinkFactory, WindowsOutputSinkFactory>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Warnings.IWarningRuleStore, WindowsWarningRuleStore>();

@@ -11,6 +11,7 @@ namespace MissionPlanner.Firmware.Devices;
 [SupportedOSPlatform("windows")]
 public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFirmwareSerialDeviceCatalog
 {
+    private readonly Dictionary<string, (string? Product, DateTimeOffset At)> arrivals = new(StringComparer.OrdinalIgnoreCase);
     /// <inheritdoc />
     public Task<IReadOnlyList<SerialDeviceDescriptor>> GetDevicesAsync(CancellationToken cancellationToken = default)
     {
@@ -70,7 +71,7 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
                         product,
                         manufacturer,
                         product is null ? [] : [product],
-                        timeProvider.GetUtcNow());
+                        Arrival(stableId, product));
                 }
             }
         }
@@ -88,11 +89,31 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
 
             if (devices.Values.All(device => !string.Equals(device.PortName, port, StringComparison.OrdinalIgnoreCase)))
             {
-                devices[$"transient:{port}"] = new SerialDeviceDescriptor(port, arrivedAt: timeProvider.GetUtcNow());
+                devices[$"transient:{port}"] = new SerialDeviceDescriptor(port, arrivedAt: Arrival($"transient:{port}", null));
             }
         }
 
+        lock (arrivals)
+        {
+            foreach (var absent in arrivals.Keys.Where(key => !devices.ContainsKey(key)).ToArray())
+            {
+                arrivals.Remove(absent);
+            }
+        }
         return Task.FromResult<IReadOnlyList<SerialDeviceDescriptor>>(devices.Values.OrderBy(device => device.PortName, StringComparer.OrdinalIgnoreCase).ToArray());
+    }
+
+    private DateTimeOffset Arrival(string id, string? product)
+    {
+        lock (arrivals)
+        {
+            if (!arrivals.TryGetValue(id, out var previous) || previous.Product != product)
+            {
+                previous = (product, timeProvider.GetUtcNow());
+                arrivals[id] = previous;
+            }
+            return previous.At;
+        }
     }
 
     private static HashSet<string> PresentDeviceInstanceIds()
