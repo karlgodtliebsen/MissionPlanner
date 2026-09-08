@@ -157,11 +157,19 @@ public sealed class FirmwarePanelLoadingTests
         var panel = services.GetRequiredService<DetectedDeviceViewModel>();
         await panel.ActivateAsync();
         Assert.Equal(2, panel.DetectedDevices.Count);
-        Assert.Null(panel.SelectedDevice);
+        Assert.Equal("COM11", panel.SelectedDevice!.Descriptor.PortName);
         panel.SelectedDevice = panel.DetectedDevices[1];
         await panel.DeactivateAsync();
         await panel.ActivateAsync();
         Assert.Equal("COM14", panel.SelectedDevice!.Descriptor.PortName);
+        services.GetRequiredService<IFirmwareSerialDeviceCatalog>().GetDevicesAsync(Arg.Any<CancellationToken>())
+            .Returns(new[] { new SerialDeviceDescriptor("COM11") });
+        await panel.RefreshAsync(TestContext.Current.CancellationToken);
+        Assert.Equal("COM11", panel.SelectedDevice!.Descriptor.PortName);
+        services.GetRequiredService<IFirmwareSerialDeviceCatalog>().GetDevicesAsync(Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<SerialDeviceDescriptor>());
+        await panel.RefreshAsync(TestContext.Current.CancellationToken);
+        Assert.Null(panel.SelectedDevice);
         await services.GetRequiredService<IFirmwareCatalogService>().DidNotReceiveWithAnyArgs().GetCatalogAsync(default!, TestContext.Current.CancellationToken);
         await panel.DeactivateAsync();
     }

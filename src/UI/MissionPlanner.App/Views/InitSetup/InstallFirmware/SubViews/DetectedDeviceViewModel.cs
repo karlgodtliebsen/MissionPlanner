@@ -112,17 +112,15 @@ public sealed partial class DetectedDeviceViewModel : ViewModelBase
         return deviceItems;
     }
 
-    /// <summary>Selects only an unambiguous device and explains ambiguous or absent devices.</summary>
+    /// <summary>Selects a unique recommended device, otherwise the first available device.</summary>
     public void SelectRecommendedDevice()
     {
         var recommendedDevices = DetectedDevices.Where(item => item.IsRecommended).ToArray();
-        SelectedDevice = recommendedDevices.Length == 1 ? recommendedDevices[0] : null;
+        SelectedDevice = recommendedDevices.Length == 1 ? recommendedDevices[0] : DetectedDevices.FirstOrDefault();
         DeviceStatus = DetectedDevices.Count == 0
             ? "No flight controller detected"
-            : recommendedDevices.Length > 1
-                ? "Multiple matching devices detected; select the exact flight controller."
-                : SelectedDevice is not null
-                    ? $"Recommended device: {SelectedDevice}"
-                    : "Select the flight controller explicitly.";
+            : recommendedDevices.Length == 1
+                ? $"Recommended device: {SelectedDevice}"
+                : $"Selected device: {SelectedDevice}. Check that this is the intended flight controller.";
     }
 }

@@ -25,6 +25,7 @@
             </WrapPanel>
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" VerticalAlignment="Center">
                 <ComboBox ToolTip.Tip="Select flight controller"
+                    MinWidth="250"
                     VerticalAlignment="Center"
                     ItemsSource="{Binding DetectedDevices}" 
                           SelectedItem="{Binding SelectedDevice}" />

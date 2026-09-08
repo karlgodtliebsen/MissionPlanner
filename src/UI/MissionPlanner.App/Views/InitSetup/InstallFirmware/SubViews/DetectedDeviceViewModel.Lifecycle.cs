@@ -92,12 +92,15 @@ public sealed partial class DetectedDeviceViewModel
     {
         var port = SelectedDevice?.Descriptor.PortName;
         DetectedDevices = CreateItems(entries, Descriptors);
-        SelectRecommendedDevice();
         var retained = DetectedDevices.FirstOrDefault(item => string.Equals(item.Descriptor.PortName, port, StringComparison.OrdinalIgnoreCase));
         if (retained is not null)
         {
             SelectedDevice = retained;
             DeviceStatus = $"Selected device: {retained}";
+        }
+        else
+        {
+            SelectRecommendedDevice();
         }
     }
 
