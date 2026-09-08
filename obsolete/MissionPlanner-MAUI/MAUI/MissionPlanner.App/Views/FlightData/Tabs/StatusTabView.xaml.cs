@@ -1,0 +1,17 @@
+﻿using UraniumUI.Material.TabViews;
+
+namespace MissionPlanner.App.Views.FlightData.Tabs;
+
+/// <summary>
+/// Provides the public API for StatusTabView.
+/// </summary>
+public partial class StatusTabView : TabViewLifecycleContent<StatusTabViewModel>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StatusTabView"/> class.
+    /// </summary>
+    public StatusTabView()
+    {
+        InitializeComponent();
+    }
+}

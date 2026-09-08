@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+             x:Class="MissionPlanner.App.Views.Common.StatusBarView"
+             x:DataType="common:StatusBarViewModel"
+             BackgroundColor="{DynamicResource Surface}"
+             HeightRequest="32">
+
+    <Border StrokeThickness="1" Padding="2" VerticalOptions="Fill" Height="50" >
+        <Grid ColumnDefinitions="Auto,*,Auto" HorizontalOptions="Fill" VerticalOptions="Center"   >
+ 
+            <!-- Connection Info (Left) -->
+            <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center" Margin="0,0,16,0">
+                <Label Text="●" TextColor="{DynamicResource DisabledText}" FontSize="14">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding IsConnectedStatus}"
+                                     Value="True">
+                            <Setter Property="TextColor"
+                                    Value="{DynamicResource Success}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
+  
+                <Label Text="{Binding VehicleDisplayName}" VerticalOptions="Center" />
+                
+                <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
+                <Label Text="{Binding ConnectionStatus}" VerticalOptions="Center" />
+
+                <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
+                <Label Text="{Binding TelemetryFreshness}" VerticalOptions="Center" />
+
+                <Label Text="•" FontSize="16"  VerticalOptions="Center" IsVisible="{Binding HasStatusMessage}"/>
+                <Label Text="{Binding StatusMessage}" VerticalOptions="Center" IsVisible="{Binding HasStatusMessage}" />
+            </HorizontalStackLayout>
+
+            
+            <!-- Clock (Right) -->
+            <Label Grid.Column="2" Text="{Binding CurrentTime}" VerticalOptions="Center" FontSize="12" TextColor="{DynamicResource OnSurfaceVariant}"/>
+        </Grid>
+    </Border>
+
+</ContentView>

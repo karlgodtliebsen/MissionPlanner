@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<navigation:ExtendedContentPage x:TypeArguments="tabs:CubeLan8PortSwitchTabViewModel"
+    
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+             xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.CubeLan8PortSwitchTabView"
+             x:DataType="tabs:CubeLan8PortSwitchTabViewModel"
+             Title="CubeLAN 8 Port Switch"
+    >
+
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+        <VerticalStackLayout Spacing="4">
+            <Label Text="CubeLAN 8 Port Switch" FontSize="24" FontAttributes="Bold" />
+            <Label Text="{Binding VehicleHeading}" FontAttributes="Bold" />
+            <Label Text="Discovery uses only the repository-documented MAVLink DEVICE_OP I²C path at address 0x50. The editor exposes COS, COS priority, EEE, VLAN tagging, and the 8×8 VLAN membership matrix. PoE, port enablement, VLAN IDs, modes, authentication, and editable labels are not exposed because no verified protocol definition exists for them." />
+        </VerticalStackLayout>
+
+        <Border Grid.Row="1" Padding="12">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="{Binding Status}" FontAttributes="Bold" />
+                    <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+                    <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+                </VerticalStackLayout>
+                <Button  Grid.Column="2" Text="Discover / read" Command="{Binding RefreshCommand}" VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <controls:VirtualizedDataGrid Grid.Row="2" 
+                                      ItemsSource="{Binding Ports}" 
+                                      ItemSizingStrategy= "MeasureFirstItem"
+                                      ShowSearchBar="False"
+                                      HorizontalOptions="Fill" 
+                                      VerticalOptions="Fill" 
+                                      BackgroundColor="Transparent">
+            <controls:VirtualizedDataGrid.EmptyView>
+                <VerticalStackLayout Padding="20" Spacing="8" HorizontalOptions="Center">
+                    <Label Text="No editable CubeLAN device is available." FontSize="18" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                    <Label Text="Unsupported, not discovered, authentication-required, and disconnected states remain explicit and send no undocumented commands." HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </controls:VirtualizedDataGrid.EmptyView>
+            <controls:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding ClassOfServiceEnabled}" Title="Class of service" />
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding ClassOfServiceHighPriority}" Title="COS high priority" />
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding EnergyEfficientEthernetEnabled}" Title="Energy Efficient Ethernet" />
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding VlanTagged}" Title="VlanTagged" />
+                <material:DataGridColumn Width="*" Title="Freshness">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="tabs:CubeLanMembershipViewModel">
+                            <HorizontalStackLayout Margin="0,0,12,4">
+                                <material:CheckBox Text="{Binding Label}" IsChecked="{Binding IsMember}" />
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
+
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <Label Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalOptions="Center" />
+            <HorizontalStackLayout Grid.Column="1">
+                <Button  Text="Export" Command="{Binding ExportCommand}" />
+                <Button  Text="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" />
+                <Button  Text="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" />
+            </HorizontalStackLayout>
+        </Grid>
+    </Grid>
+</navigation:ExtendedContentPage>

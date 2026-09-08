@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent
+    x:Class="MissionPlanner.App.Views.FlightData.Tabs.GaugesTabView"
+    x:TypeArguments="tabs:GaugesTabViewModel"
+    x:DataType="tabs:GaugesTabViewModel"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions">
+
+    <Grid Padding="12" RowDefinitions="Auto,*" RowSpacing="8">
+        <Label FontAttributes="Bold" FontSize="20" Text="Flight gauges" />
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" RowDefinitions="*,*" ColumnSpacing="8" RowSpacing="8">
+            <Border StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <tabs:FlightGaugeView
+                    Minimum="-10" Maximum="10"
+                    Label="VSI"
+                    Value="{Binding VerticalSpeed.NumericValue}"
+                    DisplayValue="{Binding VerticalSpeed.Value}"
+                    Unit="{Binding VerticalSpeed.Unit}" />
+            </Border>
+
+            <Border Grid.Column="1" StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <tabs:FlightGaugeView
+                    Minimum="0" Maximum="60"
+                    Label="Speed"
+                    Value="{Binding Speed.NumericValue}"
+                    DisplayValue="{Binding Speed.Value}"
+                    Unit="{Binding Speed.Unit}" />
+            </Border>
+
+            <Border Grid.Row="1" StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <tabs:FlightGaugeView
+                    Minimum="0" Maximum="100"
+                    Label="Alt"
+                    Value="{Binding Altitude.NumericValue}"
+                    DisplayValue="{Binding Altitude.Value}"
+                    Unit="{Binding Altitude.Unit}" />
+            </Border>
+
+            <Border Grid.Row="1" Grid.Column="1" StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <tabs:FlightGaugeView
+                    Mode="Compass"
+                    Label="Heading"
+                    Value="{Binding Heading.NumericValue}"
+                    DisplayValue="{Binding Heading.Value}"
+                    Unit="{Binding Heading.Unit}" />
+            </Border>
+        </Grid>
+    </Grid>
+</tabViews:TabViewLifecycleContent>

@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:ExtendedTabHeaderView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+    xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+    x:Class="MissionPlanner.App.Views.Common.SlimTabHeaderView"
+    x:DataType="common:TabItemViewModel"
+    Margin="0"
+    BorderStyleClass="SurfaceContainer,Rounded,Elevation1"
+    Padding="5">
+    <Label
+        Margin="5"
+        FontAttributes="Bold"
+        FontSize="16"
+        Text="{Binding Title}"
+        TextColor="{DynamicResource OnSurface}" />
+</tabViews:ExtendedTabHeaderView>

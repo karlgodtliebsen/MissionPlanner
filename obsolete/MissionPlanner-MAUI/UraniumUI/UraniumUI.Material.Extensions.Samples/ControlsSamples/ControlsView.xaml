@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+    xmlns:controlsSamples="clr-namespace:UraniumUI.Material.Extensions.Samples.ControlsSamples;assembly=UraniumUI.Material.Extensions.Samples"
+    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+    x:Class="UraniumUI.Material.Extensions.Samples.ControlsSamples.ControlsView"
+    x:DataType="controlsSamples:ControlsViewModel"
+    
+    >
+
+    <uranium:UraniumContentPage.Resources>
+        <!--<Style TargetType="controls:NumericField" >
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="BackgroundColor" Value="Green" />
+            <Setter Property="AccentColor" Value="Yellow" />
+            <Setter Property="BorderColor" Value="Red" />
+            <Setter Property="TitleColor" Value="Orange" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="MaximumHeightRequest" Value="30" />
+
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal"/>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.6" />
+                                <Setter Property="BorderColor" Value="Blue" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Entry">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+            <Setter Property="BackgroundColor" Value="Green" />
+            <Setter Property="FontFamily" Value="OpenSansRegular"/>
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="HorizontalTextAlignment" Value="End" />
+            <Setter Property="HorizontalOptions" Value="End" />
+
+            <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>-->
+
+    </uranium:UraniumContentPage.Resources>
+
+
+
+    <ScrollView VerticalScrollBarVisibility="Always">
+
+        <VerticalStackLayout Padding="24" Spacing="20">
+            <VerticalStackLayout Spacing="20"  HorizontalOptions="Fill">
+                <Label Text="Extended Aligned Editor Fields" HorizontalOptions="Center"></Label>
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+
+                    <controls:AlignedEditorField
+                        Title="Aligned editor Center"
+                        Text="Centered text"
+                        MaximumWidthRequest="200"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center" />
+
+                    <controls:AlignedEditorField
+                        Title="Aligned editor Right"
+                        Text="Right text"
+                        MaximumWidthRequest="200"
+                        HorizontalTextAlignment="End"
+                        VerticalTextAlignment="Center" />
+
+                    <controls:AlignedEditorField
+                        Title="Aligned editor Left"
+                        Text="Left text"
+                        MaximumWidthRequest="200"
+                        HorizontalTextAlignment="Start"
+                        VerticalTextAlignment="Center" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <BoxView  StyleClass="Divider" />
+
+            <VerticalStackLayout Spacing="20"  HorizontalOptions="Fill">
+                <Label Text="Numeric Editor Fields" HorizontalOptions="Center"></Label>
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+
+
+                    <controls:NumericField
+                        Value="{Binding StepSize, Mode=TwoWay}"
+                        NumberFormat="F7"
+                        BorderThickness="0"
+                        MinimumWidthRequest="200"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" 
+                        />
+
+                    <controls:NumericField
+                        Value="{Binding StepSize, Mode=TwoWay}"
+                        NumberFormat="N7"
+                        CultureName="da-DK"
+                        Min="0"
+                        Max="1000"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" 
+                        AllowClear="True"
+                        AllowSign="False"
+                        AllowThousands="True" />
+
+                    <controls:NumericField
+                        Value="{Binding StepSize, Mode=TwoWay}"
+                        NumberFormat="N2"
+                        CultureName="da-DK"
+                        Min="0"
+                        Max="100"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" 
+                        AllowSign="False"
+                        AllowThousands="True" />
+
+
+
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <BoxView  StyleClass="Divider" />
+
+            <VerticalStackLayout Spacing="20"  HorizontalOptions="Fill">
+                <Label Text="Styled Entry" HorizontalOptions="Center"></Label>
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <!--<Entry
+                        Text="{Binding StepSize, Mode=TwoWay}"
+                        MinimumWidthRequest="200"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />-->
+                    <controls:NumericField
+                        Value="{Binding StepSize, Mode=TwoWay}"
+                        MinimumWidthRequest="200"
+                        NumberFormat="F1"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+            <BoxView  StyleClass="Divider" />
+
+            <VerticalStackLayout Spacing="20"  HorizontalOptions="Fill">
+
+                <Label Text="Extended NumericUpDownField with Text Binding" HorizontalOptions="Center"></Label>
+
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+
+                    <!-- Recommended parameter usage:
+                        Bind Text when the current ViewModel value is a string. -->
+                    <controls:NumericUpDownField
+                        Title="Text - Numeric - Left Aligned"
+                        Text="{Binding Value, Mode=TwoWay}"
+                        Min="{Binding Minimum}"
+                        Max="{Binding Maximum}"
+                        StepSize="{Binding StepSize}"
+                        WidthRequest="275"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Start"
+                        VerticalTextAlignment="Center"
+                        ButtonOrientation="Horizontal"
+                        BorderColor="Aqua" />
+
+                    <controls:NumericUpDownField
+                        Title="Text - Numeric - Center Aligned"
+                        Text="{Binding Value, Mode=TwoWay}"
+                        Min="{Binding Minimum}"
+                        Max="{Binding Maximum}"
+                        StepSize="{Binding StepSize}"
+                        WidthRequest="275"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center"
+                        ButtonOrientation="Horizontal"
+                        BorderColor="Aqua" />
+
+                    <controls:NumericUpDownField
+                        Title="Text - Numeric - Right Aligned"
+                        Text="{Binding Value, Mode=TwoWay}"
+                        Min="{Binding Minimum}"
+                        Max="{Binding Maximum}"
+                        StepSize="{Binding StepSize}"
+                        WidthRequest="275"
+                        HorizontalTextAlignment="End"
+                        HorizontalOptions="Center"
+                        VerticalTextAlignment="Center"
+                        ButtonOrientation="Horizontal"
+                        BorderColor="Aqua" />
+                </HorizontalStackLayout>
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+
+                    <!-- Recommended parameter usage:
+                Bind Text when the current ViewModel value is a string. -->
+                    <controls:NumericUpDownField
+                        Title="Text - Numeric - Left Aligned"
+                        Text="{Binding Value, Mode=TwoWay}"
+                        Min="{Binding Minimum}"
+                        Max="{Binding Maximum}"
+                        StepSize="{Binding StepSize}"
+                        WidthRequest="275"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Start"
+                        VerticalTextAlignment="Center"
+                        ButtonOrientation="Vertical"
+                        BorderColor="Aqua" />
+
+                    <controls:NumericUpDownField
+                        Title="Text - Numeric - Center Aligned"
+                        Text="{Binding Value, Mode=TwoWay}"
+                        Min="{Binding Minimum}"
+                        Max="{Binding Maximum}"
+                        StepSize="{Binding StepSize}"
+                        WidthRequest="275"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center"
+                        ButtonOrientation="Vertical"
+                        BorderColor="Aqua" />
+
+                    <controls:NumericUpDownField
+                        Title="Text - Numeric - Right Aligned"
+                        Text="{Binding Value, Mode=TwoWay}"
+                        Min="{Binding Minimum}"
+                        Max="{Binding Maximum}"
+                        StepSize="{Binding StepSize}"
+                        WidthRequest="275"
+                        HorizontalTextAlignment="End"
+                        HorizontalOptions="Center"
+                        VerticalTextAlignment="Center"
+                        ButtonOrientation="Vertical"
+                        BorderColor="Aqua" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <BoxView  StyleClass="Divider" />
+
+
+            <VerticalStackLayout Spacing="20"  HorizontalOptions="Fill">
+
+                <Label Text="Extended NumericUpDownField with Value Binding" HorizontalOptions="Center"></Label>
+
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+
+                    <!-- Bind Value instead when the ViewModel exposes a double. -->
+                    <controls:NumericUpDownField
+                    Title="Number"
+                    Value="{Binding Altitude, Mode=TwoWay}"
+                    Min="0"
+                    Max="100"
+                    StepSize="0.5"
+                    DecimalPlaces="1"
+                    CultureName="da-DK" 
+                    BorderColor="MediumPurple"
+                    ButtonOrientation="Horizontal"
+                    HorizontalTextAlignment="End"
+                    VerticalTextAlignment="Center"
+                    WidthRequest="220" />
+
+                    <controls:NumericUpDownField
+                        Title="Number"
+                        Value="{Binding Altitude, Mode=TwoWay}"
+                        Min="0"
+                        Max="100"
+                        StepSize="0.5"
+                        DecimalPlaces="1"
+                        CultureName="da-DK" 
+                        BorderColor="MediumPurple"
+                        ButtonOrientation="Horizontal"
+                        HorizontalTextAlignment="End"
+                        VerticalTextAlignment="Center"
+                        WidthRequest="220" />
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+
+                    <!-- Bind Value instead when the ViewModel exposes a double. -->
+                    <controls:NumericUpDownField
+                        Title="Number"
+                        Value="{Binding Altitude, Mode=TwoWay}"
+                        Min="0"
+                        Max="100"
+                        StepSize="0.5"
+                        DecimalPlaces="1"
+                        CultureName="da-DK" 
+                        BorderColor="MediumPurple"
+                        ButtonOrientation="Vertical"
+                        HorizontalTextAlignment="End"
+                        VerticalTextAlignment="Center"
+                        WidthRequest="220" />
+
+                    <controls:NumericUpDownField
+                        Title="Number"
+                        Value="{Binding Altitude, Mode=TwoWay}"
+                        Min="0"
+                        Max="100"
+                        StepSize="0.5"
+                        DecimalPlaces="1"
+                        CultureName="da-DK" 
+                        BorderColor="MediumPurple"
+                        ButtonOrientation="Vertical"
+                        HorizontalTextAlignment="End"
+                        VerticalTextAlignment="Center"
+                        WidthRequest="220" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <BoxView  StyleClass="Divider" />
+            <VerticalStackLayout Spacing="20" HorizontalOptions="Fill">
+
+                <Label Text="Extended Multiple PickerField" HorizontalOptions="Center"></Label>
+
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+
+                    <controls:ExtendedMultiplePickerField 
+                              Title="Multiple options"
+                              BorderColor="Aqua"
+                              TitleFontSize="10"
+                              FontSize="14"
+                              WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                              ItemsSource="{Binding Items}"
+                              SelectedItems="{Binding SelectedItems}" />
+                    <controls:ExtendedMultiplePickerField 
+                            BorderColor="Aqua"
+                            TitleFontSize="10"
+                            FontSize="14"
+                            WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                            ItemsSource="{Binding Items}"
+                            SelectedItems="{Binding SelectedItems}" />
+
+
+                    <controls:ExtendedMultiplePickerField 
+                            Title="Multiple options"              
+                            EmptySelectionText=""
+                            BorderColor="Aqua"
+                            TitleFontSize="10"
+                            FontSize="14"
+                            WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                            ItemsSource="{Binding Items}"
+                            SelectedItems="{Binding SelectedItems}" />
+
+                    <controls:ExtendedMultiplePickerField 
+                            Title="Multiple options"
+                            BorderColor="Aqua"
+                            TitleFontSize="10"
+                            FontSize="14"
+                            MaximumSelectionTextLength ="10"
+                            WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                            ItemsSource="{Binding Items}"
+                            SelectedItems="{Binding SelectedItems}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+
+    </ScrollView>
+</uranium:UraniumContentPage>

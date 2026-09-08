@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/UraniumUI.Material.Tests/UraniumUI.Material.Tests.csproj" />
+  </Folder>
+  <Project Path="UraniumUI.Material.Controls.Extensions/UraniumUI.Material.Controls.Extensions.csproj" />
+  <Project Path="UraniumUI.Material.Extensions.Samples/UraniumUI.Material.Extensions.Samples.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="UraniumUI.Material.VirtualizedDataGrid/UraniumUI.Material.VirtualizedDataGrid.csproj" />
+
+</Solution>

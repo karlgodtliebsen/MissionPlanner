@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+             x:Class="MissionPlanner.App.Views.Common.NotificationView"
+             x:DataType="common:NotificationViewModel" 
+             MinimumWidthRequest="250"
+             MinimumHeightRequest="75"
+             IsVisible="{Binding HasBanner}"
+             >
+    <!--IsVisible="{Binding HasBanner}"-->
+
+    <Border StyleClass="SurfaceContainer,Rounded,Elevation1"
+            Padding="8,2"
+            VerticalOptions="Fill" 
+            HorizontalOptions="Fill"
+            BackgroundColor="{DynamicResource Primary}">
+        
+        <Border.Triggers>
+            <DataTrigger TargetType="Border" Binding="{Binding BannerSeverity}" Value="Warning">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Warning}" />
+            </DataTrigger>
+            <DataTrigger TargetType="Border" Binding="{Binding BannerSeverity}" Value="Error">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Error}" />
+            </DataTrigger>
+        </Border.Triggers>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Label Text="{Binding BannerMessage}"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               FontSize="12"
+                               LineBreakMode="TailTruncation"
+                               VerticalOptions="Center" />
+            <Button Grid.Column="1"
+                                Text="×"
+                                Command="{Binding DismissBannerCommand}"
+                                BackgroundColor="Transparent"
+                                TextColor="White"
+                                FontSize="16"
+                                Padding="4,0"
+                                MinimumWidthRequest="24"
+                                MinimumHeightRequest="24"
+                                SemanticProperties.Description="Dismiss notification" />
+        </Grid>
+    </Border>
+
+</ContentView>

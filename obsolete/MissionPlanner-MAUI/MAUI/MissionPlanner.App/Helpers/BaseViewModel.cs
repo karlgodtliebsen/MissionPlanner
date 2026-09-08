@@ -1,0 +1,296 @@
+﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using MissionPlanner.Library.EventHub.Abstractions;
+using UraniumUI.Material;
+using UraniumUI.Material.TabViews;
+
+namespace MissionPlanner.App.Helpers;
+
+/// <summary>
+/// Represents the base view model with common functionality for handling busy state, status messages, and error messages.
+/// </summary>
+public partial class BaseViewModel : ObservableObject, IDisposable, IActivationLifeCycle
+{
+    private readonly SemaphoreSlim operationGate = new(1, 1);
+    private readonly ILogger logger;
+    private bool disposed;
+    private readonly IDomainEventHub? eventHub;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="logger">The logger used for operation failures.</param>
+    /// <param name="dispatcher">
+    /// The UI dispatcher. When omitted, the dispatcher for the current thread is used. A
+    /// synchronous dispatcher is used only when no MAUI dispatcher exists, such as in a
+    /// headless unit-test process.
+    /// </param>
+    protected BaseViewModel(ILogger logger, IDispatcher? dispatcher = null)
+    {
+        this.Dispatcher = dispatcher
+            ?? Microsoft.Maui.Dispatching.Dispatcher.GetForCurrentThread()
+            ?? HeadlessDispatcher.Instance;
+        this.logger = logger;
+        // MAUI supplies the application event hub in production. Headless unit tests
+        // construct view models directly and therefore have no IPlatformApplication.
+        eventHub = IPlatformApplication.Current?.Services.GetService<IDomainEventHub>();
+        logger.LogTrace("BaseViewModel initialized for ViewModel {viewModel}", GetType().FullName);
+        Debug.Print($"BaseViewModel initialized for ViewModel {GetType().FullName}");
+    }
+
+    /// <summary>Gets the dispatcher associated with the application UI.</summary>
+    protected IDispatcher Dispatcher
+    {
+        get;
+    }
+
+    /// <summary>Gets or sets the current operation progress from zero to one.</summary>
+    [ObservableProperty]
+    public partial double Progress
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Gets whether an operation is running.
+    /// </summary>
+    [ObservableProperty]
+    public virtual partial bool IsBusy
+    {
+        get; set;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    protected void SetBusy()
+    {
+        DispatchIfAlive(
+            () =>
+            {
+                IsBusy = true;
+                Task.Yield();
+            });
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    protected void ResetBusy()
+    {
+        DispatchIfAlive(() =>
+        {
+            IsBusy = false;
+            Task.Yield();
+        });
+    }
+
+    /// <summary>
+    /// Gets the latest operation or validation status.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
+    public virtual partial string? StatusMessage
+    {
+        get; set;
+    }
+
+    partial void OnStatusMessageChanged(string? value)
+    {
+        eventHub?.PublishDomainEventAsync<StatusMessageReceived>(new StatusMessageReceived(value));
+        //eventHub/
+    }
+
+
+    /// <summary>
+    /// Gets whether a status message is available.
+    /// </summary>
+    public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
+
+    /// <summary>
+    /// Gets the latest error message, if any.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasError))]
+    public partial string? ErrorMessage { get; set; } = null;
+
+    /// <summary>
+    /// Gets whether an error message is available.
+    /// </summary>
+    public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="statusMessage"></param>
+    /// <param name="errorMessage"></param>
+    protected virtual void SetMessages(string? statusMessage = null, string? errorMessage = null)
+    {
+        if (Dispatcher.IsDispatchRequired)
+        {
+            Dispatcher.Dispatch(() => SetMessages(statusMessage, errorMessage));
+            return;
+        }
+        StatusMessage = statusMessage;
+        ErrorMessage = errorMessage;
+        Task.Yield();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="ex"></param>
+    protected virtual void SetMessages(Exception? ex)
+    {
+        if (Dispatcher.IsDispatchRequired)
+        {
+            Dispatcher.Dispatch(() => SetMessages(ex));
+            return;
+        }
+        string? eMsg = null;
+        if (ex is not null)
+        {
+            eMsg = ex.Message;
+        }
+        StatusMessage = null;
+        ErrorMessage = eMsg;
+        Task.Yield();
+    }
+
+
+    /// <summary>
+    /// Runs the specified operation asynchronously, handling busy state and exceptions.
+    /// </summary>
+    /// <param name="lifetimeCancellation"> </param>
+    /// <param name="operation">The operation to run.</param>
+    protected virtual async Task RunAsync(CancellationToken lifetimeCancellation, Func<CancellationToken, Task> operation)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (!await operationGate.WaitAsync(0, lifetimeCancellation))
+        {
+            return;
+        }
+        DispatchIfAlive(() => IsBusy = true);
+        try
+        {
+            lifetimeCancellation.ThrowIfCancellationRequested();
+            await operation(lifetimeCancellation);
+        }
+        catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested)
+        {
+            DispatchIfAlive(() => StatusMessage = "Operation cancelled.");
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Operation failed.");
+            DispatchIfAlive(() =>
+            {
+                StatusMessage = $"Operation failed: {exception.Message}";
+                ErrorMessage = exception.Message;
+            });
+        }
+        finally
+        {
+            DispatchIfAlive(() => IsBusy = false);
+            operationGate.Release();
+        }
+    }
+
+    /// <inheritdoc />
+    public virtual void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+        disposed = true;
+        //lifetimeCancellation.Cancel();
+        // An in-flight operation can still be observing this source. It is intentionally
+        // retained until the view model becomes unreachable rather than raced by disposal.
+    }
+
+    /// <inheritdoc />
+    public virtual Task ActivateAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public virtual Task DeactivateAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    private void DispatchIfAlive(Action action)
+    {
+        Dispatcher.Dispatch(() =>
+        {
+            if (!disposed)
+            {
+                action();
+            }
+        });
+    }
+
+    private sealed class HeadlessDispatcher : IDispatcher
+    {
+        public static HeadlessDispatcher Instance { get; } = new();
+
+        public bool IsDispatchRequired => false;
+
+        public bool Dispatch(Action action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            action();
+            return true;
+        }
+
+        public bool DispatchDelayed(TimeSpan delay, Action action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            action();
+            return true;
+        }
+
+        public IDispatcherTimer CreateTimer()
+        {
+            return new HeadlessDispatcherTimer();
+        }
+    }
+
+    private sealed class HeadlessDispatcherTimer : IDispatcherTimer
+    {
+        public TimeSpan Interval
+        {
+            get; set;
+        }
+
+        public bool IsRepeating
+        {
+            get; set;
+        }
+
+        public bool IsRunning
+        {
+            get; private set;
+        }
+
+        public event EventHandler? Tick;
+
+        public void Start()
+        {
+            IsRunning = true;
+            Tick?.Invoke(this, EventArgs.Empty);
+            if (!IsRepeating)
+            {
+                IsRunning = false;
+            }
+        }
+
+        public void Stop()
+        {
+            IsRunning = false;
+        }
+    }
+
+}

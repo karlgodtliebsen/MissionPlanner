@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:MessagesTabViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.MessagesTabView"
+                                  x:DataType="tabs:MessagesTabViewModel"
+                                  >
+
+    <Grid Padding="8" RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="15">
+        <material:SelectField
+            Title="Severity"
+            ItemsSource="{Binding SeverityFilters}"
+            SelectedItem="{Binding SelectedSeverity}"
+        />
+
+        <SearchBar Grid.Row="1"
+                       Placeholder="Search text or source"
+                       Text="{Binding SearchText}" />
+
+        <ScrollView Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
+            <HorizontalStackLayout Spacing="6">
+                <Button Text="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}" />
+                <Button Text="Clear View" Command="{Binding ClearCurrentViewCommand}" />
+                <Button Text="Copy Selected" Command="{Binding CopySelectedCommand}" />
+                <Button Text="Copy All" Command="{Binding CopyAllCommand}" />
+                <Button Text="Export Text" Command="{Binding ExportTextCommand}" />
+                <Button Text="Export JSON" Command="{Binding ExportJsonCommand}" />
+            </HorizontalStackLayout>
+        </ScrollView>
+        <Grid Grid.Row="3" >
+            <controls:VirtualizedDataGrid 
+                ItemsSource="{Binding Items}" 
+                SelectedItems="{Binding SelectedItems}" 
+                ItemSizingStrategy= "MeasureFirstItem"
+                ShowSearchBar="False"
+                HorizontalOptions="Fill" 
+                VerticalOptions="Fill" 
+                BackgroundColor="Transparent">
+                <controls:VirtualizedDataGrid.EmptyView>
+                    <Label HorizontalOptions="Center" Text="No messages match the current vehicle and filter." FontSize="12" Opacity="0.6" Margin="0,20" />
+                </controls:VirtualizedDataGrid.EmptyView>
+                <controls:VirtualizedDataGrid.Columns>
+                    <material:DataGridColumn Title="Severity" Width="*">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:MessageListItem">
+                                <Label Text="{Binding SeverityDisplay}" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                    <material:DataGridColumn Title="Title" Width="*">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:MessageListItem">
+                                <Label Text="{Binding Text}" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                    <material:DataGridColumn Title="Details" Width="*">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:MessageListItem">
+                                <Label Text="{Binding Details}" LineBreakMode="WordWrap" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                    <material:DataGridColumn Title="Notification" Width="160">
+                        <material:DataGridColumn.CellItemTemplate >
+                            <DataTemplate  >
+                                <Label 
+                                    Text="Local application notification — not MAVLink STATUSTEXT"
+                                    FontSize="11"
+                                    FontAttributes="Italic"
+                                    IsVisible="False">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding Origin}" Value="Application">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                </controls:VirtualizedDataGrid.Columns>
+            </controls:VirtualizedDataGrid>
+        </Grid>
+        <Label Grid.Row="4" Text="{Binding Status}" LineBreakMode="TailTruncation" />
+    </Grid>
+</tabViews:TabViewLifecycleContent>

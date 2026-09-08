@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary x:Class="MissionPlanner.App.Resources.Styles.StyleResources"
+                    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:local="clr-namespace:UraniumUI.Material.Resources"
+                    xmlns:views="clr-namespace:UraniumUI.Views;assembly=UraniumUI"
+                    xmlns:a="clr-namespace:UraniumUI.Material.Attachments"
+                    xmlns:c="clr-namespace:UraniumUI.Material.Controls"
+                    xmlns:t="clr-namespace:UraniumUI.Theming;assembly=UraniumUI"
+                    xmlns:input="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary>
+            <!--#region Style Resources-->
+            <Shadow x:Key="UraniumUI.Styles.Resources.ShadowElevation0" Opacity="0" Offset="0,0" Radius="0" Brush="{DynamicResource ShadowBrush}" />
+            <Shadow x:Key="UraniumUI.Styles.Resources.ShadowElevation1" Opacity="0.2" Offset="2,2" Radius="4" Brush="{DynamicResource ShadowBrush}" />
+            <Shadow x:Key="UraniumUI.Styles.Resources.ShadowElevation2" Opacity="0.4" Offset="4,4" Radius="8" Brush="{DynamicResource ShadowBrush}" />
+            <Shadow x:Key="UraniumUI.Styles.Resources.ShadowElevation3" Opacity="0.6" Offset="6,6" Radius="12" Brush="{DynamicResource ShadowBrush}" />
+            <Shadow x:Key="UraniumUI.Styles.Resources.ShadowElevation4" Opacity="0.6" Offset="8,8" Radius="16" Brush="{DynamicResource ShadowBrush}" />
+            <Shadow x:Key="UraniumUI.Styles.Resources.ShadowElevation5" Opacity="0.8" Offset="10,10" Radius="20" Brush="{DynamicResource ShadowBrush}" />
+            <!--#endregion-->
+
+            <!--#region Keyed Styles-->
+            <Style x:Key="UraniumUI.Styles.Page" TargetType="Page" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Background}"/>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.Label" TargetType="Label" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="TextColor" Value="{DynamicResource OnBackground}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.Frame" TargetType="Frame" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.View.Elevation0" TargetType="View" ApplyToDerivedTypes="True" >
+                <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation0}" />
+            </Style>
+            <Style x:Key="UraniumUI.Styles.View.Elevation1" TargetType="View" ApplyToDerivedTypes="True" >
+                <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation1}" />
+            </Style>
+            <Style x:Key="UraniumUI.Styles.View.Elevation2" TargetType="View" ApplyToDerivedTypes="True" >
+                <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation2}" />
+            </Style>
+            <Style x:Key="UraniumUI.Styles.View.Elevation3" TargetType="View" ApplyToDerivedTypes="True" >
+                <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation3}" />
+            </Style>
+            <Style x:Key="UraniumUI.Styles.View.Elevation4" TargetType="View" ApplyToDerivedTypes="True" >
+                <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation3}" />
+            </Style>
+            <Style x:Key="UraniumUI.Styles.View.Elevation5" TargetType="View" ApplyToDerivedTypes="True" >
+                <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation3}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.Button" TargetType="Button">
+                <Setter Property="CornerRadius" Value="20" />
+                <Setter Property="HeightRequest" Value="40" />
+                <Setter Property="Padding" Value="24,0" />
+            </Style>
+
+            <!--Legacy Name-->
+            <Style x:Key="BaseButtonStyle" BaseResourceKey="UraniumUI.Styles.Button" TargetType="Button" />
+
+            <!--Use Legacy Base Name-->
+            <Style x:Key="UraniumUI.Styles.Button.Elevated" TargetType="Button" BaseResourceKey="BaseButtonStyle" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation1}"/>
+                <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal"/>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation0}" />
+                                    <Setter Property="TextColor" Value="{DynamicResource DisabledText}"/>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource DisabledBackground}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Hover">
+                                <VisualState.Setters>
+                                    <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation2}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation0}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!--Use Legacy Base Name-->
+            <Style x:Key="UraniumUI.Styles.Button.Filled" TargetType="Button" BaseResourceKey="BaseButtonStyle" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                <Setter Property="TextColor" Value="{DynamicResource OnPrimary}" />
+                <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation0}" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="Hover">
+                                <VisualState.Setters>
+                                    <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation1}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="TextColor" Value="{DynamicResource DisabledText}"/>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource DisabledBackground}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!--Use Legacy Base Name-->
+            <Style x:Key="UraniumUI.Styles.Button.FilledTonal" TargetType="Button" BaseResourceKey="BaseButtonStyle" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource SecondaryContainer}" />
+                <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="1" />
+                <Setter Property="TextColor" Value="{DynamicResource OnSecondaryContainer}" />
+                <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation0}" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal"/>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="TextColor" Value="{DynamicResource DisabledText}"/>
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource DisabledBackground}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Hover">
+                                <VisualState.Setters>
+                                    <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation1}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0.8" />
+                                    <Setter Property="Shadow" Value="{DynamicResource UraniumUI.Styles.Resources.ShadowElevation0}"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!--Use Legacy Base Name-->
+            <Style x:Key="UraniumUI.Styles.Button.Outlined" TargetType="Button" BaseResourceKey="BaseButtonStyle" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0" />
+                <Setter Property="BorderColor" Value="{DynamicResource Outline}" />
+                <Setter Property="BorderWidth" Value="1" />
+                <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal"/>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0" />
+                                    <Setter Property="TextColor" Value="{DynamicResource Gray300}"/>
+                                    <Setter Property="BorderColor" Value="{DynamicResource Gray100}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Hover">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0.1" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0.16" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!--Use Legacy Base Name-->
+            <Style x:Key="UraniumUI.Styles.Button.Text" TargetType="Button" BaseResourceKey="BaseButtonStyle" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0" />
+                <Setter Property="BorderWidth" Value="0" />
+                <Setter Property="Margin" Value="0,2"/>
+                <Setter Property="TextColor" Value="{DynamicResource Primary}" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal"/>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0" />
+                                    <Setter Property="TextColor" Value="{DynamicResource DisabledText}"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Hover">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0.1" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0.16" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.BoxView" TargetType="BoxView" CanCascade="True">
+                <Setter Property="HeightRequest" Value="1" />
+                <Setter Property="Color" Value="{DynamicResource OutlineVariant}" />
+                <Setter Property="Margin" Value="16,8"/>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.CheckBox" TargetType="input:CheckBox" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="Type" Value="Material" />
+                <Setter Property="BorderColor" Value="{DynamicResource Outline}" />
+                <Setter Property="Color" Value="{DynamicResource Primary}" />
+                <Setter Property="TextColor" Value="{DynamicResource OnBackground}" />
+                <Setter Property="ValidationColor" Value="{DynamicResource Error}"/>
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="Opacity" Value="1"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="Opacity" Value="0.6" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.RadioButton" TargetType="input:RadioButton" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="Color" Value="{DynamicResource Primary}" />
+                <Setter Property="TextColor" Value="{DynamicResource OnBackground}" />
+                <Setter Property="CircleColor" Value="{DynamicResource Outline}" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="Opacity" Value="1"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="Opacity" Value="0.6" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.SelectionView" TargetType="input:SelectionView" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="Color" Value="{DynamicResource Tertiary}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.RadioButton.Checked" TargetType="material:RadioButton" CanCascade="True">
+                <Setter Property="SelectedIconGeomerty" Value="{x:Static input:PredefinedShapes.CheckCircle}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.BottomSheetView" TargetType="material:BottomSheetView" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Surface}"/>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.BackdropView" TargetType="material:BackdropView" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Primary}"/>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.DataGrid" TargetType="material:DataGrid" CanCascade="True" ApplyToDerivedTypes="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+                <Setter Property="LineSeparatorColor" Value="{DynamicResource Outline}"/>
+                <Setter Property="Stroke" Value="{DynamicResource Outline}" />
+                <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+                <Setter Property="StrokeThickness" Value=".5" />
+                <Setter Property="SelectionColor" Value="{DynamicResource Primary}" />
+            </Style>
+
+            <!--Legacy Name-->
+            <Style x:Key="DataGrid.Base" BaseResourceKey="UraniumUI.Styles.DataGrid" TargetType="material:DataGrid" CanCascade="True" />
+
+            <Style x:Key="UraniumUI.Styles.InputField" TargetType="material:InputField" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="Opacity" Value="1"/>
+                <Setter Property="AccentColor" Value="{DynamicResource Primary}" />
+                <Setter Property="BorderColor" Value="{DynamicResource OnBackground}" />
+                <Setter Property="TitleColor" Value="{DynamicResource OnBackground}" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal"/>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="Opacity" Value="0.6" />
+                                    <Setter Property="BorderColor" Value="{DynamicResource DisabledText}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!--Legacy Name-->
+            <Style x:Key="InputFieldBaseStyle" BaseResourceKey="UraniumUI.Styles.InputField" TargetType="material:InputField" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <!--Use Legacy Base Name-->
+            <Style x:Key="UraniumUI.Styles.TextField" BaseResourceKey="InputFieldBaseStyle" TargetType="material:TextField"  CanCascade="True">
+                <Setter Property="TextColor" Value="{DynamicResource OnBackground}" />
+                <Setter Property="SelectionHighlightColor" Value="{DynamicResource Primary}" />
+            </Style>
+
+            <!--Use Legacy Base Name-->
+            <Style x:Key="UraniumUI.Styles.AutoCompleteTextField" BaseResourceKey="InputFieldBaseStyle" TargetType="material:AutoCompleteTextField" CanCascade="True">
+                <Setter Property="TextColor" Value="{DynamicResource OnBackground}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.StatefulContentView" TargetType="views:StatefulContentView" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="Opacity" Value="0.8" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="Opacity" Value="1.0" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!--Legacy Name-->
+            <Style x:Key="UraniumUI.Views.StatefulContentView.Base" BaseResourceKey="UraniumUI.Styles.StatefulContentView" TargetType="views:StatefulContentView" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style x:Key="UraniumUI.Styles.ButtonView" TargetType="material:ButtonView" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                <Setter Property="Padding" Value="10" />
+                <Setter Property="StrokeShape" Value="{RoundRectangle CornerRadius=20}"/>
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0.9" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Normal"/>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0.8" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <!--Legacy Name-->
+            <Style x:Key="UraniumUI.Material.Controls.ButtonView.Base" BaseResourceKey="UraniumUI.Styles.ButtonView" TargetType="material:ButtonView" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style x:Key="UraniumUI.Styles.ButtonView.TreeViewExpand" TargetType="material:ButtonView" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Primary}" />
+                <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0" />
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="PointerOver">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0.1" />
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Normal"/>
+                            <VisualState x:Name="Pressed">
+                                <VisualState.Setters>
+                                    <Setter Property="t:DynamicTint.BackgroundColorOpacity" Value="0.15" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.View.PrimaryContainer" TargetType="View" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="Background" Value="{DynamicResource PrimaryContainerBrush}" />
+                <Setter Property="t:CascadingStyle.Resources">
+                    <ResourceDictionary>
+                        <Style TargetType="Label">
+                            <Setter Property="TextColor" Value="{DynamicResource OnPrimaryContainer}" />
+                        </Style>
+                    </ResourceDictionary>
+                </Setter>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.View.SecondaryContainer" TargetType="View" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource SecondaryContainer}" />
+                <Setter Property="t:CascadingStyle.Resources">
+                    <ResourceDictionary>
+                        <Style TargetType="Label">
+                            <Setter Property="TextColor" Value="{DynamicResource OnSecondaryContainer}" />
+                        </Style>
+                    </ResourceDictionary>
+                </Setter>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.View.TertiaryContainer" TargetType="View" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource TertiaryContainer}" />
+                <Setter Property="t:CascadingStyle.Resources">
+                    <ResourceDictionary>
+                        <Style TargetType="Label">
+                            <Setter Property="TextColor" Value="{DynamicResource OnTertiaryContainer}" />
+                        </Style>
+                    </ResourceDictionary>
+                </Setter>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.View.ErrorContainer" TargetType="View" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource ErrorContainer}" />
+                <Setter Property="t:CascadingStyle.Resources">
+                    <ResourceDictionary>
+                        <Style TargetType="Label">
+                            <Setter Property="TextColor" Value="{DynamicResource OnErrorContainer}" />
+                        </Style>
+                    </ResourceDictionary>
+                </Setter>
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.View.SurfaceContainer" TargetType="View" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.Border.Rounded" TargetType="Border" ApplyToDerivedTypes="True" CanCascade="True">
+                <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.Path" TargetType="Path" CanCascade="True">
+                <Setter Property="Fill" Value="{DynamicResource OnSurface}"></Setter>
+            </Style>
+
+            <!-- Disable until solution of MAUI bug -->
+
+            <!--<Style x:Key="UraniumUI.Styles.FontImageSource" TargetType="FontImageSource" CanCascade="True">
+                <Setter Property="Color" Value="{DynamicResource OnBackground}"></Setter>
+            </Style>-->
+
+            <Style x:Key="UraniumUI.Styles.TreeView" TargetType="material:TreeView">
+                <Setter Property="SelectionColor" Value="{DynamicResource Tertiary}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.Label.TreeView" TargetType="Label" BaseResourceKey="Microsoft.Maui.Controls.Label" />
+
+            <Style x:Key="UraniumUI.Styles.Label.TreeView.Selected" TargetType="Label" BaseResourceKey="Microsoft.Maui.Controls.Label">
+                <Setter Property="TextColor" Value="{DynamicResource OnTertiary}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.Path.TreeView.Arrow" TargetType="Path" BaseResourceKey="Microsoft.Maui.Controls.Shapes.Path">
+                <Setter Property="Fill" Value="{DynamicResource OnBackground}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.Path.TreeView.Arrow.Selected" TargetType="Path" BaseResourceKey="Microsoft.Maui.Controls.StyleClass.TreeView.Arrow">
+                <Setter Property="Fill" Value="{DynamicResource OnTertiary}" />
+            </Style>
+
+            <Style x:Key="UraniumUI.Styles.Border.BottomSheet" TargetType="Border" CanCascade="True">
+                <Setter Property="StrokeShape"  Value="RoundRectangle 8" />
+                <Setter Property="StrokeThickness" Value="0" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+            </Style>
+            <!--#endregion-->
+
+            <!--#region Default Styles-->
+            <Style BaseResourceKey="UraniumUI.Styles.Page" TargetType="Page" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.Label" TargetType="Label" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.Frame" TargetType="Frame" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.View.Elevation0" TargetType="View" Class="Elevation0" ApplyToDerivedTypes="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.View.Elevation1" TargetType="View" Class="Elevation1" ApplyToDerivedTypes="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.View.Elevation2" TargetType="View" Class="Elevation2" ApplyToDerivedTypes="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.View.Elevation3" TargetType="View" Class="Elevation3" ApplyToDerivedTypes="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.View.Elevation4" TargetType="View" Class="Elevation4" ApplyToDerivedTypes="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.View.Elevation5" TargetType="View" Class="Elevation5" ApplyToDerivedTypes="True" />
+
+            <!--Use Legacy Base Name-->
+            <Style BaseResourceKey="BaseButtonStyle" TargetType="Button" CanCascade="True"/>
+
+            <Style BaseResourceKey="UraniumUI.Styles.Button.Elevated" TargetType="Button" Class="ElevatedButton" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.Button.Filled" TargetType="Button" Class="FilledButton" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.Button.FilledTonal" TargetType="Button" Class="FilledTonalButton" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.Button.Outlined" TargetType="Button" Class="OutlinedButton" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.Button.Text" TargetType="Button" Class="TextButton" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.BoxView" TargetType="BoxView" Class="Divider" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.CheckBox" TargetType="input:CheckBox" ApplyToDerivedTypes="True" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.RadioButton" TargetType="input:RadioButton" ApplyToDerivedTypes="True" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.SelectionView" TargetType="input:SelectionView" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.RadioButton.Checked" TargetType="material:RadioButton" Class="CheckRadioButton" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.BottomSheetView" TargetType="material:BottomSheetView" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.BackdropView" TargetType="material:BackdropView" CanCascade="True" />
+
+            <!--Use Legacy Base Name-->
+            <Style BaseResourceKey="DataGrid.Base" TargetType="material:DataGrid" CanCascade="True" />
+
+            <!--Use Legacy Base Name-->
+            <Style BaseResourceKey="InputFieldBaseStyle" TargetType="material:InputField" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.TextField" TargetType="material:TextField"  CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.AutoCompleteTextField" TargetType="material:AutoCompleteTextField" CanCascade="True" />
+
+            <!--Use Legacy Base Name-->
+            <Style BaseResourceKey="UraniumUI.Views.StatefulContentView.Base" TargetType="views:StatefulContentView" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <!--Use Legacy Base Name-->
+            <Style BaseResourceKey="UraniumUI.Material.Controls.ButtonView.Base" TargetType="material:ButtonView" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.ButtonView.TreeViewExpand" TargetType="material:ButtonView" Class="TreeViewExpandButton" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.View.PrimaryContainer" TargetType="View" Class="PrimaryContainer" ApplyToDerivedTypes="True" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.View.SecondaryContainer" TargetType="View" Class="SecondaryContainer" ApplyToDerivedTypes="True" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.View.TertiaryContainer" TargetType="View" Class="TertiaryContainer" ApplyToDerivedTypes="True" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.View.ErrorContainer" TargetType="View" Class="ErrorContainer" ApplyToDerivedTypes="True" CanCascade="True" />
+            <Style BaseResourceKey="UraniumUI.Styles.View.SurfaceContainer" TargetType="View" Class="SurfaceContainer" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.Border.Rounded" TargetType="Border" Class="Rounded" ApplyToDerivedTypes="True" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.Path" TargetType="Path" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.FontImageSource" TargetType="FontImageSource" CanCascade="True" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.TreeView" TargetType="material:TreeView" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.Label.TreeView" TargetType="Label" Class="TreeView.Label" />
+            <Style BaseResourceKey="UraniumUI.Styles.Label.TreeView.Selected" TargetType="Label" Class="TreeView.Label.Selected" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.Path.TreeView.Arrow" TargetType="Path" Class="TreeView.Arrow" />
+            <Style BaseResourceKey="UraniumUI.Styles.Path.TreeView.Arrow.Selected" TargetType="Path" Class="TreeView.Arrow.Selected" />
+
+            <Style BaseResourceKey="UraniumUI.Styles.Border.BottomSheet" TargetType="Border" Class="BottomSheet" CanCascade="True" />
+            <!--#endregion-->
+        </ResourceDictionary>
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

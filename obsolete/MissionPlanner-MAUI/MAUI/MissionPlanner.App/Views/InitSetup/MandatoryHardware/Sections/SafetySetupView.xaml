@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:SafetySetupViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:setup="clr-namespace:MissionPlanner.Core.Setup;assembly=MissionPlanner.Core"
+                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:mandatoryHardware="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                                  x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SafetySetupView"
+                                  x:DataType="sections:SafetySetupViewModel"
+                                 
+                                  >
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
+            <Label Text="Safety and arming" FontSize="18" FontAttributes="Bold" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <VerticalStackLayout IsVisible="{Binding HasWarnings}" BindableLayout.ItemsSource="{Binding Warnings}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Label Text="{Binding .}" TextColor="{DynamicResource Warning}" LineBreakMode="WordWrap" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" Spacing="4">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="mandatoryHardware:SafetyCheckItem">
+                        <Grid ColumnDefinitions="220,120,*" ColumnSpacing="8">
+                            <Label Text="{Binding Name}" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="{Binding Status}" />
+                            <Label Grid.Column="2" Text="{Binding Detail}" LineBreakMode="WordWrap" Opacity="0.8" />
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+            <Button Text="Re-assess safety"
+                Command="{Binding RefreshCommand}"
+                HorizontalOptions="Start" />
+        </VerticalStackLayout>
+    </ScrollView>
+</tabViews:TabViewLifecycleContent>

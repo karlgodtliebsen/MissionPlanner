@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
+                    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                    xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
+                    xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                    x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.EditorDataGridPage"
+                    x:DataType="dataGrids:EditorDataGridPageViewModel"
+                    >
+
+    <Grid RowDefinitions="Auto,*" Margin="100"  HorizontalOptions="Fill" VerticalOptions="Fill" >
+
+        <HorizontalStackLayout Grid.Row="0" HorizontalOptions="Center" Margin="8,20" >
+            <Button StyleClass="FilledButton" Text="Add data" Command="{Binding AddNewCommand}" />
+        </HorizontalStackLayout>
+        <ActivityIndicator Grid.Row="0" IsRunning="{Binding IsBusy}" Margin="40" />
+
+        <virtualized:VirtualizedDataGrid 
+            Grid.Row="1"
+            ItemsSource="{Binding Items}" 
+            RowHeight="85"
+            EstimatedRowHeight="85"
+            HorizontalOptions="Fill"
+            VerticalOptions="Center"
+            MaximumWidthRequest="600"
+            MinimumStarColumnWidth= "60"
+            ItemSizingStrategy= "MeasureFirstItem"
+            FilterMemberPaths="Name,Id,Age"
+            ShowSearchBar="True"
+        >
+            <virtualized:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Width="*" x:DataType="models:EditorStudent" ValueBinding="{Binding Id}" Title="Id" />
+                <material:DataGridColumn Width="2*" Title="Name">
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="models:EditorStudent" >
+                            <controls:AlignedEditorField
+                                Title="Student Name"
+                                BorderColor="MediumPurple"
+                                Text="{Binding Name}"
+                                VerticalOptions="Center"
+                                HorizontalTextAlignment="End"
+                                VerticalTextAlignment="Center" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+
+                <material:DataGridColumn Width="*" Title="Age">
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="models:EditorStudent" >
+                           <controls:NumericField 
+                                    Padding="3" 
+                                    Value="{Binding Age, Mode=TwoWay}"
+                                    NumericType="Int32"
+                                    BorderColor="MediumPurple"
+                                    NumberFormat="F0"
+                                    Min="0"
+                                    Max="100"
+                                    HorizontalOptions="Fill"
+                                    VerticalOptions="Center"
+                                    HorizontalTextAlignment="End" 
+                                    AllowClear="True"
+                                    AllowSign="False"
+                                    AllowThousands="False" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+
+                <material:DataGridColumn Width="2*" Title="Actions">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="models:EditorStudent">
+                            <Button
+                                Text="Remove"
+                                VerticalOptions="Center"
+                                BackgroundColor="{AppThemeBinding
+                                    Light={StaticResource Secondary},
+                                    Dark={StaticResource SecondaryDark}}"
+                                TextColor="{AppThemeBinding
+                                    Light={StaticResource OnSecondary},
+                                    Dark={StaticResource OnSecondaryDark}}"
+                                Command="{Binding
+                                    BindingContext.RemoveItemCommand,
+                                    Source={RelativeSource AncestorType={x:Type virtualized:VirtualizedDataGrid}}}"
+                                CommandParameter="{Binding .}" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+
+            </virtualized:VirtualizedDataGrid.Columns>
+        </virtualized:VirtualizedDataGrid>
+
+    </Grid>
+
+</uranium:UraniumContentPage>

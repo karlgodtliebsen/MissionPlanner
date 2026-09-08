@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<navigation:ExtendedContentPage
+                    x:TypeArguments="local:OptionalHardwareViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                    xmlns:tabs="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware"
+                    xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+                    xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.OptionalHardwareView"
+                    x:DataType="local:OptionalHardwareViewModel" 
+                    Title="Optional Hardware"
+    >
+    <Grid Padding="20"
+          RowDefinitions="Auto,*"
+          RowSpacing="14"
+          HorizontalOptions="Fill"
+          VerticalOptions="Fill">
+        <VerticalStackLayout>
+            <Label Text="Optional Hardware" FontSize="26" FontAttributes="Bold"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding VehicleHeading}"/>
+            <Label Text="{Binding AvailabilitySummary}" Opacity="0.75"/>
+        </VerticalStackLayout>
+
+        <Border Grid.Row="1"  StyleClass="SurfaceContainer,Rounded,Elevation1" >
+            <tabs:ExtendedTabView  
+                              HorizontalOptions="Fill"
+                              VerticalOptions="Fill"
+                              TabPlacement="Start" 
+                              CachingStrategy="CacheOnLayout"
+                              UseAnimation="False"
+                              HeaderItemsSource="{Binding Tabs}" 
+                              SelectedHeaderItem="{Binding SelectedTab,Mode=TwoWay}"
+                             
+                              >
+                <material:TabView.TabHeaderItemTemplate>
+                    <DataTemplate x:DataType="common:TabItemViewModel">
+                        <common:SlimTabHeaderView IsVisible="{Binding IsAvailable}"
+                                                 MinimumWidthRequest="260"
+                                                 HorizontalOptions="Fill" />
+                    </DataTemplate>
+                </material:TabView.TabHeaderItemTemplate>
+
+                <material:TabItem Title="RTK/GPS Inject">
+                    <sections:RtkGpsInjectView/>
+                </material:TabItem>
+                <material:TabItem Title="SiK Radio">
+                    <sections:SikRadioView/>
+                </material:TabItem>
+                <material:TabItem Title="DroneCAN / UAVCAN">
+                    <sections:DroneCanUavCanView/>
+                </material:TabItem>
+                <material:TabItem Title="Joystick">
+                    <sections:JoystickView/>
+                </material:TabItem>
+                <material:TabItem Title="Battery Monitors">
+                    <sections:BatterySetupView/>
+                </material:TabItem>
+                <material:TabItem Title="CAN GPS Order">
+                    <sections:CanGpsOrderView/>
+                </material:TabItem>
+                <material:TabItem Title="Compass / Motor Calibration">
+                    <sections:CompassMotorCalibrationView/>
+                </material:TabItem>
+                <material:TabItem Title="Rangefinder">
+                    <sections:RangefinderView/>
+                </material:TabItem>
+                <material:TabItem Title="Airspeed">
+                    <sections:AirspeedView/>
+                </material:TabItem>
+                <material:TabItem Title="Optical Flow">
+                    <sections:OpticalFlowView/>
+                </material:TabItem>
+                <material:TabItem Title="Onboard OSD">
+                    <sections:OnboardOsdBridgeView/>
+                </material:TabItem>
+                <material:TabItem Title="Camera / Gimbal">
+                    <sections:CameraGimbalView/>
+                </material:TabItem>
+                <material:TabItem Title="Motor Test">
+                    <sections:MotorTestView/>
+                </material:TabItem>
+                <material:TabItem Title="Bluetooth Setup">
+                    <sections:BluetoothSetupView/>
+                </material:TabItem>
+                <material:TabItem Title="Parachute">
+                    <sections:ParachuteView/>
+                </material:TabItem>
+                <material:TabItem Title="ESP8266 Setup">
+                    <sections:Esp8266SetupView/>
+                </material:TabItem>
+                <material:TabItem Title="CubeID Update">
+                    <sections:CubeIdUpdateView/>
+                </material:TabItem>
+                <material:TabItem Title="Antenna Tracker">
+                    <sections:AntennaTrackerView/>
+                </material:TabItem>
+                <material:TabItem Title="FFT Setup">
+                    <sections:FftSetupView/>
+                </material:TabItem>
+            </tabs:ExtendedTabView>
+        </Border>
+
+
+    </Grid>
+</navigation:ExtendedContentPage>

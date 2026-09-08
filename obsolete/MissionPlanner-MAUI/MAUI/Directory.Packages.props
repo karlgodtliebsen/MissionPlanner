@@ -1,0 +1,115 @@
+<Project>
+  <PropertyGroup>
+    <!-- Central package versions -->
+    <MicrosoftExtensionsVersion>10.0.9</MicrosoftExtensionsVersion>
+    <MauiVersion>10.0.71</MauiVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Microsoft.Extensions family -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.10" />
+    <!-- Logging family -->
+    <PackageVersion Include="Serilog" Version="4.4.0" />
+    <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageVersion Include="Serilog.Enrichers.Process" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Settings.AppSettings" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.1" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
+    <PackageVersion Include="Serilog.Sinks.Debug" Version="3.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Trace" Version="4.0.0" />
+    <PackageVersion Include="Spectre.Console" Version="0.57.0" />
+    <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
+    <!--Other-->
+    <PackageVersion Include="System.IO.Ports" Version="10.0.10" />
+    <PackageVersion Include="System.Reactive" Version="7.0.0" />
+    <PackageVersion Include="Polly" Version="8.7.0" />
+    <PackageVersion Include="DynamicData" Version="9.4.31" />
+    <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
+    <PackageVersion Include="Ulid" Version="1.4.1" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="All" />
+    
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+    <PackageVersion Include="Mapsui" Version="5.1.0" />
+    <PackageVersion Include="Mapsui.Avalonia12" Version="5.1.0" />
+    <PackageVersion Include="Mapsui.Tiling" Version="5.1.0" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+
+      <!--soon obsolete-->
+    <!--MAUI-->
+    <PackageVersion Include="Microsoft.Maui.Core" Version="10.0.90" />
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.90" />
+    <PackageVersion Include="Microsoft.Maui.Controls.Compatibility" Version="10.0.90" />
+    <PackageVersion Include="Plainer.Maui" Version="1.8.0" />
+    <PackageVersion Include="Mapsui" Version="5.1.0" />
+    <PackageVersion Include="Mapsui.Maui" Version="5.1.0" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="2.1.12" />
+    <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="4.151.1" />
+    <PackageVersion Include="CommunityToolkit.Maui" Version="15.0.0" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <!--MAUI Uranium-->
+    <PackageVersion Include="UraniumUI.Blurs" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Dialogs.CommunityToolkit" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Dialogs.Mopups" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Icons.FontAwesome" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Icons.MaterialIcons" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Icons.MaterialSymbols" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Icons.SegoeFluent" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Material" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Validations.DataAnnotations" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.WebComponents" Version="3.0.0" />
+    <PackageVersion Include="InputKit.Maui" Version="4.6.0" />
+
+
+
+      <!--Avalonia-->
+    <PackageVersion Include="Avalonia" Version="12.1.1" />
+    <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.2" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.1" />
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageVersion>
+    <PackageVersion Include="Irihi.Ursa" Version="2.2.0" />
+    <PackageVersion Include="Irihi.Ursa.Themes.Semi" Version="2.2.0" />
+    <PackageVersion Include="Semi.Avalonia" Version="12.1.0.1" />
+    <PackageVersion Include="Semi.Avalonia.AvaloniaEdit" Version="12.0.0" />
+    <PackageVersion Include="Semi.Avalonia.DataGrid" Version="12.1.0.1" />
+    <PackageVersion Include="Semi.Avalonia.Dock" Version="12.0.0.2" />
+    <PackageVersion Include="Semi.Avalonia.ColorPicker" Version="12.1.0.1" />
+    <!-- Testing family -->
+    <PackageVersion Include="Shouldly" Version="4.3.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+    <PackageVersion Include="Testcontainers" Version="4.12.0" />
+    <PackageVersion Include="Meziantou.Extensions.Logging.Xunit.v3" Version="3.0.0" />
+    <PackageVersion Include="FluentAssertions" Version="[7.0.0]" />
+    <PackageVersion Include="NSubstitute" Version="6.0.0" />
+    <PackageVersion Include="AutoBogus" Version="2.13.1" />
+    <PackageVersion Include="AutoBogus.Conventions" Version="2.13.1" />
+    <PackageVersion Include="AutoBogus.NSubstitute" Version="2.13.1" />
+    <PackageVersion Include="AutoBogus.Templating" Version="2.13.1" />
+    <PackageVersion Include="Bogus" Version="35.6.5" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<navigation:ExtendedContentPage 
+                         x:TypeArguments="vm:FlightPlannerViewModel"  
+                         xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                         xmlns:vm="clr-namespace:MissionPlanner.App.Views.FlightPlanner"
+                         xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
+                         xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                         xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                         xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                         x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerPage"
+                         x:DataType="vm:FlightPlannerViewModel"
+                         BackgroundColor="{DynamicResource Surface}"
+                         >
+
+    <controls:RightDockPanel 
+        HorizontalOptions="Fill" 
+        VerticalOptions="Fill" 
+        Title="Quick Editor"
+        DockWidth="360"
+        MinDockWidth="260"
+        MaxDockWidth="520"
+        IsExpanded="False"
+
+        AutoSizeToContent="True"
+        ShowEdgeToggleWhenExpanded="False"
+
+        DockBackground="{DynamicResource Surface}"
+        HeaderBackground="{DynamicResource SurfaceContainerLow}"
+        DockBorderColor="{DynamicResource Outline}"
+        SplitterColor="{DynamicResource OutlineVariant}"
+        >
+        <controls:RightDockPanel.MainContent>
+            <Grid RowDefinitions="Auto,*" RowSpacing="4" Padding="5"  HorizontalOptions="Fill" VerticalOptions="Fill">
+                <FlexLayout Grid.Row="0" Wrap="Wrap" VerticalOptions="Center" AlignItems="Center" JustifyContent="Start" 
+                            Margin="10,5,0,5">
+
+                    <Button Text="Load File" Command="{Binding Map.LoadWpFileCommand}" Margin="0,0,4,4" />
+                    <Button Text="Save File"  Command="{Binding Map.SaveWpFileCommand}" Margin="0,0,4,4" />
+                    <Button Text="Clear Mission" Command="{Binding Map.ClearMissionCommand}" Margin="0,0,4,4" />
+
+                    <Button Text="Apply" Command="{Binding Map.ApplyRowEditsCommand}" Margin="0,0,4,4" />
+                    <Button Text="Revert" Command="{Binding Map.CancelRowEditsCommand}" Margin="0,0,4,4" />
+
+                    <Button Text="Read" Command="{Binding ReadFromVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+                    <Button Text="Write" Command="{Binding WriteToVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+                    <Button Text="Write Fast" Command="{Binding WriteToVehicleFastCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+                    <Button Text="Editor" Command="{Binding EditCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="4" VerticalOptions="Fill" Margin="0,0,4,4">
+                        <Label  Grid.Column="0" Text="Map:" VerticalOptions="Center" />
+
+                        <material:SelectField 
+                                Grid.Column="1"
+                                ItemsSource="{Binding Map.AvailableSourceIds}"
+                                SelectedItem="{Binding Map.SelectedSourceId}"
+                                WidthRequest="170"
+                                Margin="0,0,4,4" />
+
+                        <Label  Grid.Column="2" Text="Default Altitude (m):" VerticalOptions="Center" />
+                        <controls:NumericField  Grid.Column="3"
+                                                WidthRequest="70"
+                                                BorderThickness="0.1"
+                                                Margin="0,0,4,4" 
+                                                Value="{Binding Map.DefaultAltitudeMeters, Mode=TwoWay}"
+                                                NumberFormat="F1"
+                                                HorizontalOptions="Fill"
+                                                HorizontalTextAlignment="End" />
+
+                        <material:CheckBox Grid.Column="4" Text="Click map to add WP" VerticalOptions="Center" IsChecked="{Binding Map.AddWaypointOnMapClick}" />
+                        <Label  Grid.Column="5" Text="{Binding TransferStatus}" VerticalOptions="Center"  />
+                    </Grid>
+                </FlexLayout>
+                <!--<Grid  x:Name="MapView" Grid.Row="1"  HorizontalOptions="Fill" VerticalOptions="Fill" ></Grid>-->
+
+                <vm:FlightPlannerMissionMapView x:Name="MapView" Grid.Row="1"  HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                <ActivityIndicator x:Name="MapLoadingIndicator"
+                                   Color="{DynamicResource Primary}"
+                                   MinimumWidthRequest="100"
+                                   MinimumHeightRequest="100"
+                                   Grid.Row="1"
+                                   IsRunning="False"
+                                   IsVisible="False"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+            </Grid>
+        </controls:RightDockPanel.MainContent>
+
+        <controls:RightDockPanel.DockContent>
+            <missions:MissionItemListView x:Name="ItemListView" BindingContext="{Binding Map}" HorizontalOptions="Fill"  VerticalOptions="Fill" ShowAllRows="False"></missions:MissionItemListView>
+        </controls:RightDockPanel.DockContent>
+
+    </controls:RightDockPanel>
+
+
+</navigation:ExtendedContentPage>

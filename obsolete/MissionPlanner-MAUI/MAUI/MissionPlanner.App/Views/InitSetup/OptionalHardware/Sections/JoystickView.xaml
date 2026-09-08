@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:JoystickViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                                  x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.JoystickView" 
+                                  x:DataType="sections:JoystickViewModel">
+
+    <VerticalStackLayout Padding="20" Spacing="25" HorizontalOptions="Center">
+        <Label Text="Joystick Setup" FontSize="24" FontAttributes="Bold"/>
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation"/>
+        <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+        <Label Text="{Binding PlatformStatus}"/>
+
+        <Grid ColumnDefinitions="Auto,Auto" VerticalOptions="Fill" ColumnSpacing="25" HorizontalOptions="Fill">
+            <material:SelectField 
+                Title="Local device" ItemsSource="{Binding Devices}" VerticalOptions="End"
+                ItemDisplayBinding="{Binding Name}" 
+                SelectedItem="{Binding SelectedDevice}" WidthRequest="300" />
+            <Button Grid.Column="1" Text="Refresh" Command="{Binding RefreshCommand}" VerticalOptions="End"/>
+        </Grid>
+
+        <Label Text="Local calibration is separate from vehicle RC calibration."/>
+        <HorizontalStackLayout>
+            <material:CheckBox  IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Text="Vehicle MANUAL_CONTROL output (disabled by default)"/>
+        </HorizontalStackLayout>
+        <Button Text="Disable and release vehicle control" 
+                Command="{Binding DisableCommand}" HorizontalOptions="Fill"/>
+    </VerticalStackLayout>
+</tabViews:TabViewLifecycleContent>

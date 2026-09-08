@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<navigation:ExtendedContentPage x:TypeArguments="tabs:MavFtpTabViewModel"
+                      xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                      xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                      xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                      xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                      xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                      xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                      x:Name="RootPage"
+                      x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
+                      Title="Vehicle Files">
+
+    <Grid Padding="16" RowDefinitions="Auto,*,Auto" RowSpacing="12">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+            <Button Text="↑" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}" />
+            <Label Grid.Column="1" Text="{Binding CurrentPath}" FontAttributes="Bold" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation" />
+            <Button Grid.Column="2" Text="Refresh"  IsVisible="{Binding HasConnection}" Command="{Binding RefreshCommand}" />
+            <Button Grid.Column="3" Text="Open" IsVisible="{Binding HasEntries}" Command="{Binding OpenSelectedCommand}" />
+            <Button Grid.Column="4" Text="Reset sessions"  IsVisible="{Binding HasConnection}" Command="{Binding ResetSessionsCommand}" />
+        </Grid>
+        <Grid Grid.Row="1"  HorizontalOptions="Fill" >
+            <controls:VirtualizedDataGrid 
+                ItemsSource="{Binding Entries}" 
+                SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                SelectionMode="Single"
+                SelectionChangedCommand="{Binding SelectionChangedCommand}"
+                SelectionTrigger="SelectionColumnAndRowClick"
+
+                ItemSizingStrategy= "MeasureFirstItem"
+                ShowSearchBar="False"
+                HorizontalOptions="Center" 
+                VerticalOptions="Fill" 
+                BackgroundColor="Transparent">
+                <controls:VirtualizedDataGrid.EmptyView>
+                    <Label HorizontalOptions="Center" Text="{Binding EmptyText}" FontSize="12" Opacity="0.6" Margin="0,20" />
+                </controls:VirtualizedDataGrid.EmptyView>
+                <controls:VirtualizedDataGrid.Columns>
+                    <controls:ExtendedSelectableDataGridColumn
+                        SelectionMemberPath="IsSelected"
+                        SelectionCommandMemberPath="SelectionChangedCommand" />
+
+                    <material:DataGridColumn Width="400" Title="Name">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:VehicleFileSystemEntryViewModel">
+                                <Label Text="{Binding Name}" HorizontalOptions="Start" VerticalOptions="Center"  />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Type">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:VehicleFileSystemEntryViewModel">
+                                <Label Text="{Binding TypeText}"  HorizontalOptions="Start" VerticalOptions="Center"  />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Size">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:VehicleFileSystemEntryViewModel">
+                                <Label Text="{Binding SizeText}"  HorizontalOptions="Start" VerticalOptions="Center"  />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                </controls:VirtualizedDataGrid.Columns>
+            </controls:VirtualizedDataGrid>
+        </Grid>
+        <VerticalStackLayout Grid.Row="2" Spacing="6">
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}" />
+            <ProgressBar Progress="{Binding TransferProgress}" />
+            <Label Text="{Binding TransferDetails}" FontSize="12" />
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Download selected" Command="{Binding DownloadSelectedCommand}"  IsVisible="{Binding HasEntries}"/>
+                <Button Text="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </Grid>
+</navigation:ExtendedContentPage>

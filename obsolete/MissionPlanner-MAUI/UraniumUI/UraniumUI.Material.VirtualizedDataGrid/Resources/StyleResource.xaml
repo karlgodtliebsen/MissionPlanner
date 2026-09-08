@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    x:Class="UraniumUI.Material.VirtualizedDataGrid.Resources.StyleResource"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls">
+
+    <ResourceDictionary.MergedDictionaries>
+        <!-- Keep the keyed and implicit styles together in one child dictionary. -->
+        <ResourceDictionary>
+            <Style
+                x:Key="UraniumUI.Styles.VirtualizedDataGrid"
+                TargetType="controls:VirtualizedDataGrid"
+                ApplyToDerivedTypes="True">
+                <Setter
+                    Property="BackgroundColor"
+                    Value="{DynamicResource Surface}" />
+                <Setter
+                    Property="LineSeparatorColor"
+                    Value="{DynamicResource Outline}" />
+                <Setter
+                    Property="Stroke"
+                    Value="{DynamicResource Outline}" />
+                <Setter Property="StrokeShape" Value="RoundRectangle 8" />
+                <Setter Property="StrokeThickness" Value="0.5" />
+                <Setter
+                    Property="SelectionColor"
+                    Value="{DynamicResource Primary}" />
+            </Style>
+
+            <!-- Implicitly applies the Material appearance to every virtualized grid. -->
+            <Style
+                TargetType="controls:VirtualizedDataGrid"
+                ApplyToDerivedTypes="True"
+                BasedOn="{StaticResource UraniumUI.Styles.VirtualizedDataGrid}" 
+                >
+            </Style>
+
+        </ResourceDictionary>
+    </ResourceDictionary.MergedDictionaries>
+
+</ResourceDictionary>

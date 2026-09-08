@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:ScriptsTabViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.ScriptsTabView"
+             
+                                  x:DataType="tabs:ScriptsTabViewModel">
+
+
+    <Grid Padding="16" RowDefinitions="Auto,220,Auto,Auto,*" RowSpacing="10">
+        <Label Text="Constrained vehicle scripts" FontSize="20" FontAttributes="Bold" />
+        <Editor Grid.Row="1" Text="{Binding ScriptJson}" AutoSize="Disabled" />
+        <HorizontalStackLayout Grid.Row="2" Spacing="8">
+            <Button Text="Validate" Command="{Binding ValidateCommand}" />
+            <Button Text="Dry run" Command="{Binding DryRunCommand}" />
+            <Button Text="Run" Command="{Binding RunCommand}" />
+            <Button Text="Cancel" Command="{Binding CancelCommand}" />
+        </HorizontalStackLayout>
+        <Label Grid.Row="3" Text="{Binding Status}" />
+        <CollectionView Grid.Row="4" ItemsSource="{Binding Output}" />
+    </Grid>
+</tabViews:TabViewLifecycleContent>

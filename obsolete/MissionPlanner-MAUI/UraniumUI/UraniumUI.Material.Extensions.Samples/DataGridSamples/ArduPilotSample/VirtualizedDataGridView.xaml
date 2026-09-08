@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pages:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                    xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                    xmlns:pages="clr-namespace:UraniumUI.Pages;assembly=UraniumUI"
+                    xmlns:arduPilotSample="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample"
+                    x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample.VirtualizedDataGridView"
+                    x:DataType="arduPilotSample:VirtualizedDataGridViewModel"
+                    >
+
+    <Grid RowDefinitions="Auto,*"
+          HorizontalOptions="Fill"
+          VerticalOptions="Fill"
+          Padding="8,0"
+          BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+    >
+
+        <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
+            <Button 
+                    Text="Load sample data from json file"
+                    Padding="10,4"
+                    VerticalOptions="Center"
+                    Command="{Binding LoadFromJsonFileCommand}" >
+            </Button>
+
+        </HorizontalStackLayout>
+
+        <virtualized:VirtualizedDataGrid Grid.Row="1" 
+                                         ItemsSource="{Binding Parameters}"
+                                         MinimumStarColumnWidth= "120"
+                                         ItemSizingStrategy= "MeasureAllItems"
+                                         ShowRowSeparators="True"
+                                         FilterMemberPaths="Name,DisplayName,Description"
+                                         ShowSearchBar="True"
+        >
+            <virtualized:VirtualizedDataGrid.EmptyView>
+                <VerticalStackLayout
+                          Padding="40"
+                          Spacing="8"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center">
+                    <Image
+                              WidthRequest="40"
+                              HeightRequest="40"
+                              HorizontalOptions="Center"
+                              VerticalOptions="Center"
+                              Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table}, 
+                                  Color={AppThemeBinding Light={StaticResource OnSurface}, 
+                                  Dark={StaticResource OnSurfaceDark}}}"/>
+                    <Label
+                              Text="No parameters match the current filter."
+                              FontAttributes="Bold"
+                              FontSize="16"
+                              HorizontalTextAlignment="Center" />
+                    <Label
+                              Text="Refresh parameters or clear the search text to display parameters."
+                              FontSize="13"
+                              Opacity="0.75"
+                              HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </virtualized:VirtualizedDataGrid.EmptyView>
+
+            <virtualized:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Width="160" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding Name}" Title="Param"  />
+                <material:DataGridColumn Title="Value" >
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate  x:DataType="arduPilotSample:ParameterItemViewModel" >
+                            <controls:NumericField
+                                IsReadOnly="{Binding IsReadOnly}"
+                                Value="{Binding Value, Mode=TwoWay}"
+                                BorderColor="Aqua"
+                                NumberFormat="N7"
+                                Min="{Binding Min}"
+                                Max="{Binding Max}"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Center"  
+                                HorizontalTextAlignment="End" 
+                                AllowClear="True"
+                                AllowSign="True"
+                                AllowThousands="True" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+
+                <material:DataGridColumn  Width="200" >
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate  x:DataType="arduPilotSample:ParameterItemViewModel">
+                            <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0" >
+                                <material:PickerField IsVisible="{Binding HasValuesData}"
+                                            FontSize="12" 
+                                            BorderColor="Aqua"
+                                            Title="Pick an option"
+                                            TitleFontSize="10"
+                                            WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                                            ItemsSource="{Binding ValuesData}"
+                                            SelectedItem="{Binding SelectedValue}" />
+
+                                <controls:ExtendedMultiplePickerField IsVisible="{Binding HasBitmask}"
+                                                                      Title="Multiple options"
+                                                                      BorderColor="Aqua"
+                                                                      TitleFontSize="10"
+                                                                      FontSize="14"
+                                                                      WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                                                                      ItemsSource="{Binding BitmaskOptions}"
+                                                                      SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
+                                                                      SelectedItems="{Binding SelectedBitmaskItems}" />
+
+                                <controls:NumericUpDownField IsVisible="{Binding HasNumericRangeData}" 
+                                                             Title="Number" 
+                                                             BorderColor="Aqua"
+                                                             TitleFontSize="10"
+                                                             FontSize="14" 
+                                                             WidthRequest="200" 
+                                                             ButtonOrientation="Vertical"
+                                                             Value="{Binding Value, Mode=TwoWay}"
+                                                             Min="{Binding Min}"
+                                                             Max="{Binding Max}"
+                                                             StepSize="{Binding StepSize}"
+                                                             VerticalOptions="Center" HorizontalOptions="Fill"
+                                                             HorizontalTextAlignment="End"
+                                                             VerticalTextAlignment="Center" />
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+
+                <material:DataGridColumn Width="100" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding Range}" Title="Range"  />
+                <material:DataGridColumn Width="100" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding OriginalValueText}" Title="Default"  />
+                <material:DataGridColumn Width="125" x:DataType="arduPilotSample:ParameterItemViewModel" Title="Units">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
+                            <Label FontSize="14" Text="{Binding Units}" Margin="10,0" VerticalOptions="Center" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+
+                <material:DataGridColumn Width="150" x:DataType="arduPilotSample:ParameterItemViewModel" Title="Write status">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
+                            <VerticalStackLayout Margin="10,0" VerticalOptions="Center" HorizontalOptions="Fill">
+                                <Label FontSize="12" Text="{Binding WriteStatus}" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                                <Label FontSize="10" Text="{Binding WriteMessage}"  LineBreakMode="WordWrap" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+
+                <material:DataGridColumn x:DataType="arduPilotSample:ParameterItemViewModel" Title="Description" Width="*">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
+                            <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,10,0,10">
+                                <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
+                                <Label FontSize="12" VerticalOptions="Fill" HorizontalOptions="Fill"  Text=" "/>
+                                <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding Description}"/>
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+
+            </virtualized:VirtualizedDataGrid.Columns>
+        </virtualized:VirtualizedDataGrid>
+    </Grid>
+
+
+</pages:UraniumContentPage>
+    

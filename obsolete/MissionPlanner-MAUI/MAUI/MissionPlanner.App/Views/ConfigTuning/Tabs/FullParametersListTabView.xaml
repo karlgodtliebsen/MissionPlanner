@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<navigation:ExtendedContentPage x:TypeArguments="tabs:FullParametersListTabViewModel"
+                      xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                      xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                      xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                      xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                      xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
+                      xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                      xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                      xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                      x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
+                      x:DataType="tabs:FullParametersListTabViewModel">
+
+  
+        <Grid RowDefinitions="Auto,Auto,*"
+          HorizontalOptions="Fill"
+          VerticalOptions="Fill"
+          Padding="8,0"
+          >
+
+            <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
+                <Button 
+                Text="Load from file"
+                    VerticalOptions="Center"
+                    Command="{Binding LoadFromFileCommand}" />
+                <Button 
+                Text="Save to file"
+                VerticalOptions="Center"
+                Command="{Binding SaveToFileCommand}" />
+                <Button 
+                    Text="Load from json file"
+                    VerticalOptions="Center"
+                    Command="{Binding LoadFromJsonFileCommand}" />
+
+                <Button 
+                    Text="Save to json file"
+                    VerticalOptions="Center"
+                    Command="{Binding SaveToJsonFileCommand}" />
+                <Button 
+                    Text="Use editor"
+                    VerticalOptions="Center"
+                    Command="{Binding LoadFromEditorCommand}" />
+
+                <Button 
+                Text="Apply modified"
+                VerticalOptions="Center"
+                Command="{Binding WriteParametersCommand}" />
+
+                <Button
+                    Text="Retry failed"
+                    VerticalOptions="Center"
+                    Command="{Binding RetryFailedCommand}" />
+
+                <Button 
+                    Text="Refresh parameters"
+                    VerticalOptions="Center"
+                    Command="{Binding RefreshParametersCommand}" />
+
+                <Button 
+                    Text="Clear parameters"
+                    VerticalOptions="Center"
+                    Command="{Binding ClearParametersCommand}" />
+
+                <Button 
+                    Text="Compare parameters"
+                    VerticalOptions="Center"
+                    Command="{Binding CompareParametersCommand}" />
+
+                <Button 
+                Text="Cancel"
+                VerticalOptions="Center"
+                Command="{Binding CancelLoadCommand}" />
+
+                <Button 
+                Text="Parameter profiles"
+                VerticalOptions="Center"
+                Command="{Binding LoadPreSavedCommand}" />
+
+
+                <Button Text="Revert Changes"
+                VerticalOptions="Center"
+                Command="{Binding RevertChangesCommand}" />
+
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Grid.Row="1" Padding="18,4" Spacing="12" Margin="0,10,0,10">
+                <ActivityIndicator
+                    IsRunning="{Binding IsBackgroundParameterLoadInProgress}"
+                    IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
+                    WidthRequest="20"
+                    HeightRequest="20" />
+                <Label
+                    Text="{Binding ProgressMessage}"
+                    IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
+                    LineBreakMode="WordWrap"
+                    VerticalOptions="Center" />
+
+                <m:SelectableLabel Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+                <Label Text="{Binding StatusMessage}" 
+                       IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
+                       LineBreakMode="WordWrap" VerticalOptions="Center" />
+
+                <Label Text="Vehicle Reboot required after confirmed changes"
+                       IsVisible="{Binding RebootRequired}"
+                       TextColor="{DynamicResource Warning}"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <Grid Grid.Row="2" 
+                  VerticalOptions="Fill" HorizontalOptions="Fill"
+                  Padding="18,4"  Margin="0,10,0,10">
+
+                <virtualized:VirtualizedDataGrid
+                    ItemsSource="{Binding Parameters}"
+                    UseAutoColumns="False"
+                    AutoColumnWidth= "180"
+                    MinimumStarColumnWidth= "120"
+                    ItemSizingStrategy= "MeasureFirstItem"
+                    ShowRowSeparators="True"
+                    FilterMemberPaths="Name,DisplayName,Description"
+                    ShowSearchBar="True"
+                    >
+                    <virtualized:VirtualizedDataGrid.EmptyView>
+                        <VerticalStackLayout
+                            Padding="40"
+                            Spacing="8"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+                            <Image
+                                WidthRequest="40"
+                                HeightRequest="40"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, 
+                                    Color={DynamicResource OnSurface}}"/>
+                            <Label
+                                Text="No parameters match the current filter."
+                                FontAttributes="Bold"
+                                FontSize="16"
+                                HorizontalTextAlignment="Center" />
+                            <Label
+                                Text="Refresh parameters or clear the search text to display parameters."
+                                FontSize="13"
+                                Opacity="0.75"
+                                HorizontalTextAlignment="Center" />
+                        </VerticalStackLayout>
+                    </virtualized:VirtualizedDataGrid.EmptyView>
+
+                    <virtualized:VirtualizedDataGrid.Columns>
+                        <material:DataGridColumn Title="Param" Width="160">
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel" >
+
+                                    <m:SelectableLabel FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" 
+                                               HorizontalOptions="Start" HorizontalTextAlignment="Start" 
+                                                   Text="{Binding Name}"/>
+
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Title="Value"  Width="100">
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
+
+                                    <VerticalStackLayout  HorizontalOptions="Center" VerticalOptions="Center" Margin="5,0,5,0">
+
+                                        <controls:NumericLabel
+                                        Value="{Binding Value, Mode=TwoWay}"
+                                       
+                                        Min="{Binding Min}"
+                                        Max="{Binding Max}"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Center"  
+                                        HorizontalTextAlignment="End" 
+                                        NumericType="{Binding NumericType}"
+                                        NumberFormat="G7"
+                                        />
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <!--<material:DataGridColumn Title="Value"  Width="50" >
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
+                                    <Label Text="{Binding Value}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>-->
+
+
+                        <material:DataGridColumn  Width="200"  Title="Selections">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
+                                    <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0" >
+                                        <material:PickerField IsVisible="{Binding HasValuesData}"
+                                              FontSize="12" 
+                                              Title="Pick an option"
+                                              TitleFontSize="10"
+                                              WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                                              ItemsSource="{Binding ValuesData}"
+                                              SelectedItem="{Binding SelectedValue}" />
+
+
+                                        <controls:ExtendedMultiplePickerField IsVisible="{Binding HasBitmask}"
+                                                       Title="Multiple options"
+                                                       TitleFontSize="10"
+                                                       FontSize="14" 
+                                                       WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                                                       ItemsSource="{Binding BitmaskOptions}" 
+                                                       SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
+                                                       SelectedItems="{Binding SelectedBitmaskItems}" />
+
+
+                                        <controls:NumericUpDownField IsVisible="{Binding HasNumericRangeData}" 
+                                                                       Title="Number" 
+                                                                       TitleFontSize="10"
+                                                                       FontSize="14" 
+                                                                       WidthRequest="200" 
+                                                                       ButtonOrientation="Vertical"
+                                                                       NumericType="{Binding NumericType}"
+                                                                       Value="{Binding Value, Mode=TwoWay}"
+                                                                       Min="{Binding Min}"
+                                                                       Max="{Binding Max}"
+                                                                       StepSize="{Binding StepSize}"
+                                                                       VerticalOptions="Center" 
+                                                                       HorizontalOptions="Fill"
+                                                                       HorizontalTextAlignment="End"
+                                                                       VerticalTextAlignment="Center" />
+
+
+
+
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Width="100" Title="Range">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <Label Text="{Binding Range}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+                        <material:DataGridColumn Width="100" Title="StepSize">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <Label Text="{Binding StepSize}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+                        <material:DataGridColumn Width="100" Title="Type">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <Label Text="{Binding MavNumericType}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Width="100" Title="Default">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <Label Text="{Binding OriginalValueText}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+                        <material:DataGridColumn Width="125" Title="Units">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <Label FontSize="14" Text="{Binding Units}" Margin="10,0" VerticalOptions="Center" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Width="150" Title="Write status">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <VerticalStackLayout Margin="10,0" VerticalOptions="Center" HorizontalOptions="Fill">
+                                        <Label FontSize="12" Text="{Binding WriteStatus}" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                                        <Label FontSize="10" Text="{Binding WriteMessage}"  LineBreakMode="WordWrap" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Title="Description" Width="*">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
+                                    <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,10,0,10">
+                                        <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
+                                        <Label FontSize="12" VerticalOptions="Fill" HorizontalOptions="Fill"  Text=" "/>
+                                        <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding Description}"/>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                    </virtualized:VirtualizedDataGrid.Columns>
+                </virtualized:VirtualizedDataGrid>
+            </Grid>
+        </Grid>
+
+</navigation:ExtendedContentPage>      

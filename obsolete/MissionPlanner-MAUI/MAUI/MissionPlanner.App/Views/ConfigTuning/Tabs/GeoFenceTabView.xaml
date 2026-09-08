@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<navigation:ExtendedContentPage x:TypeArguments="tabs:GeoFenceTabViewModel"
+                            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                            xmlns:config="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
+                            xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                            xmlns:controls1="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                            x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.GeoFenceTabView"
+                            x:DataType="tabs:GeoFenceTabViewModel"
+                            Title="GeoFence">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="12" RowSpacing="10">
+        <HorizontalStackLayout Spacing="8">
+            <Button Text="Download" Command="{Binding DownloadCommand}" />
+            <Button Text="Validate &amp; upload" Command="{Binding UploadCommand}" />
+            <Button Text="Clear vehicle" Command="{Binding ClearVehicleCommand}" />
+            <Button Text="Restore backup" Command="{Binding RestoreBackupCommand}" />
+            <Button Text="Refresh parameters" Command="{Binding RefreshParametersCommand}" />
+            <Button Text="Revert parameters" Command="{Binding RevertParametersCommand}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+        </HorizontalStackLayout>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <ProgressBar Grid.Column="2" WidthRequest="180" Progress="{Binding TransferPercent}" />
+        </Grid>
+
+        <Grid Grid.Row="2" ColumnDefinitions="380,*" ColumnSpacing="12">
+            <ScrollView>
+                <VerticalStackLayout Spacing="10">
+                    <Border Padding="10">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Fence synchronization" FontAttributes="Bold" FontSize="18" />
+                            <Label Text="{Binding LocalRevisionText}" />
+                            <Label Text="{Binding VehicleRevisionText}" />
+                            <Label Text="{Binding ReturnPointText}" />
+                            <Label Text="Local geometry has unapplied changes"
+                                   TextColor="{DynamicResource Warning}"
+                                   IsVisible="{Binding IsGeometryDirty}" />
+                            <Label Text="Typed geometry is not advertised by this firmware."
+                                   TextColor="{DynamicResource Warning}"
+                                   IsVisible="{Binding IsTypedGeometryUnsupported}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="10">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Fence parameters" FontAttributes="Bold" FontSize="18" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Parameters}" Spacing="6">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="config:ParameterItemViewModel">
+                                        <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                                            <Label Text="{Binding DisplayName}" FontAttributes="Bold" />
+                                            <controls1:NumericField
+                                                Grid.Column="1"
+                                                IsReadOnly="{Binding IsReadOnly}"
+                                                Value="{Binding Value, Mode=TwoWay}"
+                                                NumberFormat="F7"
+                                                HorizontalOptions="Fill"
+                                                HorizontalTextAlignment="End" />
+                                                <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                                   Text="{Binding ValidationError}"
+                                                   TextColor="{DynamicResource Warning}"
+                                                   FontSize="12" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="10">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Fence map edit mode" FontAttributes="Bold" FontSize="18" />
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="6" RowSpacing="6">
+                                <Button Text="Inclusion polygon" Command="{Binding BeginPolygonInclusionCommand}" />
+                                <Button Grid.Column="1" Text="Exclusion polygon" Command="{Binding BeginPolygonExclusionCommand}" />
+                                <Button Grid.Row="1" Text="Inclusion circle" Command="{Binding BeginCircleInclusionCommand}" />
+                                <Button Grid.Row="1" Grid.Column="1" Text="Exclusion circle" Command="{Binding BeginCircleExclusionCommand}" />
+                                <Button Grid.Row="2" Text="Set return point" Command="{Binding BeginReturnPointCommand}" />
+                                <!--<Entry Grid.Row="2" Grid.Column="1" Placeholder="Circle radius (m)" 
+                                       Text="{Binding CircleRadiusMeters, Mode=TwoWay}" Keyboard="Numeric" />-->
+                                <controls1:NumericField
+                                    Grid.Row="2" Grid.Column="1" Title="Circle radius (m)" 
+                                    Value="{Binding CircleRadiusMeters, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
+
+                            </Grid>
+                            <HorizontalStackLayout Spacing="6" IsVisible="{Binding IsFenceEditMode}">
+                                <Button Text="Finish polygon" Command="{Binding FinishPolygonCommand}" />
+                                <Button Text="Cancel edit" Command="{Binding CancelEditCommand}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="10">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Local geometry" FontAttributes="Bold" FontSize="18" />
+
+
+                            <virtualized:VirtualizedDataGrid 
+                                ItemsSource="{Binding Areas}" 
+                                SelectedItem="{Binding SelectedArea}"
+                                SelectionMode="Single"
+                                ItemSizingStrategy= "MeasureFirstItem"
+                                HeightRequest="180"
+                                ShowSearchBar="False"
+                                HorizontalOptions="Fill" 
+                                VerticalOptions="Fill" 
+                                BackgroundColor="Transparent">
+                                <virtualized:VirtualizedDataGrid.EmptyView>
+                                    <Label HorizontalOptions="Center" Text="No items." FontSize="12" Opacity="0.6" Margin="0,20" />
+                                </virtualized:VirtualizedDataGrid.EmptyView>
+                                <virtualized:VirtualizedDataGrid.Columns>
+                                    <material:DataGridColumn Width="*" x:DataType="tabs:FenceAreaListItem"  ValueBinding="{Binding Kind}" Title="Kind" />
+                                    <material:DataGridColumn Width="*"  x:DataType="tabs:FenceAreaListItem" ValueBinding="{Binding Summary}" Title="Summary" />
+                                </virtualized:VirtualizedDataGrid.Columns>
+                            </virtualized:VirtualizedDataGrid>
+                            <HorizontalStackLayout Spacing="6">
+                                <Button Text="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" />
+                                <Button Text="Remove return" Command="{Binding RemoveReturnPointCommand}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <tabs:GeoFenceMapView x:Name="FenceMapView" Grid.Column="1" />
+        </Grid>
+    </Grid>
+</navigation:ExtendedContentPage>

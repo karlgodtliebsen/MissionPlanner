@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:ActionsTabViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.ActionsTabView"
+                                  x:DataType="tabs:ActionsTabViewModel">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="12" Spacing="10">
+            <Label Text="Vehicle Actions" FontSize="18" FontAttributes="Bold" />
+            <Border Padding="8" Stroke="{DynamicResource Warning}">
+                <Label Text="{Binding DataSourceMode}" FontAttributes="Bold" 
+                       TextColor="{DynamicResource Warning}" />
+            </Border>
+            <Label Text="{Binding ObservedState}" FontSize="11" LineBreakMode="WordWrap" />
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                <Button  Grid.Row="0" Grid.Column="0" Text="Arm" Command="{Binding ArmCommand}" IsEnabled="{Binding CanArm}" />
+                <Button  Grid.Row="0" Grid.Column="1" Text="Disarm" Command="{Binding DisarmCommand}" IsEnabled="{Binding CanDisarm}" />
+                <Button  Grid.Row="1" Grid.Column="0" Text="RTL" Command="{Binding ReturnToLaunchCommand}" IsEnabled="{Binding CanReturnToLaunch}" />
+                <Button  Grid.Row="1" Grid.Column="1" Text="Loiter / Hold" Command="{Binding HoldCommand}" IsEnabled="{Binding CanHoldPosition}" />
+                <Button  Grid.Row="2" Grid.ColumnSpan="2" Text="Land" Command="{Binding LandCommand}" IsEnabled="{Binding CanLand}" />
+            </Grid>
+
+            <Label Text="Flight mode" FontAttributes="Bold" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <material:SelectField Grid.Column="0"
+                        ItemsSource="{Binding Modes}"
+                        SelectedItem="{Binding SelectedMode}"
+                        ItemDisplayBinding="{Binding Name}" />
+                <Button  Grid.Column="1" Text="Set Mode" Command="{Binding SetModeCommand}" IsEnabled="{Binding CanTransmit}" />
+            </Grid>
+
+            <Label Text="Takeoff altitude (m)" FontAttributes="Bold" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <controls:NumericField
+                    Grid.Column="0"
+                    Value="{Binding TakeoffAltitudeMeters, Mode=TwoWay}"
+                    NumberFormat="F1"
+                    HorizontalOptions="Fill"
+                    HorizontalTextAlignment="End" />
+                <Button  Grid.Column="1" Text="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                <Button  Grid.Column="0" Text="Set Home Here" Command="{Binding SetHomeHereCommand}" IsEnabled="{Binding CanSetHome}" />
+                <Button  Grid.Column="1" Text="Reboot Autopilot" Command="{Binding RebootCommand}" IsEnabled="{Binding CanReboot}" />
+                <Button Grid.Row="1" Grid.ColumnSpan="2"
+                        Text="{Binding AltitudeZeroActionText}"
+                        Command="{Binding ToggleAltitudeZeroCommand}"
+                        IsEnabled="{Binding CanToggleAltitudeZero}"
+                        ToolTipProperties.Text="Sets the current displayed relative altitude to 0. Vehicle HOME is not changed." />
+            </Grid>
+
+            <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <VerticalStackLayout Spacing="7">
+                    <Label Text="Mission intervention" FontAttributes="Bold" />
+                    <Label Text="{Binding CurrentMissionSequenceText}" FontSize="11" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <controls:NumericField Grid.Column="0"
+                                               Title="Canonical mission sequence"
+                                               Value="{Binding SelectedMissionSequence, Mode=TwoWay}"
+                                               NumberFormat="F0" />
+                        <Button Grid.Column="1" Text="Set Current WP"
+                                Command="{Binding SetCurrentMissionItemCommand}"
+                                IsEnabled="{Binding CanSetCurrentMissionItem}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Button Grid.Column="0" Text="Restart Mission"
+                                Command="{Binding RestartMissionCommand}"
+                                IsEnabled="{Binding CanRestartMission}"
+                                ToolTipProperties.Text="Resets to the first item and resets mission state/jump counters. Does not arm or change flight mode." />
+                        <Button Grid.Column="1" Text="Resume Mission"
+                                Command="{Binding ResumeMissionCommand}"
+                                IsEnabled="{Binding CanResumeMission}"
+                                ToolTipProperties.Text="Continues a paused onboard mission at its current position. Does not rewrite, arm, take off, or change mode." />
+                    </Grid>
+                    <Button Text="Abort Landing"
+                            IsVisible="{Binding IsAbortLandingVisible}"
+                            IsEnabled="{Binding CanAbortLanding}"
+                            Command="{Binding AbortLandingCommand}"
+                            ToolTipProperties.Text="{Binding AbortLandingReason}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <VerticalStackLayout Spacing="7">
+                    <Label Text="In-flight adjustments" FontAttributes="Bold" />
+                    <Label Text="Ground speed" FontSize="11" IsVisible="{Binding IsSpeedTypeSelectorVisible, Converter={StaticResource InvertedBoolConverter}}" />
+                    <material:SelectField ItemsSource="{Binding SpeedTargetTypes}"
+                                          SelectedItem="{Binding SelectedSpeedTargetType}"
+                                          IsVisible="{Binding IsSpeedTypeSelectorVisible}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <controls:NumericField Grid.Column="0" Title="Speed (m/s)" Value="{Binding TargetSpeedMetersPerSecond, Mode=TwoWay}" NumberFormat="F1" />
+                        <Button Grid.Column="1" Text="Change Speed" Command="{Binding ChangeSpeedCommand}" IsEnabled="{Binding CanChangeSpeed}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <controls:NumericField Grid.Column="0" Title="Target altitude above HOME (m)" Value="{Binding TargetAltitudeAboveHomeMeters, Mode=TwoWay}" NumberFormat="F1" />
+                        <Button Grid.Column="1" Text="Change Altitude" Command="{Binding ChangeAltitudeCommand}" IsEnabled="{Binding CanChangeAltitude}"
+                                ToolTipProperties.Text="{Binding ChangeAltitudeReason}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <controls:NumericField Grid.Column="0" Title="Loiter radius magnitude (m)" Value="{Binding LoiterRadiusMagnitudeMeters, Mode=TwoWay}" NumberFormat="F1" />
+                        <Button Grid.Column="1" Text="Set Loiter Radius" Command="{Binding SetLoiterRadiusCommand}" IsEnabled="{Binding CanSetLoiterRadius}"
+                                ToolTipProperties.Text="{Binding LoiterRadiusReason}" />
+                    </Grid>
+                    <Label Text="Persistent vehicle parameter. Existing loiter direction is preserved." FontSize="10" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <VerticalStackLayout Spacing="5">
+                    <Label Text="Command status" FontAttributes="Bold" />
+                    <Label Text="{Binding PendingCommand, StringFormat='Pending: {0}'}" />
+                    <Label Text="{Binding AckResult, StringFormat='ACK: {0}'}" />
+                    <Label Text="{Binding OperationState.Message}" LineBreakMode="WordWrap" />
+                </VerticalStackLayout>
+            </Border>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Expert MAV_CMD" VerticalOptions="Center" FontAttributes="Bold" />
+                <Switch IsToggled="{Binding IsExpertSectionVisible}" />
+            </HorizontalStackLayout>
+            <VerticalStackLayout IsVisible="{Binding IsExpertSectionVisible}" Spacing="6">
+                <Label Text="Advanced commands can be hazardous. Verify the command ID and all seven parameters." TextColor="{DynamicResource Warning}" />
+               
+                <controls:NumericField
+                    Title="Command ID"
+                    Value="{Binding ExpertCommandId, Mode=TwoWay}"
+                    NumberFormat="F1"
+                    HorizontalOptions="Fill"
+                    HorizontalTextAlignment="End" />
+
+                <controls:AlignedEditorField Title="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />
+
+                <Button Text="Validate, Confirm, and Send" Command="{Binding ExecuteExpertCommand}" IsEnabled="{Binding CanTransmit}" />
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</tabViews:TabViewLifecycleContent>

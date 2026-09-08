@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:TransponderTabViewModel"
+ xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+ xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs" xmlns:components="clr-namespace:MissionPlanner.Core.FlightData.Components;assembly=MissionPlanner.Core"
+ xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+ xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+ xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+ xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+ x:Class="MissionPlanner.App.Views.FlightData.Tabs.TransponderTabView" x:DataType="tabs:TransponderTabViewModel">
+
+    <Grid Padding="16" RowDefinitions="Auto,*,*" RowSpacing="10">
+        <Label Text="{Binding Status}" FontSize="20" FontAttributes="Bold" />
+
+
+        <controls:VirtualizedDataGrid Grid.Row="1" 
+                                      ItemsSource="{Binding Components}" 
+                                      ItemSizingStrategy= "MeasureFirstItem"
+                                      ShowSearchBar="False"
+                                      HorizontalOptions="Fill" 
+                                      VerticalOptions="Fill" 
+                                      BackgroundColor="Transparent"
+        >
+            <controls:VirtualizedDataGrid.EmptyView>
+                <Label HorizontalOptions="Center" Text="No Rows could be found"
+                        FontSize="12" Opacity="0.6" Margin="0,20" />
+            </controls:VirtualizedDataGrid.EmptyView>
+
+            <controls:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Width="*" Title="VehicleType">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:TransponderComponentState">
+                            <Label Text="{Binding FlightId}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
+        <controls:VirtualizedDataGrid Grid.Row="2" 
+                                      ItemsSource="{Binding Traffic}" 
+                                      ItemSizingStrategy= "MeasureFirstItem"
+                                      ShowSearchBar="False"
+                                      HorizontalOptions="Fill" 
+                                      VerticalOptions="Fill" 
+                                      BackgroundColor="Transparent"
+        >
+            <controls:VirtualizedDataGrid.EmptyView>
+                <Label HorizontalOptions="Center" Text="No Rows could be found"
+                       FontSize="12" Opacity="0.6" Margin="0,20" />
+            </controls:VirtualizedDataGrid.EmptyView>
+
+            <controls:VirtualizedDataGrid.Columns>
+
+                <material:DataGridColumn Width="*" Title="Callsign">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                            <Label Text="{Binding Callsign}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="*" Title="Icao Address">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                            <Label Text="{Binding IcaoAddress}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="*" Title="Altitude (m)">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                            <Label Text="{Binding AltitudeMeters, StringFormat='{0:0} m'}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="*" Title="Observed At">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                            <Label Text="{Binding ObservedAt}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
+
+        <!--<CollectionView Grid.Row="2" ItemsSource="{Binding Traffic}">
+            <CollectionView.Header>
+                <Label Text="Nearby ADS-B traffic" FontAttributes="Bold" />
+            </CollectionView.Header>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                    <Grid Padding="6" ColumnDefinitions="120,120,120,*">
+                        <Label Text="{Binding Callsign}" />
+                        <Label Grid.Column="1" Text="{Binding IcaoAddress}" />
+                        <Label Grid.Column="2" Text="{Binding AltitudeMeters, StringFormat='{0:0} m'}" />
+                        <Label Grid.Column="3" Text="{Binding ObservedAt}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>-->
+
+
+    </Grid>
+</tabViews:TabViewLifecycleContent>

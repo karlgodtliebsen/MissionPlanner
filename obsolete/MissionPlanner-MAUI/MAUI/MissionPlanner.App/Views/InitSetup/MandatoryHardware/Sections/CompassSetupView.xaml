@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:CompassSetupViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                                  x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
+                                  x:DataType="sections:CompassSetupViewModel"
+                                  >
+
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
+            <Label Text="Compass discovery and calibration" FontSize="18" FontAttributes="Bold" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <VerticalStackLayout IsVisible="{Binding HasIssues}" Spacing="4">
+                <Label Text="Configuration warnings" FontAttributes="Bold" TextColor="{DynamicResource Warning}" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Issues}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Label Text="{Binding .}" TextColor="{DynamicResource Warning}" LineBreakMode="WordWrap" />
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Compasses}" Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="sections:CompassInstanceViewModel">
+                        <Border Padding="10"  StyleClass="SurfaceContainer,Rounded,Elevation1">
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+                                <Label Text="{Binding Header}" FontAttributes="Bold" />
+                                <Label Grid.Column="1" Text="{Binding HealthLabel}" />
+                                <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DeviceLabel}" />
+                                <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding OffsetsLabel}" Opacity="0.75" />
+                                <Label Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding MotorCompensationLabel}" Opacity="0.75" />
+                                <HorizontalStackLayout Grid.Row="4" Grid.ColumnSpan="2" Spacing="10">
+                                    <Label Text="Use" VerticalOptions="Center" />
+                                    <Switch IsToggled="{Binding IsUsed}" />
+                                    <Label Text="External" VerticalOptions="Center" IsVisible="{Binding SupportsExternal}" />
+                                    <Switch IsToggled="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
+                                    <material:SelectField Title="Orientation"
+                                        ItemsSource="{Binding Orientations}"
+                                        SelectedItem="{Binding SelectedOrientation}"
+                                        ItemDisplayBinding="{Binding Name}" />
+                                    <Button Text="Write and verify"
+                                        Command="{Binding ApplyCommand}" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+            <Button 
+                Text="Refresh compass values"
+                Command="{Binding RefreshInventoryCommand}"
+                HorizontalOptions="Start" />
+
+            <Label Text="Onboard calibration" FontSize="18" FontAttributes="Bold" />
+            <Label Text="Move away from metal, vehicles, and magnetic interference before starting calibration."
+               TextColor="{DynamicResource Warning}"
+               FontAttributes="Bold"
+               LineBreakMode="WordWrap" />
+            <Label Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
+            <Label Text="{Binding Instruction}" FontSize="17" FontAttributes="Bold" LineBreakMode="WordWrap" />
+            <Label Text="{Binding ProgressSummary}" LineBreakMode="WordWrap" />
+            <Label Text="{Binding QualitySummary}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" />
+                <Button Text="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" />
+                <Button Text="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" />
+                <Button Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</tabViews:TabViewLifecycleContent>

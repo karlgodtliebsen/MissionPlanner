@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<navigation:ExtendedContentPage x:TypeArguments="tabs:ExtendedTuningTabViewModel"
+                            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                            xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                            xmlns:controls1="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                            x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.ExtendedTuningTabView"
+                            x:DataType="tabs:ExtendedTuningTabViewModel"
+                            Title="Extended Tuning">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" Padding="12" RowSpacing="10">
+        <Grid ColumnDefinitions="*,360,Auto" ColumnSpacing="10">
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Extended Tuning" FontAttributes="Bold" FontSize="24" />
+                <Label Text="{Binding FirmwareFamilyText, StringFormat='Advanced firmware profile: {0}'}" />
+            </VerticalStackLayout>
+            <SearchBar Grid.Column="1"
+                       Placeholder="Search curated advanced parameters"
+                       Text="{Binding SearchText, Mode=TwoWay}" />
+            <ActivityIndicator Grid.Column="2" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+        </Grid>
+
+        <Border Grid.Row="1" Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+                <Label Text="Expert page: changes to controllers, estimators, and filters can destabilize a vehicle. Autotune execution is intentionally not available here."
+                       TextColor="{DynamicResource Warning}"
+                       FontAttributes="Bold"
+                       IsVisible="{Binding HasSupportedProfile}" />
+                <Label Text="This connected firmware has no supported advanced profile."
+                       TextColor="{DynamicResource Warning}"
+                       IsVisible="{Binding IsUnsupported}" />
+            </VerticalStackLayout>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="2*,3*" ColumnSpacing="10" IsVisible="{Binding HasSupportedProfile}">
+            <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding ModifiedCount, StringFormat='Pending advanced changes: {0}'}" FontAttributes="Bold" />
+                    <Label Text="{Binding ChangeSummary}"
+                           MaxLines="5"
+                           LineBreakMode="TailTruncation"
+                           FontFamily="Consolas" />
+                </VerticalStackLayout>
+            </Border>
+            <Border Grid.Column="1" Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Live controller response (read-only PID_TUNING context)" FontAttributes="Bold" />
+
+                    <controls:VirtualizedDataGrid 
+                        ItemsSource="{Binding Areas}" 
+                        ItemSizingStrategy= "MeasureFirstItem"
+                        ShowSearchBar="False"
+                        HeightRequest="54"
+                        HorizontalOptions="Fill" 
+                        VerticalOptions="Fill" 
+                        BackgroundColor="Transparent">
+                        <controls:VirtualizedDataGrid.EmptyView>
+                            <Label HorizontalOptions="Center" Text="No PID response telemetry received." FontSize="12" Opacity="0.6" Margin="0,20" />
+                        </controls:VirtualizedDataGrid.EmptyView>
+                        <controls:VirtualizedDataGrid.Columns>
+                            <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel" ValueBinding="{Binding Axis}" Title="Axis" />
+                            <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel" ValueBinding="{Binding Desired}" Title="Desired" />
+                            <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel" ValueBinding="{Binding Achieved}" Title="Achieved" />
+                            <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel" ValueBinding="{Binding Error}" Title="Error" />
+                        </controls:VirtualizedDataGrid.Columns>
+                    </controls:VirtualizedDataGrid>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <CollectionView Grid.Row="3"
+                        ItemsSource="{Binding VisibleGroups}"
+                        SelectionMode="None"
+                        IsVisible="{Binding HasSupportedProfile}"
+                        ItemSizingStrategy="MeasureFirstItem">
+            <CollectionView.EmptyView>
+                <Label Text="No curated advanced fields match the search." HorizontalOptions="Center" Margin="20" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="tabs:ExtendedTuningGroupViewModel">
+                    <Border Padding="12" Margin="0,0,0,10">
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                <VerticalStackLayout Spacing="2">
+                                    <HorizontalStackLayout Spacing="8">
+                                        <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="20" />
+                                        <Label Text="{Binding Category}" FontSize="12" VerticalOptions="Center" />
+                                        <Label Text="{Binding SupportedFieldCount, StringFormat='{0} supported fields'}" FontSize="12" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                    <Label Text="{Binding Description}" LineBreakMode="WordWrap" />
+                                </VerticalStackLayout>
+                                <Button  Grid.Column="1" Text="Expand / collapse" Command="{Binding ToggleExpandedCommand}" />
+                            </Grid>
+
+                            <Label Text="{Binding ExpertWarning}"
+                                   TextColor="{DynamicResource Warning}"
+                                   FontAttributes="Bold"
+                                   LineBreakMode="WordWrap" />
+                            <Label Text="{Binding ValidationMessage}"
+                                   TextColor="{DynamicResource Warning}"
+                                   IsVisible="{Binding HasValidationError}"
+                                   LineBreakMode="WordWrap" />
+                            <Label Text="This group has pending changes."
+                                   TextColor="{DynamicResource Warning}"
+                                   IsVisible="{Binding IsModified}" />
+
+                            <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                    <HorizontalStackLayout Spacing="6">
+                                        <Button  Text="Refresh" Command="{Binding RefreshCommand}" />
+                                        <Button  Text="Revert group" Command="{Binding RevertCommand}" />
+                                        <Button  Text="Review &amp; apply group" Command="{Binding ApplyCommand}" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Grid.Column="1" Spacing="6" IsVisible="{Binding SupportsAxisCopy}">
+                                        <material:SelectField Title="Source axis" WidthRequest="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedSourceAxis}" />
+                                        <material:SelectField Title="Target axis" WidthRequest="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedTargetAxis}" />
+                                        <Button  Text="Preview axis copy" Command="{Binding PreviewCopyCommand}" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+
+                                <Border Padding="10" IsVisible="{Binding HasCopyPreview}" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                                    <VerticalStackLayout Spacing="4">
+                                        <Label Text="Axis copy preview — no pending values have changed" FontAttributes="Bold" />
+                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding CopyPreview}">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="tabs:AxisCopyChangeViewModel">
+                                                    <Grid ColumnDefinitions="90,*,*,Auto,Auto" ColumnSpacing="8">
+                                                        <Label Text="{Binding Component}" />
+                                                        <Label Grid.Column="1" Text="{Binding SourceParameter}" />
+                                                        <Label Grid.Column="2" Text="{Binding TargetParameter}" />
+                                                        <Label Grid.Column="3" Text="{Binding BeforeValue, StringFormat='{0:G} →'}" />
+                                                        <Label Grid.Column="4" Text="{Binding AfterValue, StringFormat='{0:G}'}" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
+                                        <Button  Text="Confirm preview into pending values" Command="{Binding ApplyCopyCommand}" HorizontalOptions="End" />
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Fields}" Spacing="6">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="tabs:AdvancedTuningFieldViewModel">
+                                            <Border Padding="10" StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                                                <Grid ColumnDefinitions="120,2*,Auto,180" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="3">
+                                                    <VerticalStackLayout>
+                                                        <Label Text="{Binding AxisText}" FontAttributes="Bold" />
+                                                        <Label Text="{Binding InstanceText}" FontSize="11" />
+                                                    </VerticalStackLayout>
+                                                    <VerticalStackLayout Grid.Column="1">
+                                                        <Label Text="{Binding Title}" FontAttributes="Bold" />
+                                                        <Label Text="{Binding ParameterName}" FontSize="11" Opacity="0.7" />
+                                                    </VerticalStackLayout>
+                                                    <Label Grid.Column="2" Text="{Binding Editor.LiveValue, StringFormat='Live {0:G}'}" VerticalOptions="Center" />
+                                                    <Grid Grid.Column="3">
+                                                        <controls1:NumericField
+                                                            IsReadOnly="{Binding Editor.IsReadOnly}"
+                                                            Value="{Binding Editor.Value, Mode=TwoWay}"
+                                                            NumberFormat="F1"
+                                                            HorizontalOptions="Fill"
+                                                            HorizontalTextAlignment="End" >
+                                                            <controls1:NumericField.Triggers>
+                                                                <DataTrigger TargetType="Entry" Binding="{Binding Editor.HasValuesData}" Value="True">
+                                                                    <Setter Property="IsVisible" Value="False" />
+                                                                </DataTrigger>
+                                                            </controls1:NumericField.Triggers>
+                                                        </controls1:NumericField>
+                                                        <material:SelectField ItemsSource="{Binding Editor.ValuesData}"
+                                                                SelectedItem="{Binding Editor.SelectedValue, Mode=TwoWay}"
+                                                                IsVisible="{Binding Editor.HasValuesData}" />
+                                                    </Grid>
+
+                                                    <Label Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                                           Text="{Binding Description}"
+                                                           LineBreakMode="WordWrap"
+                                                           FontSize="12" />
+                                                    <Label Grid.Row="1" Grid.Column="3" Text="{Binding Units, StringFormat='Units: {0}'}" FontSize="12" />
+
+                                                    <ProgressBar Grid.Row="2" Grid.Column="0" Progress="{Binding NormalizedMagnitude}" />
+                                                    <Label Grid.Row="2" Grid.Column="1" Text="Normalized magnitude across axes" FontSize="11" />
+                                                    <Label Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
+                                                           Text="{Binding Editor.ValidationError}"
+                                                           TextColor="{DynamicResource Warning}"
+                                                           FontSize="12" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</navigation:ExtendedContentPage>

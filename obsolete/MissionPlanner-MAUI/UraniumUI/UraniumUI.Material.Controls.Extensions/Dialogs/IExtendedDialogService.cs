@@ -1,0 +1,195 @@
+﻿using UraniumUI.Dialogs;
+
+namespace UraniumUI.Material.Dialogs;
+
+/// <summary>
+/// Provides extended dialog services.
+/// Defines methods for navigating modally within the application.
+/// </summary>
+public interface IExtendedDialogService : IDialogService
+{
+    /// <summary>Displays a right-aligned multiline text prompt.</summary>
+    /// <param name="title">Dialog title.</param>
+    /// <param name="message">Instruction displayed above the input field.</param>
+    /// <param name="initialValue">Initial text displayed in the editor.</param>
+    /// <param name="accept">Accept button text.</param>
+    /// <param name="cancel">Cancel button text.</param>
+    /// <param name="clear">Clear button text; empty hides the button.</param>
+    /// <returns>The edited text, or <see langword="null"/> on Cancel or Clear.</returns>
+    Task<string?> DisplayPromptAsync(
+        string title,
+        string message,
+        string initialValue,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a prompt dialog for entering a TimeSpan value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
+    /// <param name="minimumTime"></param>
+    /// <param name="maximumTime"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<TimeSpan?> DisplayPromptAsync(
+        string title,
+        string message,
+        TimeSpan? initialValue = null,
+        TimeSpan? minimumTime = null,
+        TimeSpan? maximumTime = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a prompt dialog for entering a double value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
+    /// <param name="minimum"></param>
+    /// <param name="maximum"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<int?> DisplayPromptAsync(
+        string title,
+        string message,
+        int? initialValue = null,
+        int? minimum = null,
+        int? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a prompt dialog for entering a long value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
+    /// <param name="minimum"></param>
+    /// <param name="maximum"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<long?> DisplayPromptAsync(
+        string title,
+        string message,
+        long? initialValue = null,
+        long? minimum = null,
+        long? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a prompt dialog for entering a float value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
+    /// <param name="minimum"></param>
+    /// <param name="maximum"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<float?> DisplayPromptAsync(
+        string title,
+        string message,
+        float? initialValue = null,
+        float? minimum = null,
+        float? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a prompt dialog for entering a double value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
+    /// <param name="minimum"></param>
+    /// <param name="maximum"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<double?> DisplayPromptAsync(
+        string title,
+        string message,
+        double? initialValue = null, double? minimum = null, double? maximum = null,
+        string accept = "OK", string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a modal page of the specified type.
+    /// </summary>
+    /// <param name="animated">Indicates whether the display should be animated.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <typeparam name="TPage">The type of the page to display.</typeparam>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task ShowAsync<TPage>(bool animated = true, CancellationToken cancellationToken = default) where TPage : Page;
+
+
+    /// <summary>
+    /// Displays a modal page.
+    /// </summary>
+    /// <param name="page">The page to display.</param>
+    /// <param name="animated">Indicates whether the display should be animated.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task ShowAsync(Page page, bool animated = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Closes the currently displayed modal page.
+    /// </summary>
+    /// <param name="animated">Indicates whether the closing should be animated.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task CloseAsync(bool animated = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Displays a view in a lightweight modal dialog with a resilient,
+    /// command-detached close operation.
+    /// </summary>
+    Task DisplayViewExtendedAsync(string title, View content, string okText = "OK");
+
+    /// <summary>
+    /// Displays a view in a lightweight modal dialog and returns whether the
+    /// user accepted it. Closing is detached from the bound button command.
+    /// </summary>
+    Task<bool> DisplayViewExtendedAsync(string title, View content, string okText, string cancelText);
+
+    /// <summary>
+    /// Displays a custom view dialog with a customizable size.
+    /// Uses the provided <paramref name="page"/> to display the dialog.
+    /// </summary>
+    /// <param name="page">The page on which to display the dialog.</param>
+    /// <param name="title">The title of the dialog.</param>
+    /// <param name="content">The content view to display.</param>
+    /// <param name="options"></param>
+    /// <param name="okText">The text for the OK button.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A disposable object that can be used to close the dialog.</returns>
+    Task<bool> DisplayViewExtendedAsync(Page page, string title, View content, ViewDialogOptions? options = null, string okText = "OK", CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Displays a cancellable progress dialog.
+    /// </summary>
+    /// <param name="title">The title of the dialog.</param>
+    /// <param name="message">A function that returns the message to display.</param>
+    /// <param name="cancelText">The text for the cancel button.</param>
+    /// <param name="tokenSource">The cancellation token source.</param>
+    /// <returns>A disposable object that can be used to close the dialog.</returns>
+    Task<IDisposable> DisplayProgressCancellableAsync(string title, Func<string> message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default);
+}
