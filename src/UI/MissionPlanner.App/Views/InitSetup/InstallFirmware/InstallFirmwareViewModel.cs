@@ -566,6 +566,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             Validated.PreparedFirmware = await preparationService.PrepareAsync(new FirmwarePreparationRequest(Catalogue.SelectedFirmware.Entry), CreateProgress(), ownedCancellation.Token);
             SetMessages(Validated.PreparedFirmware.WasCacheHit ? "Validated cached firmware package." : "Firmware downloaded and validated.");
             Validated.IsFirmwareValidated = true;
+            NotificationManager?.Show(StatusMessage ?? "");
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
@@ -574,7 +575,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         catch (Exception exception)
         {
             Logger.LogWarning(exception, "Firmware preparation failed.");
-            SetMessages(null, exception.Message);
+            SetMessages(exception);
+            NotificationManager?.Show(ErrorMessage ?? "");
             UpdateContextHelp(exception is Firmware.Exceptions.FirmwarePackageException);
         }
         finally
@@ -605,6 +607,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             ? "Cancellation requested. The flash will continue through verify and reboot before stopping at a safe boundary. Do not disconnect power."
             : "Cancelling firmware operation…");
 
+        NotificationManager?.Show(StatusMessage ?? "");
         cancellation.Cancel();
     }
 

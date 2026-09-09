@@ -1,19 +1,10 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using MissionPlanner.Firmware.Betaflight.Protocol;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Installation;
 
 namespace MissionPlanner.Firmware.Betaflight;
-
-/// <summary>Semantic reboot modes defined by Betaflight's MSP implementation.</summary>
-public enum MspRebootMode : byte
-{
-    /// <summary>Restart the currently installed firmware.</summary>
-    Firmware = 0,
-    /// <summary>Enter the MCU factory ROM bootloader.</summary>
-    RomBootloader = 1
-}
 
 /// <summary>Enters ROM DFU only after same-port live firmware, UID and armed-state validation.</summary>
 public sealed class BetaflightMspBootloaderEntryStrategy(MspPortConnector connector, IBetaflightMspClient client,
@@ -111,5 +102,8 @@ public sealed class BetaflightMspBootloaderEntryStrategy(MspPortConnector connec
         return Failed("serial-did-not-disappear");
     }
 
-    private static BootloaderEntryResult Failed(string code) => new(BootloaderEntryOutcome.Failed, "betaflight." + code);
+    private static BootloaderEntryResult Failed(string code)
+    {
+        return new(BootloaderEntryOutcome.Failed, "betaflight." + code);
+    }
 }

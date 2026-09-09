@@ -12,8 +12,9 @@
                           x:DataType="local:CustomFirmwareViewModel"
                           Margin="25,0,25,0"
                           >
-    <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" >
-        <Border Grid.Row="0"  IsVisible="{Binding HasDfuBootLoader, Converter={StaticResource InvertedBoolConverter}}" Padding="16"
+    <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="25">
+        <subViews:DetectedDeviceView Grid.Row="0" DataContext="{Binding Devices}"   ></subViews:DetectedDeviceView>
+        <Border Grid.Row="1"  IsVisible="{Binding HasDfuBootLoader, Converter={StaticResource InvertedBoolConverter}}" Padding="16"
                 Classes="SectionCard">
             <Grid RowDefinitions="Auto,Auto,*" RowSpacing="20" HorizontalAlignment="Center">
 
@@ -82,7 +83,6 @@
                 </Grid>
             </Grid>
         </Border>
-        <subViews:DetectedDeviceView Grid.Row="1" DataContext="{Binding Devices}"   ></subViews:DetectedDeviceView>
     </Grid>
 
 </view:UserControlViewBase>

@@ -146,6 +146,8 @@ public static class FirmwareConfigurator
         services.TryAddSingleton<Betaflight.IFirmwareDeviceIdentityService, Betaflight.FirmwareDeviceIdentityService>();
         services.TryAddSingleton<Betaflight.IUsbTopologyProvider, Betaflight.UnsupportedUsbTopologyProvider>();
         services.TryAddSingleton<Betaflight.IBetaflightDfuHandoff, Betaflight.BetaflightDfuHandoff>();
+        services.TryAddSingleton<Betaflight.IBetaflightArduPilotCompatibilityProvider, Betaflight.BetaflightArduPilotCompatibilityProvider>();
+        services.TryAddSingleton<Betaflight.IBetaflightToArduPilotConversionService, Betaflight.BetaflightToArduPilotConversionService>();
         services.AddHttpClient(FirmwareHttpClient.Name, (serviceProvider, client) =>
             {
                 var configured = serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>().Value;

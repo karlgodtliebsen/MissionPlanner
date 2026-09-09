@@ -11,10 +11,8 @@ namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 public sealed partial class ValidatedPackageViewModel : ViewModelBase
 {
     /// <summary>Initializes the validated panel.</summary>
-    public ValidatedPackageViewModel(
-        ILogger<ValidatedPackageViewModel> logger,
-        IUiDispatcher dispatcher,
-        IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
+    public ValidatedPackageViewModel(IUiDispatcher dispatcher, IDomainEventHub eventHub, ILogger<ValidatedPackageViewModel> logger)
+        : base(logger, dispatcher, eventHub)
     {
     }
 
@@ -26,12 +24,15 @@ public sealed partial class ValidatedPackageViewModel : ViewModelBase
     }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPreparedFirmware))]
     public partial FirmwarePreparationResult? PreparedFirmware
     {
         get; set;
     }
 
-    /// <summary>Gets whether a validated downloadable artifact is ready.</summary>
+    /// <summary>
+    /// Gets whether a validated downloadable artifact is ready.
+    /// </summary>
     public bool HasPreparedFirmware => PreparedFirmware is not null;
 
     [ObservableProperty]
@@ -40,7 +41,10 @@ public sealed partial class ValidatedPackageViewModel : ViewModelBase
         get;
         set;
     }
-    /// <summary>Notifies the active parent about panel changes.</summary>
+
+    /// <summary>
+    /// Notifies the active parent about panel changes.
+    /// </summary>
     public event Action<FirmwarePanelRequest>? OperationRequested;
 
 
@@ -50,12 +54,13 @@ public sealed partial class ValidatedPackageViewModel : ViewModelBase
         return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Install, cancellationToken);
     }
 
-    /// <summary>Gets whether the parent permits installation.</summary>
+    /// <summary>
+    /// Gets whether the parent permits installation.
+    /// </summary>
     [ObservableProperty, NotifyCanExecuteChangedFor(nameof(ValidatedPackageViewModel.InstallCommand))]
     public partial bool CanInstall
     {
         get; set;
     }
-    partial void OnPreparedFirmwareChanged(FirmwarePreparationResult? value) => OnPropertyChanged(nameof(HasPreparedFirmware));
 
 }

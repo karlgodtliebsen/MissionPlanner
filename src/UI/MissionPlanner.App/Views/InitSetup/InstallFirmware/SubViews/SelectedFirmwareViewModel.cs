@@ -7,16 +7,17 @@ using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 
-/// <summary>Owns selected panel state and commands.</summary>
+/// <summary>
+/// Owns selected panel state and commands.
+/// </summary>
 public sealed partial class SelectedFirmwareViewModel : ViewModelBase
 {
     private readonly ITextClipboardService clipboard;
-    /// <summary>Initializes the selected panel.</summary>
-    public SelectedFirmwareViewModel(
-        ITextClipboardService clipboard,
-        ILogger<SelectedFirmwareViewModel> logger,
-        IUiDispatcher dispatcher,
-        IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
+    /// <summary>
+    /// Initializes the selected panel.
+    /// </summary>
+    public SelectedFirmwareViewModel(ITextClipboardService clipboard, IUiDispatcher dispatcher, IDomainEventHub eventHub, ILogger<SelectedFirmwareViewModel> logger)
+        : base(logger, dispatcher, eventHub)
     {
         this.clipboard = clipboard;
     }

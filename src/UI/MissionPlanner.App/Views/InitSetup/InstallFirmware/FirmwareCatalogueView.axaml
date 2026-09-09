@@ -12,8 +12,10 @@
                           x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.FirmwareCatalogueView"
                           x:DataType="local:FirmwareCatalogViewModel" Margin="25,0,25,0">
 
-    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" IsEnabled="{Binding !InstallationRunning}">
-        <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"  Padding="20" Classes="SectionCard">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" 
+          IsEnabled="{Binding !InstallationRunning}" RowSpacing="25">
+        <subViews:DetectedDeviceView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" DataContext="{Binding Devices}" ></subViews:DetectedDeviceView>
+        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Padding="20" Classes="SectionCard">
             <StackPanel Spacing="16" Orientation="Vertical">
                 <TextBlock Text="Select Firmware" Classes="H3" />
                 <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
@@ -101,9 +103,10 @@
                 </controls:VirtualizedItemsGrid>
             </StackPanel>
         </Border>
-        <subViews:SelectedFirmwareView DataContext="{Binding Selected}" Grid.Row="1" Grid.Column="0"  IsVisible="{Binding HasSelectedFirmware}" />
-        <subViews:ValidatedPackageView DataContext="{Binding Validated}"  Grid.Row="1" Grid.Column="1"   IsVisible="{Binding HasPreparedFirmware}" />
-        <subViews:DetectedDeviceView DataContext="{Binding Devices}"  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"  ></subViews:DetectedDeviceView>
+        <subViews:SelectedFirmwareView Grid.Row="2" Grid.Column="0" DataContext="{Binding Selected}"  
+                                       IsEnabled="{Binding HasSelectedFirmware}" />
+        <subViews:ValidatedPackageView Grid.Row="2" Grid.Column="1" DataContext="{Binding Validated}" />
+        <subViews:DetectedDeviceView Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" DataContext="{Binding Devices}" ></subViews:DetectedDeviceView>
 
     </Grid>
 </view:UserControlViewBase>

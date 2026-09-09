@@ -70,6 +70,12 @@ capabilities, confirmation/progress sequencing, and safe flashing. It supplies a
 interlock to the read panels and subscribes to their `Action<bool>` refresh-state events to
 prevent competing install commands. Panels also observe connection changes independently.
 
+The validated-package panel owns its enabled binding through `HasPreparedFirmware`, derived
+from `PreparedFirmware`. Successful download/preparation enables the panel. Rebuilding
+recommendations for the same manifest entry preserves validation, including transient grid
+selection resets during that rebuild. Selecting another entry or clearing the selection
+invalidates the prepared package. Installation retains its separate capability checks.
+
 Catalogue loading is platform-neutral. Browser can open the catalogue panel, with inline
 status because the existing progress service requires a desktop Window. Direct flashing
 remains subject to platform capabilities. Serial and DFU discovery continue to use existing

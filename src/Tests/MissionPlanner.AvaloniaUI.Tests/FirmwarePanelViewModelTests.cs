@@ -84,6 +84,53 @@ public sealed class FirmwarePanelViewModelTests
     }
 
     [Fact]
+    public async Task DownloadedPackageEnablesValidationAndSurvivesRecommendationRefreshButNotReleaseChange()
+    {
+        using var services = CreateServices();
+        var parent = services.GetRequiredService<InstallFirmwareViewModel>();
+        await parent.ActivateAsync();
+        var catalogue = services.GetRequiredService<FirmwareCatalogViewModel>();
+        FirmwareManifestEntry Entry(int id) => new(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
+            new FirmwareBoardTarget(id, "board" + id, FirmwareVehicleType.Copter),
+            new FirmwareArtifact(new Uri($"https://example.test/{id}.apj"), FirmwareImageFormat.Apj));
+        var entries = new[] { Entry(50), Entry(51) };
+        catalogue.SetCatalogue(entries, [], false);
+        catalogue.SelectedFirmware = catalogue.FirmwareChoices.Single(item => item.BoardId == 50);
+        var validated = catalogue.Validated;
+        var states = new List<bool>();
+        validated.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(validated.HasPreparedFirmware))
+            {
+                states.Add(validated.HasPreparedFirmware);
+            }
+        };
+        Assert.False(validated.HasPreparedFirmware);
+        var prepared = new FirmwarePreparationResult(entries[0],
+            new("cache", entries[0].Artifact.DownloadUri, DateTimeOffset.UtcNow, 1, "sha256"),
+            new ApjFirmwarePackage(50, new byte[] { 1 }, 1), "sha256", false, "cache", []);
+        services.GetRequiredService<IFirmwarePreparationService>()
+            .PrepareAsync(Arg.Any<FirmwarePreparationRequest>(), Arg.Any<IProgress<FirmwareProgress>>(), Arg.Any<CancellationToken>())
+            .Returns(prepared);
+
+        await catalogue.Selected.DownloadAndValidateCommand.ExecuteAsync(null);
+        Assert.Same(prepared, validated.PreparedFirmware);
+        Assert.True(validated.HasPreparedFirmware);
+        Assert.True(validated.IsFirmwareValidated);
+
+        catalogue.SetCatalogue(entries, [], false);
+
+        Assert.Same(prepared, validated.PreparedFirmware);
+        Assert.True(validated.HasPreparedFirmware);
+        Assert.True(validated.IsFirmwareValidated);
+        catalogue.SelectedFirmware = catalogue.FirmwareChoices.Single(item => item.BoardId == 51);
+        Assert.False(validated.HasPreparedFirmware);
+        Assert.False(validated.IsFirmwareValidated);
+        Assert.Equal(new[] { true, false }, states);
+        await parent.DeactivateAsync();
+    }
+
+    [Fact]
     public async Task ClosingCustomPanelRejectsLateFilePickerResult()
     {
         using var services = CreateServices();

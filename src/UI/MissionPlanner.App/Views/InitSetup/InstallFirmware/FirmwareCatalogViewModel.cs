@@ -62,6 +62,7 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
     private FirmwareManifestEntry? selectedFirmwareTarget;
     private bool showingAllOptions;
     private bool isClearing;
+    private bool isRebuildingChoices;
 
     ///
     /// <summary>Gets catalogue choices.
@@ -235,6 +236,20 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
 
     private void ApplyTargetQuery()
     {
+        isRebuildingChoices = true;
+        try
+        {
+            RebuildTargetChoices();
+        }
+        finally
+        {
+            isRebuildingChoices = false;
+            InvalidatePreparedFirmwareIfSelectionChanged();
+        }
+    }
+
+    private void RebuildTargetChoices()
+    {
         SelectedVersion = null;
         SelectedFrameType = null;
         SelectedManufacturer = null;
@@ -340,9 +355,24 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         }
         OnPropertyChanged(nameof(HasSelectedFirmware));
         Selected.SelectedFirmware = value;
-        Validated.PreparedFirmware = null;
-        Validated.IsFirmwareValidated = false;
+        if (!isRebuildingChoices)
+        {
+            InvalidatePreparedFirmwareIfSelectionChanged();
+        }
         SelectionChanged?.Invoke(value);
+    }
+
+    private void InvalidatePreparedFirmwareIfSelectionChanged()
+    {
+        // Rebuilding recommendations creates new row models for the same manifest entry.
+        // Keep its prepared package, but never carry validation to a different release.
+        if (Validated.PreparedFirmware is { } prepared
+            && ReferenceEquals(prepared.ManifestEntry, SelectedFirmware?.Entry))
+        {
+            return;
+        }
+
+        Validated.Reset();
     }
     [RelayCommand]
     private void ClearCatalogueFirmware()

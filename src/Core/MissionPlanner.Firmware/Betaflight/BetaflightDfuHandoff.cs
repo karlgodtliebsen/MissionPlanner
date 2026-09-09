@@ -1,5 +1,4 @@
-using Microsoft.Extensions.Options;
-using MissionPlanner.Firmware.Configuration;
+﻿using Microsoft.Extensions.Options;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Entry;
@@ -8,18 +7,6 @@ using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Operations;
 
 namespace MissionPlanner.Firmware.Betaflight;
-
-/// <summary>Retains source and transition evidence; correlation never equates MCU UID with a DFU serial.</summary>
-public sealed record BetaflightDfuHandoffResult(bool Succeeded, string Code, SerialDeviceDescriptor Source,
-    DfuDeviceDescriptor? Device = null, string? PhysicalLocation = null);
-
-/// <summary>Owns a safe reboot and same-physical-device handoff into the existing DFU stack.</summary>
-public interface IBetaflightDfuHandoff
-{
-    /// <summary>Reboots the explicitly selected controller and proves its returning DFU endpoint.</summary>
-    Task<BetaflightDfuHandoffResult> RebootAsync(SerialDeviceDescriptor source, IProgress<FirmwareProgress>? progress = null,
-        CancellationToken cancellationToken = default);
-}
 
 /// <summary>Reuses existing serial snapshots and USB DFU monitoring for the transition.</summary>
 public sealed class BetaflightDfuHandoff(IBootloaderEntryService entry, IDfuDeviceCatalog dfu,
@@ -47,7 +34,9 @@ public sealed class BetaflightDfuHandoff(IBootloaderEntryService entry, IDfuDevi
             var existing = before.Select(device => device.ProviderId).ToHashSet(StringComparer.OrdinalIgnoreCase);
             progress?.Report(new(FirmwareOperationState.RequestingBootloaderReboot, null, "betaflight.reboot-requested"));
             var entered = await entry.EnterAsync(new(new(source), source)
-                { Target = BootloaderEntryTarget.Stm32RomDfu }, cancellationToken).ConfigureAwait(false);
+            {
+                Target = BootloaderEntryTarget.Stm32RomDfu
+            }, cancellationToken).ConfigureAwait(false);
             if (entered.Outcome != BootloaderEntryOutcome.DfuRebootInitiated)
             {
                 return new(false, entered.Code, source);
