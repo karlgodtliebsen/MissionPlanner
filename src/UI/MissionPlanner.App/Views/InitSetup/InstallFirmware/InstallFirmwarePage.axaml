@@ -57,37 +57,40 @@
                     </WrapPanel>
                 </Border>
 
-                <TabControl Grid.Row="3" x:Name="MainTabControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" TabIndex="0" >
-
-                    <TabItem Header="Information"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                        <local:LandingView  />
+                <TabControl Grid.Row="3" x:Name="MainTabControl"
+                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <TabItem Header="Firmware">
+                        <TabControl TabStripPlacement="Left" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                            <TabItem Header="Catalogue" IsEnabled="{Binding CanUseSerialFirmware}">
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <local:FirmwareCatalogueView DataContext="{Binding Catalogue}" IsDetectedDeviceVisible="True" />
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Custom Firmware" IsEnabled="{Binding CanUseSerialFirmware}">
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <local:CustomFirmwareView DataContext="{Binding Custom}" />
+                                </ScrollViewer>
+                            </TabItem>
+                        </TabControl>
                     </TabItem>
-                    <TabItem Header="Select Firmware from Catalogue" IsEnabled="{Binding CanUseSerialFirmware}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                        <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
-                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:FirmwareCatalogueView DataContext="{Binding Catalogue}" IsDetectedDeviceVisible="True" />
-                        </ScrollViewer>
+                    <TabItem Header="STM32 DFU">
+                        <TabControl TabStripPlacement="Left" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                            <TabItem Header="Device / Enter DFU">
+                                <local:LandingView />
+                            </TabItem>
+                            <TabItem Header="Catalogue" IsEnabled="{Binding CanUseDfuFirmware}">
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <local:STM32BootloaderView DataContext="{Binding Dfu}" />
+                                </ScrollViewer>
+                            </TabItem>
+                            <TabItem Header="Custom HEX" IsEnabled="{Binding CanUseDfuFirmware}">
+                                <TextBlock Text="Use the combined HEX controls in the DFU Catalogue panel while this workflow is being separated."
+                                           TextWrapping="Wrap" Margin="25" />
+                            </TabItem>
+                        </TabControl>
                     </TabItem>
-                    <TabItem Header="Custom Firmware" IsEnabled="{Binding CanUseSerialFirmware}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                        <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
-                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:CustomFirmwareView DataContext="{Binding Custom}" />
-                        </ScrollViewer>
-                    </TabItem>
-                    <TabItem Header="STM32 Bootloader" IsEnabled="{Binding CanUseDfuFirmware}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                        <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
-                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:STM32BootloaderView DataContext="{Binding Dfu}"/>
-                        </ScrollViewer>
-                    </TabItem>
-                    <TabItem Header="Help &amp; Support" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                        <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
-                                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                      HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <TabItem Header="Help &amp; Support">
+                        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                             <local:HelpView DataContext="{Binding Help}" />
                         </ScrollViewer>
                     </TabItem>
@@ -120,3 +123,4 @@
 
     </ContentPage>
 </utilities:NavigationViewBase>
+

@@ -106,3 +106,7 @@ passed using `dotnet build <project-or-solution> --no-restore -p:UsedAvaloniaPro
 `src/Tests/Run-AllTests.ps1` passed 938 .NET tests (including 62 UI tests) and 7
 JavaScript tests. The 29 existing skips were unchanged. Results are in
 `TestResults/all-tests/20260908-002401-802`.
+
+## InstallFirmware-take2 execution
+
+Task 01: navigation now separates Firmware, STM32 DFU, and Help & Support. Nested tabs use a left tab strip; device entry remains accessible before a DFU endpoint exists. Existing operations and status/Refresh controls are retained. Focused DFU compositions follow in tasks 02–04.
