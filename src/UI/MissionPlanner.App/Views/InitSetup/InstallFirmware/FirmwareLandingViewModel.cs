@@ -21,6 +21,19 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
     /// <summary>Gets the shared controller selection.</summary>
     public DetectedDeviceViewModel Devices => devices;
 
+    /// <summary>Gets the existing DFU device selection and tool readiness.</summary>
+    public STM32BootloaderViewModel Dfu => dfu;
+
+    /// <summary>Gets protocol-reported identity without inferring an ArduPilot target.</summary>
+    public string SourceIdentitySummary => devices.SelectedDevice?.Descriptor.BetaflightIdentity is { } identity
+        ? $"Firmware: {identity.FirmwareVariant} {identity.FirmwareVersion}\nBoard: {identity.Board?.BoardName ?? "Unknown"}\nTarget: {identity.Board?.TargetName ?? "Unknown"}\nManufacturer: {identity.Board?.ManufacturerId ?? "Unknown"}\nMCU: {identity.McuType ?? "Unknown"}\nUID: {identity.McuUniqueId ?? "Unavailable"}"
+        : "Runtime firmware identity is unknown. A serial port name does not identify the controller firmware or exact board.";
+
+    /// <summary>Explains the limits of anonymous ROM USB identity.</summary>
+    public string DfuIdentitySummary => dfu.SelectedDfuDevice is { } selected
+        ? $"USB {selected.Descriptor.VendorId:X4}:{selected.Descriptor.ProductId:X4}\nUSB serial: {selected.Descriptor.SerialNumber ?? "Unknown"}\nPhysical device: {selected.Descriptor.PnpInstanceId ?? selected.Descriptor.DevicePath ?? selected.Descriptor.ProviderId}\nSTM32 ROM DFU alone does not prove the exact flight-controller target."
+        : "Hold BOOT/DFU while reconnecting USB; some boards require BOOT + RESET. STM32 ROM DFU is a USB endpoint, normally not a COM port. Refresh after changing mode.";
+
     /// <summary>Requests a page-owned boot-mode operation.</summary>
     public event Action<FirmwarePanelRequest>? OperationRequested;
 

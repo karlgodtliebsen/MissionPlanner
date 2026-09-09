@@ -110,3 +110,5 @@ JavaScript tests. The 29 existing skips were unchanged. Results are in
 ## InstallFirmware-take2 execution
 
 Task 01: navigation now separates Firmware, STM32 DFU, and Help & Support. Nested tabs use a left tab strip; device entry remains accessible before a DFU endpoint exists. Existing operations and status/Refresh controls are retained. Focused DFU compositions follow in tasks 02–04.
+
+Task 02: STM32DfuDeviceView replaces LandingView, reusing FirmwareLandingViewModel and existing discovery. It exposes runtime/board/MCU identity, a DFU endpoint selector, tool readiness and manual BOOT/RESET guidance. USB DFU identity does not imply an exact FC target.

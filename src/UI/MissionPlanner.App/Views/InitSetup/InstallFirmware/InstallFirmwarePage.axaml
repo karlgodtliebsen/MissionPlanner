@@ -76,7 +76,7 @@
                     <TabItem Header="STM32 DFU">
                         <TabControl TabStripPlacement="Left" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                             <TabItem Header="Device / Enter DFU">
-                                <local:LandingView />
+                                <local:STM32DfuDeviceView />
                             </TabItem>
                             <TabItem Header="Catalogue" IsEnabled="{Binding CanUseDfuFirmware}">
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -123,4 +123,5 @@
 
     </ContentPage>
 </utilities:NavigationViewBase>
+
 

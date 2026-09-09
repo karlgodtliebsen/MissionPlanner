@@ -7,7 +7,7 @@
                                xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                x:DataType="local:FirmwareLandingViewModel"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                               x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.LandingView"
+                               x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.STM32DfuDeviceView"
                                Margin="25,0,25,0"
                                >
 
@@ -27,6 +27,7 @@
                     <TextBlock Text="Serial devices" Classes="H4" FontWeight="Bold" />
                     <TextBlock Text="{Binding SerialSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding SerialDetail}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding SourceIdentitySummary}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
             <Border Padding="20" Classes="SectionCard">
@@ -34,6 +35,11 @@
                     <TextBlock Text="STM32 DFU devices" Classes="H4" FontWeight="Bold" />
                     <TextBlock Text="{Binding DfuSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding DfuDetail}" TextWrapping="Wrap" />
+                    <ComboBox ItemsSource="{Binding Dfu.DfuDevices}" SelectedItem="{Binding Dfu.SelectedDfuDevice}"
+                              MinWidth="250" HorizontalAlignment="Left" PlaceholderText="Select STM32 ROM DFU endpoint"
+                              IsEnabled="{Binding !Dfu.InstallationRunning}" />
+                    <TextBlock Text="{Binding DfuIdentitySummary}" TextWrapping="Wrap" Classes="Warning" />
+                    <TextBlock Text="{Binding Dfu.ToolReadiness}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding DfuRebootGuidance}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}"
                                Classes="Warning" FontWeight="SemiBold" TextWrapping="Wrap" />
@@ -58,3 +64,4 @@
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>
+

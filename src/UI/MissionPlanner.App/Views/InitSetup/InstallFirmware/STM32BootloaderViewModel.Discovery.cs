@@ -14,6 +14,13 @@ public sealed partial class STM32BootloaderViewModel
     private readonly IActiveVehicleContext activeVehicle;
     private readonly FirmwarePanelLoader loader = new();
     internal bool DiscoveryOwnedByPage { get; set; }
+    /// <summary>Gets the most recent CubeProgrammer readiness evidence.</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ToolReadiness))]
+    public partial DfuToolStatus? ToolStatus { get; private set; }
+
+    /// <summary>Gets explicit tool readiness for every DFU subview.</summary>
+    public string ToolReadiness => ToolStatus is null ? "STM32CubeProgrammer has not been checked. Refresh devices."
+        : $"STM32CubeProgrammer: {ToolStatus.Availability}. {ToolStatus.Diagnostic}";
     /// <summary>Gets whether DFU discovery is running.</summary>
     [ObservableProperty] public partial bool IsRefreshing { get; private set; }
     /// <summary>Gets or sets the parent's exclusive installation interlock.</summary>
@@ -52,6 +59,7 @@ public sealed partial class STM32BootloaderViewModel
             {
                 if (token.IsCancellationRequested) { return; }
                 var previousId = SelectedDfuDevice?.Descriptor.ProviderId;
+                ToolStatus = tool;
                 DfuDevices = devices.Select(device => new DfuDeviceItemViewModel(device)).ToArray();
                 SelectedDfuDevice = previousId is null
                     ? DfuDevices.Count == 1 ? DfuDevices[0] : null
