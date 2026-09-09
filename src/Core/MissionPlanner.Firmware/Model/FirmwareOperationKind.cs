@@ -13,5 +13,8 @@ public enum FirmwareOperationKind
     UpdateEmbeddedBootloader,
 
     /// <summary>Owns serial devices for non-destructive firmware identification.</summary>
-    ProbeFirmwareIdentity
+    ProbeFirmwareIdentity,
+
+    /// <summary>Resolves and inspects a DFU artifact without opening a programming device.</summary>
+    PrepareDfuArtifact
 }

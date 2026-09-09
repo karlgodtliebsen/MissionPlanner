@@ -29,6 +29,11 @@ public sealed class DfuArtifactResolver(
             throw new DfuArtifactResolutionException("The selected manifest release does not match the explicit DFU platform and board selection.");
         var source = entry.Artifact.DownloadUri;
         if (!IsTrustedOfficialSource(source)) throw new DfuArtifactResolutionException("Sibling derivation is allowed only from a configured official HTTPS firmware source.");
+        var sourcePlatform = Uri.UnescapeDataString(new Uri(source, ".").AbsolutePath.TrimEnd('/').Split('/')[^1]);
+        if (!string.Equals(sourcePlatform, entry.Target.Platform, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new DfuArtifactResolutionException("The manifest platform does not match the source platform/vehicle-variant directory. Select a consistent catalogue release.");
+        }
         var fileName = entry.Target.VehicleType switch
         {
             FirmwareVehicleType.Copter => "arducopter_with_bl.hex",

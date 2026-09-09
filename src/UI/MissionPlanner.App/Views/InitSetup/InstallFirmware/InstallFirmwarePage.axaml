@@ -80,7 +80,7 @@
                             </TabItem>
                             <TabItem Header="Catalogue" IsEnabled="{Binding CanUseDfuFirmware}">
                                 <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                                    <local:STM32BootloaderView DataContext="{Binding Dfu}" />
+                                    <local:STM32DfuCatalogueView DataContext="{Binding Catalogue}" />
                                 </ScrollViewer>
                             </TabItem>
                             <TabItem Header="Custom HEX" IsEnabled="{Binding CanUseDfuFirmware}">
@@ -123,5 +123,6 @@
 
     </ContentPage>
 </utilities:NavigationViewBase>
+
 
 

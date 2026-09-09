@@ -76,7 +76,7 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
         {
             ObjectDisposedException.ThrowIf(disposed, this);
             ArgumentNullException.ThrowIfNull(progress);
-            var permitted = Kind == FirmwareOperationKind.ProbeFirmwareIdentity
+            var permitted = Kind is FirmwareOperationKind.ProbeFirmwareIdentity or FirmwareOperationKind.PrepareDfuArtifact
                 ? State == FirmwareOperationState.Idle && progress.State is FirmwareOperationState.Completed or FirmwareOperationState.Failed or FirmwareOperationState.Cancelled
                 : Transitions.TryGetValue(State, out var allowed) && allowed.Contains(progress.State);
             if (!permitted)

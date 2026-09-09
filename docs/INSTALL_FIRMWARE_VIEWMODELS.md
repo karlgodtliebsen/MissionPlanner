@@ -112,3 +112,5 @@ JavaScript tests. The 29 existing skips were unchanged. Results are in
 Task 01: navigation now separates Firmware, STM32 DFU, and Help & Support. Nested tabs use a left tab strip; device entry remains accessible before a DFU endpoint exists. Existing operations and status/Refresh controls are retained. Focused DFU compositions follow in tasks 02–04.
 
 Task 02: STM32DfuDeviceView replaces LandingView, reusing FirmwareLandingViewModel and existing discovery. It exposes runtime/board/MCU identity, a DFU endpoint selector, tool readiness and manual BOOT/RESET guidance. USB DFU identity does not imply an exact FC target.
+
+Task 03: DFU Catalogue reuses the single catalogue selector and selected-entry state, with its APJ action hidden. A separate artifact panel prepares/inspects combined HEX through IDfuArtifactResolver under the global operation lease. Tool and driver readiness gate installation. The resolver rejects a source directory that disagrees with the selected platform, including vehicle-variant mismatches.

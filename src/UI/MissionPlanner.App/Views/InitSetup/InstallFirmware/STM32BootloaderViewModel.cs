@@ -37,6 +37,15 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
     {
         get;
     }
+
+    /// <summary>Gets the separately inspected DFU HEX artifact.</summary>
+    [ObservableProperty]
+    public partial MissionPlanner.Firmware.Dfu.DfuArtifact? PreparedArtifact { get; set; }
+
+    /// <summary>Requests combined HEX preparation through the page operation owner.</summary>
+    [RelayCommand(CanExecute = nameof(CanInstallDfu))]
+    private Task PrepareDfuAsync(CancellationToken cancellationToken) =>
+        FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.PrepareDfu, cancellationToken);
     [ObservableProperty]
     public partial IReadOnlyList<DfuDeviceItemViewModel> DfuDevices
     {
@@ -204,7 +213,7 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
     }
 
     /// <summary>Gets whether the parent permits DFU installation.</summary>
-    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(InstallDfuFirmwareCommand))]
+    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(InstallDfuFirmwareCommand)), NotifyCanExecuteChangedFor(nameof(PrepareDfuCommand))]
     public partial bool CanInstallDfu
     {
         get; set;

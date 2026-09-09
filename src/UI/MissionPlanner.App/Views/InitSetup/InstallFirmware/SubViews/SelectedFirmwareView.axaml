@@ -50,7 +50,8 @@
             <SelectableTextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SelectedFirmware.BootloaderAliases,FallbackValue='', TargetNullValue=''}" />
 
             <StackPanel Orientation="Horizontal" Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" Spacing="10" HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Download &amp; Validate" 
+                <Button ToolTip.Tip="Download &amp; Validate"
+                        IsVisible="{Binding ShowApjDownload, RelativeSource={RelativeSource AncestorType=subViews:SelectedFirmwareView}}"
                         Command="{Binding DownloadAndValidateCommand}"
                         Classes="Primary"
                         Padding="8,2"

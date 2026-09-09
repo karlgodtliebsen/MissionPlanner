@@ -41,12 +41,28 @@ public sealed class DfuArtifactResolverTests
         downloader.Source.Should().BeNull();
     }
 
+    [Theory]
+    [InlineData("BETAFPV-F405", "BETAFPV-F405-heli")]
+    [InlineData("CubeOrange", "CubeOrange-heli")]
+    public async Task PlatformVariantMismatchIsRejectedBeforeDownload(string selectedPlatform, string sourcePlatform)
+    {
+        var downloader = new FakeDownloader();
+        var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
+            new FirmwareBoardTarget(140, selectedPlatform, FirmwareVehicleType.Copter),
+            new FirmwareArtifact(new Uri($"https://firmware.ardupilot.org/Copter/stable/{sourcePlatform}/arducopter-heli.apj"), FirmwareImageFormat.Apj));
+        var request = new DfuInstallationRequest(selectedPlatform, 140,
+            new DfuDeviceDescriptor("usb1", 0x0483, 0xDF11, DfuDriverState.PresentReady), ManifestEntry: entry);
+        var action = () => CreateResolver(downloader).ResolveAsync(request, TestContext.Current.CancellationToken);
+        await action.Should().ThrowAsync<DfuArtifactResolutionException>().WithMessage("*variant*");
+        downloader.Source.Should().BeNull();
+    }
+
     [Fact]
     public async Task MissingOfficialSiblingRemainsAResolutionFailure()
     {
         var resolver = CreateResolver(new FakeDownloader { Failure = new DfuArtifactResolutionException("not found") });
         var action = () => resolver.ResolveAsync(OfficialRequest(FirmwareVehicleType.Copter,
-            new Uri("https://firmware.ardupilot.org/Copter/stable/Board/firmware.apj")), TestContext.Current.CancellationToken);
+            new Uri("https://firmware.ardupilot.org/Copter/stable/CubeOrange/firmware.apj")), TestContext.Current.CancellationToken);
 
         await action.Should().ThrowAsync<DfuArtifactResolutionException>().WithMessage("not found");
     }

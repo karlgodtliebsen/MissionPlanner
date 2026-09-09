@@ -60,6 +60,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private readonly MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity;
     private readonly MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff dfuHandoff;
     private readonly IDfuInstallationService dfuInstallationService;
+    private readonly IDfuArtifactResolver dfuArtifactResolver;
+    private readonly MissionPlanner.Firmware.Operations.IFirmwareOperationCoordinator firmwareOperations;
     private readonly IEmbeddedBootloaderUpdateService bootloaderUpdateService;
     private readonly IFirmwarePageModeResolver modeResolver;
     private readonly IActiveVehicleContext activeVehicle;
@@ -81,6 +83,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="installationService"></param>
     /// <param name="preparationService"></param>
     /// <param name="dfuInstallationService"></param>
+    /// <param name="dfuArtifactResolver">Resolves and inspects combined HEX previews.</param>
+    /// <param name="firmwareOperations">Prevents concurrent firmware resource ownership.</param>
     /// <param name="bootloaderUpdateService"></param>
     /// <param name="modeResolver"></param>
     /// <param name="activeVehicle"></param>
@@ -102,6 +106,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         IFirmwareInstallationService installationService,
         IFirmwarePreparationService preparationService,
         IDfuInstallationService dfuInstallationService,
+        IDfuArtifactResolver dfuArtifactResolver,
+        MissionPlanner.Firmware.Operations.IFirmwareOperationCoordinator firmwareOperations,
         IEmbeddedBootloaderUpdateService bootloaderUpdateService,
         IFirmwarePageModeResolver modeResolver,
         IActiveVehicleContext activeVehicle,
@@ -123,6 +129,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         this.installationService = installationService;
         this.preparationService = preparationService;
         this.dfuInstallationService = dfuInstallationService;
+        this.dfuArtifactResolver = dfuArtifactResolver;
+        this.firmwareOperations = firmwareOperations;
         this.bootloaderUpdateService = bootloaderUpdateService;
         this.modeResolver = modeResolver;
         this.activeVehicle = activeVehicle;
@@ -411,14 +419,16 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         return
             (!string.IsNullOrWhiteSpace(Dfu.LocalDfuFirmwarePath) ? !string.IsNullOrWhiteSpace(Dfu.LocalDfuPlatform) : Catalogue.SelectedFirmware is not null)
             &&
-            Dfu.SelectedDfuDevice?.Descriptor.DriverState == DfuDriverState.PresentReady && !IsOperationInProgress && !ArePanelsRefreshing;
+            OperatingSystem.IsWindows() && !activeVehicle.IsOnline
+            && Dfu.ToolStatus?.Availability == DfuToolAvailability.Available
+            && Dfu.SelectedDfuDevice?.Descriptor.DriverState == DfuDriverState.PresentReady && !IsOperationInProgress && !ArePanelsRefreshing;
     }
 
     [RelayCommand(CanExecute = nameof(CanStartDfuInstall), AllowConcurrentExecutions = false)]
     private async Task InstallDfuFirmwareAsync(CancellationToken cancellationToken)
     {
         var hasLocalHex = !string.IsNullOrWhiteSpace(Dfu.LocalDfuFirmwarePath);
-        if ((!hasLocalHex && Catalogue.SelectedFirmware is null) || Dfu.SelectedDfuDevice is null ||
+        if (!CanStartDfuInstall() || (!hasLocalHex && Catalogue.SelectedFirmware is null) || Dfu.SelectedDfuDevice is null ||
             Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
         {
             return;
@@ -891,6 +901,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         request.Completion = request.Action switch
         {
             FirmwarePanelAction.Download => DownloadAndValidateAsync(request.CancellationToken),
+            FirmwarePanelAction.PrepareDfu => PrepareDfuArtifactAsync(request.CancellationToken),
             FirmwarePanelAction.RebootToDfu => RebootToDfuAsync(request.CancellationToken),
             FirmwarePanelAction.Install when CanStartInstall() => InstallAsync(request.CancellationToken),
             FirmwarePanelAction.InstallDfu when CanStartDfuInstall() => InstallDfuFirmwareAsync(request.CancellationToken),
@@ -899,6 +910,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     private void OnCatalogueSelection(FirmwareCatalogItemViewModel? value)
     {
+        Dfu.PreparedArtifact = null;
         if (value is not null)
         {
             Custom.CustomPackage = null;
@@ -941,6 +953,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     private void OnDfuFirmware(string? value)
     {
+        Dfu.PreparedArtifact = null;
         if (value is not null)
         {
             Custom.CustomPackage = null;
@@ -950,6 +963,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     private void OnDfuPlatform(string? value)
     {
+        Dfu.PreparedArtifact = null;
         UpdatePanelCapabilities();
     }
 

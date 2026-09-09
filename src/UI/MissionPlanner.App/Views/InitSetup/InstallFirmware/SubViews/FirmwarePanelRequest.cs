@@ -13,6 +13,9 @@ public enum FirmwarePanelAction
     InstallDfu,
     /// <summary>Reboot the selected Betaflight controller into ROM DFU.</summary>
     RebootToDfu
+    ,
+    /// <summary>Resolve and inspect the selected combined HEX without programming.</summary>
+    PrepareDfu
 }
 
 /// <summary>An awaitable request sent from a panel to its active parent.</summary>

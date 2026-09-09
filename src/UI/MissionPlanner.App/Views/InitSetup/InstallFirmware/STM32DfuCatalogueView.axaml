@@ -1,0 +1,12 @@
+<view:UserControlViewBase xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:view="clr-namespace:MissionPlanner.App.Utilities" xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+    xmlns:sub="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
+    x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.STM32DfuCatalogueView"
+    x:TypeArguments="local:FirmwareCatalogViewModel" x:DataType="local:FirmwareCatalogViewModel">
+    <StackPanel Spacing="20" Margin="25" IsEnabled="{Binding !InstallationRunning}">
+        <sub:FirmwareCatalogueSelectorView />
+        <TextBlock Text="Selected catalogue entry — identifies the platform/release; the APJ below is not the DFU programming artifact." TextWrapping="Wrap" Classes="Warning" />
+        <sub:SelectedFirmwareView DataContext="{Binding Selected}" ShowApjDownload="False" />
+        <local:STM32DfuArtifactView />
+    </StackPanel>
+</view:UserControlViewBase>

@@ -165,6 +165,9 @@ public sealed class FirmwarePanelViewModelTests
         services.AddSingleton(Substitute.For<IFirmwareInstallationService>());
         services.AddSingleton(Substitute.For<IFirmwarePreparationService>());
         services.AddSingleton(Substitute.For<IDfuInstallationService>());
+        services.AddSingleton(Substitute.For<IDfuArtifactResolver>());
+        services.AddSingleton<MissionPlanner.Firmware.Operations.IFirmwareOperationCoordinator,
+            MissionPlanner.Firmware.Operations.FirmwareOperationCoordinator>();
         services.AddSingleton(Substitute.For<IDfuDeviceCatalog>());
         services.AddSingleton(Substitute.For<IDfuToolLocator>());
         services.AddSingleton(Substitute.For<IEmbeddedBootloaderUpdateService>());
