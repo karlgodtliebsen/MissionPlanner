@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using MissionPlanner.Core.FlightData.Telemetry;
 using MissionPlanner.Core.Setup.Advanced.Warnings;
 
@@ -7,8 +7,11 @@ namespace MissionPlanner.Core.Tests;
 public sealed class WarningManagerTests
 {
     private readonly WarningSources sources = new(new TelemetryFieldCatalog());
-    private static WarningRule Rule() => new(Guid.NewGuid(), "Battery", true, "battery-voltage",
+    private static WarningRule Rule()
+    {
+        return new(Guid.NewGuid(), "Battery", true, "battery-voltage",
         WarningComparison.Less, 10, 20, WarningSeverity.Warning, "{name}: {value}");
+    }
 
     [Theory]
     [InlineData(WarningComparison.Less, 9, true)]
@@ -29,7 +32,10 @@ public sealed class WarningManagerTests
     [InlineData(WarningComparison.OutsideRange, 21, true)]
     public void OperatorsRespectBoundaries(WarningComparison comparison, double value, bool expected)
     {
-        Assert.Equal(expected, WarningEngine.Matches(Rule() with { Comparison = comparison }, value));
+        Assert.Equal(expected, WarningEngine.Matches(Rule() with
+        {
+            Comparison = comparison
+        }, value));
     }
 
     [Fact]
@@ -37,10 +43,23 @@ public sealed class WarningManagerTests
     {
         var clock = new TestClock();
         var engine = new WarningEngine(sources, clock);
-        var rule = Rule() with { DelaySeconds = 2, Hysteresis = 1, CooldownSeconds = 10, RequiresAcknowledgement = true };
-        var other = rule with { Id = Guid.NewGuid() };
+        var rule = Rule() with
+        {
+            DelaySeconds = 2,
+            Hysteresis = 1,
+            CooldownSeconds = 10,
+            RequiresAcknowledgement = true
+        };
+        var other = rule with
+        {
+            Id = Guid.NewGuid()
+        };
         engine.SetRules([rule, other]);
-        IReadOnlyList<WarningSnapshot> Tick(double value) => engine.Evaluate(_ => new(value, clock.GetUtcNow()));
+        IReadOnlyList<WarningSnapshot> Tick(double value)
+        {
+            return engine.Evaluate(_ => new(value, clock.GetUtcNow()));
+        }
+
         Assert.All(Tick(9), item => Assert.Equal(WarningState.Pending, item.State));
         clock.Advance(1);
         Assert.All(Tick(9), item => Assert.False(item.Notify));
@@ -103,14 +122,18 @@ public sealed class WarningManagerTests
         var repository = new WarningRuleRepository(store, sources);
         var rule = Rule();
         await repository.SaveAsync([rule], TestContext.Current.CancellationToken);
-        Assert.Equal(rule, Assert.Single((await repository.LoadAsync(default)).Rules));
-        store.Document = JsonSerializer.Serialize(new { Version = 1, Rules = new object[] { rule, new { Name = "broken" }, rule } });
-        var loaded = await repository.LoadAsync(default);
+        Assert.Equal(rule, Assert.Single((await repository.LoadAsync(TestContext.Current.CancellationToken)).Rules));
+        store.Document = JsonSerializer.Serialize(new
+        {
+            Version = 1,
+            Rules = new object[] { rule, new { Name = "broken" }, rule }
+        });
+        var loaded = await repository.LoadAsync(TestContext.Current.CancellationToken);
         Assert.Equal(rule, Assert.Single(loaded.Rules));
         Assert.Contains("2 invalid", loaded.Diagnostic);
         Assert.Equal(store.Document, store.Recovery);
         store.Document = "{bad json";
-        Assert.Empty((await repository.LoadAsync(default)).Rules);
+        Assert.Empty((await repository.LoadAsync(TestContext.Current.CancellationToken)).Rules);
         Assert.Equal("{bad json", store.Recovery);
     }
 
@@ -128,8 +151,15 @@ public sealed class WarningManagerTests
     private sealed class TestClock : TimeProvider
     {
         private DateTimeOffset now = new(2026, 9, 7, 0, 0, 0, TimeSpan.Zero);
-        public override DateTimeOffset GetUtcNow() => now;
-        internal void Advance(int seconds) => now += TimeSpan.FromSeconds(seconds);
+        public override DateTimeOffset GetUtcNow()
+        {
+            return now;
+        }
+
+        internal void Advance(int seconds)
+        {
+            now += TimeSpan.FromSeconds(seconds);
+        }
     }
 
     private sealed class MemoryStore : IWarningRuleStore
@@ -137,7 +167,11 @@ public sealed class WarningManagerTests
         internal string? Document;
         internal string? Recovery;
         internal bool FailWrite;
-        public ValueTask<string?> ReadAsync(CancellationToken token) => ValueTask.FromResult(Document);
+        public ValueTask<string?> ReadAsync(CancellationToken token)
+        {
+            return ValueTask.FromResult(Document);
+        }
+
         public ValueTask WriteAsync(string document, CancellationToken token)
         {
             if (FailWrite)
