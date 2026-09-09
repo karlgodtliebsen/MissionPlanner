@@ -14,7 +14,7 @@
                 <SelectableTextBlock Text="{Binding LocalDfuFirmwareName}" />
                 <SelectableTextBlock Text="{Binding LocalDfuFirmwarePath}" TextWrapping="Wrap" />
                 <TextBlock Text="Intel HEX does not contain APJ board metadata. Enter the exact ArduPilot platform used to build this file; MCU type alone is insufficient." Classes="Warning" TextWrapping="Wrap" />
-                <TextBox Text="{Binding LocalDfuPlatform}" Watermark="Exact ArduPilot platform" MinWidth="250" HorizontalAlignment="Left" />
+                <TextBox Text="{Binding LocalDfuPlatform}" PlaceholderText="Exact ArduPilot platform" MinWidth="250" HorizontalAlignment="Left" />
             </StackPanel>
         </Border>
         <local:STM32DfuArtifactView />

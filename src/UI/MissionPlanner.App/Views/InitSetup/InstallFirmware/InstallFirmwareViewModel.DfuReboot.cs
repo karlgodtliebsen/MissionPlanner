@@ -1,14 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 public sealed partial class InstallFirmwareViewModel
 {
+    [RelayCommand]
+
     private async Task RebootToDfuAsync(CancellationToken cancellationToken)
     {
         if (!landing.CanRebootToDfu || IsOperationInProgress || ArePanelsRefreshing
-            || Devices.SelectedDevice?.Descriptor is not { } source)
+            || DevicesModel.SelectedDevice?.Descriptor is not { } source)
         {
             return;
         }
@@ -19,7 +22,7 @@ public sealed partial class InstallFirmwareViewModel
         {
             SelectedSectionIndex = (int)FirmwareSection.Stm32Dfu;
             SelectedDfuTabIndex = (int)Stm32DfuSection.Device;
-            Dfu.CorrelatedHandoff = null;
+            DfuModel.CorrelatedHandoff = null;
             landing.ErrorMessage = null;
             SetOperation(true, FirmwareOperationState.RequestingBootloaderReboot);
             await ShowOperationDialogAsync("Identifying selected controller", owned);
@@ -64,26 +67,26 @@ public sealed partial class InstallFirmwareViewModel
                 return;
             }
 
-            await Dfu.RefreshAfterInstallationAsync(owned.Token);
-            Dfu.SelectedDfuDevice = Dfu.DfuDevices.SingleOrDefault(item =>
+            await DfuModel.RefreshAfterInstallationAsync(owned.Token);
+            DfuModel.SelectedDfuDevice = DfuModel.DfuDevices.SingleOrDefault(item =>
                 item.Descriptor.ProviderId == result.Device?.ProviderId
                 && item.Descriptor.ArrivedAt == result.Device.ArrivedAt);
-            if (Dfu.SelectedDfuDevice is not null)
+            if (DfuModel.SelectedDfuDevice is not null)
             {
-                Dfu.CorrelatedHandoff = result;
-                Catalogue.SetReviewedDfuTarget(betaflightCompatibility.Resolve(source.BetaflightIdentity!));
+                DfuModel.CorrelatedHandoff = result;
+                OnlineFirmwareModel.SetReviewedDfuTarget(betaflightCompatibility.Resolve(source.BetaflightIdentity!));
                 navigateToCatalogue = true;
             }
-            Dfu.DfuStatus = Dfu.SelectedDfuDevice is null
+            DfuModel.DfuStatus = DfuModel.SelectedDfuDevice is null
                 ? "The controller entered DFU but is no longer detected. Refresh devices before continuing."
                 : "The selected controller entered DFU. Open STM32 Bootloader to continue.";
-            SetMessages(Dfu.DfuStatus);
+            SetMessages(DfuModel.DfuStatus);
             NotificationManager?.Show(StatusMessage ?? "");
         }
         catch (OperationCanceledException) when (owned.IsCancellationRequested)
         {
-            Dfu.DfuStatus = "DFU reboot cancelled. If the controller already rebooted, refresh devices to detect its current mode.";
-            SetMessages(errorMessage: Dfu.DfuStatus);
+            DfuModel.DfuStatus = "DFU reboot cancelled. If the controller already rebooted, refresh devices to detect its current mode.";
+            SetMessages(errorMessage: DfuModel.DfuStatus);
             NotificationManager?.Show(ErrorMessage ?? "");
         }
         catch (Exception exception)
@@ -111,7 +114,7 @@ public sealed partial class InstallFirmwareViewModel
     private void ReportDfuRebootError(string message)
     {
         CloseOperationDialog();
-        Dfu.DfuStatus = message;
+        DfuModel.DfuStatus = message;
         landing.ErrorMessage = message;
         SetMessages(null, message);
         NotificationManager?.Show(ErrorMessage ?? "");

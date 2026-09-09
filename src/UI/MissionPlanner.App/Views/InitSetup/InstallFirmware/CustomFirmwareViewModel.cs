@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
@@ -9,7 +8,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 /// <summary>Owns custom panel state and commands.</summary>
-public sealed partial class CustomFirmwareViewModel : ViewModelBase
+public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
 {
     private readonly IFirmwareFilePicker filePicker;
     private readonly IFirmwarePackageReader packageReader;
@@ -18,8 +17,10 @@ public sealed partial class CustomFirmwareViewModel : ViewModelBase
     public CustomFirmwareViewModel(
         IFirmwareFilePicker filePicker,
         IFirmwarePackageReader packageReader,
-        SubViews.DetectedDeviceViewModel devices,
-        SubViews.ValidatedPackageViewModel validated,
+
+        DetectedDeviceViewModel devices,
+        ValidatedPackageViewModel validated,
+
         ILogger<CustomFirmwareViewModel> logger,
         IUiDispatcher dispatcher,
         IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
@@ -97,8 +98,15 @@ public sealed partial class CustomFirmwareViewModel : ViewModelBase
         set;
     } = true;
 
-    /// <summary>Gets whether parsed custom metadata is available.</summary>
-    public bool HasCustomFirmware => CustomPackage is not null;
+    /// <summary>
+    /// Gets whether parsed custom metadata is available.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool HasCustomFirmware
+    {
+        get;
+        set;
+    }
 
     private CancellationTokenSource? viewLifetime;
 
@@ -129,21 +137,13 @@ public sealed partial class CustomFirmwareViewModel : ViewModelBase
         base.Dispose();
     }
     public event Action<FirmwarePanelRequest>? OperationRequested;
-    /// <summary>Gets whether the parent permits installation.</summary>
-    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(InstallCommand))]
-    public partial bool CanInstall
-    {
-        get; set;
-    }
 
-    [RelayCommand(CanExecute = nameof(CanInstall))]
-    private Task InstallAsync(CancellationToken cancellationToken)
+    public Task InstallAsync(CancellationToken cancellationToken)
     {
         return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Install, cancellationToken);
     }
 
-    [RelayCommand(CanExecute = nameof(HasDevice))]
-    private async Task LoadCustomFirmwareAsync(CancellationToken cancellationToken)
+    public async Task LoadCustomFirmwareAsync(CancellationToken cancellationToken)
     {
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, viewLifetime?.Token ?? CancellationToken.None);
         cancellationToken = operation.Token;
@@ -176,26 +176,28 @@ public sealed partial class CustomFirmwareViewModel : ViewModelBase
             CustomFirmwareBuild = package.Version ?? package.GitIdentity ?? "Unknown build";
             CustomFirmwareBoardId = package.BoardId;
             CustomFirmwareImageSize = package.Image.Length;
-
+            HasCustomFirmware = CustomPackage is not null;
             SetMessages("Local firmware parsed and validated. Verify its board ID, then install it using the custom firmware panel.");
             NotificationManager?.Show(StatusMessage ?? "");
 
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            HasCustomFirmware = false;
         }
         catch (Exception exception)
         {
             Logger.LogWarning(exception, "Custom firmware selection failed.");
             CustomPackage = null;
+            HasCustomFirmware = false;
             SetMessages(exception);
             NotificationManager?.Show(ErrorMessage ?? "");
         }
     }
 
-    [RelayCommand]
-    private void ClearCustomFirmware()
+    public void ClearCustomFirmware()
     {
+        HasCustomFirmware = false;
         CustomPackage = null;
         CustomFirmwareName = null;
         CustomFirmwareDescription = null;
@@ -204,20 +206,28 @@ public sealed partial class CustomFirmwareViewModel : ViewModelBase
         CustomFirmwareBoardId = 0;
         CustomFirmwareImageSize = 0;
         RequireExactBoardIdMatch = true;
-
-        SetMessages("Local firmware selection cleared.");
-
     }
+
+    public void Reset()
+    {
+        ClearCustomFirmware();
+    }
+
     /// <summary>Notifies the active parent about panel changes.</summary>
     public event Action<ApjFirmwarePackage?>? PackageChanged;
 
-    /// <summary>Gets whether a serial controller is selected.</summary>
-    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(LoadCustomFirmwareCommand))]
+    /// <summary>
+    /// Gets whether a serial controller is selected.
+    /// </summary>
+    [ObservableProperty]
     public partial bool HasDevice
     {
         get; set;
     }
-    /// <summary>Gets whether the selected device uses the separate DFU path.</summary>
+
+    /// <summary>
+    /// Gets whether the selected device uses the separate DFU path.
+    /// </summary>
     [ObservableProperty]
     public partial bool HasDetectedDfuDevice
     {
@@ -229,6 +239,7 @@ public sealed partial class CustomFirmwareViewModel : ViewModelBase
         {
             RequireExactBoardIdMatch = true;
         }
+        HasCustomFirmware = false;
         OnPropertyChanged(nameof(HasCustomFirmware));
         PackageChanged?.Invoke(value);
     }

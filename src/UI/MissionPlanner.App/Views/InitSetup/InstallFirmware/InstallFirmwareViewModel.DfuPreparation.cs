@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Dfu;
+﻿using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
@@ -12,15 +12,15 @@ public sealed partial class InstallFirmwareViewModel
             return;
         }
         var local = UsesLocalDfuHex;
-        var entry = local ? null : Catalogue.SelectedFirmware!.Entry;
-        var request = new DfuInstallationRequest(local ? Dfu.LocalDfuPlatform!.Trim() : entry!.Target.Platform,
-            entry?.Target.BoardId, Dfu.SelectedDfuDevice!.Descriptor,
-            ManifestEntry: entry, LocalHexPath: local ? Dfu.LocalDfuFirmwarePath : null);
+        var entry = local ? null : OnlineFirmwareModel.SelectedFirmware!.Entry;
+        var request = new DfuInstallationRequest(local ? DfuModel.LocalDfuPlatform!.Trim() : entry!.Target.Platform,
+            entry?.Target.BoardId, DfuModel.SelectedDfuDevice!.Descriptor,
+            ManifestEntry: entry, LocalHexPath: local ? DfuModel.LocalDfuFirmwarePath : null);
         using var owned = BeginOperationCancellation(cancellationToken);
         try
         {
             SetOperation(true, FirmwareOperationState.Downloading);
-            Dfu.PreparedArtifact = null;
+            DfuModel.PreparedArtifact = null;
             using var lease = firmwareOperations.Begin(FirmwareOperationKind.PrepareDfuArtifact);
             try
             {
@@ -28,15 +28,15 @@ public sealed partial class InstallFirmwareViewModel
                 var artifact = await dfuArtifactResolver.ResolveAsync(request, owned.Token);
                 owned.Token.ThrowIfCancellationRequested();
                 if (UsesLocalDfuHex != local || (local
-                    ? Dfu.LocalDfuFirmwarePath != request.LocalHexPath || Dfu.LocalDfuPlatform?.Trim() != request.SelectedPlatform
-                    : !ReferenceEquals(Catalogue.SelectedFirmware?.Entry, entry)))
+                    ? DfuModel.LocalDfuFirmwarePath != request.LocalHexPath || DfuModel.LocalDfuPlatform?.Trim() != request.SelectedPlatform
+                    : !ReferenceEquals(OnlineFirmwareModel.SelectedFirmware?.Entry, entry)))
                 {
-                    Dfu.StatusMessage = "Selection changed; prepare the newly selected combined HEX before reviewing it.";
+                    DfuModel.StatusMessage = "Selection changed; prepare the newly selected combined HEX before reviewing it.";
                     return;
                 }
-                Dfu.PreparedArtifact = artifact;
-                Dfu.StatusMessage = "Combined HEX inspected. Review its source and the exact controller target before installation.";
-                Dfu.ErrorMessage = null;
+                DfuModel.PreparedArtifact = artifact;
+                DfuModel.StatusMessage = "Combined HEX inspected. Review its source and the exact controller target before installation.";
+                DfuModel.ErrorMessage = null;
                 lease.Transition(new(FirmwareOperationState.Completed, null, "dfu.preview-completed"));
             }
             finally
@@ -49,11 +49,11 @@ public sealed partial class InstallFirmwareViewModel
         }
         catch (OperationCanceledException) when (owned.IsCancellationRequested)
         {
-            Dfu.StatusMessage = "Combined HEX preparation cancelled.";
+            DfuModel.StatusMessage = "Combined HEX preparation cancelled.";
         }
         catch (Exception exception)
         {
-            Dfu.ErrorMessage = exception.Message;
+            DfuModel.ErrorMessage = exception.Message;
         }
         finally
         {

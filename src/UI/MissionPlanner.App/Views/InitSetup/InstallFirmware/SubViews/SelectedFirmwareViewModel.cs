@@ -27,7 +27,7 @@ public sealed partial class SelectedFirmwareViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelectedFirmware))]
-    public partial FirmwareCatalogItemViewModel? SelectedFirmware
+    public partial FirmwareCatalogItemViewModel? SelectedFirmwareModel
     {
         get; set;
     }
@@ -35,14 +35,14 @@ public sealed partial class SelectedFirmwareViewModel : ViewModelBase
     /// <summary>
     /// Gets whether a release is selected.
     /// </summary>
-    public bool HasSelectedFirmware => SelectedFirmware is not null;
+    public bool HasSelectedFirmware => SelectedFirmwareModel is not null;
 
     [RelayCommand]
     private Task CopyDownloadUrlAsync()
     {
-        return SelectedFirmware is null
+        return SelectedFirmwareModel is null
             ? Task.CompletedTask
-            : clipboard.SetTextAsync(SelectedFirmware.Entry.Artifact.DownloadUri.AbsoluteUri);
+            : clipboard.SetTextAsync(SelectedFirmwareModel.Entry.Artifact.DownloadUri.AbsoluteUri);
     }
 
     /// <summary>

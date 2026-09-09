@@ -1,5 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Irihi.Avalonia.Shared.Contracts;
+using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Utilities;
 
@@ -35,6 +38,22 @@ public partial class DialogViewModelBase : ViewModelBase, IDialogContext
     public bool Closed
     {
         get; set;
+    }
+
+    protected DialogViewModelBase(ILogger logger, IUiDispatcher dispatcher, IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
+    {
+    }
+
+    /// <inheritdoc />
+    protected DialogViewModelBase(ILogger logger) : base(logger)
+    {
+
+    }
+
+    /// <inheritdoc />
+    protected DialogViewModelBase() : base()
+    {
+
     }
 
 

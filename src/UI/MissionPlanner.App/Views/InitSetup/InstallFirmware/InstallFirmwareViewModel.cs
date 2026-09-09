@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -19,83 +20,122 @@ using MissionPlanner.Firmware.Preparation;
 using MissionPlanner.Firmware.Presentation;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
-using DialogOptions = MissionPlanner.App.Utilities.Dialogs.DialogOptions;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 /// <summary>Drives connected and disconnected firmware installation experiences.</summary>
 public sealed partial class InstallFirmwareViewModel : ViewModelBase
 {
-    /// <summary>Gets the catalogue panel.</summary>
-    public FirmwareCatalogViewModel Catalogue
-    {
-        get;
-    }
-    /// <summary>Gets the custom panel.</summary>
-    public CustomFirmwareViewModel Custom
-    {
-        get;
-    }
-    /// <summary>Gets the dfu panel.</summary>
-    public STM32BootloaderViewModel Dfu
-    {
-        get;
-    }
-    /// <summary>Gets the help panel.</summary>
-    public SubViews.FirmwareHelpViewModel Help
-    {
-        get;
-    }
-    /// <summary>Gets the shared devices panel.</summary>
-    public SubViews.DetectedDeviceViewModel Devices => Catalogue.Devices;
-    /// <summary>Gets the shared validated panel.</summary>
-    public SubViews.ValidatedPackageViewModel Validated => Catalogue.Validated;
 
-    /// <summary>Gets the shared selected panel.</summary>
-    public SubViews.SelectedFirmwareViewModel Selected => Catalogue.Selected;
-
-    private readonly IFirmwareInstallationService installationService;
-    /// <summary>Gets or sets the selected top-level installation context.</summary>
-    [ObservableProperty]
-    public partial int SelectedSectionIndex { get; set; }
-
-    partial void OnSelectedSectionIndexChanged(int value)
-    {
-        Catalogue.IsDfuContext = value == (int)FirmwareSection.Stm32Dfu;
-    }
-    /// <summary>Gets or sets the selected STM32 workflow: device, catalogue, or custom HEX.</summary>
-    [ObservableProperty]
-    public partial int SelectedDfuTabIndex { get; set; }
-
-    partial void OnSelectedDfuTabIndexChanged(int value)
-    {
-        Dfu.PreparedArtifact = null;
-        UpdatePanelCapabilities();
-    }
 
     private bool UsesLocalDfuHex => SelectedDfuTabIndex == (int)Stm32DfuSection.Custom;
     private readonly IFirmwarePreparationService preparationService;
     private readonly FirmwareLandingViewModel landing;
-    private readonly MissionPlanner.Firmware.Betaflight.IBetaflightArduPilotCompatibilityProvider betaflightCompatibility;
-    private readonly MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity;
-    private readonly MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff dfuHandoff;
+    private readonly Firmware.Betaflight.IBetaflightArduPilotCompatibilityProvider betaflightCompatibility;
+    private readonly Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity;
+    private readonly Firmware.Betaflight.IBetaflightDfuHandoff dfuHandoff;
     private readonly IDfuInstallationService dfuInstallationService;
     private readonly IDfuArtifactResolver dfuArtifactResolver;
-    private readonly MissionPlanner.Firmware.Operations.IFirmwareOperationCoordinator firmwareOperations;
+    private readonly Firmware.Operations.IFirmwareOperationCoordinator firmwareOperations;
     private readonly IEmbeddedBootloaderUpdateService bootloaderUpdateService;
     private readonly IFirmwarePageModeResolver modeResolver;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IUserConfirmationService confirmation;
     private readonly IDialogService dialogService;
     private readonly IDomainFactory domainFactory;
+    private readonly IFirmwareInstallationService installationService;
     private readonly FirmwareDialogCoordinator firmwareDialogs;
     private CancellationTokenSource? lifetime;
     private CancellationTokenSource? operationCancellation;
     private IDisposable? progressDialog;
     private int operationRunning;
-
     private bool disposed;
     private bool active;
+
+
+
+    /// <summary>Gets the catalogue panel.</summary>
+    public FirmwareCatalogueViewModel OnlineFirmwareModel
+    {
+        get;
+        init;
+    }
+    /// <summary>Gets the custom panel.</summary>
+    public CustomFirmwareViewModel LocalFirmwareModel
+    {
+        get;
+        init;
+    }
+    /// <summary>Gets the dfu panel.</summary>
+    public STM32BootloaderViewModel DfuModel
+    {
+        get;
+    }
+    /// <summary>Gets the help panel.</summary>
+    public FirmwareHelpViewModel HelpModel
+    {
+        get;
+    }
+
+    /// <summary>
+    /// Gets the shared validated panel.
+    /// </summary>
+    public ValidatedPackageViewModel ValidatedModel
+    {
+        get;
+    }
+    /// <summary>Gets the selected release details.</summary>
+    public SelectedFirmwareViewModel SelectedFirmwareModel
+    {
+        get;
+    }
+
+    /// <summary>
+    /// Gets the shared devices panel.
+    /// </summary>
+    public DetectedDeviceViewModel DevicesModel
+    {
+        get;
+    }
+
+
+    ///// <summary>Gets the shared devices panel.</summary>
+    //public DetectedDeviceViewModel DevicesModel => OnlineFirmwareModel.DevicesModel;
+    ///// <summary>Gets the shared validated panel.</summary>
+    //public ValidatedPackageViewModel ValidatedPackageModel => OnlineFirmwareModel.ValidatedPackageModel;
+
+    /// <summary>Gets the shared selected panel.</summary>
+   // public SelectedFirmwareViewModel SelectedFirmwareModel => OnlineFirmwareModel.SelectedFirmwareModel;
+
+    //public CustomFirmwareViewModel CustomFirmware => LocalFirmwareModel;
+
+
+
+    /// <summary>
+    /// Gets or sets the selected top-level installation context.
+    /// </summary>
+    [ObservableProperty]
+    public partial int SelectedSectionIndex
+    {
+        get; set;
+    }
+
+    partial void OnSelectedSectionIndexChanged(int value)
+    {
+        OnlineFirmwareModel.IsDfuContext = value == (int)FirmwareSection.Stm32Dfu;
+    }
+    /// <summary>Gets or sets the selected STM32 workflow: device, catalogue, or custom HEX.</summary>
+    [ObservableProperty]
+    public partial int SelectedDfuTabIndex
+    {
+        get; set;
+    }
+
+    partial void OnSelectedDfuTabIndexChanged(int value)
+    {
+        DfuModel.PreparedArtifact = null;
+        UpdatePanelCapabilities();
+    }
 
     /// <summary>
     /// Initializes the firmware page.
@@ -113,12 +153,15 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="domainFactory"></param>
     /// <param name="logger"></param>
     /// <param name="firmwareDialogs">Sequences operator confirmations and firmware progress windows.</param>
-    /// <param name="catalogue">Owns catalogue choices and filters.</param>
+    /// <param name="devices">Owns the detected devices panel.</param>
+    /// <param name="validated">Owns the validated firmware panel.</param>
+    /// <param name="selected">Owns the selected firmware panel.</param>
+    /// <param name="onlineFirmwareModel">Owns catalogue choices and filters.</param>
     /// <param name="landing">Owns device status and boot-mode entry requests.</param>
     /// <param name="betaflightCompatibility">Provides reviewed exact-board mappings, when available.</param>
-    /// <param name="deviceIdentity">Verifies the selected serial device before requesting DFU.</param>
+    /// <param name="deviceIdentity">Verifies the selected serial device before requesting DfuModel.</param>
     /// <param name="dfuHandoff">Reboots and correlates the selected physical controller.</param>
-    /// <param name="custom">Owns custom application packages.</param>
+    /// <param name="localFirmwareModel">Owns custom application packages.</param>
     /// <param name="dfu">Owns DFU devices and local HEX selection.</param>
     /// <param name="help">Owns firmware help and support links.</param>
     /// <param name="dispatcher">Marshals observable state to the UI thread.</param>
@@ -128,7 +171,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         IFirmwarePreparationService preparationService,
         IDfuInstallationService dfuInstallationService,
         IDfuArtifactResolver dfuArtifactResolver,
-        MissionPlanner.Firmware.Operations.IFirmwareOperationCoordinator firmwareOperations,
+        Firmware.Operations.IFirmwareOperationCoordinator firmwareOperations,
         IEmbeddedBootloaderUpdateService bootloaderUpdateService,
         IFirmwarePageModeResolver modeResolver,
         IActiveVehicleContext activeVehicle,
@@ -136,15 +179,21 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         IDialogService dialogService,
         IDomainFactory domainFactory,
         FirmwareDialogCoordinator firmwareDialogs,
-        FirmwareCatalogViewModel catalogue,
+
+        DetectedDeviceViewModel devices,
+        ValidatedPackageViewModel validated,
+        SelectedFirmwareViewModel selected,
+        FirmwareCatalogueViewModel onlineFirmwareModel,
         FirmwareLandingViewModel landing,
-        MissionPlanner.Firmware.Betaflight.IBetaflightArduPilotCompatibilityProvider betaflightCompatibility,
-        MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity,
-        MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff dfuHandoff,
-        CustomFirmwareViewModel custom,
+        CustomFirmwareViewModel localFirmwareModel,
         STM32BootloaderViewModel dfu,
-        SubViews.FirmwareHelpViewModel help,
-        IUiDispatcher dispatcher, IDomainEventHub eventHub,
+        FirmwareHelpViewModel help,
+
+        Firmware.Betaflight.IBetaflightArduPilotCompatibilityProvider betaflightCompatibility,
+        Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity,
+        Firmware.Betaflight.IBetaflightDfuHandoff dfuHandoff,
+        IUiDispatcher dispatcher,
+        IDomainEventHub eventHub,
         ILogger<InstallFirmwareViewModel> logger
         ) : base(logger, dispatcher, eventHub)
     {
@@ -160,27 +209,96 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
         this.firmwareDialogs = firmwareDialogs;
-        Catalogue = catalogue;
-        this.landing = landing;
         this.betaflightCompatibility = betaflightCompatibility;
         this.deviceIdentity = deviceIdentity;
         this.dfuHandoff = dfuHandoff;
-        Custom = custom;
-        Dfu = dfu;
-        Help = help;
+
+        this.landing = landing;
+
+        DevicesModel = devices;
+        ValidatedModel = validated;
+        SelectedFirmwareModel = selected;
+        OnlineFirmwareModel = onlineFirmwareModel;
+        LocalFirmwareModel = localFirmwareModel;
+        DfuModel = dfu;
+        HelpModel = help;
+    }
+
+    /// <summary>
+    /// Gets whether a serial controller is selected.
+    /// </summary>
+
+    public bool HasDevice => LocalFirmwareModel.HasDevice;
+
+
+    [RelayCommand(CanExecute = nameof(HasDevice))]
+    public async Task LoadLocalFirmwareAsync(CancellationToken cancellationToken)
+    {
+        await LocalFirmwareModel.LoadCustomFirmwareAsync(cancellationToken);
+    }
+
+
+    [RelayCommand]
+    private void ClearFirmwareSelection()
+    {
+
+        LocalFirmwareModel.Reset();
+        OnlineFirmwareModel.Reset();
+        ValidatedModel.Reset();
+        DevicesModel.Reset();
+        DfuModel.Reset();
+        SetMessages("Firmware selection cleared.");
+    }
+
+    /// <summary>Gets whether the parent permits installation.</summary>
+    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(InstallCommand))]
+    public partial bool CanInstallLocalFirmware
+    {
+        get; set;
+    }
+
+
+    [RelayCommand(CanExecute = nameof(CanInstallLocalFirmware))]
+    public Task InstallLocalFirmwareAsync(CancellationToken cancellationToken)
+    {
+        return LocalFirmwareModel.InstallAsync(cancellationToken);
+    }
+
+
+    [RelayCommand]
+    public async Task ShowOnlineFirmwareSelectorAsync(CancellationToken cancellationToken)
+    {
+        var options = dialogService.CreateOptions("Select Online Firmware", "Close", "Cancel");
+        options.FullScreen = true;
+        var result = await dialogService.ShowOverlayDialogAsync<FirmwareCatalogueView, FirmwareCatalogueViewModel>(
+            OnlineFirmwareModel,
+            options,
+            cancellationToken: cancellationToken);
+    }
+
+    [RelayCommand]
+    public async Task ShowLocalFirmwareSelectorAsync(CancellationToken cancellationToken)
+    {
+        await LocalFirmwareModel.LoadCustomFirmwareAsync(cancellationToken);
     }
 
     /// <summary>Gets the message displayed by the active firmware progress dialog.</summary>
     [ObservableProperty]
     public partial string ProgressMessage { get; private set; } = string.Empty;
 
-    /// <summary>Gets whether disconnecting power could interrupt a flash write or verification.</summary>
+    /// <summary>
+    /// Gets whether disconnecting power could interrupt a flash write or verification.
+    /// </summary>
     public bool IsPowerCritical => CurrentOperationState is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying;
 
-    /// <summary>Gets whether the current non-terminal work accepts a cancellation request.</summary>
+    /// <summary>
+    /// Gets whether the current non-terminal work accepts a cancellation request.
+    /// </summary>
     public bool CanRequestCancellation => IsCatalogRefreshRunning || IsOperationInProgress;
 
-    /// <summary>Gets whether Shell navigation may safely leave this page.</summary>
+    /// <summary>
+    /// Gets whether Shell navigation may safely leave this page.
+    /// </summary>
     public bool CanNavigateAway => !IsOperationInProgress;
 
     [ObservableProperty]
@@ -212,7 +330,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
 
     /// <summary>Gets the catalogue panel's read state for page-wide cancellation controls.</summary>
-    public bool IsCatalogRefreshRunning => Catalogue.IsRefreshing;
+    public bool IsCatalogRefreshRunning => OnlineFirmwareModel.IsRefreshing;
 
     [ObservableProperty]
     public partial bool IsCancellationDeferred
@@ -268,18 +386,17 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
         active = true;
         discoveryInitialized = false;
-        Validated.IsFirmwareValidated = false;
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
         SubscribePanels();
-        Custom.HasDevice = Devices.HasDevice;
-        Custom.HasDetectedDfuDevice = Dfu.HasDetectedDfuDevice;
+        LocalFirmwareModel.HasDevice = DevicesModel.HasDevice;
+        LocalFirmwareModel.HasDetectedDfuDevice = DfuModel.HasDetectedDfuDevice;
         activeVehicle.Changed += OnActiveVehicleChanged;
         //SetBusy();
         SetMessages("Ready");
         ApplyMode();
-        Devices.DiscoveryOwnedByPage = Dfu.DiscoveryOwnedByPage = true;
-        await Task.WhenAll(Devices.ActivateAsync(), Dfu.ActivateAsync());
+        DevicesModel.DiscoveryOwnedByPage = DfuModel.DiscoveryOwnedByPage = true;
+        await Task.WhenAll(LocalFirmwareModel.ActivateAsync(), ValidatedModel.ActivateAsync(), DevicesModel.ActivateAsync(), DfuModel.ActivateAsync());
         discoveryInitialized = true;
         UpdatePanelCapabilities();
     }
@@ -302,34 +419,37 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
 
         active = false;
-        Devices.DiscoveryOwnedByPage = Dfu.DiscoveryOwnedByPage = false;
+        DevicesModel.DiscoveryOwnedByPage = DfuModel.DiscoveryOwnedByPage = false;
         CanUseSerialFirmware = CanUseDfuFirmware = false;
         UnsubscribePanels();
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        var cleanup = Task.WhenAll(Catalogue.DeactivateAsync(), Devices.DeactivateAsync(), Dfu.DeactivateAsync(), Custom.DeactivateAsync());
-        Validated.Reset();
-        Devices.Reset();
-        Dfu.Reset();
-        Validated.IsFirmwareValidated = false;
+        var cleanup = Task.WhenAll(OnlineFirmwareModel.DeactivateAsync(), LocalFirmwareModel.DeactivateAsync(), ValidatedModel.DeactivateAsync(), DevicesModel.DeactivateAsync(), DfuModel.DeactivateAsync());
+        OnlineFirmwareModel.Reset();
+        LocalFirmwareModel.Reset();
+        ValidatedModel.Reset();
+        DevicesModel.Reset();
+        DfuModel.Reset();
         var current = lifetime;
         lifetime = null;
-
-        current?.Cancel();
-        current?.Dispose();
+        if (current is not null)
+        {
+            await current.CancelAsync();
+            current.Dispose();
+        }
         await cleanup;
     }
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        _ = DeactivatePanelsAsync();
+        DeactivatePanelsAsync().SafeFireAndForget();
         disposed = true;
         base.Dispose();
     }
 
     partial void OnIsOperationInProgressChanged(bool value)
     {
-        Catalogue.InstallationRunning = Devices.InstallationRunning = Dfu.InstallationRunning = value;
+        OnlineFirmwareModel.InstallationRunning = DevicesModel.InstallationRunning = DfuModel.InstallationRunning = value;
         OnPropertyChanged(nameof(CanNavigateAway));
         OnPropertyChanged(nameof(CanRequestCancellation));
         InstallCommand.NotifyCanExecuteChanged();
@@ -353,7 +473,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanStartInstall), AllowConcurrentExecutions = false)]
     private async Task InstallAsync(CancellationToken cancellationToken)
     {
-        if ((Catalogue.SelectedFirmware is null && Custom.CustomPackage is null) || Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
+        if ((OnlineFirmwareModel.SelectedFirmware is null && LocalFirmwareModel.CustomPackage is null) || Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
         {
             return;
         }
@@ -363,21 +483,21 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         {
             SetOperation(true, FirmwareOperationState.Downloading);
             await ShowOperationDialogAsync("Installing firmware", ownedCancellation, deferUntilConfirmed: true);
-            var target = Catalogue.SelectedFirmware?.Entry.Target;
-            var prepared = Validated.PreparedFirmware is not null && ReferenceEquals(Validated.PreparedFirmware.ManifestEntry, Catalogue.SelectedFirmware?.Entry) ? Validated.PreparedFirmware : null;
+            var target = OnlineFirmwareModel.SelectedFirmware?.Entry.Target;
+            var prepared = ValidatedModel.PreparedFirmware is not null && ReferenceEquals(ValidatedModel.PreparedFirmware.ManifestEntry, OnlineFirmwareModel.SelectedFirmware?.Entry) ? ValidatedModel.PreparedFirmware : null;
             var request = new FirmwareInstallationRequest(
                 new BootloaderEntryContext(new BootloaderDiscoveryRequest(
-                        Devices.SelectedDevice?.Descriptor,
+                        DevicesModel.SelectedDevice?.Descriptor,
                         target?.UsbIdentifiers,
                         target?.BootloaderNames),
-                    Devices.SelectedDevice?.Descriptor),
-                prepared is null ? Catalogue.SelectedFirmware?.Entry.Artifact : null,
-                Custom.CustomPackage ?? prepared?.Package,
-                Custom.CustomPackage is not null ? FirmwareInstallationSource.LocalCustom : FirmwareInstallationSource.OfficialCatalogue,
-                Custom.CustomPackage is not null
-                    ? new FirmwareCompatibilityPolicy(!Custom.RequireExactBoardIdMatch)
+                    DevicesModel.SelectedDevice?.Descriptor),
+                prepared is null ? OnlineFirmwareModel.SelectedFirmware?.Entry.Artifact : null,
+                LocalFirmwareModel.CustomPackage ?? prepared?.Package,
+                LocalFirmwareModel.CustomPackage is not null ? FirmwareInstallationSource.LocalCustom : FirmwareInstallationSource.OfficialCatalogue,
+                LocalFirmwareModel.CustomPackage is not null
+                    ? new FirmwareCompatibilityPolicy(!LocalFirmwareModel.RequireExactBoardIdMatch)
                     : FirmwareCompatibilityPolicy.Strict,
-                Custom.CustomPackage is not null ? Custom.CustomFirmwareName : null);
+                LocalFirmwareModel.CustomPackage is not null ? LocalFirmwareModel.CustomFirmwareName : null);
 
             var progress = CreateProgress();
             var result = await installationService.InstallAsync(request, progress, ownedCancellation.Token);
@@ -434,24 +554,24 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private bool CanStartInstall()
     {
-        return Validated.IsFirmwareValidated != false && Devices.SelectedDevice is not null && CanInstall && (Catalogue.SelectedFirmware is not null || Custom.CustomPackage is not null) && !IsOperationInProgress && !ArePanelsRefreshing;
+        return ValidatedModel.IsFirmwareValidated != false && DevicesModel.SelectedDevice is not null && CanInstall && (OnlineFirmwareModel.SelectedFirmware is not null || LocalFirmwareModel.CustomPackage is not null) && !IsOperationInProgress && !ArePanelsRefreshing;
     }
 
     private bool CanStartDfuInstall()
     {
         return
-            (UsesLocalDfuHex ? !string.IsNullOrWhiteSpace(Dfu.LocalDfuFirmwarePath) && !string.IsNullOrWhiteSpace(Dfu.LocalDfuPlatform) : Catalogue.SelectedFirmware is not null)
+            (UsesLocalDfuHex ? !string.IsNullOrWhiteSpace(DfuModel.LocalDfuFirmwarePath) && !string.IsNullOrWhiteSpace(DfuModel.LocalDfuPlatform) : OnlineFirmwareModel.SelectedFirmware is not null)
             &&
             OperatingSystem.IsWindows() && !activeVehicle.IsOnline
-            && Dfu.ToolStatus?.Availability == DfuToolAvailability.Available
-            && Dfu.SelectedDfuDevice?.Descriptor.DriverState == DfuDriverState.PresentReady && !IsOperationInProgress && !ArePanelsRefreshing;
+            && DfuModel.ToolStatus?.Availability == DfuToolAvailability.Available
+            && DfuModel.SelectedDfuDevice?.Descriptor.DriverState == DfuDriverState.PresentReady && !IsOperationInProgress && !ArePanelsRefreshing;
     }
 
     [RelayCommand(CanExecute = nameof(CanStartDfuInstall), AllowConcurrentExecutions = false)]
     private async Task InstallDfuFirmwareAsync(CancellationToken cancellationToken)
     {
         var hasLocalHex = UsesLocalDfuHex;
-        if (!CanStartDfuInstall() || (!hasLocalHex && Catalogue.SelectedFirmware is null) || Dfu.SelectedDfuDevice is null ||
+        if (!CanStartDfuInstall() || (!hasLocalHex && OnlineFirmwareModel.SelectedFirmware is null) || DfuModel.SelectedDfuDevice is null ||
             Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
         {
             return;
@@ -459,11 +579,11 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
         // The active source context determines the request; hidden local-file state must
         // never override a catalogue entry (or vice versa).
-        var selectedFirmware = hasLocalHex ? null : Catalogue.SelectedFirmware;
-        var selectedDfuDevice = Dfu.SelectedDfuDevice;
-        var platform = hasLocalHex ? Dfu.LocalDfuPlatform?.Trim() : selectedFirmware?.Platform;
+        var selectedFirmware = hasLocalHex ? null : OnlineFirmwareModel.SelectedFirmware;
+        var selectedDfuDevice = DfuModel.SelectedDfuDevice;
+        var platform = hasLocalHex ? DfuModel.LocalDfuPlatform?.Trim() : selectedFirmware?.Platform;
         var boardId = selectedFirmware?.BoardId;
-        var localHexPath = hasLocalHex ? Dfu.LocalDfuFirmwarePath : null;
+        var localHexPath = hasLocalHex ? DfuModel.LocalDfuFirmwarePath : null;
         if (string.IsNullOrWhiteSpace(platform))
         {
             SetMessages("Enter the exact ArduPilot platform for the selected local HEX file.");
@@ -511,9 +631,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             var result = await dfuInstallationService.InstallAsync(
                 new DfuInstallationRequest(platform, boardId, selectedDfuDevice.Descriptor, ConfirmationPhrase: requiredPhrase,
                     ManifestEntry: selectedFirmware?.Entry, LocalHexPath: localHexPath,
-                    PreviousApplicationDevice: Dfu.HasCorrelatedSource ? Dfu.CorrelatedHandoff?.Source : null), progress, ownedCancellation.Token);
+                    PreviousApplicationDevice: DfuModel.HasCorrelatedSource ? DfuModel.CorrelatedHandoff?.Source : null), progress, ownedCancellation.Token);
 
-            await Dfu.RefreshAfterInstallationAsync(CancellationToken.None);
+            await DfuModel.RefreshAfterInstallationAsync(CancellationToken.None);
 
             var diagnosticReport = BuildDfuDiagnosticReport(result, platform, boardId, selectedDfuDevice.Descriptor);
             SetMessages(result.State == DfuOperationState.Completed
@@ -614,8 +734,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [RelayCommand]
     private async Task DownloadAndValidateAsync(CancellationToken cancellationToken)
     {
-        Validated.IsFirmwareValidated = false;
-        if (Catalogue.SelectedFirmware is null || IsOperationInProgress || ArePanelsRefreshing)
+        ValidatedModel.IsFirmwareValidated = false;
+        if (OnlineFirmwareModel.SelectedFirmware is null || IsOperationInProgress || ArePanelsRefreshing)
         {
             return;
         }
@@ -625,9 +745,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         {
             SetOperation(true, FirmwareOperationState.Downloading);
             await ShowOperationDialogAsync("Downloading firmware", ownedCancellation);
-            Validated.PreparedFirmware = await preparationService.PrepareAsync(new FirmwarePreparationRequest(Catalogue.SelectedFirmware.Entry), CreateProgress(), ownedCancellation.Token);
-            SetMessages(Validated.PreparedFirmware.WasCacheHit ? "Validated cached firmware package." : "Firmware downloaded and validated.");
-            Validated.IsFirmwareValidated = true;
+            ValidatedModel.PreparedFirmware = await preparationService.PrepareAsync(new FirmwarePreparationRequest(OnlineFirmwareModel.SelectedFirmware.Entry), CreateProgress(), ownedCancellation.Token);
+            SetMessages(ValidatedModel.PreparedFirmware.WasCacheHit ? "ValidatedPackageModel cached firmware package." : "Firmware downloaded and ValidatedModel.");
+            ValidatedModel.IsFirmwareValidated = true;
             NotificationManager?.Show(StatusMessage ?? "");
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
@@ -654,7 +774,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     {
         if (IsCatalogRefreshRunning)
         {
-            Catalogue.CancelRefresh();
+            OnlineFirmwareModel.CancelRefresh();
             SetMessages("Firmware catalogue refresh cancelled.");
         }
 
@@ -798,11 +918,11 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private void UpdateContextHelp(bool packageBoardMismatch = false)
     {
         ContextHelp = FirmwareContextHelpResolver.Resolve(new FirmwareSupportContext(
-            SerialDevicePresent: Devices.DetectedDevices.Count > 0,
-            TargetAmbiguous: Catalogue.FirmwareChoices.Count > 0 && Catalogue.SelectedFirmware is null,
+            SerialDevicePresent: DevicesModel.DetectedDevices.Count > 0,
+            TargetAmbiguous: OnlineFirmwareModel.FirmwareChoices.Count > 0 && OnlineFirmwareModel.SelectedFirmware is null,
             PackageBoardMismatch: packageBoardMismatch,
-            Channel: Catalogue.SelectedChannel,
-            CustomPackageSelected: Custom.CustomPackage is not null));
+            Channel: OnlineFirmwareModel.SelectedChannel,
+            CustomPackageSelected: LocalFirmwareModel.CustomPackage is not null));
     }
 
     private static string StageText(FirmwareProgress progress)
@@ -884,48 +1004,48 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private void SubscribePanels()
     {
-        Catalogue.SelectionChanged += OnCatalogueSelection;
-        Catalogue.ChannelChanged += OnCatalogueChannel;
-        Catalogue.FiltersChanged += OnCatalogueFilters;
-        Devices.SelectionChanged += OnDeviceSelection;
-        Custom.PackageChanged += OnCustomPackage;
-        Custom.OperationRequested += OnPanelOperation;
-        Dfu.SelectionChanged += OnDfuSelection;
-        Dfu.LocalFirmwareChanged += OnDfuFirmware;
-        Dfu.PlatformChanged += OnDfuPlatform;
-        Catalogue.RefreshStateChanged += OnPanelRefreshState;
-        Devices.RefreshStateChanged += OnPanelRefreshState;
-        Dfu.RefreshStateChanged += OnPanelRefreshState;
-        Devices.OperationRequested += OnPanelOperation;
+        OnlineFirmwareModel.SelectionChanged += OnCatalogueSelection;
+        OnlineFirmwareModel.ChannelChanged += OnCatalogueChannel;
+        OnlineFirmwareModel.FiltersChanged += OnCatalogueFilters;
+        DevicesModel.SelectionChanged += OnDeviceSelection;
+        LocalFirmwareModel.PackageChanged += OnCustomPackage;
+        LocalFirmwareModel.OperationRequested += OnPanelOperation;
+        DfuModel.SelectionChanged += OnDfuSelection;
+        DfuModel.LocalFirmwareChanged += OnDfuFirmware;
+        DfuModel.PlatformChanged += OnDfuPlatform;
+        OnlineFirmwareModel.RefreshStateChanged += OnPanelRefreshState;
+        DevicesModel.RefreshStateChanged += OnPanelRefreshState;
+        DfuModel.RefreshStateChanged += OnPanelRefreshState;
+        DevicesModel.OperationRequested += OnPanelOperation;
 
-        Dfu.OperationRequested += OnPanelOperation;
-        Validated.OperationRequested += OnPanelOperation;
+        DfuModel.OperationRequested += OnPanelOperation;
+        ValidatedModel.OperationRequested += OnPanelOperation;
         landing.OperationRequested += OnPanelOperation;
-        Selected.OperationRequested += OnPanelOperation;
+        SelectedFirmwareModel.OperationRequested += OnPanelOperation;
     }
 
     private void UnsubscribePanels()
     {
-        Catalogue.SelectionChanged -= OnCatalogueSelection;
-        Catalogue.ChannelChanged -= OnCatalogueChannel;
-        Catalogue.FiltersChanged -= OnCatalogueFilters;
-        Devices.SelectionChanged -= OnDeviceSelection;
-        Custom.PackageChanged -= OnCustomPackage;
-        Custom.OperationRequested -= OnPanelOperation;
-        Dfu.SelectionChanged -= OnDfuSelection;
-        Dfu.LocalFirmwareChanged -= OnDfuFirmware;
-        Dfu.PlatformChanged -= OnDfuPlatform;
-        Catalogue.RefreshStateChanged -= OnPanelRefreshState;
-        Devices.RefreshStateChanged -= OnPanelRefreshState;
-        Dfu.RefreshStateChanged -= OnPanelRefreshState;
-        Devices.OperationRequested -= OnPanelOperation;
-        Dfu.OperationRequested -= OnPanelOperation;
-        Validated.OperationRequested -= OnPanelOperation;
+        OnlineFirmwareModel.SelectionChanged -= OnCatalogueSelection;
+        OnlineFirmwareModel.ChannelChanged -= OnCatalogueChannel;
+        OnlineFirmwareModel.FiltersChanged -= OnCatalogueFilters;
+        DevicesModel.SelectionChanged -= OnDeviceSelection;
+        LocalFirmwareModel.PackageChanged -= OnCustomPackage;
+        LocalFirmwareModel.OperationRequested -= OnPanelOperation;
+        DfuModel.SelectionChanged -= OnDfuSelection;
+        DfuModel.LocalFirmwareChanged -= OnDfuFirmware;
+        DfuModel.PlatformChanged -= OnDfuPlatform;
+        OnlineFirmwareModel.RefreshStateChanged -= OnPanelRefreshState;
+        DevicesModel.RefreshStateChanged -= OnPanelRefreshState;
+        DfuModel.RefreshStateChanged -= OnPanelRefreshState;
+        DevicesModel.OperationRequested -= OnPanelOperation;
+        DfuModel.OperationRequested -= OnPanelOperation;
+        ValidatedModel.OperationRequested -= OnPanelOperation;
         landing.OperationRequested -= OnPanelOperation;
-        Selected.OperationRequested -= OnPanelOperation;
+        SelectedFirmwareModel.OperationRequested -= OnPanelOperation;
     }
 
-    private bool ArePanelsRefreshing => Catalogue.IsRefreshing || Devices.IsRefreshing || Dfu.IsRefreshing;
+    private bool ArePanelsRefreshing => OnlineFirmwareModel.IsRefreshing || DevicesModel.IsRefreshing || DfuModel.IsRefreshing;
 
     private void OnPanelRefreshState(bool value)
     {
@@ -950,10 +1070,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     private void OnCatalogueSelection(FirmwareCatalogItemViewModel? value)
     {
-        Dfu.PreparedArtifact = null;
+        DfuModel.PreparedArtifact = null;
         if (value is not null)
         {
-            Custom.CustomPackage = null;
+            LocalFirmwareModel.CustomPackage = null;
         }
         UpdatePanelCapabilities();
         UpdateContextHelp();
@@ -964,50 +1084,50 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     private void OnCatalogueFilters(bool value)
     {
-        Validated.IsFirmwareValidated = false;
+        ValidatedModel.IsFirmwareValidated = false;
         UpdatePanelCapabilities();
     }
     private void OnDeviceSelection(FirmwareDeviceItemViewModel? value)
     {
-        Custom.HasDevice = value is not null;
+        LocalFirmwareModel.HasDevice = value is not null;
         UpdatePanelCapabilities();
     }
     private void OnCustomPackage(ApjFirmwarePackage? value)
     {
-        Validated.PreparedFirmware = null;
+        ValidatedModel.PreparedFirmware = null;
         if (value is not null)
         {
-            Catalogue.ClearSelection();
-            Dfu.LocalDfuFirmwarePath = null;
-            Dfu.LocalDfuFirmwareName = null;
+            OnlineFirmwareModel.ClearSelection();
+            DfuModel.LocalDfuFirmwarePath = null;
+            DfuModel.LocalDfuFirmwareName = null;
         }
-        Validated.IsFirmwareValidated = value is not null;
+        ValidatedModel.IsFirmwareValidated = value is not null;
         UpdatePanelCapabilities();
         UpdateContextHelp();
     }
     private void OnDfuSelection(DfuDeviceItemViewModel? value)
     {
-        if (Dfu.CorrelatedHandoff is not null && !Dfu.HasCorrelatedSource)
+        if (DfuModel.CorrelatedHandoff is not null && !DfuModel.HasCorrelatedSource)
         {
-            Catalogue.SetReviewedDfuTarget(null);
+            OnlineFirmwareModel.SetReviewedDfuTarget(null);
         }
-        Custom.HasDetectedDfuDevice = value is not null;
+        LocalFirmwareModel.HasDetectedDfuDevice = value is not null;
         OnPropertyChanged(nameof(HasDetectedDfuDevice));
         UpdatePanelCapabilities();
     }
     private void OnDfuFirmware(string? value)
     {
-        Dfu.PreparedArtifact = null;
+        DfuModel.PreparedArtifact = null;
         if (value is not null)
         {
-            Custom.CustomPackage = null;
-            Catalogue.ClearSelection();
+            LocalFirmwareModel.CustomPackage = null;
+            OnlineFirmwareModel.ClearSelection();
         }
         UpdatePanelCapabilities();
     }
     private void OnDfuPlatform(string? value)
     {
-        Dfu.PreparedArtifact = null;
+        DfuModel.PreparedArtifact = null;
         UpdatePanelCapabilities();
     }
 
@@ -1018,17 +1138,17 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             return;
         }
         var available = discoveryInitialized && IsDisconnectedMode && !activeVehicle.IsOnline && !IsOperationInProgress;
-        CanUseDfuFirmware = available && Dfu.DfuDevices.Count > 0;
-        CanUseSerialFirmware = available && Dfu.DfuDevices.Count == 0
-            && Devices.Descriptors.Any(device => !string.IsNullOrWhiteSpace(device.PortName));
-        Devices.CanInstall = CanStartInstall();
-        Validated.CanInstall = CanStartInstall();
-        Dfu.CanInstallDfu = CanStartDfuInstall();
+        CanUseDfuFirmware = available && DfuModel.DfuDevices.Count > 0;
+        CanUseSerialFirmware = available && DfuModel.DfuDevices.Count == 0
+            && DevicesModel.Descriptors.Any(device => !string.IsNullOrWhiteSpace(device.PortName));
+        DevicesModel.CanInstall = CanStartInstall();
+        ValidatedModel.CanInstall = CanStartInstall();
+        DfuModel.CanInstallDfu = CanStartDfuInstall();
         InstallCommand.NotifyCanExecuteChanged();
         InstallDfuFirmwareCommand.NotifyCanExecuteChanged();
     }
     /// <summary>Gets whether the DFU tab has a selected device.</summary>
-    public bool HasDetectedDfuDevice => Dfu.HasDetectedDfuDevice;
+    public bool HasDetectedDfuDevice => DfuModel.HasDetectedDfuDevice;
 
     private bool discoveryInitialized;
 
@@ -1050,7 +1170,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [RelayCommand]
     private async Task RefreshDevicesAsync(CancellationToken cancellationToken)
     {
-        await Task.WhenAll(Devices.RefreshAsync(cancellationToken), Dfu.RefreshAsync(cancellationToken));
+        await Task.WhenAll(DevicesModel.RefreshAsync(cancellationToken), DfuModel.RefreshAsync(cancellationToken));
         UpdatePanelCapabilities();
     }
 }

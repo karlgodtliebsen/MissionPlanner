@@ -14,63 +14,78 @@ namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 /// <summary>
 /// Owns catalogue panel state and commands.
 /// </summary>
-public sealed partial class FirmwareCatalogViewModel : ViewModelBase
+public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
 {
-    /// <summary>
-    /// Initializes the catalogue panel.
-    /// </summary>
-    public FirmwareCatalogViewModel(
-        DetectedDeviceViewModel devices,
-        ValidatedPackageViewModel validated,
-        SelectedFirmwareViewModel selected,
-        IFirmwareCatalogService catalogService,
-        Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
-        Utilities.Dialogs.IDialogService dialogService,
-        FirmwareDialogCoordinator firmwareDialogs,
-        ILogger<FirmwareCatalogViewModel> logger,
-        IUiDispatcher dispatcher,
-        IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
-    {
-        Devices = devices;
-        Validated = validated;
-        Selected = selected;
-        this.catalogService = catalogService;
-        this.activeVehicle = activeVehicle;
-        this.dialogService = dialogService;
-        this.firmwareDialogs = firmwareDialogs;
-    }
-
-    /// <summary>
-    /// Gets the shared devices panel.
-    /// </summary>
-    public DetectedDeviceViewModel Devices
-    {
-        get;
-    }
-    /// <summary>
-    /// Gets the shared validated panel.
-    /// </summary>
-    public ValidatedPackageViewModel Validated
-    {
-        get;
-    }
-    /// <summary>Gets the selected release details.</summary>
-    public SelectedFirmwareViewModel Selected
-    {
-        get;
-    }
     private IReadOnlyList<FirmwareManifestEntry> availableEntries = [];
     private IReadOnlyList<SerialDeviceDescriptor> availableDevices = [];
     private FirmwareManifestEntry? selectedFirmwareTarget;
     private bool showingAllOptions;
     private bool isClearing;
     private bool isRebuildingChoices;
-    /// <summary>Prevents anonymous DFU identity from driving serial USB catalogue recommendations.</summary>
-    public bool IsDfuContext { get; set; }
-    private MissionPlanner.Firmware.Betaflight.BetaflightArduPilotMapping? reviewedDfuTarget;
 
-    /// <summary>Accepts only an exact reviewed compatibility result for DFU preselection.</summary>
-    public void SetReviewedDfuTarget(MissionPlanner.Firmware.Betaflight.BetaflightArduPilotMapping? mapping)
+
+    /// <summary>
+    /// Initializes the catalogue panel.
+    /// </summary>
+    public FirmwareCatalogueViewModel(
+        DetectedDeviceViewModel devicesModel,
+        ValidatedPackageViewModel validatedPackageModel,
+        SelectedFirmwareViewModel selectedFirmwareModel,
+        IFirmwareCatalogService catalogService,
+        Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
+        Utilities.Dialogs.IDialogService dialogService,
+        FirmwareDialogCoordinator firmwareDialogs,
+        ILogger<FirmwareCatalogueViewModel> logger,
+        IUiDispatcher dispatcher,
+        IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
+    {
+        DevicesModel = devicesModel;
+        ValidatedPackageModel = validatedPackageModel;
+        SelectedFirmwareModel = selectedFirmwareModel;
+        this.catalogService = catalogService;
+        this.activeVehicle = activeVehicle;
+        this.dialogService = dialogService;
+        this.firmwareDialogs = firmwareDialogs;
+    }
+
+
+    /// <summary>
+    /// Gets the shared devicesModel panel.
+    /// </summary>
+    public DetectedDeviceViewModel DevicesModel
+    {
+        get;
+    }
+
+    /// <summary>
+    /// Gets the shared validated panel.
+    /// </summary>
+    public ValidatedPackageViewModel ValidatedPackageModel
+    {
+        get;
+    }
+    /// <summary>
+    /// Gets the selected release details.
+    /// </summary>
+    public SelectedFirmwareViewModel SelectedFirmwareModel
+    {
+        get;
+    }
+
+
+    /// <summary>
+    /// Prevents anonymous DFU identity from driving serial USB catalogue recommendations.
+    /// </summary>
+    public bool IsDfuContext
+    {
+        get; set;
+    }
+    private Firmware.Betaflight.BetaflightArduPilotMapping? reviewedDfuTarget;
+
+    /// <summary>
+    /// Accepts only an exact reviewed compatibility result for DFU preselection.
+    /// </summary>
+    public void SetReviewedDfuTarget(Firmware.Betaflight.BetaflightArduPilotMapping? mapping)
     {
         reviewedDfuTarget = mapping;
         ClearSelection();
@@ -169,6 +184,7 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         selectedFirmwareTarget = null;
         SelectedChannel = FirmwareReleaseChannel.Stable;
     }
+
     /// <summary>Gets whether a firmware release from the catalogue is selected.</summary>
     public bool HasSelectedFirmware => SelectedFirmware is not null;
 
@@ -177,6 +193,22 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
     {
         get;
         set;
+    }
+
+    /// <inheritdoc />
+    public override void Cancel()
+    {
+        Reset();
+        base.Cancel();
+    }
+
+    /// <inheritdoc />
+    public override void OK()
+    {
+        if (SelectedFirmwareModel is not null)
+        {
+            base.OK();
+        }
     }
 
     [RelayCommand]
@@ -270,7 +302,7 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         SelectedFrameType = null;
         SelectedManufacturer = null;
 
-        // The grid may transiently clear SelectedFirmware while its collection is rebuilt.
+        // The grid may transiently clear SelectedFirmwareModel while its collection is rebuilt.
         // Preserve the last deliberate/non-null selection independently of that UI event.
         var previousEntry = selectedFirmwareTarget;
         var recommendations =
@@ -339,14 +371,17 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
     /// Notifies the active parent about panel changes.
     /// </summary>
     public event Action<FirmwareCatalogItemViewModel?>? SelectionChanged;
+
     /// <summary>
     /// Notifies the active parent about panel changes.
     /// </summary>
     public event Action<FirmwareReleaseChannel>? ChannelChanged;
+
     /// <summary>
     /// Notifies the active parent about panel changes.
     /// </summary>
     public event Action<bool>? FiltersChanged;
+
     [RelayCommand]
     private Task RefreshCatalogAsync(CancellationToken cancellationToken)
     {
@@ -376,7 +411,7 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
             selectedFirmwareTarget = value.Entry;
         }
         OnPropertyChanged(nameof(HasSelectedFirmware));
-        Selected.SelectedFirmware = value;
+        SelectedFirmwareModel.SelectedFirmwareModel = value;
         if (!isRebuildingChoices)
         {
             InvalidatePreparedFirmwareIfSelectionChanged();
@@ -388,14 +423,15 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
     {
         // Rebuilding recommendations creates new row models for the same manifest entry.
         // Keep its prepared package, but never carry validation to a different release.
-        if (Validated.PreparedFirmware is { } prepared
+        if (ValidatedPackageModel.PreparedFirmware is { } prepared
             && ReferenceEquals(prepared.ManifestEntry, SelectedFirmware?.Entry))
         {
             return;
         }
 
-        Validated.Reset();
+        ValidatedPackageModel.Reset();
     }
+
     [RelayCommand]
     private void ClearCatalogueFirmware()
     {
@@ -404,6 +440,7 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         selectedFirmwareTarget = null;
         SelectedChannel = FirmwareReleaseChannel.Stable;
     }
+
     /// <summary>
     /// Rebuilds catalogue recommendations from the latest snapshot.
     /// </summary>
@@ -414,6 +451,7 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         showingAllOptions = allOptions;
         ApplyTargetQuery();
     }
+
     /// <summary>
     /// Clears a deliberate selection when a local file takes precedence.
     /// </summary>

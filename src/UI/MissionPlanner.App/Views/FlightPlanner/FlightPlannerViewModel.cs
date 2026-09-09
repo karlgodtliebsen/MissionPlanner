@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
@@ -9,7 +8,6 @@ using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using Ursa.Common;
 using Ursa.Controls;
@@ -25,8 +23,6 @@ public partial class FlightPlannerViewModel : ViewModelBase
 {
     private readonly IDialogService dialogService;
 
-    private readonly IDomainFactory domainFactory;
-    private readonly IServiceFactory serviceFactory;
     private readonly IDomainEventHub domainEventHub;
     private readonly IMissionTransferService transferService;
     private readonly IMissionProtocolMapper protocolMapper;
@@ -42,8 +38,6 @@ public partial class FlightPlannerViewModel : ViewModelBase
     public FlightPlannerViewModel(
         FlightPlannerMissionMapViewModel map,
         IDialogService dialogService,
-        IDomainFactory domainFactory,
-        IServiceFactory serviceFactory,
         IDomainEventHub domainEventHub,
         IMissionTransferService transferService,
         IMissionProtocolMapper protocolMapper,
@@ -53,8 +47,6 @@ public partial class FlightPlannerViewModel : ViewModelBase
     {
         Map = map;
         this.dialogService = dialogService;
-        this.domainFactory = domainFactory;
-        this.serviceFactory = serviceFactory;
         this.domainEventHub = domainEventHub;
         this.transferService = transferService;
         this.protocolMapper = protocolMapper;

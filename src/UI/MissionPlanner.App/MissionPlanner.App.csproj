@@ -320,9 +320,6 @@
 	  <Compile Update="Views\InitSetup\InstallFirmware\InstallFirmwarePage.axaml.cs">
 	    <DependentUpon>InstallFirmwarePage.axaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Views\InitSetup\InstallFirmware\SubViews\FirmwareCatalogueSelectorView.axaml.cs">
-	    <DependentUpon>FirmwareCatalogueSelectorView.axaml</DependentUpon>
-	  </Compile>
 	</ItemGroup>
 
 </Project>

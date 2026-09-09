@@ -1,19 +1,19 @@
-<view:UserControlViewBase x:TypeArguments="subViews:ValidatedPackageViewModel"
-             xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
-             xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
-             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:subViews="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.ValidatedPackageView"
-             x:DataType="subViews:ValidatedPackageViewModel">
+<UserControl 
+                  xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
+                  xmlns="https://github.com/avaloniaui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                  xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+                  xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                  xmlns:subViews="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
+                  mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                  x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.ValidatedPackageView"
+                  x:DataType="subViews:ValidatedPackageViewModel">
     <Border Padding="20" Classes="SectionCard" 
             IsEnabled="{Binding HasPreparedFirmware}">
         <StackPanel Orientation="Vertical" Spacing="10">
-            <TextBlock Text="Validated package"  Classes="H3" Margin="0,0,0,10"/>
+            <TextBlock Text="ValidatedPackageModel package"  Classes="H3" Margin="0,0,0,10"/>
 
             <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
                 <TextBlock Grid.Row="0" Text="Package board ID" />
@@ -79,4 +79,4 @@
             </Button>-->
         </StackPanel>
     </Border>
-</view:UserControlViewBase>
+</UserControl>

@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -51,24 +51,24 @@ public sealed class DfuWorkflowTests
         services.GetRequiredService<IDfuDeviceCatalog>().GetDevicesAsync(Arg.Any<CancellationToken>()).Returns(new[] { device });
         services.GetRequiredService<IDfuToolLocator>().LocateAsync(Arg.Any<CancellationToken>())
             .Returns(new DfuToolStatus(DfuToolAvailability.Available));
-        await parent.Dfu.RefreshAsync(TestContext.Current.CancellationToken);
+        await parent.DfuModel.RefreshAsync(TestContext.Current.CancellationToken);
         parent.SelectedDfuTabIndex = custom ? (int)Stm32DfuSection.Custom : (int)Stm32DfuSection.Catalogue;
-        parent.Dfu.LocalDfuFirmwarePath = "retained_with_bl.hex";
-        parent.Dfu.LocalDfuPlatform = "LocalBoard";
+        parent.DfuModel.LocalDfuFirmwarePath = "retained_with_bl.hex";
+        parent.DfuModel.LocalDfuPlatform = "LocalBoard";
         var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
             new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter),
             new FirmwareArtifact(new Uri("https://firmware.ardupilot.org/Copter/stable/Board/arducopter.apj"), FirmwareImageFormat.Apj));
-        parent.Catalogue.SetCatalogue([entry], [], true);
-        parent.Catalogue.SelectedFirmware = parent.Catalogue.FirmwareChoices.Single();
-        Assert.True(parent.Dfu.CanInstallDfu);
+        parent.OnlineFirmwareModel.SetCatalogue([entry], [], true);
+        parent.OnlineFirmwareModel.SelectedFirmware = parent.OnlineFirmwareModel.FirmwareChoices.Single();
+        Assert.True(parent.DfuModel.CanInstallDfu);
         var artifact = new DfuArtifact("arducopter_with_bl.hex", "prepared.hex",
             new DfuArtifactMetadata(100, 1, 0x08000000, 0x08000000, "hex-hash", [], []),
             Platform: custom ? "LocalBoard" : "Board");
         var resolver = services.GetRequiredService<IDfuArtifactResolver>();
         resolver.ResolveAsync(Arg.Any<DfuInstallationRequest>(), Arg.Any<CancellationToken>()).Returns(artifact);
-        await parent.Dfu.PrepareDfuCommand.ExecuteAsync(null);
-        Assert.Same(artifact, parent.Dfu.PreparedArtifact);
-        Assert.Null(parent.Validated.PreparedFirmware);
+        await parent.DfuModel.PrepareDfuCommand.ExecuteAsync(null);
+        Assert.Same(artifact, parent.DfuModel.PreparedArtifact);
+        Assert.Null(parent.ValidatedModel.PreparedFirmware);
         await resolver.Received(1).ResolveAsync(Arg.Is<DfuInstallationRequest>(request => custom
             ? request.LocalHexPath == "retained_with_bl.hex" && request.ManifestEntry == null && request.SelectedPlatform == "LocalBoard"
             : request.LocalHexPath == null && request.ManifestEntry == entry && request.SelectedPlatform == "Board"), Arg.Any<CancellationToken>());
@@ -76,8 +76,8 @@ public sealed class DfuWorkflowTests
             .InstallAsync(default!, default, TestContext.Current.CancellationToken);
         services.GetRequiredService<IDfuToolLocator>().LocateAsync(Arg.Any<CancellationToken>())
             .Returns(new DfuToolStatus(DfuToolAvailability.NotInstalled));
-        await parent.Dfu.RefreshAsync(TestContext.Current.CancellationToken);
-        Assert.False(parent.Dfu.CanInstallDfu);
+        await parent.DfuModel.RefreshAsync(TestContext.Current.CancellationToken);
+        Assert.False(parent.DfuModel.CanInstallDfu);
         await parent.DeactivateAsync();
     }
 
@@ -90,7 +90,7 @@ public sealed class DfuWorkflowTests
         await landing.ActivateAsync();
         Assert.Contains("No preceding controller identity", landing.DfuIdentitySummary);
         Assert.False(landing.Dfu.HasCorrelatedSource);
-        Assert.Null(services.GetRequiredService<FirmwareCatalogViewModel>().SelectedFirmware);
+        Assert.Null(services.GetRequiredService<FirmwareCatalogueViewModel>().SelectedFirmware);
         await landing.DeactivateAsync();
     }
 }

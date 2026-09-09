@@ -11,32 +11,16 @@
              x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.DetectedDeviceView"
              x:DataType="subViews:DetectedDeviceViewModel"
              >
-    <Border  Padding="20" Classes="SectionCard">
+    <Border Padding="20" Classes="SectionCard">
 
         <StackPanel Orientation="Vertical" Spacing="10">
             <WrapPanel Orientation="Horizontal" ItemSpacing="25">
                 <TextBlock Text="Detected device" Classes="H3" />
-                <Button ToolTip.Tip="Refresh devices" 
-                        Padding="8,2"
-                        VerticalAlignment="Center"
-                        Command="{Binding ReprobeCommand}" IsEnabled="{Binding !InstallationRunning}" HorizontalAlignment="Left">
-                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
-                </Button>
-            </WrapPanel>
-            <WrapPanel Orientation="Horizontal" ItemSpacing="10" VerticalAlignment="Center">
                 <ComboBox ToolTip.Tip="Select flight controller"
                     MinWidth="250"
                     VerticalAlignment="Center"
                     ItemsSource="{Binding DetectedDevices}" 
-                          SelectedItem="{Binding SelectedDevice}" />
-
-                <Button ToolTip.Tip="Install Validated Firmware" 
-                        Padding="8,2"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Command="{Binding InstallCommand}" >
-                    <avalonia:MaterialIcon Kind="EyeAddOutline" Width="30" Height="30" />
-                </Button>
+                    SelectedItem="{Binding SelectedDevice}" />
             </WrapPanel>
             <SelectableTextBlock Text="{Binding DeviceStatus}" />
         </StackPanel>

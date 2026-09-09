@@ -15,9 +15,9 @@ public sealed partial class DetectedDeviceViewModel : ViewModelBase
     /// Initializes the devices panel.
     /// </summary>
     public DetectedDeviceViewModel(
-        MissionPlanner.Firmware.Devices.IFirmwareSerialDeviceCatalog deviceCatalog,
-        MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService identityService,
-        MissionPlanner.Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
+        Firmware.Devices.IFirmwareSerialDeviceCatalog deviceCatalog,
+        Firmware.Betaflight.IFirmwareDeviceIdentityService identityService,
+        Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
         ILogger<DetectedDeviceViewModel> logger,
         IUiDispatcher dispatcher,
         IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
@@ -53,13 +53,16 @@ public sealed partial class DetectedDeviceViewModel : ViewModelBase
     /// <summary>
     /// Gets whether a serial flight-controller device is selected.
     /// </summary>
-    public bool HasDevice => SelectedDevice is not null;
-    ///
-    /// <summary>Notifies the active parent about panel changes.
+    //public bool HasDevice => SelectedDevice is not null;
+    public bool HasDevice => DetectedDevices.Any();
+
+    /// <summary>
+    /// Notifies the active parent about panel changes.
     /// </summary>
     public event Action<FirmwareDeviceItemViewModel?>? SelectionChanged;
-    ///
-    /// <summary>Notifies the active parent about panel changes.
+
+    /// <summary>
+    /// Notifies the active parent about panel changes.
     /// </summary>
     public event Action<FirmwarePanelRequest>? OperationRequested;
 

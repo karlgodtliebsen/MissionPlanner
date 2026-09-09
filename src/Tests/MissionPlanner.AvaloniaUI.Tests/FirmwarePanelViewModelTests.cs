@@ -27,9 +27,9 @@ public sealed class FirmwarePanelViewModelTests
         using var services = CreateServices();
         var parent = services.GetRequiredService<InstallFirmwareViewModel>();
         var devices = services.GetRequiredService<DetectedDeviceViewModel>();
-        Assert.Same(devices, parent.Catalogue.Devices);
-        Assert.Same(devices, parent.Custom.Devices);
-        Assert.Same(parent.Selected, parent.Dfu.Selected);
+        Assert.Same(devices, parent.OnlineFirmwareModel.DevicesModel);
+        Assert.Same(devices, parent.LocalFirmwareModel.Devices);
+        Assert.Same(parent.SelectedFirmwareModel, parent.DfuModel.Selected);
         var notifications = 0;
         parent.InstallCommand.CanExecuteChanged += (_, _) => notifications++;
 
@@ -37,7 +37,7 @@ public sealed class FirmwarePanelViewModelTests
         notifications = 0;
         devices.SelectedDevice = new(new SerialDeviceDescriptor("COM11"), true, "test");
         Assert.Equal(1, notifications);
-        Assert.True(parent.Custom.HasDevice);
+        Assert.True(parent.LocalFirmwareModel.HasDevice);
 
         await parent.DeactivateAsync();
         notifications = 0;
@@ -55,10 +55,14 @@ public sealed class FirmwarePanelViewModelTests
     public void CatalogueFiltersAndRetainsSelectionAcrossRefresh()
     {
         using var services = CreateServices();
-        var catalogue = services.GetRequiredService<FirmwareCatalogViewModel>();
-        FirmwareManifestEntry Entry(int id, string version) => new(new FirmwareVersion(version), FirmwareReleaseChannel.Stable,
+        var catalogue = services.GetRequiredService<FirmwareCatalogueViewModel>();
+        FirmwareManifestEntry Entry(int id, string version)
+        {
+            return new(new FirmwareVersion(version), FirmwareReleaseChannel.Stable,
             new FirmwareBoardTarget(id, "board" + id, FirmwareVehicleType.Copter),
             new FirmwareArtifact(new Uri($"https://example.test/{id}.apj"), FirmwareImageFormat.Apj));
+        }
+
         var entries = new[] { Entry(50, "4.6.0"), Entry(51, "4.5.0") };
         catalogue.SetCatalogue(entries, [], false);
         Assert.Equal(2, catalogue.FilteredFirmwareChoices.Count);
@@ -89,14 +93,18 @@ public sealed class FirmwarePanelViewModelTests
         using var services = CreateServices();
         var parent = services.GetRequiredService<InstallFirmwareViewModel>();
         await parent.ActivateAsync();
-        var catalogue = services.GetRequiredService<FirmwareCatalogViewModel>();
-        FirmwareManifestEntry Entry(int id) => new(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
+        var catalogue = services.GetRequiredService<FirmwareCatalogueViewModel>();
+        FirmwareManifestEntry Entry(int id)
+        {
+            return new(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
             new FirmwareBoardTarget(id, "board" + id, FirmwareVehicleType.Copter),
             new FirmwareArtifact(new Uri($"https://example.test/{id}.apj"), FirmwareImageFormat.Apj));
+        }
+
         var entries = new[] { Entry(50), Entry(51) };
         catalogue.SetCatalogue(entries, [], false);
         catalogue.SelectedFirmware = catalogue.FirmwareChoices.Single(item => item.BoardId == 50);
-        var validated = catalogue.Validated;
+        var validated = catalogue.ValidatedPackageModel;
         var states = new List<bool>();
         validated.PropertyChanged += (_, args) =>
         {
@@ -113,7 +121,7 @@ public sealed class FirmwarePanelViewModelTests
             .PrepareAsync(Arg.Any<FirmwarePreparationRequest>(), Arg.Any<IProgress<FirmwareProgress>>(), Arg.Any<CancellationToken>())
             .Returns(prepared);
 
-        await catalogue.Selected.DownloadAndValidateCommand.ExecuteAsync(null);
+        await catalogue.SelectedFirmwareModel.DownloadAndValidateCommand.ExecuteAsync(null);
         Assert.Same(prepared, validated.PreparedFirmware);
         Assert.True(validated.HasPreparedFirmware);
         Assert.True(validated.IsFirmwareValidated);
@@ -142,7 +150,7 @@ public sealed class FirmwarePanelViewModelTests
         custom.HasDevice = true;
         var changed = 0;
         custom.PackageChanged += _ => changed++;
-        var pending = custom.LoadCustomFirmwareCommand.ExecuteAsync(null);
+        var pending = custom.LoadCustomFirmwareAsync(CancellationToken.None);
         await custom.DeactivateAsync();
         response.SetResult(new("custom.apj", _ => throw new InvalidOperationException("Late file must not be opened")));
         await pending;
@@ -180,7 +188,7 @@ public sealed class FirmwarePanelViewModelTests
         services.AddSingleton(Substitute.For<IDialogService>());
         services.AddSingleton(Substitute.For<MissionPlanner.Library.Factory.Domain.Abstractions.IDomainFactory>());
         services.AddSingleton<FirmwareDialogCoordinator>();
-        services.AddSingleton<FirmwareCatalogViewModel>();
+        services.AddSingleton<FirmwareCatalogueViewModel>();
         services.AddSingleton<DetectedDeviceViewModel>();
         services.AddSingleton<CustomFirmwareViewModel>();
         services.AddSingleton<STM32BootloaderViewModel>();
@@ -201,12 +209,39 @@ public sealed class FirmwarePanelViewModelTests
 
     private sealed class InlineDispatcher : IUiDispatcher
     {
-        public bool CheckAccess() => true;
-        public void Dispatch(Action action) => action();
-        public T Dispatch<T>(Func<T> action) => action();
-        public Task DispatchAsync(Action action) { action(); return Task.CompletedTask; }
-        public Task<T> DispatchAsync<T>(Func<T> action) => Task.FromResult(action());
-        public Task DispatchAsync(Func<Task> action) => action();
-        public Task<T> DispatchAsync<T>(Func<Task<T>> action) => action();
+        public bool CheckAccess()
+        {
+            return true;
+        }
+
+        public void Dispatch(Action action)
+        {
+            action();
+        }
+
+        public T Dispatch<T>(Func<T> action)
+        {
+            return action();
+        }
+
+        public Task DispatchAsync(Action action)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+        public Task<T> DispatchAsync<T>(Func<T> action)
+        {
+            return Task.FromResult(action());
+        }
+
+        public Task DispatchAsync(Func<Task> action)
+        {
+            return action();
+        }
+
+        public Task<T> DispatchAsync<T>(Func<Task<T>> action)
+        {
+            return action();
+        }
     }
 }

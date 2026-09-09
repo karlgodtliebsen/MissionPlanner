@@ -14,7 +14,7 @@
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="16" Margin="0,16">
             <TextBlock Text="Controller status" Classes="H3" />
-            <TextBlock Text="Review the connection and detected devices before choosing a firmware workflow." Classes="Warning" TextWrapping="Wrap" />
+            <TextBlock Text="Review the connection and detected devicesModel before choosing a firmware workflow." Classes="Warning" TextWrapping="Wrap" />
             <Border Padding="20" Classes="SectionCard">
                 <StackPanel Spacing="10">
                     <TextBlock Text="Vehicle connection" Classes="H4" FontWeight="Bold" />
@@ -49,9 +49,9 @@
                                   MinWidth="250" HorizontalAlignment="Left"
                                   IsEnabled="{Binding !Devices.InstallationRunning}"
                                   PlaceholderText="Select controller to reboot" />
-                        <Button ToolTip.Tip="Reboot to DFU" Command="{Binding RebootToDfuCommand}"  HorizontalAlignment="Left">
+<!--                        <Button ToolTip.Tip="Reboot to DFU" Command="{Binding RebootToDfuCommand}"  HorizontalAlignment="Left">
                             <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
-                        </Button>
+                        </Button>-->
                     </WrapPanel>
                 </StackPanel>
             </Border>

@@ -331,7 +331,10 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
             }
 
             if (SelectedChannel is null || !Channels.Contains(SelectedChannel))
+            {
                 SelectedChannel = defaultChannel;
+            }
+
             Logger.LogInformation("Refreshed port list: {PortCount} ports found", availablePorts.Length);
         }
         catch (Exception ex)
@@ -414,9 +417,6 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
         {
             return;
         }
-
-
-
 
         IsConnecting = true;
         StatusMessage = "Connecting...";

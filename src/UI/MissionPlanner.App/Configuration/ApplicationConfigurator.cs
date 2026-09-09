@@ -210,7 +210,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<INavigationService, AvaloniaNavigationService>();
 
         services.TryAddSingleton<MainShellViewModel>();
-        services.TryAddSingleton<FirmwareCatalogViewModel>();
+        services.TryAddSingleton<FirmwareCatalogueViewModel>();
         services.TryAddSingleton<CustomFirmwareViewModel>();
         services.TryAddSingleton<STM32BootloaderViewModel>();
         services.TryAddSingleton<DetectedDeviceViewModel>();
@@ -417,6 +417,8 @@ public static class ApplicationConfigurator
         domainFactory.Add<MissionItemListViewPage>();
         domainFactory.Add<MissionMapPresenter>();
         domainFactory.Add<ParametersEditorViewModel>();
+        domainFactory.Add<FirmwareCatalogueViewModel>();
+        domainFactory.Add<CustomFirmwareViewModel>();
         return services;
     }
 

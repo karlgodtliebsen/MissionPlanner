@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles;
@@ -14,14 +14,25 @@ public sealed partial class DetectedDeviceViewModel
     private readonly MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService identityService;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly FirmwarePanelLoader loader = new();
-    internal bool DiscoveryOwnedByPage { get; set; }
+    internal bool DiscoveryOwnedByPage
+    {
+        get; set;
+    }
     private IReadOnlyList<FirmwareManifestEntry> entries = [];
     /// <summary>Gets the latest device descriptors for catalogue recommendations.</summary>
     public IReadOnlyList<SerialDeviceDescriptor> Descriptors { get; private set; } = [];
     /// <summary>Gets whether a device scan is running.</summary>
-    [ObservableProperty] public partial bool IsRefreshing { get; private set; }
+    [ObservableProperty]
+    public partial bool IsRefreshing
+    {
+        get; private set;
+    }
     /// <summary>Gets or sets the installation interlock shared by the parent.</summary>
-    [ObservableProperty] public partial bool InstallationRunning { get; set; }
+    [ObservableProperty]
+    public partial bool InstallationRunning
+    {
+        get; set;
+    }
     /// <summary>Notifies catalogue consumers about newly discovered device evidence.</summary>
     public event Action<IReadOnlyList<SerialDeviceDescriptor>>? DevicesChanged;
     /// <summary>Notifies the active parent about device scan ownership.</summary>
@@ -39,7 +50,10 @@ public sealed partial class DetectedDeviceViewModel
     /// <inheritdoc />
     public override async Task ActivateAsync()
     {
-        if (!await loader.ActivateAsync()) { return; }
+        if (!await loader.ActivateAsync())
+        {
+            return;
+        }
         activeVehicle.Changed += VehicleChanged;
         await RefreshAsync();
     }
@@ -47,7 +61,10 @@ public sealed partial class DetectedDeviceViewModel
     /// <inheritdoc />
     public override async Task DeactivateAsync()
     {
-        if (DiscoveryOwnedByPage) { return; }
+        if (DiscoveryOwnedByPage)
+        {
+            return;
+        }
         activeVehicle.Changed -= VehicleChanged;
         await loader.DeactivateAsync();
     }
@@ -63,10 +80,14 @@ public sealed partial class DetectedDeviceViewModel
     [RelayCommand]
     public Task RefreshAsync(CancellationToken cancellationToken = default)
     {
-        if (InstallationRunning || activeVehicle.IsOnline) { return Task.CompletedTask; }
-        return loader.RunAsync(async token =>
+        return InstallationRunning || activeVehicle.IsOnline
+            ? Task.CompletedTask
+            : loader.RunAsync(async token =>
         {
-            if (InstallationRunning || activeVehicle.IsOnline) { return; }
+            if (InstallationRunning || activeVehicle.IsOnline)
+            {
+                return;
+            }
             try
             {
                 IsRefreshing = true;
@@ -75,7 +96,10 @@ public sealed partial class DetectedDeviceViewModel
                 devices = await identityService.EnrichAsync(devices, cancellationToken: token);
                 await Dispatcher.DispatchAsync(() =>
                 {
-                    if (token.IsCancellationRequested) { return; }
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
                     Descriptors = devices;
                     RebuildChoices();
                     DevicesChanged?.Invoke(devices);
@@ -87,7 +111,10 @@ public sealed partial class DetectedDeviceViewModel
                 Logger.LogWarning(exception, "Firmware serial-device discovery failed.");
                 await Dispatcher.DispatchAsync(() =>
                 {
-                    if (!token.IsCancellationRequested) { DeviceStatus = "Unable to enumerate serial devices. Check platform support and permissions, then refresh."; }
+                    if (!token.IsCancellationRequested)
+                    {
+                        DeviceStatus = "Unable to enumerate serial devices. Check platform support and permissions, then refresh.";
+                    }
                 });
             }
             finally { await Dispatcher.DispatchAsync(() => IsRefreshing = false); }
@@ -102,7 +129,7 @@ public sealed partial class DetectedDeviceViewModel
         if (retained is not null)
         {
             SelectedDevice = retained;
-            DeviceStatus = $"Selected device: {retained}";
+            DeviceStatus = $"SelectedFirmwareModel device: {retained}";
         }
         else
         {
@@ -110,12 +137,24 @@ public sealed partial class DetectedDeviceViewModel
         }
     }
 
-    private void VehicleChanged(ActiveVehicleChangedEventArgs args) => Dispatcher.Dispatch(() =>
+    private void VehicleChanged(ActiveVehicleChangedEventArgs args)
     {
-        if (!loader.IsActive) { return; }
-        if (args.Current.IsOnline) { loader.Cancel(); }
-        else { _ = RefreshAsync(); }
+        Dispatcher.Dispatch(() =>
+    {
+        if (!loader.IsActive)
+        {
+            return;
+        }
+        if (args.Current.IsOnline)
+        {
+            loader.Cancel();
+        }
+        else
+        {
+            _ = RefreshAsync();
+        }
     });
+    }
 
     /// <inheritdoc />
     public override void Dispose()

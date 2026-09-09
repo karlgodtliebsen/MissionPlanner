@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
@@ -9,7 +9,7 @@ using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
-public sealed partial class FirmwareCatalogViewModel
+public sealed partial class FirmwareCatalogueViewModel
 {
     private readonly IFirmwareCatalogService catalogService;
     private readonly IActiveVehicleContext activeVehicle;
@@ -18,26 +18,40 @@ public sealed partial class FirmwareCatalogViewModel
     private readonly FirmwarePanelLoader loader = new();
 
     /// <summary>Gets whether catalogue loading owns the progress dialog.</summary>
-    [ObservableProperty] public partial bool IsRefreshing { get; private set; }
+    [ObservableProperty]
+    public partial bool IsRefreshing
+    {
+        get; private set;
+    }
     /// <summary>Gets or sets the parent's exclusive installation interlock.</summary>
-    [ObservableProperty] public partial bool InstallationRunning { get; set; }
+    [ObservableProperty]
+    public partial bool InstallationRunning
+    {
+        get; set;
+    }
     /// <summary>Notifies the active parent about read-operation ownership.</summary>
     public event Action<bool>? RefreshStateChanged;
 
     partial void OnIsRefreshingChanged(bool value) => RefreshStateChanged?.Invoke(value);
     partial void OnInstallationRunningChanged(bool value)
     {
-        if (value) { loader.Cancel(); }
+        if (value)
+        {
+            loader.Cancel();
+        }
     }
 
     /// <inheritdoc />
     public override async Task ActivateAsync()
     {
-        if (!await loader.ActivateAsync()) { return; }
+        if (!await loader.ActivateAsync())
+        {
+            return;
+        }
         activeVehicle.Changed += VehicleChanged;
-        Devices.DevicesChanged += DevicesChanged;
+        DevicesModel.DevicesChanged += DevicesModelChanged;
         IsVehicleConnected = activeVehicle.IsOnline;
-        availableDevices = Devices.Descriptors;
+        availableDevices = DevicesModel.Descriptors;
         await RefreshAsync(false);
     }
 
@@ -45,23 +59,30 @@ public sealed partial class FirmwareCatalogViewModel
     public override async Task DeactivateAsync()
     {
         activeVehicle.Changed -= VehicleChanged;
-        Devices.DevicesChanged -= DevicesChanged;
+        DevicesModel.DevicesChanged -= DevicesModelChanged;
         await loader.DeactivateAsync();
     }
 
     /// <summary>Refreshes this panel only; serial/DFU panels own their own discovery.</summary>
     public Task RefreshAsync(bool forceRefresh, CancellationToken cancellationToken = default)
     {
-        if (InstallationRunning || activeVehicle.IsOnline) { return Task.CompletedTask; }
-        return loader.RunAsync(token => LoadCatalogueAsync(forceRefresh, token), cancellationToken);
+        return InstallationRunning || activeVehicle.IsOnline
+            ? Task.CompletedTask
+            : loader.RunAsync(token => LoadCatalogueAsync(forceRefresh, token), cancellationToken);
     }
 
     /// <summary>Cancels the panel-owned refresh without clearing the last usable catalogue.</summary>
-    public void CancelRefresh() => loader.Cancel();
+    public void CancelRefresh()
+    {
+        loader.Cancel();
+    }
 
     private async Task LoadCatalogueAsync(bool forceRefresh, CancellationToken token)
     {
-        if (InstallationRunning || activeVehicle.IsOnline) { return; }
+        if (InstallationRunning || activeVehicle.IsOnline)
+        {
+            return;
+        }
         IDisposable? progress = null;
         var channel = SelectedChannel;
         var allOptions = showingAllOptions;
@@ -83,9 +104,12 @@ public sealed partial class FirmwareCatalogViewModel
                 && entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
             await Dispatcher.DispatchAsync(() =>
             {
-                if (token.IsCancellationRequested) { return; }
-                SetCatalogue(entries, Devices.Descriptors, allOptions);
-                Devices.SetCatalogue(entries);
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+                SetCatalogue(entries, DevicesModel.Descriptors, allOptions);
+                DevicesModel.SetCatalogue(entries);
                 SetMessages(catalog.IsStale ? "Showing cached firmware catalogue" : $"{FirmwareChoices.Count} vehicle firmware choices available");
             });
         }
@@ -95,7 +119,10 @@ public sealed partial class FirmwareCatalogViewModel
             Logger.LogWarning(exception, "Firmware catalogue refresh failed.");
             await Dispatcher.DispatchAsync(() =>
             {
-                if (!token.IsCancellationRequested) { SetMessages(exception); }
+                if (!token.IsCancellationRequested)
+                {
+                    SetMessages(exception);
+                }
             });
         }
         finally
@@ -112,22 +139,37 @@ public sealed partial class FirmwareCatalogViewModel
     private async Task ReloadChannelAsync()
     {
         await loader.CancelAndWaitAsync();
-        if (loader.IsActive) { await RefreshAsync(false); }
+        if (loader.IsActive)
+        {
+            await RefreshAsync(false);
+        }
     }
 
-    private void DevicesChanged(IReadOnlyList<SerialDeviceDescriptor> devices)
+    private void DevicesModelChanged(IReadOnlyList<SerialDeviceDescriptor> devices)
     {
         availableDevices = devices;
         ApplyTargetQuery();
     }
 
-    private void VehicleChanged(ActiveVehicleChangedEventArgs args) => Dispatcher.Dispatch(() =>
+    private void VehicleChanged(ActiveVehicleChangedEventArgs args)
     {
-        if (!loader.IsActive) { return; }
+        Dispatcher.Dispatch(() =>
+    {
+        if (!loader.IsActive)
+        {
+            return;
+        }
         IsVehicleConnected = args.Current.IsOnline;
-        if (IsVehicleConnected) { loader.Cancel(); }
-        else { _ = RefreshAsync(false); }
+        if (IsVehicleConnected)
+        {
+            loader.Cancel();
+        }
+        else
+        {
+            _ = RefreshAsync(false);
+        }
     });
+    }
 
     /// <inheritdoc />
     public override void Dispose()

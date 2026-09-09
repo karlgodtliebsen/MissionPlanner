@@ -23,7 +23,13 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         return CreateDialogOptions(title, accept, cancel);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Creates overlay dialog options with the specified title, accept text, and cancel text.
+    /// </summary>
+    /// <param name="title">The title of the dialog.</param>
+    /// <param name="accept">The text for the accept button.</param>
+    /// <param name="cancel">The text for the cancel button.</param>
+    /// <returns>The created overlay dialog options.</returns>
     public static OverlayDialogOptions CreateDialogOptions(string title, string? accept, string? cancel)
     {
         var options = new OverlayDialogOptions()
@@ -42,7 +48,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         };
         if (string.IsNullOrEmpty(cancel))
         {
-            //options.Buttons = DialogButton.OK;
+            options.Buttons = DialogButton.OK;
         }
         return options;
     }

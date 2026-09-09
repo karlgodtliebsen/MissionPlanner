@@ -24,7 +24,7 @@ public sealed class FirmwarePanelLoadingTests
         await parent.ActivateAsync();
         await landing.ActivateAsync();
         services.GetRequiredService<IActiveVehicleContext>().IsOnline.Returns(false);
-        parent.Devices.SelectedDevice = new(new SerialDeviceDescriptor("COM4"), false, "Unknown");
+        parent.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM4"), false, "Unknown");
         if (portBusy)
         {
             services.GetRequiredService<MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService>()
@@ -36,14 +36,14 @@ public sealed class FirmwarePanelLoadingTests
 
         await landing.RebootToDfuCommand.ExecuteAsync(null);
 
-        Assert.Contains(portBusy ? "Cannot open COM4" : "Could not verify", parent.Dfu.DfuStatus);
-        Assert.Equal(parent.Dfu.DfuStatus, landing.ErrorMessage);
+        Assert.Contains(portBusy ? "Cannot open COM4" : "Could not verify", parent.DfuModel.DfuStatus);
+        Assert.Equal(parent.DfuModel.DfuStatus, landing.ErrorMessage);
         Assert.True(landing.HasError);
         Assert.False(parent.IsOperationInProgress);
         await services.GetRequiredService<MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff>()
-            .DidNotReceiveWithAnyArgs().RebootAsync(default!, default, default);
+            .DidNotReceiveWithAnyArgs().RebootAsync(default!, default, TestContext.Current.CancellationToken);
         await services.GetRequiredService<IDialogService>().DidNotReceiveWithAnyArgs()
-            .ConfirmAsync(default!, default!, default);
+            .ConfirmAsync(default!, default!, TestContext.Current.CancellationToken);
         await landing.DeactivateAsync();
         await parent.DeactivateAsync();
     }
@@ -66,8 +66,11 @@ public sealed class FirmwarePanelLoadingTests
             BetaflightIdentity = new("COM4", new Version(1, 46), "BTFL", McuType: "STM32F405", McuUniqueId: "test-uid")
         };
         // Enumeration alone must leave a way to retry identity on the selected port.
-        var unprobed = source with { BetaflightIdentity = null };
-        parent.Devices.SelectedDevice = new(unprobed, false, "Manual device selection");
+        var unprobed = source with
+        {
+            BetaflightIdentity = null
+        };
+        parent.DevicesModel.SelectedDevice = new(unprobed, false, "Manual device selection");
         services.GetRequiredService<MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService>()
             .EnrichAsync(Arg.Is<IReadOnlyList<SerialDeviceDescriptor>>(items => items.Count == 1 && items[0] == unprobed),
                 true, Arg.Any<CancellationToken>()).Returns(new[] { source });
@@ -92,16 +95,16 @@ public sealed class FirmwarePanelLoadingTests
         Assert.False(parent.IsOperationInProgress);
         if (succeeds)
         {
-            Assert.Same(dfuDevice, parent.Dfu.SelectedDfuDevice?.Descriptor);
+            Assert.Same(dfuDevice, parent.DfuModel.SelectedDfuDevice?.Descriptor);
             Assert.True(parent.CanUseDfuFirmware);
             Assert.Equal((int)FirmwareSection.Stm32Dfu, parent.SelectedSectionIndex);
             Assert.Equal((int)Stm32DfuSection.Catalogue, parent.SelectedDfuTabIndex);
-            Assert.Same(source, parent.Dfu.CorrelatedHandoff?.Source);
-            Assert.True(parent.Dfu.HasCorrelatedSource);
+            Assert.Same(source, parent.DfuModel.CorrelatedHandoff?.Source);
+            Assert.True(parent.DfuModel.HasCorrelatedSource);
         }
         else if (confirm)
         {
-            Assert.Contains("test-not-found", parent.Dfu.DfuStatus);
+            Assert.Contains("test-not-found", parent.DfuModel.DfuStatus);
             Assert.Equal((int)Stm32DfuSection.Device, parent.SelectedDfuTabIndex);
         }
         vehicle.IsOnline.Returns(true);
@@ -179,8 +182,8 @@ public sealed class FirmwarePanelLoadingTests
         Assert.Equal(OperatingSystem.IsWindows() && !connected && dfu, parent.CanUseDfuFirmware);
 
         // Unloading a workflow view must not stop page-owned discovery.
-        await parent.Devices.DeactivateAsync();
-        await parent.Dfu.DeactivateAsync();
+        await parent.DevicesModel.DeactivateAsync();
+        await parent.DfuModel.DeactivateAsync();
         services.GetRequiredService<IFirmwareSerialDeviceCatalog>().GetDevicesAsync(Arg.Any<CancellationToken>())
             .Returns(Array.Empty<SerialDeviceDescriptor>());
         services.GetRequiredService<IDfuDeviceCatalog>().GetDevicesAsync(Arg.Any<CancellationToken>())
@@ -203,7 +206,7 @@ public sealed class FirmwarePanelLoadingTests
         service.GetCatalogAsync(Arg.Any<FirmwareCatalogRequest>(), Arg.Any<CancellationToken>()).Returns(Catalog(entry));
         var handle = Substitute.For<IDisposable>();
         services.GetRequiredService<IDialogService>().DisplayProgressCancellableAsync(Arg.Any<Func<string>>(), Arg.Any<DialogOptions>(), Arg.Any<CancellationToken>()).Returns(handle);
-        var panel = services.GetRequiredService<FirmwareCatalogViewModel>();
+        var panel = services.GetRequiredService<FirmwareCatalogueViewModel>();
         await panel.ActivateAsync();
         panel.SelectedFirmware = Assert.Single(panel.FirmwareChoices);
         await panel.DeactivateAsync();
@@ -225,7 +228,7 @@ public sealed class FirmwarePanelLoadingTests
         var service = services.GetRequiredService<IFirmwareCatalogService>();
         var handle = Substitute.For<IDisposable>();
         services.GetRequiredService<IDialogService>().DisplayProgressCancellableAsync(Arg.Any<Func<string>>(), Arg.Any<DialogOptions>(), Arg.Any<CancellationToken>()).Returns(handle);
-        var panel = services.GetRequiredService<FirmwareCatalogViewModel>();
+        var panel = services.GetRequiredService<FirmwareCatalogueViewModel>();
         for (var iteration = 0; iteration < 10; iteration++)
         {
             var started = new TaskCompletionSource<CancellationToken>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -297,7 +300,7 @@ public sealed class FirmwarePanelLoadingTests
     {
         using var services = FirmwarePanelViewModelTests.CreateServices();
         services.GetRequiredService<IActiveVehicleContext>().IsOnline.Returns(false);
-        var catalogue = services.GetRequiredService<FirmwareCatalogViewModel>();
+        var catalogue = services.GetRequiredService<FirmwareCatalogueViewModel>();
         var serial = services.GetRequiredService<DetectedDeviceViewModel>();
         var dfu = services.GetRequiredService<STM32BootloaderViewModel>();
         catalogue.InstallationRunning = serial.InstallationRunning = dfu.InstallationRunning = true;
@@ -319,15 +322,21 @@ public sealed class FirmwarePanelLoadingTests
         var beta = Entry(FirmwareReleaseChannel.Beta);
         service.GetCatalogAsync(Arg.Any<FirmwareCatalogRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
         {
-            if (call.Arg<FirmwareCatalogRequest>()?.Channel == FirmwareReleaseChannel.Beta) { return Task.FromResult(Catalog(beta)); }
+            if (call.Arg<FirmwareCatalogRequest>()?.Channel == FirmwareReleaseChannel.Beta)
+            {
+                return Task.FromResult(Catalog(beta));
+            }
             firstStarted.TrySetResult(call.Arg<CancellationToken>());
             return firstResult.Task;
         });
-        var panel = services.GetRequiredService<FirmwareCatalogViewModel>();
+        var panel = services.GetRequiredService<FirmwareCatalogueViewModel>();
         var applied = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         panel.FirmwareChoices.CollectionChanged += (_, _) =>
         {
-            if (panel.FirmwareChoices.Any(item => item.Entry.Channel == FirmwareReleaseChannel.Beta)) { applied.TrySetResult(); }
+            if (panel.FirmwareChoices.Any(item => item.Entry.Channel == FirmwareReleaseChannel.Beta))
+            {
+                applied.TrySetResult();
+            }
         };
         var activation = panel.ActivateAsync();
         var firstToken = await firstStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
@@ -351,7 +360,7 @@ public sealed class FirmwarePanelLoadingTests
             .Returns(Task.FromException<FirmwareCatalog>(new IOException("fixture failure")));
         var handle = Substitute.For<IDisposable>();
         services.GetRequiredService<IDialogService>().DisplayProgressCancellableAsync(Arg.Any<Func<string>>(), Arg.Any<DialogOptions>(), Arg.Any<CancellationToken>()).Returns(handle);
-        var panel = services.GetRequiredService<FirmwareCatalogViewModel>();
+        var panel = services.GetRequiredService<FirmwareCatalogueViewModel>();
         await panel.ActivateAsync();
         Assert.False(panel.IsBusy);
         Assert.False(panel.IsRefreshing);
@@ -363,9 +372,15 @@ public sealed class FirmwarePanelLoadingTests
         await panel.DeactivateAsync();
     }
 
-    private static FirmwareManifestEntry Entry(FirmwareReleaseChannel channel = FirmwareReleaseChannel.Stable) => new(new FirmwareVersion("4.6.0"), channel,
+    private static FirmwareManifestEntry Entry(FirmwareReleaseChannel channel = FirmwareReleaseChannel.Stable)
+    {
+        return new(new FirmwareVersion("4.6.0"), channel,
         new FirmwareBoardTarget(50, "test", FirmwareVehicleType.Copter),
         new FirmwareArtifact(new Uri("https://example.test/firmware.apj"), FirmwareImageFormat.Apj));
+    }
 
-    private static FirmwareCatalog Catalog(params FirmwareManifestEntry[] entries) => new(entries, DateTimeOffset.UnixEpoch, false);
+    private static FirmwareCatalog Catalog(params FirmwareManifestEntry[] entries)
+    {
+        return new(entries, DateTimeOffset.UnixEpoch, false);
+    }
 }
