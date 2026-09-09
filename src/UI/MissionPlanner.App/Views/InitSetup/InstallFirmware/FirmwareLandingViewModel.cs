@@ -1,4 +1,6 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using AsyncAwaitBestPractices;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
@@ -9,17 +11,44 @@ using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 /// <summary>Explains the current firmware connection and discovery state without starting another scan.</summary>
-public sealed class FirmwareLandingViewModel : ViewModelBase
+public sealed partial class FirmwareLandingViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext vehicle;
     private readonly DetectedDeviceViewModel devices;
     private readonly STM32BootloaderViewModel dfu;
     private bool active;
 
+    /// <summary>Gets the shared controller selection.</summary>
+    public DetectedDeviceViewModel Devices => devices;
+
+    /// <summary>Requests a page-owned boot-mode operation.</summary>
+    public event Action<FirmwarePanelRequest>? OperationRequested;
+
+    /// <summary>Gets whether the selected disconnected controller supports the Betaflight reboot workflow.</summary>
+    public bool CanRebootToDfu => active && OperatingSystem.IsWindows() && !vehicle.IsOnline
+        && !devices.InstallationRunning && !dfu.InstallationRunning
+        && !devices.IsRefreshing && !dfu.IsRefreshing
+        && devices.SelectedDevice is not null;
+
+    /// <summary>Explains the software reboot capability and manual alternative.</summary>
+    public string DfuRebootGuidance => !OperatingSystem.IsWindows()
+        ? "Software DFU reboot requires the Windows desktop app."
+        : vehicle.IsOnline ? "Disconnect the vehicle before requesting DFU mode."
+        : devices.InstallationRunning || dfu.InstallationRunning ? "Wait for the current firmware operation to finish."
+        : devices.IsRefreshing || dfu.IsRefreshing ? "Wait for device discovery to finish."
+        : devices.SelectedDevice is null ? "Select a controller port to check for software DFU reboot support."
+        : "Reboot to DFU first verifies the selected port as a Betaflight controller. You will be asked to confirm before it reboots. Other controllers require the board's BOOT/RESET procedure. No firmware is flashed.";
+
+    [RelayCommand(CanExecute = nameof(CanRebootToDfu))]
+    private Task RebootToDfuAsync(CancellationToken cancellationToken)
+    {
+        return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.RebootToDfu, cancellationToken);
+    }
+
     /// <summary>Initializes the information panel using the shared device discovery models.</summary>
     public FirmwareLandingViewModel(IActiveVehicleContext vehicle, DetectedDeviceViewModel devices,
-        STM32BootloaderViewModel dfu, ILogger<FirmwareLandingViewModel> logger,
-        IUiDispatcher dispatcher, IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
+        STM32BootloaderViewModel dfu,
+        IUiDispatcher dispatcher, IDomainEventHub eventHub, ILogger<FirmwareLandingViewModel> logger) : base(logger, dispatcher, eventHub)
     {
         this.vehicle = vehicle;
         this.devices = devices;
@@ -92,23 +121,36 @@ public sealed class FirmwareLandingViewModel : ViewModelBase
         vehicle.Changed -= VehicleChanged;
         devices.PropertyChanged -= DiscoveryChanged;
         dfu.PropertyChanged -= DiscoveryChanged;
+        RebootToDfuCommand.NotifyCanExecuteChanged();
         return Task.CompletedTask;
     }
 
-    private void VehicleChanged(ActiveVehicleChangedEventArgs args) => NotifyStatus();
-    private void DiscoveryChanged(object? sender, PropertyChangedEventArgs args) => NotifyStatus();
-    private void NotifyStatus() => Dispatcher.Dispatch(() =>
+    private void VehicleChanged(ActiveVehicleChangedEventArgs args)
     {
-        if (active)
+        NotifyStatus();
+    }
+
+    private void DiscoveryChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        NotifyStatus();
+    }
+
+    private void NotifyStatus()
+    {
+        Dispatcher.Dispatch(() =>
         {
-            OnPropertyChanged(string.Empty);
-        }
-    });
+            if (active)
+            {
+                OnPropertyChanged(string.Empty);
+                RebootToDfuCommand.NotifyCanExecuteChanged();
+            }
+        });
+    }
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        _ = DeactivateAsync();
+        DeactivateAsync().SafeFireAndForget();
         base.Dispose();
     }
 }

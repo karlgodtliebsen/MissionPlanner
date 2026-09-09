@@ -190,6 +190,7 @@ public sealed class FirmwarePanelViewModelTests
             .Returns(call => call.Arg<IReadOnlyList<SerialDeviceDescriptor>>());
         services.AddSingleton(identity);
         services.AddSingleton<FirmwareLandingViewModel>();
+        services.AddSingleton(Substitute.For<MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff>());
         services.AddTransient<InstallFirmwareViewModel>();
         return services.BuildServiceProvider();
     }

@@ -30,6 +30,9 @@ public sealed record SerialDeviceDescriptor
     /// <summary>Gets protocol-proven runtime identity, separate from canonical USB metadata.</summary>
     public Betaflight.BetaflightDeviceInfo? BetaflightIdentity { get; init; }
 
+    /// <summary>Gets the last protocol-probe outcome so callers can explain missing identity.</summary>
+    public Betaflight.BetaflightProbeOutcome? BetaflightProbeOutcome { get; init; }
+
     /// <summary>Gets the stable operating-system device identity when available.</summary>
     public string? OsDeviceId { get; }
 

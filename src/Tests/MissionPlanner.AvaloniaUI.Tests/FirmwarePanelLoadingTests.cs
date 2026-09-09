@@ -13,6 +13,100 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 
 public sealed class FirmwarePanelLoadingTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LandingRejectsUnidentifiedPortWithoutRequestingReboot(bool portBusy)
+    {
+        using var services = FirmwarePanelViewModelTests.CreateServices();
+        var parent = services.GetRequiredService<InstallFirmwareViewModel>();
+        var landing = services.GetRequiredService<FirmwareLandingViewModel>();
+        await parent.ActivateAsync();
+        await landing.ActivateAsync();
+        services.GetRequiredService<IActiveVehicleContext>().IsOnline.Returns(false);
+        parent.Devices.SelectedDevice = new(new SerialDeviceDescriptor("COM4"), false, "Unknown");
+        if (portBusy)
+        {
+            services.GetRequiredService<MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService>()
+                .EnrichAsync(Arg.Any<IReadOnlyList<SerialDeviceDescriptor>>(), true, Arg.Any<CancellationToken>())
+                .Returns(call => new[] { call.Arg<IReadOnlyList<SerialDeviceDescriptor>>()[0] with
+                { BetaflightProbeOutcome = MissionPlanner.Firmware.Betaflight.BetaflightProbeOutcome.PortBusy } });
+        }
+        Assert.True(landing.RebootToDfuCommand.CanExecute(null));
+
+        await landing.RebootToDfuCommand.ExecuteAsync(null);
+
+        Assert.Contains(portBusy ? "Cannot open COM4" : "Could not verify", parent.Dfu.DfuStatus);
+        Assert.Equal(parent.Dfu.DfuStatus, landing.ErrorMessage);
+        Assert.True(landing.HasError);
+        Assert.False(parent.IsOperationInProgress);
+        await services.GetRequiredService<MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff>()
+            .DidNotReceiveWithAnyArgs().RebootAsync(default!, default, default);
+        await services.GetRequiredService<IDialogService>().DidNotReceiveWithAnyArgs()
+            .ConfirmAsync(default!, default!, default);
+        await landing.DeactivateAsync();
+        await parent.DeactivateAsync();
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task LandingDfuRebootRequiresConfirmationAndReleasesOperation(bool confirm, bool succeeds)
+    {
+        using var services = FirmwarePanelViewModelTests.CreateServices();
+        var parent = services.GetRequiredService<InstallFirmwareViewModel>();
+        var landing = services.GetRequiredService<FirmwareLandingViewModel>();
+        await parent.ActivateAsync();
+        await landing.ActivateAsync();
+        var vehicle = services.GetRequiredService<IActiveVehicleContext>();
+        vehicle.IsOnline.Returns(false);
+        var source = new SerialDeviceDescriptor("COM4")
+        {
+            BetaflightIdentity = new("COM4", new Version(1, 46), "BTFL", McuType: "STM32F405", McuUniqueId: "test-uid")
+        };
+        // Enumeration alone must leave a way to retry identity on the selected port.
+        var unprobed = source with { BetaflightIdentity = null };
+        parent.Devices.SelectedDevice = new(unprobed, false, "Manual device selection");
+        services.GetRequiredService<MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService>()
+            .EnrichAsync(Arg.Is<IReadOnlyList<SerialDeviceDescriptor>>(items => items.Count == 1 && items[0] == unprobed),
+                true, Arg.Any<CancellationToken>()).Returns(new[] { source });
+        var dialogs = services.GetRequiredService<IDialogService>();
+        dialogs.ConfirmAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(confirm);
+        var handoff = services.GetRequiredService<MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff>();
+        var dfuDevice = new DfuDeviceDescriptor("selected-dfu", 0x0483, 0xDF11, DfuDriverState.PresentReady,
+            ArrivedAt: DateTimeOffset.UtcNow);
+        services.GetRequiredService<IDfuDeviceCatalog>().GetDevicesAsync(Arg.Any<CancellationToken>())
+            .Returns(new[] { dfuDevice });
+        services.GetRequiredService<IDfuToolLocator>().LocateAsync(Arg.Any<CancellationToken>())
+            .Returns(new DfuToolStatus(DfuToolAvailability.NotInstalled));
+        handoff.RebootAsync(source, Arg.Any<IProgress<FirmwareProgress>>(), Arg.Any<CancellationToken>())
+            .Returns(new MissionPlanner.Firmware.Betaflight.BetaflightDfuHandoffResult(succeeds, "test-not-found", source,
+                succeeds ? dfuDevice : null));
+
+        Assert.True(landing.RebootToDfuCommand.CanExecute(null));
+        await landing.RebootToDfuCommand.ExecuteAsync(null);
+
+        await handoff.Received(confirm ? 1 : 0).RebootAsync(source, Arg.Any<IProgress<FirmwareProgress>>(), Arg.Any<CancellationToken>());
+        Assert.False(parent.IsOperationInProgress);
+        if (succeeds)
+        {
+            Assert.Same(dfuDevice, parent.Dfu.SelectedDfuDevice?.Descriptor);
+            Assert.True(parent.CanUseDfuFirmware);
+        }
+        else if (confirm)
+        {
+            Assert.Contains("test-not-found", parent.Dfu.DfuStatus);
+        }
+        vehicle.IsOnline.Returns(true);
+        Assert.False(landing.RebootToDfuCommand.CanExecute(null));
+        await landing.DeactivateAsync();
+        await parent.DeactivateAsync();
+        vehicle.IsOnline.Returns(false);
+        Assert.False(landing.RebootToDfuCommand.CanExecute(null));
+    }
+
     [Fact]
     public async Task LandingObservesDiscoveryOnlyWhileActiveWithoutStartingScans()
     {

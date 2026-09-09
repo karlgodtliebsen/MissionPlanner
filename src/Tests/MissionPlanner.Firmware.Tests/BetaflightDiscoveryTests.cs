@@ -10,6 +10,28 @@ namespace MissionPlanner.Firmware.Tests;
 public sealed class BetaflightDiscoveryTests
 {
     [Fact]
+    public async Task BusyOutcomeSurvivesCacheAndForcedRetryCanRecover()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        var probe = new Probe { Busy = true };
+        var service = new FirmwareDeviceIdentityService(probe, new Connection(),
+            new FirmwareOperationCoordinator(NullLogger<FirmwareOperationCoordinator>.Instance), TimeProvider.System);
+        var device = new SerialDeviceDescriptor("COM4", "physical-A");
+        var first = await service.EnrichAsync([device], cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(BetaflightProbeOutcome.PortBusy, first[0].BetaflightProbeOutcome);
+        var cached = await service.EnrichAsync([device], cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(BetaflightProbeOutcome.PortBusy, cached[0].BetaflightProbeOutcome);
+        Assert.Equal(1, probe.Calls);
+        probe.Busy = false;
+        var retried = await service.EnrichAsync([device], true, TestContext.Current.CancellationToken);
+        Assert.Equal(BetaflightProbeOutcome.Success, retried[0].BetaflightProbeOutcome);
+        Assert.NotNull(retried[0].BetaflightIdentity);
+    }
+
+    [Fact]
     public async Task PresenceCacheForceAndComReuseKeepIdentityIsolated()
     {
         if (!OperatingSystem.IsWindows())
@@ -60,9 +82,14 @@ public sealed class BetaflightDiscoveryTests
     {
         public int Calls { get; private set; }
         public bool IsBetaflight { get; set; } = true;
+        public bool Busy { get; set; }
         public Task<BetaflightProbeResult> ProbeAsync(string portName, CancellationToken cancellationToken = default)
         {
             Calls++;
+            if (Busy)
+            {
+                return Task.FromResult(new BetaflightProbeResult(BetaflightProbeOutcome.PortBusy));
+            }
             return Task.FromResult(IsBetaflight ? new BetaflightProbeResult(BetaflightProbeOutcome.Success,
                 new(portName, new Version(1, 46), "BTFL")) : new BetaflightProbeResult(BetaflightProbeOutcome.NotMsp));
         }

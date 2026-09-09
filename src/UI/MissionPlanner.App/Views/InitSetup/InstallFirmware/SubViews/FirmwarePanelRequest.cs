@@ -10,7 +10,9 @@ public enum FirmwarePanelAction
     /// <summary>Install an APJ application.</summary>
     Install,
     /// <summary>Install a combined HEX through DFU.</summary>
-    InstallDfu
+    InstallDfu,
+    /// <summary>Reboot the selected Betaflight controller into ROM DFU.</summary>
+    RebootToDfu
 }
 
 /// <summary>An awaitable request sent from a panel to its active parent.</summary>

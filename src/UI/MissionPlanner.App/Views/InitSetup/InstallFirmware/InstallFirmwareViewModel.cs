@@ -56,6 +56,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private readonly IFirmwareInstallationService installationService;
     private readonly IFirmwarePreparationService preparationService;
+    private readonly FirmwareLandingViewModel landing;
+    private readonly MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity;
+    private readonly MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff dfuHandoff;
     private readonly IDfuInstallationService dfuInstallationService;
     private readonly IEmbeddedBootloaderUpdateService bootloaderUpdateService;
     private readonly IFirmwarePageModeResolver modeResolver;
@@ -87,6 +90,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="logger"></param>
     /// <param name="firmwareDialogs">Sequences operator confirmations and firmware progress windows.</param>
     /// <param name="catalogue">Owns catalogue choices and filters.</param>
+    /// <param name="landing">Owns device status and boot-mode entry requests.</param>
+    /// <param name="deviceIdentity">Verifies the selected serial device before requesting DFU.</param>
+    /// <param name="dfuHandoff">Reboots and correlates the selected physical controller.</param>
     /// <param name="custom">Owns custom application packages.</param>
     /// <param name="dfu">Owns DFU devices and local HEX selection.</param>
     /// <param name="help">Owns firmware help and support links.</param>
@@ -104,6 +110,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         IDomainFactory domainFactory,
         FirmwareDialogCoordinator firmwareDialogs,
         FirmwareCatalogViewModel catalogue,
+        FirmwareLandingViewModel landing,
+        MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity,
+        MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff dfuHandoff,
         CustomFirmwareViewModel custom,
         STM32BootloaderViewModel dfu,
         SubViews.FirmwareHelpViewModel help,
@@ -122,6 +131,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         this.domainFactory = domainFactory;
         this.firmwareDialogs = firmwareDialogs;
         Catalogue = catalogue;
+        this.landing = landing;
+        this.deviceIdentity = deviceIdentity;
+        this.dfuHandoff = dfuHandoff;
         Custom = custom;
         Dfu = dfu;
         Help = help;
@@ -838,6 +850,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
         Dfu.OperationRequested += OnPanelOperation;
         Validated.OperationRequested += OnPanelOperation;
+        landing.OperationRequested += OnPanelOperation;
         Selected.OperationRequested += OnPanelOperation;
     }
 
@@ -858,6 +871,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         Devices.OperationRequested -= OnPanelOperation;
         Dfu.OperationRequested -= OnPanelOperation;
         Validated.OperationRequested -= OnPanelOperation;
+        landing.OperationRequested -= OnPanelOperation;
         Selected.OperationRequested -= OnPanelOperation;
     }
 
@@ -877,6 +891,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         request.Completion = request.Action switch
         {
             FirmwarePanelAction.Download => DownloadAndValidateAsync(request.CancellationToken),
+            FirmwarePanelAction.RebootToDfu => RebootToDfuAsync(request.CancellationToken),
             FirmwarePanelAction.Install when CanStartInstall() => InstallAsync(request.CancellationToken),
             FirmwarePanelAction.InstallDfu when CanStartDfuInstall() => InstallDfuFirmwareAsync(request.CancellationToken),
             _ => Task.CompletedTask

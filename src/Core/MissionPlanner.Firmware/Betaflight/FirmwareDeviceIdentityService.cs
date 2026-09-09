@@ -11,7 +11,7 @@ public sealed class FirmwareDeviceIdentityService(IBetaflightDeviceProbe probe, 
     Microsoft.Extensions.Options.IOptions<BetaflightOptions>? options = null) : IFirmwareDeviceIdentityService
 {
     private readonly object sync = new();
-    private readonly Dictionary<string, (DateTimeOffset At, BetaflightDeviceInfo? Identity)> cache = [];
+    private readonly Dictionary<string, (DateTimeOffset At, BetaflightDeviceInfo? Identity, BetaflightProbeOutcome? Outcome)> cache = [];
     private long generation;
 
     /// <inheritdoc />
@@ -61,7 +61,7 @@ public sealed class FirmwareDeviceIdentityService(IBetaflightDeviceProbe probe, 
         {
             try
             {
-                var result = devices.Select(device => device with { BetaflightIdentity = null }).ToArray();
+                var result = devices.Select(device => device with { BetaflightIdentity = null, BetaflightProbeOutcome = null }).ToArray();
                 for (var index = 0; index < result.Length; index++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -75,7 +75,7 @@ public sealed class FirmwareDeviceIdentityService(IBetaflightDeviceProbe probe, 
                     {
                         if (key is not null && cache.TryGetValue(key, out var known) && clock.GetUtcNow() - known.At < (options?.Value.CacheDuration ?? TimeSpan.FromSeconds(30)))
                         {
-                            result[index] = device with { BetaflightIdentity = known.Identity is null ? null : known.Identity with { PortName = device.PortName } };
+                            result[index] = device with { BetaflightIdentity = known.Identity is null ? null : known.Identity with { PortName = device.PortName }, BetaflightProbeOutcome = known.Outcome };
                             continue;
                         }
                     }
@@ -87,13 +87,14 @@ public sealed class FirmwareDeviceIdentityService(IBetaflightDeviceProbe probe, 
                         {
                             break;
                         }
+                        result[index] = device with { BetaflightProbeOutcome = observed.Outcome };
                         if (observed.Outcome == BetaflightProbeOutcome.Success)
                         {
-                            result[index] = device with { BetaflightIdentity = observed.Identity };
+                            result[index] = result[index] with { BetaflightIdentity = observed.Identity };
                         }
                         if (key is not null && observed.Outcome != BetaflightProbeOutcome.Cancelled)
                         {
-                            cache[key] = (clock.GetUtcNow(), result[index].BetaflightIdentity);
+                            cache[key] = (clock.GetUtcNow(), result[index].BetaflightIdentity, observed.Outcome);
                         }
                     }
                 }

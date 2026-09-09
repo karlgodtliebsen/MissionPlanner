@@ -61,6 +61,21 @@ serial port enables catalogue and custom firmware. No devices, a connected vehic
 unsupported platform, or an installation in progress disables all three workflow tabs.
 Information and Help remain accessible. After attaching or changing hardware, the page's
 Refresh devices command scans both device types, including when every workflow tab is disabled.
+
+The Information landing page also provides a controller selector and **Reboot to DFU** action
+for selected serial controllers on Windows. The action freshly probes only that controller,
+so an incomplete or timed-out background scan does not leave the button inaccessible.
+Only a verified Betaflight identity with a MCU UID may proceed to reboot confirmation.
+Probe outcomes are retained alongside discovered identities, including cached failures.
+Port access denial is reported visibly in the Landing DFU section with instructions to
+disconnect Betaflight Configurator and retry. The progress dialog closes before errors
+are displayed, and the next attempt clears the previous error and forces fresh identity probing.
+The child sends an awaited operation request
+to the active parent, which confirms propeller removal before opening progress and delegates
+to the existing physical-device DFU handoff service. A confirmed handoff refreshes DFU
+discovery, selects only the correlated endpoint and enables the STM32 tab through its normal
+device gating. This action does not flash firmware. Unsupported controllers use BOOT/RESET;
+Browser does not expose native serial reboot capability.
 Serial discovery provides candidates; board compatibility remains an installation validation.
 
 Panel unload preserves selections and cached catalogue choices. The page no longer forwards
