@@ -12,101 +12,23 @@
                           x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.FirmwareCatalogueView"
                           x:DataType="local:FirmwareCatalogViewModel" Margin="25,0,25,0">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" 
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,*"
           IsEnabled="{Binding !InstallationRunning}" RowSpacing="25">
-        <subViews:DetectedDeviceView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" DataContext="{Binding Devices}" ></subViews:DetectedDeviceView>
-        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  Padding="20" Classes="SectionCard">
-            <StackPanel Spacing="16" Orientation="Vertical">
-                <TextBlock Text="Select Firmware" Classes="H3" />
-                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
-                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Warning" />
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <Button ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}" IsEnabled="{Binding !IsRefreshing}" >
-                        <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
-                    </Button>
-                    <Button ToolTip.Tip="All Version Options" 
-                             Command="{Binding ShowAllOptionsCommand}"  >
-                        <avalonia:MaterialIcon Kind="AllInclusiveBoxOutline" Width="30" Height="30" />
-                    </Button>
-                    <Button 
-                        ToolTip.Tip="Clear all Settings"
-                        Padding="8,2"
-                        VerticalAlignment="Center"
-                        Command="{Binding ClearCatalogueFirmwareCommand}"  >
-                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
-                    </Button>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal"  Spacing="10">
-                    <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release"  ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="250"/>
-                    <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
-                    <ComboBox ItemsSource="{Binding FrameTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
-                    <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
-                    <Button  ToolTip.Tip="Clear Filters" 
-                             Command="{Binding ClearCommand}"
-                             Padding="8,2"
-                             VerticalAlignment="Center" >
-                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
-                    </Button>
-                </StackPanel>
-                <controls:VirtualizedItemsGrid
-                    IsVisible="{Binding IsVehicleConnected,Converter={StaticResource InvertedBoolConverter}}"
-                    Height="400"
-                    ItemsSource="{Binding FilteredFirmwareChoices}"
-                    ColumnWidths="250,100,*,2*,100,*"
-                    ColumnSpacing="6"
-                    RowMinHeight="48"
-                    ShowHeader="True"
-                    ShowSearchBar="True"
-                    SearchWatermark="Search firmware..."
-                    SearchMemberPaths="VehicleType,FirmwareVersion.Value,FirmwareVersion.SemanticVersion,Platform,Manufacturer,BoardId,MatchReason"
-                    ShowPagination="False"
-                    SelectionMode="Single"
-                    SelectionColumnWidth="30"
-                    SelectedItem="{Binding SelectedFirmware, Mode=OneWayToSource}">
 
-                    <controls:VirtualizedItemsGrid.EmptyView>
-                        <TextBlock Text="No firmware releases match the current filters."
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Margin="20"
-                                   Opacity="0.7" />
-                    </controls:VirtualizedItemsGrid.EmptyView>
+        <subViews:DetectedDeviceView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                     IsVisible="{Binding IsDetectedDeviceVisible,
+                                     RelativeSource={RelativeSource AncestorType=local:FirmwareCatalogueView}}"
+                                     DataContext="{Binding Devices}" />
 
-                    <controls:VirtualizedItemsGrid.HeaderTemplate>
-                        <DataTemplate>
-                            <controls:VirtualizedItemsGridRow>
-                                <TextBlock Grid.Column="0" Text="Version information" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="1" Text="Vehicle type" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="2" Text="Platform" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="3" Text="Manufacturer" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="4" Text="Board ID" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="5" Text="Match reason" Classes="DataGridColumn" />
-                            </controls:VirtualizedItemsGridRow>
-                        </DataTemplate>
-                    </controls:VirtualizedItemsGrid.HeaderTemplate>
-
-                    <controls:VirtualizedItemsGrid.RowTemplate>
-                        <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                            <controls:VirtualizedItemsGridRow>
-                                <StackPanel Grid.Column="0" Orientation="Vertical" Classes="DataGridRow" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding FirmwareVersion.Value, StringFormat='Version: {0}'}" />
-                                    <TextBlock Text="{Binding FirmwareVersion.SemanticVersion, StringFormat='Semantic version: {0}'}" />
-                                </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{Binding VehicleType}" Classes="DataGridRow" />
-                                <TextBlock Grid.Column="2" HorizontalAlignment="Center" Text="{Binding Platform}" Classes="DataGridRow" />
-                                <TextBlock Grid.Column="3" HorizontalAlignment="Center" Text="{Binding Manufacturer}" Classes="DataGridRow" />
-                                <TextBlock Grid.Column="4" HorizontalAlignment="Center" Text="{Binding BoardId}" Classes="DataGridRow" />
-                                <TextBlock Grid.Column="5" HorizontalAlignment="Center" Text="{Binding MatchReason}" Classes="DataGridRow" />
-                            </controls:VirtualizedItemsGridRow>
-                        </DataTemplate>
-                    </controls:VirtualizedItemsGrid.RowTemplate>
-                </controls:VirtualizedItemsGrid>
-            </StackPanel>
-        </Border>
-        <subViews:SelectedFirmwareView Grid.Row="2" Grid.Column="0" DataContext="{Binding Selected}"  
+        <subViews:FirmwareCatalogueSelectorView  Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"  />
+        <subViews:SelectedFirmwareView Grid.Row="2" Grid.Column="0" DataContext="{Binding Selected}"
                                        IsEnabled="{Binding HasSelectedFirmware}" />
         <subViews:ValidatedPackageView Grid.Row="2" Grid.Column="1" DataContext="{Binding Validated}" />
-        <subViews:DetectedDeviceView Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" DataContext="{Binding Devices}" ></subViews:DetectedDeviceView>
+
+        <subViews:DetectedDeviceView Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                                     IsVisible="{Binding IsDetectedDeviceVisible,
+                                     RelativeSource={RelativeSource AncestorType=local:FirmwareCatalogueView}}"
+                                     DataContext="{Binding Devices}" />
 
     </Grid>
 </view:UserControlViewBase>

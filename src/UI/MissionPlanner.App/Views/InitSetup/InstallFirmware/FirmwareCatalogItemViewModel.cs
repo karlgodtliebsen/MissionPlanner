@@ -9,8 +9,6 @@ public sealed partial class FirmwareCatalogItemViewModel : ObservableObject
 {
     private readonly FirmwareTargetRecommendation recommendation;
 
-    [ObservableProperty] public partial bool IsSelected { get; set; }
-
     /// <summary>
     /// One data-driven firmware choice displayed by the install page.
     /// </summary>
@@ -26,7 +24,10 @@ public sealed partial class FirmwareCatalogItemViewModel : ObservableObject
     public FirmwareVersion FirmwareVersion => Entry.Version;
 
     /// <summary>Gets the normalized release.</summary>
-    public FirmwareManifestEntry Entry { get; }
+    public FirmwareManifestEntry Entry
+    {
+        get;
+    }
 
     /// <summary>Gets the target match explanation.</summary>
     public string MatchReason => recommendation.Reason switch

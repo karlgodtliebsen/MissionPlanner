@@ -8,6 +8,7 @@ using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.EventHub.Abstractions;
+
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 /// <summary>
@@ -19,12 +20,12 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
     /// Initializes the catalogue panel.
     /// </summary>
     public FirmwareCatalogViewModel(
-        SubViews.DetectedDeviceViewModel devices,
-        SubViews.ValidatedPackageViewModel validated,
-        SubViews.SelectedFirmwareViewModel selected,
+        DetectedDeviceViewModel devices,
+        ValidatedPackageViewModel validated,
+        SelectedFirmwareViewModel selected,
         IFirmwareCatalogService catalogService,
-        MissionPlanner.Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
-        MissionPlanner.App.Utilities.Dialogs.IDialogService dialogService,
+        Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
+        Utilities.Dialogs.IDialogService dialogService,
         FirmwareDialogCoordinator firmwareDialogs,
         ILogger<FirmwareCatalogViewModel> logger,
         IUiDispatcher dispatcher,
@@ -38,22 +39,23 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         this.dialogService = dialogService;
         this.firmwareDialogs = firmwareDialogs;
     }
+
     /// <summary>
     /// Gets the shared devices panel.
     /// </summary>
-    public SubViews.DetectedDeviceViewModel Devices
+    public DetectedDeviceViewModel Devices
     {
         get;
     }
     /// <summary>
     /// Gets the shared validated panel.
     /// </summary>
-    public SubViews.ValidatedPackageViewModel Validated
+    public ValidatedPackageViewModel Validated
     {
         get;
     }
     /// <summary>Gets the selected release details.</summary>
-    public SubViews.SelectedFirmwareViewModel Selected
+    public SelectedFirmwareViewModel Selected
     {
         get;
     }
@@ -133,7 +135,10 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         set;
     }
 
-    /// <summary>Gets release channels.</summary>
+
+    /// <summary>
+    /// Gets release channels.
+    /// </summary>
     public IReadOnlyList<FirmwareReleaseChannel> Channels { get; } = [FirmwareReleaseChannel.Stable, FirmwareReleaseChannel.Beta, FirmwareReleaseChannel.Latest];
 
     [ObservableProperty]

@@ -400,6 +400,9 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         private set => SetAndRaise(ResolvedColumnsWidthProperty, ref _resolvedColumnsWidth, value);
     }
 
+    /// <summary>
+    /// Read-only collection of currently selected items. The collection is updated
+    /// </summary>
     public ReadOnlyObservableCollection<object> SelectedItems => _readonlySelectedItems;
 
     public static readonly DirectProperty<VirtualizedItemsGrid, object?> SelectedItemProperty =

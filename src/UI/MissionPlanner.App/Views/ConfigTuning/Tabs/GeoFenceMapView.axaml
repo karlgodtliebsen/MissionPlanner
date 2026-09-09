@@ -75,11 +75,7 @@
                     IsVisible="{Binding HasPointerAltitudeStatus}"
                     Text="{Binding PointerAltitudeStatusText}"
                     VerticalAlignment="Center" />
-                <!--                <TextBlock Text="•" VerticalAlignment="Center" IsVisible="{Binding HasStatusMessage}"/>
-                <TextBlock
-                IsVisible="{Binding HasStatusMessage}"
-                Text="{Binding StatusMessage}"
-                VerticalAlignment="Center" />-->
+
             </StackPanel>
         </Border>
 

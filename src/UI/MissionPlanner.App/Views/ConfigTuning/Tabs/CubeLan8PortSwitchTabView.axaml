@@ -16,8 +16,6 @@
         <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12" HorizontalAlignment="Center">
             <StackPanel Orientation="Vertical" Spacing="10">
                 
-<!--                <TextBlock Text="{Binding VehicleHeading}" FontWeight="Bold" />
--->
                 <TextBlock Text="Discovery uses only the repository-documented MAVLink DEVICE_OP I²C path at address 0x50. The editor exposes COS, COS priority, EEE, VLAN tagging, and the 8×8 VLAN membership matrix. PoE, port enablement, VLAN IDs, modes, authentication, and editable labels are not exposed because no verified protocol definition exists for them." />
             </StackPanel>
 
@@ -25,11 +23,6 @@
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                     <ProgressBar IsIndeterminate="True"  Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" />
                     <StackPanel Orientation="Vertical" Grid.Column="1" Spacing="10">
-                        
-<!--                        <TextBlock Text="{Binding Status}" FontWeight="Bold" />
--->
-<!--                        <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
--->                        
                         <TextBlock Text="{Binding ErrorMessage}"  
                                    IsVisible="{Binding HasError}" 
                                    Classes="Danger"/>

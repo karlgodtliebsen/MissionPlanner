@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>MissionPlanner.App</RootNamespace>
         <TargetFramework>net10.0</TargetFramework>
@@ -319,6 +319,9 @@
 	<ItemGroup>
 	  <Compile Update="Views\InitSetup\InstallFirmware\InstallFirmwarePage.axaml.cs">
 	    <DependentUpon>InstallFirmwarePage.axaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\InitSetup\InstallFirmware\SubViews\FirmwareCatalogueSelectorView.axaml.cs">
+	    <DependentUpon>FirmwareCatalogueSelectorView.axaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
 

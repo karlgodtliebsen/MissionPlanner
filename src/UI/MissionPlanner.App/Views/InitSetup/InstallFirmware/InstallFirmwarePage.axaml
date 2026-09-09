@@ -67,7 +67,7 @@
                         <ScrollViewer BorderThickness="2" CornerRadius="6" Padding="10"
                                       HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:FirmwareCatalogueView DataContext="{Binding Catalogue}" />
+                            <local:FirmwareCatalogueView DataContext="{Binding Catalogue}" IsDetectedDeviceVisible="True" />
                         </ScrollViewer>
                     </TabItem>
                     <TabItem Header="Custom Firmware" IsEnabled="{Binding CanUseSerialFirmware}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
