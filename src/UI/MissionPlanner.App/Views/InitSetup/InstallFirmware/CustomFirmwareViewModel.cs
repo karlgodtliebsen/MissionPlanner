@@ -219,7 +219,7 @@ public sealed partial class CustomFirmwareViewModel : ViewModelBase
     }
     /// <summary>Gets whether the selected device uses the separate DFU path.</summary>
     [ObservableProperty]
-    public partial bool HasDfuBootLoader
+    public partial bool HasDetectedDfuDevice
     {
         get; set;
     }

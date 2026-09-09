@@ -83,7 +83,7 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
     /// <summary>
     /// Gets whether an STM32 DFU device is selected.
     /// </summary>
-    public bool HasDfuBootLoader => SelectedDfuDevice is not null;
+    public bool HasDetectedDfuDevice => SelectedDfuDevice is not null;
 
     private CancellationTokenSource? viewLifetime;
 
@@ -115,7 +115,7 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
         base.Dispose();
     }
 
-    [RelayCommand(CanExecute = nameof(HasDfuBootLoader))]
+    [RelayCommand(CanExecute = nameof(HasDetectedDfuDevice))]
     private async Task LoadCustomBlWithFirmwareAsync(CancellationToken cancellationToken)
     {
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, viewLifetime?.Token ?? CancellationToken.None);
@@ -212,7 +212,7 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
 
     partial void OnSelectedDfuDeviceChanged(DfuDeviceItemViewModel? value)
     {
-        OnPropertyChanged(nameof(HasDfuBootLoader));
+        OnPropertyChanged(nameof(HasDetectedDfuDevice));
         LoadCustomBlWithFirmwareCommand.NotifyCanExecuteChanged();
         SelectionChanged?.Invoke(value);
     }

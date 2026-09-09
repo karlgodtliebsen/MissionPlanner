@@ -230,7 +230,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         lifetime = new CancellationTokenSource();
         SubscribePanels();
         Custom.HasDevice = Devices.HasDevice;
-        Custom.HasDfuBootLoader = Dfu.HasDfuBootLoader;
+        Custom.HasDetectedDfuDevice = Dfu.HasDetectedDfuDevice;
         activeVehicle.Changed += OnActiveVehicleChanged;
         //SetBusy();
         SetMessages("Ready");
@@ -920,8 +920,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     private void OnDfuSelection(DfuDeviceItemViewModel? value)
     {
-        Custom.HasDfuBootLoader = value is not null;
-        OnPropertyChanged(nameof(HasDfuBootLoader));
+        Custom.HasDetectedDfuDevice = value is not null;
+        OnPropertyChanged(nameof(HasDetectedDfuDevice));
         UpdatePanelCapabilities();
     }
     private void OnDfuFirmware(string? value)
@@ -955,7 +955,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         InstallDfuFirmwareCommand.NotifyCanExecuteChanged();
     }
     /// <summary>Gets whether the DFU tab has a selected device.</summary>
-    public bool HasDfuBootLoader => Dfu.HasDfuBootLoader;
+    public bool HasDetectedDfuDevice => Dfu.HasDetectedDfuDevice;
 
     private bool discoveryInitialized;
 

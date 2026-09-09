@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
@@ -185,7 +185,7 @@ public sealed class FirmwarePanelLoadingTests
             .Returns(new DfuToolStatus(DfuToolAvailability.Available));
         var panel = services.GetRequiredService<STM32BootloaderViewModel>();
         await panel.ActivateAsync();
-        Assert.True(panel.HasDfuBootLoader);
+        Assert.True(panel.HasDetectedDfuDevice);
         Assert.Contains("ready", panel.DfuStatus);
         await services.GetRequiredService<IFirmwareCatalogService>().DidNotReceiveWithAnyArgs().GetCatalogAsync(default!, TestContext.Current.CancellationToken);
         await panel.DeactivateAsync();
