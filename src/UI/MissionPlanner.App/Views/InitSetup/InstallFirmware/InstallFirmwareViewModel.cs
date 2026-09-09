@@ -55,6 +55,17 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     public SubViews.SelectedFirmwareViewModel Selected => Catalogue.Selected;
 
     private readonly IFirmwareInstallationService installationService;
+    /// <summary>Gets or sets the selected STM32 workflow: device, catalogue, or custom HEX.</summary>
+    [ObservableProperty]
+    public partial int SelectedDfuTabIndex { get; set; }
+
+    partial void OnSelectedDfuTabIndexChanged(int value)
+    {
+        Dfu.PreparedArtifact = null;
+        UpdatePanelCapabilities();
+    }
+
+    private bool UsesLocalDfuHex => SelectedDfuTabIndex == 2;
     private readonly IFirmwarePreparationService preparationService;
     private readonly FirmwareLandingViewModel landing;
     private readonly MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity;
@@ -417,7 +428,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private bool CanStartDfuInstall()
     {
         return
-            (!string.IsNullOrWhiteSpace(Dfu.LocalDfuFirmwarePath) ? !string.IsNullOrWhiteSpace(Dfu.LocalDfuPlatform) : Catalogue.SelectedFirmware is not null)
+            (UsesLocalDfuHex ? !string.IsNullOrWhiteSpace(Dfu.LocalDfuFirmwarePath) && !string.IsNullOrWhiteSpace(Dfu.LocalDfuPlatform) : Catalogue.SelectedFirmware is not null)
             &&
             OperatingSystem.IsWindows() && !activeVehicle.IsOnline
             && Dfu.ToolStatus?.Availability == DfuToolAvailability.Available
@@ -427,15 +438,15 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanStartDfuInstall), AllowConcurrentExecutions = false)]
     private async Task InstallDfuFirmwareAsync(CancellationToken cancellationToken)
     {
-        var hasLocalHex = !string.IsNullOrWhiteSpace(Dfu.LocalDfuFirmwarePath);
+        var hasLocalHex = UsesLocalDfuHex;
         if (!CanStartDfuInstall() || (!hasLocalHex && Catalogue.SelectedFirmware is null) || Dfu.SelectedDfuDevice is null ||
             Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
         {
             return;
         }
 
-        // An explicitly loaded local image must always take precedence over a catalogue
-        // row that may have been restored or automatically selected during refresh.
+        // The active source context determines the request; hidden local-file state must
+        // never override a catalogue entry (or vice versa).
         var selectedFirmware = hasLocalHex ? null : Catalogue.SelectedFirmware;
         var selectedDfuDevice = Dfu.SelectedDfuDevice;
         var platform = hasLocalHex ? Dfu.LocalDfuPlatform?.Trim() : selectedFirmware?.Platform;

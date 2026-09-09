@@ -74,7 +74,7 @@
                         </TabControl>
                     </TabItem>
                     <TabItem Header="STM32 DFU">
-                        <TabControl TabStripPlacement="Left" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                        <TabControl SelectedIndex="{Binding SelectedDfuTabIndex}" TabStripPlacement="Left" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                             <TabItem Header="Device / Enter DFU">
                                 <local:STM32DfuDeviceView />
                             </TabItem>
@@ -84,8 +84,9 @@
                                 </ScrollViewer>
                             </TabItem>
                             <TabItem Header="Custom HEX" IsEnabled="{Binding CanUseDfuFirmware}">
-                                <TextBlock Text="Use the combined HEX controls in the DFU Catalogue panel while this workflow is being separated."
-                                           TextWrapping="Wrap" Margin="25" />
+                                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                    <local:STM32DfuCustomHexView DataContext="{Binding Dfu}" />
+                                </ScrollViewer>
                             </TabItem>
                         </TabControl>
                     </TabItem>
@@ -123,6 +124,7 @@
 
     </ContentPage>
 </utilities:NavigationViewBase>
+
 
 
 

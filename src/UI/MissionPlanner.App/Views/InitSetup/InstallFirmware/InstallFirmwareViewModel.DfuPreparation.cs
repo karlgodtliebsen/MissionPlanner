@@ -11,7 +11,7 @@ public sealed partial class InstallFirmwareViewModel
         {
             return;
         }
-        var local = !string.IsNullOrWhiteSpace(Dfu.LocalDfuFirmwarePath);
+        var local = UsesLocalDfuHex;
         var entry = local ? null : Catalogue.SelectedFirmware!.Entry;
         var request = new DfuInstallationRequest(local ? Dfu.LocalDfuPlatform!.Trim() : entry!.Target.Platform,
             entry?.Target.BoardId, Dfu.SelectedDfuDevice!.Descriptor,

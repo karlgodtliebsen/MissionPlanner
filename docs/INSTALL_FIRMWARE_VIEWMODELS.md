@@ -114,3 +114,5 @@ Task 01: navigation now separates Firmware, STM32 DFU, and Help & Support. Neste
 Task 02: STM32DfuDeviceView replaces LandingView, reusing FirmwareLandingViewModel and existing discovery. It exposes runtime/board/MCU identity, a DFU endpoint selector, tool readiness and manual BOOT/RESET guidance. USB DFU identity does not imply an exact FC target.
 
 Task 03: DFU Catalogue reuses the single catalogue selector and selected-entry state, with its APJ action hidden. A separate artifact panel prepares/inspects combined HEX through IDfuArtifactResolver under the global operation lease. Tool and driver readiness gate installation. The resolver rejects a source directory that disagrees with the selected platform, including vehicle-variant mismatches.
+
+Task 04: Custom HEX now has a focused composition sharing the existing picker, HEX rules, DFU readiness and installation commands. The selected nested DFU tab chooses catalogue versus local source; retained files never silently override catalogue selection. The overloaded STM32BootloaderView was removed.
