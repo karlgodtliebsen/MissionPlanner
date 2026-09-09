@@ -67,6 +67,19 @@ public sealed class DfuArtifactResolverTests
         await action.Should().ThrowAsync<DfuArtifactResolutionException>().WithMessage("not found");
     }
 
+    [Theory]
+    [InlineData("arducopter-heli.apj")]
+    [InlineData("arduplane.apj")]
+    public async Task SourceVehicleVariantMismatchIsRejectedBeforeDownload(string fileName)
+    {
+        var downloader = new FakeDownloader();
+        var request = OfficialRequest(FirmwareVehicleType.Copter,
+            new Uri($"https://firmware.ardupilot.org/Copter/stable/CubeOrange/{fileName}"));
+        var action = () => CreateResolver(downloader).ResolveAsync(request, TestContext.Current.CancellationToken);
+        await action.Should().ThrowAsync<DfuArtifactResolutionException>().WithMessage("*variant*");
+        downloader.Source.Should().BeNull();
+    }
+
     [Fact]
     public async Task LocalCustomHexIsInspectedAndWarnsWithoutCombinedFilenameClaim()
     {

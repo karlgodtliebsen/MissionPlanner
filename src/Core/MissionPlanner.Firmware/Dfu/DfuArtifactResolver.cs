@@ -42,6 +42,13 @@ public sealed class DfuArtifactResolver(
             FirmwareVehicleType.Sub => "ardusub_with_bl.hex",
             _ => throw new DfuArtifactResolutionException("This vehicle family has no approved official DFU sibling naming rule.")
         };
+        var sourceStem = Path.GetFileNameWithoutExtension(Uri.UnescapeDataString(source.AbsolutePath));
+        var expectedStem = fileName[..^"_with_bl.hex".Length];
+        if (!string.Equals(sourceStem, expectedStem, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(sourceStem, "firmware", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new DfuArtifactResolutionException("The manifest source filename does not match the selected vehicle variant's approved combined HEX naming rule.");
+        }
         var sibling = new Uri(source, fileName);
         if (!SameDirectory(source, sibling)) throw new DfuArtifactResolutionException("The official sibling URI escaped its platform/version directory.");
         return await downloader.DownloadAsync(sibling, entry.Target.Platform, entry.Target.BoardId, cancellationToken).ConfigureAwait(false);

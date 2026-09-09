@@ -473,8 +473,24 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
         var requiredPhrase = $"FLASH {platform}";
         var options = dialogService.CreateOptions("Confirm initial ArduPilot installation", "Continue", null);
-        var message = $"This replaces Betaflight and installs ArduPilot plus its bootloader for {platform}{(boardId is int id ? $"(board ID {id})" : string.Empty)}. Type exactly: {requiredPhrase}";
-        var phrase = await dialogService.PromptAsync(options, message, string.Empty, cancellationToken);
+        var message = $"This replaces the current firmware and installs ArduPilot plus its bootloader for {platform}{(boardId is int id ? $" (board ID {id})" : string.Empty)}. Type exactly: {requiredPhrase}";
+        string? phrase;
+        try
+        {
+            phrase = await dialogService.PromptAsync(options, message, string.Empty, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            Interlocked.Exchange(ref operationRunning, 0);
+            SetMessages("Initial DFU installation cancelled.");
+            return;
+        }
+        catch (Exception exception)
+        {
+            Interlocked.Exchange(ref operationRunning, 0);
+            SetMessages(exception);
+            return;
+        }
         if (!string.Equals(phrase?.Trim(), requiredPhrase, StringComparison.Ordinal))
         {
             SetMessages(phrase is null ? "Initial DFU installation cancelled." : $"Confirmation did not match {requiredPhrase}.");
@@ -494,7 +510,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             }));
             var result = await dfuInstallationService.InstallAsync(
                 new DfuInstallationRequest(platform, boardId, selectedDfuDevice.Descriptor, ConfirmationPhrase: requiredPhrase,
-                    ManifestEntry: selectedFirmware?.Entry, LocalHexPath: localHexPath), progress, ownedCancellation.Token);
+                    ManifestEntry: selectedFirmware?.Entry, LocalHexPath: localHexPath,
+                    PreviousApplicationDevice: Dfu.HasCorrelatedSource ? Dfu.CorrelatedHandoff?.Source : null), progress, ownedCancellation.Token);
 
             await Dfu.RefreshAfterInstallationAsync(CancellationToken.None);
 
@@ -970,6 +987,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     private void OnDfuSelection(DfuDeviceItemViewModel? value)
     {
+        if (Dfu.CorrelatedHandoff is not null && !Dfu.HasCorrelatedSource)
+        {
+            Catalogue.SetReviewedDfuTarget(null);
+        }
         Custom.HasDetectedDfuDevice = value is not null;
         OnPropertyChanged(nameof(HasDetectedDfuDevice));
         UpdatePanelCapabilities();

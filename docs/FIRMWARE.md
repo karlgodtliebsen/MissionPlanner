@@ -64,9 +64,9 @@ Manifest entries are parsed independently. Invalid URLs, board IDs, USB identifi
 
 Catalogue refresh is latest-request-wins. Selecting a new release channel cancels the preceding request and invalidates late responses; only the current response applies a single collection snapshot on the UI dispatcher. The page exposes catalogue-refresh activity and retains an explicitly selected target while that exact board/channel/artifact remains available.
 
-Supported image formats in this workflow are `.apj` and `.px4`. Intel HEX, `_with_bl.hex`, DFU, legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters, and mobile USB-host flashing are not implemented. `.hex` requires a future DFU/legacy workflow.
+Normal Firmware supports `.apj` and `.px4` through the ArduPilot serial bootloader. The separate STM32 DFU context supports combined `*_with_bl.hex` through STM32CubeProgrammer. Legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters and mobile USB-host flashing are not implemented.
 
-The separate DFU architecture now has platform-neutral contracts under `MissionPlanner.Firmware.Dfu` for STM32 USB device evidence, tool/provider capabilities, bounded Intel HEX inspection, artifacts and address ranges, controlled process execution, progress, and typed results. DFU remains distinct from serial ports and serial bootloader clients, while sharing the global firmware-operation lease so destructive workflows cannot overlap. Provider, parser, Windows discovery, and orchestration implementations follow in later tasks.
+The separate DFU architecture now has platform-neutral contracts under `MissionPlanner.Firmware.Dfu` for STM32 USB device evidence, tool/provider capabilities, bounded Intel HEX inspection, artifacts and address ranges, controlled process execution, progress, and typed results. DFU remains distinct from serial ports and serial bootloader clients, while sharing the global firmware-operation lease so destructive workflows cannot overlap. The current Windows discovery, parser, provider and orchestration implementations are described below.
 
 ## Serial ownership, protocol, and recovery
 
@@ -74,7 +74,7 @@ Only one firmware operation may own serial resources. Discovery snapshots device
 
 When a disconnected application-mode port is available, the host can create an isolated, one-shot MAVLink parser over that exclusively opened serial stream, wait for a bounded heartbeat, send reboot-to-bootloader, interpret an ACK when one arrives, and dispose the stream before discovery starts. It never starts or reuses the normal Mission Planner vehicle session.
 
-Detected application devices remain typed through the UI and installation request. The page auto-selects only one uniquely recommended USB/board-hint match; ambiguous candidates require explicit selection and show the recommendation reason. The selected descriptor is supplied both to bootloader entry and discovery, enabling temporary MAVLink reboot while retaining identity across a COM-port change.
+Detected application devices remain typed through the UI and installation request. The page prefers one uniquely recommended USB/board-hint match, otherwise selects the first available port; the operator must verify that selection. Anonymous DFU never uses this serial recommendation to infer a target. The selected descriptor is supplied both to bootloader entry and discovery, enabling temporary MAVLink reboot while retaining identity across a COM-port change.
 
 The protocol client implements bounded synchronization, identify, erase, chunked program, checksum verification, and reboot operations. Board identity and writable size are known before erase. Verification is mandatory; a checksum mismatch can never report success.
 
@@ -147,3 +147,23 @@ Protocol behavior, manifest/APJ conventions, command semantics, and workflow exp
 ## Existing mandatory-hardware firmware section
 
 The separate mandatory-hardware Setup section continues to display firmware identity from `HEARTBEAT` and `AUTOPILOT_VERSION` and uses the older `FirmwareManifestSelector`, `FirmwarePackageManager`, and `FirmwareUpdateCoordinator` abstractions. Its configured manifest entries require technical family/board/vendor/product matching and HTTPS/SHA-256 validation; labels are never binary-selection keys. `UnsupportedFirmwareFlashingService` remains its default adapter. That workflow and the modern direct bootloader page must not share or retain live serial/MAVLink ownership across a reboot transition.
+
+## Installation contexts (InstallFirmware-take2)
+
+The page separates Firmware / Catalogue and Custom Firmware (APJ/PX4, ArduPilot serial bootloader)
+from STM32 DFU / Device, Catalogue and Custom HEX (combined application-and-bootloader Intel HEX).
+Help & Support and the persistent status/Refresh controls remain available. See
+[ViewModel ownership and navigation](INSTALL_FIRMWARE_VIEWMODELS.md).
+
+Normal update: ArduPilot/application or serial bootloader -> Firmware -> Catalogue/Custom -> APJ.
+Betaflight conversion: COM/MSP -> STM32 DFU / Device -> proven physical ROM DFU handoff ->
+Catalogue -> reviewed `*_with_bl.hex`. Already in ROM DFU: Device confirms endpoint ->
+Catalogue/Custom HEX -> `*_with_bl.hex`. Every install is explicit and retains existing safety
+confirmation, provider verification and power-critical cancellation rules.
+
+STM32 ROM DFU normally has no COM port. USB 0483:DF11 alone cannot prove the flight-controller
+PCB. Handoff preserves observed source identity and navigates to catalogue without choosing
+an unverified target or automatically flashing. No Betaflight firmware installation is included.
+The DFU preview uses the existing resolver/inspector and global operation lease. It displays
+HEX evidence separately from the selected manifest/APJ identity. Inconsistent platform/source
+variant directories are rejected before download.

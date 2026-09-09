@@ -27,6 +27,13 @@ public sealed partial class InstallFirmwareViewModel
                 await ShowOperationDialogAsync("Preparing combined HEX", owned);
                 var artifact = await dfuArtifactResolver.ResolveAsync(request, owned.Token);
                 owned.Token.ThrowIfCancellationRequested();
+                if (UsesLocalDfuHex != local || (local
+                    ? Dfu.LocalDfuFirmwarePath != request.LocalHexPath || Dfu.LocalDfuPlatform?.Trim() != request.SelectedPlatform
+                    : !ReferenceEquals(Catalogue.SelectedFirmware?.Entry, entry)))
+                {
+                    Dfu.StatusMessage = "Selection changed; prepare the newly selected combined HEX before reviewing it.";
+                    return;
+                }
                 Dfu.PreparedArtifact = artifact;
                 Dfu.StatusMessage = "Combined HEX inspected. Review its source and the exact controller target before installation.";
                 Dfu.ErrorMessage = null;

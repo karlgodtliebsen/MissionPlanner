@@ -5,7 +5,7 @@
     <Border Padding="20" Classes="SectionCard">
         <StackPanel Spacing="12">
             <TextBlock Text="Combined application + bootloader HEX" Classes="H3" />
-            <TextBlock Text="The selected catalogue release resolves to a sibling *_with_bl.hex. APJ validation is separate. HEX inspection does not prove the exact flight-controller target." Classes="Warning" TextWrapping="Wrap" />
+            <TextBlock Text="Catalogue resolves a sibling *_with_bl.hex; Custom HEX uses the selected local file. APJ validation is separate. HEX inspection does not prove the exact flight-controller target." Classes="Warning" TextWrapping="Wrap" />
             <ComboBox ItemsSource="{Binding DfuDevices}" SelectedItem="{Binding SelectedDfuDevice}" MinWidth="250" HorizontalAlignment="Left" />
             <TextBlock Text="{Binding DfuStatus}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding ToolReadiness}" TextWrapping="Wrap" />

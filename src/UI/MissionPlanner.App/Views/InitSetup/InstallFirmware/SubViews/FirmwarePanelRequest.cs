@@ -12,8 +12,7 @@ public enum FirmwarePanelAction
     /// <summary>Install a combined HEX through DFU.</summary>
     InstallDfu,
     /// <summary>Reboot the selected Betaflight controller into ROM DFU.</summary>
-    RebootToDfu
-    ,
+    RebootToDfu,
     /// <summary>Resolve and inspect the selected combined HEX without programming.</summary>
     PrepareDfu
 }

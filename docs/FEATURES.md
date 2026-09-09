@@ -1031,3 +1031,5 @@ WinForms-only features were added. “Implemented” means the service and comma
 The initial MSP protocol foundation is implemented in the firmware library. Identity, DFU handoff,
 conversion UI and physical acceptance are tracked in [Betaflight conversion](BETAFLIGHT_DFU_AND_ARDUPILOT_CONVERSION.md).
 Betaflight firmware downloading/flashing is deferred.
+
+Install Firmware now separates serial APJ/PX4 updates from STM32 DFU combined-HEX workflows. Device entry, shared catalogue and custom HEX have focused views; correlated Betaflight reboot opens DFU Catalogue without automatic flashing. See [workflow ownership](INSTALL_FIRMWARE_VIEWMODELS.md).

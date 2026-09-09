@@ -75,7 +75,7 @@ through BOXIDS and STATUS, and rejects armed or unknown status before sending se
 The transport is disposed before transition polling. An ACK is only reboot initiation; otherwise
 a definitely completed write plus observed removal is required. Failed writes, MSP rejection,
 stale identity, and a serial device that remains present are not success. Task 05 must still
-correlate a DFU endpoint before any programming. No physical reboot has been performed yet.
+correlate a DFU endpoint before any programming. Physical hardware acceptance remains separately recorded; automated coverage alone does not establish it.
 
 ## Discovery integration
 
@@ -100,3 +100,21 @@ advanced clock cover request timeout/cancellation/disconnect. No physical device
 
 Physical acceptance remains pending. No board mappings, conversion success, or Pavo 20
 compatibility have been established by this work.
+
+## InstallFirmware-take2 presentation
+
+The three contexts are Firmware, STM32 DFU and Help & Support. STM32 DFU has Device / Enter DFU,
+Catalogue and Custom HEX subviews. They reuse existing protocol, catalogue, device, resolver and
+programming services; no second scanner or flashing stack was added.
+
+A successful physically correlated reboot retains the receipt and selected DFU generation and
+opens DFU Catalogue without starting a flash. Failed/ambiguous handoffs remain on Device with an
+actionable error. An already-present 0483:DF11 device can be selected without a COM port, but is
+not assigned an exact FC target from its USB/MCU identity. Reviewed exact mappings are used only
+when registered; otherwise selection is manual. No general Pavo/BETAFPV mapping was introduced.
+
+DFU Catalogue presents the manifest entry as release identity and the resolved `*_with_bl.hex`
+as the programming artifact. Custom HEX retains filename/local-path policy and requires an exact
+platform. The selected source context prevents hidden local state from overriding catalogue
+installation. Betaflight firmware installation remains deferred. The older task table tracks the
+broader conversion/hardware effort; this UI restructure does not complete its pending acceptance.

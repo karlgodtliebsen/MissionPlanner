@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -111,9 +111,9 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
         : devices.IsRefreshing || dfu.IsRefreshing
             ? "Discovery is running. Available firmware workflows will update when the scan finishes."
         : dfu.DfuDevices.Count > 0
-            ? "Open STM32 Bootloader. A DFU device was detected, so Catalogue and Custom Firmware are disabled. Check the driver and programmer status in that tab before continuing."
+            ? "Review the selected DFU endpoint and tool readiness, then open STM32 DFU / Catalogue or Custom HEX."
         : devices.Descriptors.Count > 0
-            ? "Choose firmware from Catalogue, or open Custom Firmware to use a local file. Select the correct controller port. STM32 Bootloader is disabled because no DFU device was detected."
+            ? "For an ArduPilot update use Firmware / Catalogue or Custom Firmware. For Betaflight conversion, select its port here and request Reboot to DFU."
         : "Attach a controller by USB, then select Refresh devices above. To use STM32 Bootloader, put the board into DFU mode first. Firmware tabs remain disabled until a device is detected.";
 
     /// <inheritdoc />
