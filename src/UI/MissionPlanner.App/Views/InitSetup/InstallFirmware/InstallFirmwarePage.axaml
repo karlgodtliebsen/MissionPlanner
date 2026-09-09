@@ -58,6 +58,7 @@
                 </Border>
 
                 <TabControl Grid.Row="3" x:Name="MainTabControl"
+                            SelectedIndex="{Binding SelectedSectionIndex}"
                             HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                     <TabItem Header="Firmware">
                         <TabControl TabStripPlacement="Left" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">

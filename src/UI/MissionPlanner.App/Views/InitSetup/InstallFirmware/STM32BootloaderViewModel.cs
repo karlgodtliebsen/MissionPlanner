@@ -42,6 +42,15 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
     [ObservableProperty]
     public partial MissionPlanner.Firmware.Dfu.DfuArtifact? PreparedArtifact { get; set; }
 
+    /// <summary>Retains observed source evidence separately from anonymous DFU identity.</summary>
+    [ObservableProperty]
+    public partial MissionPlanner.Firmware.Betaflight.BetaflightDfuHandoffResult? CorrelatedHandoff { get; set; }
+
+    /// <summary>Gets whether the selected endpoint is still the observed handoff generation.</summary>
+    public bool HasCorrelatedSource => CorrelatedHandoff is { Succeeded: true, Device: { } device }
+        && SelectedDfuDevice?.Descriptor.ProviderId == device.ProviderId
+        && SelectedDfuDevice.Descriptor.ArrivedAt == device.ArrivedAt;
+
     /// <summary>Requests combined HEX preparation through the page operation owner.</summary>
     [RelayCommand(CanExecute = nameof(CanInstallDfu))]
     private Task PrepareDfuAsync(CancellationToken cancellationToken) =>

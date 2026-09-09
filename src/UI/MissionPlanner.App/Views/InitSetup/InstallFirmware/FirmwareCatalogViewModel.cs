@@ -65,6 +65,17 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
     private bool showingAllOptions;
     private bool isClearing;
     private bool isRebuildingChoices;
+    /// <summary>Prevents anonymous DFU identity from driving serial USB catalogue recommendations.</summary>
+    public bool IsDfuContext { get; set; }
+    private MissionPlanner.Firmware.Betaflight.BetaflightArduPilotMapping? reviewedDfuTarget;
+
+    /// <summary>Accepts only an exact reviewed compatibility result for DFU preselection.</summary>
+    public void SetReviewedDfuTarget(MissionPlanner.Firmware.Betaflight.BetaflightArduPilotMapping? mapping)
+    {
+        reviewedDfuTarget = mapping;
+        ClearSelection();
+        ApplyTargetQuery();
+    }
 
     ///
     /// <summary>Gets catalogue choices.
@@ -264,7 +275,7 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         var previousEntry = selectedFirmwareTarget;
         var recommendations =
             FirmwareTargetSelector.Query(availableEntries, new FirmwareTargetQuery(ReleaseChannel: showingAllOptions ? null : SelectedChannel),
-                availableDevices, SelectedFirmware?.BoardId);
+                IsDfuContext ? [] : availableDevices, SelectedFirmware?.BoardId);
 
         var choices = recommendations.Select(recommendation => new FirmwareCatalogItemViewModel(recommendation))
             .ToArray();
@@ -307,7 +318,13 @@ public sealed partial class FirmwareCatalogViewModel : ViewModelBase
         Debug.Print($"InstallFirmware ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
 
         var retained = previousEntry is null ? null : FirmwareChoices.FirstOrDefault(item => SameEntry(item.Entry, previousEntry));
-        var automatic = FirmwareTargetSelector.UnambiguousHighConfidence(recommendations);
+        if (IsDfuContext && reviewedDfuTarget is { } reviewed)
+        {
+            var exact = FirmwareChoices.Where(item => item.Platform == reviewed.ArduPilotPlatform
+                && item.BoardId == reviewed.ArduPilotBoardId).Take(2).ToArray();
+            retained = exact.Length == 1 ? exact[0] : null;
+        }
+        var automatic = IsDfuContext ? null : FirmwareTargetSelector.UnambiguousHighConfidence(recommendations);
         SelectedFirmware = retained ?? (automatic is null ? null : FirmwareChoices.Single(item => ReferenceEquals(item.Entry, automatic.Entry)));
     }
 

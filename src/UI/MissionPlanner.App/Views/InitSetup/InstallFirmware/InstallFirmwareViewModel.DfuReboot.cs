@@ -14,8 +14,12 @@ public sealed partial class InstallFirmwareViewModel
         }
 
         using var owned = BeginOperationCancellation(cancellationToken);
+        var navigateToCatalogue = false;
         try
         {
+            SelectedSectionIndex = (int)FirmwareSection.Stm32Dfu;
+            SelectedDfuTabIndex = (int)Stm32DfuSection.Device;
+            Dfu.CorrelatedHandoff = null;
             landing.ErrorMessage = null;
             SetOperation(true, FirmwareOperationState.RequestingBootloaderReboot);
             await ShowOperationDialogAsync("Identifying selected controller", owned);
@@ -64,6 +68,12 @@ public sealed partial class InstallFirmwareViewModel
             Dfu.SelectedDfuDevice = Dfu.DfuDevices.SingleOrDefault(item =>
                 item.Descriptor.ProviderId == result.Device?.ProviderId
                 && item.Descriptor.ArrivedAt == result.Device.ArrivedAt);
+            if (Dfu.SelectedDfuDevice is not null)
+            {
+                Dfu.CorrelatedHandoff = result;
+                Catalogue.SetReviewedDfuTarget(betaflightCompatibility.Resolve(source.BetaflightIdentity!));
+                navigateToCatalogue = true;
+            }
             Dfu.DfuStatus = Dfu.SelectedDfuDevice is null
                 ? "The controller entered DFU but is no longer detected. Refresh devices before continuing."
                 : "The selected controller entered DFU. Open STM32 Bootloader to continue.";
@@ -90,6 +100,11 @@ public sealed partial class InstallFirmwareViewModel
             CloseOperationDialog();
             EndOperationCancellation(owned);
             SetOperation(false, null);
+            if (navigateToCatalogue)
+            {
+                SelectedSectionIndex = (int)FirmwareSection.Stm32Dfu;
+                SelectedDfuTabIndex = (int)Stm32DfuSection.Catalogue;
+            }
         }
     }
 

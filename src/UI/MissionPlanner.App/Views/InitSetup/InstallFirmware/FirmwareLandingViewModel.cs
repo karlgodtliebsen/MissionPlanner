@@ -25,13 +25,16 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
     public STM32BootloaderViewModel Dfu => dfu;
 
     /// <summary>Gets protocol-reported identity without inferring an ArduPilot target.</summary>
-    public string SourceIdentitySummary => devices.SelectedDevice?.Descriptor.BetaflightIdentity is { } identity
+    public string SourceIdentitySummary => (dfu.HasCorrelatedSource ? dfu.CorrelatedHandoff?.Source.BetaflightIdentity
+        : devices.SelectedDevice?.Descriptor.BetaflightIdentity) is { } identity
         ? $"Firmware: {identity.FirmwareVariant} {identity.FirmwareVersion}\nBoard: {identity.Board?.BoardName ?? "Unknown"}\nTarget: {identity.Board?.TargetName ?? "Unknown"}\nManufacturer: {identity.Board?.ManufacturerId ?? "Unknown"}\nMCU: {identity.McuType ?? "Unknown"}\nUID: {identity.McuUniqueId ?? "Unavailable"}"
         : "Runtime firmware identity is unknown. A serial port name does not identify the controller firmware or exact board.";
 
     /// <summary>Explains the limits of anonymous ROM USB identity.</summary>
     public string DfuIdentitySummary => dfu.SelectedDfuDevice is { } selected
-        ? $"USB {selected.Descriptor.VendorId:X4}:{selected.Descriptor.ProductId:X4}\nUSB serial: {selected.Descriptor.SerialNumber ?? "Unknown"}\nPhysical device: {selected.Descriptor.PnpInstanceId ?? selected.Descriptor.DevicePath ?? selected.Descriptor.ProviderId}\nSTM32 ROM DFU alone does not prove the exact flight-controller target."
+        ? $"USB {selected.Descriptor.VendorId:X4}:{selected.Descriptor.ProductId:X4}\nUSB serial: {selected.Descriptor.SerialNumber ?? "Unknown"}\nPhysical device: {selected.Descriptor.PnpInstanceId ?? selected.Descriptor.DevicePath ?? selected.Descriptor.ProviderId}\n"
+            + (dfu.HasCorrelatedSource ? "Physical handoff: matched. Source identity is preserved; review the exact ArduPilot target before installation."
+                : "No preceding controller identity is available. The exact flight-controller target cannot be inferred from STM32 DFU alone.")
         : "Hold BOOT/DFU while reconnecting USB; some boards require BOOT + RESET. STM32 ROM DFU is a USB endpoint, normally not a COM port. Refresh after changing mode.";
 
     /// <summary>Requests a page-owned boot-mode operation.</summary>

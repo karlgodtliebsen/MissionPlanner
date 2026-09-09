@@ -94,12 +94,19 @@ public sealed class FirmwarePanelLoadingTests
         {
             Assert.Same(dfuDevice, parent.Dfu.SelectedDfuDevice?.Descriptor);
             Assert.True(parent.CanUseDfuFirmware);
+            Assert.Equal((int)FirmwareSection.Stm32Dfu, parent.SelectedSectionIndex);
+            Assert.Equal((int)Stm32DfuSection.Catalogue, parent.SelectedDfuTabIndex);
+            Assert.Same(source, parent.Dfu.CorrelatedHandoff?.Source);
+            Assert.True(parent.Dfu.HasCorrelatedSource);
         }
         else if (confirm)
         {
             Assert.Contains("test-not-found", parent.Dfu.DfuStatus);
+            Assert.Equal((int)Stm32DfuSection.Device, parent.SelectedDfuTabIndex);
         }
         vehicle.IsOnline.Returns(true);
+        await services.GetRequiredService<IDfuInstallationService>().DidNotReceiveWithAnyArgs()
+            .InstallAsync(default!, default, TestContext.Current.CancellationToken);
         Assert.False(landing.RebootToDfuCommand.CanExecute(null));
         await landing.DeactivateAsync();
         await parent.DeactivateAsync();

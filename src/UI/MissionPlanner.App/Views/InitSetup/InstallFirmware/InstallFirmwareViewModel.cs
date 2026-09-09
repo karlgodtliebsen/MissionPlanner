@@ -55,6 +55,14 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     public SubViews.SelectedFirmwareViewModel Selected => Catalogue.Selected;
 
     private readonly IFirmwareInstallationService installationService;
+    /// <summary>Gets or sets the selected top-level installation context.</summary>
+    [ObservableProperty]
+    public partial int SelectedSectionIndex { get; set; }
+
+    partial void OnSelectedSectionIndexChanged(int value)
+    {
+        Catalogue.IsDfuContext = value == (int)FirmwareSection.Stm32Dfu;
+    }
     /// <summary>Gets or sets the selected STM32 workflow: device, catalogue, or custom HEX.</summary>
     [ObservableProperty]
     public partial int SelectedDfuTabIndex { get; set; }
@@ -65,9 +73,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         UpdatePanelCapabilities();
     }
 
-    private bool UsesLocalDfuHex => SelectedDfuTabIndex == 2;
+    private bool UsesLocalDfuHex => SelectedDfuTabIndex == (int)Stm32DfuSection.Custom;
     private readonly IFirmwarePreparationService preparationService;
     private readonly FirmwareLandingViewModel landing;
+    private readonly MissionPlanner.Firmware.Betaflight.IBetaflightArduPilotCompatibilityProvider betaflightCompatibility;
     private readonly MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity;
     private readonly MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff dfuHandoff;
     private readonly IDfuInstallationService dfuInstallationService;
@@ -106,6 +115,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="firmwareDialogs">Sequences operator confirmations and firmware progress windows.</param>
     /// <param name="catalogue">Owns catalogue choices and filters.</param>
     /// <param name="landing">Owns device status and boot-mode entry requests.</param>
+    /// <param name="betaflightCompatibility">Provides reviewed exact-board mappings, when available.</param>
     /// <param name="deviceIdentity">Verifies the selected serial device before requesting DFU.</param>
     /// <param name="dfuHandoff">Reboots and correlates the selected physical controller.</param>
     /// <param name="custom">Owns custom application packages.</param>
@@ -128,6 +138,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         FirmwareDialogCoordinator firmwareDialogs,
         FirmwareCatalogViewModel catalogue,
         FirmwareLandingViewModel landing,
+        MissionPlanner.Firmware.Betaflight.IBetaflightArduPilotCompatibilityProvider betaflightCompatibility,
         MissionPlanner.Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity,
         MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff dfuHandoff,
         CustomFirmwareViewModel custom,
@@ -151,6 +162,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         this.firmwareDialogs = firmwareDialogs;
         Catalogue = catalogue;
         this.landing = landing;
+        this.betaflightCompatibility = betaflightCompatibility;
         this.deviceIdentity = deviceIdentity;
         this.dfuHandoff = dfuHandoff;
         Custom = custom;
