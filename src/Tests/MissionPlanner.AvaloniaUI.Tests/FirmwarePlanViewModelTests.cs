@@ -161,6 +161,14 @@ public sealed class FirmwarePlanViewModelTests
         Assert.Null(page.CurrentPlan.Context.Bootloader);
         Assert.NotEqual(FirmwareIdentityConfidence.Verified, page.CurrentPlan.Context.IdentityConfidence);
         Assert.False(page.CurrentPlan.CanExecute);
+        Assert.Contains("Operating mode: Application", page.PhysicalControllerSummary);
+        Assert.Contains("MavLinkProbe", page.PhysicalControllerSummary);
+        PrepareOnline(page);
+        Assert.True(page.CurrentPlan.CanExecute);
+        Assert.True(page.InstallCommand.CanExecute(null));
+        Assert.True(page.ExecuteCurrentPlanCommand.CanExecute(null));
+        Assert.False(page.SelectedArtifact.TargetCompatible);
+        Assert.Null(page.CurrentPlan.Context.Bootloader);
         await page.DeactivateAsync();
     }
 

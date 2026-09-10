@@ -11,6 +11,7 @@ using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Firmware.Betaflight;
+using MissionPlanner.Firmware.Workflow;
 
 namespace MissionPlanner.Core.Firmware;
 
@@ -26,6 +27,55 @@ public sealed class TemporaryMavLinkBootloaderGateway(
     IOptions<FirmwareOptions> options,
     ILogger<TemporaryMavLinkBootloaderGateway> logger) : ITemporaryMavLinkBootloaderGateway, IArduPilotRuntimeVerifier
 {
+
+    /// <inheritdoc />
+    public async Task<FirmwareRuntimeProbeResult> ProbeAsync(SerialDeviceDescriptor device, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        frameParser.Reset();
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(options.Value.BootloaderPortOpenTimeout + options.Value.TemporaryMavLinkHeartbeatTimeout);
+        try
+        {
+            await using var port = await serialPortFactory.OpenAsync(new SerialPortOpenOptions(device.PortName,
+                options.Value.BootloaderBaudRate), deadline.Token).ConfigureAwait(false);
+            var heartbeat = await ReadMessageAsync<HeartbeatMessage>(port.Stream,
+                new TransportEndPoint("firmware-runtime-probe", device.PortName), options.Value.TemporaryMavLinkHeartbeatTimeout,
+                deadline.Token, message => message.ComponentId == 1, propagateTransportError: true).ConfigureAwait(false);
+            if (heartbeat is null)
+            {
+                return Failed(FirmwareRuntimeProbeOutcome.Timeout, "runtime.mavlink-timeout");
+            }
+            if (heartbeat.Autopilot != 3)
+            {
+                return Failed(FirmwareRuntimeProbeOutcome.OtherAutopilot, "runtime.other-autopilot");
+            }
+            return new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "runtime.ardupilot", (heartbeat.BaseMode & 128) != 0)
+            {
+                Evidence = FirmwareRuntimeEvidence.MavLinkProbe,
+                Verification = FirmwareRuntimeVerification.Verified,
+                Outcome = FirmwareRuntimeProbeOutcome.Success
+            };
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return Failed(FirmwareRuntimeProbeOutcome.Timeout, "runtime.mavlink-timeout");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Failed(FirmwareRuntimeProbeOutcome.PortBusy, "runtime.port-busy");
+        }
+        catch (Exception exception) when (exception is IOException or TimeoutException)
+        {
+            return Failed(FirmwareRuntimeProbeOutcome.TransportError, "runtime.transport-error");
+        }
+
+        static FirmwareRuntimeProbeResult Failed(FirmwareRuntimeProbeOutcome outcome, string code)
+        {
+            return new(FirmwareRuntimeKind.Unknown, FirmwareBootEnvironment.None, code) { Outcome = outcome };
+        }
+    }
+
     /// <inheritdoc />
     public async Task<ArduPilotRuntimeIdentity?> VerifyAsync(SerialDeviceDescriptor device, CancellationToken cancellationToken = default)
     {
@@ -105,7 +155,8 @@ public sealed class TemporaryMavLinkBootloaderGateway(
         return true;
     }
 
-    private async Task<TMessage?> ReadMessageAsync<TMessage>(Stream stream, TransportEndPoint endpoint, TimeSpan timeout, CancellationToken cancellationToken, Func<TMessage, bool>? predicate = null)
+    private async Task<TMessage?> ReadMessageAsync<TMessage>(Stream stream, TransportEndPoint endpoint, TimeSpan timeout, CancellationToken cancellationToken,
+        Func<TMessage, bool>? predicate = null, bool propagateTransportError = false)
         where TMessage : MavLinkMessage
     {
         using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -142,7 +193,7 @@ public sealed class TemporaryMavLinkBootloaderGateway(
         {
             return null;
         }
-        catch (IOException exception)
+        catch (IOException exception) when (!propagateTransportError)
         {
             logger.LogDebug(exception, "Temporary MAVLink serial stream closed during bootloader transition.");
             return null;

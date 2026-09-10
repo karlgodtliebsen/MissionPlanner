@@ -575,7 +575,7 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
 
 ### Missing (v1.38 feature inventory)
 
-* **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup
+* **Install Firmware**: runtime identification and serial APJ/DFU installation are implemented. Discovery reuses a matching vehicle session, then probes MAVLink before MSP with a per-device deadline. Verified ArduPilot applications can start automatic bootloader handoff from Install; authoritative bootloader/APJ compatibility remains mandatory before erase/write. Passive COM10 runtime identification was verified on 2026-09-11. See [runtime correction report](tasks/ArduPilot-Runtime/06-correction-report.md). The guided first-time setup wizard remains missing.
 * **Optional Hardware**: Battery Monitor (analog/smart), CompassMot, Range Finder/Sonar, Airspeed sensor, Optical Flow / PX4Flow, OSD, Camera Gimbal (Mount), Motor Test, Bluetooth, SiK Radio configuration, Antenna Tracker, Parachute, ADSB, DroneCAN/UAVCAN, Serial port mapping, GPS ordering, ESP8266, CubeID, Joystick
 
 Note: accelerometer/level, compass, and radio calibration plus flight-mode assignment are

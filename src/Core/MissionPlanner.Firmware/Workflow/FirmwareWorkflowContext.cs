@@ -73,6 +73,8 @@ public sealed record FirmwareWorkflowContext
     public string? Endpoint { get; init; }
     /// <summary>Gets the protocol-observed runtime.</summary>
     public FirmwareRuntimeKind Runtime { get; init; }
+    /// <summary>Gets the strength of application runtime evidence independently of board identity.</summary>
+    public FirmwareRuntimeVerification RuntimeVerification { get; init; }
     /// <summary>Gets the observed boot environment.</summary>
     public FirmwareBootEnvironment BootEnvironment { get; init; }
     /// <summary>Gets the strength of board identity evidence.</summary>

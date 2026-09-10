@@ -81,7 +81,8 @@ public sealed partial class InstallFirmwareViewModel
             }
             var device = DevicesModel.SelectedDevice?.Descriptor;
             return device is null ? "No physical controller selected. Firmware preparation is available."
-                : $"{device.PortName} — USB {device.UsbIdentifier}\nRuntime: {CurrentPlan.Context.Runtime}\nBoot environment: {CurrentPlan.Context.BootEnvironment}\n"
+                : $"{device.PortName} — USB {device.UsbIdentifier}\nRuntime: {CurrentPlan.Context.Runtime}\nOperating mode: {device.RuntimeProbe?.OperatingMode ?? "Unknown"}\n"
+                    + $"Runtime evidence: {device.RuntimeProbe?.Evidence} — {device.RuntimeProbe?.Verification} ({device.RuntimeProbe?.Code})\n"
                     + $"Identity: {CurrentPlan.Context.IdentityConfidence} — {CurrentPlan.Context.IdentityEvidence}\n"
                     + (device.BetaflightIdentity is { } identity ? $"Betaflight target: {identity.Board?.TargetName}, version: {identity.FirmwareVersion}" : string.Empty);
         }
@@ -143,6 +144,7 @@ public sealed partial class InstallFirmwareViewModel
             PhysicalTarget = dfu is not null ? FirmwarePhysicalTarget.Stm32Dfu : serial is not null ? FirmwarePhysicalTarget.Serial : FirmwarePhysicalTarget.None,
             Endpoint = dfu?.ProviderId ?? serial?.PortName,
             Runtime = dfu is null ? runtime : FirmwareRuntimeKind.None,
+            RuntimeVerification = dfu is null ? serial?.RuntimeProbe?.Verification ?? FirmwareRuntimeVerification.None : FirmwareRuntimeVerification.None,
             BootEnvironment = boot,
             Bootloader = dfu is null ? serial?.BootloaderIdentity : null,
             IdentityConfidence = (dfu is null && serial?.BootloaderIdentity is not null) || reviewed is not null

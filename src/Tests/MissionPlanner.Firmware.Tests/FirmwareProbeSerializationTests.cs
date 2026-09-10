@@ -30,8 +30,8 @@ public sealed class FirmwareProbeSerializationTests
 
         // At no point did more than one probe touch the endpoint.
         Assert.Equal(1, monitor.MaxConcurrent);
-        // The MSP probe fully completed before the MAVLink probe started.
-        Assert.Equal(new[] { "msp-start", "msp-end", "mav-start", "mav-end" }, monitor.Events);
+        // MAVLink releases the endpoint before the MSP fallback starts.
+        Assert.Equal(new[] { "mav-start", "mav-end", "msp-start", "msp-end" }, monitor.Events);
     }
 
     private sealed class ConcurrencyMonitor
@@ -68,7 +68,7 @@ public sealed class FirmwareProbeSerializationTests
             monitor.Enter("msp");
             await Task.Yield();
             monitor.Exit("msp");
-            // Not Betaflight, so the sequential MAVLink runtime probe runs next.
+            // Neither protocol identifies this endpoint.
             return new BetaflightProbeResult(BetaflightProbeOutcome.NotMsp);
         }
     }

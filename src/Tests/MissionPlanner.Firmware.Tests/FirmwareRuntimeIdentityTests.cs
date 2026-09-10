@@ -19,6 +19,7 @@ public sealed class FirmwareRuntimeIdentityTests
         {
             PhysicalTarget = FirmwarePhysicalTarget.Serial,
             Runtime = FirmwareRuntimeKind.ArduPilot,
+            RuntimeVerification = FirmwareRuntimeVerification.Verified,
             BootEnvironment = FirmwareBootEnvironment.None,
             IdentityConfidence = FirmwareIdentityConfidence.Hint,
             Bootloader = null
@@ -30,10 +31,9 @@ public sealed class FirmwareRuntimeIdentityTests
         Assert.Equal(FirmwareRuntimeKind.ArduPilot, plan.Context.Runtime);
         Assert.Null(plan.Context.Bootloader);
         Assert.NotEqual(FirmwareIdentityConfidence.Verified, plan.Context.IdentityConfidence);
-        // ArduPilot runtime alone must not authorize flashing without a proven board:
-        // the workflow requires ArduPilot bootloader entry before an exact board exists.
+        // A validated package is still required before starting automatic bootloader entry.
         Assert.False(plan.CanExecute);
-        Assert.Equal("target.boot-entry-required", plan.Capabilities.BlockCode);
+        Assert.Equal("artifact.not-validated", plan.Capabilities.BlockCode);
     }
 
     [Fact]

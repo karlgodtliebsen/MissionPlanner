@@ -12,11 +12,58 @@ using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
+using MissionPlanner.Firmware.Workflow;
 
 namespace MissionPlanner.Core.Tests;
 
 public sealed class TemporaryMavLinkBootloaderGatewayTests
 {
+    [Theory]
+    [InlineData(3, FirmwareRuntimeProbeOutcome.Success)]
+    [InlineData(12, FirmwareRuntimeProbeOutcome.OtherAutopilot)]
+    public async Task DiscoveryProbeReportsAutopilotEvidenceWithoutWrites(byte autopilot, FirmwareRuntimeProbeOutcome outcome)
+    {
+        var stream = new ScriptedStream([1]);
+        var factory = new FakePortFactory(stream);
+        var gateway = new TemporaryMavLinkBootloaderGateway(factory, new MarkerParser(), new MarkerDecoder(MavResult.Accepted, autopilot: autopilot),
+            new FakeEncoder(), Options.Create(new FirmwareOptions()), NullLogger<TemporaryMavLinkBootloaderGateway>.Instance);
+        var result = await gateway.ProbeAsync(new("COM10"), TestContext.Current.CancellationToken);
+        Assert.Equal(outcome, result.Outcome);
+        Assert.Equal(0, stream.Written.Length);
+        Assert.True(factory.PortDisposed);
+    }
+
+    [Fact]
+    public async Task DiscoveryCancellationReleasesNonCancellableNativeRead()
+    {
+        var factory = new FakePortFactory(new ScriptedStream());
+        var gateway = new TemporaryMavLinkBootloaderGateway(factory, new MarkerParser(), new MarkerDecoder(MavResult.Accepted),
+            new FakeEncoder(), Options.Create(new FirmwareOptions()), NullLogger<TemporaryMavLinkBootloaderGateway>.Instance);
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => gateway.ProbeAsync(new("COM10"), cancellation.Token));
+        Assert.True(factory.PortDisposed);
+    }
+
+    [Theory]
+    [InlineData(true, FirmwareRuntimeProbeOutcome.PortBusy)]
+    [InlineData(false, FirmwareRuntimeProbeOutcome.TransportError)]
+    public async Task DiscoveryPreservesOpenFailureOutcome(bool busy, FirmwareRuntimeProbeOutcome outcome)
+    {
+        var gateway = new TemporaryMavLinkBootloaderGateway(new FailingPortFactory(busy), new MarkerParser(), new MarkerDecoder(MavResult.Accepted),
+            new FakeEncoder(), Options.Create(new FirmwareOptions()), NullLogger<TemporaryMavLinkBootloaderGateway>.Instance);
+        var result = await gateway.ProbeAsync(new("COM10"), TestContext.Current.CancellationToken);
+        Assert.Equal(outcome, result.Outcome);
+        Assert.Equal(FirmwareRuntimeKind.Unknown, result.Runtime);
+    }
+
+    private sealed class FailingPortFactory(bool busy) : IFirmwareSerialPortFactory
+    {
+        public Task<IFirmwareSerialPort> OpenAsync(SerialPortOpenOptions options, CancellationToken cancellationToken = default)
+        {
+            throw busy ? new UnauthorizedAccessException() : new IOException();
+        }
+    }
+
     [Fact]
     public async Task ArmedHeartbeatPreventsRebootAndReleasesThePort()
     {

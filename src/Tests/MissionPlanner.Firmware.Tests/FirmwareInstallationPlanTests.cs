@@ -5,6 +5,29 @@ namespace MissionPlanner.Firmware.Tests;
 
 public sealed class FirmwareInstallationPlanTests
 {
+    [Fact]
+    public void ArduPilotApplicationCanStartHandoffWithoutClaimingCompatibility()
+    {
+        var context = new FirmwareWorkflowContext
+        {
+            PhysicalTarget = FirmwarePhysicalTarget.Serial,
+            Runtime = FirmwareRuntimeKind.ArduPilot,
+            RuntimeVerification = FirmwareRuntimeVerification.Verified,
+            ArtifactFormat = FirmwareArtifactFormat.Apj,
+            ArtifactValid = true
+        };
+        var plan = FirmwareInstallationPlanResolver.Resolve(context);
+        Assert.True(plan.CanExecute);
+        Assert.False(plan.Context.TargetCompatible);
+        Assert.Null(plan.Context.Bootloader);
+        Assert.Equal(FirmwareBootEntryRequirement.ArduPilotRebootOrManualReconnect, plan.BootEntry);
+        Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { TargetPortOwned = true }).CanExecute);
+        Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { TargetArmed = true }).CanExecute);
+        Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { Runtime = FirmwareRuntimeKind.Unknown }).CanExecute);
+        Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { RuntimeVerification = FirmwareRuntimeVerification.None }).CanExecute);
+        Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { ArtifactFormat = FirmwareArtifactFormat.WithBootloaderHex }).CanExecute);
+    }
+
     [Theory]
     [InlineData(FirmwareArtifactFormat.Apj, true)]
     [InlineData(FirmwareArtifactFormat.WithBootloaderHex, false)]

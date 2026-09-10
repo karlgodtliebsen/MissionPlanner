@@ -10,7 +10,7 @@ namespace MissionPlanner.Firmware.Tests;
 public sealed class BetaflightDiscoveryTests
 {
     [Fact]
-    public async Task DiscoveryDeadlineRetainsCompletedEvidenceAndUnknownRemainingDevices()
+    public async Task DeviceDeadlineRetainsCompletedEvidenceAndContinuesRemainingDevices()
     {
         if (!OperatingSystem.IsWindows())
         {
@@ -24,8 +24,8 @@ public sealed class BetaflightDiscoveryTests
             cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(result[0].BetaflightIdentity);
         Assert.Null(result[1].BetaflightIdentity);
-        Assert.Null(result[2].BetaflightIdentity);
-        Assert.Equal(2, probe.Calls);
+        Assert.NotNull(result[2].BetaflightIdentity);
+        Assert.Equal(3, probe.Calls);
     }
 
     private sealed class DeadlineProbe(ManualTimeProvider clock) : IBetaflightDeviceProbe
@@ -37,7 +37,7 @@ public sealed class BetaflightDiscoveryTests
             Calls++;
             if (Calls == 2)
             {
-                clock.Advance(TimeSpan.FromSeconds(9));
+                clock.Advance(TimeSpan.FromSeconds(13));
                 cancellationToken.ThrowIfCancellationRequested();
             }
             return Task.FromResult(new BetaflightProbeResult(BetaflightProbeOutcome.Success,
