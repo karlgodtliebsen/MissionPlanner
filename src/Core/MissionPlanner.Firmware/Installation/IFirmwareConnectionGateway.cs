@@ -1,4 +1,6 @@
-﻿namespace MissionPlanner.Firmware.Installation;
+﻿using MissionPlanner.Firmware.Workflow;
+
+namespace MissionPlanner.Firmware.Installation;
 
 /// <summary>Reports normal Mission Planner connection ownership.</summary>
 public interface IFirmwareConnectionGateway
@@ -11,6 +13,14 @@ public interface IFirmwareConnectionGateway
 
     /// <summary>Gets the serial port owned by the normal connection, including connection establishment.</summary>
     string? ActiveSerialPort => null;
+
+    /// <summary>
+    /// Reports the application runtime already proven by an active Mission Planner vehicle session
+    /// that owns the given serial port, so identity can be reused without reopening or stealing the
+    /// port. Returns <see langword="null"/> when no session owns that exact port or its autopilot
+    /// identity does not prove a supported runtime.
+    /// </summary>
+    FirmwareRuntimeKind? IdentifyOwnedSerialRuntime(string? portName) => null;
 
     /// <summary>Requests a future host-controlled disconnect; first-release installation does not call it automatically.</summary>
     Task RequestDisconnectAsync(CancellationToken cancellationToken = default);

@@ -40,6 +40,27 @@ public sealed class FirmwareInstallationServiceTests
     }
 
     [Fact]
+    public async Task AuthoritativeBootloaderBoardIdentityGovernsCompatibilityNotUsbHints()
+    {
+        // The bootloader authoritatively reports board 50 (matches the package). The application
+        // device carries USB metadata and a friendly name that would suggest a different board.
+        var fixture = new Fixture(bootloader: new BootloaderIdentity(50, 4, 16));
+        var misleadingDevice = new SerialDeviceDescriptor("COM10", productName: "ArduPilot",
+            usbIdentifier: new(4617, 9999), boardHints: ["some-other-board-9"]);
+        var request = fixture.Request with
+        {
+            EntryContext = new BootloaderEntryContext(new BootloaderDiscoveryRequest(misleadingDevice), misleadingDevice)
+        };
+
+        var result = await fixture.Service.InstallAsync(request, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.State.Should().Be(FirmwareOperationState.Completed);
+        // Confirmation and compatibility used the authoritative bootloader board ID, never the USB hint.
+        fixture.Interaction.LastConfirmation!.DetectedBoardId.Should().Be(50);
+        fixture.Client.Calls.Should().Equal("erase", "program", "verify", "reboot", "dispose");
+    }
+
+    [Fact]
     public async Task CompatibilityFailureCannotReachConfirmationOrErase()
     {
         var fixture = new Fixture(bootloader: new BootloaderIdentity(9, 4, 16));

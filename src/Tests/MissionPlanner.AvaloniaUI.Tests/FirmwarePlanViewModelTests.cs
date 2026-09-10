@@ -137,6 +137,55 @@ public sealed class FirmwarePlanViewModelTests
     }
 
     [Fact]
+    public async Task MavLinkProvenArduPilotIsApplicationRuntimeWithUnresolvedExactBoard()
+    {
+        using var services = Services(ConnectionTransportKind.Udp);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        // A controller such as "ArduPilot (COM10)" proven by an isolated MAVLink probe.
+        page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM10", productName: "ArduPilot",
+            usbIdentifier: new(4617, 22337))
+        {
+            RuntimeProbe = new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "runtime.ardupilot")
+            {
+                Evidence = FirmwareRuntimeEvidence.MavLinkProbe,
+                Verification = FirmwareRuntimeVerification.Verified
+            }
+        }, false, "USB hint");
+
+        // Runtime is no longer Unknown, and it is represented as an application (no bootloader active).
+        Assert.Equal(FirmwareRuntimeKind.ArduPilot, page.CurrentPlan.Context.Runtime);
+        Assert.Equal(FirmwareBootEnvironment.None, page.CurrentPlan.Context.BootEnvironment);
+        Assert.Equal(FirmwareArtifactFormat.Apj, page.CurrentPlan.RequiredArtifactFormat);
+        // The exact board stays unresolved: runtime knowledge is never exact-board proof.
+        Assert.Null(page.CurrentPlan.Context.Bootloader);
+        Assert.NotEqual(FirmwareIdentityConfidence.Verified, page.CurrentPlan.Context.IdentityConfidence);
+        Assert.False(page.CurrentPlan.CanExecute);
+        await page.DeactivateAsync();
+    }
+
+    [Fact]
+    public async Task UsbArduPilotNameAloneDoesNotProduceVerifiedRuntimeOrExactBoard()
+    {
+        using var services = Services(ConnectionTransportKind.Udp);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        // USB product text says "ArduPilot", but no protocol identity was obtained.
+        page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM10", productName: "ArduPilot",
+            usbIdentifier: new(4617, 22337))
+        {
+            RuntimeProbe = new(FirmwareRuntimeKind.Unknown, FirmwareBootEnvironment.None, "runtime.not-probed")
+        }, false, "USB hint");
+
+        Assert.Equal(FirmwareRuntimeKind.Unknown, page.CurrentPlan.Context.Runtime);
+        Assert.Equal(FirmwareArtifactFormat.None, page.CurrentPlan.RequiredArtifactFormat);
+        Assert.NotEqual(FirmwareIdentityConfidence.Verified, page.CurrentPlan.Context.IdentityConfidence);
+        Assert.Null(page.CurrentPlan.Context.Bootloader);
+        Assert.False(page.CurrentPlan.CanExecute);
+        await page.DeactivateAsync();
+    }
+
+    [Fact]
     public async Task SameSerialPortBlocksButAnotherPortRemainsAvailable()
     {
         using var services = Services(ConnectionTransportKind.Serial);

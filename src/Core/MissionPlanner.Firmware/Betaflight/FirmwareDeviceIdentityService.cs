@@ -81,7 +81,21 @@ public sealed class FirmwareDeviceIdentityService(IBetaflightDeviceProbe probe, 
                     var device = result[index];
                     if (connection.OwnsSerialPort(device.PortName))
                     {
-                        result[index] = device with { BetaflightProbeOutcome = BetaflightProbeOutcome.PortBusy };
+                        // Step 1 — an existing Mission Planner vehicle session owns this exact port.
+                        // Reuse its authoritative autopilot identity instead of reopening or stealing
+                        // the port. A generic/other autopilot leaves the runtime unresolved.
+                        var owned = connection.IdentifyOwnedSerialRuntime(device.PortName);
+                        result[index] = owned == FirmwareRuntimeKind.ArduPilot
+                            ? device with
+                            {
+                                BetaflightProbeOutcome = BetaflightProbeOutcome.PortBusy,
+                                RuntimeProbe = new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "runtime.ardupilot.existing-session")
+                                {
+                                    Evidence = FirmwareRuntimeEvidence.ExistingVehicleSession,
+                                    Verification = FirmwareRuntimeVerification.Verified
+                                }
+                            }
+                            : device with { BetaflightProbeOutcome = BetaflightProbeOutcome.PortBusy };
                         continue;
                     }
                     var key = Key(device);
@@ -102,14 +116,24 @@ public sealed class FirmwareDeviceIdentityService(IBetaflightDeviceProbe probe, 
                     var enriched = device with { BetaflightProbeOutcome = observed.Outcome, BetaflightIdentity = observed.Identity };
                     if (observed.Outcome == BetaflightProbeOutcome.Success)
                     {
-                        enriched = enriched with { RuntimeProbe = new(FirmwareRuntimeKind.Betaflight, FirmwareBootEnvironment.None, "runtime.betaflight") };
+                        enriched = enriched with { RuntimeProbe = new(FirmwareRuntimeKind.Betaflight, FirmwareBootEnvironment.None, "runtime.betaflight")
+                        {
+                            Evidence = FirmwareRuntimeEvidence.MspProbe,
+                            Verification = FirmwareRuntimeVerification.Verified,
+                            ProtocolDetail = observed.Identity?.Board?.TargetName
+                        } };
                     }
                     else if (observed.Outcome is BetaflightProbeOutcome.NotMsp or BetaflightProbeOutcome.Timeout
                         && !connection.OwnsSerialPort(device.PortName))
                     {
                         if (runtimeVerifier is not null && await runtimeVerifier.VerifyAsync(device, linked.Token).ConfigureAwait(false) is { } runtime)
                         {
-                            enriched = enriched with { RuntimeProbe = new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "runtime.ardupilot", runtime.IsArmed) };
+                            enriched = enriched with { RuntimeProbe = new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "runtime.ardupilot", runtime.IsArmed)
+                            {
+                                Evidence = FirmwareRuntimeEvidence.MavLinkProbe,
+                                Verification = FirmwareRuntimeVerification.Verified,
+                                ProtocolDetail = runtime.Version?.ToString()
+                            } };
                         }
                         else if (bootloaderDiscovery is not null && !connection.OwnsSerialPort(device.PortName))
                         {
@@ -118,7 +142,11 @@ public sealed class FirmwareDeviceIdentityService(IBetaflightDeviceProbe probe, 
                                 await using var found = await bootloaderDiscovery.FindAsync(new(device, Timeout: TimeSpan.FromMilliseconds(600)),
                                     cancellationToken: linked.Token).ConfigureAwait(false);
                                 enriched = enriched with { BootloaderIdentity = found.Identity,
-                                    RuntimeProbe = new(FirmwareRuntimeKind.None, FirmwareBootEnvironment.ArduPilotBootloader, "runtime.ap-bootloader") };
+                                    RuntimeProbe = new(FirmwareRuntimeKind.None, FirmwareBootEnvironment.ArduPilotBootloader, "runtime.ap-bootloader")
+                                    {
+                                        Evidence = FirmwareRuntimeEvidence.ArduPilotBootloader,
+                                        Verification = FirmwareRuntimeVerification.Verified
+                                    } };
                             }
                             catch (FirmwareDeviceNotFoundException)
                             {

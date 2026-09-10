@@ -4,6 +4,7 @@
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:u="https://irihi.tech/ursa"
     x:TypeArguments="local:InstallFirmwareViewModel"
     x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
     x:DataType="local:InstallFirmwareViewModel">
@@ -15,61 +16,97 @@
             <TabItem Header="Firmware">
                 <Grid RowDefinitions="Auto,*" Margin="20" RowSpacing="12" HorizontalAlignment="Stretch">
                     <WrapPanel Grid.Row="0" ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
-                        <Button ToolTip.Tip="Refresh physical serial and DFU devices"
-                                Command="{Binding RefreshDevicesCommand}"
-                                IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
-                            <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
-                        </Button>
+                        <!--
+                        <u:ToolBar Header="Actions">
+                        <Button Content="Save" Classes="Small" />
+                        <u:ToolBarSeparator />
+                        <Button Content="Load" Classes="Small" />
+                        <Button Content="Delete" Classes="Small" />
+                        </u:ToolBar>
+                        -->
+                        <!--
+                        <u:IconSplitButton Icon="{StaticResource SemiIconCamera}" Content="IconSplitButton" />
+                        -->
 
-                        <Button ToolTip.Tip="Probe Runtime. Identify the selected controller using live protocols"
-                                Command="{Binding ProbeRuntimeCommand}" >
-                            <avalonia:MaterialIcon Kind="ProgressAuto" Width="30" Height="30" />
-                        </Button>
+                        <u:ToolBar Header="">
+                            <Button ToolTip.Tip="Refresh physical serial and DFU devices"
+                                    Command="{Binding RefreshDevicesCommand}"
+                                    IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
+                                <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
+                            </Button>
 
-                        <Button ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
-                                Command="{Binding EnterArduPilotBootloaderCommand}" >
+                            <Button ToolTip.Tip="Probe Runtime. Identify the selected controller using live protocols"
+                                    Command="{Binding ProbeRuntimeCommand}" >
+                                <avalonia:MaterialIcon Kind="ProgressAuto" Width="30" Height="30" />
+                            </Button>
+
+                            <!--Icon="{StaticResource Bootstrap}"-->
+                            <u:IconSplitButton  >
+                                <SplitButton.Flyout>
+                                    <MenuFlyout Placement="Bottom">
+                                        <MenuItem
+                                            ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
+                                            Command="{Binding EnterArduPilotBootloaderCommand}"
+                                            Header="ArduPilot Bootloader" />
+                                        <MenuItem ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
+                                                  Command="{Binding RebootToDfuCommand}"
+                                                  Header="STM32 DFU" />
+                                        <MenuItem ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
+                                                  Header="Manual BOOT / RESET"
+
+                                                  Command="{Binding EnterManualDfuCommand}"
+                                                  IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}"
+                                                  />
+                                    </MenuFlyout>
+                                </SplitButton.Flyout>
+                                <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
+                            </u:IconSplitButton>
+
+                            <!--
+                            <Button ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
+                            Command="{Binding EnterArduPilotBootloaderCommand}" >
                             <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
-                        </Button>
+                            </Button>
 
-                        <Button ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
-                                Command="{Binding RebootToDfuCommand}" >
+                            <Button ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
+                            Command="{Binding RebootToDfuCommand}" >
                             <avalonia:MaterialIcon Kind="Gymnastics" Width="30" Height="30" />
-                        </Button>
-
-                        <Button ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
-                                Command="{Binding EnterManualDfuCommand}"
-                                IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
+                            </Button>
+                            <Button ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
+                            Command="{Binding EnterManualDfuCommand}"
+                            IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
                             <avalonia:MaterialIcon Kind="Excavator" Width="30" Height="30" />
-                        </Button>
+                            </Button>-->
 
-                        <Button ToolTip.Tip="Online Firmware" Command="{Binding ShowOnlineFirmwareSelectorCommand}"
-                                IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}" >
-                            <avalonia:MaterialIcon Kind="OpenInBrowser" Width="30" Height="30" />
-                        </Button>
+                            <Button ToolTip.Tip="Online Firmware" Command="{Binding ShowOnlineFirmwareSelectorCommand}"
+                                    IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}" >
+                                <avalonia:MaterialIcon Kind="OpenInBrowser" Width="30" Height="30" />
+                            </Button>
 
-                        <Button ToolTip.Tip="Local Firmware" Command="{Binding ShowLocalFirmwareSelectorCommand}"
-                                IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}">
-                            <avalonia:MaterialIcon Kind="Folder" Width="30" Height="30" />
-                        </Button>
+                            <Button ToolTip.Tip="Local Firmware" Command="{Binding ShowLocalFirmwareSelectorCommand}"
+                                    IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}">
+                                <avalonia:MaterialIcon Kind="Folder" Width="30" Height="30" />
+                            </Button>
 
-                        <Button ToolTip.Tip="Clear Selected Firmware" Command="{Binding ClearFirmwareSelectionCommand}"
-                                IsEnabled="{Binding !IsOperationInProgress}" >
-                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
-                        </Button>
+                            <Button ToolTip.Tip="Clear Selected Firmware" Command="{Binding ClearFirmwareSelectionCommand}"
+                                    IsEnabled="{Binding !IsOperationInProgress}" >
+                                <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                            </Button>
 
-                        <Button ToolTip.Tip="Install / Reinstall"
-                                Command="{Binding ExecuteCurrentPlanCommand}"
-                                IsEnabled="{Binding CurrentPlan.CanExecute}" >
-                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
-                        </Button>
+                            <Button ToolTip.Tip="Install / Reinstall"
+                                    Command="{Binding ExecuteCurrentPlanCommand}"
+                                    IsEnabled="{Binding CurrentPlan.CanExecute}" >
+                                <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                            </Button>
 
-                        <Button ToolTip.Tip="Copy URL" Command="{Binding CopySelectedUrlCommand}"  >
-                            <avalonia:MaterialIcon Kind="Copyright" Width="30" Height="30" />
-                        </Button>
-                        <Button  ToolTip.Tip="Update Embedded Bootloader. Maintenance operation on a supported, disarmed connected ArduPilot vehicle"
-                                 Command="{Binding UpdateBootloaderCommand}" >
-                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
-                        </Button>
+                            <Button ToolTip.Tip="Copy URL" Command="{Binding CopySelectedUrlCommand}"  >
+                                <avalonia:MaterialIcon Kind="Copyright" Width="30" Height="30" />
+                            </Button>
+                            <Button  ToolTip.Tip="Update Embedded Bootloader. Maintenance operation on a supported, disarmed connected ArduPilot vehicle"
+                                     Command="{Binding UpdateBootloaderCommand}" >
+                                <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                            </Button>
+                        </u:ToolBar>
                     </WrapPanel>
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="12" HorizontalAlignment="Center">
