@@ -56,12 +56,14 @@
                                       >
                             <Grid ColumnDefinitions="Auto,*" HorizontalAlignment="Left"
                                   >
-                                <Border Grid.Column="0"  Margin="8,0,0 0"
+                                <!-- Keep the selection slot identical to the body. Extra
+                                horizontal margin feeds back into viewport-based star sizing. -->
+                                <Border Grid.Column="0"
                                         Width="{TemplateBinding SelectionColumnWidth}"
                                         IsVisible="{Binding IsSelectionEnabled, RelativeSource={RelativeSource TemplatedParent}}">
                                     <CheckBox x:Name="PART_SelectAllCheckBox"
                                               IsThreeState="True"
-                                              Margin="8,0,0 0"
+                                              Margin="0"
 
                                               HorizontalContentAlignment="Center"
                                               HorizontalAlignment="Stretch"

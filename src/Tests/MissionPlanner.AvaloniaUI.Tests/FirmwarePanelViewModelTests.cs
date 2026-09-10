@@ -28,7 +28,7 @@ public sealed class FirmwarePanelViewModelTests
         var parent = services.GetRequiredService<InstallFirmwareViewModel>();
         var devices = services.GetRequiredService<DetectedDeviceViewModel>();
         Assert.Same(devices, parent.OnlineFirmwareModel.DevicesModel);
-        Assert.Same(devices, parent.LocalFirmwareModel.Devices);
+        Assert.Same(devices, parent.LocalFirmwareModel.DevicesModel);
         Assert.Same(parent.SelectedFirmwareModel, parent.DfuModel.Selected);
         var notifications = 0;
         parent.InstallCommand.CanExecuteChanged += (_, _) => notifications++;

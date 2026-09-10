@@ -18,8 +18,8 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
         IFirmwareFilePicker filePicker,
         IFirmwarePackageReader packageReader,
 
-        DetectedDeviceViewModel devices,
-        ValidatedPackageViewModel validated,
+        DetectedDeviceViewModel devicesModel,
+        ValidatedPackageViewModel validatedModel,
 
         ILogger<CustomFirmwareViewModel> logger,
         IUiDispatcher dispatcher,
@@ -27,16 +27,16 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
     {
         this.filePicker = filePicker;
         this.packageReader = packageReader;
-        Devices = devices;
-        Validated = validated;
+        DevicesModel = devicesModel;
+        ValidatedModel = validatedModel;
     }
     /// <summary>Gets the shared devices panel.</summary>
-    public SubViews.DetectedDeviceViewModel Devices
+    public DetectedDeviceViewModel DevicesModel
     {
         get;
     }
     /// <summary>Gets the shared validated panel.</summary>
-    public SubViews.ValidatedPackageViewModel Validated
+    public ValidatedPackageViewModel ValidatedModel
     {
         get;
     }
@@ -177,6 +177,7 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
             CustomFirmwareBoardId = package.BoardId;
             CustomFirmwareImageSize = package.Image.Length;
             HasCustomFirmware = CustomPackage is not null;
+
             SetMessages("Local firmware parsed and validated. Verify its board ID, then install it using the custom firmware panel.");
             NotificationManager?.Show(StatusMessage ?? "");
 
@@ -195,7 +196,7 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
         }
     }
 
-    public void ClearCustomFirmware()
+    public void Reset()
     {
         HasCustomFirmware = false;
         CustomPackage = null;
@@ -206,11 +207,6 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
         CustomFirmwareBoardId = 0;
         CustomFirmwareImageSize = 0;
         RequireExactBoardIdMatch = true;
-    }
-
-    public void Reset()
-    {
-        ClearCustomFirmware();
     }
 
     /// <summary>Notifies the active parent about panel changes.</summary>

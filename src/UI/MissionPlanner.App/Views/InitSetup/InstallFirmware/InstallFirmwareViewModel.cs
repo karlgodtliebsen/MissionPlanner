@@ -235,6 +235,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     public async Task LoadLocalFirmwareAsync(CancellationToken cancellationToken)
     {
         await LocalFirmwareModel.LoadCustomFirmwareAsync(cancellationToken);
+        if (LocalFirmwareModel.HasCustomFirmware)
+        {
+            await LoadAndValidateAsync(cancellationToken);
+        }
     }
 
 
@@ -274,6 +278,11 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             OnlineFirmwareModel,
             options,
             cancellationToken: cancellationToken);
+
+        if (SelectedFirmwareModel.HasSelectedFirmware)
+        {
+            await DownloadAndValidateAsync(cancellationToken);
+        }
     }
 
     [RelayCommand]
@@ -713,25 +722,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         return CanUpdateBootloader && !IsOperationInProgress && !ArePanelsRefreshing;
     }
 
-    private async Task DispatchAsync(Action action)
-    {
-        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        await Dispatcher.DispatchAsync(() =>
-        {
-            try
-            {
-                action();
-                completion.SetResult();
-            }
-            catch (Exception exception)
-            {
-                completion.SetException(exception);
-            }
-        });
 
-    }
-
-    [RelayCommand]
     private async Task DownloadAndValidateAsync(CancellationToken cancellationToken)
     {
         ValidatedModel.IsFirmwareValidated = false;
@@ -768,6 +759,50 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             SetOperation(false, null);
         }
     }
+
+    private async Task LoadAndValidateAsync(CancellationToken cancellationToken)
+    {
+        ValidatedModel.IsFirmwareValidated = false;
+        if (!LocalFirmwareModel.HasCustomFirmware || IsOperationInProgress || ArePanelsRefreshing)
+        {
+            return;
+        }
+
+        using var ownedCancellation = BeginOperationCancellation(cancellationToken);
+        try
+        {
+            SetOperation(true, FirmwareOperationState.Downloading);
+            await ShowOperationDialogAsync("Downloading firmware", ownedCancellation);
+
+            //ValidatedModel.PreparedFirmware = await preparationService.PrepareAsync(
+            //    new FirmwarePreparationRequest(LocalFirmwareModel.CustomPackage), CreateProgress(), ownedCancellation.Token);
+
+            //SetMessages(ValidatedModel.PreparedFirmware.WasCacheHit ? "ValidatedPackageModel cached firmware package." : "Firmware downloaded and ValidatedModel.");
+
+
+            ValidatedModel.IsFirmwareValidated = true;
+            NotificationManager?.Show(StatusMessage ?? "");
+        }
+        catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
+        {
+            SetMessages("Firmware download and validation cancelled.", null);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "Firmware preparation failed.");
+            SetMessages(exception);
+            NotificationManager?.Show(ErrorMessage ?? "");
+            UpdateContextHelp(exception is Firmware.Exceptions.FirmwarePackageException);
+        }
+        finally
+        {
+            CloseOperationDialog();
+            EndOperationCancellation(ownedCancellation);
+            SetOperation(false, null);
+        }
+    }
+
+
 
     [RelayCommand(CanExecute = nameof(CanRequestCancellation))]
     private void Cancel()

@@ -411,7 +411,7 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
             selectedFirmwareTarget = value.Entry;
         }
         OnPropertyChanged(nameof(HasSelectedFirmware));
-        SelectedFirmwareModel.SelectedFirmwareModel = value;
+        SelectedFirmwareModel.Selected = value;
         if (!isRebuildingChoices)
         {
             InvalidatePreparedFirmwareIfSelectionChanged();
