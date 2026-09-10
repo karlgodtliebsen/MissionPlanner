@@ -33,13 +33,13 @@
 
                         <Button ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
                                 Command="{Binding RebootToDfuCommand}" >
-                            <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="Gymnastics" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
                                 Command="{Binding EnterManualDfuCommand}"
                                 IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
-                            <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="Excavator" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Online Firmware" Command="{Binding ShowOnlineFirmwareSelectorCommand}"
