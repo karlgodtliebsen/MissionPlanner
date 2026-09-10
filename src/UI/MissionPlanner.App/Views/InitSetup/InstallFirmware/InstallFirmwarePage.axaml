@@ -26,9 +26,11 @@
                         -->
                         <!--
                         <u:IconSplitButton Icon="{StaticResource SemiIconCamera}" Content="IconSplitButton" />
+                        
+                          <u:ToolBar Header="">                      
                         -->
 
-                        <u:ToolBar Header="">
+
                             <Button ToolTip.Tip="Refresh physical serial and DFU devices"
                                     Command="{Binding RefreshDevicesCommand}"
                                     IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
@@ -41,7 +43,7 @@
                             </Button>
 
                             <!--Icon="{StaticResource Bootstrap}"-->
-                            <Button  >
+<!--                            <Button  >
                                 <Button.Flyout>
                                     <MenuFlyout Placement="Bottom">
                                         <MenuItem
@@ -61,7 +63,7 @@
                                 </Button.Flyout>
                                 <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
                             </Button>
-
+-->
                             <u:IconSplitButton  >
                                 <SplitButton.Flyout>
                                     <MenuFlyout Placement="Bottom">
@@ -127,7 +129,7 @@
                                      Command="{Binding UpdateBootloaderCommand}" >
                                 <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
                             </Button>
-                        </u:ToolBar>
+                        <!--</u:ToolBar>-->
                     </WrapPanel>
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
                         <StackPanel Spacing="12" HorizontalAlignment="Center">
@@ -156,7 +158,7 @@
                             <Border Classes="SectionCard" Padding="16">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="Selected Firmware" Classes="H3" />
-                                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="6">
+                                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="6">
                                         <TextBlock Text="Source" />
                                         <SelectableTextBlock Grid.Column="1" Text="{Binding SelectedArtifact.Source}" />
                                         <TextBlock Grid.Row="1" Text="Format" />
@@ -175,10 +177,14 @@
                                         <SelectableTextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedArtifact.ImageSize}" />
                                         <TextBlock Grid.Row="5" Text="SHA-256" />
                                         <SelectableTextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedArtifact.Sha256}" TextWrapping="Wrap" />
+                                        
                                         <TextBlock Grid.Row="6" Text="Cache identity" />
                                         <SelectableTextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedArtifact.CacheIdentity}" TextWrapping="Wrap" />
+                                        
                                         <TextBlock Grid.Row="7" Text="Online source" IsVisible="{Binding HasOnlineArtifact}" />
-                                        <SelectableTextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedArtifact.OnlineUrl}" TextWrapping="Wrap" IsVisible="{Binding HasOnlineArtifact}" />
+                                        <SelectableTextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedArtifact.OnlineUrl}" 
+                                                             TextWrapping="Wrap" IsVisible="{Binding HasOnlineArtifact}" />
+                                        
                                         <TextBlock Grid.Row="8" Text="Channel / Git SHA" IsVisible="{Binding HasOnlineArtifact}" />
                                         <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Spacing="12" IsVisible="{Binding HasOnlineArtifact}">
                                             <TextBlock Text="{Binding SelectedArtifact.Channel}" />
@@ -192,10 +198,12 @@
                                         <TextBlock Grid.Row="11" Grid.Column="0" Text="Reused cache:" />
                                         <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SelectedArtifact.CacheHit}" />
 
+                                        <TextBlock Grid.Row="12" Grid.Column="0" Text="Address Ranges:" />
+                                        <TextBlock Grid.Row="12" Grid.Column="1"  Text="{Binding SelectedArtifact.AddressRanges}" TextWrapping="Wrap" />
                                     </Grid>
-                                    <TextBlock Text="{Binding SelectedArtifact.AddressRanges}" TextWrapping="Wrap" />
 
                                     <StackPanel IsVisible="{Binding DfuModel.HasLocalDfuFirmware}" Spacing="6">
+                                        <TextBlock Text="Enter exact ArduPilot platform for local HEX (sample BETAFPV F405):" />
                                         <TextBox Text="{Binding DfuModel.LocalDfuPlatform}" PlaceholderText="Exact ArduPilot platform for local HEX" />
                                         <Button Content="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}"
                                                 IsEnabled="{Binding !IsOperationInProgress}" />
