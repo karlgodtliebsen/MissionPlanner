@@ -11,7 +11,7 @@ public static class FirmwareContextHelpResolver
         ArgumentNullException.ThrowIfNull(context);
         if (context.PackageBoardMismatch)
         {
-            return new FirmwareContextHelp("Firmware target does not match", "Select the exact hardware platform. Only a deliberately selected local APJ/PX4 may use the expert board-ID override; all other compatibility checks remain mandatory.", FirmwareSupportCategory.ArduPilot);
+            return new FirmwareContextHelp("Firmware target does not match", "Select the exact hardware platform. Local and online APJ use the same strict board-ID and compatibility checks.", FirmwareSupportCategory.ArduPilot);
         }
 
         if (context.WrongDfuDriver)
@@ -35,7 +35,7 @@ public static class FirmwareContextHelpResolver
         }
 
         return context.CustomPackageSelected
-            ? new FirmwareContextHelp("Custom firmware provenance", "Confirm the package source, board ID, features, and build identity. Compatibility and provenance are your responsibility.", FirmwareSupportCategory.ArduPilot)
+            ? new FirmwareContextHelp("Custom firmware provenance", "Confirm the package source, board ID, features, and build identity. Verify provenance; the same target compatibility checks apply to local and online firmware.", FirmwareSupportCategory.ArduPilot)
             : context.Channel == FirmwareReleaseChannel.Latest
                 ? new FirmwareContextHelp("Latest is a development build", "Use Latest only for experienced testing. Prefer Stable for normal operation and preserve a recovery path.", FirmwareSupportCategory.ArduPilot)
                 : context.Channel == FirmwareReleaseChannel.Beta
@@ -45,4 +45,3 @@ public static class FirmwareContextHelpResolver
                         : new FirmwareContextHelp("Standard serial installation", "Confirm the exact board target, use Download & Validate first, and keep power connected through erase, programming, verification, and reboot.");
     }
 }
-

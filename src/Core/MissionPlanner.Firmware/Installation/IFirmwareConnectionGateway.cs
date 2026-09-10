@@ -1,4 +1,4 @@
-namespace MissionPlanner.Firmware.Installation;
+﻿namespace MissionPlanner.Firmware.Installation;
 
 /// <summary>Reports normal Mission Planner connection ownership.</summary>
 public interface IFirmwareConnectionGateway
@@ -8,6 +8,9 @@ public interface IFirmwareConnectionGateway
 
     /// <summary>Gets the active normal transport kind.</summary>
     ConnectionTransportKind? ActiveTransportKind { get; }
+
+    /// <summary>Gets the serial port owned by the normal connection, including connection establishment.</summary>
+    string? ActiveSerialPort => null;
 
     /// <summary>Requests a future host-controlled disconnect; first-release installation does not call it automatically.</summary>
     Task RequestDisconnectAsync(CancellationToken cancellationToken = default);

@@ -24,7 +24,7 @@ public sealed class BetaflightMspBootloaderEntryStrategy(MspPortConnector connec
         {
             return new(BootloaderEntryOutcome.NotApplicable, "betaflight.not-proven");
         }
-        if (context.HasActiveMissionPlannerSession || connection.IsVehicleConnected)
+        if (context.HasActiveMissionPlannerSession || connection.OwnsSerialPort(selected.PortName))
         {
             return Failed("port-busy");
         }
@@ -73,7 +73,7 @@ public sealed class BetaflightMspBootloaderEntryStrategy(MspPortConnector connec
                 return Failed("armed");
             }
             cancellationToken.ThrowIfCancellationRequested();
-            if (connection.IsVehicleConnected)
+            if (connection.OwnsSerialPort(selected.PortName))
             {
                 return Failed("port-busy");
             }

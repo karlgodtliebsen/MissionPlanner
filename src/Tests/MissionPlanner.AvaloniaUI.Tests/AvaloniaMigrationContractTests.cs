@@ -105,7 +105,7 @@ public sealed class AvaloniaMigrationContractTests
     /// <summary>Verifies representative migrated pages contain complete current controls.</summary>
     [Theory]
     [InlineData("Views/ConfigTuning/Tabs/FullParametersListTabView.axaml", "VirtualizedItemsGrid")]
-    [InlineData("Views/InitSetup/InstallFirmware/SubViews/FirmwareCatalogueSelectorView.axaml", "VirtualizedItemsGrid")]
+    [InlineData("Views/InitSetup/InstallFirmware/FirmwareCatalogueView.axaml", "VirtualizedItemsGrid")]
     [InlineData("Views/Navigation/MainShellView.axaml", "u:NavMenu")]
     [InlineData("Views/FlightData/FlightDataPage.axaml", "FlightDataMissionMapView")]
     [InlineData("Views/FlightPlanner/FlightPlannerPage.axaml", "MissionMapView")]
@@ -129,16 +129,17 @@ public sealed class AvaloniaMigrationContractTests
         System.Xml.Linq.XNamespace ui = "https://github.com/avaloniaui";
         var tabs = page.Descendants(ui + "TabControl").First();
         var top = tabs.Elements(ui + "TabItem").ToArray();
-        Assert.Equal(new[] { "Firmware", "STM32 DFU", "Help & Support" }, top.Select(item => (string?)item.Attribute("Header")));
-        Assert.Equal(new[] { "Catalogue", "Custom Firmware" }, top[0].Element(ui + "TabControl")!.Elements(ui + "TabItem").Select(item => (string?)item.Attribute("Header")));
-        var dfu = top[1].Element(ui + "TabControl")!;
-        Assert.Equal("Left", (string?)dfu.Attribute("TabStripPlacement"));
-        Assert.Equal(new[] { "Device / Enter DFU", "Catalogue", "Custom HEX" }, dfu.Elements(ui + "TabItem").Select(item => (string?)item.Attribute("Header")));
-        var catalogue = File.ReadAllText(Path.Combine(path, "STM32DfuCatalogueView.axaml"));
-        Assert.Contains("FirmwareCatalogueSelectorView", catalogue);
-        Assert.DoesNotContain("ValidatedPackageView", catalogue);
-        Assert.False(File.Exists(Path.Combine(path, "LandingView.axaml")));
-        Assert.False(File.Exists(Path.Combine(path, "STM32BootloaderView.axaml")));
+        Assert.Equal(new[] { "Information", "Firmware", "Help & Support" }, top.Select(item => (string?)item.Attribute("Header")));
+        Assert.Single(page.Descendants(ui + "TabControl"));
+        var landing = XDocument.Load(Path.Combine(path, "LandingView.axaml"));
+        Assert.Empty(landing.Descendants(ui + "Button"));
+        var firmware = top[1].ToString();
+        Assert.Contains("SelectedArtifact.Source", firmware);
+        Assert.Contains("SelectedArtifact.TargetCompatible", firmware);
+        Assert.Contains("CurrentPlan.CanExecute", firmware);
+        Assert.DoesNotContain("IsConnectedMode", firmware);
+        Assert.DoesNotContain("CustomFirmwareView", firmware);
+        Assert.DoesNotContain("ValidatedPackageView", firmware);
     }
 
     /// <summary>Guards the first-connect MAVFTP refresh against self-cancelling initialization.</summary>

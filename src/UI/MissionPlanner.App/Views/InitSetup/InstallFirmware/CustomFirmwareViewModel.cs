@@ -4,6 +4,7 @@ using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Model;
+using MissionPlanner.Firmware.Preparation;
 using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
@@ -11,12 +12,12 @@ namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
 {
     private readonly IFirmwareFilePicker filePicker;
-    private readonly IFirmwarePackageReader packageReader;
+    private readonly IFirmwarePreparationService preparationService;
 
     /// <summary>Initializes the custom panel.</summary>
     public CustomFirmwareViewModel(
         IFirmwareFilePicker filePicker,
-        IFirmwarePackageReader packageReader,
+        IFirmwarePreparationService preparationService,
 
         DetectedDeviceViewModel devicesModel,
         ValidatedPackageViewModel validatedModel,
@@ -26,7 +27,7 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
         IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
     {
         this.filePicker = filePicker;
-        this.packageReader = packageReader;
+        this.preparationService = preparationService;
         DevicesModel = devicesModel;
         ValidatedModel = validatedModel;
     }
@@ -40,6 +41,9 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
     {
         get;
     }
+
+    /// <summary>Gets the imported local artifact and provenance, independent of target compatibility.</summary>
+    public LocalFirmwarePreparationResult? PreparedLocalFirmware { get; private set; }
     /// <summary>Gets the shared diagnostics panel.</summary>
     [ObservableProperty]
     public partial ApjFirmwarePackage? CustomPackage
@@ -91,13 +95,6 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
     }
 
 
-    [ObservableProperty]
-    public partial bool RequireExactBoardIdMatch
-    {
-        get;
-        set;
-    } = true;
-
     /// <summary>
     /// Gets whether parsed custom metadata is available.
     /// </summary>
@@ -143,13 +140,13 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
         return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Install, cancellationToken);
     }
 
-    public async Task LoadCustomFirmwareAsync(CancellationToken cancellationToken)
+    public async Task LoadCustomFirmwareAsync(CancellationToken cancellationToken, FirmwareFileSelection? selection = null)
     {
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, viewLifetime?.Token ?? CancellationToken.None);
         cancellationToken = operation.Token;
         try
         {
-            var file = await filePicker.PickAsync(cancellationToken);
+            var file = selection ?? await filePicker.PickAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (file is null)
             {
@@ -157,17 +154,18 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
             }
 
             var extension = Path.GetExtension(file.FileName);
-            if (!extension.Equals(".apj", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".px4", StringComparison.OrdinalIgnoreCase))
+            if (!extension.Equals(".apj", StringComparison.OrdinalIgnoreCase))
             {
-                SetMessages("Only .apj and .px4 application packages are supported here. Use the separate DFU/legacy workflow for *_with_bl.hex.");
+                SetMessages("The ArduPilot serial plan requires an .apj application package. STM32 DFU requires *_with_bl.hex.");
                 NotificationManager?.Show(StatusMessage ?? "");
                 return;
             }
 
             await using var stream = await file.OpenReadAsync(cancellationToken);
-            var package = await packageReader.ReadAsync(stream, cancellationToken);
+            var imported = await preparationService.ImportAsync(stream, file.FileName, file.LocalPath, cancellationToken);
+            var package = imported.Package;
             cancellationToken.ThrowIfCancellationRequested();
-            RequireExactBoardIdMatch = true;
+            PreparedLocalFirmware = imported;
             CustomPackage = package;
 
             CustomFirmwareName = file.FileName;
@@ -178,7 +176,7 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
             CustomFirmwareImageSize = package.Image.Length;
             HasCustomFirmware = CustomPackage is not null;
 
-            SetMessages("Local firmware parsed and validated. Verify its board ID, then install it using the custom firmware panel.");
+            SetMessages("Local firmware validated and imported. Target compatibility will be checked against the bootloader identity.");
             NotificationManager?.Show(StatusMessage ?? "");
 
         }
@@ -206,7 +204,6 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
         CustomFirmwareBuild = null;
         CustomFirmwareBoardId = 0;
         CustomFirmwareImageSize = 0;
-        RequireExactBoardIdMatch = true;
     }
 
     /// <summary>Notifies the active parent about panel changes.</summary>
@@ -233,7 +230,7 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
     {
         if (value is null)
         {
-            RequireExactBoardIdMatch = true;
+            PreparedLocalFirmware = null;
         }
         HasCustomFirmware = false;
         OnPropertyChanged(nameof(HasCustomFirmware));

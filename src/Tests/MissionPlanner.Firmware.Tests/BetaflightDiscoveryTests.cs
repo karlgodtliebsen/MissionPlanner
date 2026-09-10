@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging.Abstractions;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.Firmware.Betaflight;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
@@ -9,6 +9,65 @@ namespace MissionPlanner.Firmware.Tests;
 
 public sealed class BetaflightDiscoveryTests
 {
+    [Fact]
+    public async Task DiscoveryDeadlineRetainsCompletedEvidenceAndUnknownRemainingDevices()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        var clock = new ManualTimeProvider(DateTimeOffset.UnixEpoch);
+        var probe = new DeadlineProbe(clock);
+        var service = new FirmwareDeviceIdentityService(probe, new Connection(),
+            new FirmwareOperationCoordinator(NullLogger<FirmwareOperationCoordinator>.Instance), clock);
+        var result = await service.EnrichAsync([new("COM1"), new("COM2"), new("COM3")],
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.NotNull(result[0].BetaflightIdentity);
+        Assert.Null(result[1].BetaflightIdentity);
+        Assert.Null(result[2].BetaflightIdentity);
+        Assert.Equal(2, probe.Calls);
+    }
+
+    private sealed class DeadlineProbe(ManualTimeProvider clock) : IBetaflightDeviceProbe
+    {
+        public int Calls { get; private set; }
+
+        public Task<BetaflightProbeResult> ProbeAsync(string portName, CancellationToken cancellationToken = default)
+        {
+            Calls++;
+            if (Calls == 2)
+            {
+                clock.Advance(TimeSpan.FromSeconds(9));
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            return Task.FromResult(new BetaflightProbeResult(BetaflightProbeOutcome.Success,
+                new(portName, new Version(1, 46), "BTFL")));
+        }
+    }
+
+    [Theory]
+    [InlineData(ConnectionTransportKind.Udp, null, 1)]
+    [InlineData(ConnectionTransportKind.Tcp, null, 1)]
+    [InlineData(ConnectionTransportKind.Serial, "COM7", 1)]
+    [InlineData(ConnectionTransportKind.Serial, "COM10", 0)]
+    public async Task OnlyTheOwnedSerialResourceBlocksProbing(ConnectionTransportKind transport, string? port, int expectedCalls)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        var probe = new Probe();
+        var connection = new Connection { IsVehicleConnected = true, ActiveTransportKind = transport, ActiveSerialPort = port };
+        var service = new FirmwareDeviceIdentityService(probe, connection,
+            new FirmwareOperationCoordinator(NullLogger<FirmwareOperationCoordinator>.Instance), TimeProvider.System);
+        var result = await service.EnrichAsync([new SerialDeviceDescriptor("COM10")], cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(expectedCalls, probe.Calls);
+        if (expectedCalls == 0)
+        {
+            Assert.Equal(BetaflightProbeOutcome.PortBusy, result[0].BetaflightProbeOutcome);
+        }
+    }
+
     [Fact]
     public async Task BusyOutcomeSurvivesCacheAndForcedRetryCanRecover()
     {
@@ -98,7 +157,8 @@ public sealed class BetaflightDiscoveryTests
     private sealed class Connection : IFirmwareConnectionGateway
     {
         public bool IsVehicleConnected { get; set; }
-        public ConnectionTransportKind? ActiveTransportKind => null;
+        public ConnectionTransportKind? ActiveTransportKind { get; set; }
+        public string? ActiveSerialPort { get; set; }
         public Task RequestDisconnectAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }

@@ -1,14 +1,16 @@
 # Firmware installation
 
-## Scope and user modes
+## Scope and workflow
 
-The modern firmware feature installs ArduPilot application firmware through the ArduPilot serial bootloader and can request an embedded bootloader update through an already connected vehicle. It deliberately separates these workflows:
+Install Firmware has Information, Firmware and Help & Support tabs. Firmware is the
+single operational page: it resolves physical target, observed runtime/boot mode,
+artifact and compatibility into one immutable installation plan. Preparation is
+available without a controller and while unrelated UDP/TCP telemetry is connected.
+Only an owned serial resource blocks access to that COM port. Embedded bootloader
+maintenance remains a separate, confirmed action for a connected, disarmed vehicle.
+Direct hardware operations currently require Windows; preparation is independent.
 
-- Connected: normal application flashing, catalogue tiles, and custom-file actions are unavailable. A supported, disarmed ArduPilot vehicle may run the separately confirmed Bootloader Update command.
-- Disconnected: Stable, Beta, Latest, All Options, and local `.apj`/`.px4` packages are available. A normal Mission Planner connection must release the transport before installation.
-- Operation in progress: progress replaces normal actions, duplicate commands are rejected, and Shell navigation is cancelled while an unsafe operation owns the page.
-- Unsupported platform: the page explains that direct installation is unavailable.
-
+See [ViewModel ownership and the A–G workflow matrix](INSTALL_FIRMWARE_VIEWMODELS.md).
 ## Architecture and dependency rules
 
 ```mermaid
@@ -48,7 +50,7 @@ sequenceDiagram
 
 ## Catalogue and package handling
 
-The ArduPilot manifest is retrieved over HTTPS with separate compressed-download and decompressed-document bounds, parsed into normalized data, cached with validators, and filterable by vehicle, release channel, board ID, and USB identity. Current official entries expose decoded application size as `image_size`; encoded artifact length is optional and is enforced exactly only when supplied. Stale cached data is distinguishable from a fresh response. Catalogue choices expose the complete matching hardware-target set and search platform, manufacturer/brand, and board ID instead of collapsing a vehicle family to its first entry. Automatic target selection requires one unambiguous high-confidence USB or bootloader-alias match; otherwise selection remains explicit and labelled with its evidence.
+The ArduPilot manifest is retrieved over HTTPS with separate compressed-download and decompressed-document bounds, parsed into normalized data, cached with validators, and filterable by vehicle, release channel, board ID, and USB identity. Current official entries expose decoded application size as `image_size`; encoded artifact length is optional and is enforced exactly only when supplied. Stale cached data is distinguishable from a fresh response. Catalogue choices expose the complete matching hardware-target set and search platform, manufacturer/brand, and board ID instead of collapsing a vehicle family to its first entry. Automatic target selection requires one unambiguous protocol-reported bootloader board ID match. USB VID/PID and product aliases are hints only, even when only one catalogue entry matches; otherwise selection remains explicit and labelled with its evidence.
 
 APJ and PX4 GCS packages are JSON containers. Parsing checks their magic, declared and configured size limits, compressed image length, board metadata, optional external image, revision requirements, and checksum inputs before device access. Downloads use a bounded temporary file, validate length and optional SHA-256, parse it, then move it atomically into cache. Temporary and selected-file streams are disposed on every path.
 
@@ -64,7 +66,7 @@ Manifest entries are parsed independently. Invalid URLs, board IDs, USB identifi
 
 Catalogue refresh is latest-request-wins. Selecting a new release channel cancels the preceding request and invalidates late responses; only the current response applies a single collection snapshot on the UI dispatcher. The page exposes catalogue-refresh activity and retains an explicitly selected target while that exact board/channel/artifact remains available.
 
-Normal Firmware supports `.apj` and `.px4` through the ArduPilot serial bootloader. The separate STM32 DFU context supports combined `*_with_bl.hex` through STM32CubeProgrammer. Legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters and mobile USB-host flashing are not implemented.
+The normal page supports `.apj` through the ArduPilot serial bootloader and combined `*_with_bl.hex` through STM32CubeProgrammer. The underlying package parser retains PX4 support for existing callers. Legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters and mobile USB-host flashing are not implemented.
 
 The separate DFU architecture now has platform-neutral contracts under `MissionPlanner.Firmware.Dfu` for STM32 USB device evidence, tool/provider capabilities, bounded Intel HEX inspection, artifacts and address ranges, controlled process execution, progress, and typed results. DFU remains distinct from serial ports and serial bootloader clients, while sharing the global firmware-operation lease so destructive workflows cannot overlap. The current Windows discovery, parser, provider and orchestration implementations are described below.
 
@@ -82,9 +84,9 @@ After reboot, recovery observes bootloader removal and matches the returning app
 
 ## State, safety, and cancellation
 
-The guarded lifecycle is Idle → catalogue/package/device/bootloader stages → compatibility → Erasing → Programming → Verifying → Rebooting → WaitingForApplication → Completed, with typed Failed and Cancelled terminals. Invalid transitions throw. Connection state is checked again in the installation service, so UI state alone cannot bypass the disconnected requirement.
+The guarded lifecycle is Idle → catalogue/package/device/bootloader stages → compatibility → Erasing → Programming → Verifying → Rebooting → WaitingForApplication → Completed, with typed Failed and Cancelled terminals. Invalid transitions throw. Selected-port ownership and compatibility are checked again in the installation service, so UI state alone cannot bypass safety requirements. Unrelated network telemetry is not a global interlock.
 
-Board ID, revision, image size, flash capacity, external-flash, bootloader revision, and supported security metadata are checked before erase. Exact board identity remains the strict default. A deliberately selected local/custom APJ or PX4 application package may enable an expert override for the board-ID equality rule only; official catalogue firmware can never use it, and selecting or clearing a local package resets the option to strict. Revision, capacity, bootloader, secure-boot, signed-image, parsing, verification, and all other safety rules remain fail-closed. When an actual mismatch is overridden, the final prompt displays both board IDs, source, image size, and bootloader revision and requires the exact phrase `FLASH <firmware-board-id> ON <detected-board-id>` before erase. This expert operation can make a controller unbootable when the build is not genuinely electrically and bootloader compatible.
+Board ID, revision, image size, flash capacity, external-flash, bootloader revision, and supported security metadata are checked before erase. Online and local APJ installation use the same strict board-ID policy. The local-only override is removed; known mismatches remain blocked regardless of source.
 
 The final prompt repeats detected and selected board IDs and image size. The page offers Cancel during catalogue loading, download/validation, device and bootloader discovery, compatibility checks, and application rediscovery. Before erase, Cancel stops the active operation-owned token immediately. During erase/program/verify/reboot, the request is recorded and the UI explains that power must remain connected; protocol calls retain their non-cancellable token, complete verification and reboot, dispose the serial port, then terminate as Cancelled at the safe `WaitingForApplication` boundary. Navigation remains blocked throughout destructive work. All protocol reads and discovery loops have bounded timeouts.
 
@@ -116,22 +118,22 @@ External-provider execution always uses a direct no-shell process with individua
 
 The CubeProgrammer provider uses ST’s documented USB connection and immediate verification sequence: `-c port=usbN -w <file.hex> -v`. Before that command is built, the local HEX file is reopened, fully inspected again, and required to match its recorded SHA-256, byte count, and address bounds. A Windows PnP device is associated with a CubeProgrammer USB index only through an explicit provider index, a unique USB serial match from `-l usb`, or an unambiguous single-device listing. Success requires exit code zero plus recognizable programming and verification evidence; otherwise the result remains a typed tool, device, connection, file, erase, programming, or verification failure with the bounded raw log preserved. Provider capabilities deliberately report detach and destructive-stage cancellation as unsupported because no target-safe reset/detach behavior has been established. Command behavior follows ST’s [current MCU CLI documentation](https://dev.st.com/stm32cube-docs/prog/latest/en/docs/markup/CubeProg_Command_Lines.html) and [UM2237](https://www.st.com/resource/en/user_manual/um2237-stm32cubeprogrammer-software-description-stmicroelectronics.pdf).
 
-Official DFU artifacts are derived only from a selected normalized manifest entry whose platform and board agree with the operator’s explicit selection. A configured trusted ArduPilot HTTPS host may resolve only a sibling in the same release/platform directory, using the approved vehicle names `arducopter_with_bl.hex`, `arduplane_with_bl.hex`, `ardurover_with_bl.hex`, or `ardusub_with_bl.hex`. The bounded response and any redirect must remain on configured HTTPS hosts; the HEX is inspected before atomic publication into the shared artifact cache, and its final source URI and SHA-256 are recorded. A missing sibling remains an explicit failure and never falls back to another platform or bootloader-only file. Local selection accepts only an existing `.hex`, always inspects its ranges, and warns when the filename does not end in `_with_bl.hex`; the filename is a hint rather than proof, so range evidence and later target confirmation remain mandatory.
+Official DFU artifacts are derived only from a selected normalized manifest entry whose platform and board agree with the operator’s explicit selection. A configured trusted ArduPilot HTTPS host may resolve only a sibling in the same release/platform directory, using the approved vehicle names `arducopter_with_bl.hex`, `arduplane_with_bl.hex`, `ardurover_with_bl.hex`, or `ardusub_with_bl.hex`. The bounded response and any redirect must remain on configured HTTPS hosts; the HEX is inspected before atomic publication into the shared artifact cache, and its final source URI and SHA-256 are recorded. A missing sibling remains an explicit failure and never falls back to another platform or bootloader-only file. The normal local picker accepts only an existing `*_with_bl.hex` and always inspects its ranges. The lower-level resolver retains generic HEX inspection for existing callers. A filename is not target proof: range evidence and exact-platform confirmation remain mandatory.
 
 DFU target safety is evaluated separately from artifact validity. It blocks an absent explicit platform, invalid HEX evidence, known artifact/manifest platform or board mismatch, a clearly bootloader-only image in normal install mode, data beyond reported internal flash, and configured known MCU/flash incompatibility. An STM32 device ID is compatibility evidence only: different flight-controller PCBs commonly share an MCU, so an MCU match never proves the selected ArduPilot platform. Without a remembered association that binds the same previous application identity, DFU USB serial, platform, and board ID, the result remains `AllowedWithStrongWarning` and requires the exact phrase `FLASH <platform>`. A matching remembered association can produce `Allowed`; known conflicts always produce `Blocked` and cannot be overridden by confirmation.
 
 ## DFU installation orchestration
 
-`IDfuInstallationService` owns the complete DFU use case and shares the process-wide firmware-operation lease with serial installation. It refuses to start while the normal vehicle connection owns a transport, validates CubeProgrammer availability, resolves and inspects the exact HEX artifact, reselects and inspects the requested USB DFU device, applies target safety, and asks for final confirmation before starting the vendor process. The host cancellation token is freely honored before programming. During program and immediate verify it is passed to the provider only when that provider explicitly reports safe cancellation support; otherwise cancellation is recorded and handled at the next safe boundary without killing CubeProgrammer.
+`IDfuInstallationService` owns the complete DFU use case and shares the process-wide firmware-operation lease with serial installation. It validates CubeProgrammer availability, resolves and inspects the exact HEX artifact, reselects and inspects the requested USB DFU device, applies target safety, and asks for final confirmation before starting the vendor process. The host cancellation token is freely honored before programming. During program and immediate verify it is passed to the provider only when that provider explicitly reports safe cancellation support; otherwise cancellation is recorded and handled at the next safe boundary without killing CubeProgrammer.
 
 After successful verification the workflow uses only a documented detach capability, otherwise it asks the operator to reset or power-cycle. DFU disappearance and application serial rediscovery are separate bounded observations. The structured result deliberately keeps programming and verification success independent from application rediscovery: a verified flash remains successful when no application port returns, with a reconnect warning and the operation ID and provider evidence preserved for diagnostics. The synthetic serial descriptor used for rediscovery carries only the DFU USB identity as transition evidence; DFU is never modeled as a COM port and no bootloader transport object is reused.
 
 ## Troubleshooting
 
 - Catalogue unavailable: retry Refresh; a valid cached catalogue may be shown as stale.
-- Vehicle connected: disconnect it through Mission Planner before normal installation.
+- Selected COM port owned: disconnect that serial session before probing or installation. Unrelated UDP/TCP telemetry can remain connected.
 - Bootloader not found: unplug/replug the controller or use its reset button; confirm no other program owns the serial port.
-- Board mismatch or insufficient flash: select firmware for the detected board. Only a deliberately selected local/custom APJ or PX4 may opt out of exact board-ID equality through the prominently warned expert control. Flash capacity and every other compatibility rule cannot be overridden.
+- Board mismatch or insufficient flash: select firmware for the protocol-identified board. Local and online packages use identical strict checks; a known mismatch cannot be confirmed away.
 - Verification failed: do not treat the controller as updated; copy the diagnostic report and retry only after checking cable and power.
 - Flash completed but reconnect not detected: reconnect manually and select the newly enumerated port. The flash itself remains successful.
 - Embedded update denied/unsupported: preserve the reported ACK outcome and verify the vehicle family, disarmed state, firmware support, and permissions.
@@ -148,22 +150,18 @@ Protocol behavior, manifest/APJ conventions, command semantics, and workflow exp
 
 The separate mandatory-hardware Setup section continues to display firmware identity from `HEARTBEAT` and `AUTOPILOT_VERSION` and uses the older `FirmwareManifestSelector`, `FirmwarePackageManager`, and `FirmwareUpdateCoordinator` abstractions. Its configured manifest entries require technical family/board/vendor/product matching and HTTPS/SHA-256 validation; labels are never binary-selection keys. `UnsupportedFirmwareFlashingService` remains its default adapter. That workflow and the modern direct bootloader page must not share or retain live serial/MAVLink ownership across a reboot transition.
 
-## Installation contexts (InstallFirmware-take2)
+## Unified preparation and plan
 
-The page separates Firmware / Catalogue and Custom Firmware (APJ/PX4, ArduPilot serial bootloader)
-from STM32 DFU / Device, Catalogue and Custom HEX (combined application-and-bootloader Intel HEX).
-Help & Support and the persistent status/Refresh controls remain available. See
-[ViewModel ownership and navigation](INSTALL_FIRMWARE_VIEWMODELS.md).
+Local APJ files use the shared preparation service: bounded import, structural parse,
+SHA-256 content identity and atomic cache commit. The common artifact summary keeps
+validity separate from target compatibility and retains source-specific provenance.
+Clearing an artifact preserves physical discovery and selection. Runtime probing
+uses live protocol evidence, and manual or automatic boot entry never starts flashing.
+The plan requires observed AP bootloader identity for serial installation, or an
+inspected combined HEX, available DFU provider and reviewed exact platform for DFU.
+Target review is invalidated when the artifact or endpoint changes. Same-version
+APJ reinstall remains available after compatibility succeeds.
 
-Normal update: ArduPilot/application or serial bootloader -> Firmware -> Catalogue/Custom -> APJ.
-Betaflight conversion: COM/MSP -> STM32 DFU / Device -> proven physical ROM DFU handoff ->
-Catalogue -> reviewed `*_with_bl.hex`. Already in ROM DFU: Device confirms endpoint ->
-Catalogue/Custom HEX -> `*_with_bl.hex`. Every install is explicit and retains existing safety
-confirmation, provider verification and power-critical cancellation rules.
-
-STM32 ROM DFU normally has no COM port. USB 0483:DF11 alone cannot prove the flight-controller
-PCB. Handoff preserves observed source identity and navigates to catalogue without choosing
-an unverified target or automatically flashing. No Betaflight firmware installation is included.
-The DFU preview uses the existing resolver/inspector and global operation lease. It displays
-HEX evidence separately from the selected manifest/APJ identity. Inconsistent platform/source
-variant directories are rejected before download.
+Progress belongs to the page, with confirmation sequencing and distinct Cancelled,
+Failed and Completed diagnostics. See [workflow details](INSTALL_FIRMWARE_VIEWMODELS.md)
+and [execution results](tasks/InstallFirmware-take-3/EXECUTION_RESULTS.md).

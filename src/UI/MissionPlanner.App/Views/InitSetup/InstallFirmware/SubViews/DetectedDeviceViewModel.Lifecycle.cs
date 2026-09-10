@@ -80,11 +80,11 @@ public sealed partial class DetectedDeviceViewModel
     [RelayCommand]
     public Task RefreshAsync(CancellationToken cancellationToken = default)
     {
-        return InstallationRunning || activeVehicle.IsOnline
+        return InstallationRunning
             ? Task.CompletedTask
             : loader.RunAsync(async token =>
         {
-            if (InstallationRunning || activeVehicle.IsOnline)
+            if (InstallationRunning)
             {
                 return;
             }
@@ -129,7 +129,7 @@ public sealed partial class DetectedDeviceViewModel
         if (retained is not null)
         {
             SelectedDevice = retained;
-            DeviceStatus = $"SelectedFirmwareModel device: {retained}";
+            DeviceStatus = $"Selected device: {retained}";
         }
         else
         {
@@ -145,14 +145,7 @@ public sealed partial class DetectedDeviceViewModel
         {
             return;
         }
-        if (args.Current.IsOnline)
-        {
-            loader.Cancel();
-        }
-        else
-        {
-            _ = RefreshAsync();
-        }
+        _ = RefreshAsync();
     });
     }
 

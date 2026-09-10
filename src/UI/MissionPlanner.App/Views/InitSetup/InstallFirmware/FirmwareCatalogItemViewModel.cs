@@ -32,8 +32,9 @@ public sealed partial class FirmwareCatalogItemViewModel : ObservableObject
     /// <summary>Gets the target match explanation.</summary>
     public string MatchReason => recommendation.Reason switch
     {
-        FirmwareTargetMatchReason.ExactUsbMatch => "Exact USB match",
-        FirmwareTargetMatchReason.ExactBootloaderAliasMatch => "Exact bootloader alias match",
+        FirmwareTargetMatchReason.UsbCompatibilityHint => "USB compatibility hint",
+        FirmwareTargetMatchReason.ProductNameHint => "Product/board name hint",
+        FirmwareTargetMatchReason.ProtocolBoardId => "Bootloader protocol board ID",
         FirmwareTargetMatchReason.PreviouslySelectedTarget => "Previously selected target",
         var _ => "Manual selection"
     };
@@ -74,4 +75,3 @@ public sealed partial class FirmwareCatalogItemViewModel : ObservableObject
     /// <summary>Gets the release channel.</summary>
     public FirmwareReleaseChannel Channel => Entry.Channel;
 }
-

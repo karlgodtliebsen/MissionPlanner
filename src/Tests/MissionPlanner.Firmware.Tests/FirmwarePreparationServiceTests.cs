@@ -1,13 +1,47 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.Firmware.Downloads;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Preparation;
+using MissionPlanner.Firmware.Configuration;
 
 namespace MissionPlanner.Firmware.Tests;
 
 public sealed class FirmwarePreparationServiceTests
 {
+    [Fact]
+    public async Task LocalImportValidatesAndCachesContentWithoutClaimingCompatibility()
+    {
+        var options = Microsoft.Extensions.Options.Options.Create(new MissionPlanner.Firmware.Configuration.FirmwareOptions());
+        var store = new FileSystemFirmwareArtifactStore(new TestPaths(), options, TimeProvider.System);
+        var reader = new MissionPlanner.Firmware.Images.ApjFirmwarePackageReader(options);
+        var service = new FirmwarePreparationService(new FakeDownloader(Download(50, false)), reader, store, options);
+        await using var stream = File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Fixtures", "valid.apj"));
+        var first = await service.ImportAsync(stream, "local.apj", cancellationToken: TestContext.Current.CancellationToken);
+        stream.Position = 0;
+        var second = await service.ImportAsync(stream, "renamed.apj", cancellationToken: TestContext.Current.CancellationToken);
+        Assert.False(first.WasCacheHit);
+        Assert.True(second.WasCacheHit);
+        Assert.Equal(first.ArtifactMetadata.CacheKey, second.ArtifactMetadata.CacheKey);
+        Assert.Equal(64, first.ArtifactMetadata.Sha256.Length);
+        Assert.Equal(50, first.Package.BoardId);
+        var local = FirmwareArtifactSummary.FromLocal(first);
+        var online = FirmwareArtifactSummary.FromOnline(new(Entry(50), first.ArtifactMetadata,
+            first.Package, first.ArtifactMetadata.Sha256, false, first.ArtifactMetadata.CacheKey, []));
+        Assert.Equal(local.BoardId, online.BoardId);
+        Assert.Equal(local.ImageSize, online.ImageSize);
+        Assert.True(local.ArtifactValid);
+        Assert.False(local.TargetCompatible);
+        await using var invalid = new MemoryStream("{truncated"u8.ToArray());
+        await Assert.ThrowsAsync<FirmwarePackageException>(() => service.ImportAsync(invalid, "broken.apj", cancellationToken: TestContext.Current.CancellationToken));
+        Assert.Single(await store.EnumerateAsync(TestContext.Current.CancellationToken));
+    }
+
+    private sealed class TestPaths : IFirmwareCachePathProvider
+    {
+        public string CacheRoot { get; } = Path.Combine(Path.GetTempPath(), "MissionPlannerLocalImportTests", Guid.NewGuid().ToString("N"));
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

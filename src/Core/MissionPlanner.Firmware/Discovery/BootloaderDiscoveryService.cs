@@ -5,6 +5,7 @@ using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Protocol;
+using MissionPlanner.Firmware.Installation;
 
 namespace MissionPlanner.Firmware.Discovery;
 
@@ -15,7 +16,8 @@ public sealed class BootloaderDiscoveryService(
     IFirmwareSerialPortFactory portFactory,
     IArduPilotBootloaderClientFactory clientFactory,
     IOptions<FirmwareOptions> options,
-    ILogger<BootloaderDiscoveryService> logger) : IBootloaderDiscoveryService
+    ILogger<BootloaderDiscoveryService> logger,
+    IFirmwareConnectionGateway? connection = null) : IBootloaderDiscoveryService
 {
     /// <inheritdoc />
     public async Task<DiscoveredBootloader> FindAsync(
@@ -126,6 +128,11 @@ public sealed class BootloaderDiscoveryService(
         IDictionary<string, string> probeFailures,
         CancellationToken cancellationToken)
     {
+        if (connection?.OwnsSerialPort(candidate.PortName) == true)
+        {
+            probeFailures[candidate.PortName] = "Selected serial port is owned by a telemetry session.";
+            return null;
+        }
         // A controller may leave application mode and return as a bootloader on
         // the same COM port and with the same USB serial number. ArrivedAt
         // distinguishes that new device generation from the rejected baseline.

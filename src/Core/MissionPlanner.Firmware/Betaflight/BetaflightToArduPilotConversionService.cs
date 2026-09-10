@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Devices;
+﻿using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
@@ -21,7 +21,7 @@ public sealed class BetaflightToArduPilotConversionService(IBetaflightDeviceProb
         var result = new BetaflightConversionResult(false, "betaflight.identifying-source", request.Source, request.Firmware);
         try
         {
-            if (!request.ConfigurationBackupConfirmed || !request.PropellersRemovedConfirmed || connection.IsVehicleConnected)
+            if (!request.ConfigurationBackupConfirmed || !request.PropellersRemovedConfirmed || connection.OwnsSerialPort(request.Source.PortName))
             {
                 return result with { Code = "betaflight.safety-confirmation-required" };
             }
@@ -98,10 +98,6 @@ public sealed class BetaflightToArduPilotConversionService(IBetaflightDeviceProb
                 using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, deadline.Token);
                 while (!linked.IsCancellationRequested)
                 {
-                    if (connection.IsVehicleConnected)
-                    {
-                        return result with { Code = "betaflight.runtime-port-owned" };
-                    }
                     var candidates = new List<SerialDeviceDescriptor>();
                     foreach (var device in await serial.GetDevicesAsync(linked.Token).ConfigureAwait(false))
                     {
@@ -117,6 +113,10 @@ public sealed class BetaflightToArduPilotConversionService(IBetaflightDeviceProb
                     }
                     if (candidates.Count == 1)
                     {
+                        if (connection.OwnsSerialPort(candidates[0].PortName))
+                        {
+                            return result with { Code = "betaflight.runtime-port-owned" };
+                        }
                         var runtime = await verifier.VerifyAsync(candidates[0], linked.Token).ConfigureAwait(false);
                         if (runtime is not null)
                         {

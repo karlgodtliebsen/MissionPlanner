@@ -49,65 +49,7 @@
             <TextBlock Grid.Row="11" Text="Bootloader aliases" />
             <SelectableTextBlock Grid.Row="11" Grid.Column="1" Text="{Binding Selected.BootloaderAliases,FallbackValue='', TargetNullValue=''}" />
 
-            <!--
-            <WrapPanel Orientation="Horizontal" Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" Spacing="10" HorizontalAlignment="Center">
 
-
-            <Grid RowDefinitions="Auto,Auto,*" RowSpacing="20" HorizontalAlignment="Center">
-
-            <TextBlock Grid.Row="0" Text="Use local / custom firmware" Classes="H3"  HorizontalAlignment="Center"/>
-            <Grid Grid.Row="1" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-
-            RowSpacing="10">
-            <TextBlock Text="Selected local/custom firmware" Classes="H3" Margin="0,0,0,10" HorizontalAlignment="Left" />
-
-            <TextBlock Grid.Row="1" Text="Firmware Name" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CustomFirmwareName,FallbackValue='', TargetNullValue=''}" />
-
-            <TextBlock Grid.Row="2" Text="Firmware Decription" />
-            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CustomFirmwareDescription,FallbackValue='', TargetNullValue=''}" />
-
-            <TextBlock Grid.Row="3" Text="Platform" />
-            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CustomFirmwarePlatform}" />
-
-            <TextBlock Grid.Row="4" Text="Board Id" />
-            <TextBlock Grid.Row="4" Grid.Column="1"  Text="{Binding CustomFirmwareBoardId}" />
-
-            <TextBlock Grid.Row="5" Text="Image Size" />
-            <TextBlock Grid.Row="5" Grid.Column="1"  Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
-
-            <TextBlock Grid.Row="6" Text="Build" />
-            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CustomFirmwareBuild}"  Classes="Warning" />
-
-
-            <TextBlock  Margin="0,8,0,0" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
-            Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
-
-            <WrapPanel Grid.Row="8"  Grid.Column="0" Grid.ColumnSpan="2"  Orientation="Horizontal" ItemSpacing="5">
-            <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
-            <TextBlock Text="Require exact board ID match"  Classes="Warning" />
-            </WrapPanel>
-            <Border Grid.Row="9"  Grid.Column="0" Grid.ColumnSpan="2"  Classes="SectionCard"
-            IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12"
-            BorderBrush="{DynamicResource Warning}">
-            <StackPanel Orientation="Vertical">
-            <TextBlock MaxLines="3" Text="Advanced override:."
-            Classes="Warning" TextWrapping="Wrap" />
-
-            <TextBlock MaxLines="3" Text="board-ID mismatch will be allowed for this local firmware only."
-            Classes="Warning" TextWrapping="Wrap" />
-            <TextBlock MaxLines="3" Text="Use this only when you know the firmware target is electrically and bootloader compatible with this controller."
-            Classes="Warning" TextWrapping="Wrap" />
-            <TextBlock MaxLines="3" Text="Flash-size, revision, bootloader and secure-boot checks still apply."
-            Classes="Warning" TextWrapping="Wrap" />
-
-            </StackPanel>
-            </Border>
-            </Grid>
-            </Grid>
-
-            </WrapPanel>
-            -->
         </Grid>
     </Border>
 

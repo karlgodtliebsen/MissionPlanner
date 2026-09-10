@@ -22,6 +22,26 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 public sealed class FirmwarePanelViewModelTests
 {
     [Fact]
+    public void CatalogueDoesNotAutoSelectSharedUsbTarget()
+    {
+        using var services = CreateServices();
+        var catalogue = services.GetRequiredService<FirmwareCatalogueViewModel>();
+        var usb = new UsbIdentifier(4617, 22337);
+        FirmwareManifestEntry Entry(int id, string platform)
+        {
+            return new(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
+                new FirmwareBoardTarget(id, platform, FirmwareVehicleType.Copter, [usb]),
+                new FirmwareArtifact(new Uri($"https://example.test/{platform}.apj"), FirmwareImageFormat.Apj));
+        }
+
+        catalogue.SetCatalogue([Entry(1115, "ACNS-CM4Pilot"), Entry(105, "BETAFPV-F405")],
+            [new SerialDeviceDescriptor("COM10", usbIdentifier: usb)], false);
+
+        Assert.Equal(2, catalogue.FilteredFirmwareChoices.Count);
+        Assert.Null(catalogue.SelectedFirmware);
+    }
+
+    [Fact]
     public async Task ParentSubscribesOnlyWhileActiveAndDoesNotDuplicateAfterReactivation()
     {
         using var services = CreateServices();
@@ -158,7 +178,7 @@ public sealed class FirmwarePanelViewModelTests
         Assert.Equal(0, changed);
     }
 
-    internal static ServiceProvider CreateServices()
+    internal static ServiceProvider CreateServices(Action<IServiceCollection>? configure = null)
     {
         var services = new ServiceCollection().AddLogging();
         services.AddSingleton<IUiDispatcher>(new InlineDispatcher());
@@ -204,6 +224,7 @@ public sealed class FirmwarePanelViewModelTests
         services.AddSingleton(Substitute.For<MissionPlanner.Firmware.Betaflight.IBetaflightArduPilotCompatibilityProvider>());
         services.AddSingleton(Substitute.For<MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff>());
         services.AddTransient<InstallFirmwareViewModel>();
+        configure?.Invoke(services);
         return services.BuildServiceProvider();
     }
 

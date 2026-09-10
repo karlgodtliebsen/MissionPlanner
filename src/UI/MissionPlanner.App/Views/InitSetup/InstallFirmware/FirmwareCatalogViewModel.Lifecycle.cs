@@ -13,11 +13,9 @@ public sealed partial class FirmwareCatalogueViewModel
 {
     private readonly IFirmwareCatalogService catalogService;
     private readonly IActiveVehicleContext activeVehicle;
-    private readonly IDialogService dialogService;
-    private readonly FirmwareDialogCoordinator firmwareDialogs;
     private readonly FirmwarePanelLoader loader = new();
 
-    /// <summary>Gets whether catalogue loading owns the progress dialog.</summary>
+    /// <summary>Gets whether the inline catalogue progress indicator is active.</summary>
     [ObservableProperty]
     public partial bool IsRefreshing
     {
@@ -66,7 +64,7 @@ public sealed partial class FirmwareCatalogueViewModel
     /// <summary>Refreshes this panel only; serial/DFU panels own their own discovery.</summary>
     public Task RefreshAsync(bool forceRefresh, CancellationToken cancellationToken = default)
     {
-        return InstallationRunning || activeVehicle.IsOnline
+        return InstallationRunning
             ? Task.CompletedTask
             : loader.RunAsync(token => LoadCatalogueAsync(forceRefresh, token), cancellationToken);
     }
@@ -79,11 +77,11 @@ public sealed partial class FirmwareCatalogueViewModel
 
     private async Task LoadCatalogueAsync(bool forceRefresh, CancellationToken token)
     {
-        if (InstallationRunning || activeVehicle.IsOnline)
+        if (InstallationRunning)
         {
             return;
         }
-        IDisposable? progress = null;
+
         var channel = SelectedChannel;
         var allOptions = showingAllOptions;
         try
@@ -91,17 +89,12 @@ public sealed partial class FirmwareCatalogueViewModel
             IsRefreshing = true;
             SetBusy();
             SetMessages("Loading firmware catalogue…");
-            if (!OperatingSystem.IsBrowser())
-            {
-                progress = await firmwareDialogs.BeginAsync(() => dialogService.DisplayProgressCancellableAsync(
-                    () => StatusMessage ?? "Loading firmware catalogue…",
-                    new DialogOptions { Title = "Loading firmware catalogue" }, token), false, token);
-            }
+
             var catalog = await Task.Run(() => catalogService.GetCatalogAsync(
                 new FirmwareCatalogRequest(Channel: allOptions ? null : channel, ForceRefresh: forceRefresh), token), token);
             token.ThrowIfCancellationRequested();
             var entries = catalog.Entries.Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown
-                && entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
+                && entry.Artifact.Format == FirmwareImageFormat.Apj).ToArray();
             await Dispatcher.DispatchAsync(() =>
             {
                 if (token.IsCancellationRequested)
@@ -129,7 +122,7 @@ public sealed partial class FirmwareCatalogueViewModel
         {
             await Dispatcher.DispatchAsync(() =>
             {
-                progress?.Dispose();
+
                 IsRefreshing = false;
                 ResetBusy();
             });
@@ -160,14 +153,7 @@ public sealed partial class FirmwareCatalogueViewModel
             return;
         }
         IsVehicleConnected = args.Current.IsOnline;
-        if (IsVehicleConnected)
-        {
-            loader.Cancel();
-        }
-        else
-        {
-            _ = RefreshAsync(false);
-        }
+
     });
     }
 

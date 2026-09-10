@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Core.Vehicles;
@@ -36,7 +36,7 @@ public sealed partial class STM32BootloaderViewModel
     /// <summary>Refreshes DFU devices and tool readiness without fetching the firmware catalogue.</summary>
     public Task RefreshAsync(CancellationToken cancellationToken = default)
     {
-        if (InstallationRunning || activeVehicle.IsOnline) { return Task.CompletedTask; }
+        if (InstallationRunning) { return Task.CompletedTask; }
         return LoadDevicesAsync(false, cancellationToken);
     }
 
@@ -45,7 +45,7 @@ public sealed partial class STM32BootloaderViewModel
 
     private Task LoadDevicesAsync(bool afterInstallation, CancellationToken cancellationToken) => loader.RunAsync(async token =>
     {
-        if (!afterInstallation && (InstallationRunning || activeVehicle.IsOnline)) { return; }
+        if (!afterInstallation && (InstallationRunning)) { return; }
         try
         {
             IsRefreshing = true;
@@ -92,7 +92,6 @@ public sealed partial class STM32BootloaderViewModel
     private void VehicleChanged(ActiveVehicleChangedEventArgs args) => Dispatcher.Dispatch(() =>
     {
         if (!loader.IsActive) { return; }
-        if (args.Current.IsOnline) { loader.Cancel(); }
-        else { _ = RefreshAsync(); }
+        _ = RefreshAsync();
     });
 }

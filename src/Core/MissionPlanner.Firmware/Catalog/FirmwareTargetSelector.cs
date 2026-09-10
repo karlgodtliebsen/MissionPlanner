@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Model;
+﻿using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Firmware.Catalog;
 
@@ -33,16 +33,21 @@ public static class FirmwareTargetSelector
 
     private static FirmwareTargetRecommendation Recommend(FirmwareManifestEntry entry, IReadOnlyCollection<SerialDeviceDescriptor> devices, int? previousBoardId)
     {
+        if (devices.Any(device => device.BootloaderIdentity?.BoardId == entry.Target.BoardId))
+        {
+            return new FirmwareTargetRecommendation(entry, FirmwareTargetMatchReason.ProtocolBoardId, FirmwareTargetConfidence.High);
+        }
+
         if (devices.Any(device => device.UsbIdentifier is { } usb && entry.Target.UsbIdentifiers.Contains(usb)))
         {
-            return new FirmwareTargetRecommendation(entry, FirmwareTargetMatchReason.ExactUsbMatch, FirmwareTargetConfidence.High);
+            return new FirmwareTargetRecommendation(entry, FirmwareTargetMatchReason.UsbCompatibilityHint, FirmwareTargetConfidence.Medium);
         }
 
         if (devices.Any(device => entry.Target.BootloaderNames.Any(alias =>
                 (!string.IsNullOrWhiteSpace(device.ProductName) && device.ProductName.Contains(alias, StringComparison.OrdinalIgnoreCase)) ||
                 device.BoardHints.Any(hint => hint.Contains(alias, StringComparison.OrdinalIgnoreCase)))))
         {
-            return new FirmwareTargetRecommendation(entry, FirmwareTargetMatchReason.ExactBootloaderAliasMatch, FirmwareTargetConfidence.High);
+            return new FirmwareTargetRecommendation(entry, FirmwareTargetMatchReason.ProductNameHint, FirmwareTargetConfidence.Medium);
         }
 
         return previousBoardId == entry.Target.BoardId

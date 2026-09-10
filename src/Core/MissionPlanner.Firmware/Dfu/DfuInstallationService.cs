@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
@@ -10,7 +10,6 @@ namespace MissionPlanner.Firmware.Dfu;
 /// <summary>Orchestrates the safety-ordered DFU installation workflow.</summary>
 public sealed class DfuInstallationService(
     IFirmwareOperationCoordinator operationCoordinator,
-    IFirmwareConnectionGateway connectionGateway,
     IDfuToolLocator toolLocator,
     IDfuArtifactResolver artifactResolver,
     IDfuDeviceCatalog deviceCatalog,
@@ -31,6 +30,7 @@ public sealed class DfuInstallationService(
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Device);
         using var operation = operationCoordinator.Begin(FirmwareOperationKind.InstallApplicationAndBootloaderDfu);
         var stage = DfuOperationState.Idle;
         var programmingVerified = false;
@@ -39,9 +39,6 @@ public sealed class DfuInstallationService(
 
         try
         {
-            if (connectionGateway.IsVehicleConnected)
-                return Fail("dfu.connection-conflict", "The normal vehicle connection must be disconnected before DFU installation.");
-
             Transition(FirmwareOperationState.Downloading, DfuOperationState.LocatingTool, "dfu.locating-tool");
             var tool = await toolLocator.LocateAsync(cancellationToken).ConfigureAwait(false);
             if (tool.Availability != DfuToolAvailability.Available)

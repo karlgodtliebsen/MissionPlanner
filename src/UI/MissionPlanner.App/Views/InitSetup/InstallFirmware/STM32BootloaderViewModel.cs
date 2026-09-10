@@ -133,14 +133,20 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
         base.Dispose();
     }
 
-    [RelayCommand(CanExecute = nameof(HasDetectedDfuDevice))]
-    private async Task LoadCustomBlWithFirmwareAsync(CancellationToken cancellationToken)
+    [RelayCommand]
+    private Task LoadCustomBlWithFirmwareAsync(CancellationToken cancellationToken)
+    {
+        return SelectHexAsync(cancellationToken);
+    }
+
+    /// <summary>Selects a combined HEX file for hardware-independent preparation.</summary>
+    public async Task SelectHexAsync(CancellationToken cancellationToken, FirmwareFileSelection? selection = null)
     {
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, viewLifetime?.Token ?? CancellationToken.None);
         cancellationToken = operation.Token;
         try
         {
-            var file = await filePicker.PickAsync(cancellationToken);
+            var file = selection ?? await filePicker.PickAsync(MissionPlanner.Firmware.Workflow.FirmwareArtifactFormat.WithBootloaderHex, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (file is null)
             {
@@ -243,6 +249,14 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
 
     public void Reset()
     {
+        CanInstallDfu = false;
+    }
+
+    /// <summary>Clears firmware state while preserving physical device discovery and handoff identity.</summary>
+    public void ClearArtifact()
+    {
+        PreparedArtifact = null;
+        ClearLocalDfuFirmware();
         CanInstallDfu = false;
     }
 }

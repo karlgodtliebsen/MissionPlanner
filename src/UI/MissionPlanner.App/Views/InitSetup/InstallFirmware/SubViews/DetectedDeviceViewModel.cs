@@ -118,7 +118,7 @@ public sealed partial class DetectedDeviceViewModel : ViewModelBase
                 device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase)))
             );
 
-            return new FirmwareDeviceItemViewModel(device, usbMatch || hintMatch, usbMatch ? "Exact catalogue USB match" : hintMatch ? "Bootloader/board hint match" : "Manual device selection");
+            return new FirmwareDeviceItemViewModel(device, usbMatch || hintMatch, usbMatch ? "USB compatibility hint" : hintMatch ? "Product/board name hint" : "Manual device selection");
         }).ToArray();
 
         Debug.Print($"InstallFirmware CreateItems found {deviceItems.Length} items");

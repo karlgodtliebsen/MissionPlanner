@@ -10,6 +10,7 @@ using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
+using MissionPlanner.Firmware.Betaflight;
 
 namespace MissionPlanner.Core.Firmware;
 
@@ -23,8 +24,34 @@ public sealed class TemporaryMavLinkBootloaderGateway(
     IMavLinkMessageDecodeHandler messageDecoder,
     IMavLinkCommandEncoder commandEncoder,
     IOptions<FirmwareOptions> options,
-    ILogger<TemporaryMavLinkBootloaderGateway> logger) : ITemporaryMavLinkBootloaderGateway
+    ILogger<TemporaryMavLinkBootloaderGateway> logger) : ITemporaryMavLinkBootloaderGateway, IArduPilotRuntimeVerifier
 {
+    /// <inheritdoc />
+    public async Task<ArduPilotRuntimeIdentity?> VerifyAsync(SerialDeviceDescriptor device, CancellationToken cancellationToken = default)
+    {
+        frameParser.Reset();
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(options.Value.BootloaderPortOpenTimeout + options.Value.TemporaryMavLinkHeartbeatTimeout);
+        try
+        {
+            await using var port = await serialPortFactory.OpenAsync(new SerialPortOpenOptions(device.PortName,
+                options.Value.BootloaderBaudRate), deadline.Token).ConfigureAwait(false);
+            var heartbeat = await ReadMessageAsync<HeartbeatMessage>(port.Stream,
+                new TransportEndPoint("firmware-runtime-probe", device.PortName), options.Value.TemporaryMavLinkHeartbeatTimeout,
+                deadline.Token, message => message.Autopilot == 3 && message.ComponentId == 1).ConfigureAwait(false);
+            return heartbeat is null ? null : new(heartbeat.SystemId, heartbeat.ComponentId, null, (heartbeat.BaseMode & 128) != 0);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or TimeoutException)
+        {
+            logger.LogDebug("Runtime probe unavailable on {PortName}: {Reason}", device.PortName, exception.Message);
+            return null;
+        }
+    }
+
     /// <inheritdoc />
     public async Task<bool> RebootToBootloaderAsync(SerialDeviceDescriptor applicationDevice, CancellationToken cancellationToken = default)
     {
@@ -44,6 +71,12 @@ public sealed class TemporaryMavLinkBootloaderGateway(
         if (heartbeat is null)
         {
             logger.LogDebug("No MAVLink heartbeat was detected on temporary firmware port {PortName}.", applicationDevice.PortName);
+            return false;
+        }
+
+        if ((heartbeat.BaseMode & 128) != 0)
+        {
+            logger.LogWarning("Refusing bootloader entry for armed controller on {PortName}.", applicationDevice.PortName);
             return false;
         }
 

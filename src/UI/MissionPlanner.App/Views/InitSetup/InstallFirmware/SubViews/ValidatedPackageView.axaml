@@ -1,4 +1,4 @@
-<UserControl 
+<UserControl
                   xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
                   xmlns="https://github.com/avaloniaui"
                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,10 +10,10 @@
                   mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                   x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.ValidatedPackageView"
                   x:DataType="subViews:ValidatedPackageViewModel">
-    <Border Padding="20" Classes="SectionCard" 
+    <Border Padding="20" Classes="SectionCard"
             IsEnabled="{Binding HasPreparedFirmware}">
         <StackPanel Orientation="Vertical" Spacing="10">
-            <TextBlock Text="ValidatedPackageModel package"  Classes="H3" Margin="0,0,0,10"/>
+            <TextBlock Text="Validated firmware"  Classes="H3" Margin="0,0,0,10"/>
 
             <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10">
                 <TextBlock Grid.Row="0" Text="Package board ID" />
@@ -68,7 +68,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
-<!--            <Button ToolTip.Tip="Install Validated Firmware" 
+<!--            <Button ToolTip.Tip="Install Validated Firmware"
                     Width="100"
                     Classes="Primary"
                     Padding="8,2"

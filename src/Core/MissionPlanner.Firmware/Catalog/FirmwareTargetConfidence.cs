@@ -1,4 +1,4 @@
-namespace MissionPlanner.Firmware.Catalog;
+﻿namespace MissionPlanner.Firmware.Catalog;
 
 /// <summary>Describes the strength of target-selection evidence.</summary>
 public enum FirmwareTargetConfidence
@@ -6,9 +6,9 @@ public enum FirmwareTargetConfidence
     /// <summary>No device evidence is available.</summary>
     Low,
 
-    /// <summary>Only remembered user intent supports the target.</summary>
+    /// <summary>USB/product hints or remembered user intent support a candidate, not an exact board.</summary>
     Medium,
 
-    /// <summary>Current device evidence supports the target.</summary>
+    /// <summary>Protocol-proven board identity supports the target.</summary>
     High
 }

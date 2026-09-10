@@ -19,6 +19,7 @@
             <converters:ByteDoubleConverter x:Key="ByteDoubleConverter" />
             <converters:StringDoubleConverter x:Key="StringDoubleConverter" />
             <converters:StringIntegerConverter x:Key="StringIntegerConverter" />
+            <converters:StringNotNullEmptyConverter x:Key="StringNotNullEmptyConverter" />
         </ResourceDictionary>
         <CornerRadius x:Key="ButtonCornerRadius">16</CornerRadius>
     </Application.Resources>

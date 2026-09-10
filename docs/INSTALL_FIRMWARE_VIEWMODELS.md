@@ -1,110 +1,100 @@
 # Install Firmware ViewModels
 
-## Navigation and artifact semantics
+## Navigation
 
-```text
-Install Firmware
-├── Firmware
-│   ├── Catalogue        — APJ/PX4 through the ArduPilot serial bootloader
-│   └── Custom Firmware  — local APJ/PX4 and its board metadata
-├── STM32 DFU
-│   ├── Device / Enter DFU
-│   ├── Catalogue        — selected release -> sibling *_with_bl.hex
-│   └── Custom HEX       — local *_with_bl.hex and explicit platform
-└── Help & Support
-```
+The page has exactly three top-level tabs: **Information**, **Firmware**, and
+**Help & Support**. Information is an informational Landing view. All operational
+commands belong to Firmware; there are no nested firmware/DFU tabs. Online selection
+uses the catalogue overlay and local selection uses the file picker. The catalogue
+has inline refresh progress and a bounded virtualized grid.
 
-The top-level contexts use horizontal tabs; nested workflow tabs are on the left.
-The persistent context card and Refresh devices action remain above them. Device / Enter DFU
-and Help remain accessible without a programmable device. Serial and DFU installation retain
-separate capability gates. Each scrolling content area is constrained by the page's star row.
+## Workflow and installation plan
 
-`InstallFirmwareViewModel` owns operation coordination, confirmations, cancellation and progress.
-`SelectedSectionIndex` and `SelectedDfuTabIndex` correspond to the UI-only `FirmwareSection` and
-`Stm32DfuSection` enums. Selecting Custom HEX explicitly selects the local source. A retained local
-file never overrides an official catalogue request from the Catalogue context.
+`FirmwareWorkflowContext` keeps physical presence, active telemetry transport,
+observed runtime, boot environment, target evidence, artifact validity and target
+compatibility separate. `FirmwareWorkflowResolver` and
+`FirmwareInstallationPlanResolver` are deterministic core functions. The parent
+rebuilds `CurrentPlan` when device, artifact, ownership or operation state changes.
+`CurrentPlan.CanExecute` gates Install/Reinstall and dispatches to the existing AP
+or DFU installer. The installers repeat their own safety checks before erase.
+
+| Physical state | Preparation | Boot action | Installation |
+| --- | --- | --- | --- |
+| No controller, with or without network telemetry | Online and local | Manual DFU guidance | Blocked: no target |
+| Betaflight serial, proven by MSP | Combined HEX | Explicit MSP-to-DFU handoff | Blocked until physical DFU and target review |
+| Unknown serial | Online and local | Probe or manual BOOT/RESET | Blocked pending transport/target evidence |
+| ArduPilot application, proven by heartbeat | APJ | Explicit AP bootloader entry | Blocked until bootloader identity |
+| STM32 ROM DFU | Combined `*_with_bl.hex` | Already in DFU | Tool, artifact, target safety and typed platform review required |
+| ArduPilot serial bootloader | APJ | Already in bootloader | Protocol board ID and strict compatibility required |
+
+USB VID/PID and product text are hints. Only protocol board identity can produce
+exact catalogue matching; shared USB identifiers never select a board automatically.
+Runtime probing uses bounded MSP, isolated MAVLink and bootloader conversations.
+A normal serial session blocks the COM port it owns, including while connecting.
+TCP/UDP telemetry does not globally block firmware preparation or a separate USB
+controller. Firmware operations also retain the shared exclusive operation lease.
 
 ## State ownership
 
-All panel ViewModels inherit `ViewModelBase` and use singleton DI registration.
-
 | ViewModel | Responsibility |
 | --- | --- |
-| `FirmwareLandingViewModel` | Device/Enter DFU identity summaries, shared selectors, actionable reboot errors and page-owned reboot requests. |
-| `FirmwareCatalogViewModel` | One shared catalogue: service loading, filters, recommendations, selected manifest entry and optional reviewed DFU target. |
-| `DetectedDeviceViewModel` | Existing platform serial discovery, identity enrichment and selected serial descriptor. |
-| `CustomFirmwareViewModel` | Normal local APJ/PX4 selection, parsing and board-ID override policy. |
-| `STM32BootloaderViewModel` | Existing DFU discovery, CubeProgrammer readiness, local combined HEX selection, inspected DFU artifact and correlated source evidence. |
-| `SelectedFirmwareViewModel` | Shared selected manifest identity, source copying and normal APJ download request. |
-| `ValidatedPackageViewModel` | Normal prepared APJ metadata and install request; never the DFU programming artifact. |
-| `DiagnosticsReportViewModel` | Diagnostic report and clipboard. |
-| `FirmwareHelpViewModel` | Embedded help and curated support actions. |
+| `InstallFirmwareViewModel` | Current plan, common artifact card, boot actions, source changes, progress, cancellation and installer dispatch |
+| `FirmwareLandingViewModel` | Informational serial/DFU summaries; no boot or flash commands |
+| `FirmwareCatalogueViewModel` | Catalogue loading, filters, hint-based recommendations and explicit manifest selection |
+| `DetectedDeviceViewModel` | Serial snapshots, expiring protocol evidence and physical selection |
+| `CustomFirmwareViewModel` | Local APJ import through the shared preparation service |
+| `STM32BootloaderViewModel` | DFU discovery, tool readiness, combined HEX input and correlated source evidence |
+| `SelectedFirmwareViewModel` | Internal selected manifest and download request state |
+| `ValidatedPackageViewModel` | Internal prepared APJ consumed by the installer |
+| `DiagnosticsReportViewModel` | Copyable terminal diagnostics |
+| `FirmwareHelpViewModel` | Embedded help and support actions |
 
-`STM32DfuDeviceView` replaces LandingView. `STM32DfuCatalogueView` reuses
-`FirmwareCatalogueSelectorView` and `SelectedFirmwareView`, with the APJ download action hidden.
-`STM32DfuCustomHexView` uses the existing local HEX picker. Both DFU source views use
-`STM32DfuArtifactView` for inspected filename, source, platform, checksum, size, readiness and
-explicit preparation/install actions. The old overloaded STM32BootloaderView is removed.
+The selected/validated child models remain internal workflow inputs. The page uses
+one `FirmwareArtifactSummary` presentation for both sources and both formats. It
+shows provenance, hash/cache identity, target/version, size and validation separately
+from compatibility. Official content includes URL/channel/Git identity; local APJ
+includes original filename/path and import time. HEX retains inspected address ranges.
 
-The selected catalogue APJ is release/platform identity. DFU preparation delegates to the same
-`IDfuArtifactResolver` used by installation, under the global `PrepareDfuArtifact` operation lease.
-It resolves and inspects combined Intel HEX, without programming. Source changes invalidate its
-preview; late results for a replaced source are rejected. Installation still resolves/revalidates
-its source and runs provider and target safety checks before programming. An APJ validated package
-is never presented or supplied as the DFU artifact.
+Local APJ import is bounded, structurally parsed, hashed and atomically cached before
+it is marked valid. Validity never implies target compatibility. Both local and online
+APJ use strict board matching; the local-only mismatch checkbox is removed. The
+lower-level package parser retains its existing format support, while normal page
+selection accepts APJ for serial and combined HEX for DFU.
 
-The resolver rejects disagreement between the explicit platform, manifest platform/board and
-source platform directory, including `Board` versus `Board-heli`. It never substitutes another
-target or a bootloader-only artifact when a sibling is unavailable.
+DFU preparation uses the existing resolver/inspector under `PrepareDfuArtifact` and
+can run without a connected controller. The chosen manifest identifies the exact
+release/platform whose sibling combined HEX is resolved. A generic HEX filename is
+rejected by the normal picker. Source changes invalidate the prepared preview; late
+results cannot replace a newer selection. Typed `FLASH <platform>` review is bound
+to the selected artifact and physical endpoint, and is invalidated on either change.
+The final service confirmation still precedes destructive programming.
 
-## Lifecycle and events
+Clear Firmware clears artifact selection and validation while preserving physical
+discovery, runtime evidence and device selection. Selecting serial or DFU selects
+one physical installation target without emptying either discovery list.
 
-Children send ordinary `Action<T>` events in this narrow parent/child UI scope. The parent
-subscribes in ActivateAsync and unsubscribes in DeactivateAsync. `FirmwarePanelRequest` lets the
-parent assign a completion Task which the child command awaits; no async-void event handlers.
+## Lifecycle, progress and cancellation
 
-Page activation starts existing serial and DFU discovery without eagerly downloading a catalogue.
-The page owns discovery until it closes, so tab changes do not stop the device models. Catalogue
-loading follows panel activation, using the existing coalescing/cancellable FirmwarePanelLoader.
-File picker operations observe panel lifetime cancellation and reject late results.
+Children use retained, narrowly scoped events. The parent subscribes on activation
+and unsubscribes on deactivation. Page activation starts serial and DFU discovery;
+the catalogue downloads when its overlay is shown. Changing top-level tabs does not
+start a second workflow. File selection and asynchronous preparation reject stale
+results and observe lifecycle cancellation.
 
-Normal `HasPreparedFirmware` is derived from PreparedFirmware. The validated panel owns its
-binding and is enabled after preparation. Rebuilding recommendations for the same manifest entry
-preserves preparation; selecting another entry or clearing selection invalidates it.
+Progress is owned by the page. `FirmwareDialogCoordinator` temporarily removes it
+for operator confirmations and restores it afterwards. The progress area wraps text
+and preserves Cancel access; terminal diagnostics close progress first. Manual
+BOOT/RESET guidance is a cancellable, bounded wait with a distinct discovery-timeout
+message. Operator cancellation is presented as Cancelled, never Completed or Failed.
+AP erase/program/verify/reboot and providers without safe cancellation support retain
+their existing deferred-cancellation behavior and tell the operator to keep power on.
 
-## Device entry and safety
+## Verification
 
-Reboot to DFU freshly probes only the selected serial controller. A successful exact BTFL identity
-and MCU UID are required before explicit propeller-removal confirmation. Confirmation closes
-before the reboot progress dialog opens. The existing handoff service rechecks identity and armed
-state, sends the supported reboot, and accepts only a newly appearing endpoint at the source's
-physical USB location. Port-busy outcomes survive discovery/cache projection and appear visibly
-in Device / Enter DFU, with instructions to disconnect Betaflight Configurator and retry.
-
-A successful handoff must still rediscover the exact endpoint generation. It retains the source
-receipt, selects that endpoint, then navigates to STM32 DFU / Catalogue. It never starts flashing.
-Failure or ambiguity remains in Device / Enter DFU. Selecting a different DFU endpoint does not
-inherit the source's identity. Existing exact reviewed compatibility mappings can select a unique
-matching release; no mapping or ambiguous releases require manual selection. STM32 USB/MCU
-identity never creates an exact target mapping.
-
-A pre-existing 0483:DF11 endpoint requires no COM device. It is anonymous unless a matching
-handoff was observed: STM32 ROM DFU is normally a USB endpoint, not a COM port, and does not prove
-the exact FC PCB. Manual BOOT/DFU reconnect or BOOT + RESET guidance remains available.
-
-Installation requires Windows, no active telemetry connection, a selected ready DFU driver,
-validated CubeProgrammer availability, the selected source and exact local platform where needed.
-The existing installer repeats tool/device/HEX/target checks and final confirmation. Power-critical
-handling, deferred cancellation and verification remain in the existing services. Browser builds
-share presentation and catalogue code but cannot perform native serial/DFU operations.
-
-## Verification and task commits
-
-The InstallFirmware-take2 tasks were implemented incrementally with separate commits. Tests cover
-navigation composition; normal APJ download/validation; custom file and local-path policy; source
-isolation and HEX preparation; tool gating; busy/unidentified ports; confirmation cancellation;
-correlated handoff navigation and no automatic flashing; and anonymous DFU identity limits.
-Full-suite and Desktop/Browser build results are recorded with task 06. Automated tests use fakes;
-this restructure does not constitute physical flash or Pavo 20 compatibility acceptance.
-
-Final verification (2026-09-09): full suite passed 1000 .NET + 7 JavaScript tests with 29 existing skips. After two additional filename-variant cases, targeted Firmware tests passed 254 (1 skip), UI tests passed 83, and Desktop/Browser builds passed. See [execution results](tasks/InstallFirmware-take2/EXECUTION_RESULTS.md).
+`FirmwareWorkflowTests` and `FirmwareInstallationPlanTests` cover the A–G capability
+and format matrix. `FirmwarePlanViewModelTests`, `DfuWorkflowTests`,
+`FirmwarePanelLoadingTests` and migration contracts cover page wiring and lifecycle.
+`BetaflightConversionScenarioTests` covers reviewed handoff, mocked programming and
+fresh runtime rediscovery, including verification failure. Existing firmware service,
+protocol, cache, ownership and cancellation suites remain in place. Physical F4/H7
+flash and visual desktop acceptance remain separate hardware checks.

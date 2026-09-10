@@ -117,3 +117,21 @@ public sealed class StringIntegerConverter : IValueConverter
         return int.TryParse(v, out var result) ? result : 0;
     }
 }
+
+/// <summary>
+/// 
+/// </summary>
+public sealed class StringNotNullEmptyConverter : IValueConverter
+{
+    /// <inheritdoc />
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return value is not null && !string.IsNullOrEmpty(value.ToString());
+    }
+
+    /// <inheritdoc />
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        return false;
+    }
+}

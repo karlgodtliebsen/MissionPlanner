@@ -47,6 +47,12 @@ public sealed class VehicleConnectionSession(
     private CancellationTokenSource serviceCts = new();
     private IMavLinkConnectionSession? connectionSession = null;
 
+    /// <inheritdoc />
+    public string? ActiveTransportProtocol { get; private set; }
+
+    /// <inheritdoc />
+    public string? ActiveSerialPort { get; private set; }
+
     /// <summary>
     /// Gets the established message pump. Throws an exception if no message pump is established.
     /// </summary>
@@ -116,6 +122,8 @@ public sealed class VehicleConnectionSession(
         transportOptions.Value.BaudRate = baudRate;
         configure?.Invoke(transportOptions.Value);
 
+        ActiveTransportProtocol = "serial";
+        ActiveSerialPort = transportOptions.Value.SerialPort;
         connectionSession = await connectionSessionFactory.CreateSerialConnection(transportOptions, cancellationToken);
 
         messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
@@ -145,6 +153,8 @@ public sealed class VehicleConnectionSession(
             await registry.Reset(cancellationToken);
         }
 
+        ActiveTransportProtocol = "tcp";
+        ActiveSerialPort = null;
         connectionSession = await connectionSessionFactory.CreateTcpConnection(transportOptions, cancellationToken);
 
         messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
@@ -176,6 +186,8 @@ public sealed class VehicleConnectionSession(
             await registry.Reset(cancellationToken);
         }
 
+        ActiveTransportProtocol = "udp";
+        ActiveSerialPort = null;
         connectionSession = await connectionSessionFactory.CreateUdpConnection(transportOptions, cancellationToken);
         messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
         messagePump = messagePumpLease.Pump;
@@ -197,6 +209,9 @@ public sealed class VehicleConnectionSession(
             await connectionSession.DisposeAsync().ConfigureAwait(false);
             connectionSession = null;
         }
+
+        ActiveTransportProtocol = null;
+        ActiveSerialPort = null;
 
         if (messagePumpLease is not null)
         {

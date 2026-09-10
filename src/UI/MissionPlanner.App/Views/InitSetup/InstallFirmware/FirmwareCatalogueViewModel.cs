@@ -33,8 +33,6 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
         SelectedFirmwareViewModel selectedFirmwareModel,
         IFirmwareCatalogService catalogService,
         Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
-        Utilities.Dialogs.IDialogService dialogService,
-        FirmwareDialogCoordinator firmwareDialogs,
         ILogger<FirmwareCatalogueViewModel> logger,
         IUiDispatcher dispatcher,
         IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
@@ -44,8 +42,6 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
         SelectedFirmwareModel = selectedFirmwareModel;
         this.catalogService = catalogService;
         this.activeVehicle = activeVehicle;
-        this.dialogService = dialogService;
-        this.firmwareDialogs = firmwareDialogs;
     }
 
 

@@ -7,14 +7,15 @@ public sealed partial class InstallFirmwareViewModel
 {
     private async Task PrepareDfuArtifactAsync(CancellationToken cancellationToken)
     {
-        if (!CanStartDfuInstall())
+        if (IsOperationInProgress || ArePanelsRefreshing
+            || (UsesLocalDfuHex ? string.IsNullOrWhiteSpace(DfuModel.LocalDfuPlatform) : OnlineFirmwareModel.SelectedFirmware is null))
         {
             return;
         }
         var local = UsesLocalDfuHex;
         var entry = local ? null : OnlineFirmwareModel.SelectedFirmware!.Entry;
         var request = new DfuInstallationRequest(local ? DfuModel.LocalDfuPlatform!.Trim() : entry!.Target.Platform,
-            entry?.Target.BoardId, DfuModel.SelectedDfuDevice!.Descriptor,
+            entry?.Target.BoardId, DfuModel.SelectedDfuDevice?.Descriptor,
             ManifestEntry: entry, LocalHexPath: local ? DfuModel.LocalDfuFirmwarePath : null);
         using var owned = BeginOperationCancellation(cancellationToken);
         try

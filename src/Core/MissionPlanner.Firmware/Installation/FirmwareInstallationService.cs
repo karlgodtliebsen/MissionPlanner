@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Compatibility;
+﻿using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Downloads;
 using MissionPlanner.Firmware.Entry;
@@ -34,9 +34,7 @@ public sealed class FirmwareInstallationService(
         var stage = FirmwareOperationState.Idle;
         var isLocalCustom = request.Source == FirmwareInstallationSource.LocalCustom;
         var requestedPolicy = request.CompatibilityPolicy ?? FirmwareCompatibilityPolicy.Strict;
-        var effectivePolicy = isLocalCustom
-            ? requestedPolicy
-            : FirmwareCompatibilityPolicy.Strict;
+        var effectivePolicy = FirmwareCompatibilityPolicy.Strict;
         var boardIdOverride = requestedPolicy.AllowBoardIdMismatch
             ? FirmwareBoardIdOverrideState.RequestedNotUsed
             : FirmwareBoardIdOverrideState.NotRequested;
@@ -51,7 +49,8 @@ public sealed class FirmwareInstallationService(
         using var logScope = logger.BeginScope(new Dictionary<string, object?> { ["FirmwareOperationId"] = operation.OperationId });
         try
         {
-            if (connectionGateway.IsVehicleConnected)
+            if (connectionGateway.OwnsSerialPort(request.EntryContext.ApplicationDevice?.PortName
+                ?? request.EntryContext.DiscoveryRequest.SelectedDevice?.PortName))
             {
                 Transition(FirmwareOperationState.Failed, "installation.connection-conflict");
                 throw new FirmwareConnectionConflictException(

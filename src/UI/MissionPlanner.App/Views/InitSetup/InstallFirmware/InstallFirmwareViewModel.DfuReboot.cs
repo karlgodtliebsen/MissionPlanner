@@ -1,27 +1,31 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Firmware.Model;
+using MissionPlanner.Firmware.Installation;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 public sealed partial class InstallFirmwareViewModel
 {
-    [RelayCommand]
+    /// <summary>Gets whether a proven Betaflight controller can enter STM32 DFU.</summary>
+    public bool CanRebootToDfu => active && OperatingSystem.IsWindows() && !IsOperationInProgress && !ArePanelsRefreshing
+        && DevicesModel.SelectedDevice?.Descriptor.BetaflightIdentity is { FirmwareVariant: "BTFL" }
+        && !(connectionGateway?.OwnsSerialPort(DevicesModel.SelectedDevice.Descriptor.PortName) ?? activeVehicle.IsOnline);
+
+    [RelayCommand(CanExecute = nameof(CanRebootToDfu))]
 
     private async Task RebootToDfuAsync(CancellationToken cancellationToken)
     {
-        if (!landing.CanRebootToDfu || IsOperationInProgress || ArePanelsRefreshing
+        if (!CanRebootToDfu || IsOperationInProgress || ArePanelsRefreshing
             || DevicesModel.SelectedDevice?.Descriptor is not { } source)
         {
             return;
         }
 
         using var owned = BeginOperationCancellation(cancellationToken);
-        var navigateToCatalogue = false;
         try
         {
-            SelectedSectionIndex = (int)FirmwareSection.Stm32Dfu;
-            SelectedDfuTabIndex = (int)Stm32DfuSection.Device;
+
             DfuModel.CorrelatedHandoff = null;
             landing.ErrorMessage = null;
             SetOperation(true, FirmwareOperationState.RequestingBootloaderReboot);
@@ -52,6 +56,7 @@ public sealed partial class InstallFirmwareViewModel
                 + "Remove all propellers and keep USB connected. No firmware will be written.", owned.Token);
             if (!confirmed)
             {
+                SetMessages("DFU reboot cancelled.");
                 return;
             }
 
@@ -61,6 +66,11 @@ public sealed partial class InstallFirmwareViewModel
             var result = await dfuHandoff.RebootAsync(source, CreateProgress(), owned.Token);
             if (!result.Succeeded)
             {
+                if (result.Code.Contains("cancelled", StringComparison.OrdinalIgnoreCase))
+                {
+                    SetMessages("DFU reboot cancelled. Refresh devices if the controller already changed mode.");
+                    return;
+                }
                 ReportDfuRebootError(result.Code.Contains("port-busy", StringComparison.OrdinalIgnoreCase)
                     ? $"Cannot open {source.PortName}: the port is in use or access was denied. Disconnect Betaflight Configurator and close other serial applications, then retry."
                     : $"DFU reboot was not confirmed ({result.Code}). Check the selected controller or use its BOOT/RESET procedure, then refresh devices.");
@@ -75,19 +85,18 @@ public sealed partial class InstallFirmwareViewModel
             {
                 DfuModel.CorrelatedHandoff = result;
                 OnlineFirmwareModel.SetReviewedDfuTarget(betaflightCompatibility.Resolve(source.BetaflightIdentity!));
-                navigateToCatalogue = true;
             }
             DfuModel.DfuStatus = DfuModel.SelectedDfuDevice is null
                 ? "The controller entered DFU but is no longer detected. Refresh devices before continuing."
-                : "The selected controller entered DFU. Open STM32 Bootloader to continue.";
+                : "The selected controller entered DFU. Select and validate combined HEX firmware, then review the exact target.";
             SetMessages(DfuModel.DfuStatus);
             NotificationManager?.Show(StatusMessage ?? "");
         }
         catch (OperationCanceledException) when (owned.IsCancellationRequested)
         {
             DfuModel.DfuStatus = "DFU reboot cancelled. If the controller already rebooted, refresh devices to detect its current mode.";
-            SetMessages(errorMessage: DfuModel.DfuStatus);
-            NotificationManager?.Show(ErrorMessage ?? "");
+            SetMessages(DfuModel.DfuStatus);
+            NotificationManager?.Show(StatusMessage ?? "");
         }
         catch (Exception exception)
         {
@@ -103,11 +112,6 @@ public sealed partial class InstallFirmwareViewModel
             CloseOperationDialog();
             EndOperationCancellation(owned);
             SetOperation(false, null);
-            if (navigateToCatalogue)
-            {
-                SelectedSectionIndex = (int)FirmwareSection.Stm32Dfu;
-                SelectedDfuTabIndex = (int)Stm32DfuSection.Catalogue;
-            }
         }
     }
 

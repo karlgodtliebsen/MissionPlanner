@@ -24,7 +24,7 @@ public sealed class DfuWorkflowTests
         await File.WriteAllTextAsync(path, "fixture", TestContext.Current.CancellationToken);
         try
         {
-            services.GetRequiredService<IFirmwareFilePicker>().PickAsync(Arg.Any<CancellationToken>())
+            services.GetRequiredService<IFirmwareFilePicker>().PickAsync(MissionPlanner.Firmware.Workflow.FirmwareArtifactFormat.WithBootloaderHex, Arg.Any<CancellationToken>())
                 .Returns(new FirmwareFileSelection(name, _ => throw new InvalidOperationException("Picker must not parse APJ"), local ? path : null));
             await dfu.LoadCustomBlWithFirmwareCommand.ExecuteAsync(null);
             Assert.Equal(accepted, dfu.HasLocalDfuFirmware);
@@ -39,20 +39,22 @@ public sealed class DfuWorkflowTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task PreviewUsesSelectedSourceContextAndExistingResolverWithoutProgramming(bool custom)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task PreviewUsesSelectedSourceContextAndExistingResolverWithoutProgramming(bool custom, bool physical)
     {
         using var services = FirmwarePanelViewModelTests.CreateServices();
         var parent = services.GetRequiredService<InstallFirmwareViewModel>();
         await parent.ActivateAsync();
         services.GetRequiredService<IActiveVehicleContext>().IsOnline.Returns(false);
         var device = new DfuDeviceDescriptor("usb", 0x0483, 0xDF11, DfuDriverState.PresentReady);
-        services.GetRequiredService<IDfuDeviceCatalog>().GetDevicesAsync(Arg.Any<CancellationToken>()).Returns(new[] { device });
+        services.GetRequiredService<IDfuDeviceCatalog>().GetDevicesAsync(Arg.Any<CancellationToken>()).Returns(physical ? new[] { device } : Array.Empty<DfuDeviceDescriptor>());
         services.GetRequiredService<IDfuToolLocator>().LocateAsync(Arg.Any<CancellationToken>())
             .Returns(new DfuToolStatus(DfuToolAvailability.Available));
         await parent.DfuModel.RefreshAsync(TestContext.Current.CancellationToken);
-        parent.SelectedDfuTabIndex = custom ? (int)Stm32DfuSection.Custom : (int)Stm32DfuSection.Catalogue;
+
         parent.DfuModel.LocalDfuFirmwarePath = "retained_with_bl.hex";
         parent.DfuModel.LocalDfuPlatform = "LocalBoard";
         var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
@@ -60,13 +62,23 @@ public sealed class DfuWorkflowTests
             new FirmwareArtifact(new Uri("https://firmware.ardupilot.org/Copter/stable/Board/arducopter.apj"), FirmwareImageFormat.Apj));
         parent.OnlineFirmwareModel.SetCatalogue([entry], [], true);
         parent.OnlineFirmwareModel.SelectedFirmware = parent.OnlineFirmwareModel.FirmwareChoices.Single();
-        Assert.True(parent.DfuModel.CanInstallDfu);
+        if (custom)
+        {
+            parent.OnlineFirmwareModel.ClearSelection();
+            parent.DfuModel.LocalDfuFirmwarePath = "retained_with_bl.hex";
+            parent.DfuModel.LocalDfuPlatform = "LocalBoard";
+        }
+        else
+        {
+            parent.DfuModel.LocalDfuFirmwarePath = null;
+        }
+        Assert.False(parent.DfuModel.CanInstallDfu);
         var artifact = new DfuArtifact("arducopter_with_bl.hex", "prepared.hex",
             new DfuArtifactMetadata(100, 1, 0x08000000, 0x08000000, "hex-hash", [], []),
             Platform: custom ? "LocalBoard" : "Board");
         var resolver = services.GetRequiredService<IDfuArtifactResolver>();
         resolver.ResolveAsync(Arg.Any<DfuInstallationRequest>(), Arg.Any<CancellationToken>()).Returns(artifact);
-        await parent.DfuModel.PrepareDfuCommand.ExecuteAsync(null);
+        await parent.PrepareSelectedHexCommand.ExecuteAsync(null);
         Assert.Same(artifact, parent.DfuModel.PreparedArtifact);
         Assert.Null(parent.ValidatedModel.PreparedFirmware);
         await resolver.Received(1).ResolveAsync(Arg.Is<DfuInstallationRequest>(request => custom

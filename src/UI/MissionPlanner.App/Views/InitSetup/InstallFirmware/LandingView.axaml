@@ -11,7 +11,7 @@
                                 >
 
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="16" Margin="0,16">
+        <StackPanel Spacing="16" Margin="0,16" HorizontalAlignment="Center">
             <TextBlock Text="Controller status" Classes="H3" />
             <TextBlock Text="Review the connection and detected devices before choosing a firmware workflow." Classes="Warning" TextWrapping="Wrap" />
             <Border Padding="20" Classes="SectionCard">

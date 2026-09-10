@@ -18,7 +18,7 @@ public sealed class BetaflightDfuHandoff(IBootloaderEntryService entry, IDfuDevi
     public async Task<BetaflightDfuHandoffResult> RebootAsync(SerialDeviceDescriptor source,
         IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
     {
-        if (connection.IsVehicleConnected || source.BetaflightIdentity is null)
+        if (connection.OwnsSerialPort(source.PortName) || source.BetaflightIdentity is null)
         {
             return new(false, "betaflight.disconnected-identity-required", source);
         }

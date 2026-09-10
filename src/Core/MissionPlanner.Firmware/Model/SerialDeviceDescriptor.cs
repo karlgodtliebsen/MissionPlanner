@@ -1,4 +1,4 @@
-namespace MissionPlanner.Firmware.Model;
+﻿namespace MissionPlanner.Firmware.Model;
 
 /// <summary>Describes a serial device visible to firmware discovery.</summary>
 public sealed record SerialDeviceDescriptor
@@ -26,6 +26,12 @@ public sealed record SerialDeviceDescriptor
 
     /// <summary>Gets the transient port name, such as COM7.</summary>
     public string PortName { get; }
+
+    /// <summary>Gets board evidence read from the ArduPilot bootloader protocol, never from USB descriptors.</summary>
+    public BootloaderIdentity? BootloaderIdentity { get; init; }
+
+    /// <summary>Gets protocol-observed runtime/boot state, independent of OS product strings.</summary>
+    public Workflow.FirmwareRuntimeProbeResult? RuntimeProbe { get; init; }
 
     /// <summary>Gets protocol-proven runtime identity, separate from canonical USB metadata.</summary>
     public Betaflight.BetaflightDeviceInfo? BetaflightIdentity { get; init; }

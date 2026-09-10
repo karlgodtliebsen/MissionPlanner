@@ -1,4 +1,4 @@
-namespace MissionPlanner.Firmware.Catalog;
+﻿namespace MissionPlanner.Firmware.Catalog;
 
 /// <summary>Identifies why a firmware target is recommended.</summary>
 public enum FirmwareTargetMatchReason
@@ -10,8 +10,11 @@ public enum FirmwareTargetMatchReason
     PreviouslySelectedTarget,
 
     /// <summary>A detected product or board hint matches a bootloader alias.</summary>
-    ExactBootloaderAliasMatch,
+    ProductNameHint,
 
     /// <summary>A detected USB VID/PID matches the manifest target.</summary>
-    ExactUsbMatch
+    UsbCompatibilityHint,
+
+    /// <summary>The ArduPilot bootloader protocol reported this board ID.</summary>
+    ProtocolBoardId
 }

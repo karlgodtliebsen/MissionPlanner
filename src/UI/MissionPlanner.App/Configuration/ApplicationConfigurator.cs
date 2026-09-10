@@ -155,6 +155,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IDfuUserInteraction, FirmwareInteractionService>();
 
         services.TryAddTransient<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
+        services.TryAddTransient<MissionPlanner.Firmware.Betaflight.IArduPilotRuntimeVerifier, TemporaryMavLinkBootloaderGateway>();
         services.TryAddTransient<ITextClipboardService, TextClipboardService>();
         services.TryAddSingleton<ISetupCompletionStore, JsonSetupCompletionStore>();
 

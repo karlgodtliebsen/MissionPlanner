@@ -1,10 +1,10 @@
-namespace MissionPlanner.Firmware.Dfu;
+﻿namespace MissionPlanner.Firmware.Dfu;
 
 /// <summary>Requests the complete DFU installation use case.</summary>
 public sealed record DfuInstallationRequest(
     string SelectedPlatform,
     int? SelectedBoardId,
-    DfuDeviceDescriptor Device,
+    DfuDeviceDescriptor? Device = null,
     DfuArtifact? Artifact = null,
     Uri? ArtifactSource = null,
     string? ConfirmationPhrase = null,

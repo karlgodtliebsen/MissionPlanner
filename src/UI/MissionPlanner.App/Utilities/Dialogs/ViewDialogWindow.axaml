@@ -45,7 +45,7 @@
                     Command="{Binding OkCommand}"
                     IsVisible="{Binding ShowOkButton}"
                 >
-                    <avalonia:MaterialIcon Kind="CheckMultiple" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
                 </Button>
             </StackPanel>
 

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Model;
 
@@ -14,12 +14,33 @@ public sealed class FirmwareTargetSelectorTests
     }
 
     [Fact]
-    public void ExactUsbEvidenceProducesOneHighConfidenceRecommendation()
+    public void SoleUsbCandidateDoesNotBecomeExactBoardEvidence()
     {
         var usb = new UsbIdentifier(0x2dae, 0x1016);
         var recommendations = FirmwareTargetSelector.Query(
             [Entry(50, "CubeOrange", usb), Entry(51, "MatekH743")], new(),
             [new SerialDeviceDescriptor("COM8", usbIdentifier: usb)]);
+        FirmwareTargetSelector.UnambiguousHighConfidence(recommendations).Should().BeNull();
+    }
+
+    [Fact]
+    public void SharedUsbIdentityNeverSelectsFirstCatalogueTarget()
+    {
+        var usb = new UsbIdentifier(4617, 22337);
+        var recommendations = FirmwareTargetSelector.Query(
+            [Entry(1115, "ACNS-CM4Pilot", usb), Entry(105, "BETAFPV-F405", usb)], new(),
+            [new SerialDeviceDescriptor("COM10", usbIdentifier: usb)]);
+        recommendations.Should().OnlyContain(item => item.Reason == FirmwareTargetMatchReason.UsbCompatibilityHint
+            && item.Confidence != FirmwareTargetConfidence.High);
+        FirmwareTargetSelector.UnambiguousHighConfidence(recommendations).Should().BeNull();
+    }
+
+    [Fact]
+    public void ProtocolBoardIdCanSelectAnUnambiguousTarget()
+    {
+        var recommendations = FirmwareTargetSelector.Query(
+            [Entry(50, "CubeOrange"), Entry(51, "MatekH743")], new(),
+            [new SerialDeviceDescriptor("COM8") { BootloaderIdentity = new(50, 5, 1024 * 1024) }]);
         FirmwareTargetSelector.UnambiguousHighConfidence(recommendations)!.Entry.Target.BoardId.Should().Be(50);
     }
 

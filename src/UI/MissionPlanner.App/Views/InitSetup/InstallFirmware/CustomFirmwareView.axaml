@@ -41,26 +41,8 @@
                 <TextBlock  Margin="0,8,0,0" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
                             Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
 
-                <WrapPanel Grid.Row="8"  Grid.Column="0" Grid.ColumnSpan="2"  Orientation="Horizontal" ItemSpacing="5">
-                    <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
-                    <TextBlock Text="Require exact board ID match"  Classes="Warning" />
-                </WrapPanel>
-                <Border Grid.Row="9"  Grid.Column="0" Grid.ColumnSpan="2"  Classes="SectionCard"
-                        IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}" Margin="0,8,0,0" Padding="12"
-                        BorderBrush="{DynamicResource Warning}">
-                    <StackPanel Orientation="Vertical">
-                        <TextBlock MaxLines="3" Text="Advanced override:."
-                                   Classes="Warning" TextWrapping="Wrap" />
 
-                        <TextBlock MaxLines="3" Text="board-ID mismatch will be allowed for this local firmware only."
-                                   Classes="Warning" TextWrapping="Wrap" />
-                        <TextBlock MaxLines="3" Text="Use this only when you know the firmware target is electrically and bootloader compatible with this controller."
-                                   Classes="Warning" TextWrapping="Wrap" />
-                        <TextBlock MaxLines="3" Text="Flash-size, revision, bootloader and secure-boot checks still apply."
-                                   Classes="Warning" TextWrapping="Wrap" />
 
-                    </StackPanel>
-                </Border>
             </Grid>
         </Border>
     </Grid>

@@ -1,274 +1,214 @@
-<utilities:NavigationViewBase x:TypeArguments="local:InstallFirmwareViewModel"
-                              xmlns="https://github.com/avaloniaui"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                              xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
-                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                              xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
-                              xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                              xmlns:subViews="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
-                              x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
-                              x:DataType="local:InstallFirmwareViewModel">
-
-    <ContentPage Header="Install Firmware" >
-
-
-        <TabControl  TabStripPlacement="Top" >
-
+<utilities:NavigationViewBase
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    x:TypeArguments="local:InstallFirmwareViewModel"
+    x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
+    x:DataType="local:InstallFirmwareViewModel">
+    <ContentPage Header="Install Firmware">
+        <TabControl TabStripPlacement="Top">
             <TabItem Header="Information">
-                <local:LandingView  />
+                <local:LandingView />
             </TabItem>
-
             <TabItem Header="Firmware">
+                <Grid RowDefinitions="Auto,*" Margin="20" RowSpacing="12" HorizontalAlignment="Stretch">
+                    <WrapPanel Grid.Row="0" ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
+                        <Button ToolTip.Tip="Refresh physical serial and DFU devices"
+                                Command="{Binding RefreshDevicesCommand}"
+                                IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
+                            <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
+                        </Button>
 
-                <Grid RowDefinitions="*" HorizontalAlignment="Stretch" Margin="25">
+                        <Button ToolTip.Tip="Probe Runtime. Identify the selected controller using live protocols"
+                                Command="{Binding ProbeRuntimeCommand}" >
+                            <avalonia:MaterialIcon Kind="ProgressAuto" Width="30" Height="30" />
+                        </Button>
 
-                    <Border Grid.Row="0" IsVisible="{Binding IsConnectedMode}"
-                            Padding="24" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Button ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
+                                Command="{Binding EnterArduPilotBootloaderCommand}" >
+                            <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
+                        </Button>
 
-                        <WrapPanel Orientation="Horizontal" ItemSpacing="25">
-                            <StackPanel Orientation="Vertical" Spacing="14">
-                                <TextBlock Text="A vehicle is connected" Classes="H3 Warning"  />
-                                <TextBlock Text="Application firmware cannot be installed while Mission Planner owns the active connection. Disconnect the vehicle first to browse or install firmware." />
-                                <TextBlock Text="Embedded bootloader update is available only for a supported, disarmed ArduPilot vehicle. Keep power connected and reboot after an accepted update." />
-                            </StackPanel>
-                            <!--
-                            <Button
-                            VerticalAlignment="Center"
-                            ToolTip.Tip="Update Bootloader"
-                            Padding="8,2"
-                            Command="{Binding UpdateBootloaderCommand}"
-                            IsEnabled="{Binding CanUpdateBootloader}"  HorizontalAlignment="Center" >
+                        <Button ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
+                                Command="{Binding RebootToDfuCommand}" >
+                            <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
+                        </Button>
+
+                        <Button ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
+                                Command="{Binding EnterManualDfuCommand}"
+                                IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
+                            <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
+                        </Button>
+
+                        <Button ToolTip.Tip="Online Firmware" Command="{Binding ShowOnlineFirmwareSelectorCommand}"
+                                IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}" >
+                            <avalonia:MaterialIcon Kind="OpenInBrowser" Width="30" Height="30" />
+                        </Button>
+
+                        <Button ToolTip.Tip="Local Firmware" Command="{Binding ShowLocalFirmwareSelectorCommand}"
+                                IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}">
+                            <avalonia:MaterialIcon Kind="Folder" Width="30" Height="30" />
+                        </Button>
+
+                        <Button ToolTip.Tip="Clear Selected Firmware" Command="{Binding ClearFirmwareSelectionCommand}"
+                                IsEnabled="{Binding !IsOperationInProgress}" >
                             <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
-                            </Button>-->
-                        </WrapPanel>
+                        </Button>
 
-                    </Border>
-                    <ScrollViewer Grid.Row="0" IsVisible="{Binding IsConnectedMode,Converter={StaticResource InvertedBoolConverter}}">
+                        <Button ToolTip.Tip="Install / Reinstall"
+                                Command="{Binding ExecuteCurrentPlanCommand}"
+                                IsEnabled="{Binding CurrentPlan.CanExecute}" >
+                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                        </Button>
 
-                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10" HorizontalAlignment="Center"  VerticalAlignment="Stretch"
-                              IsVisible="{Binding IsConnectedMode,Converter={StaticResource InvertedBoolConverter}}">
-
-                            <WrapPanel Grid.Row="0" Orientation="Horizontal"  ItemSpacing="10"  HorizontalAlignment="Center" VerticalAlignment="Center">
-
-                                <Button
-                                    VerticalAlignment="Center"
-                                    ToolTip.Tip="Refresh devices"
-                                    Padding="8,2"
-                                    Command="{Binding RefreshDevicesCommand}"
-                                    IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Center" >
-                                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
-                                </Button>
-
-                                <!--
-                                <Button ToolTip.Tip="Refresh devices"
-                                Padding="8,2"
-                                VerticalAlignment="Center"
-                                Command="{Binding ReprobeCommand}" IsEnabled="{Binding !InstallationRunning}" HorizontalAlignment="Left">
-                                <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
-                                </Button>
-                                -->
-
-                                <Button
-                                    ToolTip.Tip="Update Bootloader"
-                                    Padding="8,2"
-                                    Command="{Binding UpdateBootloaderCommand}"
-                                    IsEnabled="{Binding CanUpdateBootloader}"
-                                    >
-                                    <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
-                                </Button>
-
-                                <Button ToolTip.Tip="Reboot to DFU"
-                                        Padding="8,2"
-                                        Command="{Binding RebootToDfuCommand}"
-                                        >
-                                    <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
-                                </Button>
-
-                                <Button ToolTip.Tip="Load Online Firmware"
-                                        Command="{Binding ShowOnlineFirmwareSelectorCommand}"
-                                        IsEnabled="{Binding CanUseSerialFirmware}"
-                                        Padding="8,2"
-                                        >
-                                    <avalonia:MaterialIcon Kind="NetworkOutline" Width="30" Height="30" />
-                                </Button>
-
-                                <Button ToolTip.Tip="Load Local Firmware"
-                                        Command="{Binding ShowLocalFirmwareSelectorCommand}"
-                                        IsEnabled="{Binding CanUseSerialFirmware}"
-                                        Padding="8,2"
-                                        >
-                                    <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
-                                </Button>
-
-                                <Button
-                                    ToolTip.Tip="Clear Selected Firmware"
-                                    Command="{Binding ClearFirmwareSelectionCommand}"
-                                    Padding="8,2">
-                                    <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
-                                </Button>
-
-                                <!--
-                                IsVisible="{Binding SelectedFirmwareModel.ShowApjDownload,
-                                RelativeSource={RelativeSource AncestorType=subViews:SelectedFirmwareView}}"
-                                -->
-<!--                                <Button ToolTip.Tip="Download &amp; Validate"
-                                        Command="{Binding DownloadAndValidateCommand}"
-                                        Padding="8,2"
-                                        >
-                                    <avalonia:MaterialIcon Kind="DownloadNetworkOutline" Width="30" Height="30" />
-                                </Button>
--->
-                                <Button ToolTip.Tip="Install Validated Firmware"
-                                        Padding="8,2"
-                                        Command="{Binding InstallCommand}" >
-                                    <avalonia:MaterialIcon Kind="EyeAddOutline" Width="30" Height="30" />
-                                </Button>
-
-                                <!--
-                                Command="{Binding CopyDownloadUrlCommand}"
-                                -->
-                                <Button ToolTip.Tip="Copy Download URL"
-                                        Command="{Binding SelectedFirmwareModel.CopyDownloadUrlCommand}"
-                                        Padding="8,2"
-                                        IsEnabled="{Binding CanUseSerialFirmware}">
-                                    <avalonia:MaterialIcon Kind="Copyright" Width="30" Height="30" />
-                                </Button>
-                            </WrapPanel>
-
-                            <Border Grid.Row="1" IsVisible="{Binding IsUnsupportedMode}" Padding="24" Classes="SectionCard">
-                                <TextBlock Text="Direct firmware installation is not available on this platform." Classes="Title"  />
+                        <Button ToolTip.Tip="Copy URL" Command="{Binding CopySelectedUrlCommand}"  >
+                            <avalonia:MaterialIcon Kind="Copyright" Width="30" Height="30" />
+                        </Button>
+                        <Button  ToolTip.Tip="Update Embedded Bootloader. Maintenance operation on a supported, disarmed connected ArduPilot vehicle"
+                                 Command="{Binding UpdateBootloaderCommand}" >
+                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                        </Button>
+                    </WrapPanel>
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="12" HorizontalAlignment="Center">
+                            <Border Classes="SectionCard" Padding="16">
+                                <StackPanel Spacing="6">
+                                    <TextBlock Text="{Binding CurrentPlan.Description}" Classes="H3" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding CurrentPlan.BlockReason}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding ErrorMessage}" Classes="Warning" TextWrapping="Wrap" />
+                                </StackPanel>
                             </Border>
-                            <Border Grid.Row="2" Padding="14" Classes="SectionCard" HorizontalAlignment="Stretch" >
+                            <Border Classes="SectionCard" Padding="16">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Physical controller" Classes="H3" />
+                                    <ComboBox ItemsSource="{Binding DevicesModel.DetectedDevices}" SelectedItem="{Binding DevicesModel.SelectedDevice}"
+                                              PlaceholderText="Select serial controller" HorizontalAlignment="Stretch"
+                                              IsEnabled="{Binding !IsOperationInProgress}" />
+                                    <ComboBox ItemsSource="{Binding DfuModel.DfuDevices}" SelectedItem="{Binding DfuModel.SelectedDfuDevice}"
+                                              PlaceholderText="Select STM32 DFU endpoint" HorizontalAlignment="Stretch"
+                                              IsEnabled="{Binding !IsOperationInProgress}" />
+                                    <TextBlock Text="{Binding PhysicalControllerSummary}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding DevicesModel.DeviceStatus}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding DfuModel.ToolReadiness}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                            <Border Classes="SectionCard" Padding="16">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Selected Firmware" Classes="H3" />
+                                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="6">
+                                        <TextBlock Text="Source" />
+                                        <SelectableTextBlock Grid.Column="1" Text="{Binding SelectedArtifact.Source}" />
+                                        <TextBlock Grid.Row="1" Text="Format" />
+                                        <SelectableTextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedArtifact.Format}" />
+                                        <TextBlock Grid.Row="2" Text="Platform / board ID" />
+                                        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                                            <SelectableTextBlock Text="{Binding SelectedArtifact.Platform}" />
+                                            <SelectableTextBlock Text="{Binding SelectedArtifact.BoardId}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Row="3" Text="Vehicle / build" />
+                                        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                                            <SelectableTextBlock Text="{Binding SelectedArtifact.VehicleFamily}" />
+                                            <SelectableTextBlock Text="{Binding SelectedArtifact.Version}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Row="4" Text="Image bytes" />
+                                        <SelectableTextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedArtifact.ImageSize}" />
+                                        <TextBlock Grid.Row="5" Text="SHA-256" />
+                                        <SelectableTextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedArtifact.Sha256}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Row="6" Text="Cache identity" />
+                                        <SelectableTextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedArtifact.CacheIdentity}" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Row="7" Text="Online source" IsVisible="{Binding HasOnlineArtifact}" />
+                                        <SelectableTextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedArtifact.OnlineUrl}" TextWrapping="Wrap" IsVisible="{Binding HasOnlineArtifact}" />
+                                        <TextBlock Grid.Row="8" Text="Channel / Git SHA" IsVisible="{Binding HasOnlineArtifact}" />
+                                        <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Spacing="12" IsVisible="{Binding HasOnlineArtifact}">
+                                            <TextBlock Text="{Binding SelectedArtifact.Channel}" />
+                                            <SelectableTextBlock Text="{Binding SelectedArtifact.GitSha}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Row="9" Text="Local source" IsVisible="{Binding HasLocalArtifact}" />
+                                        <SelectableTextBlock Grid.Row="9" Grid.Column="1" Text="{Binding SelectedArtifact.LocalFile}" TextWrapping="Wrap" IsVisible="{Binding HasLocalArtifact}" />
+                                        <TextBlock Grid.Row="10" Text="Imported" IsVisible="{Binding HasLocalArtifact}" />
+                                        <SelectableTextBlock Grid.Row="10" Grid.Column="1" Text="{Binding SelectedArtifact.ImportedAt}" IsVisible="{Binding HasLocalArtifact}" />
 
-                                <WrapPanel Orientation="Horizontal" ItemSpacing="25">
-                                    <StackPanel Orientation="Vertical" Spacing="14">
-                                        <TextBlock Text="{Binding ContextHelp.Title}" Classes="H3" />
-                                        <TextBlock Text="{Binding ContextHelp.Content}" Classes="H4 Warning"/>
+                                        <TextBlock Grid.Row="11" Grid.Column="0" Text="Reused cache:" />
+                                        <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SelectedArtifact.CacheHit}" />
+
+                                    </Grid>
+                                    <TextBlock Text="{Binding SelectedArtifact.AddressRanges}" TextWrapping="Wrap" />
+
+                                    <StackPanel IsVisible="{Binding DfuModel.HasLocalDfuFirmware}" Spacing="6">
+                                        <TextBox Text="{Binding DfuModel.LocalDfuPlatform}" PlaceholderText="Exact ArduPilot platform for local HEX" />
+                                        <Button Content="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}"
+                                                IsEnabled="{Binding !IsOperationInProgress}" />
                                     </StackPanel>
-                                    <!--
-                                    <Button
-                                    VerticalAlignment="Center"
-                                    ToolTip.Tip="Refresh devices"
-                                    Padding="8,2"
-                                    Command="{Binding RefreshDevicesCommand}"
-                                    IsEnabled="{Binding IsDisconnectedMode}" HorizontalAlignment="Center" >
-                                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
-                                    </Button>
-                                    -->
-                                </WrapPanel>
+
+                                </StackPanel>
                             </Border>
+                            <Border Classes="SectionCard" Padding="16">
+                                <StackPanel Spacing="8">
 
-                            <!--                    IsVisible="{Binding IsDetectedDeviceVisible,
-                            RelativeSource={RelativeSource AncestorType=local:FirmwareCatalogueView}}"
-                            -->
-                            <subViews:DetectedDeviceView Grid.Row="3"
-                                                         IsVisible="{Binding HasDevice}"
-                                                         HorizontalAlignment="Stretch"
-                                                         DataContext="{Binding DevicesModel}" />
+                                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="6">
 
-                            <WrapPanel  Grid.Row="4" Grid.Column="0" Orientation="Horizontal" ItemSpacing="10"
-                                        IsVisible="{Binding SelectedFirmwareModel.HasSelectedFirmware}"
-                                        >
-                                <subViews:SelectedFirmwareView DataContext="{Binding SelectedFirmwareModel}"
-                                                               />
-                                <subViews:ValidatedPackageView  DataContext="{Binding ValidatedModel}" />
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="Validation and compatibility" Classes="H3" />
 
-                            </WrapPanel>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Artifact valid:" />
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedArtifact.ArtifactValid}" />
 
-                            <WrapPanel  Grid.Row="5" Grid.Column="0" Orientation="Horizontal" ItemSpacing="10"
-                                        IsVisible="{Binding LocalFirmwareModel.HasCustomFirmware}"
-                                        >
-                                <local:CustomFirmwareView
-                                    DataContext="{Binding LocalFirmwareModel}"  />
-                            </WrapPanel>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Target compatible:" />
+                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedArtifact.TargetCompatible}" />
 
 
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Required format:" />
 
-                            <!--
-                            <TabControl Grid.Row="3" x:Name="MainTabControl"
-                            SelectedIndex="{Binding SelectedSectionIndex}"
-                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-                            <TabItem Header="Online Firmware">
 
-                            <TabControl TabStripPlacement="Left" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-                            <TabItem Header="Online Firmware" IsEnabled="{Binding CanUseSerialFirmware}">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:FirmwareCatalogueView DataContext="{Binding Catalogue}" IsDetectedDeviceVisible="True" />
-                            </ScrollViewer>
-                            </TabItem>
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Compatibility Status:" TextWrapping="Wrap" />
+                                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding CompatibilityStatus}" TextWrapping="Wrap" />
 
-                            <TabItem Header="Local Firmware" IsEnabled="{Binding CanUseSerialFirmware}">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:CustomFirmwareView DataContext="{Binding Custom}" />
-                            </ScrollViewer>
-                            </TabItem>
-                            </TabControl>
-                            </TabItem>
-                            <TabItem Header="STM32 DFU">
-                            <TabControl SelectedIndex="{Binding SelectedDfuTabIndex}" TabStripPlacement="Left" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-                            <TabItem Header="Device / Enter DFU">
-                            <local:STM32DfuDeviceView />
-                            </TabItem>
-                            <TabItem Header="Online Firmware" IsEnabled="{Binding CanUseDfuFirmware}">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:STM32DfuCatalogueView DataContext="{Binding Catalogue}" />
-                            </ScrollViewer>
-                            </TabItem>
-                            <TabItem Header="Local HEX" IsEnabled="{Binding CanUseDfuFirmware}">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:STM32DfuCustomHexView DataContext="{Binding Dfu}" />
-                            </ScrollViewer>
-                            </TabItem>
-                            </TabControl>
-                            </TabItem>
-                            <TabItem Header="Help &amp; Support">
-                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:HelpView DataContext="{Binding Help}" />
-                            </ScrollViewer>
-                            </TabItem>
-                            </TabControl>
-                            -->
 
-                        </Grid>
+                                        <Button Grid.Row="5" Content="Review DFU target" Command="{Binding ReviewDfuTargetCommand}"
+                                                IsVisible="{Binding HasDetectedDfuDevice}" IsEnabled="{Binding !IsOperationInProgress}" />
 
+
+                                        <TextBlock Grid.Row="6" Grid.Column="0" Text="Warnings:" Classes="Warning" TextWrapping="Wrap" IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}" />
+                                        <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedArtifact.Warnings}" Classes="Warning" TextWrapping="Wrap" />
+
+                                        <TextBlock Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Text="Cancellation is deferred through verification and reboot. Keep power connected."
+                                                   IsVisible="{Binding IsCancellationDeferred}" Classes="Warning" TextWrapping="Wrap" />
+
+
+                                        <Button Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2"  Content="Cancel operation" Command="{Binding CancelCommand}"
+                                                IsVisible="{Binding IsOperationInProgress}" />
+                                    </Grid>
+
+
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </ScrollViewer>
+
+                    <Border Grid.RowSpan="2" ZIndex="10"
+                            IsVisible="{Binding IsProgressVisible}"
+                            Classes="SectionCard" Padding="16" Margin="20"
+                            MaxWidth="720" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <StackPanel Spacing="20">
+                            <TextBlock Text="Firmware operation" Classes="H3" />
+                            <TextBlock Text="{Binding ProgressMessage}" TextWrapping="Wrap" MinWidth="300" />
+                            <ProgressBar IsIndeterminate="True" />
+                            <TextBlock Text="Cancellation requested. Verification and reboot will finish before stopping. Keep power connected."
+                                       IsVisible="{Binding IsCancellationDeferred}" Classes="Warning" TextWrapping="Wrap" />
+                            <Button Content="Cancel operation" Command="{Binding CancelCommand}"
+                                    HorizontalAlignment="Right" />
+                        </StackPanel>
+                    </Border>
+
                 </Grid>
-
             </TabItem>
-
             <TabItem Header="Help &amp; Support">
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                    <local:HelpView  />
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                    <local:HelpView />
                 </ScrollViewer>
             </TabItem>
-
         </TabControl>
     </ContentPage>
 </utilities:NavigationViewBase>
-
-
-<!--
-<StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="12,6"
-Spacing="10" >
-<StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-IsVisible="{Binding IsCancellationDeferred}">
-<TextBlock Text="Firmware Operation Status:" FontSize="16" VerticalAlignment="Center" />
-<TextBlock Text="  •  " FontSize="16"  VerticalAlignment="Center" />
-<TextBlock Text="Cancellation is deferred until verification and vehicle reboot reach a safe boundary. Keep power connected." Classes="Warning"
-IsVisible="{Binding IsCancellationDeferred}" />
-</StackPanel>
-
-
-<StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-IsVisible="{Binding IsPowerCritical}">
-<TextBlock Text="Firmware Operation Status:" FontSize="16" VerticalAlignment="Center" />
-<TextBlock Text="  •  " FontSize="16" VerticalAlignment="Center" />
-<TextBlock Text="Do not disconnect power while flash memory is being changed." Classes="Warning"
-IsVisible="{Binding IsPowerCritical}" />
-</StackPanel>
-</StackPanel>
--->
-

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Firmware;
@@ -17,6 +17,33 @@ namespace MissionPlanner.Core.Tests;
 
 public sealed class TemporaryMavLinkBootloaderGatewayTests
 {
+    [Fact]
+    public async Task ArmedHeartbeatPreventsRebootAndReleasesThePort()
+    {
+        var stream = new ScriptedStream([1]);
+        var factory = new FakePortFactory(stream);
+        var gateway = new TemporaryMavLinkBootloaderGateway(factory, new MarkerParser(), new MarkerDecoder(MavResult.Accepted, 128),
+            new FakeEncoder(), Options.Create(new FirmwareOptions()), NullLogger<TemporaryMavLinkBootloaderGateway>.Instance);
+
+        Assert.False(await gateway.RebootToBootloaderAsync(new SerialDeviceDescriptor("COM10"), TestContext.Current.CancellationToken));
+        Assert.Equal(0, stream.Written.Length);
+        Assert.True(factory.PortDisposed);
+    }
+
+    [Fact]
+    public async Task RuntimeProbeIdentifiesArduPilotWithoutWritingAnyCommand()
+    {
+        var stream = new ScriptedStream([1]);
+        var factory = new FakePortFactory(stream);
+        var gateway = new TemporaryMavLinkBootloaderGateway(factory, new MarkerParser(), new MarkerDecoder(MavResult.Accepted),
+            new FakeEncoder(), Options.Create(new FirmwareOptions()), NullLogger<TemporaryMavLinkBootloaderGateway>.Instance);
+        var runtime = await gateway.VerifyAsync(new SerialDeviceDescriptor("COM10"), TestContext.Current.CancellationToken);
+        Assert.NotNull(runtime);
+        Assert.False(runtime.IsArmed);
+        Assert.Equal(0, stream.Written.Length);
+        Assert.True(factory.PortDisposed);
+    }
+
     [Theory]
     [InlineData(MavResult.Accepted)]
     [InlineData(MavResult.InProgress)]
@@ -136,13 +163,13 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
         public void Reset() { }
     }
 
-    private sealed class MarkerDecoder(MavResult result) : IMavLinkMessageDecodeHandler
+    private sealed class MarkerDecoder(MavResult result, byte baseMode = 0) : IMavLinkMessageDecodeHandler
     {
         public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
         {
             message = frame.MessageId switch
             {
-                1 => new HeartbeatMessage(1, 1, frame.EndPoint, 0, 2, 3, 0, 0, 3, frame.ReceivedAt),
+                1 => new HeartbeatMessage(1, 1, frame.EndPoint, 0, 2, 3, baseMode, 0, 3, frame.ReceivedAt),
                 2 => new CommandAckMessage(1, 1, frame.EndPoint, MavLinkCommandIds.PreflightRebootShutdown, (byte)result, frame.ReceivedAt),
                 var _ => null
             };

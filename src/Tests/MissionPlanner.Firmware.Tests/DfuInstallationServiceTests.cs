@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Firmware.Dfu;
@@ -78,7 +78,7 @@ public sealed class DfuInstallationServiceTests
             interaction = new Interaction(() => Confirm);
             Programmer = new Programmer(catalog);
             var coordinator = new FirmwareOperationCoordinator(NullLogger<FirmwareOperationCoordinator>.Instance);
-            Service = new DfuInstallationService(coordinator, new Connection(), new Locator(), new Resolver(Artifact), catalog,
+            Service = new DfuInstallationService(coordinator, new Locator(), new Resolver(Artifact), catalog,
                 new Monitor(), Programmer, new Safety(), interaction, new Discovery(applicationReturns),
                 Options.Create(new DfuOptions { DfuDisappearanceTimeout = TimeSpan.FromMilliseconds(20) }), NullLogger<DfuInstallationService>.Instance);
         }

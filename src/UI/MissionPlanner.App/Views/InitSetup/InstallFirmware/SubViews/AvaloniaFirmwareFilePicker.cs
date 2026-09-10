@@ -5,14 +5,25 @@ namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 /// <summary>Selects firmware through the shared persistent-path file picker.</summary>
 public sealed class AvaloniaFirmwareFilePicker(IFileOpenService fileOpenService) : IFirmwareFilePicker
 {
-    private static readonly string[] FirmwarePatterns = ["*.apj", "*.px4", "*_with_bl.hex"];
+    /// <inheritdoc />
+    public Task<FirmwareFileSelection?> PickAsync(CancellationToken cancellationToken = default)
+    {
+        return PickAsync(MissionPlanner.Firmware.Workflow.FirmwareArtifactFormat.Apj, cancellationToken);
+    }
 
     /// <inheritdoc />
-    public async Task<FirmwareFileSelection?> PickAsync(CancellationToken cancellationToken = default)
+    public async Task<FirmwareFileSelection?> PickAsync(MissionPlanner.Firmware.Workflow.FirmwareArtifactFormat format,
+        CancellationToken cancellationToken = default)
     {
+        string[] patterns = format switch
+        {
+            MissionPlanner.Firmware.Workflow.FirmwareArtifactFormat.WithBootloaderHex => ["*_with_bl.hex"],
+            MissionPlanner.Firmware.Workflow.FirmwareArtifactFormat.Apj => ["*.apj"],
+            _ => ["*.apj", "*_with_bl.hex"]
+        };
         using var selectedFile = await fileOpenService.OpenAsync(
-            "Select ArduPilot firmware (.apj, .px4, or *_with_bl.hex)",
-            FirmwarePatterns,
+            "Select ArduPilot firmware (" + string.Join(", ", patterns) + ")",
+            patterns,
             cancellationToken);
         if (selectedFile is null)
         {

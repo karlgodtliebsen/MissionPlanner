@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -37,30 +37,8 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
                 : "No preceding controller identity is available. The exact flight-controller target cannot be inferred from STM32 DFU alone.")
         : "Hold BOOT/DFU while reconnecting USB; some boards require BOOT + RESET. STM32 ROM DFU is a USB endpoint, normally not a COM port. Refresh after changing mode.";
 
-    /// <summary>Requests a page-owned boot-mode operation.</summary>
-    public event Action<FirmwarePanelRequest>? OperationRequested;
-
-    /// <summary>Gets whether the selected disconnected controller supports the Betaflight reboot workflow.</summary>
-    public bool CanRebootToDfu => active && OperatingSystem.IsWindows() && !vehicle.IsOnline
-        && !devices.InstallationRunning && !dfu.InstallationRunning
-        && !devices.IsRefreshing && !dfu.IsRefreshing
-        && devices.SelectedDevice is not null;
-
-    /// <summary>Explains the software reboot capability and manual alternative.</summary>
-    public string DfuRebootGuidance => !OperatingSystem.IsWindows()
-        ? "Software DFU reboot requires the Windows desktop app."
-        : vehicle.IsOnline ? "Disconnect the vehicle before requesting DFU mode."
-        : devices.InstallationRunning || dfu.InstallationRunning ? "Wait for the current firmware operation to finish."
-        : devices.IsRefreshing || dfu.IsRefreshing ? "Wait for device discovery to finish."
-        : devices.SelectedDevice is null ? "Select a controller port to check for software DFU reboot support."
-        : "Reboot to DFU first verifies the selected port as a Betaflight controller. You will be asked to confirm before it reboots. Other controllers require the board's BOOT/RESET procedure. No firmware is flashed.";
-
-    [RelayCommand(CanExecute = nameof(CanRebootToDfu))]
-    private Task RebootToDfuAsync(CancellationToken cancellationToken)
-    {
-        return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.RebootToDfu, cancellationToken);
-    }
-
+    /// <summary>Explains manual boot entry without owning operational commands.</summary>
+    public string DfuRebootGuidance => "Use Enter STM32 DFU on the Firmware page for a proven Betaflight controller, or follow the board's BOOT/RESET procedure.";
     /// <summary>Initializes the information panel using the shared device discovery models.</summary>
     public FirmwareLandingViewModel(IActiveVehicleContext vehicle, DetectedDeviceViewModel devices,
         STM32BootloaderViewModel dfu,
@@ -76,45 +54,37 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
 
     /// <summary>Explains why device detection differs from a telemetry connection.</summary>
     public string ConnectionDetail => vehicle.IsOnline
-        ? "Mission Planner has an active vehicle connection. Disconnect it before installing application firmware."
+        ? "Mission Planner has an active telemetry connection. Local firmware preparation remains available; only a session owning the selected serial port conflicts."
         : "A controller can be detected over USB without an active telemetry connection. You do not need to connect to the vehicle to install firmware.";
 
     /// <summary>Gets the serial discovery summary, including candidate port names.</summary>
-    public string SerialSummary => vehicle.IsOnline ? "Discovery paused while connected"
-        : devices.IsRefreshing ? "Looking for serial devices…"
+    public string SerialSummary => devices.IsRefreshing ? "Looking for serial devices…"
         : devices.Descriptors.Count == 0 ? "No serial devices detected"
         : "Detected serial ports: " + string.Join(", ", devices.Descriptors.Select(device => device.PortName));
 
     /// <summary>Gets the latest serial discovery diagnostic.</summary>
-    public string SerialDetail => vehicle.IsOnline
-        ? "Disconnect the vehicle to refresh the available devices."
-        : $"{devices.DeviceStatus}\nA detected serial port is a candidate; firmware compatibility is checked before installation.";
+    public string SerialDetail => $"{devices.DeviceStatus}\nA detected serial port is a candidate; firmware compatibility is checked before installation.";
 
     /// <summary>Gets the DFU discovery summary.</summary>
-    public string DfuSummary => vehicle.IsOnline ? "Discovery paused while connected"
-        : dfu.IsRefreshing ? "Looking for STM32 DFU devices…"
+    public string DfuSummary => dfu.IsRefreshing ? "Looking for STM32 DFU devices…"
         : dfu.DfuDevices.Count == 0 ? "No DFU devices detected"
         : string.Join("\n", dfu.DfuDevices.Select(device => device.ToString()));
 
     /// <summary>Gets DFU tool and driver readiness guidance.</summary>
-    public string DfuDetail => vehicle.IsOnline
-        ? "DFU discovery resumes after disconnection."
-        : $"{dfu.DfuStatus}\nDFU is the controller's USB bootloader mode, not a vehicle telemetry connection.";
+    public string DfuDetail => $"{dfu.DfuStatus}\nDFU is the controller's USB bootloader mode, not a vehicle telemetry connection.";
 
     /// <summary>Gets the next action appropriate to the current connection and discovery state.</summary>
     public string NextStep => !OperatingSystem.IsWindows()
         ? "Direct firmware installation is not available on this platform. Use the Windows desktop app."
         : devices.InstallationRunning || dfu.InstallationRunning
             ? "A firmware operation is in progress. Follow its progress dialog and keep the controller powered."
-        : vehicle.IsOnline
-            ? "Disconnect the vehicle first. Catalogue, Custom Firmware and STM32 Bootloader are disabled while connected."
         : devices.IsRefreshing || dfu.IsRefreshing
             ? "Discovery is running. Available firmware workflows will update when the scan finishes."
         : dfu.DfuDevices.Count > 0
-            ? "Review the selected DFU endpoint and tool readiness, then open STM32 DFU / Catalogue or Custom HEX."
+            ? "Review the selected DFU endpoint and tool readiness on the Firmware page."
         : devices.Descriptors.Count > 0
-            ? "For an ArduPilot update use Firmware / Catalogue or Custom Firmware. For Betaflight conversion, select its port here and request Reboot to DFU."
-        : "Attach a controller by USB, then select Refresh devices above. To use STM32 Bootloader, put the board into DFU mode first. Firmware tabs remain disabled until a device is detected.";
+            ? "Open Firmware to probe the selected controller, prepare firmware and choose the required boot transition."
+        : "Attach a controller by USB, then select Refresh devices above. To use STM32 Bootloader, put the board into DFU mode first. Firmware can be browsed and prepared without a controller.";
 
     /// <inheritdoc />
     public override Task ActivateAsync()
@@ -137,7 +107,7 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
         vehicle.Changed -= VehicleChanged;
         devices.PropertyChanged -= DiscoveryChanged;
         dfu.PropertyChanged -= DiscoveryChanged;
-        RebootToDfuCommand.NotifyCanExecuteChanged();
+
         return Task.CompletedTask;
     }
 
@@ -158,7 +128,7 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
             if (active)
             {
                 OnPropertyChanged(string.Empty);
-                RebootToDfuCommand.NotifyCanExecuteChanged();
+
             }
         });
     }

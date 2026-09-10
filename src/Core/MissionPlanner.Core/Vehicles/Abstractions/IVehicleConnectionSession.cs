@@ -12,6 +12,12 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// </summary>
 public interface IVehicleConnectionSession : IAsyncDisposable
 {
+    /// <summary>Gets the protocol of the transport being acquired or currently owned.</summary>
+    string? ActiveTransportProtocol => null;
+
+    /// <summary>Gets the serial port being acquired or owned, until session disposal.</summary>
+    string? ActiveSerialPort => null;
+
     /// <summary>
     /// Creates a MAVFTP connection for the vehicle.
     /// </summary>
