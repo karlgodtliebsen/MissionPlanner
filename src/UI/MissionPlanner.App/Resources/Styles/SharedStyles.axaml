@@ -3,7 +3,7 @@
         xmlns:u="https://irihi.tech/ursa">
 
     <Style Selector="Border.SectionCard">
-        <Setter Property="Background" Value="{DynamicResource SemiColorBgDefault}" />
+        <Setter Property="Background" Value="{DynamicResource SemiColorBackground2}" />
         <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="6" />

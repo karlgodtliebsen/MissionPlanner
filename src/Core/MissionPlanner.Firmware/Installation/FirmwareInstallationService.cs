@@ -1,4 +1,6 @@
-﻿using MissionPlanner.Firmware.Compatibility;
+﻿using Microsoft.Extensions.Logging;
+using MissionPlanner.Firmware.Compatibility;
+using MissionPlanner.Firmware.Diagnostics;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Downloads;
 using MissionPlanner.Firmware.Entry;
@@ -6,8 +8,6 @@ using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Operations;
 using MissionPlanner.Firmware.Recovery;
-using MissionPlanner.Firmware.Diagnostics;
-using Microsoft.Extensions.Logging;
 
 namespace MissionPlanner.Firmware.Installation;
 
@@ -38,7 +38,7 @@ public sealed class FirmwareInstallationService(
         var boardIdOverride = requestedPolicy.AllowBoardIdMismatch
             ? FirmwareBoardIdOverrideState.RequestedNotUsed
             : FirmwareBoardIdOverrideState.NotRequested;
-        ApjFirmwarePackage? diagnosticPackage = request.Package;
+        var diagnosticPackage = request.Package;
         string? firmwareSource = request.Artifact?.DownloadUri.AbsoluteUri ?? (isLocalCustom
             ? request.LocalFileName ?? "local/custom"
             : request.Package is null ? null : "official/catalogue (prepared package)");
@@ -69,15 +69,13 @@ public sealed class FirmwareInstallationService(
                 diagnosticPackage = package;
                 source = downloaded.Metadata.SourceUri.AbsoluteUri;
             }
-            else if (package is not null)
-            {
-                source = isLocalCustom
-                    ? request.LocalFileName ?? "local/custom"
-                    : "official/catalogue (prepared package)";
-            }
             else
             {
-                throw new FirmwarePackageException("An artifact or validated package is required.");
+                source = package is not null
+                    ? isLocalCustom
+                    ? request.LocalFileName ?? "local/custom"
+                    : "official/catalogue (prepared package)"
+                    : throw new FirmwarePackageException("An artifact or validated package is required.");
             }
 
             Transition(FirmwareOperationState.ValidatingPackage, "installation.package-validated");
@@ -88,7 +86,10 @@ public sealed class FirmwareInstallationService(
                 Progress = value => Transition(value.State, value.MessageCode, value.TechnicalDetail)
             }, cancellationToken).ConfigureAwait(false);
             DiscoveredBootloader found;
-            if (entry is { Outcome: BootloaderEntryOutcome.BootloaderIdentified, Bootloader: not null }) found = entry.Bootloader;
+            if (entry is { Outcome: BootloaderEntryOutcome.BootloaderIdentified, Bootloader: not null })
+            {
+                found = entry.Bootloader;
+            }
             else
             {
                 // EntryService already performs discovery after every strategy that can cause a
@@ -109,12 +110,19 @@ public sealed class FirmwareInstallationService(
                     $"Device: {found.Device.PortName}; board ID: {found.Identity.BoardId}; bootloader revision: {found.Identity.BootloaderRevision}");
                 Transition(FirmwareOperationState.CheckingCompatibility, "installation.checking-compatibility");
                 var decision = compatibility.Check(package, found.Identity, effectivePolicy);
-                if (!decision.IsCompatible) throw new FirmwareCompatibilityException($"{decision.Code}: {decision.TechnicalDetail}");
+                if (!decision.IsCompatible)
+                {
+                    throw new FirmwareCompatibilityException($"{decision.Code}: {decision.TechnicalDetail}");
+                }
 
                 var mismatchOverrideUsed = effectivePolicy.AllowBoardIdMismatch &&
                                            package.BoardId != found.Identity.BoardId &&
                                            !(found.Identity.BoardId == 33 && package.BoardId == 9);
-                if (mismatchOverrideUsed) boardIdOverride = FirmwareBoardIdOverrideState.Used;
+                if (mismatchOverrideUsed)
+                {
+                    boardIdOverride = FirmwareBoardIdOverrideState.Used;
+                }
+
                 var requiredPhrase = mismatchOverrideUsed ? $"FLASH {package.BoardId} ON {found.Identity.BoardId}" : null;
 
                 var confirmed = await interaction.ConfirmInstallationAsync(new FirmwareInstallationConfirmation(
@@ -142,7 +150,10 @@ public sealed class FirmwareInstallationService(
                 var verification = await found.Client.VerifyAsync(package, effectivePolicy, destructiveToken).ConfigureAwait(false);
                 verificationResult = verification.Succeeded ? "Succeeded" : $"Failed (expected 0x{verification.ExpectedChecksum:X8}, actual 0x{verification.ActualChecksum:X8})";
                 if (!verification.Succeeded)
+                {
                     throw new FirmwareVerificationException($"Expected checksum 0x{verification.ExpectedChecksum:X8}; received 0x{verification.ActualChecksum:X8}.");
+                }
+
                 Transition(FirmwareOperationState.Rebooting, "installation.rebooting");
                 await found.Client.RebootAsync(destructiveToken).ConfigureAwait(false);
             }
@@ -151,7 +162,10 @@ public sealed class FirmwareInstallationService(
             if (operation.CancellationRequested || cancellationToken.IsCancellationRequested)
             {
                 if (operation.State != FirmwareOperationState.Cancelled)
+                {
                     operation.RequestCancellation("installation.cancelled-at-safe-boundary");
+                }
+
                 return new FirmwareOperationResult(operation.OperationId, operation.Kind, FirmwareOperationState.Cancelled,
                     DiagnosticReport: CreateDiagnostic(FirmwareOperationState.Cancelled));
             }
@@ -179,11 +193,18 @@ public sealed class FirmwareInstallationService(
         catch (OperationCanceledException exception)
         {
             var failureStage = stage;
-            if (operation.State == FirmwareOperationState.Cancelled) { }
+            if (operation.State == FirmwareOperationState.Cancelled)
+            {
+            }
             else if (operation.State is not (FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting))
+            {
                 Transition(FirmwareOperationState.Cancelled, "installation.cancelled");
+            }
             else
+            {
                 Transition(FirmwareOperationState.Failed, "installation.cancelled-after-destructive-stage");
+            }
+
             return new FirmwareOperationResult(operation.OperationId, operation.Kind, operation.State,
                 new FirmwareOperationFailure("installation.cancelled", failureStage, exception.Message, exception.GetType().Name),
                 DiagnosticReport: CreateDiagnostic(operation.State, failureCode: "installation.cancelled", failureStage: failureStage, failureDetail: exception.Message));
@@ -192,7 +213,10 @@ public sealed class FirmwareInstallationService(
         {
             var failureStage = stage;
             if (operation.State is not (FirmwareOperationState.Completed or FirmwareOperationState.Cancelled or FirmwareOperationState.Failed))
+            {
                 Transition(FirmwareOperationState.Failed, FailureCode(exception));
+            }
+
             logger.LogError(exception, "Firmware operation {OperationId} failed in state {FailureStage} with {FailureCode}.", operation.OperationId, failureStage, FailureCode(exception));
             return new FirmwareOperationResult(operation.OperationId, operation.Kind, operation.State,
                 new FirmwareOperationFailure(FailureCode(exception), failureStage, exception.Message, exception.GetType().Name),
@@ -216,7 +240,9 @@ public sealed class FirmwareInstallationService(
             SerialDeviceDescriptor? applicationDevice = null,
             string? failureCode = null,
             FirmwareOperationState? failureStage = null,
-            string? failureDetail = null) => new(
+            string? failureDetail = null)
+        {
+            return new(
                 operation.OperationId,
                 resultState,
                 firmwareSource,
@@ -233,16 +259,20 @@ public sealed class FirmwareInstallationService(
                 failureStage,
                 failureDetail,
                 boardIdOverride);
+        }
     }
 
-    private static string FailureCode(Exception exception) => exception switch
+    private static string FailureCode(Exception exception)
     {
-        FirmwareCompatibilityException => "installation.compatibility-failed",
-        FirmwareVerificationException => "installation.verification-failed",
-        FirmwareDeviceNotFoundException => "installation.device-not-found",
-        FirmwareDownloadException => "installation.download-failed",
-        FirmwarePackageException => "installation.package-invalid",
-        FirmwareBootloaderException => "installation.bootloader-failed",
-        _ => "installation.failed"
-    };
+        return exception switch
+        {
+            FirmwareCompatibilityException => "installation.compatibility-failed",
+            FirmwareVerificationException => "installation.verification-failed",
+            FirmwareDeviceNotFoundException => "installation.device-not-found",
+            FirmwareDownloadException => "installation.download-failed",
+            FirmwarePackageException => "installation.package-invalid",
+            FirmwareBootloaderException => "installation.bootloader-failed",
+            _ => "installation.failed"
+        };
+    }
 }

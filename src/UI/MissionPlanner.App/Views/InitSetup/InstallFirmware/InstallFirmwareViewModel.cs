@@ -17,7 +17,6 @@ using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Preparation;
-using MissionPlanner.Firmware.Presentation;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 
@@ -533,15 +532,15 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             if (succeeded)
             {
                 var options = dialogService.CreateOptions("Firmware installation completed.", "Ok", null);
-                var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
-                dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
+                var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
+                dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
             }
             else
             {
                 var options = dialogService.CreateOptions(result.State == FirmwareOperationState.Cancelled
                     ? "Firmware installation cancelled." : "Firmware installation failed.", "Ok", null);
-                var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
-                dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
+                var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
+                dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
             }
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
@@ -558,8 +557,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             NotificationManager?.Show(ErrorMessage ?? message);
             CloseOperationDialog();
             var options = dialogService.CreateOptions(message, "Ok", null);
-            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(message, exception.Message);
-            dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
+            var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(message, exception.Message);
+            dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
         }
         finally
         {
@@ -636,8 +635,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 DfuOperationState.Cancelled => "Firmware installation cancelled.",
                 _ => "Firmware installation failed."
             }, "Ok", null);
-            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(diagnosticReport ?? "", "");
-            dialogService.ShowOverlayDialog<SubViews.DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
+            var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticReport ?? "", "");
+            dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
 
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
@@ -651,8 +650,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             SetMessages(exception);
             CloseOperationDialog();
             var options = dialogService.CreateOptions("Initial STM32 DFU installation failed.", "Ok", null);
-            var viewModel = domainFactory.Create<SubViews.DiagnosticsReportViewModel, string, string>(message ?? "", exception.Message);
-            dialogService.ShowOverlayDialog<DiagnosticsReportView, SubViews.DiagnosticsReportViewModel>(viewModel, options);
+            var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(message ?? "", exception.Message);
+            dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
 
         }
         finally
@@ -850,7 +849,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     /// <summary>Gets whether the page-owned progress overlay is currently visible.</summary>
     [ObservableProperty]
-    public partial bool IsProgressVisible { get; private set; }
+    public partial bool IsProgressVisible
+    {
+        get; private set;
+    }
 
     private sealed class PageProgressHandle(Action close) : IDisposable
     {

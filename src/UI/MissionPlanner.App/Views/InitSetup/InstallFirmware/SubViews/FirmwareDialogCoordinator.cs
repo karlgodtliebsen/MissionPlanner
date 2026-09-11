@@ -7,16 +7,25 @@ public sealed class FirmwareDialogCoordinator(IUiDispatcher dispatcher)
 {
     private Session? current;
 
-    public Task<IDisposable> BeginAsync(Func<Task<IDisposable>> showProgress, bool deferUntilConfirmed, CancellationToken token) =>
-        dispatcher.DispatchAsync<IDisposable>(async () =>
+    public Task<IDisposable> BeginAsync(Func<Task<IDisposable>> showProgress, bool deferUntilConfirmed, CancellationToken token)
+    {
+        return dispatcher.DispatchAsync<IDisposable>(async () =>
         {
             token.ThrowIfCancellationRequested();
-            if (current is not null) throw new InvalidOperationException("A firmware dialog session is already active.");
+            if (current is not null)
+            {
+                throw new InvalidOperationException("A firmware dialog session is already active.");
+            }
+
             var session = new Session(this, showProgress, token);
             current = session;
             try
             {
-                if (!deferUntilConfirmed) await ShowAsync(session);
+                if (!deferUntilConfirmed)
+                {
+                    await ShowAsync(session);
+                }
+
                 return session;
             }
             catch
@@ -25,9 +34,11 @@ public sealed class FirmwareDialogCoordinator(IUiDispatcher dispatcher)
                 throw;
             }
         });
+    }
 
-    public Task<bool> ConfirmAsync(Func<Task<bool>> confirm, CancellationToken token) =>
-        dispatcher.DispatchAsync(async () =>
+    public Task<bool> ConfirmAsync(Func<Task<bool>> confirm, CancellationToken token)
+    {
+        return dispatcher.DispatchAsync(async () =>
         {
             token.ThrowIfCancellationRequested();
             var session = current;
@@ -36,36 +47,57 @@ public sealed class FirmwareDialogCoordinator(IUiDispatcher dispatcher)
             // The prompt must have fully closed before opening another modal.
             token.ThrowIfCancellationRequested();
             if (accepted && session is not null && ReferenceEquals(current, session))
+            {
                 await ShowAsync(session);
+            }
+
             return accepted;
         });
+    }
 
     private async Task ShowAsync(Session session)
     {
         session.Token.ThrowIfCancellationRequested();
         var handle = await session.ShowProgress();
         if (ReferenceEquals(current, session) && !session.Token.IsCancellationRequested)
+        {
             session.Handle = handle;
+        }
         else
+        {
             handle.Dispose();
+        }
     }
 
-    private void EndSession(Session session) => dispatcher.Dispatch(() =>
+    private void EndSession(Session session)
     {
-        if (ReferenceEquals(current, session)) current = null;
+        dispatcher.Dispatch(() =>
+    {
+        if (ReferenceEquals(current, session))
+        {
+            current = null;
+        }
+
         session.CloseProgress();
     });
+    }
 
     private sealed class Session(FirmwareDialogCoordinator owner, Func<Task<IDisposable>> showProgress, CancellationToken token) : IDisposable
     {
         public Func<Task<IDisposable>> ShowProgress { get; } = showProgress;
         public CancellationToken Token { get; } = token;
-        public IDisposable? Handle { get; set; }
+        public IDisposable? Handle
+        {
+            get; set;
+        }
         public void CloseProgress()
         {
             Handle?.Dispose();
             Handle = null;
         }
-        public void Dispose() => owner.EndSession(this);
+        public void Dispose()
+        {
+            owner.EndSession(this);
+        }
     }
 }
