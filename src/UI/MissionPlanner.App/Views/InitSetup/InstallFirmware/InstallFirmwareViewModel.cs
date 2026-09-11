@@ -840,32 +840,20 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         CloseOperationDialog();
         ProgressMessage = title + "…";
 
-        progressDialog = await firmwareDialogs.BeginAsync(() =>
+        var options = new DialogOptions
         {
-            IsProgressVisible = true;
-            return Task.FromResult<IDisposable>(new PageProgressHandle(() => IsProgressVisible = false));
-        }, deferUntilConfirmed, cancellation.Token);
-    }
-
-    /// <summary>Gets whether the page-owned progress overlay is currently visible.</summary>
-    [ObservableProperty]
-    public partial bool IsProgressVisible
-    {
-        get; private set;
-    }
-
-    private sealed class PageProgressHandle(Action close) : IDisposable
-    {
-        private bool disposed;
-
-        public void Dispose()
-        {
-            if (!disposed)
-            {
-                disposed = true;
-                close();
-            }
-        }
+            Title = title,
+            Width = 720,
+            Height = 600,
+            RequestCancellation = Cancel
+        };
+        progressDialog = await firmwareDialogs.BeginAsync(
+            () => dialogService.DisplayProgressCancellableAsync(
+                () => IsCancellationDeferred
+                    ? $"{ProgressMessage}\nCancellation requested. Verification and reboot will finish before stopping. Keep power connected."
+                    : ProgressMessage,
+                options, cancellation.Token),
+            deferUntilConfirmed, cancellation.Token);
     }
 
     private void CloseOperationDialog()

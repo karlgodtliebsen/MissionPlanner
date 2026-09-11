@@ -253,21 +253,6 @@
                         </StackPanel>
                     </ScrollViewer>
 
-                    <Border Grid.RowSpan="2" ZIndex="10"
-                            IsVisible="{Binding IsProgressVisible}"
-                            Classes="SectionCard" Padding="16" Margin="20"
-                            MaxWidth="720" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <StackPanel Spacing="20">
-                            <TextBlock Text="Firmware operation" Classes="H3" />
-                            <TextBlock Text="{Binding ProgressMessage}" TextWrapping="Wrap" MinWidth="300" />
-                            <ProgressBar IsIndeterminate="True"  Theme="{DynamicResource ProgressRing}"/>
-                            <TextBlock Text="Cancellation requested. Verification and reboot will finish before stopping. Keep power connected."
-                                       IsVisible="{Binding IsCancellationDeferred}" Classes="Warning" TextWrapping="Wrap" />
-                            <Button Content="Cancel operation" Command="{Binding CancelCommand}"
-                                    HorizontalAlignment="Right" />
-                        </StackPanel>
-                    </Border>
-
                 </Grid>
             </TabItem>
             <TabItem Header="Help &amp; Support">

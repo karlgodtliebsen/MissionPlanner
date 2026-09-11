@@ -29,4 +29,10 @@ public sealed record DialogOptions
     public bool ShowOkButton { get; init; } = true;
 
     public bool ShowCloseButton { get; init; } = true;
+
+    /// <summary>
+    /// Gets an optional progress-dialog cancellation request. When supplied, Cancel and
+    /// window-close request cancellation; the caller disposes the handle when work safely ends.
+    /// </summary>
+    public Action? RequestCancellation { get; init; }
 }

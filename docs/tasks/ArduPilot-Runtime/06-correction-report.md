@@ -1,5 +1,19 @@
 # Runtime identification corrections — 2026-09-11
 
+## Subsequent progress-dialog integration
+
+Install Firmware operation progress now uses `IDialogService.DisplayProgressCancellableAsync`
+through `ShowOperationDialogAsync`. The page-owned overlay, `IsProgressVisible`, and its
+disposable wrapper were removed. `FirmwareDialogCoordinator` still suspends progress for
+confirmation prompts. `DialogOptions.RequestCancellation` optionally lets the shared dialog
+request cancellation while leaving closure to the operation owner, preserving deferred
+cancellation during flash verification/reboot. Existing callers without this callback retain
+token-triggered closure. Catalogue background-loading indicators remain inline.
+
+Validation: the UI suite passed 104 tests after migration; the final targeted run passed
+25 tests, including live-message, cancellation/handle-disposal, and confirmation-order
+regressions. No physical firmware operation was run for this UI change.
+
 The existing implementation covered much of tasks 01–05, but discovery ran MSP before MAVLink, one snapshot-wide deadline could starve later endpoints, and the workflow disabled Install until manual bootloader entry. These were functional gaps even though the earlier regression tests passed.
 
 ## Task 01 — identity model

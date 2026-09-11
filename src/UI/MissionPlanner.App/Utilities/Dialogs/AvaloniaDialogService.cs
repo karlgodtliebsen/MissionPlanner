@@ -229,18 +229,37 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
                 Height = options.Height,
                 Width = options.Width,
                 ShowOkButton = false,
-                ShowCloseButton = false,
+                ShowCloseButton = options.RequestCancellation is not null,
+                CloseText = "Cancel operation",
                 CanResize = false
             };
             var dialog = CreateWindow(new ProgressDialogView(contentViewModel), effectiveOptions);
-            var registration = cancellationToken.Register(() => dispatcher.Dispatch(() => dialog.Close(false)));
+            var allowClose = false;
+            void CloseProgress()
+            {
+                allowClose = true;
+                dialog.Close(false);
+            }
+            dialog.Closing += (_, args) =>
+            {
+                if (!allowClose && options.RequestCancellation is { } requestCancellation)
+                {
+                    args.Cancel = true;
+                    requestCancellation();
+                }
+            };
+            // Firmware may defer cancellation through erase/program/verify/reboot. Keep its
+            // progress visible until the operation owner disposes the handle at a safe boundary.
+            var registration = options.RequestCancellation is null
+                ? cancellationToken.Register(() => dispatcher.Dispatch(CloseProgress))
+                : default;
             Register(dialog);
             _ = dialog.ShowDialog<bool>(owner).ContinueWith(_ =>
             {
                 Unregister(dialog);
                 contentViewModel.Dispose();
             }, TaskScheduler.Default);
-            return new DialogHandle(() => dispatcher.Dispatch(() => dialog.Close(false)), registration);
+            return new DialogHandle(() => dispatcher.Dispatch(CloseProgress), registration);
         });
     }
 

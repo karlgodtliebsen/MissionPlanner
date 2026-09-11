@@ -144,7 +144,8 @@ public interface IDialogService
 
 
     /// <summary>
-    /// Displays a cancellable progress dialog.
+    /// Displays a progress dialog that closes on cancellation, or remains owner-controlled
+    /// when <see cref="DialogOptions.RequestCancellation"/> is supplied for deferred cancellation.
     /// </summary>
     /// <param name="message">A function that returns the message to display in the progress dialog.</param>
     /// <param name="options">The dialog options.</param>

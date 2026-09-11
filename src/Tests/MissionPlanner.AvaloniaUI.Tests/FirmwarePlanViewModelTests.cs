@@ -6,6 +6,7 @@ using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Dfu;
+using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Preparation;
@@ -16,6 +17,70 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 
 public sealed class FirmwarePlanViewModelTests
 {
+    [Fact]
+    public async Task FirmwareProgressUsesDialogServiceAndCancellationClosesOwnedHandle()
+    {
+        var entryService = Substitute.For<IBootloaderEntryService>();
+        using var services = FirmwarePanelViewModelTests.CreateServices(collection => collection.AddSingleton(entryService));
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        services.GetRequiredService<IActiveVehicleContext>().IsOnline.Returns(false);
+        page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM10")
+        {
+            RuntimeProbe = new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "test")
+            { Verification = FirmwareRuntimeVerification.Verified }
+        }, false, "test");
+        var handle = Substitute.For<IDisposable>();
+        DialogOptions? options = null;
+        Func<string>? message = null;
+        Action<FirmwareProgress>? progress = null;
+        var started = new TaskCompletionSource<CancellationToken>(TaskCreationOptions.RunContinuationsAsynchronously);
+        services.GetRequiredService<IDialogService>()
+            .DisplayProgressCancellableAsync(Arg.Any<Func<string>>(), Arg.Any<DialogOptions>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                options = call.Arg<DialogOptions>();
+                message = call.Arg<Func<string>>();
+                return handle;
+            });
+        entryService.EnterAsync(Arg.Any<BootloaderEntryContext>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var token = call.Arg<CancellationToken>();
+                progress = call.Arg<BootloaderEntryContext>()!.Progress;
+                started.SetResult(token);
+                return WaitForCancellation(token);
+            });
+        var pending = page.EnterArduPilotBootloaderCommand.ExecuteAsync(null);
+        var operationToken = await started.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        Assert.Equal("Entering ArduPilot bootloader", options!.Title);
+        Assert.Contains("Entering ArduPilot bootloader", message!());
+        var updated = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        page.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(page.ProgressMessage) && page.ProgressMessage.Contains("Received 1024 bytes"))
+            {
+                updated.TrySetResult();
+            }
+        };
+        progress!(new(FirmwareOperationState.WaitingForBootloader, null, "test.wait", technicalDetail: "Received 1024 bytes"));
+        await updated.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        Assert.Contains("Received 1024 bytes", message());
+        options.RequestCancellation!();
+        Assert.True(operationToken.IsCancellationRequested,
+            $"CanCancel={operationToken.CanBeCanceled}; busy={page.IsOperationInProgress}; completed={pending.IsCompleted}; error={page.ErrorMessage}; status={page.StatusMessage}");
+        await pending.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        handle.Received(1).Dispose();
+        Assert.False(page.IsOperationInProgress);
+        await page.DeactivateAsync();
+
+        static async Task<BootloaderEntryResult> WaitForCancellation(CancellationToken token)
+        {
+            await Task.Delay(Timeout.Infinite, token);
+            throw new InvalidOperationException("Entry must be cancelled.");
+        }
+    }
+
     [Fact]
     public async Task DfuPlanRequiresExplicitTargetReviewAndInvalidatesItWhenTargetChanges()
     {
