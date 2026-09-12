@@ -9,7 +9,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
     x:DataType="local:InstallFirmwareViewModel">
     <ContentPage Header="Install Firmware">
-        <TabControl TabStripPlacement="Top">
+        <TabControl TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
             <TabItem Header="Information">
                 <local:LandingView />
             </TabItem>
@@ -304,7 +304,7 @@
                                     <Button Content="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
                                             IsVisible="{Binding ShowOnlineValidation}" IsEnabled="{Binding !IsOperationInProgress}"
                                             HorizontalAlignment="Center" />
-                                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
+                                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
 
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Artifact valid:" />
                                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.ArtifactValid}" />
@@ -315,23 +315,27 @@
                                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Compatibility Status:" TextWrapping="Wrap" />
                                         <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CompatibilityStatus}" TextWrapping="Wrap" />
 
-                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Install status:" TextWrapping="Wrap" />
-                                        <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding InstallStatus}" TextWrapping="Wrap" />
-
-                                        <TextBlock Grid.Row="5" Grid.Column="0" Text="Warnings:" Classes="Warning" TextWrapping="Wrap"
+                                       
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Status:" TextWrapping="Wrap" 
+                                                   IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                        <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding InstallStatus}" 
+                                                             IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                                             TextWrapping="Wrap" />
+                                        
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Warnings:" Classes="Warning" TextWrapping="Wrap"
                                                    IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                                        <TextBlock Grid.Row="5" Grid.Column="1"
+                                        <TextBlock Grid.Row="3" Grid.Column="1"
                                                    Text="{Binding SelectedArtifact.Warnings}" Classes="Warning" TextWrapping="Wrap"
                                                    IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
-                                        <TextBlock Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="2"
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
                                                    Text="Cancellation is deferred through verification and reboot. Keep power connected."
                                                    Classes="Warning" TextWrapping="Wrap"
                                                    IsVisible="{Binding IsCancellationDeferred}"
                                                    />
 
                                         <TextBox
-                                            Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+                                            Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
                                             IsVisible="{Binding ShowDfuConfirmation}"
                                             IsEnabled="{Binding !IsOperationInProgress}"
                                             Text="{Binding DfuConfirmationText}"

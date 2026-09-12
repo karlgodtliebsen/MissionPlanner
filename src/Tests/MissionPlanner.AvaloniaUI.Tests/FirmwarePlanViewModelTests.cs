@@ -19,6 +19,99 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 public sealed class FirmwarePlanViewModelTests
 {
     [Fact]
+    public async Task SuccessfulSerialInstallAlsoReturnsToLanding()
+    {
+        using var services = Services(null);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        page.SelectedTabIndex = 1;
+        PrepareOnline(page);
+        page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM10")
+        {
+            BootloaderIdentity = new(50, 5, 1024)
+        }, true, "Protocol identity");
+        Assert.True(page.InstallCommand.CanExecute(null));
+        services.GetRequiredService<IFirmwareInstallationService>()
+            .InstallAsync(Arg.Any<FirmwareInstallationRequest>(), Arg.Any<IProgress<FirmwareProgress>>(), Arg.Any<CancellationToken>())
+            .Returns(new FirmwareOperationResult(Guid.NewGuid(), FirmwareOperationKind.InstallApplicationFirmware,
+                FirmwareOperationState.Completed));
+        services.GetRequiredService<IDialogService>()
+            .ShowOverlayDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(Arg.Any<DiagnosticsReportViewModel>(),
+                Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<DiagnosticsReportViewModel>(null!));
+        await page.InstallCommand.ExecuteAsync(null);
+        Assert.Equal(0, page.SelectedTabIndex);
+        Assert.False(page.IsFirmwareSelected);
+        Assert.False(page.IsOperationInProgress);
+        Assert.False(page.ShowValidationAndCompatibility);
+        await page.DeactivateAsync();
+    }
+
+    [Theory]
+    [InlineData(DfuOperationState.Completed)]
+    [InlineData(DfuOperationState.Failed)]
+    [InlineData(DfuOperationState.Cancelled)]
+    public async Task SuccessfulDfuReturnsToLandingAndRediscoversAfterDiagnosticsClose(DfuOperationState outcome)
+    {
+        using var services = Services(null);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        page.SelectedTabIndex = 1;
+        services.GetRequiredService<IDfuToolLocator>().LocateAsync(Arg.Any<CancellationToken>())
+            .Returns(new DfuToolStatus(DfuToolAvailability.Available));
+        await page.DfuModel.RefreshAsync(TestContext.Current.CancellationToken);
+        PrepareOnline(page);
+        page.DfuModel.SelectedDfuDevice = new(new("usb", 0x0483, 0xdf11, DfuDriverState.PresentReady));
+        var metadata = new DfuArtifactMetadata(100, 4, 0x08000000, 0x08000003, new string('a', 64),
+            [new DfuMemoryRange(0x08000000, new byte[4])], []);
+        page.DfuModel.PreparedArtifact = new("firmware_with_bl.hex", "cache.hex", metadata, Metadata().SourceUri, "Board", 50);
+        page.DfuConfirmationText = "FLASH Board";
+        await page.ReviewDfuTargetCommand.ExecuteAsync(null);
+        Assert.True(page.InstallDfuFirmwareCommand.CanExecute(null));
+        services.GetRequiredService<IDfuInstallationService>()
+            .InstallAsync(Arg.Any<DfuInstallationRequest>(), Arg.Any<IProgress<DfuProgress>>(), Arg.Any<CancellationToken>())
+            .Returns(new DfuProgrammingResult(outcome, outcome == DfuOperationState.Completed, outcome == DfuOperationState.Completed, false));
+        var shown = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var closed = new TaskCompletionSource<DiagnosticsReportViewModel>(TaskCreationOptions.RunContinuationsAsynchronously);
+        services.GetRequiredService<IDialogService>()
+            .ShowOverlayDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(Arg.Any<DiagnosticsReportViewModel>(),
+                Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                shown.TrySetResult();
+                return closed.Task;
+            });
+        var install = page.InstallDfuFirmwareCommand.ExecuteAsync(null);
+        if (outcome == DfuOperationState.Completed)
+        {
+            await shown.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+            Assert.Equal(1, page.SelectedTabIndex);
+            Assert.True(page.IsFirmwareSelected);
+            // Simulate the reconnected application becoming visible while the report is open.
+            services.GetRequiredService<MissionPlanner.Firmware.Devices.IFirmwareSerialDeviceCatalog>()
+                .GetDevicesAsync(Arg.Any<CancellationToken>()).Returns(new[] { new SerialDeviceDescriptor("COM11") });
+            closed.SetResult(null!);
+        }
+        await install.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        Assert.False(page.IsOperationInProgress);
+        if (outcome == DfuOperationState.Completed)
+        {
+            Assert.Equal(0, page.SelectedTabIndex);
+            Assert.False(page.IsFirmwareSelected);
+            Assert.Null(page.DfuConfirmationText);
+            Assert.Null(page.DfuModel.PreparedArtifact);
+            Assert.Empty(page.DfuModel.DfuDevices);
+            Assert.Contains("COM11", services.GetRequiredService<FirmwareLandingViewModel>().SerialSummary);
+        }
+        else
+        {
+            Assert.Equal(1, page.SelectedTabIndex);
+            Assert.True(page.IsFirmwareSelected);
+        }
+        await page.DeactivateAsync();
+    }
+
+    [Fact]
     public async Task LocalSelectorLoadsPlatformsWithoutOpeningOnlineSelector()
     {
         using var services = Services(null);

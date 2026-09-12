@@ -3,7 +3,6 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -52,7 +51,6 @@ public sealed class IsolatedSimulatorVehicleConnection : ISimulatorVehicleConnec
         this.sessionId = sessionId;
         this.connectionSession = connectionSession;
         this.vehicleRegistry = vehicleRegistry;
-        commandService = commandService;
         this.domainEventHub = domainEventHub;
         this.clock = clock;
         this.channelRegistry = channelRegistry;

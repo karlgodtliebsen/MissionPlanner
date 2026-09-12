@@ -521,6 +521,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             return;
         }
 
+        var returnToLanding = false;
         using var ownedCancellation = BeginOperationCancellation(cancellationToken);
         try
         {
@@ -561,7 +562,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             {
                 var options = dialogService.CreateOptions("Firmware installation completed.", "Ok", null);
                 var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
-                dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+                await dialogService.ShowOverlayDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options,
+                    cancellationToken: lifetime?.Token ?? CancellationToken.None);
+                returnToLanding = true;
             }
             else
             {
@@ -595,6 +598,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             EndOperationCancellation(ownedCancellation);
             Interlocked.Exchange(ref operationRunning, 0);
             SetOperation(false, null);
+        }
+        if (returnToLanding)
+        {
+            await ReturnToLandingAfterInstallationAsync();
         }
     }
 
@@ -633,6 +640,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
         var requiredPhrase = dfuTargetConfirmation;
 
+        var returnToLanding = false;
         using var ownedCancellation = BeginOperationCancellation(cancellationToken);
         try
         {
@@ -668,7 +676,16 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 _ => "Firmware installation failed."
             }, "Ok", null);
             var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticReport ?? "", "");
-            dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+            if (result.State == DfuOperationState.Completed)
+            {
+                await dialogService.ShowOverlayDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options,
+                    cancellationToken: lifetime?.Token ?? CancellationToken.None);
+                returnToLanding = true;
+            }
+            else
+            {
+                dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+            }
 
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
@@ -693,6 +710,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             EndOperationCancellation(ownedCancellation);
             Interlocked.Exchange(ref operationRunning, 0);
             SetOperation(false, null);
+        }
+        if (returnToLanding)
+        {
+            await ReturnToLandingAfterInstallationAsync();
         }
     }
 

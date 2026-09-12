@@ -10,12 +10,12 @@
     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
     x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.DiagnosticsReportView"
     x:DataType="subViews:DiagnosticsReportViewModel"
-    MinHeight="400"
+    MinHeight="500"
     MinWidth="600"
     >
     <Border Margin="50" Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
-        <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="25">
             <StackPanel Orientation="Vertical" Spacing="20">
                 <TextBlock Text="{Binding Title}" Classes="H3" HorizontalAlignment="Center"/>
 

@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -29,8 +29,6 @@ public sealed partial class SigningViewModel(SigningKeyViewModel keys, SigningSe
     [ObservableProperty] public partial string Message { get; private set; } = "Select a key and a unique outbound link ID. Use a trusted physical connection for setup.";
     /// <summary>Gets non-secret connection status and counters.</summary>
     [ObservableProperty] public partial string Status { get; private set; } = "Disabled";
-    /// <summary>Gets whether setup is running.</summary>
-    [ObservableProperty] public partial bool IsBusy { get; private set; }
 
     /// <inheritdoc />
     public override async Task ActivateAsync()
@@ -38,7 +36,10 @@ public sealed partial class SigningViewModel(SigningKeyViewModel keys, SigningSe
         await gate.WaitAsync();
         try
         {
-            if (lifetime is not null) { return; }
+            if (lifetime is not null)
+            {
+                return;
+            }
             lifetime = new();
             keys.KeyChanged += KeyChanged;
             await keys.ActivateAsync();
@@ -54,7 +55,10 @@ public sealed partial class SigningViewModel(SigningKeyViewModel keys, SigningSe
         await gate.WaitAsync();
         try
         {
-            if (lifetime is null) { return; }
+            if (lifetime is null)
+            {
+                return;
+            }
             keys.KeyChanged -= KeyChanged;
             await configuring;
             await polling;
@@ -66,12 +70,18 @@ public sealed partial class SigningViewModel(SigningKeyViewModel keys, SigningSe
         finally { gate.Release(); }
     }
 
-    private void KeyChanged(string fingerprint) => Message = $"Selected key fingerprint: {fingerprint}. Configuration requires confirmation.";
+    private void KeyChanged(string fingerprint)
+    {
+        Message = $"Selected key fingerprint: {fingerprint}. Configuration requires confirmation.";
+    }
 
     [RelayCommand]
     private Task ConfigureAsync()
     {
-        if (IsBusy || keys.IsBusy || lifetime is null) { return Task.CompletedTask; }
+        if (IsBusy || keys.IsBusy || lifetime is null)
+        {
+            return Task.CompletedTask;
+        }
         configuring = ConfigureCoreAsync(lifetime.Token);
         return configuring;
     }
@@ -82,13 +92,20 @@ public sealed partial class SigningViewModel(SigningKeyViewModel keys, SigningSe
         byte[]? secret = null;
         try
         {
-            if (keys.LinkId is < 0 or > 255) { throw new InvalidOperationException("Invalid link identifier."); }
+            if (keys.LinkId is < 0 or > 255)
+            {
+                throw new InvalidOperationException("Invalid link identifier.");
+            }
             secret = keys.CopyKey();
             var link = (byte)keys.LinkId;
             var accepted = await dialogs.ConfirmAsync(dialogs.CreateOptions("Configure vehicle signing", "Configure signing", "Cancel"),
                 "This sends a secret key to the connected vehicle. Use a trusted USB/wired connection. Other ground stations may be locked out; retain a recovery copy before continuing. A timeout can mean the vehicle changed even though local setup failed. Configure signing now?", token);
             token.ThrowIfCancellationRequested();
-            if (!accepted) { Message = "Signing setup cancelled before transmission."; return; }
+            if (!accepted)
+            {
+                Message = "Signing setup cancelled before transmission.";
+                return;
+            }
             Message = "Waiting for a verified signed exchange from the selected vehicle…";
             await setup.ConfigureAsync(secret, link, true, token);
             Message = "Vehicle signature verified; local outbound signing is active. Unsigned traffic is still accepted by policy.";
@@ -104,7 +121,10 @@ public sealed partial class SigningViewModel(SigningKeyViewModel keys, SigningSe
         }
         finally
         {
-            if (secret is not null) { CryptographicOperations.ZeroMemory(secret); }
+            if (secret is not null)
+            {
+                CryptographicOperations.ZeroMemory(secret);
+            }
             IsBusy = keys.Locked = false;
         }
     }
@@ -145,7 +165,10 @@ public sealed partial class SigningViewModel(SigningKeyViewModel keys, SigningSe
 
     private async Task CloseAsync()
     {
-        try { await DeactivateAsync(); }
+        try
+        {
+            await DeactivateAsync();
+        }
         catch (Exception exception) { Logger.LogWarning("Signing view cleanup failed ({FailureType}).", exception.GetType().Name); }
     }
 }
