@@ -266,7 +266,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             options,
             cancellationToken: cancellationToken);
 
-        if (SelectedFirmwareModel.HasSelectedFirmware)
+        if (OnlineFirmwareModel.SelectedFirmware is not null)
         {
             if (CurrentPlan.RequiredArtifactFormat == Firmware.Workflow.FirmwareArtifactFormat.WithBootloaderHex)
             {
@@ -294,9 +294,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         if (file.FileName.EndsWith("_with_bl.hex", StringComparison.OrdinalIgnoreCase))
         {
             await DfuModel.SelectHexAsync(cancellationToken, file);
-            if (!string.IsNullOrWhiteSpace(DfuModel.LocalDfuPlatform))
+            if (DfuModel.HasLocalDfuFirmware)
             {
-                await PrepareDfuArtifactAsync(cancellationToken);
+                await LoadLocalPlatformChoicesAsync(cancellationToken);
             }
         }
         else
@@ -326,6 +326,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// </summary>
     public bool CanNavigateAway => !IsOperationInProgress;
 
+    /// <summary>Gets completed workflow steps for the current firmware selection.</summary>
     [ObservableProperty]
     public partial string? WorkflowProgress
     {
@@ -333,6 +334,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         private set;
     }
 
+    /// <summary>Gets the next action required from the operator.</summary>
     [ObservableProperty]
     public partial string? WorkflowNextStep
     {
@@ -554,6 +556,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
             SetMessages(message);
             NotificationManager?.Show(message);
+            RecordWorkflowResult(message, succeeded);
             if (succeeded)
             {
                 var options = dialogService.CreateOptions("Firmware installation completed.", "Ok", null);
@@ -571,6 +574,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
             SetMessages("Firmware installation cancelled.");
+            RecordWorkflowResult("Firmware installation cancelled.");
             NotificationManager?.Show(StatusMessage ?? "");
         }
         catch (Exception exception)
@@ -638,6 +642,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             {
                 ProgressMessage = DfuStageText(value);
                 SetMessages(ProgressMessage);
+                RecordDfuProgress(value.State);
+                UpdateWorkflowGuidance();
             }));
             var result = await dfuInstallationService.InstallAsync(
                 new DfuInstallationRequest(platform, boardId, selectedDfuDevice.Descriptor, ConfirmationPhrase: requiredPhrase,
@@ -652,6 +658,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                     ? "Initial ArduPilot installation completed and the application device was detected."
                     : "Programming and verification completed. Reconnect or reset the controller if ArduPilot does not appear."
                 : result.Failure?.Message ?? $"STM32 DFU installation {result.State}.");
+            RecordWorkflowResult(StatusMessage ?? "DFU operation finished.", result.State == DfuOperationState.Completed);
 
             CloseOperationDialog();
             var options = dialogService.CreateOptions(result.State switch
@@ -667,6 +674,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
             SetMessages("Initial DFU installation cancelled.");
+            RecordWorkflowResult("DFU installation cancelled.");
         }
         catch (Exception exception)
         {
@@ -711,6 +719,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             SetOperation(true, FirmwareOperationState.Programming);
             var result = await bootloaderUpdateService.UpdateAsync(new BootloaderUpdateRequest(true), cancellationToken);
             SetMessages(result.Code + (result.RebootRequired ? " — reboot the flight controller to use the new bootloader." : string.Empty));
+            RecordWorkflowResult(StatusMessage ?? result.Code);
 
 
         }
@@ -823,6 +832,16 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             if (!operationActive)
             {
                 IsCancellationDeferred = false;
+                if (!workflowInstalled && !string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    workflowResult = $"Operation failed: {ErrorMessage}";
+                }
+            }
+            else
+            {
+                workflowResult = null;
+                workflowInstalled = false;
+                completedOperationSteps.Clear();
             }
         });
         UpdateWorkflow();
@@ -848,6 +867,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             {
                 CurrentOperationState = progress.State;
                 SetMessages(StageText(progress));
+                RecordOperationProgress(progress.State);
+                UpdateWorkflowGuidance();
             });
     }
 
@@ -1001,6 +1022,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private void SubscribePanels()
     {
         ValidatedModel.PropertyChanged += OnPreparedArtifactChanged;
+        OnlineFirmwareModel.PropertyChanged += OnCatalogueAvailabilityChanged;
         DevicesModel.PropertyChanged += OnDeviceAvailabilityChanged;
         DfuModel.PropertyChanged += OnDeviceAvailabilityChanged;
         DfuModel.PropertyChanged += OnPreparedArtifactChanged;
@@ -1027,6 +1049,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private void UnsubscribePanels()
     {
         ValidatedModel.PropertyChanged -= OnPreparedArtifactChanged;
+        OnlineFirmwareModel.PropertyChanged -= OnCatalogueAvailabilityChanged;
         DevicesModel.PropertyChanged -= OnDeviceAvailabilityChanged;
         DfuModel.PropertyChanged -= OnDeviceAvailabilityChanged;
         DfuModel.PropertyChanged -= OnPreparedArtifactChanged;
@@ -1051,11 +1074,19 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
     private bool ArePanelsRefreshing => OnlineFirmwareModel.IsRefreshing || DevicesModel.IsRefreshing || DfuModel.IsRefreshing;
 
+    private void OnCatalogueAvailabilityChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName == nameof(FirmwareCatalogueViewModel.KnownPlatforms))
+        {
+            UpdatePanelCapabilities();
+        }
+    }
+
     private void OnPreparedArtifactChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
     {
         if (args.PropertyName is nameof(ValidatedPackageViewModel.PreparedFirmware) or nameof(STM32BootloaderViewModel.PreparedArtifact))
         {
-            dfuTargetConfirmation = null;
+            InvalidateDfuConfirmation();
             UpdatePanelCapabilities();
         }
     }
@@ -1134,7 +1165,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
     private void OnDfuSelection(DfuDeviceItemViewModel? value)
     {
-        dfuTargetConfirmation = null;
+        InvalidateDfuConfirmation();
         if (value is not null && DevicesModel.SelectedDevice is not null)
         {
             DevicesModel.SelectedDevice = null;

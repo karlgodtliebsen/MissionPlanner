@@ -13,7 +13,7 @@
     MinHeight="400"
     MinWidth="600"
     >
-    <Border Margin="20" Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Border Margin="50" Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
         <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel Orientation="Vertical" Spacing="20">
@@ -37,7 +37,6 @@
                         >
                     <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
                 </Button>
-                <!--Content="Copy diagnostic report"-->
                 <Button
                     Width="100"
                     Padding="8,2"

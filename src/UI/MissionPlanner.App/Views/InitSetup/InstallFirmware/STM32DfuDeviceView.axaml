@@ -42,7 +42,7 @@
                     <TextBlock Text="{Binding Dfu.ToolReadiness}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding DfuRebootGuidance}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}"
-                               Classes="Warning" FontWeight="SemiBold" TextWrapping="Wrap" />
+                               Classes="Danger" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <WrapPanel Orientation="Horizontal" ItemSpacing="25">
                         <ComboBox ItemsSource="{Binding Devices.DetectedDevices}"
                                   SelectedItem="{Binding Devices.SelectedDevice}"

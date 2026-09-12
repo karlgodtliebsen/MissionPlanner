@@ -7,8 +7,7 @@ public sealed partial class InstallFirmwareViewModel
 {
     private async Task PrepareDfuArtifactAsync(CancellationToken cancellationToken)
     {
-        if (IsOperationInProgress || ArePanelsRefreshing
-            || (UsesLocalDfuHex ? string.IsNullOrWhiteSpace(DfuModel.LocalDfuPlatform) : OnlineFirmwareModel.SelectedFirmware is null))
+        if (!CanValidateHexFile())
         {
             return;
         }
@@ -51,10 +50,12 @@ public sealed partial class InstallFirmwareViewModel
         catch (OperationCanceledException) when (owned.IsCancellationRequested)
         {
             DfuModel.StatusMessage = "Combined HEX preparation cancelled.";
+            RecordWorkflowResult(DfuModel.StatusMessage);
         }
         catch (Exception exception)
         {
             DfuModel.ErrorMessage = exception.Message;
+            RecordWorkflowResult($"Combined HEX validation failed: {exception.Message}");
         }
         finally
         {

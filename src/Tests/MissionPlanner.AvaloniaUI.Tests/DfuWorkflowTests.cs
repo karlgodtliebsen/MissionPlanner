@@ -64,6 +64,9 @@ public sealed class DfuWorkflowTests
         parent.OnlineFirmwareModel.SelectedFirmware = parent.OnlineFirmwareModel.FirmwareChoices.Single();
         if (custom)
         {
+            var localTarget = new FirmwareManifestEntry(entry.Version, entry.Channel,
+                new FirmwareBoardTarget(51, "LocalBoard", FirmwareVehicleType.Copter), entry.Artifact);
+            parent.OnlineFirmwareModel.SetCatalogue([entry, localTarget], [], true);
             parent.OnlineFirmwareModel.ClearSelection();
             parent.DfuModel.LocalDfuFirmwarePath = "retained_with_bl.hex";
             parent.DfuModel.LocalDfuPlatform = "LocalBoard";

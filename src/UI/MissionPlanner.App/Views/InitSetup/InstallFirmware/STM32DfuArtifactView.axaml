@@ -10,7 +10,7 @@
             <TextBlock Text="{Binding DfuStatus}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding ToolReadiness}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
-            <TextBlock Text="{Binding ErrorMessage}" Classes="Warning" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap" />
             <SelectableTextBlock Text="{Binding PreparedArtifact.FileName, TargetNullValue='Combined HEX not prepared yet'}" />
             <SelectableTextBlock Text="{Binding PreparedArtifact.SourceUri}" TextWrapping="Wrap" />
             <SelectableTextBlock Text="{Binding PreparedArtifact.Platform, StringFormat='Platform: {0}'}" />

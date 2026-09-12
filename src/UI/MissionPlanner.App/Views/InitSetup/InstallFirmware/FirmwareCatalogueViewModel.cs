@@ -17,6 +17,9 @@ namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
 {
     private IReadOnlyList<FirmwareManifestEntry> availableEntries = [];
+
+    /// <summary>Gets known platform names independently of the release filters.</summary>
+    public IReadOnlyList<string> KnownPlatforms { get; private set; } = [];
     private IReadOnlyList<SerialDeviceDescriptor> availableDevices = [];
     private FirmwareManifestEntry? selectedFirmwareTarget;
     private bool showingAllOptions;
@@ -443,6 +446,10 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
     public void SetCatalogue(IReadOnlyList<FirmwareManifestEntry> entries, IReadOnlyList<SerialDeviceDescriptor> devices, bool allOptions)
     {
         availableEntries = entries;
+        KnownPlatforms = entries.Select(entry => entry.Target.Platform)
+            .Where(platform => !string.IsNullOrWhiteSpace(platform)).Distinct(StringComparer.Ordinal)
+            .OrderBy(platform => platform, StringComparer.Ordinal).ToArray();
+        OnPropertyChanged(nameof(KnownPlatforms));
         availableDevices = devices;
         showingAllOptions = allOptions;
         ApplyTargetQuery();

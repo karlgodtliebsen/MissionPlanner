@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Dfu;
@@ -16,6 +18,110 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 
 public sealed class FirmwarePlanViewModelTests
 {
+    [Fact]
+    public async Task LocalSelectorLoadsPlatformsWithoutOpeningOnlineSelector()
+    {
+        using var services = Services(null);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        page.DfuModel.SelectedDfuDevice = new(new("usb", 0x0483, 0xdf11, DfuDriverState.PresentReady));
+        var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
+            new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter),
+            new FirmwareArtifact(Metadata().SourceUri, FirmwareImageFormat.Apj));
+        services.GetRequiredService<IFirmwareCatalogService>()
+            .GetCatalogAsync(Arg.Any<FirmwareCatalogRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new FirmwareCatalog([entry], DateTimeOffset.UtcNow, false));
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + "_with_bl.hex");
+        await File.WriteAllTextAsync(path, "fixture", TestContext.Current.CancellationToken);
+        try
+        {
+            services.GetRequiredService<IFirmwareFilePicker>()
+                .PickAsync(FirmwareArtifactFormat.WithBootloaderHex, Arg.Any<CancellationToken>())
+                .Returns(new FirmwareFileSelection("firmware_with_bl.hex", _ => throw new InvalidOperationException(), path));
+            Assert.Empty(page.OnlineFirmwareModel.KnownPlatforms);
+            await page.ShowLocalFirmwareSelectorCommand.ExecuteAsync(null);
+            Assert.Contains("Board", page.OnlineFirmwareModel.KnownPlatforms);
+            Assert.Equal(path, page.SelectedArtifact.LocalFile);
+            Assert.Null(page.OnlineFirmwareModel.SelectedFirmware);
+            Assert.False(page.ShowValidationAndCompatibility);
+            page.LocalDfuPlatform = "Board";
+            Assert.True(page.PrepareSelectedHexCommand.CanExecute(null));
+        }
+        finally
+        {
+            await page.DeactivateAsync();
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task ClosingOnlineSelectorPreparesDfuAndExposesInlineConfirmation()
+    {
+        using var services = Services(null);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        page.DfuModel.SelectedDfuDevice = new(new("usb", 0x0483, 0xdf11, DfuDriverState.PresentReady));
+        services.GetRequiredService<IDialogService>()
+            .CreateOptions(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>())
+            .Returns(new Ursa.Controls.OverlayDialogOptions());
+        services.GetRequiredService<IDialogService>()
+            .ShowOverlayDialogAsync<FirmwareCatalogueView, FirmwareCatalogueViewModel>(
+                Arg.Any<FirmwareCatalogueViewModel>(), Arg.Any<Ursa.Controls.OverlayDialogOptions>(),
+                Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                PrepareOnline(page);
+                page.ValidatedModel.PreparedFirmware = null;
+                return page.OnlineFirmwareModel;
+            });
+        var metadata = new DfuArtifactMetadata(100, 4, 0x08000000, 0x08000003, new string('a', 64),
+            [new DfuMemoryRange(0x08000000, new byte[4])], []);
+        services.GetRequiredService<IDfuArtifactResolver>()
+            .ResolveAsync(Arg.Any<DfuInstallationRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new DfuArtifact("firmware_with_bl.hex", "cache.hex", metadata, Metadata().SourceUri, "Board", 50));
+        await page.ShowOnlineFirmwareSelectorCommand.ExecuteAsync(null);
+        Assert.True(page.ShowValidationAndCompatibility);
+        Assert.True(page.ShowDfuConfirmation);
+        Assert.False(page.ShowOnlineValidation);
+        Assert.Null(page.LocalDfuPlatform);
+        Assert.Contains("FLASH Board", page.DfuConfirmationPlaceholder);
+        await page.DeactivateAsync();
+    }
+
+    [Fact]
+    public async Task OnlineDfuSelectionShowsReleaseDetailsAndEnablesHexPreparationWithoutLocalPlatform()
+    {
+        using var services = Services(null);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        page.DfuModel.SelectedDfuDevice = new(new("usb", 0x0483, 0xdf11, DfuDriverState.PresentReady));
+        PrepareOnline(page);
+        page.ValidatedModel.PreparedFirmware = null;
+        Assert.Null(page.LocalDfuPlatform);
+        Assert.Equal("Official catalogue", page.SelectedArtifact.Source);
+        Assert.Equal("Board", page.SelectedArtifact.Platform);
+        Assert.Equal("4.6.0", page.SelectedArtifact.Version);
+        Assert.Equal(50, page.SelectedArtifact.BoardId);
+        Assert.True(page.ShowHexPreparation);
+        Assert.True(page.PrepareSelectedHexCommand.CanExecute(null));
+        Assert.True(page.ShowValidationAndCompatibility);
+        Assert.True(page.ShowOnlineValidation);
+        Assert.Contains("Validate combined HEX", page.WorkflowNextStep);
+
+        services.GetRequiredService<IDfuArtifactResolver>()
+            .ResolveAsync(Arg.Any<DfuInstallationRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<DfuArtifact>(new InvalidOperationException("Invalid HEX checksum")));
+        await page.PrepareSelectedHexCommand.ExecuteAsync(null);
+        Assert.True(page.ShowValidationAndCompatibility);
+        Assert.False(page.ShowDfuConfirmation);
+        Assert.Contains("Invalid HEX checksum", page.WorkflowProgress);
+        Assert.Contains("Validate combined HEX", page.WorkflowNextStep);
+        page.ClearFirmwareSelectionCommand.Execute(null);
+        Assert.DoesNotContain("Invalid HEX checksum", page.WorkflowProgress);
+        Assert.Contains("Select online firmware", page.WorkflowNextStep);
+        await page.DeactivateAsync();
+    }
+
     [Fact]
     public async Task SelectedLocalHexShowsProvenanceBeforeValidation()
     {
@@ -135,11 +241,17 @@ public sealed class FirmwarePlanViewModelTests
             .Returns(new DfuToolStatus(DfuToolAvailability.Available));
         await page.DfuModel.RefreshAsync(TestContext.Current.CancellationToken);
         page.DfuModel.SelectedDfuDevice = new(new("usb", 0x0483, 0xdf11, DfuDriverState.PresentReady));
+        Assert.Contains("Select online firmware or a local firmware file", page.WorkflowNextStep);
+        PrepareOnline(page);
         page.DfuModel.LocalDfuFirmwarePath = "Board_with_bl.hex";
+        page.DfuModel.LocalDfuPlatform = "an arbitrary sentence";
+        Assert.False(page.PrepareSelectedHexCommand.CanExecute(null));
         page.DfuModel.LocalDfuPlatform = "Board";
         Assert.True(page.IsFirmwareSelected);
         Assert.True(page.HasPhysicalController);
-        Assert.True(page.ShowValidationAndCompatibility);
+        Assert.False(page.ShowValidationAndCompatibility);
+        Assert.Contains("Firmware selected", page.WorkflowProgress);
+        Assert.Contains("Validate combined HEX", page.WorkflowNextStep);
         Assert.False(page.CanValidateCompatibility);
         var metadata = new DfuArtifactMetadata(100, 4, 0x08000000, 0x08000003, new string('a', 64),
             [new DfuMemoryRange(0x08000000, new byte[4])], []);
@@ -149,13 +261,21 @@ public sealed class FirmwarePlanViewModelTests
         Assert.True(page.CanValidateCompatibility);
         Assert.True(page.SelectedArtifact.ArtifactValid);
         Assert.False(page.CurrentPlan.CanExecute);
-        services.GetRequiredService<IDialogService>().PromptAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string>(),
-            Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns("FLASH Board");
+        Assert.True(page.ShowValidationAndCompatibility);
+        Assert.Contains("Combined HEX validated", page.WorkflowProgress);
+        Assert.Contains("FLASH Board", page.WorkflowNextStep);
+        page.DfuConfirmationText = "wrong";
+        Assert.False(page.ReviewDfuTargetCommand.CanExecute(null));
+        page.DfuConfirmationText = "FLASH Board";
+        Assert.True(page.ReviewDfuTargetCommand.CanExecute(null));
         await page.ReviewDfuTargetCommand.ExecuteAsync(null);
         Assert.True(page.CurrentPlan.CanExecute);
         Assert.True(page.ExecuteCurrentPlanCommand.CanExecute(null));
+        Assert.Contains("DFU controller target confirmed", page.WorkflowProgress);
+        Assert.Contains("Click Install firmware", page.WorkflowNextStep);
         page.DfuModel.SelectedDfuDevice = new(new("other-usb", 0x0483, 0xdf11, DfuDriverState.PresentReady));
         Assert.False(page.CurrentPlan.CanExecute);
+        Assert.Null(page.DfuConfirmationText);
         await page.DeactivateAsync();
     }
 

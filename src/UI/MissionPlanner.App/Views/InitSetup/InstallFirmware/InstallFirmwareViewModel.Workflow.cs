@@ -15,34 +15,17 @@ public sealed partial class InstallFirmwareViewModel
     private string? dfuTargetConfirmation;
 
     /// <summary>Reviews exact platform intent separately from artifact validation.</summary>
-    [RelayCommand]
-    private async Task ReviewDfuTargetAsync(CancellationToken cancellationToken)
+    [RelayCommand(CanExecute = nameof(CanReviewDfuTarget))]
+    private Task ReviewDfuTargetAsync(CancellationToken cancellationToken)
     {
-        if (IsOperationInProgress || !SelectedArtifact.ArtifactValid
-            || CurrentPlan.Transport != BootloaderEntryTarget.Stm32RomDfu || string.IsNullOrWhiteSpace(SelectedArtifact.Platform))
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!CanReviewDfuTarget())
         {
-            return;
+            return Task.CompletedTask;
         }
-        var artifact = DfuModel.PreparedArtifact;
-        var target = DfuModel.SelectedDfuDevice;
-        var platform = SelectedArtifact.Platform;
-        var expected = $"FLASH {platform}";
-        var options = dialogService.CreateOptions("Confirm exact DFU target", "Confirm", "Cancel");
-        var message1 = "STM32 ROM DFU does not identify the flight-controller board. ";
-        var message2 = $"Verify that {platform} is the exact platform.";
-
-        var viewModel = domainFactory.Create<ConfirmDfuTargetViewModel, string, string, string>(expected, message1, message2);
-        var result = await dialogService.ShowOverlayDialogAsync<ConfirmDfuTargetView, ConfirmDfuTargetViewModel>(viewModel, options, cancellationToken: cancellationToken);
-
-        var phrase = result.TargetMessage;
-
-
-        if (ReferenceEquals(artifact, DfuModel.PreparedArtifact) && ReferenceEquals(target, DfuModel.SelectedDfuDevice)
-            && string.Equals(phrase?.Trim(), expected, StringComparison.Ordinal))
-        {
-            dfuTargetConfirmation = expected;
-        }
+        dfuTargetConfirmation = DfuConfirmationText?.Trim();
         UpdatePanelCapabilities();
+        return Task.CompletedTask;
     }
 
     /// <summary>Gets whether online provenance is available for the current artifact.</summary>
@@ -107,7 +90,8 @@ public sealed partial class InstallFirmwareViewModel
     }
     private bool CanValidateHexFile()
     {
-        return !IsOperationInProgress && !string.IsNullOrEmpty(DfuModel.LocalDfuPlatform);
+        return !IsOperationInProgress && !ArePanelsRefreshing
+            && (UsesLocalDfuHex ? IsKnownLocalPlatform : OnlineFirmwareModel.SelectedFirmware is not null);
     }
 
     [ObservableProperty]
@@ -306,8 +290,28 @@ public sealed partial class InstallFirmwareViewModel
         var dfu = DfuModel.SelectedDfuDevice?.Descriptor;
         var package = LocalFirmwareModel.PreparedLocalFirmware?.Package ?? ValidatedModel.PreparedFirmware?.Package;
         var artifact = DfuModel.PreparedArtifact is { } hex ? FirmwareArtifactSummary.FromHex(hex)
+            : DfuModel.HasLocalDfuFirmware ? new FirmwareArtifactSummary
+            {
+                Source = "Local file",
+                LocalFile = DfuModel.LocalDfuFirmwarePath,
+                Format = FirmwareArtifactFormat.WithBootloaderHex,
+                Platform = DfuModel.LocalDfuPlatform?.Trim(),
+                Warnings = "Combined HEX validation pending. The selected platform is the intended target, not a board identity read from this file."
+            }
             : LocalFirmwareModel.PreparedLocalFirmware is { } local ? FirmwareArtifactSummary.FromLocal(local)
             : ValidatedModel.PreparedFirmware is { } online ? FirmwareArtifactSummary.FromOnline(online)
+            : OnlineFirmwareModel.SelectedFirmware?.Entry is { } selected ? new FirmwareArtifactSummary
+            {
+                Source = "Official catalogue",
+                OnlineUrl = selected.Artifact.DownloadUri,
+                Platform = selected.Target.Platform,
+                BoardId = selected.Target.BoardId,
+                VehicleFamily = selected.Target.VehicleType.ToString(),
+                Version = selected.Version.Value,
+                Channel = selected.Channel.ToString(),
+                GitSha = selected.GitSha,
+                Format = dfu is not null ? FirmwareArtifactFormat.WithBootloaderHex : FirmwareArtifactFormat.Apj
+            }
             : new FirmwareArtifactSummary();
         if (DfuModel.PreparedArtifact is not null && !UsesLocalDfuHex && OnlineFirmwareModel.SelectedFirmware?.Entry is { } release)
         {
@@ -397,12 +401,21 @@ public sealed partial class InstallFirmwareViewModel
             || LocalFirmwareModel.PreparedLocalFirmware is not null
             || DfuModel.HasLocalDfuFirmware
             || artifact.ArtifactValid;
-        ShowValidationAndCompatibility = HasPhysicalController && IsFirmwareSelected;
+        ShowValidationAndCompatibility = OnlineFirmwareModel.SelectedFirmware is not null
+            || HasPhysicalController && artifact.ArtifactValid
+                && (CurrentPlan.RequiredArtifactFormat != FirmwareArtifactFormat.WithBootloaderHex || DfuModel.PreparedArtifact is not null);
         CanValidateCompatibility = !context.OperationInProgress && artifact.ArtifactValid
             && (dfu is not null
                 ? DfuModel.PreparedArtifact is not null && !string.IsNullOrWhiteSpace(artifact.Platform) && dfuSafety is not null
                 : package is not null && serial?.BootloaderIdentity is not null && compatibility is not null);
         SetDeviceInformation();
+        UpdateWorkflowGuidance();
+        OnPropertyChanged(nameof(ShowHexPreparation));
+        OnPropertyChanged(nameof(ShowOnlineValidation));
+        OnPropertyChanged(nameof(ShowDfuConfirmation));
+        OnPropertyChanged(nameof(DfuConfirmationPlaceholder));
+        PrepareSelectedHexCommand.NotifyCanExecuteChanged();
+        ReviewDfuTargetCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(CanRebootToDfu));
         RebootToDfuCommand.NotifyCanExecuteChanged();
         EnterArduPilotBootloaderCommand.NotifyCanExecuteChanged();

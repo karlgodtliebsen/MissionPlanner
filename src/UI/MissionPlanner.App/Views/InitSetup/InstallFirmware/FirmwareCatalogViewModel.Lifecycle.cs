@@ -69,6 +69,39 @@ public sealed partial class FirmwareCatalogueViewModel
             : loader.RunAsync(token => LoadCatalogueAsync(forceRefresh, token), cancellationToken);
     }
 
+    /// <summary>Loads platform choices independently of the online selector's view lifetime.</summary>
+    public async Task EnsureKnownPlatformsAsync(CancellationToken cancellationToken = default)
+    {
+        if (KnownPlatforms.Count > 0 || IsRefreshing || InstallationRunning)
+        {
+            return;
+        }
+        try
+        {
+            IsRefreshing = true;
+            SetMessages("Loading controller platform choices…");
+            var catalogue = await catalogService.GetCatalogAsync(new FirmwareCatalogRequest(), cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            KnownPlatforms = catalogue.Entries.Select(entry => entry.Target.Platform)
+                .Where(platform => !string.IsNullOrWhiteSpace(platform)).Distinct(StringComparer.Ordinal)
+                .OrderBy(platform => platform, StringComparer.Ordinal).ToArray();
+            OnPropertyChanged(nameof(KnownPlatforms));
+            SetMessages(KnownPlatforms.Count > 0 ? "Controller platform choices loaded." : "No controller platforms were found. Retry loading the catalogue.");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            SetMessages("Loading controller platforms cancelled. Retry when ready.");
+        }
+        catch (Exception exception)
+        {
+            SetMessages("Unable to load controller platforms. Check the connection and retry.", exception.Message);
+        }
+        finally
+        {
+            IsRefreshing = false;
+        }
+    }
+
     /// <summary>Cancels the panel-owned refresh without clearing the last usable catalogue.</summary>
     public void CancelRefresh()
     {

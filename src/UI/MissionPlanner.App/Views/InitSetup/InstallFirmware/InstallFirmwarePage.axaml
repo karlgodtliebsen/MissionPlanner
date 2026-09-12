@@ -85,22 +85,6 @@
                             <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
                         </u:IconSplitButton>
 
-                        <!--
-                        <Button ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
-                        Command="{Binding EnterArduPilotBootloaderCommand}" >
-                        <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
-                        </Button>
-
-                        <Button ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
-                        Command="{Binding RebootToDfuCommand}" >
-                        <avalonia:MaterialIcon Kind="Gymnastics" Width="30" Height="30" />
-                        </Button>
-                        <Button ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
-                        Command="{Binding EnterManualDfuCommand}"
-                        IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
-                        <avalonia:MaterialIcon Kind="Excavator" Width="30" Height="30" />
-                        </Button>-->
-
                         <Button ToolTip.Tip="Online Firmware" Command="{Binding ShowOnlineFirmwareSelectorCommand}"
                                 IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}" >
                             <avalonia:MaterialIcon Kind="OpenInBrowser" Width="30" Height="30" />
@@ -116,10 +100,17 @@
                             <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
                         </Button>
 
-                        <Button ToolTip.Tip="Install / Reinstall"
+                        <Button ToolTip.Tip="Install firmware"
                                 Command="{Binding ExecuteCurrentPlanCommand}"
                                 IsEnabled="{Binding CurrentPlan.CanExecute}" >
                             <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                        </Button>
+
+                        <Button ToolTip.Tip="Load platform choices"
+                                IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
+                                Command="{Binding LoadLocalPlatformChoicesCommand}"
+                                IsEnabled="{Binding !IsOperationInProgress}" HorizontalAlignment="Center"  >
+                            <avalonia:MaterialIcon Kind="Loading" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Copy URL" Command="{Binding CopySelectedUrlCommand}"  >
@@ -149,21 +140,33 @@
                                  IsVisible="{Binding IsOperationInProgress}">
                             <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
                         </Button>
-
                         <!--</u:ToolBar>-->
                     </WrapPanel>
+
                     <Border Grid.Row="1" Classes="SectionCard" Padding="16"  HorizontalAlignment="Center" Width="{Binding #PhysicalCtrl.Bounds.Width}">
                         <StackPanel Spacing="6">
                             <TextBlock Text="{Binding CurrentPlan.Description}" Classes="H3" TextWrapping="Wrap" />
-                            <TextBlock Text="{Binding CurrentPlan.BlockReason}"  Classes="Warning" TextWrapping="Wrap" />
-                            <TextBlock Text="{Binding WorkflowProgress}" Classes="H4 Warning"  TextWrapping="Wrap"
-                                       IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                            <TextBlock Text="{Binding WorkflowNextStep}" Classes="H4 Warning"  TextWrapping="Wrap"
-                                       IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                            <!--
-                            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
-                            -->
-                            <TextBlock Text="{Binding ErrorMessage}" Classes="Warning" TextWrapping="Wrap"
+
+                            <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch">
+
+                                <TextBlock Grid.Row="0"
+                                           Text="Progress:" Classes="H4 Warning"  TextWrapping="Wrap"
+                                           IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                <TextBlock Grid.Row="1" Text="{Binding WorkflowProgress}" Classes="H4 Warning"  TextWrapping="Wrap"
+                                           IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                            </Grid>
+
+                            <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch">
+                                <TextBlock Grid.Row="0" Text="Next:" Classes="H4 Warning"  TextWrapping="Wrap"
+                                           IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+
+                                <TextBlock Grid.Row="1" Text="{Binding WorkflowNextStep}" Classes="H4 Warning"  TextWrapping="Wrap"
+                                           IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+
+                            </Grid>
+
+
+                            <TextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap"
                                        IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                         </StackPanel>
                     </Border>
@@ -266,31 +269,42 @@
                                         <TextBlock Grid.Row="13" Grid.Column="0"  Text="To validate:"
                                                    IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
                                                    TextWrapping="Wrap" />
-                                        <SelectableTextBlock Grid.Row="13" Grid.Column="1" Text="Enter exact ArduPilot platform for local HEX file:"
+                                        <SelectableTextBlock Grid.Row="13" Grid.Column="1" Text="Choose the intended controller platform. HEX validation does not establish board identity. Use the file supplier's target information; if unknown, select an online release for your exact controller."
                                                              IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
                                                              TextWrapping="Wrap" />
 
-                                        <TextBox
+                                        <ComboBox
                                             Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="2"
                                             IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
-                                            Text="{Binding LocalDfuPlatform}"
-                                            PlaceholderText="Type ArduPilot platform"  TextWrapping="Wrap" />
+                                            ItemsSource="{Binding OnlineFirmwareModel.KnownPlatforms}"
+                                            SelectedItem="{Binding LocalDfuPlatform}"
+                                            PlaceholderText="Select intended controller platform from catalogue"
+                                            HorizontalAlignment="Stretch" />
 
                                     </Grid>
 
-                                    <StackPanel HorizontalAlignment="Stretch" IsVisible="{Binding DfuModel.HasLocalDfuFirmware}" >
+                                    <StackPanel HorizontalAlignment="Stretch" IsVisible="{Binding ShowHexPreparation}" >
                                         <Button
                                             HorizontalAlignment="Center"
                                             Content="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}"
                                             />
                                     </StackPanel>
+                                    <!--
+                                    <StackPanel IsVisible="{Binding DfuModel.HasLocalDfuFirmware}" Spacing="8">
+                                    <TextBlock Text="{Binding OnlineFirmwareModel.StatusMessage}" TextWrapping="Wrap" />
+                                    <Button Content="Load platform choices" Command="{Binding LoadLocalPlatformChoicesCommand}"
+                                    IsEnabled="{Binding !IsOperationInProgress}" HorizontalAlignment="Center" />
+                                    </StackPanel>-->
 
                                 </StackPanel>
                             </Border>
                             <Border Classes="SectionCard" Padding="16" IsVisible="{Binding ShowValidationAndCompatibility}" Width="{Binding #PhysicalCtrl.Bounds.Width}">
                                 <StackPanel Spacing="8">
                                     <TextBlock  Text="Validation and compatibility" Classes="H3" />
-                                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
+                                    <Button Content="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
+                                            IsVisible="{Binding ShowOnlineValidation}" IsEnabled="{Binding !IsOperationInProgress}"
+                                            HorizontalAlignment="Center" />
+                                    <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
 
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Artifact valid:" />
                                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.ArtifactValid}" />
@@ -315,12 +329,20 @@
                                                    Classes="Warning" TextWrapping="Wrap"
                                                    IsVisible="{Binding IsCancellationDeferred}"
                                                    />
+
+                                        <TextBox
+                                            Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+                                            IsVisible="{Binding ShowDfuConfirmation}"
+                                            IsEnabled="{Binding !IsOperationInProgress}"
+                                            Text="{Binding DfuConfirmationText}"
+                                            PlaceholderText="{Binding DfuConfirmationPlaceholder}" TextWrapping="Wrap" />
+
                                     </Grid>
                                     <StackPanel   HorizontalAlignment="Stretch">
                                         <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
                                             <Button
                                                 HorizontalAlignment="Center"
-                                                Content="Review DFU target" Command="{Binding ReviewDfuTargetCommand}"
+                                                Content="Confirm DFU target" Command="{Binding ReviewDfuTargetCommand}"
                                                 IsVisible="{Binding HasDetectedDfuDevice}"
                                                 IsEnabled="{Binding !IsOperationInProgress}" />
 
