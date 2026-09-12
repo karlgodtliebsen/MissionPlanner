@@ -207,6 +207,7 @@ public sealed class FirmwarePanelViewModelTests
         services.AddSingleton(Substitute.For<IUserConfirmationService>());
         services.AddSingleton(Substitute.For<IDialogService>());
         services.AddSingleton(Substitute.For<MissionPlanner.Library.Factory.Domain.Abstractions.IDomainFactory>());
+        services.AddSingleton(Substitute.For<MissionPlanner.Library.Factory.Domain.Abstractions.IServiceFactory>());
         services.AddSingleton<FirmwareDialogCoordinator>();
         services.AddSingleton<FirmwareCatalogueViewModel>();
         services.AddSingleton<DetectedDeviceViewModel>();

@@ -327,6 +327,20 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     public bool CanNavigateAway => !IsOperationInProgress;
 
     [ObservableProperty]
+    public partial string? WorkflowProgress
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial string? WorkflowNextStep
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
     public partial bool IsConnectedMode
     {
         get;
@@ -987,6 +1001,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private void SubscribePanels()
     {
         ValidatedModel.PropertyChanged += OnPreparedArtifactChanged;
+        DevicesModel.PropertyChanged += OnDeviceAvailabilityChanged;
+        DfuModel.PropertyChanged += OnDeviceAvailabilityChanged;
         DfuModel.PropertyChanged += OnPreparedArtifactChanged;
         OnlineFirmwareModel.SelectionChanged += OnCatalogueSelection;
         OnlineFirmwareModel.ChannelChanged += OnCatalogueChannel;
@@ -1011,6 +1027,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private void UnsubscribePanels()
     {
         ValidatedModel.PropertyChanged -= OnPreparedArtifactChanged;
+        DevicesModel.PropertyChanged -= OnDeviceAvailabilityChanged;
+        DfuModel.PropertyChanged -= OnDeviceAvailabilityChanged;
         DfuModel.PropertyChanged -= OnPreparedArtifactChanged;
         OnlineFirmwareModel.SelectionChanged -= OnCatalogueSelection;
         OnlineFirmwareModel.ChannelChanged -= OnCatalogueChannel;
@@ -1038,6 +1056,14 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         if (args.PropertyName is nameof(ValidatedPackageViewModel.PreparedFirmware) or nameof(STM32BootloaderViewModel.PreparedArtifact))
         {
             dfuTargetConfirmation = null;
+            UpdatePanelCapabilities();
+        }
+    }
+
+    private void OnDeviceAvailabilityChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName is nameof(DetectedDeviceViewModel.DetectedDevices) or nameof(STM32BootloaderViewModel.DfuDevices))
+        {
             UpdatePanelCapabilities();
         }
     }

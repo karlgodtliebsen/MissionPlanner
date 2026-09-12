@@ -17,6 +17,49 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 public sealed class FirmwarePlanViewModelTests
 {
     [Fact]
+    public async Task SelectedLocalHexShowsProvenanceBeforeValidation()
+    {
+        using var services = Services(null);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        page.DfuModel.LocalDfuFirmwarePath = "Board_with_bl.hex";
+        Assert.Equal("Local file", page.SelectedArtifact.Source);
+        Assert.Equal("Board_with_bl.hex", page.SelectedArtifact.LocalFile);
+        Assert.Equal(FirmwareArtifactFormat.WithBootloaderHex, page.SelectedArtifact.Format);
+        Assert.True(page.HasLocalArtifact);
+        Assert.True(page.IsFirmwareSelected);
+        Assert.False(page.SelectedArtifact.ArtifactValid);
+        Assert.Null(page.SelectedArtifact.Sha256);
+        Assert.False(page.CurrentPlan.CanExecute);
+
+        page.DfuModel.LocalDfuPlatform = " Board ";
+        Assert.Equal("Board", page.SelectedArtifact.Platform);
+        Assert.False(page.SelectedArtifact.ArtifactValid);
+        page.DfuModel.LocalDfuFirmwarePath = "Other_with_bl.hex";
+        Assert.Equal("Other_with_bl.hex", page.SelectedArtifact.LocalFile);
+
+        page.ClearFirmwareSelectionCommand.Execute(null);
+        Assert.False(page.HasLocalArtifact);
+        Assert.False(page.IsFirmwareSelected);
+        Assert.Equal("No firmware selected", page.SelectedArtifact.Source);
+        await page.DeactivateAsync();
+    }
+
+    [Fact]
+    public async Task ControllerChoicesRemainVisibleWithoutASelectionAndHideWhenRemoved()
+    {
+        using var services = Services(null);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        page.DevicesModel.DetectedDevices = [new(new SerialDeviceDescriptor("COM10"), false, "test")];
+        Assert.True(page.ShowPhysicalController);
+        Assert.False(page.HasPhysicalController);
+        page.DevicesModel.DetectedDevices = [];
+        Assert.False(page.ShowPhysicalController);
+        await page.DeactivateAsync();
+    }
+
+    [Fact]
     public async Task FirmwareProgressUsesDialogServiceAndCancellationClosesOwnedHandle()
     {
         var entryService = Substitute.For<IBootloaderEntryService>();
@@ -94,11 +137,16 @@ public sealed class FirmwarePlanViewModelTests
         page.DfuModel.SelectedDfuDevice = new(new("usb", 0x0483, 0xdf11, DfuDriverState.PresentReady));
         page.DfuModel.LocalDfuFirmwarePath = "Board_with_bl.hex";
         page.DfuModel.LocalDfuPlatform = "Board";
+        Assert.True(page.IsFirmwareSelected);
+        Assert.True(page.HasPhysicalController);
+        Assert.True(page.ShowValidationAndCompatibility);
+        Assert.False(page.CanValidateCompatibility);
         var metadata = new DfuArtifactMetadata(100, 4, 0x08000000, 0x08000003, new string('a', 64),
             [new DfuMemoryRange(0x08000000, new byte[4])], []);
         services.GetRequiredService<IDfuArtifactResolver>().ResolveAsync(Arg.Any<DfuInstallationRequest>(), Arg.Any<CancellationToken>())
             .Returns(new DfuArtifact("Board_with_bl.hex", "Board_with_bl.hex", metadata, Platform: "Board"));
         await page.PrepareSelectedHexCommand.ExecuteAsync(null);
+        Assert.True(page.CanValidateCompatibility);
         Assert.True(page.SelectedArtifact.ArtifactValid);
         Assert.False(page.CurrentPlan.CanExecute);
         services.GetRequiredService<IDialogService>().PromptAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string>(),
@@ -126,6 +174,11 @@ public sealed class FirmwarePlanViewModelTests
         Assert.False(page.CurrentPlan.CanExecute);
         Assert.False(page.IsConnectedMode);
         Assert.Equal("target.absent", page.CurrentPlan.BlockCode);
+        Assert.False(page.IsFirmwareSelected);
+        Assert.False(page.HasPhysicalController);
+        Assert.False(page.ShowPhysicalController);
+        Assert.False(page.ShowValidationAndCompatibility);
+        Assert.False(page.CanValidateCompatibility);
         await page.DeactivateAsync();
     }
 
@@ -190,6 +243,11 @@ public sealed class FirmwarePlanViewModelTests
         Assert.True(page.SelectedArtifact.ArtifactValid);
         Assert.False(page.SelectedArtifact.TargetCompatible);
         page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM10") { BootloaderIdentity = new(detectedBoard, 5, 1024) }, true, "Protocol identity");
+        Assert.True(page.IsFirmwareSelected);
+        Assert.True(page.HasPhysicalController);
+        Assert.True(page.ShowPhysicalController);
+        Assert.True(page.ShowValidationAndCompatibility);
+        Assert.True(page.CanValidateCompatibility);
         Assert.Equal(executable, page.CurrentPlan.CanExecute);
         Assert.Equal(executable, page.InstallCommand.CanExecute(null));
         Assert.Equal(executable, page.ExecuteCurrentPlanCommand.CanExecute(null));
@@ -197,6 +255,11 @@ public sealed class FirmwarePlanViewModelTests
         var selectedDevice = page.DevicesModel.SelectedDevice;
         page.ClearFirmwareSelectionCommand.Execute(null);
         Assert.Same(selectedDevice, page.DevicesModel.SelectedDevice);
+        Assert.True(page.HasPhysicalController);
+        Assert.True(page.ShowPhysicalController);
+        Assert.False(page.IsFirmwareSelected);
+        Assert.False(page.ShowValidationAndCompatibility);
+        Assert.False(page.CanValidateCompatibility);
         Assert.False(page.SelectedArtifact.ArtifactValid);
         Assert.False(page.CurrentPlan.CanExecute);
         await page.DeactivateAsync();

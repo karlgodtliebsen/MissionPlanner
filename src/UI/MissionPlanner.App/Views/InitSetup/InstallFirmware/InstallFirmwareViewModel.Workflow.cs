@@ -51,6 +51,41 @@ public sealed partial class InstallFirmwareViewModel
     /// <summary>Gets whether local provenance is available for the current artifact.</summary>
     public bool HasLocalArtifact => SelectedArtifact.LocalFile is not null;
 
+    /// <summary>Gets whether online firmware, a local APJ, or a local HEX file is selected.</summary>
+    [ObservableProperty]
+    public partial bool IsFirmwareSelected
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets whether a serial controller or STM32 DFU endpoint is selected.</summary>
+    [ObservableProperty]
+    public partial bool HasPhysicalController
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets whether controller choices or a selected controller should be shown.</summary>
+    [ObservableProperty]
+    public partial bool ShowPhysicalController
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets whether firmware and controller selections provide a validation context.</summary>
+    [ObservableProperty]
+    public partial bool ShowValidationAndCompatibility
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets whether a prepared package and target evidence are available for checking; this does not mean they match.</summary>
+    [ObservableProperty]
+    public partial bool CanValidateCompatibility
+    {
+        get; private set;
+    }
+
 
     [RelayCommand(CanExecute = nameof(HasOnlineArtifact))]
     private Task CopySelectedUrlAsync()
@@ -356,6 +391,17 @@ public sealed partial class InstallFirmwareViewModel
         OnPropertyChanged(nameof(HasLocalArtifact));
         CopySelectedUrlCommand.NotifyCanExecuteChanged();
         CurrentPlan = FirmwareInstallationPlanResolver.Resolve(context);
+        HasPhysicalController = serial is not null || dfu is not null;
+        ShowPhysicalController = HasPhysicalController || DevicesModel.DetectedDevices.Count > 0 || DfuModel.DfuDevices.Count > 0;
+        IsFirmwareSelected = OnlineFirmwareModel.SelectedFirmware is not null
+            || LocalFirmwareModel.PreparedLocalFirmware is not null
+            || DfuModel.HasLocalDfuFirmware
+            || artifact.ArtifactValid;
+        ShowValidationAndCompatibility = HasPhysicalController && IsFirmwareSelected;
+        CanValidateCompatibility = !context.OperationInProgress && artifact.ArtifactValid
+            && (dfu is not null
+                ? DfuModel.PreparedArtifact is not null && !string.IsNullOrWhiteSpace(artifact.Platform) && dfuSafety is not null
+                : package is not null && serial?.BootloaderIdentity is not null && compatibility is not null);
         SetDeviceInformation();
         OnPropertyChanged(nameof(CanRebootToDfu));
         RebootToDfuCommand.NotifyCanExecuteChanged();
