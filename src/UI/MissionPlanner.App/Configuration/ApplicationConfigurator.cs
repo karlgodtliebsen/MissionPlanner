@@ -402,6 +402,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<Esp8266SetupViewModel>();
         services.TryAddTransient<AntennaTrackerViewModel>();
         services.TryAddTransient<FftSetupViewModel>();
+        services.TryAddTransient<ConfirmDfuTargetViewModel>();
 
         return services;
     }
@@ -420,6 +421,7 @@ public static class ApplicationConfigurator
         domainFactory.Add<ParametersEditorViewModel>();
         domainFactory.Add<FirmwareCatalogueViewModel>();
         domainFactory.Add<CustomFirmwareViewModel>();
+        domainFactory.Add<ConfirmDfuTargetViewModel>();
         return services;
     }
 

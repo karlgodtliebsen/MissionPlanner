@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
-using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Dfu;
@@ -28,7 +27,9 @@ public sealed class FirmwarePlanViewModelTests
         page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM10")
         {
             RuntimeProbe = new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "test")
-            { Verification = FirmwareRuntimeVerification.Verified }
+            {
+                Verification = FirmwareRuntimeVerification.Verified
+            }
         }, false, "test");
         var handle = Substitute.For<IDisposable>();
         DialogOptions? options = null;
@@ -226,8 +227,6 @@ public sealed class FirmwarePlanViewModelTests
         Assert.Null(page.CurrentPlan.Context.Bootloader);
         Assert.NotEqual(FirmwareIdentityConfidence.Verified, page.CurrentPlan.Context.IdentityConfidence);
         Assert.False(page.CurrentPlan.CanExecute);
-        Assert.Contains("Operating mode: Application", page.PhysicalControllerSummary);
-        Assert.Contains("MavLinkProbe", page.PhysicalControllerSummary);
         PrepareOnline(page);
         Assert.True(page.CurrentPlan.CanExecute);
         Assert.True(page.InstallCommand.CanExecute(null));
@@ -287,9 +286,15 @@ public sealed class FirmwarePlanViewModelTests
         });
     }
 
-    private static ApjFirmwarePackage Package() => new(50, new byte[] { 1, 2, 3 }, 1024);
-    private static MissionPlanner.Firmware.Downloads.FirmwareArtifactMetadata Metadata() =>
-        new("cache", new Uri("https://example.test/firmware.apj"), DateTimeOffset.UtcNow, 3, new string('a', 64));
+    private static ApjFirmwarePackage Package()
+    {
+        return new(50, new byte[] { 1, 2, 3 }, 1024);
+    }
+
+    private static MissionPlanner.Firmware.Downloads.FirmwareArtifactMetadata Metadata()
+    {
+        return new("cache", new Uri("https://example.test/firmware.apj"), DateTimeOffset.UtcNow, 3, new string('a', 64));
+    }
 
     private static void PrepareOnline(InstallFirmwareViewModel page)
     {

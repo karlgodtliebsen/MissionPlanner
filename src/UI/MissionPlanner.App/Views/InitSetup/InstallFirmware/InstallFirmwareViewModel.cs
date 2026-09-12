@@ -47,6 +47,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     private readonly IUserConfirmationService confirmation;
     private readonly IDialogService dialogService;
     private readonly IDomainFactory domainFactory;
+    private readonly IServiceFactory serviceFactory;
     private readonly IFirmwareInstallationService installationService;
     private readonly FirmwareDialogCoordinator firmwareDialogs;
     private CancellationTokenSource? lifetime;
@@ -75,6 +76,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     {
         get;
     }
+
     /// <summary>Gets the help panel.</summary>
     public FirmwareHelpViewModel HelpModel
     {
@@ -117,6 +119,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="dialogService">Displays the cancellable firmware-operation progress dialog.</param>
     /// <param name="domainFactory"></param>
     /// <param name="logger"></param>
+    /// <param name="serviceFactory"></param>
     /// <param name="firmwareDialogs">Sequences operator confirmations and firmware progress windows.</param>
     /// <param name="devices">Owns the detected devices panel.</param>
     /// <param name="validated">Owns the validated firmware panel.</param>
@@ -148,6 +151,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         IUserConfirmationService confirmation,
         IDialogService dialogService,
         IDomainFactory domainFactory,
+        IServiceFactory serviceFactory,
         FirmwareDialogCoordinator firmwareDialogs,
 
         DetectedDeviceViewModel devices,
@@ -189,6 +193,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         this.confirmation = confirmation;
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
+        this.serviceFactory = serviceFactory;
         this.firmwareDialogs = firmwareDialogs;
         this.betaflightCompatibility = betaflightCompatibility;
         this.deviceIdentity = deviceIdentity;
@@ -204,6 +209,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         DfuModel = dfu;
         HelpModel = help;
     }
+
 
     /// <summary>
     /// Gets whether a serial controller is selected.
@@ -410,6 +416,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         LocalFirmwareModel.HasDevice = DevicesModel.HasDevice;
         LocalFirmwareModel.HasDetectedDfuDevice = DfuModel.HasDetectedDfuDevice;
         activeVehicle.Changed += OnActiveVehicleChanged;
+        DfuModel.PropertyChanged += DfuModel_PropertyChanged;
         //SetBusy();
         SetMessages("Ready");
         UpdateWorkflow();
@@ -417,6 +424,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         await Task.WhenAll(LocalFirmwareModel.ActivateAsync(), ValidatedModel.ActivateAsync(), DevicesModel.ActivateAsync(), DfuModel.ActivateAsync());
         UpdatePanelCapabilities();
     }
+
+
+
 
     /// <inheritdoc />
     public override Task DeactivateAsync()
@@ -445,6 +455,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         LocalFirmwareModel.Reset();
         ValidatedModel.Reset();
         DevicesModel.Reset();
+        DfuModel.PropertyChanged -= DfuModel_PropertyChanged;
         DfuModel.Reset();
         var current = lifetime;
         lifetime = null;

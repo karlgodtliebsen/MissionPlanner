@@ -12,16 +12,17 @@ namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 /// </summary>
 public sealed partial class STM32BootloaderViewModel : ViewModelBase
 {
+    //public event Action<PropertyChangedEventArgs>? PropertyChanged;
     private readonly IFirmwareFilePicker filePicker;
     /// <summary>
     /// Initializes the dfu panel.
     /// </summary>
     public STM32BootloaderViewModel(
         IFirmwareFilePicker filePicker,
-        SubViews.SelectedFirmwareViewModel selected,
-        MissionPlanner.Firmware.Dfu.IDfuDeviceCatalog deviceCatalog,
-        MissionPlanner.Firmware.Dfu.IDfuToolLocator toolLocator,
-        MissionPlanner.Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
+        SelectedFirmwareViewModel selected,
+        Firmware.Dfu.IDfuDeviceCatalog deviceCatalog,
+        Firmware.Dfu.IDfuToolLocator toolLocator,
+        Core.Vehicles.Abstractions.IActiveVehicleContext activeVehicle,
         ILogger<STM32BootloaderViewModel> logger,
         IUiDispatcher dispatcher,
         IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
@@ -32,19 +33,26 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
         this.toolLocator = toolLocator;
         this.activeVehicle = activeVehicle;
     }
+
     /// <summary>Gets the shared selected panel.</summary>
-    public SubViews.SelectedFirmwareViewModel Selected
+    public SelectedFirmwareViewModel Selected
     {
         get;
     }
 
     /// <summary>Gets the separately inspected DFU HEX artifact.</summary>
     [ObservableProperty]
-    public partial MissionPlanner.Firmware.Dfu.DfuArtifact? PreparedArtifact { get; set; }
+    public partial Firmware.Dfu.DfuArtifact? PreparedArtifact
+    {
+        get; set;
+    }
 
     /// <summary>Retains observed source evidence separately from anonymous DFU identity.</summary>
     [ObservableProperty]
-    public partial MissionPlanner.Firmware.Betaflight.BetaflightDfuHandoffResult? CorrelatedHandoff { get; set; }
+    public partial Firmware.Betaflight.BetaflightDfuHandoffResult? CorrelatedHandoff
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether the selected endpoint is still the observed handoff generation.</summary>
     public bool HasCorrelatedSource => CorrelatedHandoff is { Succeeded: true, Device: { } device }
@@ -53,8 +61,11 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
 
     /// <summary>Requests combined HEX preparation through the page operation owner.</summary>
     [RelayCommand(CanExecute = nameof(CanInstallDfu))]
-    private Task PrepareDfuAsync(CancellationToken cancellationToken) =>
-        FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.PrepareDfu, cancellationToken);
+    private Task PrepareDfuAsync(CancellationToken cancellationToken)
+    {
+        return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.PrepareDfu, cancellationToken);
+    }
+
     [ObservableProperty]
     public partial IReadOnlyList<DfuDeviceItemViewModel> DfuDevices
     {
@@ -109,7 +120,10 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
     public override async Task ActivateAsync()
     {
         viewLifetime ??= new CancellationTokenSource();
-        if (!await loader.ActivateAsync()) { return; }
+        if (!await loader.ActivateAsync())
+        {
+            return;
+        }
         activeVehicle.Changed += VehicleChanged;
         await RefreshAsync();
     }
@@ -121,7 +135,10 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
         viewLifetime = null;
         previous?.Cancel();
         previous?.Dispose();
-        if (DiscoveryOwnedByPage) { return; }
+        if (DiscoveryOwnedByPage)
+        {
+            return;
+        }
         activeVehicle.Changed -= VehicleChanged;
         await loader.DeactivateAsync();
     }

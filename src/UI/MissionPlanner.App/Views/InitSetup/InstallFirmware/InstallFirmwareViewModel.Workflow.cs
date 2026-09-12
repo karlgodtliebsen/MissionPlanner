@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Installation;
@@ -26,9 +27,16 @@ public sealed partial class InstallFirmwareViewModel
         var target = DfuModel.SelectedDfuDevice;
         var platform = SelectedArtifact.Platform;
         var expected = $"FLASH {platform}";
-        var phrase = await dialogService.PromptAsync(dialogService.CreateOptions("Confirm exact DFU target", "Confirm", "Cancel"),
-            $"STM32 ROM DFU does not identify the flight-controller board. Verify that {platform} is the exact platform. Type {expected}.",
-            string.Empty, cancellationToken);
+        var options = dialogService.CreateOptions("Confirm exact DFU target", "Confirm", "Cancel");
+        var message1 = "STM32 ROM DFU does not identify the flight-controller board. ";
+        var message2 = $"Verify that {platform} is the exact platform.";
+
+        var viewModel = domainFactory.Create<ConfirmDfuTargetViewModel, string, string, string>(expected, message1, message2);
+        var result = await dialogService.ShowOverlayDialogAsync<ConfirmDfuTargetView, ConfirmDfuTargetViewModel>(viewModel, options, cancellationToken: cancellationToken);
+
+        var phrase = result.TargetMessage;
+
+
         if (ReferenceEquals(artifact, DfuModel.PreparedArtifact) && ReferenceEquals(target, DfuModel.SelectedDfuDevice)
             && string.Equals(phrase?.Trim(), expected, StringComparison.Ordinal))
         {
@@ -43,6 +51,7 @@ public sealed partial class InstallFirmwareViewModel
     /// <summary>Gets whether local provenance is available for the current artifact.</summary>
     public bool HasLocalArtifact => SelectedArtifact.LocalFile is not null;
 
+
     [RelayCommand(CanExecute = nameof(HasOnlineArtifact))]
     private Task CopySelectedUrlAsync()
     {
@@ -50,7 +59,40 @@ public sealed partial class InstallFirmwareViewModel
             ? clipboard.SetTextAsync(SelectedArtifact.OnlineUrl!.AbsoluteUri) : Task.CompletedTask;
     }
 
-    [RelayCommand]
+    private void DfuModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(DfuModel.LocalDfuPlatform))
+        {
+            if (LocalDfuPlatform != DfuModel.LocalDfuPlatform)
+            {
+                LocalDfuPlatform = DfuModel.LocalDfuPlatform;
+            }
+            PrepareSelectedHexCommand.NotifyCanExecuteChanged();
+        }
+    }
+    private bool CanValidateHexFile()
+    {
+        return !IsOperationInProgress && !string.IsNullOrEmpty(DfuModel.LocalDfuPlatform);
+    }
+
+    [ObservableProperty]
+    public partial string? LocalDfuPlatform
+    {
+        get;
+        set;
+    }
+
+    partial void OnLocalDfuPlatformChanged(string? value)
+    {
+        if (value != DfuModel.LocalDfuPlatform)
+        {
+            DfuModel.LocalDfuPlatform = value;
+        }
+        PrepareSelectedHexCommand.NotifyCanExecuteChanged();
+    }
+
+
+    [RelayCommand(CanExecute = nameof(CanValidateHexFile))]
     private Task PrepareSelectedHexAsync(CancellationToken cancellationToken)
     {
         return PrepareDfuArtifactAsync(cancellationToken);
@@ -68,28 +110,163 @@ public sealed partial class InstallFirmwareViewModel
     [ObservableProperty]
     public partial string CompatibilityStatus { get; private set; } = "Target compatibility has not been checked.";
 
-    /// <summary>Gets physical identity and runtime evidence without inferring a board from USB.</summary>
-    public string PhysicalControllerSummary
+    [ObservableProperty]
+    public partial string? InstallStatus
     {
-        get
-        {
-            if (DfuModel.SelectedDfuDevice is { } dfu)
-            {
-                return $"STM32 ROM DFU: {dfu.Descriptor.ProviderId}\nUSB {dfu.Descriptor.VendorId:X4}:{dfu.Descriptor.ProductId:X4}\n"
-                    + (DfuModel.HasCorrelatedSource ? $"Historical Betaflight identity: {DfuModel.CorrelatedHandoff!.Source.BetaflightIdentity}\n" : string.Empty)
-                    + "ROM DFU identifies the MCU boot environment, not the flight-controller board.";
-            }
-            var device = DevicesModel.SelectedDevice?.Descriptor;
-            return device is null ? "No physical controller selected. Firmware preparation is available."
-                : $"{device.PortName} — USB {device.UsbIdentifier}\nRuntime: {CurrentPlan.Context.Runtime}\nOperating mode: {device.RuntimeProbe?.OperatingMode ?? "Unknown"}\n"
-                    + $"Runtime evidence: {device.RuntimeProbe?.Evidence} — {device.RuntimeProbe?.Verification} ({device.RuntimeProbe?.Code})\n"
-                    + $"Identity: {CurrentPlan.Context.IdentityConfidence} — {CurrentPlan.Context.IdentityEvidence}\n"
-                    + (device.BetaflightIdentity is { } identity ? $"Betaflight target: {identity.Board?.TargetName}, version: {identity.FirmwareVersion}" : string.Empty);
-        }
+        get; private set;
     }
+
+    private void SetDeviceInformation()
+    {
+        DfuProviderId = string.Empty;
+        DfuVendorId = string.Empty;
+        DfuProductId = string.Empty;
+        DfuCorrelatedSource = string.Empty;
+        DfuMessage = string.Empty;
+        UsbDevicePortName = string.Empty;
+        UsbIdentifier = string.Empty;
+        UsbRuntime = string.Empty;
+        UsbOperationMode = string.Empty;
+        UsbRuntimeEvidence = string.Empty;
+        UsbIdentity = string.Empty;
+        UsbBetaflightTarget = string.Empty;
+
+
+        if (DfuModel.SelectedDfuDevice is { } dfu)
+        {
+            DfuProviderId = dfu.Descriptor.ProviderId;
+            DfuVendorId = $"{dfu.Descriptor.VendorId:X4}";
+            DfuProductId = $"{dfu.Descriptor.ProductId:X4}";
+
+            DfuCorrelatedSource = DfuModel.HasCorrelatedSource && DfuModel.CorrelatedHandoff is not null && DfuModel.CorrelatedHandoff!.Source.BetaflightIdentity is not null
+                ? DfuModel.CorrelatedHandoff!.Source.BetaflightIdentity.ToString()
+                : "Historical Betaflight identity";
+            DfuMessage = "ROM DFU identifies the MCU boot environment, not the flight-controller board.";
+
+            //return $"STM32 ROM DFU: {dfu.Descriptor.ProviderId}\nUSB {dfu.Descriptor.VendorId:X4}:{dfu.Descriptor.ProductId:X4}\n"
+            //    + (DfuModel.HasCorrelatedSource ? $"Historical Betaflight identity: {DfuModel.CorrelatedHandoff!.Source.BetaflightIdentity}\n" : string.Empty)
+            //    + "ROM DFU identifies the MCU boot environment, not the flight-controller board.";
+
+
+        }
+
+        var device = DevicesModel.SelectedDevice?.Descriptor;
+        //return device is null ? "No physical controller selected. Firmware preparation is available."
+        //    : $"{device.PortName} — USB {device.UsbIdentifier}\nRuntime: {CurrentPlan.Context.Runtime}\n
+        //          Operating mode: {device.RuntimeProbe?.OperatingMode ?? "Unknown"}\n"
+        //        + $"Runtime evidence: {device.RuntimeProbe?.Evidence} — {device.RuntimeProbe?.Verification} ({device.RuntimeProbe?.Code})\n"
+        //        + $"Identity: {CurrentPlan.Context.IdentityConfidence} — {CurrentPlan.Context.IdentityEvidence}\n"
+        //        + (device.BetaflightIdentity is { } identity ? $"Betaflight target: {identity.Board?.TargetName}, version: {identity.FirmwareVersion}" : string.Empty);
+
+
+        NoDfuDeviceWhenNull = "No physical controller selected. Firmware preparation is available.";
+
+        if (device is not null)
+        {
+            UsbDevicePortName = device.PortName;
+            if (device.UsbIdentifier is not null)
+            {
+                UsbIdentifier = device.UsbIdentifier!.ToString();
+            }
+
+            UsbRuntime = CurrentPlan.Context.Runtime.ToString();
+            UsbOperationMode = device.RuntimeProbe?.OperatingMode ?? "Unknown";
+            UsbRuntimeEvidence = $"{device.RuntimeProbe?.Evidence} — {device.RuntimeProbe?.Verification} ({device.RuntimeProbe?.Code})";
+            UsbIdentity = $"{CurrentPlan.Context.IdentityConfidence} — {CurrentPlan.Context.IdentityEvidence}";
+
+
+            var identity = device.BetaflightIdentity;
+            UsbBetaflightTarget = identity is not null ? $"Betaflight target: {identity.Board?.TargetName}, version: {identity.FirmwareVersion}" : string.Empty;
+        }
+
+
+    }
+
+    [ObservableProperty]
+    public partial string? UsbIdentity
+    {
+        get; private set;
+    }
+    [ObservableProperty]
+    public partial string? UsbBetaflightTarget
+    {
+        get; private set;
+    }
+
+
+    [ObservableProperty]
+    public partial string? UsbRuntimeEvidence
+    {
+        get; private set;
+    }
+    [ObservableProperty]
+    public partial string? UsbOperationMode
+    {
+        get; private set;
+    }
+
+    [ObservableProperty]
+    public partial string? UsbRuntime
+    {
+        get; private set;
+    }
+
+
+    [ObservableProperty]
+    public partial string? UsbIdentifier
+    {
+        get; private set;
+    }
+
+    [ObservableProperty]
+    public partial string? UsbDevicePortName
+    {
+        get; private set;
+    }
+
+
+    [ObservableProperty]
+    public partial string? NoDfuDeviceWhenNull
+    {
+        get; private set;
+    }
+
+
+    [ObservableProperty]
+    public partial string? DfuMessage
+    {
+        get; private set;
+    }
+    [ObservableProperty]
+    public partial string? DfuCorrelatedSource
+    {
+        get; private set;
+    }
+
+    /// <summary>
+    /// Gets compatibility details separately from file validity.
+    /// </summary>
+    [ObservableProperty]
+    public partial string? DfuProviderId
+    {
+        get; private set;
+    }
+
+    [ObservableProperty]
+    public partial string? DfuVendorId
+    {
+        get; private set;
+    }
+    [ObservableProperty]
+    public partial string? DfuProductId
+    {
+        get; private set;
+    }
+
 
     private void ResolveCurrentPlan()
     {
+        InstallStatus = string.Empty;
         var serial = DevicesModel.SelectedDevice?.Descriptor;
         var dfu = DfuModel.SelectedDfuDevice?.Descriptor;
         var package = LocalFirmwareModel.PreparedLocalFirmware?.Package ?? ValidatedModel.PreparedFirmware?.Package;
@@ -110,19 +287,27 @@ public sealed partial class InstallFirmwareViewModel
         var compatible = false;
         var safetyConfirmed = false;
         CompatibilityStatus = "Target compatibility has not been checked.";
+
         if (dfu is not null && DfuModel.PreparedArtifact is { } preparedHex)
         {
             var safety = dfuSafety?.Evaluate(new(UsesLocalDfuHex ? DfuModel.LocalDfuPlatform : OnlineFirmwareModel.SelectedFirmware?.Platform,
                 UsesLocalDfuHex ? null : OnlineFirmwareModel.SelectedFirmware?.BoardId, preparedHex,
                 new DfuDeviceInformation(dfu, null, null, null, [], []),
                 UsesLocalDfuHex ? null : OnlineFirmwareModel.SelectedFirmware?.Entry, ConfirmationPhrase: dfuTargetConfirmation));
+
             safetyConfirmed = safety is not null && safety.RequiredConfirmationPhrase is null && safety.Decision != DfuTargetSafetyDecision.Blocked;
+
             compatible = safety is not null && safety.Decision != DfuTargetSafetyDecision.Blocked
                 && DfuModel.ToolStatus?.Availability == DfuToolAvailability.Available
                 && dfu.DriverState == DfuDriverState.PresentReady;
-            CompatibilityStatus = safety is null ? "Target safety service unavailable."
-                : $"{safety.Decision}: {string.Join(", ", safety.EvidenceCodes)}. "
-                    + (safety.RequiredConfirmationPhrase is { } phrase ? $"Installation requires typing {phrase}." : string.Empty);
+
+            CompatibilityStatus = safety is null
+                ? "Target safety service unavailable."
+                : $"{safety.Decision}: {string.Join(", ", safety.EvidenceCodes)}. ";
+
+
+            InstallStatus = (safety is not null && safety.RequiredConfirmationPhrase is { } phrase) ? $"Installation requires typing {phrase}." : string.Empty;
+
         }
         else if (dfu is null && package is not null && serial?.BootloaderIdentity is { } bootloader)
         {
@@ -171,13 +356,14 @@ public sealed partial class InstallFirmwareViewModel
         OnPropertyChanged(nameof(HasLocalArtifact));
         CopySelectedUrlCommand.NotifyCanExecuteChanged();
         CurrentPlan = FirmwareInstallationPlanResolver.Resolve(context);
-        OnPropertyChanged(nameof(PhysicalControllerSummary));
+        SetDeviceInformation();
         OnPropertyChanged(nameof(CanRebootToDfu));
         RebootToDfuCommand.NotifyCanExecuteChanged();
         EnterArduPilotBootloaderCommand.NotifyCanExecuteChanged();
         ProbeRuntimeCommand.NotifyCanExecuteChanged();
         ExecuteCurrentPlanCommand.NotifyCanExecuteChanged();
     }
+
 
     private bool CanEnterArduPilotBootloader()
     {
@@ -297,7 +483,7 @@ public sealed partial class InstallFirmwareViewModel
         {
             SetMessages("ArduPilot bootloader entry cancelled.");
         }
-        catch (Exception exception)
+        catch (System.Exception exception)
         {
             SetMessages(exception);
         }

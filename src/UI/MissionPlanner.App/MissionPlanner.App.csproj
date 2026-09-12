@@ -320,6 +320,9 @@
 	  <Compile Update="Views\InitSetup\InstallFirmware\InstallFirmwarePage.axaml.cs">
 	    <DependentUpon>InstallFirmwarePage.axaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\InitSetup\InstallFirmware\SubViews\ConfirmDfuTargetView.axaml.cs">
+	    <DependentUpon>ConfirmDfuTargetView.axaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 </Project>

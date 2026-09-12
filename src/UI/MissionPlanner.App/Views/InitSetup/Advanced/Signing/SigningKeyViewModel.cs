@@ -1,4 +1,4 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -29,12 +29,17 @@ public sealed partial class SigningKeyViewModel(SigningKeyRepository repository,
     /// <summary>Gets or sets the outbound link identifier.</summary>
     [ObservableProperty] public partial int LinkId { get; set; } = 1;
     /// <summary>Gets or sets whether configuration currently owns this selection.</summary>
-    [ObservableProperty] public partial bool Locked { get; set; }
-    /// <summary>Gets whether a file operation is pending.</summary>
-    [ObservableProperty] public partial bool IsBusy { get; private set; }
+    [ObservableProperty]
+    public partial bool Locked
+    {
+        get; set;
+    }
 
     /// <summary>Copies the selected key for one operation; callers must erase their copy.</summary>
-    public byte[] CopyKey() => key?.ToArray() ?? throw new InvalidOperationException("Select a signing key first.");
+    public byte[] CopyKey()
+    {
+        return key?.ToArray() ?? throw new InvalidOperationException("Select a signing key first.");
+    }
 
     /// <summary>Erases the selected key when the parent page closes.</summary>
     public void Clear()
@@ -64,15 +69,22 @@ public sealed partial class SigningKeyViewModel(SigningKeyRepository repository,
         lifetime = null;
     }
 
-    [RelayCommand] private Task GenerateAsync() => RunAsync(async token =>
+    [RelayCommand]
+    private Task GenerateAsync()
+    {
+        return RunAsync(async token =>
     {
         if (await ConfirmAsync("Generate signing key", "Replace the selected key with a new random key? The vehicle is not changed until setup is confirmed.", token))
         {
             Set(MavLinkSigningCodec.Generate());
         }
     });
+    }
 
-    [RelayCommand] private Task LoadAsync() => RunAsync(async token =>
+    [RelayCommand]
+    private Task LoadAsync()
+    {
+        return RunAsync(async token =>
     {
         using var saved = await repository.LoadAsync(token);
         token.ThrowIfCancellationRequested();
@@ -85,8 +97,12 @@ public sealed partial class SigningKeyViewModel(SigningKeyRepository repository,
         Set(saved.Key.ToArray());
         Message = "Saved key loaded for review. Previous setup may not have completed; local signing is not activated by loading.";
     });
+    }
 
-    [RelayCommand] private Task ImportAsync() => RunAsync(async token =>
+    [RelayCommand]
+    private Task ImportAsync()
+    {
+        return RunAsync(async token =>
     {
         if (!await ConfirmAsync("Import signing key", "Import a secret key from a trusted local file? The file must contain exactly 64 hexadecimal characters.", token))
         {
@@ -105,7 +121,10 @@ public sealed partial class SigningKeyViewModel(SigningKeyRepository repository,
             while (count < bytes.Length)
             {
                 var read = await file.Content.ReadAsync(bytes.AsMemory(count), token);
-                if (read == 0) { break; }
+                if (read == 0)
+                {
+                    break;
+                }
                 count += read;
             }
             Set(MavLinkSigningCodec.Import(Encoding.ASCII.GetString(bytes, 0, count)));
@@ -115,8 +134,12 @@ public sealed partial class SigningKeyViewModel(SigningKeyRepository repository,
             CryptographicOperations.ZeroMemory(bytes);
         }
     });
+    }
 
-    [RelayCommand] private Task ExportAsync() => RunAsync(async token =>
+    [RelayCommand]
+    private Task ExportAsync()
+    {
+        return RunAsync(async token =>
     {
         if (!await ConfirmAsync("Export secret signing key", "This saves the unencrypted key to a file. Anyone with the file can authenticate commands. Store it securely and never attach it to diagnostics. Continue?", token))
         {
@@ -137,6 +160,7 @@ public sealed partial class SigningKeyViewModel(SigningKeyRepository repository,
             CryptographicOperations.ZeroMemory(bytes);
         }
     });
+    }
 
     private void Set(byte[] next)
     {
@@ -167,7 +191,10 @@ public sealed partial class SigningKeyViewModel(SigningKeyRepository repository,
     private async Task RunCoreAsync(Func<CancellationToken, Task> action, CancellationToken token)
     {
         IsBusy = true;
-        try { await action(token); }
+        try
+        {
+            await action(token);
+        }
         catch (OperationCanceledException) { Message = "Key operation cancelled."; }
         catch (Exception exception)
         {

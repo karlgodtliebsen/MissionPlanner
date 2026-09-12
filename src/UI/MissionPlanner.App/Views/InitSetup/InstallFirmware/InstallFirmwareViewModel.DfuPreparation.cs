@@ -32,12 +32,12 @@ public sealed partial class InstallFirmwareViewModel
                     ? DfuModel.LocalDfuFirmwarePath != request.LocalHexPath || DfuModel.LocalDfuPlatform?.Trim() != request.SelectedPlatform
                     : !ReferenceEquals(OnlineFirmwareModel.SelectedFirmware?.Entry, entry)))
                 {
-                    DfuModel.StatusMessage = "Selection changed; prepare the newly selected combined HEX before reviewing it.";
+                    StatusMessage = "Selection changed; prepare the newly selected combined HEX before reviewing it.";
                     return;
                 }
                 DfuModel.PreparedArtifact = artifact;
-                DfuModel.StatusMessage = "Combined HEX inspected. Review its source and the exact controller target before installation.";
-                DfuModel.ErrorMessage = null;
+                StatusMessage = "Combined HEX inspected. Review its source and the exact controller target before installation.";
+                ErrorMessage = null;
                 lease.Transition(new(FirmwareOperationState.Completed, null, "dfu.preview-completed"));
             }
             finally

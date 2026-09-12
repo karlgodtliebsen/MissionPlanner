@@ -1,0 +1,55 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:subViews="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews"
+                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                               x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.ConfirmDfuTargetView"
+                               x:DataType="subViews:ConfirmDfuTargetViewModel"
+                               MinHeight="400"
+                               MinWidth="600"
+
+                               >
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border Margin="50" Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+            <Grid RowDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+                <TextBlock Text="{Binding Title}" Classes="H3" 
+                           HorizontalAlignment="Center"/>
+                    
+                <StackPanel Grid.Row="1"  Orientation="Vertical" Spacing="20" Margin="25,50,25,50"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+      
+                    <TextBlock Text="{Binding Message1}" Classes="H4" HorizontalAlignment="Left"/>
+                    <TextBlock Text="{Binding Message2}" Classes="H4" HorizontalAlignment="Left"/>
+
+                    <SelectableTextBlock Text="{Binding ExpectedMessage,StringFormat=Type: {0}}" Classes="H4" HorizontalAlignment="Left" Margin="0,25,0,0"/>
+
+                    <TextBox Text="{Binding TargetMessage}" PlaceholderText="Type DFU target to Confirm" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+
+
+                </StackPanel>
+
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10"  
+                            HorizontalAlignment="Center">
+                    <Button ToolTip.Tip="Confirm"
+                            Width="100"
+                            Padding="8,2"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+
+                            Command="{Binding OKCommand}"
+                            >
+                        <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                    </Button>
+
+                </StackPanel>
+
+            </Grid>
+        </Border>
+    </Grid>
+
+</utilities:UserControlViewBase>
