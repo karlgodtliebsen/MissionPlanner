@@ -17,7 +17,8 @@
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <NumericUpDown  PlaceholderText="Sample rate Hz" Value="{Binding SampleRateHz}" Minimum="0" FormatString="F0" />
             <TextBox AcceptsReturn="True" PlaceholderText="Paste comma/newline-separated samples from an existing log artifact" Text="{Binding SamplesText}" Height="180" />
-            <Button Content="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Left" />
+            
+            <Button Content="Analyze samples" ToolTip.Tip="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Right" />
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

@@ -10,13 +10,15 @@
     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
     x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.DiagnosticsReportView"
     x:DataType="subViews:DiagnosticsReportViewModel"
-    MinHeight="500"
-    MinWidth="600"
+    HorizontalContentAlignment="Stretch"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    Margin="50,50,50,25"
     >
-    <Border Margin="50" Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-
-        <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="25">
-            <StackPanel Orientation="Vertical" Spacing="20">
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+          RowSpacing="25">
+        <Border  Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel Orientation="Vertical" Spacing="25">
                 <TextBlock Text="{Binding Title}" Classes="H3" HorizontalAlignment="Center"/>
 
                 <TextBlock Text="{Binding StatusMessage}" Classes="H4" HorizontalAlignment="Center"
@@ -26,30 +28,29 @@
                                      IsVisible="{Binding HasDiagnosticReport}"
                                      />
             </StackPanel>
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Copy diagnostic report"
-                        Width="100"
-                        Padding="8,2"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        IsVisible="{Binding HasDiagnosticReport}"
-                        Command="{Binding CopyDiagnosticReportCommand}"
-                        >
-                    <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
-                </Button>
-                <Button
+        </Border>
+        
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button ToolTip.Tip="Copy diagnostic report"
                     Width="100"
                     Padding="8,2"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    ToolTip.Tip="OK"
-                    Command="{Binding OKCommand}"
+                    IsVisible="{Binding HasDiagnosticReport}"
+                    Command="{Binding CopyDiagnosticReportCommand}"
                     >
-                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                </Button>
-            </StackPanel>
-        </Grid>
-
-
-    </Border>
+                <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
+            </Button>
+            <Button
+                Width="100"
+                Padding="8,2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                ToolTip.Tip="OK"
+                Command="{Binding OKCommand}"
+                >
+                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+            </Button>
+        </StackPanel>
+    </Grid>
 </subViews:DiagnosticsReportView>

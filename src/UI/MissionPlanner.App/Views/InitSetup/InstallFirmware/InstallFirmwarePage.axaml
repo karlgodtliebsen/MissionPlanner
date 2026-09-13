@@ -182,7 +182,7 @@
                                     <TextBlock Text="Enter STM32 DFU using the BOOT button" Classes="H3" />
                                     <TextBlock Text="Firmware validation checks the file. Target confirmation and flashing require a detected STM32 DFU device. For a controller requiring manual entry, disconnect USB, hold BOOT while reconnecting USB, then release BOOT. Follow the board's BOOT/RESET instructions if different. Your firmware selection will be kept."
                                                TextWrapping="Wrap" />
-                                    <Button Content="Enter DFU using BOOT button" Command="{Binding EnterManualDfuCommand}"
+                                    <Button Content="Enter DFU using BOOT button" ToolTip.Tip="Enter DFU using BOOT button" Command="{Binding EnterManualDfuCommand}"
                                             HorizontalAlignment="Center" />
                                 </StackPanel>
                             </Border>
@@ -261,7 +261,7 @@
                                     <StackPanel HorizontalAlignment="Stretch" IsVisible="{Binding ShowHexPreparation}" >
                                         <Button
                                             HorizontalAlignment="Center"
-                                            Content="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}"
+                                            Content="Validate combined HEX" ToolTip.Tip="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}"
                                             />
                                     </StackPanel>
                                     <!--
@@ -276,7 +276,7 @@
                             <Border Classes="SectionCard" Padding="16" IsVisible="{Binding ShowValidationAndCompatibility}" Width="{Binding #PhysicalCtrl.Bounds.Width}">
                                 <StackPanel Spacing="8">
                                     <TextBlock  Text="Validation and compatibility" Classes="H3" />
-                                    <Button Content="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
+                                    <Button Content="Validate selected firmware" ToolTip.Tip="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
                                             IsVisible="{Binding ShowOnlineValidation}" IsEnabled="{Binding !IsOperationInProgress}"
                                             HorizontalAlignment="Center" />
                                     <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
@@ -331,13 +331,13 @@
                                         <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
                                             <Button
                                                 HorizontalAlignment="Center"
-                                                Content="Confirm DFU target" Command="{Binding ReviewDfuTargetCommand}"
+                                                Content="Confirm DFU target" ToolTip.Tip="Confirm DFU target" Command="{Binding ReviewDfuTargetCommand}"
                                                 IsVisible="{Binding HasDetectedDfuDevice}"
                                                 IsEnabled="{Binding !IsOperationInProgress}" />
 
                                             <Button
                                                 HorizontalAlignment="Center"
-                                                Content="Cancel operation" Command="{Binding CancelCommand}"
+                                                Content="Cancel operation" ToolTip.Tip="Cancel operation" Command="{Binding CancelCommand}"
                                                 IsVisible="{Binding IsOperationInProgress}"
                                                 />
 

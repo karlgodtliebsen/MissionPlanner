@@ -7,43 +7,56 @@
              x:Class="MissionPlanner.App.Utilities.Dialogs.SubViews.ConfirmDialogView"
              x:DataType="subViews:ConfirmDialogViewModel"
              mc:Ignorable="d"
-             HorizontalContentAlignment="Center"
-             VerticalAlignment="Center"
-             Margin="50"
+             d:DesignWidth="800"
+             d:DesignHeight="550"
+             HorizontalContentAlignment="Stretch"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             Margin="50,50,50,25"
              >
-    <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Center"  Padding="50">
-        <StackPanel    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="50">
-            <TextBlock Text="{Binding Title}" TextAlignment="Center" Classes="H1"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-            <TextBlock Text="{Binding Message}"  TextWrapping="Wrap"
-                       TextAlignment="Center" Classes="H4"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" />
-
-            <StackPanel Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center">
-              <Button
-                    Width="100"
-                    Classes="Primary"
-                    Padding="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Command="{Binding CancelCommand}"
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+          RowSpacing="25">
+        <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                 >
-                    <avalonia:MaterialIcon Kind="Cancel" Width="30" Height="30" />
-                </Button>
-                <Button
-                    Width="100"
-                    Classes="Primary"
-                    Padding="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Command="{Binding OKCommand}"
-                    >
-                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                </Button>
+            <StackPanel  HorizontalAlignment="Stretch" VerticalAlignment="Center" 
+                         Spacing="25">
+                <TextBlock Text="{Binding Title}" TextAlignment="Center"
+                           Classes="H2"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                <TextBlock Text="{Binding Message}"  TextWrapping="Wrap"
+                           TextAlignment="Center" Classes="H4"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+
             </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+           
+            <Button
+                Width="100"
+                Classes="Primary"
+                Padding="5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Command="{Binding CancelCommand}"
+            >
+                <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
+            </Button>
+            <Button
+                Width="100"
+                Classes="Primary"
+                Padding="5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Command="{Binding OKCommand}"
+                >
+                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+            </Button>
         </StackPanel>
-    </Border>
 
 
+
+    </Grid>
 </UserControl>

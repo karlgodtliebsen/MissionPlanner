@@ -18,7 +18,7 @@
             <ItemsControl IsVisible="{Binding HasWarnings}" ItemsSource="{Binding Warnings}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="x:String">
-<TextBlock Text="{Binding .}" Classes="Warning" />
+                        <TextBlock Text="{Binding .}" Classes="Warning" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -33,7 +33,11 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button Content="Re-assess safety" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+
+            <StackPanel HorizontalAlignment="Right">
+            <Button Content="Re-assess safety" ToolTip.Tip="Re-assess safety" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+            </StackPanel>
+
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

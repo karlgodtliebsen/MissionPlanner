@@ -8,49 +8,56 @@
              x:Class="MissionPlanner.App.Utilities.Dialogs.SubViews.ChoiceDialogView"
              x:DataType="subViews:ChoiceDialogViewModel"
              mc:Ignorable="d"
-             HorizontalContentAlignment="Center"
-             VerticalAlignment="Center"
-             Margin="50"
+             d:DesignWidth="800" d:DesignHeight="550"
+             HorizontalContentAlignment="Stretch"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             Margin="50,50,50,25"
              >
 
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+          RowSpacing="25">
+        <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  >
+            <StackPanel MinHeight="200"
+                        MinWidth="200"
+                        Spacing="25"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        >
+                <TextBlock Text="{Binding Title}" TextAlignment="Center"
+                           Classes="H2"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-    <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="50">
-        <StackPanel    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="50">
-            <TextBlock Text="{Binding Title}" TextAlignment="Center" Classes="H1"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <TextBlock Text="Select an option"  TextWrapping="Wrap"
+                           TextAlignment="Center" Classes="H4"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-            <TextBlock Text="Select an option"  TextWrapping="Wrap"
-                       TextAlignment="Center" Classes="H4"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <ComboBox ItemsSource="{Binding Choices}"
+                          HorizontalAlignment="Center"
+                          HorizontalContentAlignment="Right"
+                          SelectedItem="{Binding SelectedChoice, Mode=TwoWay}"
+                          MinWidth="360" />
 
-            <ComboBox ItemsSource="{Binding Choices}"
-                      SelectedItem="{Binding SelectedChoice, Mode=TwoWay}"
-                      MinWidth="360" />
-
-
-            <StackPanel Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center">
-                <Button
-                    Width="100"
-                    Classes="Primary"
-                    Padding="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Command="{Binding CancelCommand}"
-                >
-                    <avalonia:MaterialIcon Kind="Cancel" Width="30" Height="30" />
-                </Button>
-                <Button
-                    Width="100"
-                    Classes="Primary"
-                    Padding="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Command="{Binding OKCommand}"
-                >
-                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                </Button>
             </StackPanel>
+        </Border>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right"  Spacing="10">
+            <Button
+                Width="100"
+                Padding="5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Command="{Binding CancelCommand}"
+                >
+                <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
+            </Button>
+            <Button
+                Width="100"
+                Padding="5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Command="{Binding OKCommand}"
+                >
+                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+            </Button>
         </StackPanel>
-    </Border>
-
+    </Grid>
 </UserControl>

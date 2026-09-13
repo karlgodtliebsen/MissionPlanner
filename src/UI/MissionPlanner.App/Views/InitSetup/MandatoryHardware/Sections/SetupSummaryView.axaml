@@ -61,10 +61,10 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Button Content="Rebuild summary" Command="{Binding RefreshCommand}" />
-                        <Button Content="Export JSON" Command="{Binding ExportJsonCommand}" />
-                        <Button Content="Export Markdown" Command="{Binding ExportMarkdownCommand}" />
+                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                        <Button Content="Rebuild summary" ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" />
+                        <Button Content="Export JSON" ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" />
+                        <Button Content="Export Markdown" ToolTip.Tip="Export Markdown" Command="{Binding ExportMarkdownCommand}" />
                     </StackPanel>
 
                     <TextBox AcceptsReturn="True" Text="{Binding ExportedText}" IsReadOnly="True" 

@@ -25,11 +25,11 @@
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <WrapPanel Orientation="Horizontal" ItemSpacing="10">
-                <Button Content="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
-                <Button Content="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" />
-                <Button Content="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" />
-                <Button Content="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
-                <Button Content="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" />
+                <Button Content="Start calibration" ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
+                <Button Content="Finish endpoint capture" ToolTip.Tip="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" />
+                <Button Content="Confirm and write" ToolTip.Tip="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" />
+                <Button Content="Cancel" ToolTip.Tip="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
+                <Button Content="Reset / retry" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" />
             </WrapPanel>
 
             <Border Padding="14" Classes="SectionCard">

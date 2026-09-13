@@ -12,7 +12,7 @@
         <WrapPanel Grid.Row="1">
             <CheckBox Content="Freeze display (continue collecting)" IsChecked="{Binding Frozen}" Margin="0,0,12,8" />
             <CheckBox Content="Sort by count descending" IsChecked="{Binding SortByCount}" Margin="0,0,12,8" />
-            <Button Content="Clear statistics" Command="{Binding ClearCommand}" Margin="0,0,12,8" />
+            <Button Content="Clear statistics" ToolTip.Tip="Clear statistics" Command="{Binding ClearCommand}" Margin="0,0,12,8" />
         </WrapPanel>
         <controls:VirtualizedItemsGrid Grid.Row="2" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}"
             ColumnWidths="110,*,150" ColumnSpacing="10" RowMinHeight="80" ShowHeader="True"

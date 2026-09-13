@@ -24,10 +24,10 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <WrapPanel>
-                <Button Content="New" Command="{Binding NewCommand}" Margin="0,0,8,8" />
-                <Button Content="Duplicate" Command="{Binding DuplicateCommand}" Margin="0,0,8,8" />
-                <Button Content="Enable / disable" Command="{Binding ToggleCommand}" Margin="0,0,8,8" />
-                <Button Content="Delete" Command="{Binding DeleteCommand}" Margin="0,0,8,8" />
+                <Button Content="New" ToolTip.Tip="New" Command="{Binding NewCommand}" Margin="0,0,8,8" />
+                <Button Content="Duplicate" ToolTip.Tip="Duplicate" Command="{Binding DuplicateCommand}" Margin="0,0,8,8" />
+                <Button Content="Enable / disable" ToolTip.Tip="Enable / disable" Command="{Binding ToggleCommand}" Margin="0,0,8,8" />
+                <Button Content="Delete" ToolTip.Tip="Delete" Command="{Binding DeleteCommand}" Margin="0,0,8,8" />
             </WrapPanel>
         </StackPanel>
     </Border>

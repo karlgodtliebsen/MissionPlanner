@@ -10,44 +10,39 @@
                                x:DataType="subViews:ConfirmDfuTargetViewModel"
                                MinHeight="400"
                                MinWidth="600"
-
+                               HorizontalContentAlignment="Stretch"
+                               HorizontalAlignment="Stretch"
+                               VerticalAlignment="Stretch"
+                               Margin="50,50,50,25"
                                >
-    <Border Margin="50" Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+          RowSpacing="25">
+        <Border Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
-        <Grid RowDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-
-            <TextBlock Text="{Binding Title}" Classes="H3"
-                       HorizontalAlignment="Center"/>
-
-            <StackPanel Grid.Row="1"  Orientation="Vertical" Spacing="20" Margin="25,50,25,50"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <StackPanel  Orientation="Vertical" Spacing="25" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <TextBlock Text="{Binding Title}" Classes="H3"
+                           HorizontalAlignment="Center"/>
 
                 <TextBlock Text="{Binding Message1}" Classes="H4" HorizontalAlignment="Left"/>
                 <TextBlock Text="{Binding Message2}" Classes="H4" HorizontalAlignment="Left"/>
-
                 <SelectableTextBlock Text="{Binding ExpectedMessage,StringFormat=Type: {0}}" Classes="H4" HorizontalAlignment="Left" Margin="0,25,0,0"/>
-
-                <TextBox Text="{Binding TargetMessage}" PlaceholderText="Type DFU target to Confirm" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-
-
+                <TextBox Text="{Binding TargetMessage}"
+                         HorizontalContentAlignment="Right"
+                         PlaceholderText="Type DFU target to Confirm"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </StackPanel>
+        </Border>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button ToolTip.Tip="Confirm"
+                    Width="100"
+                    Padding="8,2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
 
-
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10"
-                        HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Confirm"
-                        Width="100"
-                        Padding="8,2"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-
-                        Command="{Binding OKCommand}"
-                        >
-                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                </Button>
-
-            </StackPanel>
-
-        </Grid>
-    </Border>
-
+                    Command="{Binding OKCommand}"
+                    >
+                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+            </Button>
+        </StackPanel>
+    </Grid>
 </utilities:UserControlViewBase>

@@ -45,7 +45,7 @@
                 Padding="8,4"
                 MaxWidth="520"
                 FontSize="11"
-                Content="{Binding AttributionText}"
+                Content="{Binding AttributionText}" ToolTip.Tip="{Binding AttributionText}"
                 IsVisible="{Binding IsAttributionVisible}"
                 Click="OnAttributionClicked" />
 

@@ -17,7 +17,7 @@
                 <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
                 <TextBlock Text="{Binding VehicleHeading}" FontSize="16" />
             </StackPanel>
-            <TabControl Grid.Row="2">
+            <TabControl TabStripPlacement="Left" Grid.Row="2" >
                 <TabItem Header="Frame"><sections:FrameSetupView /></TabItem>
                 <TabItem Header="Accelerometer"><sections:AccelerometerSetupView /></TabItem>
                 <TabItem Header="Compass"><sections:CompassSetupView /></TabItem>

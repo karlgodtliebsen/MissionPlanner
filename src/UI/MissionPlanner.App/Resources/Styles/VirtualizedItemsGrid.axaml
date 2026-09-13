@@ -118,8 +118,8 @@
                               VerticalAlignment="Center"
                               >
 
-                            <Button x:Name="PART_FirstPageButton" Grid.Column="0" Content="⏮" Padding="8,3" />
-                            <Button x:Name="PART_PreviousPageButton" Grid.Column="1" Content="◀" Padding="8,3" />
+                            <Button x:Name="PART_FirstPageButton" Grid.Column="0" Content="⏮" ToolTip.Tip="First page" Padding="8,3" />
+                            <Button x:Name="PART_PreviousPageButton" Grid.Column="1" Content="◀" ToolTip.Tip="Previous page" Padding="8,3" />
 
                             <TextBlock Grid.Column="2" Text="Page" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="3"
@@ -132,8 +132,8 @@
                                        FontWeight="Bold"
                                        VerticalAlignment="Center" />
 
-                            <Button x:Name="PART_NextPageButton" Grid.Column="6" Content="▶" ToolTip.Tip="▶" Padding="8,3" />
-                            <Button x:Name="PART_LastPageButton" Grid.Column="7" Content="⏭" ToolTip.Tip="⏭" Padding="8,3" />
+                            <Button x:Name="PART_NextPageButton" Grid.Column="6" Content="▶" ToolTip.Tip="Next page" Padding="8,3" />
+                            <Button x:Name="PART_LastPageButton" Grid.Column="7" Content="⏭" ToolTip.Tip="Last page" Padding="8,3" />
 
                             <TextBlock Grid.Column="8"
                                        Margin="12,0,0,0"

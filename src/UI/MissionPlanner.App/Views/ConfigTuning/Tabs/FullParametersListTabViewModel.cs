@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dialogs;
+using MissionPlanner.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Notifications;
@@ -12,9 +13,6 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
-using ErrorView = MissionPlanner.App.Utilities.Dialogs.SubViews.ErrorView;
-using ErrorViewModel = MissionPlanner.App.Utilities.Dialogs.SubViews.ErrorViewModel;
-using ParametersViewModel = MissionPlanner.App.Models.ParametersViewModel;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 

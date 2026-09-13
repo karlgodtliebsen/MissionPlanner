@@ -26,7 +26,8 @@ public sealed partial class OverlayViewDialogViewModel : ObservableObject, IDial
     public string Title
     {
         get;
-    }
+        set;
+    } = "The Title";
 
     public Control Content
     {

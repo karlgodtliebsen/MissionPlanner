@@ -5,7 +5,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorDetailView"
     x:TypeArguments="local:InspectorDetailViewModel" x:DataType="local:InspectorDetailViewModel">
     <Grid RowDefinitions="Auto,*" RowSpacing="12">
-        <Button Content="Copy selected row and details" Command="{Binding CopyCommand}" HorizontalAlignment="Left" />
+        <Button Content="Copy selected row and details" ToolTip.Tip="Copy selected row and details" Command="{Binding CopyCommand}" HorizontalAlignment="Left" />
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <Border Classes="SectionCard" Padding="16">
                 <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" FontFamily="monospace" />

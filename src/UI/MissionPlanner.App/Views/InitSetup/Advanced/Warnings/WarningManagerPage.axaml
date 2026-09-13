@@ -10,8 +10,8 @@
                        TextWrapping="Wrap" Classes="Warning" />
             <StackPanel Grid.Row="1" Spacing="10">
                 <WrapPanel IsEnabled="{Binding !IsBusy}">
-                    <Button Content="Import rules (merge by ID)" Command="{Binding ImportCommand}" Margin="0,0,8,8" />
-                    <Button Content="Export rules" Command="{Binding ExportCommand}" Margin="0,0,8,8" />
+                    <Button Content="Import rules (merge by ID)" ToolTip.Tip="Import rules (merge by ID)" Command="{Binding ImportCommand}" Margin="0,0,8,8" />
+                    <Button Content="Export rules" ToolTip.Tip="Export rules" Command="{Binding ExportCommand}" Margin="0,0,8,8" />
                 </WrapPanel>
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
             </StackPanel>

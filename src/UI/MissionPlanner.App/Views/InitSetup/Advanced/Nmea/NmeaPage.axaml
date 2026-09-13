@@ -12,8 +12,8 @@
                 <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
             </StackPanel>
             <WrapPanel Grid.Row="1">
-                <Button Content="Start NMEA" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" />
-                <Button Content="Stop NMEA" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" />
+                <Button Content="Start NMEA" ToolTip.Tip="Start NMEA" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" />
+                <Button Content="Stop NMEA" ToolTip.Tip="Stop NMEA" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" />
             </WrapPanel>
             <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                 <TabItem Header="Sentences"><local:NmeaOptionsView DataContext="{Binding Settings}" /></TabItem>

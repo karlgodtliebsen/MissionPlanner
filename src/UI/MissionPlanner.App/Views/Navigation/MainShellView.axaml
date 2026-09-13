@@ -71,7 +71,7 @@
                     </u:NavMenu.HeaderTemplate>
                     <u:NavMenu.Footer>
                         <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                                Classes="Tertiary Light" Content="Exit"
+                                Classes="Tertiary Light" Content="Exit" ToolTip.Tip="Exit"
                                 Command="{Binding ExitCommand}"
                                 Theme="{DynamicResource BorderlessIconButton}" />
                     </u:NavMenu.Footer>

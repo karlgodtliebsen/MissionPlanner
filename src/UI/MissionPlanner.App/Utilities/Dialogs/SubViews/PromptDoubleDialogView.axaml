@@ -4,53 +4,60 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:subViews="clr-namespace:MissionPlanner.App.Utilities.Dialogs.SubViews"
-             mc:Ignorable="d" d:DesignWidth="800"
-             d:DesignHeight="450"
+             mc:Ignorable="d"
+             d:DesignWidth="800"
+             d:DesignHeight="550"
              x:Class="MissionPlanner.App.Utilities.Dialogs.SubViews.PromptDoubleDialogView"
              x:DataType="subViews:PromptDoubleDialogViewModel"
-             HorizontalContentAlignment="Center"
-             VerticalAlignment="Center"
-             Margin="50"
+             HorizontalContentAlignment="Stretch"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             Margin="50,50,50,25"
              >
-    <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="50">
-        <StackPanel    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="50">
-            <TextBlock Text="{Binding Title}" TextAlignment="Center" Classes="H1"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-            <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Classes="H4"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+          RowSpacing="25">
 
-            <!--<TextBox Text="{Binding PromptText, Mode=TwoWay}" Classes="H5" PlaceholderText="Enter your response here" />
-            -->
-            <NumericUpDown Value="{Binding Value, Mode=TwoWay}"
-                           Classes="H5" PlaceholderText="Enter your response here" 
-                           HorizontalContentAlignment="Right"
-                           Minimum="{Binding Min}"
-                           Maximum="{Binding Max}" />
-            <StackPanel Orientation="Horizontal" Spacing="10"  HorizontalAlignment="Center">
-                <Button
-                    Width="100"
-                    Classes="Primary"
-                    Padding="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Command="{Binding CancelCommand}"
-                    >
-                    <avalonia:MaterialIcon Kind="Cancel" Width="30" Height="30" />
-                </Button>
-                <Button
-                    Width="100"
-                    Classes="Primary"
-                    Padding="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Command="{Binding OKCommand}"
-                    >
-                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                </Button>
+        <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                >
+            <StackPanel  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Spacing="25">
+                <TextBlock Text="{Binding Title}" TextAlignment="Center" Classes="H1"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" Classes="H4"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                <NumericUpDown Value="{Binding Value, Mode=TwoWay}"
+                               Classes="H5" PlaceholderText="Enter your response here"
+                               HorizontalContentAlignment="Right"
+                               HorizontalAlignment="Center"
+                               Minimum="{Binding Min}"
+                               Maximum="{Binding Max}" />
+
             </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button
+                Width="100"
+                Classes="Primary"
+                Padding="5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Command="{Binding CancelCommand}"
+                >
+                <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
+            </Button>
+            <Button
+                Width="100"
+                Classes="Primary"
+                Padding="5"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Command="{Binding OKCommand}"
+                >
+                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+            </Button>
         </StackPanel>
-    </Border>
-
-
+    </Grid>
 </UserControl>

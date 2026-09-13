@@ -22,13 +22,13 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
             <Button HorizontalAlignment="Right"
-                    Content="Add Parameters" Width="200" Command="{Binding UseCommand}">
+                    Content="Add Parameters" ToolTip.Tip="Add Parameters" Width="200" Command="{Binding UseCommand}">
             </Button>
             <Button HorizontalAlignment="Right"
-                    Content="Clear" Width="150" Command="{Binding ClearCommand}">
+                    Content="Clear" ToolTip.Tip="Clear" Width="150" Command="{Binding ClearCommand}">
             </Button>
             <Button HorizontalAlignment="Right"
-                    Content="Cancel" Width="100" Command="{Binding CancelCommand}">
+                    Content="Cancel" ToolTip.Tip="Cancel" Width="100" Command="{Binding CancelCommand}">
             </Button>
         </StackPanel>
 

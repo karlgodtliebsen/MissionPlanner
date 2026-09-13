@@ -15,7 +15,7 @@
                         <StackPanel Spacing="12">
                             <TextBlock Text="Vehicle setup" Classes="H4" />
                             <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
-                            <Button Content="Configure signing…" Command="{Binding ConfigureCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" />
+                            <Button Content="Configure signing…" ToolTip.Tip="Configure signing…" Command="{Binding ConfigureCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" />
                             <TextBlock Text="Closing this page cancels pending setup. Verified connection signing continues until disconnection. It does not enforce a signed-only policy." TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>

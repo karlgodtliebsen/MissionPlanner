@@ -8,29 +8,48 @@
                xmlns:subViews="clr-namespace:MissionPlanner.App.Utilities.Dialogs.SubViews"
                x:Class="MissionPlanner.App.Utilities.Dialogs.SubViews.ErrorView"
                x:DataType="subViews:ErrorViewModel"
-               HorizontalContentAlignment="Center"
-               VerticalAlignment="Center"
-               Margin="50"
+               mc:Ignorable="d"
+               d:DesignWidth="800"
+               d:DesignHeight="550"
+               HorizontalContentAlignment="Stretch"
+               HorizontalAlignment="Stretch"
+               VerticalAlignment="Stretch"
+               Margin="50,50,50,25"
                >
-    <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Center"  Padding="50">
-        <StackPanel    HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="50">
-            <TextBlock Text="{Binding Title}" TextAlignment="Center" Classes="Title Danger"
-                        HorizontalAlignment="Center" VerticalAlignment="Center" />
-            
-            <TextBlock Text="{Binding ErrorMessage}" TextAlignment="Center" 
-                       Classes="H4 Danger"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-            <Button
-                Width="100"
-                Classes="Primary"
-                Padding="5"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Command="{Binding OKCommand}"
-                >
-                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-            </Button>
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+          RowSpacing="25">
+
+        <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Center"  >
+
+            <StackPanel MinHeight="200"
+                        MinWidth="200"
+                        Spacing="25"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        >
+
+                <TextBlock Text="{Binding Title}" TextAlignment="Center"
+                           Classes="Title H2 Danger"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                <TextBlock Text="{Binding ErrorMessage}" TextAlignment="Center"
+                           Classes="H4 Danger"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </StackPanel>
+
+        </Border>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+                <Button
+                    Width="100"
+                    Padding="5"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Command="{Binding OKCommand}"
+                    >
+                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                </Button>
         </StackPanel>
-    </Border>
+    </Grid>
+
 </UserControl>

@@ -11,7 +11,7 @@
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding Dropped, StringFormat='Dropped / omitted observations: {0}'}" Classes="Warning" />
             </StackPanel>
-            <Button Grid.Row="1" Content="Export bounded snapshot" Command="{Binding ExportCommand}" HorizontalAlignment="Left" />
+            <Button Grid.Row="1" Content="Export bounded snapshot" ToolTip.Tip="Export bounded snapshot" Command="{Binding ExportCommand}" HorizontalAlignment="Left" />
             <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                 <TabItem Header="Messages">
                     <local:InspectorListView DataContext="{Binding List}" />

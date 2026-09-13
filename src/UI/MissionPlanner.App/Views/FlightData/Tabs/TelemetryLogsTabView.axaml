@@ -18,9 +18,9 @@
             </StackPanel>
         </Border>
         <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
-            <Button Content="Load .tlog" Command="{Binding LoadCommand}"/>
-            <Button Grid.Column="1" Content="{Binding PlayPauseText}" Command="{Binding PlayPauseCommand}"/>
-            <Button Grid.Column="2" Content="Close replay" Command="{Binding CloseReplayCommand}"/>
+            <Button Content="Load .tlog" ToolTip.Tip="Load .tlog" Command="{Binding LoadCommand}"/>
+            <Button Grid.Column="1" Content="{Binding PlayPauseText}" ToolTip.Tip="{Binding PlayPauseText}" Command="{Binding PlayPauseCommand}"/>
+            <Button Grid.Column="2" Content="Close replay" ToolTip.Tip="Close replay" Command="{Binding CloseReplayCommand}"/>
             <StackPanel Grid.Column="3">
                 <TextBlock Text="{Binding SourceName}" FontWeight="Bold"/>
                 <TextBlock Text="{Binding StatusMessage}"/>
@@ -29,9 +29,9 @@
         </Grid>
         <Grid Grid.Row="2" ColumnDefinitions="*,Auto,90,Auto" ColumnSpacing="8">
             <Slider Maximum="{Binding DurationSeconds}" Value="{Binding SeekSeconds}"/>
-            <Button Grid.Column="1" Content="Seek" Command="{Binding SeekCommand}"/>
+            <Button Grid.Column="1" Content="Seek" ToolTip.Tip="Seek" Command="{Binding SeekCommand}"/>
             <NumericUpDown Grid.Column="2" Value="{Binding PlaybackSpeed}" Increment="0.1"/>
-            <Button Grid.Column="3" Content="Apply speed ×" Command="{Binding ApplySpeedCommand}"/>
+            <Button Grid.Column="3" Content="Apply speed ×" ToolTip.Tip="Apply speed ×" Command="{Binding ApplySpeedCommand}"/>
         </Grid>
         <Grid Grid.Row="3" ColumnDefinitions="*,Auto">
             <ProgressBar Maximum="1" Value="{Binding Progress}" Theme="{DynamicResource ProgressRing}" />

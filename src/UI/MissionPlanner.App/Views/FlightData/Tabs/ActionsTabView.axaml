@@ -21,11 +21,11 @@
                        FontSize="11" TextWrapping="Wrap" />
 
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-                <Button  Grid.Row="0" Grid.Column="0" Content="Arm" Command="{Binding ArmCommand}" IsEnabled="{Binding CanArm}" />
-                <Button  Grid.Row="0" Grid.Column="1" Content="Disarm" Command="{Binding DisarmCommand}" IsEnabled="{Binding CanDisarm}" />
-                <Button  Grid.Row="1" Grid.Column="0" Content="RTL" Command="{Binding ReturnToLaunchCommand}" IsEnabled="{Binding CanReturnToLaunch}" />
-                <Button  Grid.Row="1" Grid.Column="1" Content="Loiter / Hold" Command="{Binding HoldCommand}" IsEnabled="{Binding CanHoldPosition}" />
-                <Button  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Land" Command="{Binding LandCommand}" IsEnabled="{Binding CanLand}" />
+                <Button  Grid.Row="0" Grid.Column="0" Content="Arm" ToolTip.Tip="Arm" Command="{Binding ArmCommand}" IsEnabled="{Binding CanArm}" />
+                <Button  Grid.Row="0" Grid.Column="1" Content="Disarm" ToolTip.Tip="Disarm" Command="{Binding DisarmCommand}" IsEnabled="{Binding CanDisarm}" />
+                <Button  Grid.Row="1" Grid.Column="0" Content="RTL" ToolTip.Tip="RTL" Command="{Binding ReturnToLaunchCommand}" IsEnabled="{Binding CanReturnToLaunch}" />
+                <Button  Grid.Row="1" Grid.Column="1" Content="Loiter / Hold" ToolTip.Tip="Loiter / Hold" Command="{Binding HoldCommand}" IsEnabled="{Binding CanHoldPosition}" />
+                <Button  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Land" ToolTip.Tip="Land" Command="{Binding LandCommand}" IsEnabled="{Binding CanLand}" />
             </Grid>
 
             <Label Content="Flight mode" FontWeight="Bold" />
@@ -34,7 +34,7 @@
                         ItemsSource="{Binding Modes}"
                         SelectedItem="{Binding SelectedMode}"
                         DisplayMemberBinding="{Binding Name}" />
-                <Button  Grid.Column="1" Content="Set Mode" Command="{Binding SetModeCommand}" IsEnabled="{Binding CanTransmit}" />
+                <Button  Grid.Column="1" Content="Set Mode" ToolTip.Tip="Set Mode" Command="{Binding SetModeCommand}" IsEnabled="{Binding CanTransmit}" />
             </Grid>
 
             <Label Content="Takeoff altitude (m)" FontWeight="Bold" />
@@ -46,12 +46,12 @@
                     FormatString="F1"
                     HorizontalAlignment="Stretch" />
 
-                <Button  Grid.Column="1" Content="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" />
+                <Button  Grid.Column="1" Content="Takeoff" ToolTip.Tip="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" />
             </Grid>
 
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-                <Button  Grid.Column="0" Content="Set Home Here" Command="{Binding SetHomeHereCommand}" IsEnabled="{Binding CanSetHome}" />
-                <Button  Grid.Column="1" Content="Reboot Autopilot" Command="{Binding RebootCommand}" IsEnabled="{Binding CanReboot}" />
+                <Button  Grid.Column="0" Content="Set Home Here" ToolTip.Tip="Set Home Here" Command="{Binding SetHomeHereCommand}" IsEnabled="{Binding CanSetHome}" />
+                <Button  Grid.Column="1" Content="Reboot Autopilot" ToolTip.Tip="Reboot Autopilot" Command="{Binding RebootCommand}" IsEnabled="{Binding CanReboot}" />
                 <Button Grid.Row="1" Grid.ColumnSpan="2"
                         Content="{Binding AltitudeZeroActionText}"
                         Command="{Binding ToggleAltitudeZeroCommand}"
@@ -69,7 +69,7 @@
                                                FormatString="F0" />
 
 
-                        <Button Grid.Column="1" Content="Set Current WP"
+                        <Button Grid.Column="1" Content="Set Current WP" ToolTip.Tip="Set Current WP"
                                 Command="{Binding SetCurrentMissionItemCommand}"
                                 IsEnabled="{Binding CanSetCurrentMissionItem}" />
                     </Grid>
@@ -100,7 +100,7 @@
                                           IsVisible="{Binding IsSpeedTypeSelectorVisible}" />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <NumericUpDown Grid.Column="0" Value="{Binding TargetSpeedMetersPerSecond, Mode=TwoWay}" FormatString="F1" />
-                        <Button Grid.Column="1" Content="Change Speed" Command="{Binding ChangeSpeedCommand}" IsEnabled="{Binding CanChangeSpeed}" />
+                        <Button Grid.Column="1" Content="Change Speed" ToolTip.Tip="Change Speed" Command="{Binding ChangeSpeedCommand}" IsEnabled="{Binding CanChangeSpeed}" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <NumericUpDown Grid.Column="0" Value="{Binding TargetAltitudeAboveHomeMeters, Mode=TwoWay}" FormatString="F1" />
@@ -139,7 +139,7 @@
 
                 <TextBox PlaceholderText="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />
 
-                <Button Content="Validate, Confirm, and Send" Command="{Binding ExecuteExpertCommand}" IsEnabled="{Binding CanTransmit}" />
+                <Button Content="Validate, Confirm, and Send" ToolTip.Tip="Validate, Confirm, and Send" Command="{Binding ExecuteExpertCommand}" IsEnabled="{Binding CanTransmit}" />
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

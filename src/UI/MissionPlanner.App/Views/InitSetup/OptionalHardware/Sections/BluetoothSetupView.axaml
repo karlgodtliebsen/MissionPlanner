@@ -17,14 +17,14 @@
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Horizontal" Spacing="25" VerticalAlignment="Center">
                 <ComboBox ToolTip.Tip="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
-                <Button Content="Refresh ports" Command="{Binding RefreshPortsCommand}" />
-                <Button Content="Probe module" Command="{Binding ProbeCommand}" />
+                <Button Content="Refresh ports" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" />
+                <Button Content="Probe module" ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" />
             </StackPanel>
             <TextBlock Text="{Binding ModuleIdentity}" FontWeight="Bold" />
             <TextBox PlaceholderText="Module name" Text="{Binding Name}" />
             <TextBox PlaceholderText="PIN" Text="{Binding Pin}" PasswordChar="●" />
             <NumericUpDown PlaceholderText="Baud" Value="{Binding BaudRate}" Minimum="0" FormatString="F0" />
-            <Button Content="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" />
+            <Button Content="Apply supported settings" ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" />
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

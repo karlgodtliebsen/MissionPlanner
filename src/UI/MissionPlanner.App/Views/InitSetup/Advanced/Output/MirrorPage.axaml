@@ -12,8 +12,8 @@
             </StackPanel>
             <WrapPanel Grid.Row="1">
                 <ComboBox ItemsSource="{Binding Directions}" SelectedItem="{Binding Direction}" IsEnabled="{Binding !Running}" MinWidth="150" Margin="0,0,12,8" AutomationProperties.Name="Mirror direction" />
-                <Button Content="Start mirror" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" />
-                <Button Content="Stop mirror" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" />
+                <Button Content="Start mirror" ToolTip.Tip="Start mirror" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" />
+                <Button Content="Stop mirror" ToolTip.Tip="Stop mirror" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" />
             </WrapPanel>
             <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                 <TabItem Header="Output endpoint"><local:OutputEndpointView DataContext="{Binding Endpoint}" /></TabItem>

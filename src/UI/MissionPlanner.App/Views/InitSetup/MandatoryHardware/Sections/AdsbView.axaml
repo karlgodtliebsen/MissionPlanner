@@ -32,13 +32,15 @@
                                 </StackPanel>
                                 <ComboBox Grid.Column="1" ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" DisplayMemberBinding="{Binding Name}" />
                                 <TextBox Grid.Column="1" PlaceholderText="Value" IsVisible="{Binding IsNumeric}" Text="{Binding NumericValue}" />
-                                <Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
+                                <Button Grid.Column="2" Content="Apply" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" />
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button Content="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+            <StackPanel HorizontalAlignment="Right">
+            <Button Content="Refresh" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+            </StackPanel>
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

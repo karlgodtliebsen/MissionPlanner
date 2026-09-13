@@ -16,7 +16,7 @@
         <ComboBox Grid.Row="3" ItemsSource="{Binding Levels}" SelectedItem="{Binding Level}"/>
         <StackPanel Grid.Row="4" Orientation="Horizontal" Spacing="8">
             <CheckBox Content="Confirm warning/high-risk action" IsChecked="{Binding IsConfirmed}"/>
-            <Button Content="Execute" Command="{Binding ExecuteCommand}"/>
+            <Button Content="Execute" ToolTip.Tip="Execute" Command="{Binding ExecuteCommand}"/>
         </StackPanel>
         <TextBlock Grid.Row="5" Text="{Binding Result}" TextWrapping="Wrap"/>
     </Grid>

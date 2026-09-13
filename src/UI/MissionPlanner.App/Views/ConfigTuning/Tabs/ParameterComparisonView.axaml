@@ -20,18 +20,18 @@
         Margin="12">
 
         <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
-            <Button Grid.Column="0" Content="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
-            <Button Grid.Column="1" Content="Stage selected" Command="{Binding StageSelectedDifferencesCommand}" />
-            <Button Grid.Column="2" Content="Apply modified" Command="{Binding ApplyModifiedCommand}" />
-            <Button Grid.Column="3" Content="Export JSON" Command="{Binding ExportJsonCommand}" />
-            <Button Grid.Column="4" Content="Export CSV" Command="{Binding ExportCsvCommand}" />
+            <Button Grid.Column="0" Content="Select all safe differences" ToolTip.Tip="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
+            <Button Grid.Column="1" Content="Stage selected" ToolTip.Tip="Stage selected" Command="{Binding StageSelectedDifferencesCommand}" />
+            <Button Grid.Column="2" Content="Apply modified" ToolTip.Tip="Apply modified" Command="{Binding ApplyModifiedCommand}" />
+            <Button Grid.Column="3" Content="Export JSON" ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" />
+            <Button Grid.Column="4" Content="Export CSV" ToolTip.Tip="Export CSV" Command="{Binding ExportCsvCommand}" />
             <ComboBox 
                 Grid.Column="5"
                 Width="140"
                 ItemsSource="{Binding Filters}"
                 SelectedItem="{Binding Filter}" />
             <Button HorizontalAlignment="Right"
-                    Grid.Column="7" Content="Close" Width="100" Command="{Binding CloseCommand}">
+                    Grid.Column="7" Content="Close" ToolTip.Tip="Close" Width="100" Command="{Binding CloseCommand}">
              
             </Button>
         </Grid>

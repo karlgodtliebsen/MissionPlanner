@@ -17,9 +17,11 @@
                     <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
                     <TextBlock Text="{Binding ModeChannelDescription}" FontWeight="Bold" />
-                    <Button Content="Refresh flight modes" 
-                            HorizontalAlignment="Center"
+                    
+                    <Button Content="Refresh flight modes" ToolTip.Tip="Refresh flight modes"
+                            HorizontalAlignment="Right"
                             Command="{Binding RefreshCommand}"  />
+
                 </StackPanel>
             </Border>
             <Border Classes="SectionCard" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">

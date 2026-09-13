@@ -46,10 +46,10 @@
             <TextBlock Text="Message template: use {name} and {value}" />
             <TextBox Text="{Binding Message}" AutomationProperties.Name="Warning message" />
             <TextBlock Text="{Binding MessageError}" Classes="Warning" TextWrapping="Wrap" />
-            <Button Content="Save rule" Command="{Binding SaveCommand}" HorizontalAlignment="Left" />
+            <Button Content="Save rule" ToolTip.Tip="Save rule" Command="{Binding SaveCommand}" HorizontalAlignment="Left" />
             <TextBlock Text="Preview input (does not affect the live warning)" />
             <NumericUpDown Value="{Binding PreviewValue}" AutomationProperties.Name="Preview value" />
-            <Button Content="Test comparison" Command="{Binding PreviewCommand}" HorizontalAlignment="Left" />
+            <Button Content="Test comparison" ToolTip.Tip="Test comparison" Command="{Binding PreviewCommand}" HorizontalAlignment="Left" />
             <TextBlock Text="{Binding PreviewResult}" TextWrapping="Wrap" />
         </StackPanel>
     </Border>

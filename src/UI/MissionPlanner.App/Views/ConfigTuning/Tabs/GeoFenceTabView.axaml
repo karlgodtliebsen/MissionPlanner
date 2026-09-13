@@ -18,12 +18,12 @@
 
         <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                <Button Content="Download" Command="{Binding DownloadCommand}" />
-                <Button Content="Validate &amp; upload" Command="{Binding UploadCommand}" />
-                <Button Content="Clear vehicle" Command="{Binding ClearVehicleCommand}" />
-                <Button Content="Restore backup" Command="{Binding RestoreBackupCommand}" />
-                <Button Content="Refresh parameters" Command="{Binding RefreshParametersCommand}" />
-                <Button Content="Revert parameters" Command="{Binding RevertParametersCommand}" />
+                <Button Content="Download" ToolTip.Tip="Download" Command="{Binding DownloadCommand}" />
+                <Button Content="Validate &amp; upload" ToolTip.Tip="Validate &amp; upload" Command="{Binding UploadCommand}" />
+                <Button Content="Clear vehicle" ToolTip.Tip="Clear vehicle" Command="{Binding ClearVehicleCommand}" />
+                <Button Content="Restore backup" ToolTip.Tip="Restore backup" Command="{Binding RestoreBackupCommand}" />
+                <Button Content="Refresh parameters" ToolTip.Tip="Refresh parameters" Command="{Binding RefreshParametersCommand}" />
+                <Button Content="Revert parameters" ToolTip.Tip="Revert parameters" Command="{Binding RevertParametersCommand}" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
             </StackPanel>
 
@@ -79,13 +79,13 @@
                                 <TextBlock Text="Fence map edit mode" FontWeight="Bold" FontSize="18" />
                                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="6" RowSpacing="6">
 
-                                    <Button Content="Inclusion polygon" Command="{Binding BeginPolygonInclusionCommand}" />
-                                    <Button Grid.Row="0" Grid.Column="1" Content="Exclusion polygon" Command="{Binding BeginPolygonExclusionCommand}" />
+                                    <Button Content="Inclusion polygon" ToolTip.Tip="Inclusion polygon" Command="{Binding BeginPolygonInclusionCommand}" />
+                                    <Button Grid.Row="0" Grid.Column="1" Content="Exclusion polygon" ToolTip.Tip="Exclusion polygon" Command="{Binding BeginPolygonExclusionCommand}" />
 
-                                    <Button Grid.Column="0" Grid.Row="1" Content="Inclusion circle" Command="{Binding BeginCircleInclusionCommand}" />
-                                    <Button Grid.Row="1" Grid.Column="1" Content="Exclusion circle" Command="{Binding BeginCircleExclusionCommand}" />
+                                    <Button Grid.Column="0" Grid.Row="1" Content="Inclusion circle" ToolTip.Tip="Inclusion circle" Command="{Binding BeginCircleInclusionCommand}" />
+                                    <Button Grid.Row="1" Grid.Column="1" Content="Exclusion circle" ToolTip.Tip="Exclusion circle" Command="{Binding BeginCircleExclusionCommand}" />
 
-                                    <Button Grid.Column="0" Grid.Row="2" Content="Set return point" Command="{Binding BeginReturnPointCommand}" />
+                                    <Button Grid.Column="0" Grid.Row="2" Content="Set return point" ToolTip.Tip="Set return point" Command="{Binding BeginReturnPointCommand}" />
                                     <!--
                                     <TextBox Grid.Row="2" Grid.Column="1" PlaceHolderText="Circle radius (m)"
                                     Text="{Binding CircleRadiusMeters, Mode=TwoWay}" />-->
@@ -98,8 +98,8 @@
 
                                 </Grid>
                                 <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsFenceEditMode}">
-                                    <Button Content="Finish polygon" Command="{Binding FinishPolygonCommand}" />
-                                    <Button Content="Cancel edit" Command="{Binding CancelEditCommand}" />
+                                    <Button Content="Finish polygon" ToolTip.Tip="Finish polygon" Command="{Binding FinishPolygonCommand}" />
+                                    <Button Content="Cancel edit" ToolTip.Tip="Cancel edit" Command="{Binding CancelEditCommand}" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>
@@ -148,8 +148,8 @@
                                     </controls:VirtualizedItemsGrid.RowTemplate>
                                 </controls:VirtualizedItemsGrid>
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <Button Content="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" />
-                                    <Button Content="Remove return" Command="{Binding RemoveReturnPointCommand}" />
+                                    <Button Content="Remove selected" ToolTip.Tip="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" />
+                                    <Button Content="Remove return" ToolTip.Tip="Remove return" Command="{Binding RemoveReturnPointCommand}" />
                                 </StackPanel>
                             </StackPanel>
                         </Border>

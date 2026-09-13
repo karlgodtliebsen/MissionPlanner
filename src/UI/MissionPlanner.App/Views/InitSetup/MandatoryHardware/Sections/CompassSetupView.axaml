@@ -15,11 +15,11 @@
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Vertical" IsVisible="{Binding HasIssues}" Spacing="4">
-<TextBlock Text="Configuration warnings" FontWeight="Bold" Classes="Warning" />
+                <TextBlock Text="Configuration warnings" FontWeight="Bold" Classes="Warning" />
                 <ItemsControl ItemsSource="{Binding Issues}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="x:String">
-<TextBlock Text="{Binding .}" Classes="Warning" />
+                            <TextBlock Text="{Binding .}" Classes="Warning" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -40,25 +40,25 @@
                                     <TextBlock Text="External" VerticalAlignment="Center" IsVisible="{Binding SupportsExternal}" />
                                     <ToggleSwitch IsChecked="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
                                     <ComboBox ToolTip.Tip="Orientation" ItemsSource="{Binding Orientations}" SelectedItem="{Binding SelectedOrientation}" DisplayMemberBinding="{Binding Name}" />
-                                    <Button Content="Write and verify" Command="{Binding ApplyCommand}" />
+                                    <Button HorizontalAlignment="Right" Content="Write and verify" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" />
                                 </StackPanel>
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button Content="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" />
+            <Button Content="Refresh compass values" ToolTip.Tip="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" />
             <TextBlock Text="Onboard calibration" FontSize="18" FontWeight="Bold" />
-<TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning" FontWeight="Bold" />
+            <TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning" FontWeight="Bold" />
             <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
             <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
             <TextBlock Text="{Binding ProgressSummary}" />
             <TextBlock Text="{Binding QualitySummary}" FontStyle="Italic" />
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Content="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" />
-                <Button Content="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" />
-                <Button Content="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" />
-                <Button Content="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                <Button Content="Start calibration" ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" />
+                <Button Content="Accept results" ToolTip.Tip="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" />
+                <Button Content="Cancel calibration" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" />
+                <Button Content="Reset / retry" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

@@ -73,7 +73,7 @@
             <Grid RowDefinitions="Auto,*">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <Label Content="Elevation profile — terrain / planned MSL"  />
-                    <Button Content="Close" Command="{Binding CloseElevationGraphCommand}" Padding="8,2" />
+                    <Button Content="Close" ToolTip.Tip="Close" Command="{Binding CloseElevationGraphCommand}" Padding="8,2" />
                 </StackPanel>
 
                 <missions1:MissionElevationProfileView Grid.Row="1" Profile="{Binding ElevationProfile}" />
@@ -87,7 +87,8 @@
                 Padding="8,4"
                 MaxWidth="520"
                 FontSize="11"
-                Content="{Binding AttributionText}"
+                Content="{Binding AttributionText}" 
+                ToolTip.Tip="{Binding AttributionText}"
                 IsVisible="{Binding IsAttributionVisible}"
                 Click="OnAttributionClicked" />
 

@@ -52,7 +52,7 @@
                                 >
                         <Button
                                     Width="200"
-                                    Content="Connect"
+                                    Content="Connect" ToolTip.Tip="Connect"
                                     Classes="Secondary"
                                     Padding="5"
                                     HorizontalAlignment="Center"
@@ -63,7 +63,7 @@
 
                         <Button
                             Width="200"
-                            Content="Error"
+                            Content="Error" ToolTip.Tip="Error"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -74,7 +74,7 @@
 
                         <Button
                             Width="200"
-                            Content="Confirm"
+                            Content="Confirm" ToolTip.Tip="Confirm"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -82,7 +82,7 @@
                             Command="{Binding ShowConfirmCommand}" />
                         <Button
                             Width="200"
-                            Content="ShowConfirm1"
+                            Content="ShowConfirm1" ToolTip.Tip="ShowConfirm1"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -92,7 +92,7 @@
 
                         <Button
                             Width="200"
-                            Content="ShowStringPrompt"
+                            Content="ShowStringPrompt" ToolTip.Tip="ShowStringPrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -101,7 +101,7 @@
 
                         <Button
                             Width="200"
-                            Content="ShowStringPrompt2"
+                            Content="ShowStringPrompt2" ToolTip.Tip="ShowStringPrompt2"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -111,7 +111,7 @@
 
                         <Button
                             Width="200"
-                            Content="ShowIntPrompt"
+                            Content="ShowIntPrompt" ToolTip.Tip="ShowIntPrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -120,7 +120,7 @@
 
                         <Button
                             Width="200"
-                            Content="ShowIntPrompt2"
+                            Content="ShowIntPrompt2" ToolTip.Tip="ShowIntPrompt2"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -129,7 +129,7 @@
 
                         <Button
                             Width="200"
-                            Content="ShowDoublePrompt"
+                            Content="ShowDoublePrompt" ToolTip.Tip="ShowDoublePrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -138,7 +138,7 @@
 
                         <Button
                             Width="200"
-                            Content="ShowDoublePrompt2"
+                            Content="ShowDoublePrompt2" ToolTip.Tip="ShowDoublePrompt2"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -146,7 +146,7 @@
                             Command="{Binding ShowDoublePrompt2Command}" />
                         <Button
                             Width="200"
-                            Content="ShowChoosePrompt"
+                            Content="ShowChoosePrompt" ToolTip.Tip="ShowChoosePrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
@@ -155,7 +155,7 @@
 
                         <Button
                             Width="200"
-                            Content="ShowPhrasePrompt"
+                            Content="ShowPhrasePrompt" ToolTip.Tip="ShowPhrasePrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"

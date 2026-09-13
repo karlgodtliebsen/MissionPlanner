@@ -1,61 +1,66 @@
 <UserControl
     x:Class="MissionPlanner.App.Utilities.Dialogs.OverlayViewDialog"
-    xmlns="https://github.com/avaloniaui"   
+    xmlns="https://github.com/avaloniaui"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:MissionPlanner.App.Utilities.Dialogs"
     xmlns:dialogs="clr-namespace:MissionPlanner.App.Utilities.Dialogs"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    x:DataType="dialogs:OverlayViewDialogViewModel">
+    d:DesignWidth="800"
+    d:DesignHeight="550"
+    mc:Ignorable="d"
+    HorizontalContentAlignment="Stretch"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    x:DataType="dialogs:OverlayViewDialogViewModel"
+    Margin="50,50,50,25"
+    >
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+          RowSpacing="25">
 
-        <TextBlock
-            Grid.Row="0"
-            Margin="16,12"
-            Text="{Binding Title}"
-            FontSize="18"
-            FontWeight="SemiBold"/>
+        <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  >
 
-        <ContentControl
-            Grid.Row="1"
-            Margin="16"
-            Content="{Binding Content}"
-            HorizontalContentAlignment="Stretch"
-            VerticalContentAlignment="Stretch"/>
+            <StackPanel MinHeight="200"
+                        MinWidth="200"
+                        Spacing="25"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        >
 
-        <Border
-            Classes="SectionCard"
-            Grid.Row="2"
-            Padding="16,10">
+                <TextBlock
+                    Margin="16,12"
+                    HorizontalAlignment="Center"
+                    Text="{Binding Title}"
+                    Classes="H3"/>
 
-            <StackPanel
-                Orientation="Horizontal"
-                HorizontalAlignment="Right"
-                Spacing="8">
-
-                <Button
-                    MinWidth="90"
-                    Classes="Secondary"
-                    ToolTip.Tip="{Binding CloseText}"
-                    Command="{Binding CancelCommand}"
-                    IsVisible="{Binding ShowCloseButton}"
-                >
-                    <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
-                </Button>
-                <Button
-                    MinWidth="90"
-                    Classes="Primary"
-                    ToolTip.Tip="{Binding OkText}"
-                    Command="{Binding OkCommand}"
-                    IsVisible="{Binding ShowOkButton}"
-                >
-                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                </Button>
-
+                <ContentControl
+                    Margin="16"
+                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                    Content="{Binding Content}"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"/>
             </StackPanel>
-
         </Border>
 
-    </Grid>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button
+                MinWidth="90"
+                ToolTip.Tip="{Binding CloseText}"
+                Command="{Binding CancelCommand}"
+                IsVisible="{Binding ShowCloseButton}"
+            >
+                <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
+            </Button>
+            <Button
+                MinWidth="90"
+                ToolTip.Tip="{Binding OkText}"
+                Command="{Binding OkCommand}"
+                IsVisible="{Binding ShowOkButton}"
+                >
+                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+            </Button>
+        </StackPanel>
 
+    </Grid>
 </UserControl>

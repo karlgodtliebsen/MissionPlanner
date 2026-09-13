@@ -21,7 +21,7 @@
                         <Grid ColumnDefinitions="220,*,90">
                             <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
                             <TextBox Grid.Column="1" Text="{Binding PendingValue}" />
-                            <Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
+                            <Button Grid.Column="2" Content="Apply" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" />
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

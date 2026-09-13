@@ -27,8 +27,8 @@
             </Border>
             <Border Classes="SectionCard" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
                 <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch">
-                    <StackPanel HorizontalAlignment="Stretch">
-                        <Button Content="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" />
+                    <StackPanel HorizontalAlignment="Right">
+                        <Button Content="Refresh" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" />
                     </StackPanel>
                     <ItemsControl ItemsSource="{Binding Settings}">
                         <ItemsControl.ItemTemplate>
@@ -52,7 +52,7 @@
                                                        PlaceholderText="Value" IsVisible="{Binding IsNumeric}" 
                                                        Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1" 
                                                        HorizontalAlignment="Stretch" />
-                                        <Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
+                                        <Button Grid.Column="2" Content="Apply" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>

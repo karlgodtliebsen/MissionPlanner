@@ -18,8 +18,8 @@
             <TextBlock Text="{Binding PreparedArtifact.Metadata.DataBytes, StringFormat='Inspected data bytes: {0}'}" />
             <ItemsControl ItemsSource="{Binding PreparedArtifact.Metadata.Warnings}" />
             <WrapPanel Orientation="Horizontal" ItemSpacing="12">
-                <Button Content="Prepare combined HEX" Command="{Binding PrepareDfuCommand}" />
-                <Button Content="Install combined HEX" Command="{Binding InstallDfuFirmwareCommand}" />
+                <Button Content="Prepare combined HEX" ToolTip.Tip="Prepare combined HEX" Command="{Binding PrepareDfuCommand}" />
+                <Button Content="Install combined HEX" ToolTip.Tip="Install combined HEX" Command="{Binding InstallDfuFirmwareCommand}" />
             </WrapPanel>
             <TextBlock Text="This replaces the current firmware and its bootloader. Confirm the exact target and keep USB power connected until programming and verification complete." Classes="Warning" TextWrapping="Wrap" />
         </StackPanel>

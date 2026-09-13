@@ -43,7 +43,7 @@
             <NumericUpDown Value="{Binding Channel}" Minimum="1"/>
             <NumericUpDown Grid.Column="1" Value="{Binding Pwm}"/>
             <CheckBox Grid.Column="2" Content="Confirm disarmed test" IsChecked="{Binding IsConfirmed}"/>
-            <Button Grid.Column="3" Content="Set servo" Command="{Binding SetServoCommand}"/>
+            <Button Grid.Column="3" Content="Set servo" ToolTip.Tip="Set servo" Command="{Binding SetServoCommand}"/>
         </Grid>
         <TextBlock Grid.Row="3" Text="{Binding Result}"/>
     </Grid>

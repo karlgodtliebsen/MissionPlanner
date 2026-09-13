@@ -18,8 +18,8 @@
             <TextBlock HorizontalAlignment="Center" Text="{Binding ErrorMessage}" 
                        IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,10,0,10">
-                <Button Content="Refresh servo outputs" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
-                <Button Content="Write" Command="{Binding WriteCommand}" HorizontalAlignment="Right" />
+                <Button Content="Refresh servo outputs" ToolTip.Tip="Refresh servo outputs" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+                <Button Content="Write" ToolTip.Tip="Write" Command="{Binding WriteCommand}" HorizontalAlignment="Right" />
             </StackPanel>
         </StackPanel>
 

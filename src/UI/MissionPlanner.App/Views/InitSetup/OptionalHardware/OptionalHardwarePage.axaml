@@ -18,7 +18,7 @@
                 <TextBlock Text="{Binding VehicleHeading}" />
                 <TextBlock Text="{Binding AvailabilitySummary}" Opacity="0.75" />
             </StackPanel>
-            <TabControl Grid.Row="1">
+            <TabControl TabStripPlacement="Left" Grid.Row="1">
                 <TabItem Header="RTK/GPS Inject"><sections:RtkGpsInjectView /></TabItem>
                 <TabItem Header="SiK Radio"><sections:SikRadioView /></TabItem>
                 <TabItem Header="DroneCAN / UAVCAN"><sections:DroneCanUavCanView /></TabItem>

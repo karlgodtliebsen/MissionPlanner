@@ -44,7 +44,7 @@
                             <ItemsControl Grid.Row="1" ItemsSource="{Binding Motors}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="motor:MotorLayoutMotor">
-                                        <Button HorizontalAlignment="Center" Width="250" Content="{Binding Label}"
+                                        <Button HorizontalAlignment="Center" Width="250" Content="{Binding Label}" ToolTip.Tip="{Binding Label}"
                                                 Margin="0,10,0,10"
                                                 Command="{Binding $parent[ItemsControl].((sections:MotorTestViewModel)DataContext).TestMotorCommand}"
                                                 CommandParameter="{Binding .}" />
@@ -53,8 +53,8 @@
                             </ItemsControl>
                             <StackPanel Orientation="Vertical" Grid.Row="2" Spacing="25" Margin="0,35,0,0" HorizontalAlignment="Center">
                                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Stretch">
-                                    <Button Content="Test all Motors" HorizontalAlignment="Stretch" Command="{Binding TestAllCommand}" />
-                                    <Button Content="Test all in sequence" HorizontalAlignment="Stretch" Command="{Binding TestSequenceCommand}" />
+                                    <Button Content="Test all Motors" ToolTip.Tip="Test all Motors" HorizontalAlignment="Stretch" Command="{Binding TestAllCommand}" />
+                                    <Button Content="Test all in sequence" ToolTip.Tip="Test all in sequence" HorizontalAlignment="Stretch" Command="{Binding TestSequenceCommand}" />
                                 </StackPanel>
                                 <Button  HorizontalAlignment="Stretch" Classes="Warning" Command="{Binding StopCommand}" >
                                     <TextBlock Classes="Warning">STOP All Motors</TextBlock>
@@ -79,7 +79,7 @@
 
 
                             </Grid>
-                            <Button VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Content="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" />
+                            <Button VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Content="Set Motor Spin Arm" ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" />
                             <u:Divider Height="1" Orientation="Horizontal" HorizontalAlignment="Stretch" />
                             <TextBlock Text="Set the minimum motor output while flying:" Margin="0,10" FontSize="20" FontFamily="Bold" />
                             <TextBlock Text="{Binding SpinMinDisplay}" FontWeight="Bold" Classes="Warning" />
@@ -91,7 +91,7 @@
                                                Minimum="1" Maximum="{Binding SpinMinMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
                                 <TextBlock Grid.Column="2" Text="{Binding SpinMinSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" />
                             </Grid>
-                            <Button VerticalAlignment="Center" Grid.Row="7" HorizontalAlignment="Stretch" Content="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" />
+                            <Button VerticalAlignment="Center" Grid.Row="7" HorizontalAlignment="Stretch" Content="Set Motor Spin Min" ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" />
                         </StackPanel>
                     </Border>
                 </Grid>

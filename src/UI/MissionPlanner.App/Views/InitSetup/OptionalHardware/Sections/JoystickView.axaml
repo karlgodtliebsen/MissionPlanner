@@ -17,12 +17,12 @@
         <TextBlock Text="{Binding PlatformStatus}" />
         <Grid ColumnDefinitions="Auto,Auto" VerticalAlignment="Stretch" ColumnSpacing="25" HorizontalAlignment="Stretch">
             <ComboBox ToolTip.Tip="Local device" ItemsSource="{Binding Devices}" VerticalAlignment="Bottom" DisplayMemberBinding="{Binding Name}" SelectedItem="{Binding SelectedDevice}" Width="300" />
-            <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" />
+            <Button Grid.Column="1" Content="Refresh" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" />
         </Grid>
         <TextBlock Text="Local calibration is separate from vehicle RC calibration." />
         <StackPanel Orientation="Horizontal">
             <CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Content="Vehicle MANUAL_CONTROL output (disabled by default)" />
         </StackPanel>
-        <Button Content="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" />
+        <Button Content="Disable and release vehicle control" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" />
     </StackPanel>
 </utilities:UserControlViewBase>

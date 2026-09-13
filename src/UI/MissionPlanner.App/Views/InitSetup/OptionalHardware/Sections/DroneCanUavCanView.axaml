@@ -14,8 +14,8 @@
         <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
         <ComboBox ToolTip.Tip="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Spacing="50">
-            <Button Content="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" />
-            <Button Content="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" />
+            <Button Content="Connect" ToolTip.Tip="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" />
+            <Button Content="Refresh nodes" ToolTip.Tip="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" />
         </StackPanel>
         <ListBox ItemsSource="{Binding Nodes}" SelectionMode="Single" SelectedItem="{Binding SelectedNode}">
             <ListBox.ItemTemplate>

@@ -19,6 +19,6 @@
         <TextBox PlaceholderText="Access-point password" Text="{Binding Password}" PasswordChar="●" />
         <TextBox PlaceholderText="Station SSID" Text="{Binding StationSsid}" />
         <TextBox PlaceholderText="Station password" Text="{Binding StationPassword}" PasswordChar="●" />
-        <Button Content="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" />
+        <Button Content="Validate settings" ToolTip.Tip="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" />
     </StackPanel>
 </utilities:UserControlViewBase>

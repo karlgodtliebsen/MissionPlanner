@@ -12,7 +12,7 @@
         <Grid ColumnDefinitions="160,*,Auto">
             <ComboBox ItemsSource="{Binding SeverityFilters}" SelectedItem="{Binding SelectedSeverity}"/>
             <TextBox Grid.Column="1" Text="{Binding SearchText}" PlaceholderText="Search messages"/>
-            <Button Grid.Column="2" Content="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}"/>
+            <Button Grid.Column="2" Content="{Binding PauseButtonText}" ToolTip.Tip="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}"/>
         </Grid>
         <ListBox x:Name="MessageCollection" Grid.Row="1" ItemsSource="{Binding Items}"
                  SelectedItem="{Binding SelectedMessage}"><ListBox.ItemTemplate>
@@ -25,10 +25,10 @@
                  </ListBox.ItemTemplate>
         </ListBox>
         <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
-            <Button Content="Copy selected" Command="{Binding CopySelectedCommand}"/>
-            <Button Content="Copy all" Command="{Binding CopyAllCommand}"/>
-            <Button Content="Export text" Command="{Binding ExportTextCommand}"/>
-            <Button Content="Export JSON" Command="{Binding ExportJsonCommand}"/>
+            <Button Content="Copy selected" ToolTip.Tip="Copy selected" Command="{Binding CopySelectedCommand}"/>
+            <Button Content="Copy all" ToolTip.Tip="Copy all" Command="{Binding CopyAllCommand}"/>
+            <Button Content="Export text" ToolTip.Tip="Export text" Command="{Binding ExportTextCommand}"/>
+            <Button Content="Export JSON" ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}"/>
         </StackPanel>
     </Grid>
 </utilities:TabItemViewBase>

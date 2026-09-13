@@ -2,54 +2,60 @@
     x:Class="MissionPlanner.App.Utilities.Dialogs.ViewDialogWindow"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ursa="https://irihi.tech/ursa"
     xmlns:vm="using:MissionPlanner.App.Utilities.Dialogs"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    d:DesignWidth="800"
+    d:DesignHeight="550"
+    mc:Ignorable="d"
     x:DataType="vm:ViewDialogViewModel"
     CanResize="True"
     WindowStartupLocation="CenterOwner"
-    ShowInTaskbar="False">
+    ShowInTaskbar="False"
+    HorizontalContentAlignment="Stretch"
+    HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
+    Margin="50,50,50,25"
+    >
 
-    <Grid RowDefinitions="Auto,*,Auto">
-        <Label Content="{Binding Title}" FontSize="22" HorizontalAlignment="Center" Margin="25"></Label>
-        <ContentControl
-            Grid.Row="1"
-            Margin="16"
-            Content="{Binding Content}"
-            HorizontalContentAlignment="Stretch"
-            VerticalContentAlignment="Stretch"/>
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+          RowSpacing="25">
+        <Border  Classes="SectionCard" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <StackPanel MinHeight="200"
+                        MinWidth="200"
+                        Spacing="25"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        >
+                <Label Content="{Binding Title}"
+                       Classes="H2" HorizontalAlignment="Center" ></Label>
 
-        <Border
-            Classes="SectionCard"
-            Grid.Row="2"
-            Padding="16,10">
-
-            <StackPanel
-                Orientation="Horizontal"
-                HorizontalAlignment="Right"
-                Spacing="8">
-
-                <Button
-                    Classes="Secondary"
-                    MinWidth="90"
-                    ToolTip.Tip="{Binding CloseText}"
-                    Command="{Binding CancelCommand}"
-                    IsVisible="{Binding ShowCloseButton}"
-                >
-                    <avalonia:MaterialIcon Kind="Cancel" Width="30" Height="30" />
-                </Button>
-                <Button
-                    Classes="Primary"
-                    MinWidth="90"
-                    ToolTip.Tip="{Binding OkText}"
-                    Command="{Binding OkCommand}"
-                    IsVisible="{Binding ShowOkButton}"
-                >
-                    <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-                </Button>
+                <ContentControl
+                    Content="{Binding Content}"
+                    HorizontalContentAlignment="Stretch"
+                    VerticalContentAlignment="Stretch"/>
             </StackPanel>
-
         </Border>
 
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button
+                MinWidth="90"
+                ToolTip.Tip="{Binding CloseText}"
+                Command="{Binding CancelCommand}"
+                IsVisible="{Binding ShowCloseButton}"
+                >
+                <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
+            </Button>
+            <Button
+                MinWidth="90"
+                ToolTip.Tip="{Binding OkText}"
+                Command="{Binding OkCommand}"
+                IsVisible="{Binding ShowOkButton}"
+                >
+                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+            </Button>
+        </StackPanel>
     </Grid>
+
 </ursa:UrsaWindow>

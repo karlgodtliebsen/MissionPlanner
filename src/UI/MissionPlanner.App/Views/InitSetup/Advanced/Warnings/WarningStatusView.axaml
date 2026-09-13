@@ -6,7 +6,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningStatusView"
     x:TypeArguments="local:WarningStatusViewModel" x:DataType="local:WarningStatusViewModel">
     <Grid RowDefinitions="Auto,*" RowSpacing="12">
-        <Button Content="Acknowledge selected warning" Command="{Binding AcknowledgeCommand}" HorizontalAlignment="Left" />
+        <Button Content="Acknowledge selected warning" ToolTip.Tip="Acknowledge selected warning" Command="{Binding AcknowledgeCommand}" HorizontalAlignment="Left" />
         <ListBox Grid.Row="1" ItemsSource="{Binding Warnings}" SelectedItem="{Binding Selected}"
                  AutomationProperties.Name="Current warning states">
             <ListBox.ItemTemplate>

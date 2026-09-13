@@ -15,7 +15,7 @@
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <TextBlock Text="Changes are explicit and confirmed by parameter readback. Live movement and capture commands remain in Payload Control." Opacity="0.75" />
-            <Button Content="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" />
+            <Button Content="Open Payload Control" ToolTip.Tip="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" />
 <TextBlock Text="Vehicle Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" Classes="Warning" FontWeight="Bold" />
             <ItemsControl ItemsSource="{Binding Settings}">
                 <ItemsControl.ItemTemplate>
@@ -23,7 +23,7 @@
                         <Grid ColumnDefinitions="250,150,90" ColumnSpacing="25">
                             <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
                             <NumericUpDown Grid.Column="1" Value="{Binding PendingValue}" Minimum="0" />
-                            <Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
+                            <Button Grid.Column="2" Content="Apply" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" />
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

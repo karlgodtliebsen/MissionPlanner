@@ -48,10 +48,10 @@
                     
                     <TextBlock Margin="0,10" Text="{Binding Instruction}" Classes="H4" />
 
-                    <StackPanel Orientation="Horizontal" Margin="0,10" Spacing="20" HorizontalAlignment="Center">
-                        <Button Content="Test motor" Command="{Binding TestMotorCommand}" />
-                        <Button Content="Test sequence" Command="{Binding TestSequenceCommand}" />
-                        <Button Foreground="{DynamicResource Warning}" FontWeight="Bold" Content="STOP" Command="{Binding StopCommand}" />
+                    <StackPanel Orientation="Horizontal" Margin="0,10" Spacing="20" HorizontalAlignment="Right">
+                        <Button Content="Test motor" ToolTip.Tip="Test motor" Command="{Binding TestMotorCommand}" />
+                        <Button Content="Test sequence" ToolTip.Tip="Test sequence" Command="{Binding TestSequenceCommand}" />
+                        <Button Foreground="{DynamicResource Warning}" FontWeight="Bold" Content="STOP" ToolTip.Tip="STOP" Command="{Binding StopCommand}" />
                     </StackPanel>
                 </StackPanel>
             </Border>

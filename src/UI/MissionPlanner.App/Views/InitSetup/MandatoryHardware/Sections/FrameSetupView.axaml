@@ -40,12 +40,12 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Content="Refresh vehicle values" Command="{Binding RefreshCommand}" />
-                <Button Content="Write and verify" Command="{Binding ApplyCommand}" />
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                <Button Content="Refresh vehicle values" ToolTip.Tip="Refresh vehicle values" Command="{Binding RefreshCommand}" />
+                <Button Content="Write and verify" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" />
             </StackPanel>
             <TextBlock Text="{Binding StatusMessage}" FontSize="12" FontStyle="Italic" TextTrimming="CharacterEllipsis" />
-<TextBlock IsVisible="{Binding RebootRequired}" Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration." Classes="Warning" FontWeight="Bold" />
+            <TextBlock IsVisible="{Binding RebootRequired}" Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration." Classes="Warning" FontWeight="Bold" />
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

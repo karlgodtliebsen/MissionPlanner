@@ -10,10 +10,10 @@
             <SelectableTextBlock Text="{Binding Fingerprint, StringFormat='Fingerprint: {0}'}" />
             <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
             <WrapPanel IsEnabled="{Binding !IsBusy}">
-                <Button Content="Generate key…" Command="{Binding GenerateCommand}" Margin="0,0,10,8" />
-                <Button Content="Import key…" Command="{Binding ImportCommand}" Margin="0,0,10,8" />
-                <Button Content="Export secret key…" Command="{Binding ExportCommand}" Margin="0,0,10,8" />
-                <Button Content="Load saved key" Command="{Binding LoadCommand}" Margin="0,0,10,8" />
+                <Button Content="Generate key…" ToolTip.Tip="Generate key…" Command="{Binding GenerateCommand}" Margin="0,0,10,8" />
+                <Button Content="Import key…" ToolTip.Tip="Import key…" Command="{Binding ImportCommand}" Margin="0,0,10,8" />
+                <Button Content="Export secret key…" ToolTip.Tip="Export secret key…" Command="{Binding ExportCommand}" Margin="0,0,10,8" />
+                <Button Content="Load saved key" ToolTip.Tip="Load saved key" Command="{Binding LoadCommand}" Margin="0,0,10,8" />
             </WrapPanel>
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <TextBlock Text="Outbound link ID (0–255)" VerticalAlignment="Center" />

@@ -32,7 +32,9 @@ public partial class TopBarViewModel : ViewModelBase
     }
 
     private readonly ApplicationStateService stateService;
+    private readonly IDomainFactory domainFactory;
     private readonly IServiceFactory serviceFactory;
+    private readonly IDialogService dialogService;
     private const string ConnectImage = "avares://MissionPlanner.App/Resources/Images/light_disconnect_icon.png";
     private const string DisConnectImage = "avares://MissionPlanner.App/Resources/Images/light_connect_icon.png";
     private readonly IList<IDisposable> disposables = [];
@@ -149,7 +151,9 @@ public partial class TopBarViewModel : ViewModelBase
     /// Initializes a new instance of the <see cref="TopBarViewModel"/> class.
     /// </summary>
     /// <param name="stateService">The application state service.</param>
+    /// <param name="domainFactory">The domain factory.</param>
     /// <param name="serviceFactory">The service factory.</param>
+    /// <param name="dialogService">The dialog service.</param>
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="replaySessionManager">Application-wide replay safety state.</param>
     /// <param name="navigationService">Application route navigation.</param>
@@ -157,7 +161,9 @@ public partial class TopBarViewModel : ViewModelBase
     /// <param name="logger">The logger instance.</param>
     public TopBarViewModel(
         ApplicationStateService stateService,
+        IDomainFactory domainFactory,
         IServiceFactory serviceFactory,
+        IDialogService dialogService,
         IDomainEventHub domainEventHub,
         IReplaySessionManager replaySessionManager,
         INavigationService navigationService,
@@ -165,7 +171,9 @@ public partial class TopBarViewModel : ViewModelBase
         ILogger<TopBarViewModel> logger) : base(logger)
     {
         this.stateService = stateService;
+        this.domainFactory = domainFactory;
         this.serviceFactory = serviceFactory;
+        this.dialogService = dialogService;
         this.replaySessionManager = replaySessionManager;
         this.navigationService = navigationService;
         this.settingsService = settingsService;
@@ -264,16 +272,18 @@ public partial class TopBarViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanOpenConnection))]
     private async Task Connect()
     {
-        var dialogService = serviceFactory.Create<IDialogService>();
         var options = dialogService.CreateOptions("Connect Vehicle", "Ok", null);
         var viewModel = serviceFactory.Create<ConnectPopupViewModel>();
-        var result = await dialogService.ShowOverlayDialogAsync<ConnectPopupView, ConnectPopupViewModel>(viewModel, options);
+        await dialogService.ShowOverlayDialogAsync<ConnectPopupView, ConnectPopupViewModel>(viewModel, options);
     }
 
     [RelayCommand]
-    private Task OpenPreferencesAsync()
+    private async Task OpenPreferencesAsync(CancellationToken cancellationToken)
     {
-        return navigationService.NavigateAsync(MissionPlannerRoutes.Preferences);
+        //var viewModel = domainFactory.Create<ErrorViewModel, string>("Ensure there is a connection and try again");
+        //var options = dialogService.CreateOptions("Load from Json file failed", "Ok", null);
+        // await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
+        await navigationService.NavigateAsync(MissionPlannerRoutes.Preferences);
     }
 
     /// <inheritdoc />
@@ -304,8 +314,7 @@ public partial class TopBarViewModel : ViewModelBase
         var result = await settingsService.SaveAsync(settingsService.Current);
         if (!result.Success)
         {
-            Logger.LogWarning("Could not persist theme {ThemeId}: {Errors}", theme.Id,
-                string.Join(" ", result.Errors.Select(error => error.Message)));
+            Logger.LogWarning("Could not persist theme {ThemeId}: {Errors}", theme.Id, string.Join(" ", result.Errors.Select(error => error.Message)));
         }
     }
 

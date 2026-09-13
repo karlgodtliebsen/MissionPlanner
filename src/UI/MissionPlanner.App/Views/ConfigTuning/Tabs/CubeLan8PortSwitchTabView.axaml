@@ -28,7 +28,7 @@
                                    Classes="Danger"/>
 
                     </StackPanel>
-                    <Button  Grid.Column="2" Content="Discover / read" Command="{Binding RefreshCommand}" VerticalAlignment="Center" />
+                    <Button  Grid.Column="2" Content="Discover / read" ToolTip.Tip="Discover / read" Command="{Binding RefreshCommand}" VerticalAlignment="Center" />
                 </Grid>
             </Border>
 
@@ -96,9 +96,9 @@
             <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <TextBlock Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalAlignment="Center" />
                 <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="10">
-                    <Button  Content="Export" Command="{Binding ExportCommand}" />
-                    <Button  Content="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" />
-                    <Button  Content="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" />
+                    <Button  Content="Export" ToolTip.Tip="Export" Command="{Binding ExportCommand}" />
+                    <Button  Content="Revert" ToolTip.Tip="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" />
+                    <Button  Content="Apply and verify" ToolTip.Tip="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" />
                 </StackPanel>
             </Grid>
         </Grid>
