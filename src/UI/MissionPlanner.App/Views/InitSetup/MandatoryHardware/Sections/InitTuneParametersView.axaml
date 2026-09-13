@@ -10,35 +10,56 @@
                                x:DataType="sections:InitTuneParametersViewModel">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <TextBlock Text="Initial Tune Parameters" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
-            <ItemsControl ItemsSource="{Binding Guidance}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-<TextBlock Text="{Binding .}" Classes="Warning" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <ItemsControl ItemsSource="{Binding Settings}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
-                        <Border Classes="SectionCard" Padding="12">
-                            <Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="10">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
-                                    <TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
-                                </StackPanel>
-                                <ComboBox Grid.Column="1" ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" DisplayMemberBinding="{Binding Name}" />
-                                <NumericUpDown Grid.Column="1" PlaceholderText="Value" IsVisible="{Binding IsNumeric}" Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                <Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <Button Content="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+            <Border Classes="SectionCard" HorizontalAlignment="Center" x:Name="SourceBorder">
+                <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+                    <TextBlock Text="Initial Tune Parameters" Classes="H4" />
+                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+                    <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+                    <ItemsControl ItemsSource="{Binding Guidance}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{Binding .}" Classes="Warning" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+            <Border Classes="SectionCard" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
+                <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch">
+                    <StackPanel HorizontalAlignment="Stretch">
+                        <Button Content="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" />
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding Settings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
+                                <Border Classes="SectionCard" Padding="12">
+                                    <Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="10">
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
+                                            <TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
+                                        </StackPanel>
+                                        <ComboBox Grid.Column="1" 
+                                                  HorizontalContentAlignment="Right"
+                                                  HorizontalAlignment="Stretch" 
+                                                  ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" 
+                                                  ItemsSource="{Binding Options}" 
+                                                  SelectedItem="{Binding SelectedOption}" 
+                                                  DisplayMemberBinding="{Binding Name}" />
+                                        <NumericUpDown Grid.Column="1" 
+                                                       
+                                                       HorizontalContentAlignment="Right"
+                                                       PlaceholderText="Value" IsVisible="{Binding IsNumeric}" 
+                                                       Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1" 
+                                                       HorizontalAlignment="Stretch" />
+                                        <Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

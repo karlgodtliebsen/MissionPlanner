@@ -10,17 +10,21 @@
                                x:DataType="sections:ServoOutputSetupViewModel">
     <Grid RowDefinitions="Auto,*" Margin="26" RowSpacing="16" HorizontalAlignment="Stretch">
         <StackPanel Orientation="Vertical" Grid.Row="0" Spacing="12" HorizontalAlignment="Stretch">
-            <TextBlock HorizontalAlignment="Center" Text="Servo output functions" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" HorizontalAlignment="Center" IsVisible="{Binding IsBusy}" />
-            <TextBlock HorizontalAlignment="Center" Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
-            <TextBlock HorizontalAlignment="Center" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+            <TextBlock HorizontalAlignment="Center" Text="Servo output functions" Classes="H3" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" HorizontalAlignment="Center" 
+                         IsVisible="{Binding IsBusy}" />
+            <TextBlock HorizontalAlignment="Center" Text="{Binding StatusMessage}" 
+                       IsVisible="{Binding HasStatusMessage}" />
+            <TextBlock HorizontalAlignment="Center" Text="{Binding ErrorMessage}" 
+                       IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,10,0,10">
                 <Button Content="Refresh servo outputs" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
                 <Button Content="Write" Command="{Binding WriteCommand}" HorizontalAlignment="Right" />
             </StackPanel>
         </StackPanel>
 
-        <DataGrid AutoGenerateColumns="False" Grid.Row="1" ItemsSource="{Binding Outputs}" RowHeight="60" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <DataGrid AutoGenerateColumns="False" Grid.Row="1" ItemsSource="{Binding Outputs}" 
+                  RowHeight="60" HorizontalAlignment="Center" VerticalAlignment="Stretch">
 
             <DataGrid.Columns>
                 <DataGridTextColumn Width="75" Binding="{Binding Header}" Header="" />

@@ -10,25 +10,39 @@
                                x:DataType="sections:FlightModesSetupViewModel">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <TextBlock Text="Flight-mode assignment" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
-            <TextBlock Text="{Binding ModeChannelDescription}" FontWeight="Bold" />
-            <Button Content="Refresh flight modes" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
-            <ItemsControl IsVisible="{Binding IsSupported}" ItemsSource="{Binding Slots}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="sections:FlightModeSlotViewModel">
-                        <Border Padding="10" Classes="SectionCard" HorizontalAlignment="Stretch">
-                            <Grid ColumnDefinitions="Auto,*,*" ColumnSpacing="8">
-                                <TextBlock Text="●" Foreground="{DynamicResource Info}" IsVisible="{Binding IsActive}" VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{Binding BandDescription}" VerticalAlignment="Center" />
-                                <ComboBox Grid.Column="2" ToolTip.Tip="Mode" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedMode}" DisplayMemberBinding="{Binding Name}" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <Border Classes="SectionCard" HorizontalAlignment="Center" x:Name="SourceBorder">
+                <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+                    <TextBlock Text="Flight-mode assignment" Classes="H3" />
+                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+                    <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+                    <TextBlock Text="{Binding ModeChannelDescription}" FontWeight="Bold" />
+                    <Button Content="Refresh flight modes" 
+                            HorizontalAlignment="Center"
+                            Command="{Binding RefreshCommand}"  />
+                </StackPanel>
+            </Border>
+            <Border Classes="SectionCard" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
+                <ItemsControl IsVisible="{Binding IsSupported}" ItemsSource="{Binding Slots}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="sections:FlightModeSlotViewModel">
+                            <Border Padding="10" Classes="SectionCard" HorizontalAlignment="Stretch">
+                                <Grid ColumnDefinitions="Auto,200,*" ColumnSpacing="8"  HorizontalAlignment="Stretch">
+                                    <TextBlock Text="●" Foreground="{DynamicResource Info}" 
+                                               IsVisible="{Binding IsActive}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="{Binding BandDescription}" VerticalAlignment="Center" />
+                                    <ComboBox Grid.Column="2" ToolTip.Tip="Mode"
+                                              HorizontalAlignment="Stretch"
+                                              HorizontalContentAlignment="Right"
+                                              ItemsSource="{Binding Options}" 
+                                              SelectedItem="{Binding SelectedMode}" 
+                                              DisplayMemberBinding="{Binding Name}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

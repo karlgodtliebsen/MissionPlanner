@@ -14,14 +14,24 @@
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <StackPanel Orientation="Vertical" Spacing="2">
-                    <TextBlock Text="Radio calibration" FontSize="24" FontWeight="Bold" />
+                    <TextBlock Text="Radio calibration" Classes="H3" />
                     <TextBlock Text="Live receiver input and verified ArduPilot endpoint calibration" Opacity="0.7" />
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="{Binding CalibrationState}" Padding="12,6" VerticalAlignment="Center" FontWeight="Bold" Background="{DynamicResource PrimaryContainer}" />
+                <TextBlock Grid.Column="1" Text="{Binding CalibrationState}" Padding="12,6" 
+                           VerticalAlignment="Center" FontWeight="Bold" Background="{DynamicResource PrimaryContainer}" />
             </Grid>
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsWriting}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+            <WrapPanel Orientation="Horizontal" ItemSpacing="10">
+                <Button Content="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
+                <Button Content="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" />
+                <Button Content="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" />
+                <Button Content="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
+                <Button Content="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" />
+            </WrapPanel>
+
             <Border Padding="14" Classes="SectionCard">
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                     <TextBlock Text="!" FontSize="22" FontWeight="Bold" VerticalAlignment="Top" />
@@ -44,13 +54,7 @@
                     <TextBlock Text="{Binding ChannelMapSummary, StringFormat='Pilot map: {0}'}" />
                 </StackPanel>
             </Border>
-            <ItemsControl>
-                <Button Content="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
-                <Button Content="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" />
-                <Button Content="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" />
-                <Button Content="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
-                <Button Content="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" />
-            </ItemsControl>
+
             <TextBlock IsVisible="{Binding IsStale}" Text="RC telemetry is stale. The last values remain visible, but calibration cannot start or write until fresh input returns." FontWeight="Bold" />
             <ItemsControl ItemsSource="{Binding Channels}">
                 <ItemsControl.ItemTemplate>
@@ -77,7 +81,7 @@
                     <TextBlock Text="Next step" FontWeight="Bold" />
                     <TextBlock Text="{Binding Instruction}" FontSize="16" />
                     <TextBlock Text="{Binding CaptureSummary}" FontSize="12" Opacity="0.75" />
-                            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsWriting}" />
+                            
                 </StackPanel>
             </Border>
             <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
