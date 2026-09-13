@@ -9,7 +9,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
     x:DataType="local:InstallFirmwareViewModel">
     <ContentPage Header="Install Firmware">
-        <TabControl TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+        <TabControl TabStripPlacement="Left" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
             <TabItem Header="Information">
                 <local:LandingView />
             </TabItem>
@@ -177,6 +177,15 @@
                                     </Grid>
                                 </StackPanel>
                             </Border>
+                            <Border Classes="SectionCard" Padding="16" IsVisible="{Binding RequiresDfuEntry}" Width="{Binding #PhysicalCtrl.Bounds.Width}">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Enter STM32 DFU using the BOOT button" Classes="H3" />
+                                    <TextBlock Text="Firmware validation checks the file. Target confirmation and flashing require a detected STM32 DFU device. For a controller requiring manual entry, disconnect USB, hold BOOT while reconnecting USB, then release BOOT. Follow the board's BOOT/RESET instructions if different. Your firmware selection will be kept."
+                                               TextWrapping="Wrap" />
+                                    <Button Content="Enter DFU using BOOT button" Command="{Binding EnterManualDfuCommand}"
+                                            HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
                             <Border Classes="SectionCard" Padding="16" IsVisible="{Binding IsFirmwareSelected}" Width="{Binding #PhysicalCtrl.Bounds.Width}">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="Selected Firmware" Classes="H3" />
@@ -276,16 +285,16 @@
                                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.ArtifactValid}" />
 
                                         <TextBlock Grid.Row="1" Grid.Column="0" Text="Target compatible:" 
-                                                   IsVisible="{Binding SelectedArtifact.TargetCompatible}"/>
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedArtifact.TargetCompatible}" 
-                                                   IsVisible="{Binding SelectedArtifact.TargetCompatible}"/>
+                                                   IsVisible="{Binding !HasCompatibilityFailure}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
+                                                   IsVisible="{Binding !HasCompatibilityFailure}"/>
 
                                         <TextBlock Grid.Row="1" Grid.Column="0" 
-                                                   IsVisible="{Binding !SelectedArtifact.TargetCompatible}"
+                                                   IsVisible="{Binding HasCompatibilityFailure}"
                                                    Text="Target compatible:" Foreground="Red"/>
                                         <TextBlock Grid.Row="1" Grid.Column="1" 
-                                                   Text="{Binding SelectedArtifact.TargetCompatible}"  
-                                                   IsVisible="{Binding !SelectedArtifact.TargetCompatible}" Foreground="Red"/>
+                                                   Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
+                                                   IsVisible="{Binding HasCompatibilityFailure}" Foreground="Red"/>
 
 
                                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Compatibility Status:" TextWrapping="Wrap" />

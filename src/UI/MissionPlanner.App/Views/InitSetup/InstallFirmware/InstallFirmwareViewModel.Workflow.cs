@@ -409,7 +409,15 @@ public sealed partial class InstallFirmwareViewModel
                 ? DfuModel.PreparedArtifact is not null && !string.IsNullOrWhiteSpace(artifact.Platform) && dfuSafety is not null
                 : package is not null && serial?.BootloaderIdentity is not null && compatibility is not null);
         SetDeviceInformation();
+        if (RequiresDfuEntry)
+        {
+            CompatibilityStatus = "Target compatibility is pending. Enter STM32 DFU using the controller's BOOT button, then confirm the exact target.";
+        }
         UpdateWorkflowGuidance();
+        OnPropertyChanged(nameof(RequiresDfuEntry));
+        OnPropertyChanged(nameof(HasCompatibilityResult));
+        OnPropertyChanged(nameof(HasCompatibilityFailure));
+        OnPropertyChanged(nameof(TargetCompatibilityText));
         OnPropertyChanged(nameof(ShowHexPreparation));
         OnPropertyChanged(nameof(ShowOnlineValidation));
         OnPropertyChanged(nameof(ShowDfuConfirmation));
@@ -419,6 +427,7 @@ public sealed partial class InstallFirmwareViewModel
         OnPropertyChanged(nameof(CanRebootToDfu));
         RebootToDfuCommand.NotifyCanExecuteChanged();
         EnterArduPilotBootloaderCommand.NotifyCanExecuteChanged();
+        EnterManualDfuCommand.NotifyCanExecuteChanged();
         ProbeRuntimeCommand.NotifyCanExecuteChanged();
         ExecuteCurrentPlanCommand.NotifyCanExecuteChanged();
     }
@@ -440,10 +449,10 @@ public sealed partial class InstallFirmwareViewModel
     }
 
     /// <summary>Guides manual BOOT/RESET and watches for a physical DFU endpoint without sending a reboot command.</summary>
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanEnterManualDfu))]
     private async Task EnterManualDfuAsync(CancellationToken cancellationToken)
     {
-        if (!CurrentPlan.Capabilities.CanRefreshPhysicalDevices)
+        if (!CanEnterManualDfu())
         {
             return;
         }
@@ -468,7 +477,9 @@ public sealed partial class InstallFirmwareViewModel
                     await DfuModel.RefreshAfterInstallationAsync(deadline.Token);
                     if (DfuModel.HasDetectedDfuDevice)
                     {
-                        SetMessages("STM32 DFU detected. Select the exact controller platform and combined HEX firmware.");
+                        SetMessages(IsFirmwareSelected
+                            ? "STM32 DFU detected. The selected firmware is retained; complete validation and confirm the exact controller target."
+                            : "STM32 DFU detected. Select the exact controller platform and combined HEX firmware.");
                         return;
                     }
                     await Task.Delay(500, deadline.Token);
@@ -490,6 +501,10 @@ public sealed partial class InstallFirmwareViewModel
             SetOperation(false, null);
         }
     }
+
+    /// <summary>Allows manual discovery while no DFU endpoint is selected and no operation owns discovery.</summary>
+    private bool CanEnterManualDfu() => CurrentPlan.Capabilities.CanRefreshPhysicalDevices
+        && !ArePanelsRefreshing && DfuModel.SelectedDfuDevice is null;
 
     /// <summary>Probes the selected physical controller without changing boot mode.</summary>
     [RelayCommand(CanExecute = nameof(CanProbeRuntime))]

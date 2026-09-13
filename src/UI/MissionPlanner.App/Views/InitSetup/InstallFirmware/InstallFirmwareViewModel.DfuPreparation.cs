@@ -12,6 +12,7 @@ public sealed partial class InstallFirmwareViewModel
             return;
         }
         var local = UsesLocalDfuHex;
+        hexPreparationFailed = false;
         var entry = local ? null : OnlineFirmwareModel.SelectedFirmware!.Entry;
         var request = new DfuInstallationRequest(local ? DfuModel.LocalDfuPlatform!.Trim() : entry!.Target.Platform,
             entry?.Target.BoardId, DfuModel.SelectedDfuDevice?.Descriptor,
@@ -55,6 +56,7 @@ public sealed partial class InstallFirmwareViewModel
         catch (Exception exception)
         {
             DfuModel.ErrorMessage = exception.Message;
+            hexPreparationFailed = true;
             RecordWorkflowResult($"Combined HEX validation failed: {exception.Message}");
         }
         finally

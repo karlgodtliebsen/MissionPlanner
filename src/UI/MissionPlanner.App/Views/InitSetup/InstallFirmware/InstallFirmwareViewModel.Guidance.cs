@@ -10,6 +10,7 @@ public sealed partial class InstallFirmwareViewModel
     private string? workflowSelection;
     private string? workflowResult;
     private bool workflowInstalled;
+    private bool hexPreparationFailed;
     private readonly List<string> completedOperationSteps = [];
 
     private bool IsKnownLocalPlatform => OnlineFirmwareModel.KnownPlatforms.Contains(DfuModel.LocalDfuPlatform?.Trim(), StringComparer.Ordinal);
@@ -25,7 +26,26 @@ public sealed partial class InstallFirmwareViewModel
 
     /// <summary>Gets whether an online release still needs validation for the selected transport.</summary>
     public bool ShowOnlineValidation => OnlineFirmwareModel.SelectedFirmware is not null
-        && (ShowHexPreparation ? DfuModel.PreparedArtifact is null : !SelectedArtifact.ArtifactValid);
+        && !ShowHexPreparation && !SelectedArtifact.ArtifactValid;
+
+    /// <summary>Gets whether the controller still needs to be placed in STM32 ROM DFU.</summary>
+    public bool RequiresDfuEntry => DfuModel.SelectedDfuDevice is null
+        && (CurrentPlan.Context.Runtime == FirmwareRuntimeKind.Betaflight || UsesLocalDfuHex || DfuModel.PreparedArtifact is not null);
+
+    /// <summary>Gets whether target evidence exists for a compatibility evaluation.</summary>
+    public bool HasCompatibilityResult => SelectedArtifact.ArtifactValid && (DfuModel.SelectedDfuDevice is not null
+        ? DfuModel.PreparedArtifact is not null && dfuSafety is not null
+        : DevicesModel.SelectedDevice?.Descriptor.BootloaderIdentity is not null && compatibility is not null
+            && SelectedArtifact.Format == FirmwareArtifactFormat.Apj);
+
+    /// <summary>Gets whether an evaluated target has failed its compatibility or readiness checks.</summary>
+    public bool HasCompatibilityFailure => HasCompatibilityResult && !SelectedArtifact.TargetCompatible;
+
+    /// <summary>Gets a compatibility result without representing pending checks as a mismatch.</summary>
+    public string TargetCompatibilityText => HasCompatibilityResult ? SelectedArtifact.TargetCompatible.ToString()
+        : RequiresDfuEntry ? "Not checked — enter STM32 DFU first"
+        : !SelectedArtifact.ArtifactValid ? "Not checked — validate firmware first"
+        : "Not checked — identify the controller first";
 
     [RelayCommand]
     private Task ValidateSelectedFirmwareAsync(CancellationToken cancellationToken)
@@ -76,6 +96,7 @@ public sealed partial class InstallFirmwareViewModel
             workflowSelection = selection;
             workflowResult = null;
             workflowInstalled = false;
+            hexPreparationFailed = false;
             completedOperationSteps.Clear();
         }
         var completed = new List<string>();
@@ -124,6 +145,8 @@ public sealed partial class InstallFirmwareViewModel
                 : $"Wait: {StatusMessage ?? ProgressMessage ?? "firmware operation in progress"}"
             : ArePanelsRefreshing ? "Wait for device discovery and the firmware catalogue to finish loading."
             : workflowInstalled ? "Reconnect to ArduPilot and check the controller configuration."
+            : hexPreparationFailed ? "Firmware validation failed. Review the error above and select a consistent release or corrected combined HEX before retrying Validate combined HEX."
+            : RequiresDfuEntry ? "Enter STM32 DFU using the BOOT button: disconnect USB, hold BOOT while reconnecting USB, then release BOOT. Click Enter DFU using BOOT button to detect the controller. The selected firmware is retained; validate it and confirm the target after DFU is detected."
             : HasPhysicalController && CurrentPlan.RequiredArtifactFormat == FirmwareArtifactFormat.None
                 ? "Identify the controller runtime. Click Probe runtime, or use the controller's documented bootloader entry procedure and refresh devices."
             : !IsFirmwareSelected ? "Select online firmware or a local firmware file."

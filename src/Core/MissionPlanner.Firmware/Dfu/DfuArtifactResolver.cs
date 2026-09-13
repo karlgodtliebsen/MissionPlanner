@@ -32,7 +32,7 @@ public sealed class DfuArtifactResolver(
         var sourcePlatform = Uri.UnescapeDataString(new Uri(source, ".").AbsolutePath.TrimEnd('/').Split('/')[^1]);
         if (!string.Equals(sourcePlatform, entry.Target.Platform, StringComparison.OrdinalIgnoreCase))
         {
-            throw new DfuArtifactResolutionException("The manifest platform does not match the source platform/vehicle-variant directory. Select a consistent catalogue release.");
+            throw new DfuArtifactResolutionException($"The selected platform '{entry.Target.Platform}' does not match release directory '{sourcePlatform}' (vehicle variant). Select a catalogue release with a matching platform and vehicle variant; this release cannot be used to derive combined HEX.");
         }
         var fileName = entry.Target.VehicleType switch
         {

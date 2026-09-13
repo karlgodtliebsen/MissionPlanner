@@ -135,7 +135,8 @@ public sealed class AvaloniaMigrationContractTests
         Assert.Empty(landing.Descendants(ui + "Button"));
         var firmware = top[1].ToString();
         Assert.Contains("SelectedArtifact.Source", firmware);
-        Assert.Contains("SelectedArtifact.TargetCompatible", firmware);
+        Assert.Contains("TargetCompatibilityText", firmware);
+        Assert.Contains("HasCompatibilityFailure", firmware);
         Assert.Contains("CurrentPlan.CanExecute", firmware);
         Assert.DoesNotContain("IsConnectedMode", firmware);
         Assert.DoesNotContain("CustomFirmwareView", firmware);

@@ -18,6 +18,64 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 
 public sealed class FirmwarePlanViewModelTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BetaflightManualDfuRetainsPreparedFirmwareAndDefersTargetConfirmation(bool local)
+    {
+        using var services = Services(null);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM4")
+        {
+            RuntimeProbe = new(FirmwareRuntimeKind.Betaflight, FirmwareBootEnvironment.None, "MSP")
+            {
+                Verification = FirmwareRuntimeVerification.Verified
+            }
+        }, false, "Betaflight");
+        PrepareOnline(page);
+        if (local)
+        {
+            page.DfuModel.LocalDfuFirmwarePath = "Board_with_bl.hex";
+            page.LocalDfuPlatform = "Board";
+        }
+        Assert.True(page.RequiresDfuEntry);
+        Assert.Contains("BOOT", page.WorkflowNextStep);
+        Assert.False(page.ShowOnlineValidation);
+        Assert.False(page.HasCompatibilityFailure);
+        var metadata = new DfuArtifactMetadata(100, 4, 0x08000000, 0x08000003, new string('a', 64),
+            [new DfuMemoryRange(0x08000000, new byte[4])], []);
+        var artifact = new DfuArtifact("Board_with_bl.hex", "Board_with_bl.hex", metadata,
+            local ? null : Metadata().SourceUri, "Board", 50);
+        services.GetRequiredService<IDfuArtifactResolver>()
+            .ResolveAsync(Arg.Any<DfuInstallationRequest>(), Arg.Any<CancellationToken>()).Returns(artifact);
+        await page.PrepareSelectedHexCommand.ExecuteAsync(null);
+        Assert.True(page.SelectedArtifact.ArtifactValid);
+        Assert.False(page.HasCompatibilityResult);
+        Assert.Contains("Not checked", page.TargetCompatibilityText);
+        Assert.Contains("BOOT", page.WorkflowNextStep);
+        Assert.False(page.ShowDfuConfirmation);
+        Assert.False(page.ExecuteCurrentPlanCommand.CanExecute(null));
+        services.GetRequiredService<IDialogService>()
+            .ConfirmAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
+        services.GetRequiredService<IDfuDeviceCatalog>().GetDevicesAsync(Arg.Any<CancellationToken>())
+            .Returns(new[] { new DfuDeviceDescriptor("usb", 0x0483, 0xdf11, DfuDriverState.PresentReady) });
+        services.GetRequiredService<IDfuToolLocator>().LocateAsync(Arg.Any<CancellationToken>())
+            .Returns(new DfuToolStatus(DfuToolAvailability.Available));
+        await page.EnterManualDfuCommand.ExecuteAsync(null);
+        Assert.False(page.RequiresDfuEntry);
+        Assert.Same(artifact, page.DfuModel.PreparedArtifact);
+        Assert.True(page.ShowDfuConfirmation);
+        Assert.True(page.HasCompatibilityResult);
+        Assert.False(page.ExecuteCurrentPlanCommand.CanExecute(null));
+        Assert.Contains("FLASH Board", page.WorkflowNextStep);
+        await services.GetRequiredService<MissionPlanner.Firmware.Betaflight.IBetaflightDfuHandoff>()
+            .DidNotReceive().RebootAsync(Arg.Any<SerialDeviceDescriptor>(), Arg.Any<IProgress<FirmwareProgress>>(), Arg.Any<CancellationToken>());
+        await services.GetRequiredService<IDfuInstallationService>().DidNotReceive()
+            .InstallAsync(Arg.Any<DfuInstallationRequest>(), Arg.Any<IProgress<DfuProgress>>(), Arg.Any<CancellationToken>());
+        await page.DeactivateAsync();
+    }
+
     [Fact]
     public async Task SuccessfulSerialInstallAlsoReturnsToLanding()
     {
@@ -198,7 +256,7 @@ public sealed class FirmwarePlanViewModelTests
         Assert.True(page.ShowHexPreparation);
         Assert.True(page.PrepareSelectedHexCommand.CanExecute(null));
         Assert.True(page.ShowValidationAndCompatibility);
-        Assert.True(page.ShowOnlineValidation);
+        Assert.False(page.ShowOnlineValidation);
         Assert.Contains("Validate combined HEX", page.WorkflowNextStep);
 
         services.GetRequiredService<IDfuArtifactResolver>()
