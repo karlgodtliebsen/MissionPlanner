@@ -13,47 +13,64 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <TextBlock Text="Setup summary" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
-            <TextBlock Text="{Binding Heading}" FontWeight="Bold" />
-            <TextBlock Text="This report describes configuration evidence only and is not a safe-to-fly certification." Opacity="0.75" />
-            <ItemsControl ItemsSource="{Binding Sections}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="models1:SetupSummarySectionViewModel">
-                        <Border Padding="10" Classes="SectionCard">
-                            <StackPanel Orientation="Vertical" Spacing="4">
-                                <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" />
-                                <ItemsControl ItemsSource="{Binding Entries}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="mandatoryHardware:SetupSummaryEntry">
-                                            <Grid ColumnDefinitions="200,*,120" ColumnSpacing="8">
-                                                <TextBlock Text="{Binding Label}" />
-                                                <TextBlock Grid.Column="1" Text="{Binding Value}" Opacity="0.8" />
-                                                <TextBlock Grid.Column="2" Text="{Binding Status}" />
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <ItemsControl IsVisible="{Binding HasWarnings}" ItemsSource="{Binding Warnings}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-<TextBlock Text="{Binding .}" Classes="Warning" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Content="Rebuild summary" Command="{Binding RefreshCommand}" />
-                <Button Content="Export JSON" Command="{Binding ExportJsonCommand}" />
-                <Button Content="Export Markdown" Command="{Binding ExportMarkdownCommand}" />
-            </StackPanel>
-            <TextBox AcceptsReturn="True" Text="{Binding ExportedText}" IsReadOnly="True" Height="180" IsVisible="{Binding HasExport}" />
+            <Border Classes="SectionCard" HorizontalAlignment="Center" x:Name="SourceBorder">
+                <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+
+                    <TextBlock Text="Setup summary" Classes="H4" />
+                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+                    <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+                    <TextBlock Text="{Binding Heading}" FontWeight="Bold" />
+                    <TextBlock Text="This report describes configuration evidence only and is not a safe-to-fly certification." Opacity="0.75" />
+                </StackPanel>
+            </Border>
+
+            <Border Classes="SectionCard" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
+                <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch">
+
+                    <ItemsControl ItemsSource="{Binding Sections}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models1:SetupSummarySectionViewModel">
+                                <Border Padding="10" Classes="SectionCard">
+                                    <StackPanel Orientation="Vertical" Spacing="4">
+                                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" />
+                                        <ItemsControl ItemsSource="{Binding Entries}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="mandatoryHardware:SetupSummaryEntry">
+                                                    <Grid ColumnDefinitions="200,*,120" ColumnSpacing="8">
+                                                        <TextBlock Text="{Binding Label}" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Value}" Opacity="0.8" />
+                                                        <TextBlock Grid.Column="2" Text="{Binding Status}" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+
+
+                    <ItemsControl IsVisible="{Binding HasWarnings}" ItemsSource="{Binding Warnings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{Binding .}" Classes="Warning" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Button Content="Rebuild summary" Command="{Binding RefreshCommand}" />
+                        <Button Content="Export JSON" Command="{Binding ExportJsonCommand}" />
+                        <Button Content="Export Markdown" Command="{Binding ExportMarkdownCommand}" />
+                    </StackPanel>
+
+                    <TextBox AcceptsReturn="True" Text="{Binding ExportedText}" IsReadOnly="True" 
+                             Height="180" IsVisible="{Binding HasExport}" />
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>
