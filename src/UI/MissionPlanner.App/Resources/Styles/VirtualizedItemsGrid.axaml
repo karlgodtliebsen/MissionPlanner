@@ -132,8 +132,8 @@
                                        FontWeight="Bold"
                                        VerticalAlignment="Center" />
 
-                            <Button x:Name="PART_NextPageButton" Grid.Column="6" Content="▶" Padding="8,3" />
-                            <Button x:Name="PART_LastPageButton" Grid.Column="7" Content="⏭" Padding="8,3" />
+                            <Button x:Name="PART_NextPageButton" Grid.Column="6" Content="▶" ToolTip.Tip="▶" Padding="8,3" />
+                            <Button x:Name="PART_LastPageButton" Grid.Column="7" Content="⏭" ToolTip.Tip="⏭" Padding="8,3" />
 
                             <TextBlock Grid.Column="8"
                                        Margin="12,0,0,0"
