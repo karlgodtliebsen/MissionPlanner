@@ -10,25 +10,31 @@
                                 Margin="25,0,25,0"
                                 >
 
+    <UserControl.Styles>
+        <Style Selector="Border.SectionCard.available">
+            <Setter Property="BorderBrush" Value="Green" />
+        </Style>
+    </UserControl.Styles>
+
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="16" Margin="0,16" HorizontalAlignment="Center">
             <TextBlock Text="Controller status" Classes="H3" />
             <TextBlock Text="Review the connection and detected devices before choosing a firmware workflow." Classes="Warning" TextWrapping="Wrap" />
-            <Border Padding="20" Classes="SectionCard">
+            <Border Padding="20" Classes="SectionCard" Classes.available="{Binding HasVehicleConnection}">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Vehicle connection" Classes="H4" FontWeight="Bold" />
                     <TextBlock Text="{Binding ConnectionSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding ConnectionDetail}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
-            <Border Padding="20" Classes="SectionCard">
+            <Border Padding="20" Classes="SectionCard" Classes.available="{Binding HasSerialDevices}">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Serial devices" Classes="H4" FontWeight="Bold" />
                     <TextBlock Text="{Binding SerialSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding SerialDetail}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
-            <Border Padding="20" Classes="SectionCard">
+            <Border Padding="20" Classes="SectionCard" Classes.available="{Binding HasDfuDevices}">
                 <StackPanel Spacing="8">
                     <TextBlock Text="STM32 DFU devices" Classes="H4" FontWeight="Bold" />
                     <TextBlock Text="{Binding DfuSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />

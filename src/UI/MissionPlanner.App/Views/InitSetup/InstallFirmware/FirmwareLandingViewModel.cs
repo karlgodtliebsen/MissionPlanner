@@ -49,6 +49,15 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
         this.dfu = dfu;
     }
 
+    /// <summary>Gets whether a vehicle connection is active.</summary>
+    public bool HasVehicleConnection => vehicle.IsOnline;
+
+    /// <summary>Gets whether serial discovery has available devices.</summary>
+    public bool HasSerialDevices => devices.Descriptors.Count > 0;
+
+    /// <summary>Gets whether DFU discovery has available devices.</summary>
+    public bool HasDfuDevices => dfu.DfuDevices.Count > 0;
+
     /// <summary>Gets the live vehicle connection summary.</summary>
     public string ConnectionSummary => vehicle.IsOnline ? "Vehicle connected" : "No vehicle connected";
 

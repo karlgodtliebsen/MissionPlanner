@@ -17,17 +17,7 @@
                 <Grid RowDefinitions="Auto,Auto,*" Margin="20" RowSpacing="12" HorizontalAlignment="Stretch">
                     <WrapPanel Grid.Row="0" ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
                         <!--
-                        <u:ToolBar Header="Actions">
-                        <Button Content="Save" Classes="Small" />
-                        <u:ToolBarSeparator />
-                        <Button Content="Load" Classes="Small" />
-                        <Button Content="Delete" Classes="Small" />
-                        </u:ToolBar>
-                        -->
-                        <!--
-                        <u:IconSplitButton Icon="{StaticResource SemiIconCamera}" Content="IconSplitButton" />
-
-                        <u:ToolBar Header="">
+                        <u:IconSplitButton Icon="{StaticResource SemiIconCamera}" Content="IconSplitButton" />                     
                         -->
 
 
@@ -41,29 +31,6 @@
                                 Command="{Binding ProbeRuntimeCommand}" >
                             <avalonia:MaterialIcon Kind="ProgressAuto" Width="30" Height="30" />
                         </Button>
-
-                        <!--Icon="{StaticResource Bootstrap}"-->
-                        <!--                            <Button  >
-                        <Button.Flyout>
-                        <MenuFlyout Placement="Bottom">
-                        <MenuItem
-                        ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
-                        Command="{Binding EnterArduPilotBootloaderCommand}"
-                        Header="ArduPilot Bootloader" />
-                        <MenuItem ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
-                        Command="{Binding RebootToDfuCommand}"
-                        Header="STM32 DFU" />
-                        <MenuItem ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
-                        Header="Manual BOOT / RESET"
-
-                        Command="{Binding EnterManualDfuCommand}"
-                        IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}"
-                        />
-                        </MenuFlyout>
-                        </Button.Flyout>
-                        <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
-                        </Button>
-                        -->
                         <u:IconSplitButton  >
                             <SplitButton.Flyout>
                                 <MenuFlyout Placement="Bottom">
@@ -140,7 +107,6 @@
                                  IsVisible="{Binding IsOperationInProgress}">
                             <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
                         </Button>
-                        <!--</u:ToolBar>-->
                     </WrapPanel>
 
                     <Border Grid.Row="1" Classes="SectionCard" Padding="16"  HorizontalAlignment="Center" Width="{Binding #PhysicalCtrl.Bounds.Width}">
@@ -309,8 +275,18 @@
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Artifact valid:" />
                                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.ArtifactValid}" />
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Target compatible:" />
-                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedArtifact.TargetCompatible}" />
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Target compatible:" 
+                                                   IsVisible="{Binding SelectedArtifact.TargetCompatible}"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedArtifact.TargetCompatible}" 
+                                                   IsVisible="{Binding SelectedArtifact.TargetCompatible}"/>
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" 
+                                                   IsVisible="{Binding !SelectedArtifact.TargetCompatible}"
+                                                   Text="Target compatible:" Foreground="Red"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" 
+                                                   Text="{Binding SelectedArtifact.TargetCompatible}"  
+                                                   IsVisible="{Binding !SelectedArtifact.TargetCompatible}" Foreground="Red"/>
+
 
                                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Compatibility Status:" TextWrapping="Wrap" />
                                         <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CompatibilityStatus}" TextWrapping="Wrap" />
