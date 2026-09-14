@@ -190,13 +190,18 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             var snapshot = SnapshotCaptures();
             var issues = ValidateCaptures(snapshot, ResolveFunctions(parameters));
             snapshot = AttachIssues(snapshot, issues);
+            // Retain validation feedback while telemetry continues updating the captured extrema.
+            foreach (var capture in snapshot)
+            {
+                captures[capture.Number] = capture;
+            }
             next = issues.Any(issue => issue.Severity == RadioIssueSeverity.Hazard)
                 ? Current with
                 {
                     Captures = snapshot,
-                    Instruction = "Endpoint capture is incomplete. Move every listed control through its full travel, then try again.",
+                    Instruction = "Capture is still running; no parameters were written. Follow the channel details below, then press Finish endpoint capture again to recheck. These results remain visible until that recheck. If a bad reading was captured, cancel and start calibration again after fixing the input.",
                     Issues = issues,
-                    FailureReason = "One or more channels failed endpoint validation."
+                    FailureReason = $"Endpoint validation failed ({issues.Count} channel issues). No parameters were written. See the channel details, then retry Finish endpoint capture."
                 }
                 : new RadioCalibrationSnapshot(
                     target,
@@ -534,15 +539,20 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         foreach (var capture in captures)
         {
             var function = functions.GetValueOrDefault(capture.Number);
-            if (capture.Minimum >= capture.Maximum || capture.Minimum < MinimumPlausiblePwm || capture.Maximum > MaximumPlausiblePwm)
+            if (capture.Minimum < MinimumPlausiblePwm || capture.Maximum > MaximumPlausiblePwm)
             {
                 issues.Add(new RadioValidationIssue(RadioIssueSeverity.Hazard,
-                    $"Channel {capture.Number}{Label(function)} produced an invalid range ({capture.Minimum}-{capture.Maximum} us)."));
+                    $"Channel {capture.Number}{Label(function)} captured {capture.Minimum}-{capture.Maximum} us; expected endpoints within {MinimumPlausiblePwm}-{MaximumPlausiblePwm} us. Check transmitter output limits and receiver input, then cancel and start calibration again to discard these readings."));
+            }
+            else if (capture.Minimum >= capture.Maximum)
+            {
+                issues.Add(new RadioValidationIssue(RadioIssueSeverity.Hazard,
+                    $"Channel {capture.Number}{Label(function)} did not move (MIN {capture.Minimum}, MAX {capture.Maximum} us; travel {capture.Range} us). Move its stick or switch through all positions. If the value stays fixed, check the transmitter channel assignment and receiver output, then retry Finish endpoint capture."));
             }
             else if (primary.Contains(capture.Number) && capture.Range < MinimumTravel)
             {
                 issues.Add(new RadioValidationIssue(RadioIssueSeverity.Hazard,
-                    $"Channel {capture.Number}{Label(function)} moved only {capture.Range} us. Move it fully and recalibrate."));
+                    $"Channel {capture.Number}{Label(function)} captured MIN {capture.Minimum}, MAX {capture.Maximum} us; travel {capture.Range} us, at least {MinimumTravel} us required. Move the stick fully both ways and check transmitter travel limits, then retry Finish endpoint capture."));
             }
         }
 
@@ -595,7 +605,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         return captures.Select(capture => capture with
         {
             Issues = issues
-                .Where(issue => issue.Message.StartsWith($"Channel {capture.Number}", StringComparison.Ordinal))
+                .Where(issue => issue.Message.StartsWith($"Channel {capture.Number} ", StringComparison.Ordinal))
                 .ToArray()
         }).ToArray();
     }

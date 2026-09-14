@@ -31,6 +31,8 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     private CancellationTokenSource? operationCancellation;
     private IDisposable? vehicleStateSubscription;
     private DateTimeOffset? observedRadioAt;
+    private IReadOnlyList<RadioValidationIssue> liveIssues = [];
+    private IReadOnlyList<RadioValidationIssue> calibrationIssues = [];
 
     /// <summary>Initializes the radio Setup workflow.</summary>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
@@ -438,11 +440,8 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
             }
         }
 
-        Issues.Clear();
-        foreach (var issue in view.Issues)
-        {
-            Issues.Add($"[{issue.Severity}] {issue.Message}");
-        }
+        liveIssues = view.Issues;
+        RefreshIssues();
 
         OnPropertyChanged(nameof(HasChannels));
         OnPropertyChanged(nameof(HasIssues));
@@ -454,7 +453,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     {
         CalibrationState = snapshot.State;
         Instruction = snapshot.Instruction;
-        SetMessages(null, snapshot.FailureReason);
+        SetMessages(snapshot.FailureReason ?? snapshot.Instruction, snapshot.FailureReason);
         CaptureSummary = snapshot.Captures.Count == 0
             ? string.Empty
             : string.Join(Environment.NewLine, snapshot.Captures.Select(capture =>
@@ -465,16 +464,8 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
             channel.ApplyCalibration(captures.GetValueOrDefault(channel.Number), snapshot.State);
         }
 
-        if (snapshot.Issues.Count > 0 && snapshot.State is RadioCalibrationState.Failed or RadioCalibrationState.Success or RadioCalibrationState.Writing)
-        {
-            Issues.Clear();
-            foreach (var issue in snapshot.Issues)
-            {
-                Issues.Add($"[{issue.Severity}] {issue.Message}");
-            }
-
-            OnPropertyChanged(nameof(HasIssues));
-        }
+        calibrationIssues = snapshot.Issues;
+        RefreshIssues();
 
         OnPropertyChanged(nameof(CanStart));
         OnPropertyChanged(nameof(CanFinishCapture));
@@ -493,6 +484,17 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
                 SetupWorkflowKey.Radio, state, parameterRegistry.GetAllParameters(vehicleId), clock.UtcNow));
             Logger.LogInformation("Recorded confirmed radio setup evidence for {VehicleId}.", vehicleId);
         }
+    }
+
+    private void RefreshIssues()
+    {
+        var messages = calibrationIssues.Concat(liveIssues)
+            .Select(issue => $"[{issue.Severity}] {issue.Message}").Distinct().ToArray();
+        if (!Issues.SequenceEqual(messages))
+        {
+            Issues.ReplaceRange(messages);
+        }
+        OnPropertyChanged(nameof(HasIssues));
     }
 }
 

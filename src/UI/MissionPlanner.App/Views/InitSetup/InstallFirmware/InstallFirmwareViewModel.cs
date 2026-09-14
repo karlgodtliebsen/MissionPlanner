@@ -212,11 +212,11 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
 
     /// <summary>
-    /// Gets whether a serial controller is selected.
+    /// Gets the connected vehicle name and firmware family.
     /// </summary>
 
-    public bool HasDevice => LocalFirmwareModel.HasDevice;
-
+    [ObservableProperty]
+    public partial string VehicleHeading { get; private set; } = "No vehicle connected";
 
     [RelayCommand]
     public async Task LoadLocalFirmwareAsync(CancellationToken cancellationToken)
@@ -227,7 +227,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             await LoadAndValidateAsync(cancellationToken);
         }
     }
-
 
     [RelayCommand]
     private void ClearFirmwareSelection()
@@ -872,6 +871,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     {
         Dispatcher.Dispatch(() =>
         {
+            var snapshot = activeVehicle.Current;
+            VehicleHeading = snapshot.IsOnline
+                ? $"{snapshot.DisplayName} · {snapshot.State!.Identity.Firmware.Family}"
+                : "No vehicle connected";
             IsConnectedMode = false;
             IsDisconnectedMode = OperatingSystem.IsWindows();
             IsUnsupportedMode = !OperatingSystem.IsWindows();

@@ -174,6 +174,53 @@ public sealed class RadioSetupTests
         written.Should().BeEmpty();
     }
 
+    /// <summary>Validation feedback survives telemetry until a successful explicit recheck.</summary>
+    [Fact]
+    public async Task EndpointIssuesPersistUntilCaptureIsRechecked()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var written = new List<string>();
+        using var service = CreateService(context, new VehicleParameterRegistry(), now, written);
+        await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
+        context.SetState(StateWithChannels([1520, 1520, 1520, 1520], now));
+        var failed = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+
+        failed.FailureReason.Should().Contain("4 channel issues").And.Contain("No parameters were written");
+        failed.Instruction.Should().Contain("Capture is still running");
+        var rollIssue = failed.Captures.Single(item => item.Number == 1).Issues.Single();
+        rollIssue.Message.Should().Contain("Channel 1 (Roll)").And.Contain("at least 200 us");
+        context.SetState(StateWithChannels([1000, 1000, 1000, 1000], now));
+        context.SetState(StateWithChannels([2000, 2000, 2000, 2000], now));
+
+        service.Current.Captures.Single(item => item.Number == 1).Issues.Should().Contain(rollIssue);
+        service.Current.Issues.Should().Equal(failed.Issues);
+        var review = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+        review.State.Should().Be(RadioCalibrationState.Review);
+        review.FailureReason.Should().BeNull();
+        review.Issues.Should().BeEmpty();
+        review.Captures.Should().OnlyContain(item => item.Issues.Count == 0);
+        written.Should().BeEmpty();
+    }
+
+    /// <summary>Channel 10 feedback must not appear on channel 1.</summary>
+    [Fact]
+    public async Task StationaryAuxiliaryFeedbackBelongsToTheExactChannel()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500], now));
+        using var service = CreateService(context, new VehicleParameterRegistry(), now);
+        await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
+        context.SetState(StateWithChannels([1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500], now));
+        context.SetState(StateWithChannels([2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1500], now));
+
+        var result = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+
+        result.Captures.Single(item => item.Number == 1).Issues.Should().BeEmpty();
+        result.Captures.Single(item => item.Number == 10).Issues.Single().Message
+            .Should().Contain("did not move").And.Contain("transmitter channel assignment");
+    }
+
     /// <summary>Verifies endpoint extrema freeze while live candidate trims continue updating in Review.</summary>
     [Fact]
     public async Task ReviewFreezesEndpointsAndUpdatesLiveCandidateTrim()

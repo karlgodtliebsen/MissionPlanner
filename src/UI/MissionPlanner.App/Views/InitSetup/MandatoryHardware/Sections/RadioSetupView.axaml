@@ -12,7 +12,7 @@
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
     <ScrollViewer VerticalScrollBarVisibility="Visible">
-        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch" MaxWidth="1000">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <StackPanel Orientation="Vertical" Spacing="2">
                     <TextBlock Text="Radio calibration" Classes="H3" />
@@ -23,8 +23,8 @@
             </Grid>
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsWriting}" />
-            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" TextWrapping="Wrap" />
             <WrapPanel Orientation="Horizontal" ItemSpacing="10">
                 <Button Content="Start calibration" ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
                 <Button ToolTip.Tip="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" AutomationProperties.Name="Finish endpoint capture">
@@ -65,6 +65,21 @@
             </Border>
 
             <TextBlock IsVisible="{Binding IsStale}" Text="RC telemetry is stale. The last values remain visible, but calibration cannot start or write until fresh input returns." FontWeight="Bold" />
+            <Border Padding="14" Classes="SectionCard">
+                <StackPanel Orientation="Vertical" Spacing="8">
+                    <TextBlock Text="Next step" FontWeight="Bold" />
+                    <TextBlock Text="{Binding Instruction}" FontSize="16" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding CaptureSummary}" FontSize="12" Opacity="0.75" />
+                            
+                </StackPanel>
+            </Border>
+            <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <TextBlock Text="{Binding .}" FontWeight="Bold" TextWrapping="Wrap" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <ItemsControl ItemsSource="{Binding Channels}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
@@ -79,24 +94,9 @@
                                 </StackPanel>
                                 <models:RadioChannelMeterView Grid.Row="1" Grid.ColumnSpan="3" ChannelNumber="{Binding Number}" FunctionName="{Binding FunctionName}" Pwm="{Binding Pwm}" ConfiguredMinimum="{Binding Minimum}" ConfiguredMaximum="{Binding Maximum}" Trim="{Binding Trim}" DeadZone="{Binding DeadZone}" CapturedMinimum="{Binding CapturedMinimum}" CapturedMaximum="{Binding CapturedMaximum}" CandidateTrim="{Binding CandidateTrim}" IsCapturing="{Binding ShowCapturedRange}" IsStale="{Binding IsStale}" HasSignal="{Binding HasSignal}" PresentationKind="{Binding PresentationKind}" IsReversed="{Binding IsReversed}" />
                                 <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="{Binding Range, StringFormat='Stored MIN / TRIM / MAX   {0}'}" FontSize="12" Opacity="0.72" />
-                                <TextBlock Grid.Row="3" Grid.ColumnSpan="3" Text="{Binding CalibrationIssue}" FontSize="12" />
+                                <TextBlock Grid.Row="3" Grid.ColumnSpan="3" Text="{Binding CalibrationIssue}" FontSize="12" TextWrapping="Wrap" Classes="Danger" />
                             </Grid>
                         </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <Border Padding="14" Classes="SectionCard">
-                <StackPanel Orientation="Vertical" Spacing="8">
-                    <TextBlock Text="Next step" FontWeight="Bold" />
-                    <TextBlock Text="{Binding Instruction}" FontSize="16" />
-                    <TextBlock Text="{Binding CaptureSummary}" FontSize="12" Opacity="0.75" />
-                            
-                </StackPanel>
-            </Border>
-            <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <TextBlock Text="{Binding .}" FontWeight="Bold" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
