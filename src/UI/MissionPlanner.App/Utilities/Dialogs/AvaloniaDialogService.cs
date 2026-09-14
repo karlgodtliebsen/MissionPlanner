@@ -42,7 +42,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
             Title = title,
             CanLightDismiss = true,
             CanDragMove = true,
-            IsCloseButtonVisible = true,//!string.IsNullOrEmpty(accept),
+            IsCloseButtonVisible = true,
             Buttons = DialogButton.OKCancel,
             CanResize = true,
         };
@@ -234,6 +234,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
                 CanResize = false
             };
             var dialog = CreateWindow(new ProgressDialogView(contentViewModel), effectiveOptions);
+
             var allowClose = false;
             void CloseProgress()
             {
@@ -254,6 +255,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
                 ? cancellationToken.Register(() => dispatcher.Dispatch(CloseProgress))
                 : default;
             Register(dialog);
+
             _ = dialog.ShowDialog<bool>(owner).ContinueWith(_ =>
             {
                 Unregister(dialog);
@@ -281,7 +283,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
             Title = options.Title,
             Width = options.Width ?? 800,
             Height = options.Height ?? 600,
-            CanResize = options.CanResize
+            CanResize = options.CanResize,
         };
         dialog.DataContext = new ViewDialogViewModel(options.Title, content, options.OkText, options.CloseText,
             options.ShowOkButton, options.ShowCloseButton, result => dialog.Close(result));

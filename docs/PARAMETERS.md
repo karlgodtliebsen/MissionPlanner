@@ -225,6 +225,12 @@ then the normal preview/confirmation/write path.
 
 ### Troubleshooting writes and imports
 
+Edit-session change callbacks may run on transport or write-completion threads.
+`ParametersViewModel` dispatches row synchronization to the UI thread and then calls
+`OnEditSessionSynchronized` for derived UI state, including command availability.
+Derived views must update bound commands inside that callback; dispatching only the
+row refresh does not make code following it run on the UI thread.
+
 - **Write rejected:** the value remains modified with `WriteFailed`; correct the value or
   connection issue and retry failed entries.
 - **Readback timeout:** the write was sent but not proven. Refresh that field before retry

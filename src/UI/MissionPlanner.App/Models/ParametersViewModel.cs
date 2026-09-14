@@ -270,6 +270,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
                 {
                     SetMessages(EditSession.InvalidReason ?? "This parameter session is stale.");
                 }
+                OnEditSessionSynchronized();
             }
             finally
             {
@@ -289,13 +290,6 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         try
         {
             Dispatcher.Dispatch(SynchronizeOnUiThread);
-            {
-                if (ownsFullRefreshSchedule)
-                {
-                    Interlocked.Exchange(ref sessionRefreshScheduled, 0);
-                }
-                Logger.LogWarning("Could not dispatch the parameter-grid synchronization to the UI thread.");
-            }
         }
         catch (Exception exception)
         {
@@ -305,6 +299,13 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             }
             Logger.LogWarning(exception, "Could not dispatch parameter-grid synchronization to the UI thread.");
         }
+    }
+
+    /// <summary>
+    /// Updates derived UI state after parameter rows have been synchronized on the UI thread.
+    /// </summary>
+    protected virtual void OnEditSessionSynchronized()
+    {
     }
 
     private void SynchronizeParameterItems(IProgress<ParameterStreamProgress>? progress = null)

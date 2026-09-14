@@ -7,8 +7,8 @@
     xmlns:ursa="https://irihi.tech/ursa"
     xmlns:vm="using:MissionPlanner.App.Utilities.Dialogs"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    d:DesignWidth="800"
-    d:DesignHeight="550"
+    d:DesignWidth="600"
+    d:DesignHeight="500"
     mc:Ignorable="d"
     x:DataType="vm:ViewDialogViewModel"
     CanResize="True"
@@ -17,10 +17,13 @@
     HorizontalContentAlignment="Stretch"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
-    Margin="50,50,50,25"
+    Padding="50,50,50,25"
+    MinWidth="600"
+    MinHeight="500"
     >
 
-    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+          Margin="25"
           RowSpacing="25">
         <Border  Classes="SectionCard" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <StackPanel MinHeight="200"

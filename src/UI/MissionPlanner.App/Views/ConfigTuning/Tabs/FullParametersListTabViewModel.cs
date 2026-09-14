@@ -321,15 +321,17 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var progress = new Progress<ParameterApplyProgress>(value =>
                 Dispatcher.Dispatch(() => ProgressMessage = $"{value.Index}/{value.Total}: {value.Name} — {value.Message}"));
 
+            await Dispatcher.DispatchAsync(async () =>
+            {
+                var report = await EditSession.ApplyAsync(plan, progress, connectionCancellation.Token);
+                lastApplyReport = report;
+                RebootRequired |= report.RebootRequired;
+                var statusMessage = report.Success ? $"Confirmed {report.Confirmed.Count} parameter changes by vehicle readback." : null;
+                var errorMessage = report.Success ? null : BuildResultSummary(report);
+                SetMessages(statusMessage, errorMessage);
+            });
 
-            var report = await EditSession.ApplyAsync(plan, progress, connectionCancellation.Token);
 
-            lastApplyReport = report;
-            RebootRequired |= report.RebootRequired;
-            var statusMessage = report.Success ? $"Confirmed {report.Confirmed.Count} parameter changes by vehicle readback." : null;
-            var errorMessage = report.Success ? null : BuildResultSummary(report);
-
-            await Dispatcher.DispatchAsync(() => SetMessages(statusMessage, errorMessage));
         }
         catch (OperationCanceledException)
         {
@@ -470,16 +472,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     }
 
     /// <inheritdoc />
-    protected override void OnEditSessionChanged()
+    protected override void OnEditSessionSynchronized()
     {
-        base.OnEditSessionChanged();
-        UpdateEditSessionCommandState();
-    }
-
-    /// <inheritdoc />
-    protected override void OnEditSessionFieldChanged(string? fieldName)
-    {
-        base.OnEditSessionFieldChanged(fieldName);
+        base.OnEditSessionSynchronized();
         UpdateEditSessionCommandState();
     }
 
