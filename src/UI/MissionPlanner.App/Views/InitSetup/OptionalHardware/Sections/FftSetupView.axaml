@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.FftSetupView"
-                               x:DataType="sections:FftSetupViewModel">
+                               x:DataType="sections:FftSetupViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="FFT Setup and Analysis" FontSize="24" FontWeight="Bold" />
@@ -18,7 +19,9 @@
             <NumericUpDown  PlaceholderText="Sample rate Hz" Value="{Binding SampleRateHz}" Minimum="0" FormatString="F0" />
             <TextBox AcceptsReturn="True" PlaceholderText="Paste comma/newline-separated samples from an existing log artifact" Text="{Binding SamplesText}" Height="180" />
             
-            <Button Content="Analyze samples" ToolTip.Tip="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Right" />
+            <Button ToolTip.Tip="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Analyze samples">
+                <mdi:MaterialIcon Kind="ChartBellCurve" Classes="ActionIcon" />
+            </Button>
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

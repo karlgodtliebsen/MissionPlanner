@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.ServoOutputSetupView"
-                               x:DataType="sections:ServoOutputSetupViewModel">
+                               x:DataType="sections:ServoOutputSetupViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,*" Margin="26" RowSpacing="16" HorizontalAlignment="Stretch">
         <StackPanel Orientation="Vertical" Grid.Row="0" Spacing="12" HorizontalAlignment="Stretch">
             <TextBlock HorizontalAlignment="Center" Text="Servo output functions" Classes="H3" />
@@ -18,8 +19,12 @@
             <TextBlock HorizontalAlignment="Center" Text="{Binding ErrorMessage}" 
                        IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,10,0,10">
-                <Button Content="Refresh servo outputs" ToolTip.Tip="Refresh servo outputs" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
-                <Button Content="Write" ToolTip.Tip="Write" Command="{Binding WriteCommand}" HorizontalAlignment="Right" />
+                <Button ToolTip.Tip="Refresh servo outputs" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh servo outputs">
+                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Write" Command="{Binding WriteCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Write">
+                    <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
+                </Button>
             </StackPanel>
         </StackPanel>
 

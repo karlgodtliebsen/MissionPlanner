@@ -34,7 +34,7 @@
                     ToolTip.Tip="Save to file"
                     VerticalAlignment="Center"
                     Command="{Binding SaveToFileCommand}"  >
-                    <avalonia:MaterialIcon Kind="ContentSaveEditOutline" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                 </Button>
                 <Button
                     ToolTip.Tip="Load from json file"
@@ -46,7 +46,7 @@
                     ToolTip.Tip="Save to json file"
                     VerticalAlignment="Center"
                     Command="{Binding SaveToJsonFileCommand}"  >
-                    <avalonia:MaterialIcon Kind="ContentSaveEditOutline" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                 </Button>
                 <Button
                     ToolTip.Tip="Use Text Editor"
@@ -58,13 +58,13 @@
                     ToolTip.Tip="Apply modified"
                     VerticalAlignment="Center"
                     Command="{Binding WriteParametersCommand}"  >
-                    <avalonia:MaterialIcon Kind="PlusBoxMultipleOutline" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                 </Button>
                 <Button
                     ToolTip.Tip="Retry failed"
                     VerticalAlignment="Center"
                     Command="{Binding RetryFailedCommand}"   >
-                    <avalonia:MaterialIcon Kind="MessageAlertOutline" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="ReloadAlert" Width="30" Height="30" />
                 </Button>
 
                 <Button
@@ -77,7 +77,7 @@
                     ToolTip.Tip="Clear parameters"
                     VerticalAlignment="Center"
                     Command="{Binding ClearParametersCommand}" >
-                    <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
                 </Button>
                 <Button
                     ToolTip.Tip="Compare parameters"
@@ -89,13 +89,13 @@
                     ToolTip.Tip="Cancel"
                     VerticalAlignment="Center"
                     Command="{Binding CancelLoadCommand}">
-                    <avalonia:MaterialIcon Kind="Cancel" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="CloseCircleOutline" Width="30" Height="30" />
                 </Button>
                 <Button
                     ToolTip.Tip="Parameter profiles"
                     VerticalAlignment="Center"
                     Command="{Binding LoadPreSavedCommand}" >
-                    <avalonia:MaterialIcon Kind="FaceManProfile" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
                 </Button>
 
                 <Button  ToolTip.Tip="Revert Changes"

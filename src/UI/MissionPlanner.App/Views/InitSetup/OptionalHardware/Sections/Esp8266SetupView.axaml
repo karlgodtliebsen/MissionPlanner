@@ -8,7 +8,8 @@
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                 x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.Esp8266SetupView"
-                x:DataType="sections:Esp8266SetupViewModel">
+                x:DataType="sections:Esp8266SetupViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
         <TextBlock Text="ESP8266 MAVLink Bridge" FontSize="24" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -19,6 +20,8 @@
         <TextBox PlaceholderText="Access-point password" Text="{Binding Password}" PasswordChar="●" />
         <TextBox PlaceholderText="Station SSID" Text="{Binding StationSsid}" />
         <TextBox PlaceholderText="Station password" Text="{Binding StationPassword}" PasswordChar="●" />
-        <Button Content="Validate settings" ToolTip.Tip="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" />
+        <Button ToolTip.Tip="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Validate settings">
+            <mdi:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
+        </Button>
     </StackPanel>
 </utilities:UserControlViewBase>

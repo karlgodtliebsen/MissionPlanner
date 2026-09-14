@@ -65,7 +65,7 @@
                                                 <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />
                                             </Button>
                                             <Button  ToolTip.Tip="Apply group" Command="{Binding ApplyCommand}" >
-                                                <avalonia:MaterialIcon Kind="PlusBoxMultipleOutline" Width="30" Height="30" />
+                                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                                             </Button>
                                         </StackPanel>
                                     </Grid>

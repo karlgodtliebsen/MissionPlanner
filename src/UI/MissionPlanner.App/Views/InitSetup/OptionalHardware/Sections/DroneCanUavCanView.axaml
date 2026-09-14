@@ -6,7 +6,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.DroneCanUavCanView" 
-                               x:DataType="sections:DroneCanUavCanViewModel">
+                               x:DataType="sections:DroneCanUavCanViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
         <TextBlock Text="DroneCAN / UAVCAN v0" FontSize="24" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -14,8 +15,12 @@
         <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
         <ComboBox ToolTip.Tip="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Spacing="50">
-            <Button Content="Connect" ToolTip.Tip="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" />
-            <Button Content="Refresh nodes" ToolTip.Tip="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" />
+            <Button ToolTip.Tip="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Connect">
+                <mdi:MaterialIcon Kind="LanConnect" Classes="ActionIcon" />
+            </Button>
+            <Button ToolTip.Tip="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Refresh nodes">
+                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+            </Button>
         </StackPanel>
         <ListBox ItemsSource="{Binding Nodes}" SelectionMode="Single" SelectedItem="{Binding SelectedNode}">
             <ListBox.ItemTemplate>

@@ -4,7 +4,8 @@
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Nmea"
     xmlns:output="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPage"
-    x:TypeArguments="local:NmeaViewModel" x:DataType="local:NmeaViewModel">
+    x:TypeArguments="local:NmeaViewModel" x:DataType="local:NmeaViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ContentPage Header="NMEA Output">
         <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14" Margin="24">
             <StackPanel Spacing="8">
@@ -12,8 +13,12 @@
                 <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
             </StackPanel>
             <WrapPanel Grid.Row="1">
-                <Button Content="Start NMEA" ToolTip.Tip="Start NMEA" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" />
-                <Button Content="Stop NMEA" ToolTip.Tip="Stop NMEA" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" />
+                <Button ToolTip.Tip="Start NMEA" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" AutomationProperties.Name="Start NMEA">
+                    <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Stop NMEA" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" AutomationProperties.Name="Stop NMEA">
+                    <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
+                </Button>
             </WrapPanel>
             <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                 <TabItem Header="Sentences"><local:NmeaOptionsView DataContext="{Binding Settings}" /></TabItem>

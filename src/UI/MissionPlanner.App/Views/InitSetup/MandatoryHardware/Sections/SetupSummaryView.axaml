@@ -9,7 +9,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
-                               x:DataType="sections:SetupSummaryViewModel">
+                               x:DataType="sections:SetupSummaryViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
@@ -62,9 +63,15 @@
                     </ItemsControl>
 
                     <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                        <Button Content="Rebuild summary" ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" />
-                        <Button Content="Export JSON" ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" />
-                        <Button Content="Export Markdown" ToolTip.Tip="Export Markdown" Command="{Binding ExportMarkdownCommand}" />
+                        <Button ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" AutomationProperties.Name="Rebuild summary">
+                            <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                        </Button>
+                        <Button ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON">
+                            <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                        </Button>
+                        <Button ToolTip.Tip="Export Markdown" Command="{Binding ExportMarkdownCommand}" AutomationProperties.Name="Export Markdown">
+                            <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                        </Button>
                     </StackPanel>
 
                     <TextBox AcceptsReturn="True" Text="{Binding ExportedText}" IsReadOnly="True" 

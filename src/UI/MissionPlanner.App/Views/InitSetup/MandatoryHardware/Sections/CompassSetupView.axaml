@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
-                               x:DataType="sections:CompassSetupViewModel">
+                               x:DataType="sections:CompassSetupViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Compass discovery and calibration" FontSize="18" FontWeight="Bold" />
@@ -40,14 +41,18 @@
                                     <TextBlock Text="External" VerticalAlignment="Center" IsVisible="{Binding SupportsExternal}" />
                                     <ToggleSwitch IsChecked="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
                                     <ComboBox ToolTip.Tip="Orientation" ItemsSource="{Binding Orientations}" SelectedItem="{Binding SelectedOrientation}" DisplayMemberBinding="{Binding Name}" />
-                                    <Button HorizontalAlignment="Right" Content="Write and verify" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" />
+                                    <Button HorizontalAlignment="Right" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
+                                        <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
+                                    </Button>
                                 </StackPanel>
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button Content="Refresh compass values" ToolTip.Tip="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" />
+            <Button ToolTip.Tip="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh compass values">
+                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+            </Button>
             <TextBlock Text="Onboard calibration" FontSize="18" FontWeight="Bold" />
             <TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning" FontWeight="Bold" />
             <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
@@ -55,10 +60,18 @@
             <TextBlock Text="{Binding ProgressSummary}" />
             <TextBlock Text="{Binding QualitySummary}" FontStyle="Italic" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                <Button Content="Start calibration" ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" />
-                <Button Content="Accept results" ToolTip.Tip="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" />
-                <Button Content="Cancel calibration" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" />
-                <Button Content="Reset / retry" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
+                <Button ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" AutomationProperties.Name="Start calibration">
+                    <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" AutomationProperties.Name="Accept results">
+                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
+                    <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
+                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                </Button>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

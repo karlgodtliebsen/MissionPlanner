@@ -39,13 +39,13 @@
 
                             <Button
                                 Grid.Column="1" Grid.RowSpan="2"
-                                ToolTip.Tip="Open"
+                                ToolTip.Tip="Open firmware help resource"
                                 Command="{Binding $parent[ItemsControl].((subViews:FirmwareHelpViewModel)DataContext).OpenSupportLinkCommand}"
                                 CommandParameter="{Binding .}"
                                 Padding="8,2"
                                 VerticalAlignment="Center"
                                 >
-                                <avalonia:MaterialIcon Kind="OpenInBrowser" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="OpenInNew" Width="30" Height="30" />
                             </Button>
                         </Grid>
                     </DataTemplate>

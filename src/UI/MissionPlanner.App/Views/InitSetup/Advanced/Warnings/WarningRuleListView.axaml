@@ -4,7 +4,8 @@
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
     xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Warnings;assembly=MissionPlanner.Core"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleListView"
-    x:TypeArguments="local:WarningRuleListViewModel" x:DataType="local:WarningRuleListViewModel">
+    x:TypeArguments="local:WarningRuleListViewModel" x:DataType="local:WarningRuleListViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Border Classes="SectionCard" Padding="16">
         <StackPanel Spacing="10">
             <TextBlock Text="Saved rules" Classes="H4" />
@@ -24,10 +25,16 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <WrapPanel>
-                <Button Content="New" ToolTip.Tip="New" Command="{Binding NewCommand}" Margin="0,0,8,8" />
-                <Button Content="Duplicate" ToolTip.Tip="Duplicate" Command="{Binding DuplicateCommand}" Margin="0,0,8,8" />
+                <Button ToolTip.Tip="New" Command="{Binding NewCommand}" Margin="0,0,8,8" AutomationProperties.Name="New">
+                    <mdi:MaterialIcon Kind="PlusBoxOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Duplicate" Command="{Binding DuplicateCommand}" Margin="0,0,8,8" AutomationProperties.Name="Duplicate">
+                    <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
+                </Button>
                 <Button Content="Enable / disable" ToolTip.Tip="Enable / disable" Command="{Binding ToggleCommand}" Margin="0,0,8,8" />
-                <Button Content="Delete" ToolTip.Tip="Delete" Command="{Binding DeleteCommand}" Margin="0,0,8,8" />
+                <Button ToolTip.Tip="Delete" Command="{Binding DeleteCommand}" Margin="0,0,8,8" AutomationProperties.Name="Delete">
+                    <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
+                </Button>
             </WrapPanel>
         </StackPanel>
     </Border>

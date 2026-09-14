@@ -5,7 +5,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RtkGpsInjectView"
-                               x:DataType="sections:RtkGpsInjectViewModel">
+                               x:DataType="sections:RtkGpsInjectViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="RTK / GPS Correction Injection" FontSize="20" FontWeight="Bold" />
@@ -25,9 +26,15 @@
                 <CheckBox IsChecked="{Binding UseTls}" Content="Use TLS" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="Refresh serial devices" ToolTip.Tip="Refresh serial devices" Command="{Binding RefreshPortsCommand}" />
-                <Button Content="Connect source" ToolTip.Tip="Connect source" Command="{Binding ConnectCommand}" />
-                <Button Content="Disconnect" ToolTip.Tip="Disconnect" Command="{Binding DisconnectCommand}" />
+                <Button ToolTip.Tip="Refresh serial devices" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh serial devices">
+                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Connect source" Command="{Binding ConnectCommand}" AutomationProperties.Name="Connect source">
+                    <mdi:MaterialIcon Kind="LanConnect" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Disconnect" Command="{Binding DisconnectCommand}" AutomationProperties.Name="Disconnect">
+                    <mdi:MaterialIcon Kind="LanDisconnect" Classes="ActionIcon" />
+                </Button>
             </StackPanel>
             <TextBlock Text="{Binding SourceStatus}" FontWeight="Bold" />
             <TextBlock Text="{Binding TargetStatus}" />

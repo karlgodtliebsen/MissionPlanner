@@ -5,14 +5,17 @@
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Inspector"
     xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Inspector;assembly=MissionPlanner.Core"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorListView"
-    x:TypeArguments="local:InspectorListViewModel" x:DataType="local:InspectorListViewModel">
+    x:TypeArguments="local:InspectorListViewModel" x:DataType="local:InspectorListViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
         <TextBox Text="{Binding Search}" MaxLength="256" PlaceholderText="Search name, ID, or sys:1 comp:1 id:0 dir:inbound"
                  AutomationProperties.Name="Filter inspected messages" />
         <WrapPanel Grid.Row="1">
             <CheckBox Content="Freeze display (continue collecting)" IsChecked="{Binding Frozen}" Margin="0,0,12,8" />
             <CheckBox Content="Sort by count descending" IsChecked="{Binding SortByCount}" Margin="0,0,12,8" />
-            <Button Content="Clear statistics" ToolTip.Tip="Clear statistics" Command="{Binding ClearCommand}" Margin="0,0,12,8" />
+            <Button ToolTip.Tip="Clear statistics" Command="{Binding ClearCommand}" Margin="0,0,12,8" AutomationProperties.Name="Clear statistics">
+                <mdi:MaterialIcon Kind="Eraser" Classes="ActionIcon" />
+            </Button>
         </WrapPanel>
         <controls:VirtualizedItemsGrid Grid.Row="2" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}"
             ColumnWidths="110,*,150" ColumnSpacing="10" RowMinHeight="80" ShowHeader="True"

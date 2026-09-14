@@ -134,14 +134,14 @@
                                                 <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />
                                             </Button>
                                             <Button  ToolTip.Tip="Review &amp; apply group" Command="{Binding ApplyCommand}" >
-                                                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                                             </Button>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="6" IsVisible="{Binding SupportsAxisCopy}">
                                             <ComboBox ToolTip.Tip="Source axis" Width="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedSourceAxis}" />
                                             <ComboBox ToolTip.Tip="Target axis" Width="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedTargetAxis}" />
                                             <Button  ToolTip.Tip="Preview axis copy" Command="{Binding PreviewCopyCommand}" >
-                                                <avalonia:MaterialIcon Kind="PrintPreview" Width="30" Height="30" />
+                                                <avalonia:MaterialIcon Kind="EyeOutline" Width="30" Height="30" />
                                             </Button>          
                                         </StackPanel>
                                     </Grid>
@@ -169,7 +169,7 @@
                                             </ItemsControl>
                                             <Button   ToolTip.Tip="Confirm preview into pending values" 
                                                       Command="{Binding ApplyCopyCommand}" HorizontalAlignment="Right" >
-                                                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                                             </Button>
                                         </StackPanel>
                                     </Border>

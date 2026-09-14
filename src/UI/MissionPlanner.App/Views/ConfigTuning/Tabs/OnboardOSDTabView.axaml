@@ -23,10 +23,10 @@
 
 
                     <Button  ToolTip.Tip="Apply selected screen" Command="{Binding ApplyScreenCommand}"  >
-                        <avalonia:MaterialIcon Kind="PlusBoxMultipleOutline" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                     </Button>
                     <Button  ToolTip.Tip="Reset to live" Command="{Binding ApplyScreenCommand}"  >
-                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                     </Button>
                     <Button  ToolTip.Tip="Import layout" Command="{Binding ImportCommand}"  >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />

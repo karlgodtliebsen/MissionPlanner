@@ -3,17 +3,26 @@
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Signing"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningKeyView"
-    x:TypeArguments="local:SigningKeyViewModel" x:DataType="local:SigningKeyViewModel">
+    x:TypeArguments="local:SigningKeyViewModel" x:DataType="local:SigningKeyViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Border Classes="SectionCard">
         <StackPanel Spacing="12" IsEnabled="{Binding !Locked}">
             <TextBlock Text="Key selection" Classes="H4" />
             <SelectableTextBlock Text="{Binding Fingerprint, StringFormat='Fingerprint: {0}'}" />
             <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
             <WrapPanel IsEnabled="{Binding !IsBusy}">
-                <Button Content="Generate key…" ToolTip.Tip="Generate key…" Command="{Binding GenerateCommand}" Margin="0,0,10,8" />
-                <Button Content="Import key…" ToolTip.Tip="Import key…" Command="{Binding ImportCommand}" Margin="0,0,10,8" />
-                <Button Content="Export secret key…" ToolTip.Tip="Export secret key…" Command="{Binding ExportCommand}" Margin="0,0,10,8" />
-                <Button Content="Load saved key" ToolTip.Tip="Load saved key" Command="{Binding LoadCommand}" Margin="0,0,10,8" />
+                <Button ToolTip.Tip="Generate key…" Command="{Binding GenerateCommand}" Margin="0,0,10,8" AutomationProperties.Name="Generate key…">
+                    <mdi:MaterialIcon Kind="KeyPlus" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Import key…" Command="{Binding ImportCommand}" Margin="0,0,10,8" AutomationProperties.Name="Import key…">
+                    <mdi:MaterialIcon Kind="FileImportOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Export secret key…" Command="{Binding ExportCommand}" Margin="0,0,10,8" AutomationProperties.Name="Export secret key…">
+                    <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Load saved key" Command="{Binding LoadCommand}" Margin="0,0,10,8" AutomationProperties.Name="Load saved key">
+                    <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
+                </Button>
             </WrapPanel>
             <StackPanel Orientation="Horizontal" Spacing="12">
                 <TextBlock Text="Outbound link ID (0–255)" VerticalAlignment="Center" />

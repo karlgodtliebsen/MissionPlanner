@@ -8,7 +8,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SafetySetupView"
-                               x:DataType="sections:SafetySetupViewModel">
+                               x:DataType="sections:SafetySetupViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Safety and arming" FontSize="18" FontWeight="Bold" />
@@ -35,7 +36,9 @@
             </ItemsControl>
 
             <StackPanel HorizontalAlignment="Right">
-            <Button Content="Re-assess safety" ToolTip.Tip="Re-assess safety" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+            <Button ToolTip.Tip="Re-assess safety" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Re-assess safety">
+                <mdi:MaterialIcon Kind="ShieldCheckOutline" Classes="ActionIcon" />
+            </Button>
             </StackPanel>
 
         </StackPanel>

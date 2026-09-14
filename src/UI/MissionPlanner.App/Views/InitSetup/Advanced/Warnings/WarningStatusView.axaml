@@ -4,9 +4,12 @@
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
     xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Warnings;assembly=MissionPlanner.Core"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningStatusView"
-    x:TypeArguments="local:WarningStatusViewModel" x:DataType="local:WarningStatusViewModel">
+    x:TypeArguments="local:WarningStatusViewModel" x:DataType="local:WarningStatusViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,*" RowSpacing="12">
-        <Button Content="Acknowledge selected warning" ToolTip.Tip="Acknowledge selected warning" Command="{Binding AcknowledgeCommand}" HorizontalAlignment="Left" />
+        <Button ToolTip.Tip="Acknowledge selected warning" Command="{Binding AcknowledgeCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Acknowledge selected warning">
+            <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+        </Button>
         <ListBox Grid.Row="1" ItemsSource="{Binding Warnings}" SelectedItem="{Binding Selected}"
                  AutomationProperties.Name="Current warning states">
             <ListBox.ItemTemplate>

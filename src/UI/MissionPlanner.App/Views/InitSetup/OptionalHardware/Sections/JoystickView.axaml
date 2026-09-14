@@ -8,7 +8,8 @@
                 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                 xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                 x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.JoystickView"
-                x:DataType="sections:JoystickViewModel">
+                x:DataType="sections:JoystickViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <StackPanel Orientation="Vertical" Margin="20" Spacing="25" HorizontalAlignment="Center">
         <TextBlock Text="Joystick Setup" FontSize="24" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -17,7 +18,9 @@
         <TextBlock Text="{Binding PlatformStatus}" />
         <Grid ColumnDefinitions="Auto,Auto" VerticalAlignment="Stretch" ColumnSpacing="25" HorizontalAlignment="Stretch">
             <ComboBox ToolTip.Tip="Local device" ItemsSource="{Binding Devices}" VerticalAlignment="Bottom" DisplayMemberBinding="{Binding Name}" SelectedItem="{Binding SelectedDevice}" Width="300" />
-            <Button Grid.Column="1" Content="Refresh" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" />
+            <Button Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
+                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+            </Button>
         </Grid>
         <TextBlock Text="Local calibration is separate from vehicle RC calibration." />
         <StackPanel Orientation="Horizontal">

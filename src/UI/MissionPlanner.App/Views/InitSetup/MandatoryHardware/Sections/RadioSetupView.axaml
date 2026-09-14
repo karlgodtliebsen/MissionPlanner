@@ -8,7 +8,8 @@
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                xmlns:models="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioSetupView"
-                               x:DataType="sections:RadioSetupViewModel">
+                               x:DataType="sections:RadioSetupViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
@@ -26,10 +27,18 @@
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <WrapPanel Orientation="Horizontal" ItemSpacing="10">
                 <Button Content="Start calibration" ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
-                <Button Content="Finish endpoint capture" ToolTip.Tip="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" />
-                <Button Content="Confirm and write" ToolTip.Tip="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" />
-                <Button Content="Cancel" ToolTip.Tip="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
-                <Button Content="Reset / retry" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" />
+                <Button ToolTip.Tip="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" AutomationProperties.Name="Finish endpoint capture">
+                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" AutomationProperties.Name="Confirm and write">
+                    <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" AutomationProperties.Name="Cancel">
+                    <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" AutomationProperties.Name="Reset / retry">
+                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                </Button>
             </WrapPanel>
 
             <Border Padding="14" Classes="SectionCard">

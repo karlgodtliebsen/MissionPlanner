@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RangefinderView"
-                               x:DataType="sections:RangefinderViewModel">
+                               x:DataType="sections:RangefinderViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Rangefinder" FontSize="20" FontWeight="Bold" />
@@ -21,7 +22,9 @@
                         <Grid ColumnDefinitions="175,150,90" ColumnSpacing="25" Margin="0,10">
                             <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
                             <NumericUpDown Grid.Column="1" Value="{Binding PendingValue}" Minimum="0" />
-                            <Button Grid.Column="2" Content="Apply" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" />
+                            <Button Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                            </Button>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

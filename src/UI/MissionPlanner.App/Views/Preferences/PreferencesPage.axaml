@@ -27,10 +27,10 @@
                         <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
                     </Button>
                     <Button  ToolTip.Tip="Reset all" Command="{Binding ResetAllCommand}" >
-                        <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                     </Button>
                     <Button  ToolTip.Tip="Save preferences" Command="{Binding SaveCommand}"  >
-                        <avalonia:MaterialIcon Kind="ContentSaveCogOutline" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                     </Button>
                 </WrapPanel>
 
@@ -40,7 +40,7 @@
                             <TextBlock Text="Application appearance" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Grid.Column="1">
                                 <Button  ToolTip.Tip="Reset appearance" Command="{Binding ResetApplicationCommand}" CommandParameter="Appearance" >
-                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                    <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
                             </StackPanel>
                         </Grid>
@@ -56,10 +56,10 @@
                             <TextBlock Text="Units and appearance" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5">
                                 <Button  ToolTip.Tip="Reset units" Command="{Binding ResetSectionCommand}" CommandParameter="Units" >
-                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                    <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
                                 <Button  ToolTip.Tip="Reset appearance" Command="{Binding ResetSectionCommand}" CommandParameter="Appearance" >
-                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                    <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
 
                             </StackPanel>
@@ -83,7 +83,7 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Map" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <Button  Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Map" >
-                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
                         <TextBlock Text="Choose by source purpose. Protocol details remain in the source definition; changing source requires restart." FontSize="12" />
@@ -97,7 +97,10 @@
                                     <Button ToolTip.Tip="{Binding DisplayName}"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
                                             CommandParameter="{Binding .}"  >
-                                        <avalonia:MaterialIcon Kind="SelectMarker" Width="30" Height="30" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                        </StackPanel>
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -111,7 +114,10 @@
                                     <Button ToolTip.Tip="{Binding DisplayName}"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
                                             CommandParameter="{Binding .}" >
-                                        <avalonia:MaterialIcon Kind="SelectMarker" Width="30" Height="30" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                        </StackPanel>
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -126,7 +132,10 @@
                                             Margin="0,10,0,10"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
                                             CommandParameter="{Binding .}"  >
-                                        <avalonia:MaterialIcon Kind="SelectMarker" Width="30" Height="30" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                        </StackPanel>
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -141,7 +150,10 @@
                                             VerticalAlignment="Center"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
                                             CommandParameter="{Binding .}" >
-                                        <avalonia:MaterialIcon Kind="SelectMarker" Width="30" Height="30" />
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                        </StackPanel>
                                     </Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -188,14 +200,14 @@
                         <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="5">
                             <TextBox Text="{Binding MapCredentialInput}" PasswordChar="●" PlaceholderText="Credential for selected source" />
                             
-                            <Button Grid.Column="1" ToolTip.Tip="Set" Command="{Binding SaveMapCredentialCommand}"  >
-                                <avalonia:MaterialIcon Kind="ContentSave" Width="30" Height="30" />
+                            <Button Grid.Column="1" ToolTip.Tip="Set and save map credential" Command="{Binding SaveMapCredentialCommand}"  >
+                                <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                             </Button>
-                            <Button Grid.Column="2" ToolTip.Tip="Remove" Command="{Binding RemoveMapCredentialCommand}"  >
-                                <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                            <Button Grid.Column="2" ToolTip.Tip="Remove map credential" Command="{Binding RemoveMapCredentialCommand}"  >
+                                <avalonia:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
                             </Button>                    
-                            <Button Grid.Column="3" ToolTip.Tip="Test" Command="{Binding TestMapCredentialCommand}"  >
-                                <avalonia:MaterialIcon Kind="TestTubeEmpty" Width="30" Height="30" />
+                            <Button Grid.Column="3" ToolTip.Tip="Test map credential" Command="{Binding TestMapCredentialCommand}"  >
+                                <avalonia:MaterialIcon Kind="FlaskOutline" Width="30" Height="30" />
                             </Button>
 
                         </Grid>
@@ -208,14 +220,14 @@
                                     <Button Grid.Column="0" ToolTip.Tip="Import / install" Command="{Binding ImportMapPackCommand}" >
                                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                                     </Button>
-                                    <Button Grid.Column="1" ToolTip.Tip="Select" Command="{Binding SelectMapPackCommand}" >
-                                        <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
+                                    <Button Grid.Column="1" ToolTip.Tip="Select map pack" Command="{Binding SelectMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                                     </Button>
-                                    <Button Grid.Column="2" ToolTip.Tip="Verify" Command="{Binding VerifyMapPackCommand}" >
-                                        <avalonia:MaterialIcon Kind="Verified" Width="30" Height="30" />
+                                    <Button Grid.Column="2" ToolTip.Tip="Verify map pack" Command="{Binding VerifyMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="ShieldCheckOutline" Width="30" Height="30" />
                                     </Button>
-                                    <Button Grid.Column="3" ToolTip.Tip="Remove" Command="{Binding RemoveMapPackCommand}" >
-                                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                                    <Button Grid.Column="3" ToolTip.Tip="Remove map pack" Command="{Binding RemoveMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
                                     </Button>
 
                                 </Grid>
@@ -241,10 +253,10 @@
                                 <TextBlock Text="{Binding MapHttpCacheSizeMiB, StringFormat='Current size: {0:F1} MiB'}" />
                                 <StackPanel Orientation="Horizontal" Spacing="5">
                                     <Button ToolTip.Tip="Clear selected source" Command="{Binding ClearSelectedMapCacheCommand}">
-                                        <avalonia:MaterialIcon Kind="ClearNetworkOutline" Width="30" Height="30" />
+                                        <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
                                     </Button>
                                     <Button   ToolTip.Tip="Clear all HTTP cache" Command="{Binding ClearAllMapCacheCommand}" >
-                                        <avalonia:MaterialIcon Kind="ClearOctagonOutline" Width="30" Height="30" />
+                                        <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
                                     </Button>
                                 </StackPanel>
                             </StackPanel>
@@ -257,7 +269,7 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Telemetry display" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Telemetry" >
-                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
@@ -286,7 +298,7 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Connection defaults" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
-                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
                         <TextBlock Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." FontSize="12" />
@@ -321,7 +333,7 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Parameter cache" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="ParameterCache" >
-                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
@@ -344,7 +356,7 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Confirmations" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Confirmations" >
-                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
                         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
@@ -364,10 +376,10 @@
                             <TextBlock Text="Logging and updates" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5">
                                 <Button ToolTip.Tip="Reset logging" Command="{Binding ResetSectionCommand}" CommandParameter="Logging" >
-                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                    <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
                                 <Button ToolTip.Tip="Reset updates" Command="{Binding ResetSectionCommand}" CommandParameter="Updates" >
-                                    <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                    <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
                             </StackPanel>
                         </Grid>
@@ -407,7 +419,7 @@
                             <TextBlock Text="Accessibility" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
 
                             <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Accessibility" >
-                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
 
                         </Grid>
@@ -436,7 +448,7 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Legacy units and speech" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <Button Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Legacy" >
-                                <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
 
                         </Grid>
@@ -598,10 +610,10 @@
                         <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
                     </Button>
                     <Button  ToolTip.Tip="Reset all" Command="{Binding ResetAllCommand}"  >
-                        <avalonia:MaterialIcon Kind="NotificationClearAll" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                     </Button>
                     <Button  ToolTip.Tip="Save preferences" Command="{Binding SaveCommand}"  >
-                        <avalonia:MaterialIcon Kind="ContentSaveCogOutline" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                     </Button>
                 </WrapPanel>
             </StackPanel>

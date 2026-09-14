@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.InitTuneParametersView"
-                               x:DataType="sections:InitTuneParametersViewModel">
+                               x:DataType="sections:InitTuneParametersViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <Border Classes="SectionCard" HorizontalAlignment="Center" x:Name="SourceBorder">
@@ -28,7 +29,9 @@
             <Border Classes="SectionCard" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
                 <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch">
                     <StackPanel HorizontalAlignment="Right">
-                        <Button Content="Refresh" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" />
+                        <Button ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
+                            <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                        </Button>
                     </StackPanel>
                     <ItemsControl ItemsSource="{Binding Settings}">
                         <ItemsControl.ItemTemplate>
@@ -52,7 +55,9 @@
                                                        PlaceholderText="Value" IsVisible="{Binding IsNumeric}" 
                                                        Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1" 
                                                        HorizontalAlignment="Stretch" />
-                                        <Button Grid.Column="2" Content="Apply" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" />
+                                        <Button Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                            <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                        </Button>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

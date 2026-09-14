@@ -15,14 +15,20 @@
         <Grid Margin="16" RowDefinitions="Auto,*,Auto" RowSpacing="12" HorizontalAlignment="Center">
             <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
                 
-                <Button ToolTip.Tip="Upload" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}"  >
-                    <avalonia:MaterialIcon Kind="Upload" Width="30" Height="30" />
+                <Button ToolTip.Tip="Upload file to vehicle" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}"  >
+                    <avalonia:MaterialIcon Kind="UploadOutline" Width="30" Height="30" />
                 </Button>
 
                 <TextBlock Grid.Column="1" Text="{Binding CurrentPath}" FontWeight="Bold" VerticalAlignment="Center" />
-                <Button Grid.Column="2" Content="Refresh" ToolTip.Tip="Refresh"  IsVisible="{Binding HasConnection}" Command="{Binding RefreshCommand}" />
-                <Button Grid.Column="3" Content="Open" ToolTip.Tip="Open" IsVisible="{Binding HasEntries}" Command="{Binding OpenSelectedCommand}" />
-                <Button Grid.Column="4" Content="Reset sessions" ToolTip.Tip="Reset sessions"  IsVisible="{Binding HasConnection}" Command="{Binding ResetSessionsCommand}" />
+                <Button Grid.Column="2" ToolTip.Tip="Refresh"  IsVisible="{Binding HasConnection}" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh">
+                    <avalonia:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
+                <Button Grid.Column="3" ToolTip.Tip="Open selected remote directory" IsVisible="{Binding HasEntries}" Command="{Binding OpenSelectedCommand}" AutomationProperties.Name="Open">
+                    <avalonia:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
+                </Button>
+                <Button Grid.Column="4" ToolTip.Tip="Reset sessions"  IsVisible="{Binding HasConnection}" Command="{Binding ResetSessionsCommand}" AutomationProperties.Name="Reset sessions">
+                    <avalonia:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                </Button>
             </Grid>
             <Grid Grid.Row="1" RowDefinitions="Auto,*" MinWidth="640">
                 <Grid ColumnDefinitions="400,100,100" ColumnSpacing="6" Margin="12,0,12,6">
@@ -64,8 +70,12 @@
                 <TextBlock Text="{Binding TransferDetails}" FontSize="12" />
                 <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
                 <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Download selected" ToolTip.Tip="Download selected" Command="{Binding DownloadSelectedCommand}"  IsVisible="{Binding HasEntries}"/>
-                    <Button Content="Cancel" ToolTip.Tip="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" />
+                    <Button ToolTip.Tip="Download selected file from vehicle" Command="{Binding DownloadSelectedCommand}"  IsVisible="{Binding HasEntries}" AutomationProperties.Name="Download selected">
+                        <avalonia:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
+                    </Button>
+                    <Button ToolTip.Tip="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" AutomationProperties.Name="Cancel">
+                        <avalonia:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                    </Button>
                 </StackPanel>
             </StackPanel>
         </Grid>

@@ -1,6 +1,12 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:u="https://irihi.tech/ursa">
+        xmlns:u="https://irihi.tech/ursa"
+        xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+
+    <Style Selector="mdi|MaterialIcon.ActionIcon">
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="30" />
+    </Style>
 
     <Style Selector="Border.SectionCard">
         <Setter Property="Background" Value="{DynamicResource SemiColorBackground2}" />

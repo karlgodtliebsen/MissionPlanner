@@ -411,7 +411,7 @@
                                                             HorizontalAlignment="Center"
                                                             Command="{Binding $parent[ItemsRepeater].((missions:MissionMapViewModel)DataContext).RemoveItemCommand}"
                                                             CommandParameter="{Binding .}"  >
-                                                            <avalonia:MaterialIcon Kind="DeleteForeverOutline" Width="20" Height="20" />
+                                                            <avalonia:MaterialIcon Kind="DeleteOutline" Width="20" Height="20" />
                                                         </Button>
                                                     </StackPanel>
                                                 </StackPanel>

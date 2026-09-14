@@ -4,7 +4,8 @@
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
     xmlns:telemetry="clr-namespace:MissionPlanner.Core.Setup.Advanced.Warnings;assembly=MissionPlanner.Core"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleEditorView"
-    x:TypeArguments="local:WarningRuleEditorViewModel" x:DataType="local:WarningRuleEditorViewModel">
+    x:TypeArguments="local:WarningRuleEditorViewModel" x:DataType="local:WarningRuleEditorViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Border Classes="SectionCard" Padding="18">
         <StackPanel Spacing="10" MaxWidth="850" HorizontalAlignment="Stretch">
             <TextBlock Text="Rule editor" Classes="H4" />
@@ -46,10 +47,14 @@
             <TextBlock Text="Message template: use {name} and {value}" />
             <TextBox Text="{Binding Message}" AutomationProperties.Name="Warning message" />
             <TextBlock Text="{Binding MessageError}" Classes="Warning" TextWrapping="Wrap" />
-            <Button Content="Save rule" ToolTip.Tip="Save rule" Command="{Binding SaveCommand}" HorizontalAlignment="Left" />
+            <Button ToolTip.Tip="Save rule" Command="{Binding SaveCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Save rule">
+                <mdi:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
+            </Button>
             <TextBlock Text="Preview input (does not affect the live warning)" />
             <NumericUpDown Value="{Binding PreviewValue}" AutomationProperties.Name="Preview value" />
-            <Button Content="Test comparison" ToolTip.Tip="Test comparison" Command="{Binding PreviewCommand}" HorizontalAlignment="Left" />
+            <Button ToolTip.Tip="Test comparison" Command="{Binding PreviewCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Test comparison">
+                <mdi:MaterialIcon Kind="FlaskOutline" Classes="ActionIcon" />
+            </Button>
             <TextBlock Text="{Binding PreviewResult}" TextWrapping="Wrap" />
         </StackPanel>
     </Border>

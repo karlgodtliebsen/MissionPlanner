@@ -5,7 +5,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.ParachuteView"
-                               x:DataType="sections:ParachuteViewModel">
+                               x:DataType="sections:ParachuteViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Parachute" FontSize="20" FontWeight="Bold" />
@@ -19,7 +20,9 @@
                         <Grid ColumnDefinitions="220,*,90">
                             <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
                             <TextBox Grid.Column="1" Text="{Binding PendingValue}" />
-                            <Button Grid.Column="2" Content="Apply" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" />
+                            <Button Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                            </Button>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

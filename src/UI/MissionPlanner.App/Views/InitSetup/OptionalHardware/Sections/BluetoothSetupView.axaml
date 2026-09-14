@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BluetoothSetupView"
-                               x:DataType="sections:BluetoothSetupViewModel">
+                               x:DataType="sections:BluetoothSetupViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -17,14 +18,20 @@
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <StackPanel Orientation="Horizontal" Spacing="25" VerticalAlignment="Center">
                 <ComboBox ToolTip.Tip="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
-                <Button Content="Refresh ports" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" />
-                <Button Content="Probe module" ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" />
+                <Button ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh ports">
+                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" AutomationProperties.Name="Probe module">
+                    <mdi:MaterialIcon Kind="BluetoothConnect" Classes="ActionIcon" />
+                </Button>
             </StackPanel>
             <TextBlock Text="{Binding ModuleIdentity}" FontWeight="Bold" />
             <TextBox PlaceholderText="Module name" Text="{Binding Name}" />
             <TextBox PlaceholderText="PIN" Text="{Binding Pin}" PasswordChar="●" />
             <NumericUpDown PlaceholderText="Baud" Value="{Binding BaudRate}" Minimum="0" FormatString="F0" />
-            <Button Content="Apply supported settings" ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" />
+            <Button ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply supported settings">
+                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+            </Button>
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

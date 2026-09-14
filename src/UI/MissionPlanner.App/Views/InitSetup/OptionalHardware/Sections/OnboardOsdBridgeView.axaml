@@ -8,7 +8,8 @@
                         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                         x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.OnboardOsdBridgeView" 
-                        x:DataType="sections:OnboardOsdBridgeViewModel">
+                        x:DataType="sections:OnboardOsdBridgeViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
         <TextBlock Text="Onboard OSD" FontSize="20" FontWeight="Bold" />
         <TextBlock Text="Configure screens, elements, positions, units and supported options in the existing Onboard OSD workspace." />
@@ -16,6 +17,8 @@
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
-        <Button Content="Open Onboard OSD configuration" ToolTip.Tip="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalAlignment="Right" />
+        <Button ToolTip.Tip="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Open Onboard OSD configuration">
+            <mdi:MaterialIcon Kind="OpenInNew" Classes="ActionIcon" />
+        </Button>
     </StackPanel>
 </utilities:UserControlViewBase>

@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AccelerometerSetupView"
-                               x:DataType="sections:AccelerometerSetupViewModel">
+                               x:DataType="sections:AccelerometerSetupViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Accelerometer and level calibration" FontSize="18" FontWeight="Bold" />
@@ -17,18 +18,26 @@
             <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." Classes="Warning" FontWeight="Bold" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
                 <Button Content="Start six-position calibration" ToolTip.Tip="Start six-position calibration" Command="{Binding StartSixPositionCommand}" />
-                <Button Content="Calibrate level" ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" />
+                <Button ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" AutomationProperties.Name="Calibrate level">
+                    <mdi:MaterialIcon Kind="ScaleBalance" Classes="ActionIcon" />
+                </Button>
             </StackPanel>
             <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
             <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
             <Image Source="{Binding OrientationImage}" Height="260" Stretch="Uniform" />
             <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" />
             <TextBlock Text="{Binding CompletedOrientations}" />
-            <Button Content="Confirm orientation" ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" />
+            <Button ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Confirm orientation">
+                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+            </Button>
             <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" FontStyle="Italic" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                <Button Content="Cancel calibration" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" />
-                <Button Content="Reset / retry" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
+                <Button ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
+                    <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
+                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                </Button>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

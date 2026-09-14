@@ -24,12 +24,12 @@
                         <Button ToolTip.Tip="Refresh physical serial and DFU devices"
                                 Command="{Binding RefreshDevicesCommand}"
                                 IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
-                            <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Probe Runtime. Identify the selected controller using live protocols"
                                 Command="{Binding ProbeRuntimeCommand}" >
-                            <avalonia:MaterialIcon Kind="ProgressAuto" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="Chip" Width="30" Height="30" />
                         </Button>
                         <u:IconSplitButton  >
                             <SplitButton.Flyout>
@@ -54,44 +54,44 @@
 
                         <Button ToolTip.Tip="Online Firmware" Command="{Binding ShowOnlineFirmwareSelectorCommand}"
                                 IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}" >
-                            <avalonia:MaterialIcon Kind="OpenInBrowser" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="CloudDownloadOutline" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Local Firmware" Command="{Binding ShowLocalFirmwareSelectorCommand}"
                                 IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}">
-                            <avalonia:MaterialIcon Kind="Folder" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Clear Selected Firmware" Command="{Binding ClearFirmwareSelectionCommand}"
                                 IsEnabled="{Binding !IsOperationInProgress}" >
-                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Install firmware"
                                 Command="{Binding ExecuteCurrentPlanCommand}"
                                 IsEnabled="{Binding CurrentPlan.CanExecute}" >
-                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="DownloadBoxOutline" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Load platform choices"
                                 IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
                                 Command="{Binding LoadLocalPlatformChoicesCommand}"
                                 IsEnabled="{Binding !IsOperationInProgress}" HorizontalAlignment="Center"  >
-                            <avalonia:MaterialIcon Kind="Loading" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Copy URL" Command="{Binding CopySelectedUrlCommand}"  >
-                            <avalonia:MaterialIcon Kind="Copyright" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
                         </Button>
                         <Button  ToolTip.Tip="Update Embedded Bootloader. Maintenance operation on a supported, disarmed connected ArduPilot vehicle"
                                  Command="{Binding UpdateBootloaderCommand}" >
-                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="Memory" Width="30" Height="30" />
                         </Button>
 
 
                         <Button  ToolTip.Tip="Validate combined HEX"
                                  Command="{Binding PrepareSelectedHexCommand}" >
-                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="FileCheckOutline" Width="30" Height="30" />
                         </Button>
 
                         <Button  ToolTip.Tip="Review DFU target"
@@ -99,13 +99,13 @@
                                  IsVisible="{Binding HasDetectedDfuDevice}"
                                  IsEnabled="{Binding !IsOperationInProgress}"
                                  >
-                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="UsbPort" Width="30" Height="30" />
                         </Button>
 
                         <Button  ToolTip.Tip="Cancel operation"
                                  Command="{Binding CancelCommand}"
                                  IsVisible="{Binding IsOperationInProgress}">
-                            <avalonia:MaterialIcon Kind="Update" Width="30" Height="30" />
+                            <avalonia:MaterialIcon Kind="CloseCircleOutline" Width="30" Height="30" />
                         </Button>
                     </WrapPanel>
 
@@ -260,9 +260,9 @@
 
                                     <StackPanel HorizontalAlignment="Stretch" IsVisible="{Binding ShowHexPreparation}" >
                                         <Button
-                                            HorizontalAlignment="Center"
-                                            Content="Validate combined HEX" ToolTip.Tip="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}"
-                                            />
+                                            HorizontalAlignment="Center" ToolTip.Tip="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}" AutomationProperties.Name="Validate combined HEX">
+                                            <avalonia:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
+                                        </Button>
                                     </StackPanel>
                                     <!--
                                     <StackPanel IsVisible="{Binding DfuModel.HasLocalDfuFirmware}" Spacing="8">
@@ -276,9 +276,11 @@
                             <Border Classes="SectionCard" Padding="16" IsVisible="{Binding ShowValidationAndCompatibility}" Width="{Binding #PhysicalCtrl.Bounds.Width}">
                                 <StackPanel Spacing="8">
                                     <TextBlock  Text="Validation and compatibility" Classes="H3" />
-                                    <Button Content="Validate selected firmware" ToolTip.Tip="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
+                                    <Button ToolTip.Tip="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
                                             IsVisible="{Binding ShowOnlineValidation}" IsEnabled="{Binding !IsOperationInProgress}"
-                                            HorizontalAlignment="Center" />
+                                            HorizontalAlignment="Center" AutomationProperties.Name="Validate selected firmware">
+                                        <avalonia:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
+                                    </Button>
                                     <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
 
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Artifact valid:" />
@@ -330,16 +332,17 @@
                                     <StackPanel   HorizontalAlignment="Stretch">
                                         <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
                                             <Button
-                                                HorizontalAlignment="Center"
-                                                Content="Confirm DFU target" ToolTip.Tip="Confirm DFU target" Command="{Binding ReviewDfuTargetCommand}"
+                                                HorizontalAlignment="Center" ToolTip.Tip="Confirm DFU target" Command="{Binding ReviewDfuTargetCommand}"
                                                 IsVisible="{Binding HasDetectedDfuDevice}"
-                                                IsEnabled="{Binding !IsOperationInProgress}" />
+                                                IsEnabled="{Binding !IsOperationInProgress}" AutomationProperties.Name="Confirm DFU target">
+                                                <avalonia:MaterialIcon Kind="ShieldCheckOutline" Classes="ActionIcon" />
+                                            </Button>
 
                                             <Button
-                                                HorizontalAlignment="Center"
-                                                Content="Cancel operation" ToolTip.Tip="Cancel operation" Command="{Binding CancelCommand}"
-                                                IsVisible="{Binding IsOperationInProgress}"
-                                                />
+                                                HorizontalAlignment="Center" ToolTip.Tip="Cancel operation" Command="{Binding CancelCommand}"
+                                                IsVisible="{Binding IsOperationInProgress}" AutomationProperties.Name="Cancel operation">
+                                                <avalonia:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                                            </Button>
 
                                         </StackPanel>
                                     </StackPanel>

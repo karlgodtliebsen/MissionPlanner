@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CubeIdUpdateView"
-                               x:DataType="sections:CubeIdUpdateViewModel">
+                               x:DataType="sections:CubeIdUpdateViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="CubeID Firmware Update" FontSize="24" FontWeight="Bold" />
@@ -15,7 +16,9 @@
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
         <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
         <TextBox PlaceholderText="Local firmware .bin path" Text="{Binding FirmwarePath}" />
-        <Button Content="Inspect firmware" ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" />
+        <Button ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
+            <mdi:MaterialIcon Kind="FileSearchOutline" Classes="ActionIcon" />
+        </Button>
         <TextBlock Text="{Binding FirmwareSummary}" />
     </StackPanel>
 </utilities:UserControlViewBase>

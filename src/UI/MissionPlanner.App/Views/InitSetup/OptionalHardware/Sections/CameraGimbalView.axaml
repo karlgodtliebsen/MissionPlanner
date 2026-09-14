@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CameraGimbalView"
-                               x:Name="Root" x:DataType="sections:CameraGimbalViewModel">
+                               x:Name="Root" x:DataType="sections:CameraGimbalViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Camera / Gimbal Configuration" FontSize="20" FontWeight="Bold" />
@@ -15,7 +16,9 @@
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
             <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <TextBlock Text="Changes are explicit and confirmed by parameter readback. Live movement and capture commands remain in Payload Control." Opacity="0.75" />
-            <Button Content="Open Payload Control" ToolTip.Tip="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" />
+            <Button ToolTip.Tip="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Open Payload Control">
+                <mdi:MaterialIcon Kind="OpenInNew" Classes="ActionIcon" />
+            </Button>
 <TextBlock Text="Vehicle Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" Classes="Warning" FontWeight="Bold" />
             <ItemsControl ItemsSource="{Binding Settings}">
                 <ItemsControl.ItemTemplate>
@@ -23,7 +26,9 @@
                         <Grid ColumnDefinitions="250,150,90" ColumnSpacing="25">
                             <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
                             <NumericUpDown Grid.Column="1" Value="{Binding PendingValue}" Minimum="0" />
-                            <Button Grid.Column="2" Content="Apply" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" />
+                            <Button Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                            </Button>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

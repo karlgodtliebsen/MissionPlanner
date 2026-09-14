@@ -7,18 +7,27 @@
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                            x:Class="MissionPlanner.App.Views.FlightData.Tabs.PayloadControlTabItemView"
-                           x:DataType="tabs:PayloadControlTabViewModel">
+                           x:DataType="tabs:PayloadControlTabViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
     <ScrollViewer><StackPanel Margin="12" Spacing="8">
         <TextBlock Text="Payload control" FontSize="18" FontWeight="Bold"/>
         <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
         <ComboBox ItemsSource="{Binding Payloads}" SelectedItem="{Binding SelectedPayload}"/>
-        <Button Content="Capture image" ToolTip.Tip="Capture image" Command="{Binding CaptureCommand}"/>
-        <Button Content="Start video" ToolTip.Tip="Start video" Command="{Binding StartVideoCommand}"/>
-        <Button Content="Stop video" ToolTip.Tip="Stop video" Command="{Binding StopVideoCommand}"/>
+        <Button ToolTip.Tip="Capture image" Command="{Binding CaptureCommand}" AutomationProperties.Name="Capture image">
+            <mdi:MaterialIcon Kind="CameraOutline" Classes="ActionIcon" />
+        </Button>
+        <Button ToolTip.Tip="Start video" Command="{Binding StartVideoCommand}" AutomationProperties.Name="Start video">
+            <mdi:MaterialIcon Kind="VideoOutline" Classes="ActionIcon" />
+        </Button>
+        <Button ToolTip.Tip="Stop video" Command="{Binding StopVideoCommand}" AutomationProperties.Name="Stop video">
+            <mdi:MaterialIcon Kind="VideoOffOutline" Classes="ActionIcon" />
+        </Button>
         <NumericUpDown Value="{Binding Pitch}"/>
         <NumericUpDown Value="{Binding Yaw}"/>
         <CheckBox Content="Earth-frame yaw lock" IsChecked="{Binding YawLock}"/>
-        <Button Content="Move gimbal" ToolTip.Tip="Move gimbal" Command="{Binding MoveGimbalCommand}"/>
+        <Button ToolTip.Tip="Move gimbal" Command="{Binding MoveGimbalCommand}" AutomationProperties.Name="Move gimbal">
+            <mdi:MaterialIcon Kind="CameraControl" Classes="ActionIcon" />
+        </Button>
     </StackPanel></ScrollViewer>
 </utilities:TabItemViewBase>

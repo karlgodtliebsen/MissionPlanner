@@ -7,7 +7,8 @@
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FlightModesSetupView"
-                               x:DataType="sections:FlightModesSetupViewModel">
+                               x:DataType="sections:FlightModesSetupViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <Border Classes="SectionCard" HorizontalAlignment="Center" x:Name="SourceBorder">
@@ -18,9 +19,11 @@
                     <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
                     <TextBlock Text="{Binding ModeChannelDescription}" FontWeight="Bold" />
                     
-                    <Button Content="Refresh flight modes" ToolTip.Tip="Refresh flight modes"
+                    <Button ToolTip.Tip="Refresh flight modes"
                             HorizontalAlignment="Right"
-                            Command="{Binding RefreshCommand}"  />
+                            Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh flight modes">
+                        <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                    </Button>
 
                 </StackPanel>
             </Border>

@@ -56,7 +56,7 @@
                                     <Button Content="Test all Motors" ToolTip.Tip="Test all Motors" HorizontalAlignment="Stretch" Command="{Binding TestAllCommand}" />
                                     <Button Content="Test all in sequence" ToolTip.Tip="Test all in sequence" HorizontalAlignment="Stretch" Command="{Binding TestSequenceCommand}" />
                                 </StackPanel>
-                                <Button  HorizontalAlignment="Stretch" Classes="Warning" Command="{Binding StopCommand}" >
+                                <Button  HorizontalAlignment="Stretch" Classes="Warning" Command="{Binding StopCommand}" ToolTip.Tip="Stop all motors" >
                                     <TextBlock Classes="Warning">STOP All Motors</TextBlock>
                                 </Button>
                             </StackPanel>

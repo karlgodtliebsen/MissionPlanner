@@ -3,7 +3,8 @@
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Signing"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningPage"
-    x:TypeArguments="local:SigningViewModel" x:DataType="local:SigningViewModel">
+    x:TypeArguments="local:SigningViewModel" x:DataType="local:SigningViewModel"
+                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ContentPage Header="MAVLink 2 Signing">
         <Grid RowDefinitions="Auto,*" Margin="24" RowSpacing="14">
             <TextBlock Text="MAVLink signing" Classes="Title" />
@@ -15,7 +16,9 @@
                         <StackPanel Spacing="12">
                             <TextBlock Text="Vehicle setup" Classes="H4" />
                             <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
-                            <Button Content="Configure signing…" ToolTip.Tip="Configure signing…" Command="{Binding ConfigureCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" />
+                            <Button ToolTip.Tip="Configure signing…" Command="{Binding ConfigureCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" AutomationProperties.Name="Configure signing…">
+                                <mdi:MaterialIcon Kind="KeyOutline" Classes="ActionIcon" />
+                            </Button>
                             <TextBlock Text="Closing this page cancels pending setup. Verified connection signing continues until disconnection. It does not enforce a signed-only policy." TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
