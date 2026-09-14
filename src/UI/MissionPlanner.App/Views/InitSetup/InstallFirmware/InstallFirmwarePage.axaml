@@ -17,7 +17,7 @@
                 <Grid RowDefinitions="Auto,Auto,*" Margin="20" RowSpacing="12" HorizontalAlignment="Stretch">
                     <WrapPanel Grid.Row="0" ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
                         <!--
-                        <u:IconSplitButton Icon="{StaticResource SemiIconCamera}" Content="IconSplitButton" />                     
+                        <u:IconSplitButton Icon="{StaticResource SemiIconCamera}" Content="IconSplitButton" />
                         -->
 
 
@@ -51,17 +51,36 @@
                             </SplitButton.Flyout>
                             <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
                         </u:IconSplitButton>
-
+                        <!--
                         <Button ToolTip.Tip="Online Firmware" Command="{Binding ShowOnlineFirmwareSelectorCommand}"
-                                IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}" >
-                            <avalonia:MaterialIcon Kind="CloudDownloadOutline" Width="30" Height="30" />
+                        IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}" >
+                        <avalonia:MaterialIcon Kind="CloudDownloadOutline" Width="30" Height="30" />
                         </Button>
 
                         <Button ToolTip.Tip="Local Firmware" Command="{Binding ShowLocalFirmwareSelectorCommand}"
-                                IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}">
-                            <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
-                        </Button>
+                        IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}">
+                        <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
+                        </Button>-->
 
+                        <u:IconSplitButton  >
+                            <SplitButton.Flyout>
+                                <MenuFlyout Placement="Bottom">
+                                    <MenuItem
+                                        ToolTip.Tip="Online Firmware"
+                                        Command="{Binding ShowOnlineFirmwareSelectorCommand}"
+                                        IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}"
+                                        Header="Online Firmware" />
+
+                                    <MenuItem
+                                        ToolTip.Tip="Local Firmware"
+                                        Command="{Binding ShowLocalFirmwareSelectorCommand}"
+                                        IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}"
+                                        Header="Local Firmware" />
+                                </MenuFlyout>
+                            </SplitButton.Flyout>
+                            <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
+                        </u:IconSplitButton>
+                        
                         <Button ToolTip.Tip="Clear Selected Firmware" Command="{Binding ClearFirmwareSelectionCommand}"
                                 IsEnabled="{Binding !IsOperationInProgress}" >
                             <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
@@ -286,15 +305,15 @@
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Artifact valid:" />
                                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.ArtifactValid}" />
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Target compatible:" 
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Target compatible:"
                                                    IsVisible="{Binding !HasCompatibilityFailure}"/>
                                         <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
                                                    IsVisible="{Binding !HasCompatibilityFailure}"/>
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" 
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
                                                    IsVisible="{Binding HasCompatibilityFailure}"
                                                    Text="Target compatible:" Foreground="Red"/>
-                                        <TextBlock Grid.Row="1" Grid.Column="1" 
+                                        <TextBlock Grid.Row="1" Grid.Column="1"
                                                    Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
                                                    IsVisible="{Binding HasCompatibilityFailure}" Foreground="Red"/>
 
@@ -302,13 +321,13 @@
                                         <TextBlock Grid.Row="2" Grid.Column="0" Text="Compatibility Status:" TextWrapping="Wrap" />
                                         <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CompatibilityStatus}" TextWrapping="Wrap" />
 
-                                       
-                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Status:" TextWrapping="Wrap" 
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Status:" TextWrapping="Wrap"
                                                    IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                                        <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding InstallStatus}" 
+                                        <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding InstallStatus}"
                                                              IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}"
                                                              TextWrapping="Wrap" />
-                                        
+
                                         <TextBlock Grid.Row="3" Grid.Column="0" Text="Warnings:" Classes="Warning" TextWrapping="Wrap"
                                                    IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                                         <TextBlock Grid.Row="3" Grid.Column="1"

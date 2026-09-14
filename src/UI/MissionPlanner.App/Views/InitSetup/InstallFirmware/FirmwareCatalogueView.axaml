@@ -146,10 +146,10 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
             <Button
-                ToolTip.Tip="Cancel"
+                ToolTip.Tip="Close"
                 Padding="5"
                 Command="{Binding CancelCommand}" >
-                <avalonia:MaterialIcon Kind="Cancel" Width="30" Height="30" />
+                <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
             </Button>
 
             <Button
