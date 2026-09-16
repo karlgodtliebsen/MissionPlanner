@@ -24,7 +24,7 @@
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsWriting}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextWrapping="Wrap" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" TextWrapping="Wrap" />
+            <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" TextWrapping="Wrap" />
             <WrapPanel Orientation="Horizontal" ItemSpacing="10">
                 <Button Content="Start calibration" ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
                 <Button ToolTip.Tip="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" AutomationProperties.Name="Finish endpoint capture">

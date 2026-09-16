@@ -13,7 +13,7 @@
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+            <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <TextBlock Text="Battery monitors and failsafe" FontSize="18" FontWeight="Bold" />
             <TextBlock Text="{Binding Status}" FontStyle="Italic" />
             <Button ToolTip.Tip="Refresh battery values" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh battery values">

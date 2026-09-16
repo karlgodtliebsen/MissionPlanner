@@ -18,7 +18,7 @@
            
 <!--            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
 -->            
-            <TextBlock Text="{Binding ErrorMessage}" 
+            <SelectableTextBlock Text="{Binding ErrorMessage}" 
                        IsVisible="{Binding HasError}" 
                        Classes="Danger" />
             <TextBlock Text="{Binding Instruction}" />

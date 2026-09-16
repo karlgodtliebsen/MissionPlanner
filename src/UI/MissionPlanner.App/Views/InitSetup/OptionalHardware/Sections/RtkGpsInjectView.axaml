@@ -12,7 +12,7 @@
             <TextBlock Text="RTK / GPS Correction Injection" FontSize="20" FontWeight="Bold" />
             <TextBlock Text="RTCM3 source → active vehicle via MAVLink GPS_RTCM_DATA" Opacity="0.75" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-            <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+            <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <ComboBox HorizontalAlignment="Stretch"
                       ToolTip.Tip="Source" ItemsSource="{Binding SourceKinds}" SelectedItem="{Binding SourceKind}" 
                       HorizontalContentAlignment="Right"

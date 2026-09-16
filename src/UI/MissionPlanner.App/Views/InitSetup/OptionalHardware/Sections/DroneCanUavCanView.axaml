@@ -12,7 +12,7 @@
         <TextBlock Text="DroneCAN / UAVCAN v0" FontSize="24" FontWeight="Bold" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-        <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+        <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
         <ComboBox ToolTip.Tip="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Spacing="50">
             <Button ToolTip.Tip="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Connect">

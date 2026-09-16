@@ -17,7 +17,7 @@
                     <TextBlock Text="Failsafe" Classes="H3" />
                     <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
                     <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+                    <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
                     <TextBlock Text="{Binding Description}" />
                     <ItemsControl ItemsSource="{Binding Guidance}">
                         <ItemsControl.ItemTemplate>

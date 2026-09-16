@@ -32,7 +32,7 @@
                            Classes="Title H2 Danger"
                            HorizontalAlignment="Center" VerticalAlignment="Center" />
 
-                <TextBlock Text="{Binding ErrorMessage}" TextAlignment="Center"
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextAlignment="Center"
                            Classes="H4 Danger"
                            HorizontalAlignment="Center" VerticalAlignment="Center" />
             </StackPanel>

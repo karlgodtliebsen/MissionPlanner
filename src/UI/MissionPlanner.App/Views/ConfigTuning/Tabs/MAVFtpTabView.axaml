@@ -65,7 +65,7 @@
                            IsHitTestVisible="False" />
             </Grid>
             <StackPanel Orientation="Vertical" Grid.Row="2" Spacing="6">
-                <TextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Classes="Danger" />
+                <SelectableTextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Classes="Danger" />
                 <ProgressBar Value="{Binding TransferProgress}" />
                 <TextBlock Text="{Binding TransferDetails}" FontSize="12" />
                 <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />

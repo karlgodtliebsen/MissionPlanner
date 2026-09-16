@@ -23,7 +23,7 @@
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                     <ProgressBar IsIndeterminate="True"  Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" />
                     <StackPanel Orientation="Vertical" Grid.Column="1" Spacing="10">
-                        <TextBlock Text="{Binding ErrorMessage}"  
+                        <SelectableTextBlock Text="{Binding ErrorMessage}"  
                                    IsVisible="{Binding HasError}" 
                                    Classes="Danger"/>
 

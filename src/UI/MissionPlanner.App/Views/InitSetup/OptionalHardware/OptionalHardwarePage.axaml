@@ -14,28 +14,29 @@
     <ContentPage Header="Optional Hardware" Background="{DynamicResource Surface}">
         <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
             <StackPanel Spacing="5" HorizontalAlignment="Center">
-                <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+                <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
                 <TextBlock Text="{Binding VehicleHeading}"  Classes="H4"/>
                 <TextBlock Text="{Binding AvailabilitySummary}" Opacity="0.75" />
             </StackPanel>
             <TabControl TabStripPlacement="Left" Grid.Row="1">
                 <TabItem Header="RTK/GPS Inject"><sections:RtkGpsInjectView /></TabItem>
+                <TabItem Header="CubeID Update"><sections:CubeIdUpdateView /></TabItem>
                 <TabItem Header="SiK Radio"><sections:SikRadioView /></TabItem>
+                <TabItem Header="CAN GPS Order"><sections:CanGpsOrderView /></TabItem>
+                <TabItem Header="Battery Monitors"><sections:BatterySetupView /></TabItem>
                 <TabItem Header="DroneCAN / UAVCAN"><sections:DroneCanUavCanView /></TabItem>
                 <TabItem Header="Joystick"><sections:JoystickView /></TabItem>
-                <TabItem Header="Battery Monitors"><sections:BatterySetupView /></TabItem>
-                <TabItem Header="CAN GPS Order"><sections:CanGpsOrderView /></TabItem>
-                <TabItem Header="Compass / Motor"><sections:CompassMotorCalibrationView /></TabItem>
+                <TabItem Header="Compass/Motor Calibration"><sections:CompassMotorCalibrationView /></TabItem>
                 <TabItem Header="Rangefinder"><sections:RangefinderView /></TabItem>
                 <TabItem Header="Airspeed"><sections:AirspeedView /></TabItem>
+                <TabItem Header="PX4Flow"><sections:AirspeedView /></TabItem>
                 <TabItem Header="Optical Flow"><sections:OpticalFlowView /></TabItem>
-                <TabItem Header="Onboard OSD"><sections:OnboardOsdBridgeView /></TabItem>
-                <TabItem Header="Camera / Gimbal"><sections:CameraGimbalView /></TabItem>
+                <TabItem Header="OSD"><sections:OnboardOsdBridgeView /></TabItem>
+                <TabItem Header="Camera Gimbal"><sections:CameraGimbalView /></TabItem>
                 <TabItem Header="Motor Test"><sections:MotorTestView /></TabItem>
-                <TabItem Header="Bluetooth"><sections:BluetoothSetupView /></TabItem>
+                <TabItem Header="Bluetooth Setup"><sections:BluetoothSetupView /></TabItem>
                 <TabItem Header="Parachute"><sections:ParachuteView /></TabItem>
                 <TabItem Header="ESP8266"><sections:Esp8266SetupView /></TabItem>
-                <TabItem Header="Cube ID"><sections:CubeIdUpdateView /></TabItem>
                 <TabItem Header="Antenna Tracker"><sections:AntennaTrackerView /></TabItem>
                 <TabItem Header="FFT"><sections:FftSetupView /></TabItem>
             </TabControl>

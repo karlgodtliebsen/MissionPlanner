@@ -37,7 +37,8 @@
                 <Label Content="{Binding TelemetryFreshness}" VerticalAlignment="Center" VerticalContentAlignment="Center" />
 
                 <Label Content="•" FontSize="16"  VerticalAlignment="Center" IsVisible="{Binding HasStatusMessage}"/>
-                <Label Content="{Binding StatusMessage}" VerticalAlignment="Center" VerticalContentAlignment="Center" 
+                <SelectableTextBlock Text="{Binding StatusMessage}" 
+                                     VerticalAlignment="Center" 
                        IsVisible="{Binding HasStatusMessage}" />
             </StackPanel>
             

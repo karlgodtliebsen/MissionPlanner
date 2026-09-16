@@ -1,4 +1,78 @@
 
+In the background, Look for newer version of installed Ardupilot and prompt the user for upgrade
+
+Is there a way to se vehicle Id
+
+
+
+
+This is also a useful Next Gen diagnostic
+
+The Serial Ports page could eventually flag this automatically:
+
+⚠ Multiple RCIN ports configured
+
+UART1  RCIN
+UART3  RCIN
+
+RC_OPTIONS:
+  Multiple receiver support: Disabled
+
+Possible configuration conflict.
+
+And ideally it could identify:
+
+UART3
+  RC protocol detected: CRSF / ELRS
+  RC frames received: Yes
+  Link Quality: ...
+
+versus:
+
+UART1
+  RC protocol detected: None
+  RC frames received: No
+
+Then the correct port becomes obvious instead of making the user reason from parameters.
+
+For this Pavo, assuming you're using its ELRS/CRSF receiver, I would therefore make the next change:
+
+SERIAL1_PROTOCOL = None
+SERIAL3_PROTOCOL = RCIN
+
+reboot, and verify in Next Gen's Radio page that the channels still move normally. If they do, we have definitively established UART3 as the active receiver port before proceeding with the remaining arming checks.
+
+
+
+
+
+
+
+
+
+
+
+
+
+**********************************************************************
+
+
+
+
+And this exercise has already exposed several concrete Next Gen improvements:
+
+proper RC calibration that ignores unused channels,
+arming readiness + rejection reason on the HUD,
+onboard logger health versus PC telemetry logging,
+compass configured/detected/required distinction,
+MAVLink .tlog recording.
+
+The test hardware is already proving quite useful.
+
+
+And this is another strong Next Gen feature opportunity: Motor Test could offer a “Determine motor dead-zone” workflow that records the start threshold for each motor and proposes MOT_SPIN_ARM / MOT_SPIN_MIN automatically.
+
+
 
 Task Logging, Also something we need to implement.
 
@@ -9,6 +83,8 @@ It is not inherent in MAVLink itself. If this test was with Next Gen, that may c
 
 Dataflash Logs
 Log system
+
+
 
 
 

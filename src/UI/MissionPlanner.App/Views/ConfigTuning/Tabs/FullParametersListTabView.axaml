@@ -158,7 +158,7 @@
                     IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
                     TextWrapping="Wrap"
                     VerticalAlignment="Center" />
-                <TextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
+                <SelectableTextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
                 <TextBlock Text="Vehicle Reboot required after confirmed changes"
                            IsVisible="{Binding RebootRequired}"
                            Classes="Warning"

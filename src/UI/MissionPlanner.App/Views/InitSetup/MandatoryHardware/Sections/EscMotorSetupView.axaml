@@ -16,7 +16,7 @@
                     <TextBlock Text="ESC calibration and motor test" Classes="H3" />
                     <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
                     <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+                    <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
                     <TextBlock Text="Remove ALL propellers before any actuator test. Motors will spin." Classes="Warning" FontWeight="Bold" />
                     <TextBlock Text="{Binding EscExplanation}" />
                     <ItemsControl IsVisible="{Binding EscCalibrationApplicable}" ItemsSource="{Binding EscSteps}">
