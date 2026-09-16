@@ -179,7 +179,12 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
             state.Flight.IsArmed,
             state.Flight.Mode,
             state.Position.LatitudeDegrees,
-            state.Position.LongitudeDegrees);
+            state.Position.LongitudeDegrees)
+        {
+            Arming = state.Connection.State == VehicleConnectionState.Offline
+                ? VehicleArmingStatus.Empty
+                : state.Arming
+        };
     }
 
     private void OnAltitudeReferenceChanged(object? sender, LocalAltitudeReferenceChangedEventArgs args)

@@ -18,6 +18,9 @@ public sealed record VehicleState(
     VehicleNavigationState Navigation,
     VehicleHealthState Health)
 {
+    /// <summary>Gets retained arming readiness and rejection reasons.</summary>
+    public VehicleArmingStatus Arming { get; init; } = VehicleArmingStatus.Empty;
+
     /// <summary>Gets estimator diagnostics and alternate estimator output.</summary>
     public VehicleEstimatorState Estimator { get; init; } = VehicleEstimatorState.Empty;
 

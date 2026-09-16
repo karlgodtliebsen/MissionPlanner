@@ -44,6 +44,9 @@ public sealed record VehicleHudData(
     double? Latitude,
     double? Longitude)
 {
+    /// <summary>Gets retained arming readiness and rejection reasons.</summary>
+    public VehicleArmingStatus Arming { get; init; } = VehicleArmingStatus.Empty;
+
     /// <summary>
     /// Creates a default/empty HUD data instance for a vehicle.
     /// </summary>

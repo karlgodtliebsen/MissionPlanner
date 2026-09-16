@@ -1,4 +1,4 @@
-using MissionPlanner.Core.DomainEvents;
+﻿using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Firmware;
@@ -19,6 +19,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
 {
     private const byte MavModeFlagSafetyArmed = 0b1000_0000;
     private VehicleState state = initialState;
+    private bool? preArmHealthy;
 
     /// <summary>
     /// Provides the public API for Id.
@@ -61,6 +62,10 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
                     : VehicleConnectionState.Online;
 
         state = state with { Connection = state.Connection with { State = currentState } };
+        if (currentState == VehicleConnectionState.Offline)
+        {
+            ResetArmingStatus();
+        }
         return previousState == currentState
             ? null
             : new VehicleConnectionStateChanged(
@@ -81,6 +86,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
         }
 
         state = state with { Identity = identity, Flight = new VehicleFlightState(observation.CustomMode, observation.BaseMode, observation.SystemStatus, MapMode(observation.CustomMode), (observation.BaseMode & MavModeFlagSafetyArmed) != 0), Connection = new VehicleConnectionData(VehicleConnectionState.Online, observation.ObservedAt) };
+        UpdateArmingStatus(observation.ObservedAt);
     }
 
     /// <summary>
@@ -405,6 +411,13 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
                 SystemObservedAt = observation.ObservedAt
             }
         };
+
+        // MAV_SYS_STATUS_PREARM_CHECK is bit 28; absent/disabled is not proof of readiness.
+        const uint preArmCheck = 1u << 28;
+        preArmHealthy = (observation.SensorsPresent & observation.SensorsEnabled & preArmCheck) != 0
+            ? (observation.SensorsHealthy & preArmCheck) != 0
+            : null;
+        UpdateArmingStatus(observation.ObservedAt);
     }
 
     /// <summary>Applies estimator drift and error diagnostics.</summary>
@@ -636,6 +649,52 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     public void ApplyStatusText(VehicleStatusText message)
     {
         Notifications.Add(message);
+        if (message.SourceComponentId != Id.ComponentId)
+        {
+            return;
+        }
+
+        var text = message.Text.Trim();
+        if (text.StartsWith("PreArm:", StringComparison.OrdinalIgnoreCase) && text.Length > 7 && !state.IsArmed)
+        {
+            preArmHealthy = false;
+            state = state with { Arming = state.Arming with { PreArmReason = text } };
+            UpdateArmingStatus(message.ReceivedAt);
+        }
+        else if (text.StartsWith("Arm:", StringComparison.OrdinalIgnoreCase) && text.Length > 4)
+        {
+            state = state with { Arming = state.Arming with { LastArmFailure = text, UpdatedAt = message.ReceivedAt } };
+        }
+    }
+
+    /// <summary>Clears retained arming feedback when this vehicle session ends.</summary>
+    public void ResetArmingStatus()
+    {
+        preArmHealthy = null;
+        state = state with { Arming = VehicleArmingStatus.Empty };
+    }
+
+    private void UpdateArmingStatus(DateTimeOffset observedAt)
+    {
+        var armingState = state.IsArmed
+            ? VehicleArmingState.Armed
+            : preArmHealthy switch
+            {
+                true => VehicleArmingState.DisarmedReady,
+                false => VehicleArmingState.DisarmedNotReady,
+                null => VehicleArmingState.Unknown
+            };
+        state = state with
+        {
+            Arming = state.Arming with
+            {
+                State = armingState,
+                PreArmReason = armingState is VehicleArmingState.Armed or VehicleArmingState.DisarmedReady
+                    ? null
+                    : state.Arming.PreArmReason,
+                UpdatedAt = observedAt
+            }
+        };
     }
 
 

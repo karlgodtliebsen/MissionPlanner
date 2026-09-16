@@ -194,3 +194,16 @@ Test hygiene (serial hardware tests):
 - TCP and UDP connect paths exist but still need real-world testing (see FEATURES.md).
 - Reconnect-on-link-loss (automatic re-establish) is not implemented — the monitor marks
   the vehicle stale/offline but does not redial.
+
+## Arming readiness and retained feedback
+
+The immutable vehicle state exposes `Arming`, owned by `VehicleSession`. Heartbeat
+armed state takes precedence. Pre-arm readiness requires the SYS_STATUS pre-arm check
+bit to be present, enabled, and healthy; absent/disabled checks remain unknown rather
+than reporting Ready to Arm. Assembled autopilot STATUSTEXT messages retain the latest
+meaningful `PreArm:` blocker and `Arm:` rejection independently of message history.
+Readiness or arming clears the pre-arm blocker. The last arming rejection remains
+visible until session reset/disconnect. Offline transitions clear both reasons.
+
+The Flight Data HUD shows the arming/readiness label and both retained reasons below
+the flight instruments. No parameter or command is sent by this read-only feature.

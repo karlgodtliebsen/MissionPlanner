@@ -50,6 +50,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
             return false;
         }
 
+        vehicle.ResetArmingStatus();
         var offlineState = vehicle.State with { Connection = vehicle.State.Connection with { State = VehicleConnectionState.Offline } };
         await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(offlineState), cancellationToken).ConfigureAwait(false);
         logger.LogInformation("Removed exact vehicle {VehicleId} from the registry.", vehicleId);

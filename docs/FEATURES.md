@@ -1033,3 +1033,9 @@ conversion UI and physical acceptance are tracked in [Betaflight conversion](BET
 Betaflight firmware downloading/flashing is deferred.
 
 Install Firmware uses one operational page and deterministic installation plan for serial APJ and STM32 DFU combined HEX. Preparation works without a controller or alongside unrelated network telemetry. USB identifiers are hints; protocol identity and strict source-independent compatibility gate installation. See [workflow ownership](INSTALL_FIRMWARE_VIEWMODELS.md).
+
+## Bench arming feedback
+
+Flight Data HUD displays armed state, pre-arm readiness, the retained pre-arm blocker,
+and the last arm rejection. Readiness is unknown until supported pre-arm telemetry
+arrives; disconnect clears retained feedback. See [vehicle connection](VEHICLE_CONNECTION.md#arming-readiness-and-retained-feedback).

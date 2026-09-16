@@ -127,6 +127,18 @@ public partial class HudViewModel : ViewModelBase
         get; set;
     }
 
+    /// <summary>Gets the flight-controller arming and readiness label.</summary>
+    [ObservableProperty]
+    public partial string ArmingLabel { get; set; } = "Arming status unknown";
+
+    /// <summary>Gets the retained pre-arm blocker.</summary>
+    [ObservableProperty]
+    public partial string? PreArmReason { get; set; }
+
+    /// <summary>Gets the latest rejected arming attempt.</summary>
+    [ObservableProperty]
+    public partial string? LastArmFailure { get; set; }
+
     /// <summary>Current flight mode.</summary>
     [ObservableProperty]
     public partial string FlightMode
@@ -164,8 +176,16 @@ public partial class HudViewModel : ViewModelBase
                 DistanceToWp = hudData.DistanceToWp;
                 GpsSatellites = hudData.GpsSatellites;
                 IsArmed = hudData.IsArmed;
+                ArmingLabel = hudData.Arming.State switch
+                {
+                    MissionPlanner.Core.Vehicles.Models.VehicleArmingState.Armed => "ARMED",
+                    MissionPlanner.Core.Vehicles.Models.VehicleArmingState.DisarmedReady => "DISARMED — Ready to Arm",
+                    MissionPlanner.Core.Vehicles.Models.VehicleArmingState.DisarmedNotReady => "DISARMED — Not Ready to Arm",
+                    _ => "Arming readiness unknown"
+                };
+                PreArmReason = hudData.Arming.PreArmReason;
+                LastArmFailure = hudData.Arming.LastArmFailure;
                 FlightMode = hudData.Mode.ToString();
             }));
     }
 }
-

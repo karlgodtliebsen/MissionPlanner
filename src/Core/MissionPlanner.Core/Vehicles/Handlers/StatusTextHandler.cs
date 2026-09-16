@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
@@ -207,7 +207,12 @@ public sealed class StatusTextHandler : IStatusTextHandler
     private async Task PersistAsync(VehicleSession vehicle, VehicleStatusText message, CancellationToken cancellationToken)
     {
         var stored = messageStore.Add(message);
+        var previous = vehicle.State;
         vehicle.ApplyStatusText(stored);
+        if (previous != vehicle.State)
+        {
+            await domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken).ConfigureAwait(false);
+        }
         await domainEventHub.PublishDomainEventAsync(new VehicleStatusTextReceived(stored), cancellationToken).ConfigureAwait(false);
     }
 
