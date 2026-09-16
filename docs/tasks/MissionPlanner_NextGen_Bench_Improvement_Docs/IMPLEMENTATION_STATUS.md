@@ -9,7 +9,7 @@ Each task is implemented, verified, documented, and committed separately.
 | 1. Arming status and HUD | Complete |
 | 2. RC calibration used channels | Complete |
 | 3. RC neutral diagnostics | Complete |
-| 4. PC telemetry recording | Pending |
+| 4. PC telemetry recording | Complete |
 | 5. Onboard logging diagnostics | Pending |
 | 6. Accelerometer calibration | Pending |
 | 7. Compass diagnostics | Pending |
@@ -38,3 +38,10 @@ Each task is implemented, verified, documented, and committed separately.
 - Complete solution build passed (18 existing warnings, zero errors).
 - Observed center is sampled only during neutral review. Live neutral assessment requires fresh telemetry and downloaded trim/dead-zone.
 - Interactive/hardware verification not run; no parameter writes are triggered by diagnostics.
+
+## Task 4 verification
+
+- Recording tests: 4 passed; Core suite: 634 passed, 6 skipped.
+- Complete solution build passed (18 existing warnings, zero errors).
+- Exact tlog framing, direction limitations, overflow/error behavior, configurable directory, and disconnect flushing documented in TELEMETRY_RECORDING.md.
+- Physical bench connection and interactive UI verification not run.

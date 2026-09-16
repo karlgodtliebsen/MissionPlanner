@@ -1,4 +1,4 @@
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.MavLink.Services;
@@ -54,6 +54,16 @@ public sealed class MavLinkInspectionLease : IDisposable
         {
             Interlocked.Increment(ref dropped);
             Interlocked.Add(ref droppedBytes, observation.Frame.RawBytes.Length);
+        }
+    }
+
+    /// <summary>Detaches the observer and completes its stream while preserving queued frames for draining.</summary>
+    public void Complete()
+    {
+        if (Interlocked.Exchange(ref disposed, 1) == 0)
+        {
+            release(this);
+            channel.Writer.TryComplete();
         }
     }
 

@@ -17,6 +17,9 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IFileOpenService fileOpenService;
 
+    private readonly TelemetryRecordingService? recordingService;
+    private readonly MissionPlanner.Library.EventHub.Abstractions.IDomainEventHub? domainEvents;
+    private IDisposable? recordingSubscription;
     private CancellationTokenSource? operationCancellation;
 
 
@@ -25,13 +28,19 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     /// <param name="activeVehicle">Active-vehicle context used by the shared tab lifecycle.</param>
     /// <param name="fileOpenService">Avalonia file-selection boundary.</param>
     /// <param name="logger">Structured workflow logger.</param>
+    /// <param name="recordingService">PC telemetry recording state.</param>
+    /// <param name="domainEvents">Application recording lifecycle events.</param>
     public TelemetryLogsTabViewModel(
         IReplaySessionManager replaySessionManager,
         IActiveVehicleContext activeVehicle,
         IFileOpenService fileOpenService,
-        ILogger<TelemetryLogsTabViewModel> logger)
+        ILogger<TelemetryLogsTabViewModel> logger,
+        TelemetryRecordingService? recordingService = null,
+        MissionPlanner.Library.EventHub.Abstractions.IDomainEventHub? domainEvents = null)
         : base(logger)
     {
+        this.recordingService = recordingService;
+        this.domainEvents = domainEvents;
         this.replaySessionManager = replaySessionManager;
         this.activeVehicle = activeVehicle;
         this.fileOpenService = fileOpenService;
@@ -41,6 +50,16 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
+        recordingSubscription?.Dispose();
+        recordingSubscription = domainEvents?.SubscribeDomainEventAsync<TelemetryRecordingChanged>((change, cancellationToken) =>
+        {
+            Dispatcher.Dispatch(() => ApplyRecording(recordingService?.Current ?? change.Status));
+            return Task.CompletedTask;
+        });
+        if (recordingService is not null)
+        {
+            ApplyRecording(recordingService.Current);
+        }
         replaySessionManager.Changed += OnReplayChanged;
         ApplySnapshot(replaySessionManager.Snapshot);
         return Task.CompletedTask;
@@ -55,6 +74,8 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
 
     private void Deactivate()
     {
+        recordingSubscription?.Dispose();
+        recordingSubscription = null;
         replaySessionManager.Changed -= OnReplayChanged;
     }
     /// <inheritdoc />
@@ -64,6 +85,25 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
         base.Dispose();
     }
 
+
+    /// <summary>Gets PC recording health, independent of vehicle onboard logging.</summary>
+    [ObservableProperty]
+    public partial string RecordingState { get; private set; } = "Idle";
+
+    /// <summary>Gets the exact PC telemetry file location.</summary>
+    [ObservableProperty]
+    public partial string? RecordingPath { get; private set; }
+
+    /// <summary>Gets a file or dropped-frame recording error.</summary>
+    [ObservableProperty]
+    public partial string? RecordingError { get; private set; }
+
+    private void ApplyRecording(TelemetryRecordingStatus status)
+    {
+        RecordingState = status.State;
+        RecordingPath = status.FilePath;
+        RecordingError = status.Error;
+    }
 
     /// <summary>Gets replay-only vehicle states; these vehicles never enter the live registry.</summary>
     public ObservableRangeCollection<VehicleState> ReplayVehicles

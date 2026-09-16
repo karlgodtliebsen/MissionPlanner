@@ -1049,3 +1049,8 @@ Radio rows now include live neutral status, observed center error, and travel
 asymmetry for mapped Roll/Pitch/Yaw. Missing parameters and stale input display
 unknown status. Guidance covers transmitter offsets and stale vehicle trims,
 without automatic parameter changes.
+
+PC telemetry recording now starts automatically per live MAVLink connection.
+Telemetry Logs shows recording state, file location, and failures separately from
+onboard logging. Files use the existing replay-compatible tlog framing and the
+persisted log directory. See [telemetry recording](TELEMETRY_RECORDING.md).

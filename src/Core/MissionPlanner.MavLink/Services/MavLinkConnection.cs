@@ -1,4 +1,4 @@
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library;
@@ -31,6 +31,8 @@ public sealed class MavLinkConnection : IMavLinkConnection
     private Task? publishTask;
     private bool disposed;
     private bool inspectionAttached;
+    private readonly IMavLinkTrafficRecording? trafficRecording;
+    private IAsyncDisposable? recording;
 
     /// <inheritdoc />
     public MavLinkInspectionTap? Inspection { get; }
@@ -49,6 +51,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     /// <param name="transmissionPolicy">Optional application safety policy for outbound frames.</param>
     /// <param name="inspection">Optional connection-owned bounded traffic observers.</param>
     /// <param name="signing">Optional connection-owned signing and verification.</param>
+    /// <param name="trafficRecording">Optional connection-boundary telemetry recorder.</param>
     /// <exception cref="ArgumentNullException"></exception>
     public MavLinkConnection(
         IMavLinkClient client,
@@ -59,7 +62,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         ILogger<MavLinkConnection> logger,
         IMavLinkTransmissionPolicy? transmissionPolicy = null,
         MavLinkInspectionTap? inspection = null,
-        MissionPlanner.MavLink.Signing.MavLinkSigningSession? signing = null)
+        MissionPlanner.MavLink.Signing.MavLinkSigningSession? signing = null, IMavLinkTrafficRecording? trafficRecording = null)
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
         this.frameParser = frameParser ?? throw new ArgumentNullException(nameof(frameParser));
@@ -67,7 +70,8 @@ public sealed class MavLinkConnection : IMavLinkConnection
         this.eventHub = eventHub ?? throw new ArgumentNullException(nameof(eventHub));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.transmissionPolicy = transmissionPolicy;
-        Inspection = inspection;
+        Inspection = inspection ?? (trafficRecording is null ? null : new MavLinkInspectionTap());
+        this.trafficRecording = trafficRecording;
         Signing = signing;
         this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.options.Validate();
@@ -96,7 +100,23 @@ public sealed class MavLinkConnection : IMavLinkConnection
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             decodedMessages = Channel.CreateBounded<DecodedMavLinkMessage>(new BoundedChannelOptions(options.DecodedMessageChannelCapacity) { SingleWriter = true, SingleReader = true, FullMode = BoundedChannelFullMode.Wait, AllowSynchronousContinuations = false });
 
-            await client.StartAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            if (Inspection is not null)
+            {
+                recording = trafficRecording?.Start(Inspection);
+            }
+            try
+            {
+                await client.StartAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            }
+            catch
+            {
+                if (recording is not null)
+                {
+                    await recording.DisposeAsync().ConfigureAwait(false);
+                    recording = null;
+                }
+                throw;
+            }
 
             parseTask = Task.Run(() => ParseLoopAsync(cancellationTokenSource.Token), CancellationToken.None);
             publishTask = Task.Run(() => PublishLoopAsync(cancellationTokenSource.Token), CancellationToken.None);
@@ -280,7 +300,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         await lifecycleLock.WaitAsync();
         try
         {
-            Inspection?.CloseObservers();
+
             Signing?.Dispose();
             if (inspectionAttached && frameParser is MavLinkV2FrameParser inspectable)
             {
@@ -328,7 +348,19 @@ public sealed class MavLinkConnection : IMavLinkConnection
         }
         finally
         {
-            lifecycleLock.Release();
+            try
+            {
+                if (recording is not null)
+                {
+                    await recording.DisposeAsync().ConfigureAwait(false);
+                    recording = null;
+                }
+                Inspection?.CloseObservers();
+            }
+            finally
+            {
+                lifecycleLock.Release();
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-<utilities:TabItemViewBase x:TypeArguments="tabs:TelemetryLogsTabViewModel"
+﻿<utilities:TabItemViewBase x:TypeArguments="tabs:TelemetryLogsTabViewModel"
                            xmlns="https://github.com/avaloniaui"
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
@@ -14,6 +14,10 @@
     <Grid Margin="12" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="10">
         <Border Padding="12" Classes="SectionCard">
             <StackPanel>
+                <TextBlock Text="{Binding RecordingState, StringFormat='PC Telemetry Recording: {0}'}" FontWeight="Bold" />
+                <SelectableTextBlock Text="{Binding RecordingPath}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding RecordingError}" Classes="Warning" TextWrapping="Wrap" />
+                <TextBlock Text="Directory: Preferences → Logging → Log directory (applies to the next connection)." TextWrapping="Wrap" />
                 <TextBlock Text="{Binding SourceModeLabel}" FontSize="16" FontWeight="Bold"/>
                 <TextBlock Text="Replay is read-only and cannot send vehicle commands." TextWrapping="Wrap"/>
             </StackPanel>
