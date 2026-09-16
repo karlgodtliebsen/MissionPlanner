@@ -956,9 +956,10 @@ public sealed class ParameterEditSession : IParameterEditSession
             var allowed = field.Metadata.Bitmask
                 .Where(option => option.Bit is >= 0 and < 64)
                 .Aggregate(0UL, (mask, option) => mask | (1UL << option.Bit));
-            if ((selected & ~allowed) != 0)
+            var existingUnknown = (ulong)Math.Max(0, Math.Round(field.LiveValue)) & ~allowed;
+            if ((selected & ~allowed) != existingUnknown)
             {
-                return "The value contains bitmask flags not advertised by the vehicle firmware metadata.";
+                return "Unknown bitmask flags must remain as reported by the vehicle.";
             }
         }
 

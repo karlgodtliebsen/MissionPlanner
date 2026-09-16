@@ -1,4 +1,4 @@
-<utilities:NavigationViewBase
+﻿<utilities:NavigationViewBase
     x:TypeArguments="optional:OptionalHardwareViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -38,6 +38,7 @@
                 <TabItem Header="Cube ID"><sections:CubeIdUpdateView /></TabItem>
                 <TabItem Header="Antenna Tracker"><sections:AntennaTrackerView /></TabItem>
                 <TabItem Header="FFT"><sections:FftSetupView /></TabItem>
+                <TabItem Header="Serial Ports"><sections:SerialPortsView /></TabItem>
             </TabControl>
         </Grid>
     </ContentPage>

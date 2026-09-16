@@ -329,3 +329,11 @@ disabled; parameter presence never makes an unknown or hazardous action safe to 
 - Delete the unused `VehicleParameterStreamService` V1–V3 classes.
 - The comparison engine and exports are implemented; the Avalonia workflow currently exposes
   live-versus-pending review while richer file/profile source selection is being expanded.
+
+### Serial Ports editor
+
+[Serial Ports](SERIAL_PORTS.md) groups reported SERIALn_PROTOCOL/BAUD/OPTIONS fields and stages them
+through the existing shared edit session. Applying the page targets only its serial parameter names.
+Metadata enum labels remain separate from stored numeric values, including numeric baud labels.
+Unknown current enum values remain representable. Shared bitmask editing preserves unadvertised bits
+already present in vehicle readback; validation rejects adding or removing unadvertised flags.

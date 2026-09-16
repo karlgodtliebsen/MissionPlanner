@@ -12,7 +12,7 @@ public sealed class OptionalHardwareTabCatalogTests
         var catalog = new OptionalHardwareTabCatalog();
         catalog.Tabs.Select(item => item.Key).Should().OnlyHaveUniqueItems();
         catalog.Tabs.Select(item => item.Order).Should().BeInAscendingOrder();
-        catalog.Tabs.Should().HaveCount(19);
+        catalog.Tabs.Should().HaveCount(20);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public sealed class OptionalHardwareTabCatalogTests
             OptionalHardwareTabKey.MotorTest, OptionalHardwareTabKey.BluetoothSetup,
             OptionalHardwareTabKey.Parachute, OptionalHardwareTabKey.Esp8266Setup,
             OptionalHardwareTabKey.CubeIdUpdate, OptionalHardwareTabKey.AntennaTracker,
-            OptionalHardwareTabKey.FftSetup);
+            OptionalHardwareTabKey.FftSetup, OptionalHardwareTabKey.SerialPorts);
     }
 
     [Fact]

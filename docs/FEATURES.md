@@ -1033,3 +1033,5 @@ conversion UI and physical acceptance are tracked in [Betaflight conversion](BET
 Betaflight firmware downloading/flashing is deferred.
 
 Install Firmware uses one operational page and deterministic installation plan for serial APJ and STM32 DFU combined HEX. Preparation works without a controller or alongside unrelated network telemetry. USB identifiers are hints; protocol identity and strict source-independent compatibility gate installation. See [workflow ownership](INSTALL_FIRMWARE_VIEWMODELS.md).
+
+* Setup / Optional Hardware now includes a metadata-driven [Serial Ports](SERIAL_PORTS.md) page with sparse port discovery, configured baud/protocol selectors, options editing, confirmed writes and non-blocking RCIN duplication diagnostics.

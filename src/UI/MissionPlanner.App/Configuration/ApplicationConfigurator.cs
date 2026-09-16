@@ -402,6 +402,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<Esp8266SetupViewModel>();
         services.TryAddTransient<AntennaTrackerViewModel>();
         services.TryAddTransient<FftSetupViewModel>();
+        services.TryAddTransient<SerialPortsViewModel>();
         services.TryAddTransient<ConfirmDfuTargetViewModel>();
 
         return services;

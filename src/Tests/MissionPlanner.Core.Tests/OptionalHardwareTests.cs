@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -31,7 +31,7 @@ public sealed class OptionalHardwareTests
         available.Should().NotContain("rangefinder", "no rangefinder parameters are present");
     }
 
-    /// <summary>Verifies serial ports sharing an exclusive protocol are flagged before any write.</summary>
+    /// <summary>Verifies duplicate protocols are not treated as exclusive without receiver metadata.</summary>
     [Fact]
     public void SerialProtocolConflictIsDetected()
     {
@@ -40,7 +40,7 @@ public sealed class OptionalHardwareTests
 
         var view = module.Build(parameters, Metadata());
 
-        view.Issues.Should().Contain(issue => issue.Message.Contains("share serial protocol 5"));
+        view.Issues.Should().BeEmpty("duplicate GPS and MAVLink assignments can be valid");
         view.Issues.Should().NotContain(issue => issue.Message.Contains("protocol 2"), "MAVLink protocols may be shared");
     }
 
