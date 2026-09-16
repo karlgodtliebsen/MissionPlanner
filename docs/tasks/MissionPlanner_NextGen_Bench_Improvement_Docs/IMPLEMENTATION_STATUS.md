@@ -11,7 +11,7 @@ Each task is implemented, verified, documented, and committed separately.
 | 3. RC neutral diagnostics | Complete |
 | 4. PC telemetry recording | Complete |
 | 5. Onboard logging diagnostics | Complete |
-| 6. Accelerometer calibration | Pending |
+| 6. Accelerometer calibration | Complete |
 | 7. Compass diagnostics | Pending |
 | 8. Motor start threshold assistant | Pending |
 | 9. Motor output diagnostics | Pending |
@@ -52,3 +52,10 @@ Each task is implemented, verified, documented, and committed separately.
 - Complete solution build passed (18 existing warnings, zero errors).
 - Simulator command-ack test now awaits connection startup; the previous fire-and-forget startup raced its first send after recording initialization.
 - Free space remains explicitly unavailable rather than inferred from unrelated camera storage. Hardware/UI verification not run.
+
+## Task 6 verification
+
+- Five fake-MAVLink workflow tests passed; Core suite: 642 passed, 6 skipped.
+- Complete solution build passed (19 warnings, zero errors; no XML documentation warnings).
+- Extended the existing workflow and view; fixed connection ownership, synchronous-response transition ordering, and bounded full calibration/refresh lifetimes.
+- Physical calibration remains unverified.

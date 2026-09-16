@@ -1058,3 +1058,7 @@ persisted log directory. See [telemetry recording](TELEMETRY_RECORDING.md).
 Telemetry Logs distinguishes Vehicle Onboard Logging from PC Telemetry Recording.
 It shows backend configuration, known health, logger text, retained ENOSPC detail,
 and arming impact; backend zero is Disabled. PC recording continues independently.
+
+Accelerometer calibration now uses the application connection boundary, a bounded
+six-position workflow, clear orientation labels, and post-success parameter and
+SYS_STATUS refresh. See [accelerometer calibration](ACCELEROMETER_CALIBRATION.md).

@@ -31,7 +31,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IEventHub eventHub;
-    private readonly IMavLinkConnection connection;
+    private readonly IVehicleConnectionSession connectionSession;
     private readonly IMavLinkCommandEncoder encoder;
     private readonly IVehicleOperationGate operationGate;
     private readonly IVehicleMessageStore messageStore;
@@ -40,6 +40,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     private readonly ILogger<ArduPilotCalibrationService> logger;
     private readonly TimeSpan startTimeout;
     private readonly TimeSpan levelTimeout;
+    private readonly TimeSpan sixPositionTimeout;
     private readonly HashSet<CalibrationOrientation> completedOrientations = [];
     private IDisposable? messageSubscription;
     private IDisposable? operationLease;
@@ -54,7 +55,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="vehicleRegistry">The vehicle registry used to resolve the endpoint.</param>
     /// <param name="eventHub">The decoded MAVLink event stream.</param>
-    /// <param name="connection">The MAVLink connection used for protocol replies.</param>
+    /// <param name="connectionSession">The application-owned connection boundary used for protocol replies.</param>
     /// <param name="encoder">The MAVLink command encoder.</param>
     /// <param name="operationGate">The shared vehicle operation gate.</param>
     /// <param name="messageStore">The bounded status-text store.</param>
@@ -66,7 +67,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         IActiveVehicleContext activeVehicle,
         IVehicleRegistry vehicleRegistry,
         IEventHub eventHub,
-        IMavLinkConnection connection,
+        IVehicleConnectionSession connectionSession,
         IMavLinkCommandEncoder encoder,
         IVehicleOperationGate operationGate,
         IVehicleMessageStore messageStore,
@@ -78,7 +79,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         this.activeVehicle = activeVehicle;
         this.vehicleRegistry = vehicleRegistry;
         this.eventHub = eventHub;
-        this.connection = connection;
+        this.connectionSession = connectionSession;
         this.encoder = encoder;
         this.operationGate = operationGate;
         this.messageStore = messageStore;
@@ -87,6 +88,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         this.logger = logger;
         startTimeout = options.Value.StartTimeout > TimeSpan.Zero ? options.Value.StartTimeout : TimeSpan.FromSeconds(8);
         levelTimeout = options.Value.LevelTimeout > TimeSpan.Zero ? options.Value.LevelTimeout : TimeSpan.FromSeconds(30);
+        sixPositionTimeout = options.Value.SixPositionTimeout > TimeSpan.Zero ? options.Value.SixPositionTimeout : TimeSpan.FromMinutes(5);
         activeVehicle.Changed += OnActiveVehicleChanged;
     }
 
@@ -126,13 +128,26 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
             samplingOrientation = orientation;
         }
 
-        await SendCommandAsync(vehicleId, AccelerometerPositionCommand, [(float)orientation], cancellationToken).ConfigureAwait(false);
+
         Transition(Current with
         {
             State = CalibrationWorkflowState.Sampling,
             Progress = Math.Max(Current.Progress, Math.Min(0.99, (completedOrientations.Count + 0.5) / 6d)),
             Instruction = $"Keep the vehicle {OrientationText(orientation)} and motionless while it samples."
         });
+        try
+        {
+            // Transition first: a synchronous next-orientation response must not be overwritten.
+            await SendCommandAsync(vehicleId, AccelerometerPositionCommand, [(float)orientation], cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            Finish(CalibrationWorkflowState.Cancelled, "Orientation confirmation was cancelled.");
+        }
+        catch (Exception exception)
+        {
+            Finish(CalibrationWorkflowState.Failed, $"Orientation confirmation failed: {exception.Message}");
+        }
     }
 
     /// <inheritdoc />
@@ -157,7 +172,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
             {
                 await SendCommandAsync(target, AccelerometerPositionCommand, [(float)AccelcalVehiclePos.Failed], cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception exception) when (exception is not OperationCanceledException)
+            catch (Exception exception)
             {
                 logger.LogWarning(exception, "Could not send accelerometer calibration abort to {VehicleId}.", target);
             }
@@ -256,16 +271,21 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
                 : "Keep the vehicle disarmed. Waiting for the first orientation request."));
         logger.LogInformation("Starting {CalibrationKind} calibration for {VehicleId}.", kind, vehicleId);
 
+        var runToken = runCancellation.Token;
+        if (kind == AccelerometerCalibrationKind.SixPosition)
+        {
+            _ = WatchSixPositionTimeoutAsync(runToken);
+        }
         try
         {
             var action = kind == AccelerometerCalibrationKind.Level
                 ? PreflightCalibrationAccelerometer.Trim
                 : PreflightCalibrationAccelerometer.Full;
-            await SendCommandAsync(vehicleId, PreflightCalibrationCommand, [0, 0, 0, 0, (float)action, 0, 0], runCancellation.Token).ConfigureAwait(false);
-            await startSignal.Task.WaitAsync(startTimeout, runCancellation.Token).ConfigureAwait(false);
+            await SendCommandAsync(vehicleId, PreflightCalibrationCommand, [0, 0, 0, 0, (float)action, 0, 0], runToken).ConfigureAwait(false);
+            await startSignal.Task.WaitAsync(startTimeout, runToken).ConfigureAwait(false);
             if (kind == AccelerometerCalibrationKind.Level && IsActive(Current.State))
             {
-                await terminalSignal.Task.WaitAsync(levelTimeout, runCancellation.Token).ConfigureAwait(false);
+                await terminalSignal.Task.WaitAsync(levelTimeout, runToken).ConfigureAwait(false);
             }
         }
         catch (TimeoutException)
@@ -290,9 +310,22 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         }
     }
 
+    private async Task WatchSixPositionTimeoutAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(sixPositionTimeout, cancellationToken).ConfigureAwait(false);
+            Finish(CalibrationWorkflowState.Failed, "Six-position calibration timed out. Keep the vehicle disarmed and retry.");
+        }
+        catch (OperationCanceledException)
+        {
+            // Completion, cancellation, or disconnect ends this run's watchdog.
+        }
+    }
+
     private Task HandleMessageAsync(MavLinkMessage message, CancellationToken cancellationToken)
     {
-        if (Current.VehicleId is not { } vehicleId || message.SystemId != vehicleId.SystemId || message.ComponentId != vehicleId.ComponentId)
+        if (!IsActive(Current.State) || Current.VehicleId is not { } vehicleId || message.SystemId != vehicleId.SystemId || message.ComponentId != vehicleId.ComponentId)
         {
             return Task.CompletedTask;
         }
@@ -368,7 +401,11 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
 
     private void HandleOrientationSignal(float rawPosition)
     {
-        var value = checked((uint)Math.Round(rawPosition));
+        if (!float.IsFinite(rawPosition) || rawPosition < 0 || rawPosition > uint.MaxValue || rawPosition != MathF.Truncate(rawPosition))
+        {
+            return;
+        }
+        var value = (uint)rawPosition;
         if (value == (uint)AccelcalVehiclePos.Success)
         {
             if (samplingOrientation is { } sampled)
@@ -453,8 +490,16 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     private async Task SendCommandAsync(VehicleId vehicleId, ushort command, IReadOnlyList<float> parameters, CancellationToken cancellationToken)
     {
         var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException("The target vehicle session is unavailable.");
+        if (!activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
+        {
+            throw new InvalidOperationException("The calibration vehicle is no longer connected.");
+        }
+        if (activeVehicle.State?.IsArmed != false)
+        {
+            throw new InvalidOperationException("Keep the vehicle disarmed throughout calibration.");
+        }
         var packet = encoder.EncodeCommandLong(vehicleId.SystemId, vehicleId.ComponentId, command, parameters);
-        await connection.SendRawAsync(packet, session.EndPoint, cancellationToken).ConfigureAwait(false);
+        await connectionSession.Connection.SendRawAsync(packet, session.EndPoint, cancellationToken).ConfigureAwait(false);
     }
 
     private void Finish(CalibrationWorkflowState state, string message)
@@ -488,13 +533,19 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     {
         try
         {
+            using var refreshCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
+            refreshCancellation.CancelAfter(TimeSpan.FromSeconds(10));
             foreach (var name in calibrationParameters)
             {
-                if (parameterRegistry.GetParameter(vehicleId, name) is not null)
+                if (!activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
                 {
-                    await parameterService.RequestParameterAsync(vehicleId, name).ConfigureAwait(false);
+                    return;
                 }
+                await parameterService.RequestParameterAsync(vehicleId, name, refreshCancellation.Token).ConfigureAwait(false);
             }
+            // Refresh SYS_STATUS through the existing command encoder. Readiness remains
+            // telemetry-derived; calibration success alone must never claim Ready to Arm.
+            await SendCommandAsync(vehicleId, (ushort)MavCmd.RequestMessage, [1], refreshCancellation.Token).ConfigureAwait(false);
         }
         catch (Exception exception)
         {

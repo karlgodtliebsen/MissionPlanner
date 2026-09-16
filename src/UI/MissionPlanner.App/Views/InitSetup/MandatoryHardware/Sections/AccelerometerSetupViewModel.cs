@@ -275,7 +275,16 @@ public sealed partial class AccelerometerSetupViewModel : ViewModelBase
         Instruction = snapshot.Instruction;
         SupplementalStatus = snapshot.SupplementalStatus;
         Progress = snapshot.Progress;
-        Orientation = snapshot.RequiredOrientation?.ToString() ?? "No orientation requested";
+        Orientation = snapshot.RequiredOrientation switch
+        {
+            CalibrationOrientation.Level => "Level",
+            CalibrationOrientation.Left => "Left side",
+            CalibrationOrientation.Right => "Right side",
+            CalibrationOrientation.NoseDown => "Nose down",
+            CalibrationOrientation.NoseUp => "Nose up",
+            CalibrationOrientation.Back => "Upside down",
+            _ => "No orientation requested"
+        };
         OrientationImage = ImageFor(snapshot.RequiredOrientation);
         CompletedOrientations = $"{snapshot.CompletedOrientations.Count} of 6 positions sampled";
         SetMessages(null, snapshot.FailureReason);
