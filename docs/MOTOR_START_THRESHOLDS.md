@@ -32,3 +32,5 @@ Ordinary motor-test/spin controls are disabled while the assistant owns its run.
 Validation covers highest-threshold calculation, the 0.17/0.20 result, required
 acknowledgement, cancel/no-write behavior, six-motor frames, and confirmed
 readback-backed writes. Physical motor testing has not been performed.
+
+Assistant observations and recommendations are hidden when their original vehicle disconnects, changes, or its connection lifetime is cancelled. A new run is required for the new vehicle context.

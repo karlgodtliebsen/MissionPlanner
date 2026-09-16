@@ -292,10 +292,11 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             return;
         }
         ThresholdMeasurements.ReplaceRange(thresholdAssistant.Measurements);
-        ThresholdInstruction = thresholdAssistant.Instruction;
+        ThresholdInstruction = thresholdAssistant.HasSession
+            ? thresholdAssistant.Instruction : "Start a new assistant run for the connected, disarmed vehicle.";
         ThresholdCurrentMotor = thresholdAssistant.CurrentMotor is { } motor
             ? $"{motor.Display} · Next pulse {thresholdAssistant.TestPercent:0}% for 1 second"
-            : "All motor observations collected";
+            : thresholdAssistant.IsComplete ? "All motor observations collected" : string.Empty;
         if (thresholdAssistant.IsComplete)
         {
             try
@@ -565,6 +566,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         {
             spinInputsInitialized = false;
             Refresh();
+            RefreshThreshold();
         });
     }
 

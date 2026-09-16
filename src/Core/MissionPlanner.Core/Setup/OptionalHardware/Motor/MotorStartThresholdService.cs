@@ -41,13 +41,15 @@ public sealed class MotorStartThresholdService(
     private bool busy;
 
     /// <summary>Gets whether a run still owns its acknowledged vehicle context.</summary>
-    public bool HasSession => vehicleId is not null;
+    public bool HasSession => vehicleId is { } id && activeVehicle.VehicleId == id &&
+        activeVehicle.IsOnline && lifetime?.IsCancellationRequested == false;
 
     /// <summary>Gets frame-derived motor measurements in test order.</summary>
-    public IReadOnlyList<MotorThresholdMeasurement> Measurements => measurements.ToArray();
+    public IReadOnlyList<MotorThresholdMeasurement> Measurements => HasSession ? measurements.ToArray() : [];
 
     /// <summary>Gets the next motor that needs a reliable-rotation observation.</summary>
-    public MotorThresholdMeasurement? CurrentMotor => measurements.FirstOrDefault(item => item.ThresholdPercent is null);
+    public MotorThresholdMeasurement? CurrentMotor => HasSession
+        ? measurements.FirstOrDefault(item => item.ThresholdPercent is null) : null;
 
     /// <summary>Gets the next pulse percentage; each motor starts at five percent.</summary>
     public double TestPercent { get; private set; } = 5;
@@ -56,7 +58,7 @@ public sealed class MotorStartThresholdService(
     public string Instruction { get; private set; } = "Start the assistant after removing all propellers.";
 
     /// <summary>Gets whether every motor has a user-confirmed threshold.</summary>
-    public bool IsComplete => vehicleId is not null && measurements.Count > 0 && CurrentMotor is null;
+    public bool IsComplete => HasSession && measurements.Count > 0 && CurrentMotor is null;
 
     /// <summary>Starts a new frame-aware run after explicit props-removed acknowledgement.</summary>
     public void Start(bool propsRemoved)

@@ -70,8 +70,27 @@ public sealed class MotorStartThresholdTests
         Assert.Equal("MOT_SPIN_MIN", fixture.Writes[0].Name);
     }
 
+    /// <summary>Disconnected or replaced vehicles cannot display an earlier assistant session as current evidence.</summary>
+    [Fact]
+    public void VehicleBoundaryInvalidatesDisplayedSession()
+    {
+        using var fixture = new Fixture();
+        fixture.Service.Start(true);
+        Assert.True(fixture.Service.HasSession);
+        fixture.Active.IsOnline.Returns(false);
+        Assert.False(fixture.Service.HasSession);
+        Assert.Empty(fixture.Service.Measurements);
+        Assert.Null(fixture.Service.CurrentMotor);
+        Assert.False(fixture.Service.IsComplete);
+        fixture.Active.IsOnline.Returns(true);
+        fixture.Active.VehicleId.Returns(new VehicleId(2, 1));
+        Assert.False(fixture.Service.HasSession);
+        Assert.Empty(fixture.Service.Measurements);
+    }
+
     private sealed class Fixture : IDisposable
     {
+        public IActiveVehicleContext Active { get; } = Substitute.For<IActiveVehicleContext>();
         public MotorStartThresholdService Service { get; }
         public List<(string Name, double Value)> Writes { get; } = [];
 
@@ -88,7 +107,7 @@ public sealed class MotorStartThresholdTests
             }
             Store("MOT_SPIN_ARM", 0.10f);
             Store("MOT_SPIN_MIN", 0.15f);
-            var active = Substitute.For<IActiveVehicleContext>();
+            var active = Active;
             active.VehicleId.Returns(id);
             active.IsOnline.Returns(true);
             active.State.Returns(new VehicleState(id, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online,
