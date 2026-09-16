@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.App.Utilities.Dialogs;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -81,19 +80,20 @@ public partial class ParametersEditorViewModel(IDialogService dialogService, Act
         var lines = Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
         foreach (var line in lines)
         {
-            var parts = line.Split(["=", "//"], StringSplitOptions.RemoveEmptyEntries);
+            var data = line.Replace(" ", string.Empty);
+            var parts = data.Split(["=", "//"], StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2)
             {
                 continue;
             }
 
-            var name = parts[0];
+            var name = parts[0].Trim();
             var parameter = fullParametersList.FirstOrDefault(p => p.Name == name);
             if (parameter is not null)
             {
                 fullParametersList.Remove(parameter);
 
-                var p = parts[1];
+                var p = parts[1].Trim();
                 if (string.IsNullOrEmpty(p))
                 {
                     continue;

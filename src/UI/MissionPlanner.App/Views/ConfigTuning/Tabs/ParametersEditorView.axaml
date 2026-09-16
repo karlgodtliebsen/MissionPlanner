@@ -22,7 +22,7 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
             <Button HorizontalAlignment="Right"
-                    Content="Add Parameters" ToolTip.Tip="Add Parameters" Width="200" Command="{Binding UseCommand}">
+                    Content="Add Parameters" ToolTip.Tip="Add Parameters to List" Width="200" Command="{Binding UseCommand}">
             </Button>
             <Button HorizontalAlignment="Right"
                     Content="Clear" ToolTip.Tip="Clear" Width="150" Command="{Binding ClearCommand}">
@@ -50,7 +50,7 @@
                             HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
 
                 <TextBox AcceptsReturn="True"  Grid.Row="2"
-                         Background="WhiteSmoke"
+                        
                          VerticalContentAlignment="Top"
                          Text="{Binding Text}" 
                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"

@@ -21,7 +21,7 @@
                 <TabItem Header="Frame"><sections:FrameSetupView /></TabItem>
                 <TabItem Header="Accelerometer"><sections:AccelerometerSetupView /></TabItem>
                 <TabItem Header="Compass"><sections:CompassSetupView /></TabItem>
-                <TabItem Header="Radio"><sections:RadioSetupView /></TabItem>
+                <TabItem Header="Radio Calibration"><sections:RadioSetupView /></TabItem>
                 <TabItem Header="Servo Output"><sections:ServoOutputSetupView /></TabItem>
                 <TabItem Header="ESC Calibration"><sections:EscMotorSetupView /></TabItem>
                 <TabItem Header="Flight Modes"><sections:FlightModesSetupView /></TabItem>

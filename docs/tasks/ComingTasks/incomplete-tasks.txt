@@ -1,0 +1,266 @@
+
+
+Task Logging, Also something we need to implement.
+
+Mission Planner, then a .tlog will only exist if we have actually implemented telemetry-log recording in Next Gen. 
+
+It is not inherent in MAVLink itself. If this test was with Next Gen, that may completely explain why you cannot find one.
+
+
+Dataflash Logs
+Log system
+
+
+
+
+
+Task HUD:
+
+Using the old MissionPlanner I also get this HUD information
+
+PreArm: Compass not healthy
+
+Not ready to Arm
+
+
+3D Accel calibration needed
+
+
+
+Yes. This screenshot shows exactly the kind of operational feedback that MissionPlanner Next Gen should surface prominently.
+
+
+For **MissionPlanner Next Gen**, I would implement this as actual vehicle state, not merely as transient HUD text. The MAVLink inputs should be:
+
+```text
+HEARTBEAT
+  → MAV_MODE_FLAG_SAFETY_ARMED
+  → Armed / Disarmed
+
+SYS_STATUS
+  → MAV_SYS_STATUS_PREARM_CHECK health bit
+  → ReadyToArm / NotReadyToArm
+
+STATUSTEXT
+  → "PreArm: Compass 1 not healthy"
+  → human-readable PreArmReason
+```
+
+Then the domain model could expose something along these lines:
+
+```csharp
+public enum VehicleArmingState
+{
+    Unknown,
+    DisarmedNotReady,
+    DisarmedReady,
+    Armed
+}
+
+public sealed record VehicleArmingStatus(
+    VehicleArmingState State,
+    string? PreArmReason,
+    DateTimeOffset UpdatedAt);
+```
+
+The HUD can then render:
+
+```text
+DISARMED
+
+PreArm: Compass 1 not healthy
+
+Not Ready to Arm
+```
+
+rather than having the HUD itself interpret MAVLink messages.
+
+There is one important detail: `STATUSTEXT` is event-like and the FC may only repeat a particular `PreArm:` message periodically. So Next Gen should retain the latest relevant pre-arm reason until one of these happens:
+
+```text
+new PreArm message arrives
+vehicle becomes Ready to Arm
+vehicle becomes Armed
+connection resets
+```
+
+I would also keep `Arm: ...` failures separately, because they are useful immediately after an explicit arm request. For example:
+
+```text
+PreArmReason = "Compass 1 not healthy"
+LastArmFailure = "Compass 1 not healthy"
+```
+
+That gives us both the continuously visible vehicle-readiness state and the result of the last command.
+
+I’ve also retained this alongside the earlier **`.tlog` logging** requirement as a MissionPlanner Next Gen feature to implement later.
+
+For the immediate Omnibus work, we are now in a much cleaner position: **RC and arming commands work; accelerometer calibration is done; compass configuration is the next blocker.**
+
+
+
+
+
+
+
+
+
+Compass task.
+
+
+
+
+And the important point is: **for FPV-oriented F4 flight controllers, having no magnetometer/compass onboard is very common**. It is not exceptional.
+
+Your two boards are strong examples.
+
+The ArduPilot documentation for the **BETAFPV F405 family** explicitly says the boards do **not include a GPS or compass**. For the AIO version, even attaching an external I²C compass requires special firmware and freeing the pins used by the integrated ELRS receiver. ([ArduPilot][1])
+
+For the **Omnibus F4 family**, the documented onboard sensors are the MPU6000 IMU and BMP280 barometer; the board provides an **I²C connection for an external compass**. No onboard compass is listed. ArduPilot also notes that there are many revisions and clones, so the exact PCB should still be checked. ([ArduPilot.org][2])
+
+Your tlog startup banner also identifies this FC as:
+
+```text
+omnibusf4
+```
+
+So at this point I would consider **“no onboard compass” highly likely for the Omnibus**, rather than assuming the compass is defective.
+
+### `COMPASS_DEV_ID=0` is more meaningful than it first appears
+
+There are two quite different pieces of ArduPilot state:
+
+```text
+COMPASS_ENABLE = 1
+```
+
+means approximately:
+
+> The configuration says that compass functionality should be enabled.
+
+That does **not** prove hardware exists.
+
+But:
+
+```text
+COMPASS_DEV_ID = 0
+COMPASS_DEV_ID2 = 0
+COMPASS_DEV_ID3 = 0
+```
+
+is different. Those parameters are **read-only and automatically populated from actual detected compass devices**. ArduPilot specifically documents them as automatically detected, not manually configured. ([ArduPilot.org][3])
+
+So the situation is essentially:
+
+```text
+Configuration:
+    COMPASS_ENABLE = 1
+    EK3_SRC1_YAW   = Compass
+
+Hardware probe:
+    COMPASS_DEV_ID = 0
+
+Result:
+    PreArm: Compass 1 not healthy
+```
+
+In other words, ArduPilot isn't really *assuming that it found a compass*. It is saying:
+
+> "You configured me to require one, but I cannot detect one."
+
+That makes perfect sense for a converted Betaflight-style FC.
+
+## Can we interrogate the hardware independently?
+
+Yes. There are several levels, from most authoritative to most invasive.
+
+1. **Board schematic/BOM/documentation.** This is the cleanest method. If the sensor list says MPU6000 + BMP280 and no QMC/HMC/IST/LIS magnetometer, there is no compass.
+
+2. **Physical inspection.** We can identify the chips on the PCB from good photographs and their package markings. This works surprisingly well if the markings are readable.
+
+3. **Direct bus probing.** This is the genuinely firmware-independent electronic test. An STM32 program can scan the board's I²C buses and report every responding device address. For example, an external magnetometer might respond at a known I²C address. We could then read the chip's identification registers to establish exactly what device it is.
+
+4. **SWD/debug firmware.** Using the STM32 SWD interface gives us the most direct route. A tiny diagnostic firmware could enumerate I²C devices and, if required, SPI chip-select devices. This avoids depending on ArduPilot's compass configuration entirely.
+
+There is one caveat to simple I²C scanning: **an I²C address alone does not uniquely identify every sensor**, and a sensor on SPI would not appear in an I²C scan. For these boards, however, an external compass is normally expected on I²C.
+
+### This could actually become a useful Next Gen feature
+
+Given what we're discovering during these conversions, I think MissionPlanner Next Gen could distinguish:
+
+```text
+Configured hardware
+Detected hardware
+Required hardware
+```
+
+rather than conflating them.
+
+For example:
+
+```text
+Compass
+
+Configured:    Yes
+Detected:      No
+Required by:   EKF3 Yaw Source
+Status:        ERROR
+
+Configured source:
+    EK3_SRC1_YAW = Compass
+
+Detected devices:
+    None
+
+Recommended action:
+    Configure compassless operation
+    or connect an external compass
+```
+
+That's considerably more informative than merely displaying:
+
+```text
+Compass 1 not healthy
+```
+
+And for supported hardware we could decode `COMPASS_DEV_ID` into something useful such as:
+
+```text
+Compass 1
+  Type:       QMC5883L
+  Bus:        I2C
+  Bus number: 1
+  Address:    0x0D
+  External:   Yes
+```
+
+That information is encoded into ArduPilot's device ID when a device actually exists.
+
+## For the Omnibus, I would not buy or attach anything yet
+
+Since this is an FPV quad and you're currently trying to get **Stabilize/manual flying** working, an external compass is not automatically necessary.
+
+ArduPilot does support compassless operation, including alternatives such as GSF when GPS is available. ([ArduPilot][4]) But your Omnibus currently has no GPS either, so we should distinguish two cases:
+
+```text
+Manual FPV:
+    Stabilize / Acro
+    no GPS
+    no compass
+
+Navigation:
+    Loiter / RTL / Auto
+    GPS
+    reliable yaw source required
+```
+
+For the first case, we can configure the Omnibus deliberately as a **manual, compassless Copter**. That is probably the right next step rather than trying to repair hardware that most likely was never present.
+
+And I agree that before changing anything, it would be worthwhile to identify the **exact Omnibus board revision**. A clear photo of the top and bottom of the FC would probably let us establish that directly, including whether any magnetometer IC physically exists.
+
+[1]: https://en.ardupilot.org/copter/docs/common-betafpvf405.html?utm_source=chatgpt.com "BETAFPV F405 Family — Copter documentation"
+[2]: https://ardupilot.org/copter/docs/common-omnibusf4pro.html?highlight=esc+calibration&utm_source=chatgpt.com "Omnibus F4 Pro (on-board current sensor) and Omnibus F4 AIO (no sensor onboard) — Copter documentation"
+[3]: https://ardupilot.org/sub/docs/parameters-Sub-stable-V4.5.3.html?utm_source=chatgpt.com "Complete Parameter List — Sub documentation"
+[4]: https://www.ardupilot.ardupilot.org/plane/docs/common-compassless.html?utm_source=chatgpt.com "Compass-less Operation — Plane documentation"
+
+

@@ -15,7 +15,7 @@
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch" MaxWidth="1000">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <StackPanel Orientation="Vertical" Spacing="2">
-                    <TextBlock Text="Radio calibration" Classes="H3" />
+                    <TextBlock Text="Radio Calibration" Classes="H3" />
                     <TextBlock Text="Live receiver input and verified ArduPilot endpoint calibration" Opacity="0.7" />
                 </StackPanel>
                 <TextBlock Grid.Column="1" Text="{Binding CalibrationState}" Padding="12,6" 

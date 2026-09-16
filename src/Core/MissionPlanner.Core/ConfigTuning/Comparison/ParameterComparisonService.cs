@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
 
@@ -52,20 +52,22 @@ public sealed class ParameterComparisonService(IParameterValueEquivalence equiva
     }
 
     /// <inheritdoc />
-    public string ExportJson(ParameterComparisonResult comparison) =>
-        JsonSerializer.Serialize(comparison, new JsonSerializerOptions { WriteIndented = true });
+    public string ExportJson(ParameterComparisonResult comparison)
+    {
+        return JsonSerializer.Serialize(comparison, new JsonSerializerOptions { WriteIndented = true });
+    }
 
     /// <inheritdoc />
     public string ExportCsv(ParameterComparisonResult comparison)
     {
-        var csv = new StringBuilder("Name,DisplayName,LeftSource,LeftValue,RightSource,RightValue,Difference,Status,Units,CanStage,Message\r\n");
+        var csv = new StringBuilder("Name,DisplayName,LeftSource,LeftValue,RightSource,RightValue,Difference,Status,Units,CanStage,Message" + Environment.NewLine);
         foreach (var row in comparison.Rows)
         {
             csv.AppendJoin(',', [
                 Quote(row.Name), Quote(row.DisplayName), Quote(row.LeftSource), Number(row.LeftValue),
                 Quote(row.RightSource), Number(row.RightValue), Number(row.Difference), Quote(row.Status.ToString()),
                 Quote(row.Units), row.CanStage ? "true" : "false", Quote(row.Message)]);
-            csv.Append("\r\n");
+            csv.Append(Environment.NewLine);
         }
 
         return csv.ToString();
@@ -143,8 +145,13 @@ public sealed class ParameterComparisonService(IParameterValueEquivalence equiva
                double.IsFinite(value);
     }
 
-    private static string Number(double? value) =>
-        value?.ToString("R", CultureInfo.InvariantCulture) ?? string.Empty;
+    private static string Number(double? value)
+    {
+        return value?.ToString("R", CultureInfo.InvariantCulture) ?? string.Empty;
+    }
 
-    private static string Quote(string? value) => $"\"{(value ?? string.Empty).Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
+    private static string Quote(string? value)
+    {
+        return $"\"{(value ?? string.Empty).Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
+    }
 }
