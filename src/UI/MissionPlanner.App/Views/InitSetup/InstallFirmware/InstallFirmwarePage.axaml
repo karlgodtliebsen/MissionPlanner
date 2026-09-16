@@ -151,42 +151,53 @@
                         <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="12" HorizontalAlignment="Center">
 
-                                <Border Classes="SectionCard" Padding="16" IsVisible="{Binding ShowPhysicalController}" x:Name="PhysicalCtrl">
-                                    <StackPanel Spacing="10">
-                                        <TextBlock Text="Physical controller" Classes="H3" />
-                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="10">
+                                <Border Classes="SectionCard" Padding="16" x:Name="PhysicalCtrl">
+                                    <StackPanel Orientation="Vertical" >
+                                        <StackPanel Spacing="10"  IsVisible="{Binding ShowPhysicalController}" >
+                                            <TextBlock Text="Physical controller" Classes="H3" />
+                                            <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" 
+                                                  ColumnSpacing="16" RowSpacing="10">
 
-                                            <ComboBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"  ItemsSource="{Binding DevicesModel.DetectedDevices}" SelectedItem="{Binding DevicesModel.SelectedDevice}"
-                                                      PlaceholderText="Select serial controller" HorizontalAlignment="Stretch"
-                                                      IsEnabled="{Binding !IsOperationInProgress}" />
+                                                <ComboBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"  
+                                                          ItemsSource="{Binding DevicesModel.DetectedDevices}" 
+                                                          SelectedItem="{Binding DevicesModel.SelectedDevice}"
+                                                          PlaceholderText="Select serial controller" HorizontalAlignment="Stretch"
+                                                          IsEnabled="{Binding !IsOperationInProgress}" />
 
-                                            <ComboBox  Grid.Column="0" Grid.Row="1"  Grid.ColumnSpan="2" ItemsSource="{Binding DfuModel.DfuDevices}" SelectedItem="{Binding DfuModel.SelectedDfuDevice}"
-                                                       PlaceholderText="Select STM32 DFU endpoint" HorizontalAlignment="Stretch"
-                                                       IsEnabled="{Binding !IsOperationInProgress}" />
-
-
-                                            <TextBlock Grid.Column="0" Grid.Row="2"  Text="STM32 ROM DFU:" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Column="1" Grid.Row="2"  Text="{Binding DfuProviderId}" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Column="0" Grid.Row="3"  Text="USB:" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Column="1" Grid.Row="3"  Text="{Binding DfuVendorId}" TextWrapping="Wrap" />
-
-                                            <TextBlock Grid.Column="0" Grid.Row="4"  Text="Product Id:" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Column="1" Grid.Row="4"  Text="{Binding DfuProductId}" TextWrapping="Wrap" />
-
-                                            <TextBlock Grid.Column="0" Grid.Row="5"  Text="Correlated Source:" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Column="1" Grid.Row="5"  Text="{Binding DfuCorrelatedSource}" TextWrapping="Wrap" />
-
-                                            <TextBlock Grid.Column="0" Grid.Row="6"  Text="Message:" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Column="1" Grid.Row="6"  Text="{Binding DfuMessage}" TextWrapping="Wrap" />
+                                                <ComboBox  Grid.Column="0" Grid.Row="1"  Grid.ColumnSpan="2" 
+                                                           ItemsSource="{Binding DfuModel.DfuDevices}" 
+                                                           SelectedItem="{Binding DfuModel.SelectedDfuDevice}"
+                                                           PlaceholderText="Select STM32 DFU endpoint" HorizontalAlignment="Stretch"
+                                                           IsEnabled="{Binding !IsOperationInProgress}" />
 
 
-                                            <TextBlock Grid.Column="0" Grid.Row="7" Text="Device Status:" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Column="1" Grid.Row="7"  Text="{Binding DevicesModel.DeviceStatus}" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="0" Grid.Row="2"  Text="STM32 ROM DFU:" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="1" Grid.Row="2"  Text="{Binding DfuProviderId}" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="0" Grid.Row="3"  Text="USB:" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="1" Grid.Row="3"  Text="{Binding DfuVendorId}" TextWrapping="Wrap" />
 
-                                            <TextBlock Grid.Column="0" Grid.Row="8"  Text="Tool Readiness:" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Column="1" Grid.Row="8"  Text="{Binding DfuModel.ToolReadiness}" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="0" Grid.Row="4"  Text="Product Id:" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="1" Grid.Row="4"  Text="{Binding DfuProductId}" TextWrapping="Wrap" />
 
-                                        </Grid>
+                                                <TextBlock Grid.Column="0" Grid.Row="5"  Text="Correlated Source:" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="1" Grid.Row="5"  Text="{Binding DfuCorrelatedSource}" TextWrapping="Wrap" />
+
+                                                <TextBlock Grid.Column="0" Grid.Row="6"  Text="Message:" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="1" Grid.Row="6"  Text="{Binding DfuMessage}" TextWrapping="Wrap" />
+
+
+                                                <TextBlock Grid.Column="0" Grid.Row="7" Text="Device Status:" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="1" Grid.Row="7"  Text="{Binding DevicesModel.DeviceStatus}" TextWrapping="Wrap" />
+
+                                                <TextBlock Grid.Column="0" Grid.Row="8"  Text="Tool Readiness:" TextWrapping="Wrap" />
+                                                <TextBlock Grid.Column="1" Grid.Row="8"  Text="{Binding DfuModel.ToolReadiness}" TextWrapping="Wrap" />
+
+                                            </Grid>
+                                        </StackPanel>
+                                        <StackPanel  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  MinWidth="600"
+                                                     IsVisible="{Binding ShowPhysicalController, Converter={StaticResource InvertedBoolConverter}}" >
+                                            <TextBlock Text="No Physical controller Detected" Classes="H3" />
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
                                 <Border Classes="SectionCard" Padding="16" IsVisible="{Binding RequiresDfuEntry}" Width="{Binding #PhysicalCtrl.Bounds.Width}">
@@ -198,8 +209,8 @@
                                                 HorizontalAlignment="Center" />
                                     </StackPanel>
                                 </Border>
-                                <Border Classes="SectionCard" Padding="16" 
-                                        IsVisible="{Binding IsFirmwareSelected}" 
+                                <Border Classes="SectionCard" Padding="16"
+                                        IsVisible="{Binding IsFirmwareSelected}"
                                         Width="{Binding #PhysicalCtrl.Bounds.Width}">
                                     <StackPanel Spacing="8">
                                         <TextBlock Text="Selected Firmware" Classes="H3" />
