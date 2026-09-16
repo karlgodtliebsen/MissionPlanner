@@ -97,7 +97,7 @@ public sealed class RadioSetupTests
         var view = CreateService(context, registry, now).GetLiveChannels(vehicleId);
 
         view.Channels.Single(channel => channel.Number == 6).DeadZone.Should().Be(35);
-        view.Channels.Single(channel => channel.Number == 1).DeadZone.Should().Be(0);
+        view.Channels.Single(channel => channel.Number == 1).DeadZone.Should().Be(99);
     }
 
     /// <summary>Verifies stale RC telemetry is reported and cannot be mistaken for live input.</summary>
@@ -209,7 +209,9 @@ public sealed class RadioSetupTests
     {
         var now = DateTimeOffset.UtcNow;
         var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500], now));
-        using var service = CreateService(context, new VehicleParameterRegistry(), now);
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "RC10_OPTION", 153);
+        using var service = CreateService(context, registry, now);
         await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
         context.SetState(StateWithChannels([1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1500], now));
         context.SetState(StateWithChannels([2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1500], now));
@@ -451,6 +453,76 @@ public sealed class RadioSetupTests
         service.Current.State.Should().Be(RadioCalibrationState.Disconnected);
         service.Reset();
         service.Current.State.Should().Be(RadioCalibrationState.NotStarted);
+    }
+
+    /// <summary>Unused advertised channels do not block calibration and are never written.</summary>
+    [Fact]
+    public async Task SixteenChannelsOnlyWriteAssignedFive()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "FLTMODE_CH", 5);
+        var context = new TestActiveVehicleContext(StateWithChannels(Enumerable.Repeat((ushort)1500, 16).ToArray(), now));
+        var written = new List<string>();
+        using var service = CreateService(context, registry, now, written);
+        await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
+        foreach (var value in new ushort[] { 1000, 2000 })
+        {
+            context.SetState(StateWithChannels(Enumerable.Range(1, 16).Select(channel => channel <= 5 ? value : (ushort)1500).ToArray(), now));
+        }
+        var review = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(RadioCalibrationState.Review, review.State);
+        Assert.Empty(review.Captures.Single(capture => capture.Number == 12).Issues);
+        var neutral = Enumerable.Repeat((ushort)1500, 16).ToArray();
+        neutral[2] = 1000;
+        context.SetState(StateWithChannels(neutral, now));
+        Assert.True((await service.CompleteAsync(TestContext.Current.CancellationToken)).Success);
+        Assert.Equal(15, written.Count);
+        Assert.All(written, name => Assert.Contains(name, Enumerable.Range(1, 5).SelectMany(channel =>
+            new[] { $"RC{channel}_MIN", $"RC{channel}_MAX", $"RC{channel}_TRIM" })));
+    }
+
+    /// <summary>Every required or used channel must move, including remapped flight-mode controls.</summary>
+    [Theory]
+    [InlineData(1, false)]
+    [InlineData(8, true)]
+    public async Task StaticAssignedChannelBlocksReview(int stationaryChannel, bool flightMode)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var registry = new VehicleParameterRegistry();
+        if (flightMode)
+        {
+            Store(registry, "FLTMODE_CH", 8);
+        }
+        var context = new TestActiveVehicleContext(StateWithChannels(Enumerable.Repeat((ushort)1500, 16).ToArray(), now));
+        using var service = CreateService(context, registry, now);
+        await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
+        foreach (var value in new ushort[] { 1000, 2000 })
+        {
+            context.SetState(StateWithChannels(Enumerable.Range(1, 16).Select(channel => channel == stationaryChannel ? (ushort)1500 : value).ToArray(), now));
+        }
+        var result = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(RadioCalibrationState.Capturing, result.State);
+        Assert.Contains(result.Issues, issue => issue.Message.Contains($"Channel {stationaryChannel} "));
+    }
+
+    /// <summary>A newly assigned static channel is revalidated immediately before writes.</summary>
+    [Fact]
+    public async Task ChangedAssignmentCannotBypassValidation()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var registry = new VehicleParameterRegistry();
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500, 1500], now));
+        var written = new List<string>();
+        using var service = CreateService(context, registry, now, written);
+        await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
+        context.SetState(StateWithChannels([1000, 1000, 1000, 1000, 1500], now));
+        context.SetState(StateWithChannels([2000, 2000, 2000, 2000, 1500], now));
+        await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+        Store(registry, "RC5_OPTION", 153);
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1500, 1500], now));
+        Assert.False((await service.CompleteAsync(TestContext.Current.CancellationToken)).Success);
+        Assert.Empty(written);
     }
 
     private static RadioCalibrationService CreateService(

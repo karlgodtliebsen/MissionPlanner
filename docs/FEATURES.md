@@ -1039,3 +1039,8 @@ Install Firmware uses one operational page and deterministic installation plan f
 Flight Data HUD displays armed state, pre-arm readiness, the retained pre-arm blocker,
 and the last arm rejection. Readiness is unknown until supported pre-arm telemetry
 arrives; disconnect clears retained feedback. See [vehicle connection](VEHICLE_CONNECTION.md#arming-readiness-and-retained-feedback).
+
+Radio calibration distinguishes primary controls, configured auxiliary channels, and
+unused receiver inputs. Static unassigned channels do not block review and receive
+no parameter writes. The existing radio rows expose observed and configured values,
+classification, dead-zone, and validation feedback.

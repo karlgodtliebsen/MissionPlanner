@@ -109,9 +109,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
                 "Throttle" => RadioChannelKind.Throttle,
                 var _ => RadioChannelKind.Auxiliary
             };
-            var deadZone = kind == RadioChannelKind.CenteredAxis
-                ? ReadInt(parameters, $"RC{number}_DZ", 0)
-                : 0;
+            var deadZone = ReadInt(parameters, $"RC{number}_DZ", 0);
             channels.Add(new RadioChannelInfo(
                 number, pwm, Normalize(pwm, minimum, maximum, trim, reversed),
                 minimum, maximum, trim, reversed, function, deadZone, kind));
@@ -246,13 +244,15 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
 
             vehicleId = target;
             state = currentState;
+            ApplyChannelSemantics(parameterRegistry.GetAllParameters(vehicleId), state);
             SampleReviewTrims(state);
             snapshot = SnapshotCaptures();
         }
 
         var parameters = parameterRegistry.GetAllParameters(vehicleId);
         var functions = ResolveFunctions(parameters);
-        var issues = ValidateTrimCandidates(snapshot, functions);
+        var issues = ValidateCaptures(snapshot, functions)
+            .Concat(ValidateTrimCandidates(snapshot, functions)).ToArray();
         snapshot = AttachIssues(snapshot, issues);
         if (issues.Any(issue => issue.Severity == RadioIssueSeverity.Hazard))
         {
@@ -539,6 +539,10 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         foreach (var capture in captures)
         {
             var function = functions.GetValueOrDefault(capture.Number);
+            if (function is null)
+            {
+                continue;
+            }
             if (capture.Minimum < MinimumPlausiblePwm || capture.Maximum > MaximumPlausiblePwm)
             {
                 issues.Add(new RadioValidationIssue(RadioIssueSeverity.Hazard,
@@ -570,7 +574,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         IReadOnlyDictionary<int, string> functions)
     {
         var issues = new List<RadioValidationIssue>();
-        foreach (var capture in captures.Where(item => item.Range >= MinimumTravel))
+        foreach (var capture in captures.Where(item => item.FunctionName is not null && item.Range >= MinimumTravel))
         {
             if (capture.CandidateTrim is not { } trim || trim < capture.Minimum || trim > capture.Maximum)
             {
@@ -613,7 +617,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     private static IReadOnlyList<RadioParameterWrite> BuildWritePlan(IReadOnlyList<RadioChannelCapture> captures)
     {
         var writes = new List<RadioParameterWrite>();
-        foreach (var capture in captures.Where(item => item.Range >= MinimumTravel))
+        foreach (var capture in captures.Where(item => item.FunctionName is not null && item.Range >= MinimumTravel))
         {
             if (capture.CandidateTrim is not { } trim)
             {
@@ -672,6 +676,23 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             functions[assignment.Channel] = functions.TryGetValue(assignment.Channel, out var existing)
                 ? $"{existing}/{assignment.Function}"
                 : assignment.Function;
+        }
+
+        for (var channel = 1; channel <= 18; channel++)
+        {
+            var option = ReadInt(parameters, $"RC{channel}_OPTION", 0);
+            if (option > 0 && !functions.ContainsKey(channel))
+            {
+                functions[channel] = $"RC{channel}_OPTION={option}";
+            }
+        }
+        foreach (var parameter in new[] { "FLTMODE_CH", "MODE_CH", "TUNE_CH" })
+        {
+            var channel = ReadInt(parameters, parameter, 0);
+            if (channel is >= 1 and <= 18 && !functions.ContainsKey(channel))
+            {
+                functions[channel] = parameter;
+            }
         }
 
         return functions;

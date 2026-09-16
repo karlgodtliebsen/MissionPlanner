@@ -516,6 +516,18 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
         Update(info, stale, true, capture, calibrationState);
     }
 
+    /// <summary>Gets the channel's calibration role and assignment evidence.</summary>
+    [ObservableProperty]
+    public partial string Classification { get; private set; } = string.Empty;
+
+    /// <summary>Gets explicitly observed values, separate from stored parameters.</summary>
+    [ObservableProperty]
+    public partial string ObservedValues { get; private set; } = "Observed MIN / center / MAX: not captured";
+
+    /// <summary>Gets the per-channel validation result.</summary>
+    [ObservableProperty]
+    public partial string ValidationStatus { get; private set; } = "Not captured";
+
     /// <summary>Gets the one-based channel number.</summary>
     public int Number
     {
@@ -696,6 +708,11 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
         Maximum = info.Maximum;
         Trim = info.Trim;
         DeadZone = info.DeadZone;
+        Classification = info.FunctionName is null
+            ? "Unused / unassigned — ignored"
+            : info.Kind is RadioChannelKind.CenteredAxis or RadioChannelKind.Throttle
+                ? $"Required primary control — {info.FunctionName}"
+                : $"Used auxiliary channel — {info.FunctionName}";
         IsReversed = info.Reversed;
         PresentationKind = info.Kind switch
         {
@@ -723,6 +740,16 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
         CandidateTrim = capture?.CandidateTrim;
         ShowCapturedRange = capture is not null && state is RadioCalibrationState.Capturing or RadioCalibrationState.Review or RadioCalibrationState.Writing or RadioCalibrationState.Success or RadioCalibrationState.Failed;
         CalibrationIssue = capture?.Issues.FirstOrDefault()?.Message;
+        ObservedValues = capture is null
+            ? "Observed MIN / center / MAX: not captured"
+            : $"Observed MIN / center / MAX: {capture.Minimum} / {capture.CandidateTrim?.ToString() ?? "awaiting neutral review"} / {capture.Maximum} µs";
+        ValidationStatus = FunctionName is null
+            ? "Ignored — no assigned function; no parameters will be written"
+            : CalibrationIssue is not null
+                ? "Validation failed — see details below"
+                : state is RadioCalibrationState.Review or RadioCalibrationState.Success
+                    ? "Endpoint validation passed"
+                    : "Awaiting endpoint validation";
     }
 
     /// <summary>Returns an optional stepped label without coercing intermediate auxiliary values.</summary>

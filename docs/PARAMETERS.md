@@ -329,3 +329,16 @@ disabled; parameter presence never makes an unknown or hazardous action safe to 
 - Delete the unused `VehicleParameterStreamService` V1–V3 classes.
 - The comparison engine and exports are implemented; the Avalonia workflow currently exposes
   live-versus-pending review while richer file/profile source selection is being expanded.
+
+## RC calibration channel selection
+
+Radio calibration requires movement only for mapped Roll/Pitch/Throttle/Yaw controls
+and assigned auxiliary inputs. Auxiliary evidence comes from nonzero RCx_OPTION,
+FLTMODE_CH, MODE_CH, and TUNE_CH parameters. Unassigned advertised inputs remain
+visible but cannot block calibration and are excluded from MIN/MAX/TRIM writes,
+even if they moved. Assignments are rechecked before the confirmed write.
+
+Each radio row separates live/current and observed endpoint/Review-center values
+from configured MIN/TRIM/MAX/dead-zone, and identifies its role and validation.
+Unknown auxiliary use outside these known mappings is not inferred from movement.
+The existing explicit review/confirmation and per-parameter readback remain in force.

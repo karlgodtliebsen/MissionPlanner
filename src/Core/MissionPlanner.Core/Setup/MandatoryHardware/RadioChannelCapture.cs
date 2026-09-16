@@ -7,6 +7,13 @@
 /// <param name="Current">The latest observed PWM.</param>
 public sealed record RadioChannelCapture(int Number, int Minimum, int Maximum, int Current)
 {
+    /// <summary>Gets why this channel participates in calibration.</summary>
+    public string Classification => FunctionName is null
+        ? "Unused / unassigned — ignored"
+        : FunctionName is "Roll" or "Pitch" or "Throttle" or "Yaw"
+            ? "Required primary control"
+            : "Used auxiliary channel";
+
     /// <summary>Gets the captured travel range in microseconds.</summary>
     public int Range => Maximum - Minimum;
 

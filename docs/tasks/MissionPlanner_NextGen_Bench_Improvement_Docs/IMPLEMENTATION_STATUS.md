@@ -7,7 +7,7 @@ Each task is implemented, verified, documented, and committed separately.
 | Task | Status |
 | --- | --- |
 | 1. Arming status and HUD | Complete |
-| 2. RC calibration used channels | Pending |
+| 2. RC calibration used channels | Complete |
 | 3. RC neutral diagnostics | Pending |
 | 4. PC telemetry recording | Pending |
 | 5. Onboard logging diagnostics | Pending |
@@ -24,3 +24,10 @@ Each task is implemented, verified, documented, and committed separately.
 - Core regression suite: 621 passed, 6 skipped.
 - Hardware/interactive HUD verification: not run.
 - Readiness is unknown when pre-arm support/enabling is absent. Arm rejection is retained until reset; readiness or arming clears the pre-arm reason.
+
+## Task 2 verification
+
+- Radio tests: 27 passed; Core suite: 625 passed, 6 skipped.
+- Complete solution build passed (18 existing warnings, zero errors; no XML documentation warnings).
+- Known mapping parameters drive strict validation and MIN/MAX/TRIM writes; assignments are revalidated at write time.
+- Interactive/hardware calibration not run.
