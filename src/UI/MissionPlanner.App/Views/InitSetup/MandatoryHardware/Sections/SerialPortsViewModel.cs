@@ -9,7 +9,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 
-namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Edits discovered serial parameters through the shared vehicle-scoped parameter session.</summary>
 public sealed partial class SerialPortsViewModel : ViewModelBase

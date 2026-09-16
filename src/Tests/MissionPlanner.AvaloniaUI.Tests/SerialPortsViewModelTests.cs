@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Utilities.Dispatching;
-using MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;

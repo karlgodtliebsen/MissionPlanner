@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
+﻿namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Displays vehicle serial configuration using the standard view lifecycle.</summary>
 public partial class SerialPortsView : UserControlViewBase<SerialPortsViewModel>

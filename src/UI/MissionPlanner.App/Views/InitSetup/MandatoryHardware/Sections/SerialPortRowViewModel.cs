@@ -3,7 +3,7 @@ using MissionPlanner.App.Models;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Setup.OptionalHardware;
 
-namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Groups shared parameter editors into one ArduPilot serial-port row.</summary>
 public sealed class SerialPortRowViewModel : ObservableObject

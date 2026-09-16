@@ -5,9 +5,10 @@
     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
     xmlns:models="clr-namespace:MissionPlanner.App.Models"
     xmlns:u="https://irihi.tech/ursa"
-    x:TypeArguments="sections:SerialPortsViewModel"
-    x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SerialPortsView"
-    x:DataType="sections:SerialPortsViewModel">
+    xmlns:sections1="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+    x:TypeArguments="sections1:SerialPortsViewModel"
+    x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SerialPortsView"
+    x:DataType="sections1:SerialPortsViewModel">
     <utilities:UserControlViewBase.Resources>
         <DataTemplate x:Key="SerialEditor" x:DataType="models:ParameterItemViewModel">
             <StackPanel Spacing="4">
@@ -50,7 +51,7 @@
             </WrapPanel>
             <ItemsControl ItemsSource="{Binding Ports}" IsEnabled="{Binding CanEdit}">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="sections:SerialPortRowViewModel">
+                    <DataTemplate x:DataType="sections1:SerialPortRowViewModel">
                         <Border Classes="SectionCard" Padding="12" Margin="0,0,0,10">
                             <StackPanel Spacing="8">
                                 <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />

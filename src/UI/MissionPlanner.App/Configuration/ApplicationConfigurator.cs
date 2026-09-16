@@ -62,11 +62,6 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
-using DetectedDeviceViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.DetectedDeviceViewModel;
-using DiagnosticsReportViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.DiagnosticsReportViewModel;
-using FirmwareHelpViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.FirmwareHelpViewModel;
-using SelectedFirmwareViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.SelectedFirmwareViewModel;
-using ValidatedPackageViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.ValidatedPackageViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
