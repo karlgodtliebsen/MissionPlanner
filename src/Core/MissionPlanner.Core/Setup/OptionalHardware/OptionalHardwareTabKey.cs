@@ -21,5 +21,7 @@ public enum OptionalHardwareTabKey
     Esp8266Setup,
     CubeIdUpdate,
     AntennaTracker,
-    FftSetup
+    FftSetup,
+    /// <summary>Vehicle SERIAL parameter configuration.</summary>
+    SerialPorts
 }

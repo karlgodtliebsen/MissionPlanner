@@ -381,7 +381,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
     partial void OnSelectedValueChanged(string? value)
     {
-        if (float.TryParse(value, out var result))
+        if (!loadingData && !HasValuesData && float.TryParse(value, out var result))
         {
             Value = result;
         }
@@ -434,7 +434,9 @@ public partial class ParameterItemViewModel : ObservableObject
         var selectedMask = SelectedBitmaskItems
             .OfType<SelectItem>()
             .Aggregate(0UL, (mask, item) => mask | (ulong)item.Value);
-        Value = selectedMask;
+        var knownMask = (BitmaskOptions ?? []).Aggregate(0UL, (mask, item) => mask | (ulong)item.Value);
+        var unknownMask = (ulong)Math.Max(0, Math.Round(LiveValue)) & ~knownMask;
+        Value = selectedMask | unknownMask;
     }
     partial void OnSelectedValueChanged(string? oldValue, string? newValue)
     {
@@ -594,6 +596,11 @@ public partial class ParameterItemViewModel : ObservableObject
 
     private void SynchronizeSelections(double pendingValue)
     {
+        if (ValuesItems is { Length: > 0 } && !ValuesItems.Any(option => Math.Abs(option.Value - pendingValue) < 0.0001f))
+        {
+            ValuesItems = [.. ValuesItems, new SelectItem($"Unknown ({pendingValue.ToString(CultureInfo.InvariantCulture)})", pendingValue)];
+            ValuesData = ValuesItems.Select(option => option.Name).ToArray();
+        }
         SelectedValue = ValuesItems?
             .FirstOrDefault(option => Math.Abs(option.Value - pendingValue) < 0.0001f)?
             .Name;
