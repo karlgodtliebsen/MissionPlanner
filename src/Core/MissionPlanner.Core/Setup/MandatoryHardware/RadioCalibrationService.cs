@@ -112,7 +112,19 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             var deadZone = ReadInt(parameters, $"RC{number}_DZ", 0);
             channels.Add(new RadioChannelInfo(
                 number, pwm, Normalize(pwm, minimum, maximum, trim, reversed),
-                minimum, maximum, trim, reversed, function, deadZone, kind));
+                minimum, maximum, trim, reversed, function, deadZone, kind)
+            {
+                NeutralDiagnostic = kind == RadioChannelKind.CenteredAxis
+                    ? new RadioNeutralDiagnostic(
+                        pwm,
+                        Current.VehicleId == vehicleId ? Current.Captures.FirstOrDefault(capture => capture.Number == number)?.CandidateTrim : null,
+                        parameters.ContainsKey($"RC{number}_TRIM") ? trim : null,
+                        parameters.ContainsKey($"RC{number}_DZ") ? deadZone : null,
+                        Current.VehicleId == vehicleId ? Current.Captures.FirstOrDefault(capture => capture.Number == number)?.Minimum : null,
+                        Current.VehicleId == vehicleId ? Current.Captures.FirstOrDefault(capture => capture.Number == number)?.Maximum : null,
+                        state.Radio.IsStale(clock.UtcNow, staleWindow))
+                    : null
+            });
         }
 
         var stale = state.Radio.IsStale(clock.UtcNow, staleWindow);

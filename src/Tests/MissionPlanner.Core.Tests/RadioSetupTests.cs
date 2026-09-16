@@ -525,6 +525,47 @@ public sealed class RadioSetupTests
         Assert.Empty(written);
     }
 
+    /// <summary>Neutral assessments use configured trim and dead-zone rather than nominal center.</summary>
+    [Theory]
+    [InlineData(1512, 1500, 20, true, 12)]
+    [InlineData(1587, 1500, 20, false, 87)]
+    [InlineData(1587, 1587, 20, true, 0)]
+    public void NeutralUsesConfiguredValues(int center, int trim, int deadZone, bool neutral, int error)
+    {
+        var diagnostic = new RadioNeutralDiagnostic(center, center, trim, deadZone, 1076, 2011, false);
+        Assert.Equal(neutral, diagnostic.NeutralAllowed);
+        Assert.Equal(!neutral, diagnostic.CenterOutsideDeadZone);
+        Assert.Equal(error, diagnostic.CenterError);
+        Assert.Equal(2011 + 1076 - 2 * center, diagnostic.Asymmetry);
+    }
+
+    /// <summary>Fresh live input and parameter updates immediately change the diagnostic projection.</summary>
+    [Fact]
+    public void NeutralProjectionTracksLiveInputAndTrim()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "RC4_TRIM", 1500);
+        Store(registry, "RC4_DZ", 20);
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1000, 1512], now));
+        using var service = CreateService(context, registry, now);
+        RadioNeutralDiagnostic? Read() => service.GetLiveChannels(vehicleId).Channels.Single(channel => channel.Number == 4).NeutralDiagnostic;
+        Assert.True(Read()!.NeutralAllowed);
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1587], now));
+        Assert.False(Read()!.NeutralAllowed);
+        Store(registry, "RC4_TRIM", 1587);
+        Assert.True(Read()!.NeutralAllowed);
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1587], now.AddSeconds(-10)));
+        Assert.Null(Read()!.NeutralAllowed);
+    }
+
+    /// <summary>Missing downloaded parameters cannot produce a false neutral assessment.</summary>
+    [Fact]
+    public void UnknownTrimOrDeadZoneRemainsUnknown()
+    {
+        Assert.Null(new RadioNeutralDiagnostic(1500, null, null, null, null, null, false).NeutralAllowed);
+    }
+
     private static RadioCalibrationService CreateService(
         TestActiveVehicleContext context,
         VehicleParameterRegistry registry,

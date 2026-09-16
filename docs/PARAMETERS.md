@@ -342,3 +342,16 @@ Each radio row separates live/current and observed endpoint/Review-center values
 from configured MIN/TRIM/MAX/dead-zone, and identifies its role and validation.
 Unknown auxiliary use outside these known mappings is not inferred from movement.
 The existing explicit review/confirmation and per-parameter readback remain in force.
+
+## RC neutral diagnostics
+
+Mapped Roll, Pitch, and Yaw rows assess neutral using
+abs(Current - configured RCx_TRIM) <= configured RCx_DZ. During neutral review,
+center error is the user-positioned observed center minus configured trim; asymmetry
+is upper travel minus lower travel around that observed center. Endpoint capture
+alone does not establish a physical center. Missing downloaded trim/dead-zone or
+stale telemetry yields unknown live neutral status.
+
+Warnings suggest checking transmitter trim/subtrim, mixer/input/output offsets,
+stick calibration, or stale vehicle trim. Diagnostics never modify parameters;
+the existing reviewed calibration write remains a separate explicit action.

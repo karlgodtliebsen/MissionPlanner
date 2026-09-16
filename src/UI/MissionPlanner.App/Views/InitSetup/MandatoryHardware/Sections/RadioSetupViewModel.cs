@@ -516,6 +516,14 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
         Update(info, stale, true, capture, calibrationState);
     }
 
+    /// <summary>Gets the current neutral/trim assessment for a centered pilot input.</summary>
+    [ObservableProperty]
+    public partial string? NeutralDiagnosticText { get; private set; }
+
+    /// <summary>Gets whether the neutral assessment needs user attention.</summary>
+    [ObservableProperty]
+    public partial bool HasNeutralWarning { get; private set; }
+
     /// <summary>Gets the channel's calibration role and assignment evidence.</summary>
     [ObservableProperty]
     public partial string Classification { get; private set; } = string.Empty;
@@ -720,6 +728,16 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
             RadioChannelKind.Throttle => RadioChannelPresentationKind.Throttle,
             var _ => RadioChannelPresentationKind.Auxiliary
         };
+        var diagnostic = info.NeutralDiagnostic;
+        HasNeutralWarning = diagnostic?.NeutralAllowed == false || diagnostic?.CenterOutsideDeadZone == true;
+        NeutralDiagnosticText = diagnostic is null
+            ? null
+            : $"Neutral: {(diagnostic.NeutralAllowed is null ? "unknown (stale input or missing trim/dead-zone)" : diagnostic.NeutralAllowed.Value ? "Neutral" : "Not neutral")} · " +
+              $"Center error: {(diagnostic.CenterError is { } error ? error.ToString("+0;-0;0") + " µs" : "awaiting neutral review")} · " +
+              $"Asymmetry: {(diagnostic.Asymmetry is { } asymmetry ? asymmetry + " µs" : "not captured")}" +
+              (HasNeutralWarning
+                  ? " — Check transmitter trim/subtrim, mixer/input/output offset, stick calibration, or stale RCx_TRIM. Review before changing any parameter."
+                  : string.Empty);
         AuxiliaryState = info.Kind == RadioChannelKind.Auxiliary ? DescribeAuxiliary(info.Pwm) : null;
         Range = $"{info.Minimum}/{info.Trim}/{info.Maximum}{(info.Reversed ? " · reversed" : string.Empty)}";
         ApplyCalibration(capture, calibrationState);

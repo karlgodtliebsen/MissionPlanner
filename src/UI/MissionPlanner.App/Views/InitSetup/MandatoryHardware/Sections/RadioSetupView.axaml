@@ -84,7 +84,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
                         <Border Padding="10,8" Classes="SectionCard">
-                            <Grid RowDefinitions="Auto,32,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                            <Grid RowDefinitions="Auto,32,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                                 <TextBlock Text="{Binding Number, StringFormat='CH {0}'}" FontWeight="Bold" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="{Binding RoleLabel}" FontWeight="Bold" VerticalAlignment="Center" />
                                 <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="8">
@@ -94,6 +94,7 @@
                                 </StackPanel>
                                 <models:RadioChannelMeterView Grid.Row="1" Grid.ColumnSpan="3" ChannelNumber="{Binding Number}" FunctionName="{Binding FunctionName}" Pwm="{Binding Pwm}" ConfiguredMinimum="{Binding Minimum}" ConfiguredMaximum="{Binding Maximum}" Trim="{Binding Trim}" DeadZone="{Binding DeadZone}" CapturedMinimum="{Binding CapturedMinimum}" CapturedMaximum="{Binding CapturedMaximum}" CandidateTrim="{Binding CandidateTrim}" IsCapturing="{Binding ShowCapturedRange}" IsStale="{Binding IsStale}" HasSignal="{Binding HasSignal}" PresentationKind="{Binding PresentationKind}" IsReversed="{Binding IsReversed}" />
                                 <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="{Binding Range, StringFormat='Stored MIN / TRIM / MAX   {0}'}" FontSize="12" Opacity="0.72" />
+                                <TextBlock Grid.Row="8" Grid.ColumnSpan="3" Text="{Binding NeutralDiagnosticText}" Classes.Warning="{Binding HasNeutralWarning}" TextWrapping="Wrap" />
                                 <TextBlock Grid.Row="4" Grid.ColumnSpan="3" Text="{Binding ObservedValues}" TextWrapping="Wrap" />
                                 <TextBlock Grid.Row="5" Grid.ColumnSpan="3" Text="{Binding DeadZone, StringFormat='Configured dead-zone: {0} µs'}" />
                                 <TextBlock Grid.Row="6" Grid.ColumnSpan="3" Text="{Binding Classification}" TextWrapping="Wrap" />

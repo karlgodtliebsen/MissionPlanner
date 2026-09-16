@@ -21,4 +21,8 @@ public sealed record RadioChannelInfo(
     bool Reversed,
     string? FunctionName,
     int DeadZone = 0,
-    RadioChannelKind Kind = RadioChannelKind.Auxiliary);
+    RadioChannelKind Kind = RadioChannelKind.Auxiliary)
+{
+    /// <summary>Gets neutral diagnostics for centered pilot axes; absent for other channels.</summary>
+    public RadioNeutralDiagnostic? NeutralDiagnostic { get; init; }
+}

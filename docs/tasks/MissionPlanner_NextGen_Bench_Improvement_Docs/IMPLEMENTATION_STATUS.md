@@ -8,7 +8,7 @@ Each task is implemented, verified, documented, and committed separately.
 | --- | --- |
 | 1. Arming status and HUD | Complete |
 | 2. RC calibration used channels | Complete |
-| 3. RC neutral diagnostics | Pending |
+| 3. RC neutral diagnostics | Complete |
 | 4. PC telemetry recording | Pending |
 | 5. Onboard logging diagnostics | Pending |
 | 6. Accelerometer calibration | Pending |
@@ -31,3 +31,10 @@ Each task is implemented, verified, documented, and committed separately.
 - Complete solution build passed (18 existing warnings, zero errors; no XML documentation warnings).
 - Known mapping parameters drive strict validation and MIN/MAX/TRIM writes; assignments are revalidated at write time.
 - Interactive/hardware calibration not run.
+
+## Task 3 verification
+
+- Radio tests: 32 passed; Core suite: 630 passed, 6 skipped.
+- Complete solution build passed (18 existing warnings, zero errors).
+- Observed center is sampled only during neutral review. Live neutral assessment requires fresh telemetry and downloaded trim/dead-zone.
+- Interactive/hardware verification not run; no parameter writes are triggered by diagnostics.

@@ -1044,3 +1044,8 @@ Radio calibration distinguishes primary controls, configured auxiliary channels,
 unused receiver inputs. Static unassigned channels do not block review and receive
 no parameter writes. The existing radio rows expose observed and configured values,
 classification, dead-zone, and validation feedback.
+
+Radio rows now include live neutral status, observed center error, and travel
+asymmetry for mapped Roll/Pitch/Yaw. Missing parameters and stale input display
+unknown status. Guidance covers transmitter offsets and stale vehicle trims,
+without automatic parameter changes.
