@@ -1072,3 +1072,5 @@ acknowledgement, one-second pulses, per-motor reliable-rotation observations, an
 reviewed 0.17/0.20-style recommendations. See [motor thresholds](MOTOR_START_THRESHOLDS.md).
 
 Motor Test includes a read-only [motor output diagnostic summary](MOTOR_OUTPUT_DIAGNOSTICS.md) joining frame, output, protocol and observed-rotation evidence.
+
+[Bench telemetry replay regressions](BENCH_TELEMETRY_REPLAY.md) cover retained arming feedback, logger faults, readiness and armed transitions using the existing isolated playback pipeline.

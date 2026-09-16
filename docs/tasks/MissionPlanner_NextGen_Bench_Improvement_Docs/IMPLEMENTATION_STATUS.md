@@ -15,7 +15,7 @@ Each task is implemented, verified, documented, and committed separately.
 | 7. Compass diagnostics | Complete |
 | 8. Motor start threshold assistant | Complete |
 | 9. Motor output diagnostics | Complete |
-| 10. Telemetry replay regression harness | Pending |
+| 10. Telemetry replay regression harness | Complete |
 
 ## Task 1 verification
 
@@ -81,3 +81,12 @@ Each task is implemented, verified, documented, and committed separately.
 - Existing view/viewmodel and output/layout resolvers reused; diagnostic section performs no writes.
 - Board timer groups and effective protocol/reboot state remain explicitly unverified.
 - Physical/UI verification not run.
+## Task 10 verification
+
+- Seven synthetic scenarios plus chunk-order/reset regression passed; Core suite: 662 passed, 6 skipped.
+- Existing replay tests cover scaled timing, pause, seek, close and transmission isolation.
+- Complete solution build passed (16 warnings, zero errors; no CS1591/CS1587).
+- Replay uses the normal decoder and shared status-text handler; chunk expiry follows recorded time.
+- During validation, a concurrent status-bar edit had an unsupported SelectableTextBlock property.
+  The property was removed to restore the build; that unrelated file remains outside the task commit.
+- Fixture sources and execution instructions are in BENCH_TELEMETRY_REPLAY.md.

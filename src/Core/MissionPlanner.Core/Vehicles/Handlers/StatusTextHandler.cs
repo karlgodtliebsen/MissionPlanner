@@ -25,6 +25,7 @@ public sealed class StatusTextHandler : IStatusTextHandler
     private readonly IDomainEventHub domainEventHub;
     private readonly ILogger<StatusTextHandler> logger;
     private readonly TimeSpan chunkTimeout;
+    private readonly bool useRecordedTime;
 
     /// <summary>Initializes a status-text handler.</summary>
     /// <param name="vehicleRegistry">The vehicle registry.</param>
@@ -32,17 +33,20 @@ public sealed class StatusTextHandler : IStatusTextHandler
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="options">The message history and assembly options.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="useRecordedTime">When true, callers advance chunk expiry with recorded timestamps instead of wall-clock timers.</param>
     public StatusTextHandler(
         IVehicleRegistry vehicleRegistry,
         IVehicleMessageStore messageStore,
         IDomainEventHub domainEventHub,
         IOptions<VehicleMessageStoreOptions> options,
-        ILogger<StatusTextHandler> logger)
+        ILogger<StatusTextHandler> logger,
+        bool useRecordedTime = false)
     {
         this.vehicleRegistry = vehicleRegistry;
         this.messageStore = messageStore;
         this.domainEventHub = domainEventHub;
         this.logger = logger;
+        this.useRecordedTime = useRecordedTime;
         chunkTimeout = options.Value.ChunkTimeout > TimeSpan.Zero
             ? options.Value.ChunkTimeout
             : TimeSpan.FromSeconds(2);
@@ -169,7 +173,35 @@ public sealed class StatusTextHandler : IStatusTextHandler
 
     private void ScheduleTimeout(ChunkKey key, int generation)
     {
-        _ = FlushAfterTimeoutAsync(key, generation);
+        if (!useRecordedTime)
+        {
+            _ = FlushAfterTimeoutAsync(key, generation);
+        }
+    }
+
+    /// <summary>Expires incomplete chunks in recorded-time order before dispatching the next replay frame.</summary>
+    public async Task FlushExpiredAsync(DateTimeOffset recordedTime, CancellationToken cancellationToken = default)
+    {
+        PendingMessage[] expired;
+        lock (sync)
+        {
+            var keys = pending.Where(pair => recordedTime - pair.Value.LastReceivedAt >= chunkTimeout)
+                .OrderBy(pair => pair.Value.LastReceivedAt).Select(pair => pair.Key).ToArray();
+            expired = keys.Select(key => pending[key]).ToArray();
+            foreach (var key in keys)
+            {
+                pending.Remove(key);
+            }
+        }
+        foreach (var message in expired)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var vehicle = vehicleRegistry.GetRequired(message.VehicleId);
+            if (vehicle is not null)
+            {
+                await PersistAsync(vehicle, message.ToMessage(true), cancellationToken).ConfigureAwait(false);
+            }
+        }
     }
 
     private async Task FlushAfterTimeoutAsync(ChunkKey key, int generation)

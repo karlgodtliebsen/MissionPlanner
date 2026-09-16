@@ -1,4 +1,6 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MissionPlanner.MavLink.Messages;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Handlers;
@@ -23,6 +25,8 @@ public sealed class ReplayTelemetryPipeline : IReplayTelemetryPipeline
     private readonly IDomainEventHub replayEventHub = new ReplayDomainEventHub();
     private IVehicleRegistry registry;
     private IVehicleMessageDispatcher dispatcher;
+    private StatusTextHandler statusText;
+    private VehicleMessageStore messageStore;
 
     /// <summary>Initializes the isolated replay telemetry pipeline.</summary>
     /// <param name="frameParser">A parser instance dedicated to replay frames.</param>
@@ -39,17 +43,21 @@ public sealed class ReplayTelemetryPipeline : IReplayTelemetryPipeline
         this.messageDecoder = messageDecoder;
         this.clock = clock;
         this.loggerFactory = loggerFactory;
-        (registry, dispatcher) = CreatePipeline();
+        (registry, dispatcher, statusText, messageStore) = CreatePipeline();
     }
 
     /// <inheritdoc />
     public IReadOnlyList<VehicleState> Vehicles => registry.Vehicles.Select(vehicle => vehicle.State).ToArray();
 
+    /// <summary>Gets bounded assembled status text in replay arrival order, isolated from live history.</summary>
+    public IReadOnlyList<VehicleStatusText> StatusMessages => registry.Vehicles
+        .SelectMany(vehicle => messageStore.GetMessages(vehicle.Id)).OrderBy(message => message.Identity).ToArray();
+
     /// <inheritdoc />
     public void Reset()
     {
         frameParser.Reset();
-        (registry, dispatcher) = CreatePipeline();
+        (registry, dispatcher, statusText, messageStore) = CreatePipeline();
     }
 
     /// <inheritdoc />
@@ -65,11 +73,19 @@ public sealed class ReplayTelemetryPipeline : IReplayTelemetryPipeline
             return false;
         }
 
-        await dispatcher.DispatchAsync(message, cancellationToken).ConfigureAwait(false);
+        await statusText.FlushExpiredAsync(receivedAt, cancellationToken).ConfigureAwait(false);
+        if (message is StatusTextMessage text)
+        {
+            await statusText.Handle(text, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await dispatcher.DispatchAsync(message, cancellationToken).ConfigureAwait(false);
+        }
         return true;
     }
 
-    private (IVehicleRegistry Registry, IVehicleMessageDispatcher Dispatcher) CreatePipeline()
+    private (IVehicleRegistry Registry, IVehicleMessageDispatcher Dispatcher, StatusTextHandler StatusText, VehicleMessageStore Messages) CreatePipeline()
     {
         IVehicleRegistry replayRegistry = new VehicleRegistry(
             replayEventHub,
@@ -84,7 +100,11 @@ public sealed class ReplayTelemetryPipeline : IReplayTelemetryPipeline
             new HealthTelemetryHandler(replayRegistry, replayEventHub),
             new SensorTelemetryHandler(replayRegistry, replayEventHub)
         ];
-        return (replayRegistry, new VehicleMessageDispatcher(handlers));
+        var options = Options.Create(new VehicleMessageStoreOptions());
+        var messages = new VehicleMessageStore(options);
+        var textHandler = new StatusTextHandler(replayRegistry, messages, replayEventHub, options,
+            loggerFactory.CreateLogger<StatusTextHandler>(), useRecordedTime: true);
+        return (replayRegistry, new VehicleMessageDispatcher(handlers), textHandler, messages);
     }
 
     private sealed class ReplayDomainEventHub : IDomainEventHub
