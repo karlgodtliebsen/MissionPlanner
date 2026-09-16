@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using MissionPlanner.App.Models;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 using MissionPlanner.Core.ConfigTuning;
@@ -193,9 +192,18 @@ public sealed class SerialPortsViewModelTests
         public IVehicleParameterMetadataService Metadata { get; } = Substitute.For<IVehicleParameterMetadataService>();
         public Dictionary<string, ParameterMetadata> Definitions { get; } = [];
         public List<(string Name, float Value)> Writes { get; } = [];
-        public bool RejectWrites { get; set; }
-        public bool SuppressReadback { get; set; }
-        public SerialPortsViewModel Model { get; }
+        public bool RejectWrites
+        {
+            get; set;
+        }
+        public bool SuppressReadback
+        {
+            get; set;
+        }
+        public SerialPortsViewModel Model
+        {
+            get;
+        }
         public ParameterEditSession Session => sessionByVehicle[Active.VehicleId!.Value];
         private readonly Dictionary<VehicleId, ParameterEditSession> sessionByVehicle = [];
         private CancellationTokenSource connectionLifetime = new();
@@ -240,12 +248,13 @@ public sealed class SerialPortsViewModelTests
                 }
                 return session;
             });
-            Model = new SerialPortsViewModel(Active, Registry, factory, NullLogger<SerialPortsViewModel>.Instance,
-                new InlineDispatcher(), Substitute.For<IDomainEventHub>());
+            Model = new SerialPortsViewModel(Active, Registry, factory, new InlineDispatcher(), Substitute.For<IDomainEventHub>(), NullLogger<SerialPortsViewModel>.Instance);
         }
 
-        public void Store(VehicleId id, string name, float value) =>
+        public void Store(VehicleId id, string name, float value)
+        {
             Registry.StoreParameter(id, new VehicleParameter(name, value, MavParamType.Int32, 0, 1), CancellationToken.None);
+        }
 
         public void Select(VehicleId? id)
         {
@@ -275,18 +284,47 @@ public sealed class SerialPortsViewModelTests
             connectionLifetime.Dispose();
         }
 
-        private static ParameterMetadata Definition(string name, string? values = null, string? bits = null, bool readOnly = false) =>
-            new(name, name, null, null, null, null, values, bits, null, null, true, readOnly);
+        private static ParameterMetadata Definition(string name, string? values = null, string? bits = null, bool readOnly = false)
+        {
+            return new(name, name, null, null, null, null, values, bits, null, null, true, readOnly);
+        }
     }
 
     private sealed class InlineDispatcher : IUiDispatcher
     {
-        public bool CheckAccess() => true;
-        public void Dispatch(Action action) => action();
-        public T Dispatch<T>(Func<T> action) => action();
-        public Task DispatchAsync(Action action) { action(); return Task.CompletedTask; }
-        public Task<T> DispatchAsync<T>(Func<T> action) => Task.FromResult(action());
-        public Task DispatchAsync(Func<Task> action) => action();
-        public Task<T> DispatchAsync<T>(Func<Task<T>> action) => action();
+        public bool CheckAccess()
+        {
+            return true;
+        }
+
+        public void Dispatch(Action action)
+        {
+            action();
+        }
+
+        public T Dispatch<T>(Func<T> action)
+        {
+            return action();
+        }
+
+        public Task DispatchAsync(Action action)
+        {
+            action();
+            return Task.CompletedTask;
+        }
+        public Task<T> DispatchAsync<T>(Func<T> action)
+        {
+            return Task.FromResult(action());
+        }
+
+        public Task DispatchAsync(Func<Task> action)
+        {
+            return action();
+        }
+
+        public Task<T> DispatchAsync<T>(Func<Task<T>> action)
+        {
+            return action();
+        }
     }
 }

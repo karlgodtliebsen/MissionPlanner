@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Setup.OptionalHardware;
@@ -25,9 +24,8 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
     private int reloadScheduled;
 
     /// <summary>Initializes the serial page with existing parameter, lifecycle and UI services.</summary>
-    public SerialPortsViewModel(IActiveVehicleContext activeVehicle, IVehicleParameterRegistry registry,
-        IParameterEditSessionFactory sessions, ILogger<SerialPortsViewModel> logger,
-        IUiDispatcher dispatcher, IDomainEventHub events) : base(logger, dispatcher, events)
+    public SerialPortsViewModel(IActiveVehicleContext activeVehicle, IVehicleParameterRegistry registry, IParameterEditSessionFactory sessions,
+        IUiDispatcher dispatcher, IDomainEventHub events, ILogger<SerialPortsViewModel> logger) : base(logger, dispatcher, events)
     {
         this.activeVehicle = activeVehicle;
         this.registry = registry;
@@ -39,7 +37,10 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
 
     /// <summary>Gets whether the current session is available for user edits.</summary>
     [ObservableProperty]
-    public partial bool CanEdit { get; private set; }
+    public partial bool CanEdit
+    {
+        get; private set;
+    }
 
     /// <summary>Gets receiver-configuration advice, including pending edits.</summary>
     [ObservableProperty]
@@ -47,7 +48,10 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
 
     /// <summary>Gets whether a confirmed serial field in the shared session requires reboot.</summary>
     [ObservableProperty]
-    public partial bool RebootRequired { get; private set; }
+    public partial bool RebootRequired
+    {
+        get; private set;
+    }
 
     /// <inheritdoc />
     public override async Task ActivateAsync()
@@ -94,7 +98,10 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
         }
         var currentGeneration = ++generation;
         DetachSession();
-        lifetime?.Cancel();
+        if (lifetime is not null)
+        {
+            await lifetime.CancelAsync();
+        }
         lifetime?.Dispose();
         lifetime = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         var token = lifetime.Token;
@@ -219,7 +226,10 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
             field.Metadata.RebootRequired && field.WriteStatus == ParameterEditWriteStatus.Confirmed);
     }
 
-    private void SessionChanged(string? name) => Dispatcher.Dispatch(Synchronize);
+    private void SessionChanged(string? name)
+    {
+        Dispatcher.Dispatch(Synchronize);
+    }
 
     private void VehicleChanged(ActiveVehicleChangedEventArgs args)
     {
@@ -279,10 +289,7 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
 
     private void DetachSession()
     {
-        if (session is not null)
-        {
-            session.FieldChanged -= SessionChanged;
-            session = null;
-        }
+        session?.FieldChanged -= SessionChanged;
+        session = null;
     }
 }

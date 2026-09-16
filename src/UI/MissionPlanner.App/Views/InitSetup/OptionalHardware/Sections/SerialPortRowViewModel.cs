@@ -20,20 +20,33 @@ public sealed class SerialPortRowViewModel : ObservableObject
         Options = Create(port.Options);
     }
 
+
     /// <summary>Gets the reported serial group.</summary>
-    public SerialPortConfiguration Configuration { get; }
+    public SerialPortConfiguration Configuration
+    {
+        get;
+    }
 
     /// <summary>Gets the stable ArduPilot index, without assuming a physical UART mapping.</summary>
     public string DisplayName => $"SERIAL{Configuration.Index}";
 
     /// <summary>Gets the shared protocol editor.</summary>
-    public ParameterItemViewModel? Protocol { get; }
+    public ParameterItemViewModel? Protocol
+    {
+        get;
+    }
 
     /// <summary>Gets the shared configured-baud editor; metadata labels show electrical units.</summary>
-    public ParameterItemViewModel? Speed { get; }
+    public ParameterItemViewModel? Speed
+    {
+        get;
+    }
 
     /// <summary>Gets the shared options editor.</summary>
-    public ParameterItemViewModel? Options { get; }
+    public ParameterItemViewModel? Options
+    {
+        get;
+    }
 
     /// <summary>Gets whether protocol metadata allows editing.</summary>
     public bool CanEditProtocol => CanEdit(Protocol);
@@ -59,9 +72,13 @@ public sealed class SerialPortRowViewModel : ObservableObject
         OnPropertyChanged(nameof(CanEditOptions));
     }
 
-    private bool CanEdit(ParameterItemViewModel? editor) =>
-        session.IsValid && editor is not null && session.GetField(editor.Name)?.Metadata.ReadOnly == false;
+    private bool CanEdit(ParameterItemViewModel? editor)
+    {
+        return session.IsValid && editor is not null && session.GetField(editor.Name)?.Metadata.ReadOnly == false;
+    }
 
-    private ParameterItemViewModel? Create(string? name) =>
-        name is not null && session.GetField(name) is { } field ? new ParameterItemViewModel(session, field) : null;
+    private ParameterItemViewModel? Create(string? name)
+    {
+        return name is not null && session.GetField(name) is { } field ? new ParameterItemViewModel(session, field) : null;
+    }
 }
