@@ -23,8 +23,8 @@
                 <TabItem Header="Compass"><sections:CompassSetupView /></TabItem>
                 <TabItem Header="Radio Calibration"><sections:RadioSetupView /></TabItem>
                 <TabItem Header="Servo Output"><sections:ServoOutputSetupView /></TabItem>
-<!--                <TabItem Header="Serial Ports"><sections:SerialPortsSetupView /></TabItem>
--->                <TabItem Header="ESC Calibration"><sections:EscMotorSetupView /></TabItem>
+                <TabItem Header="Serial Ports"><sections:SerialPortsView /></TabItem>
+                <TabItem Header="ESC Calibration"><sections:EscMotorSetupView /></TabItem>
                 <TabItem Header="Flight Modes"><sections:FlightModesSetupView /></TabItem>
                 <TabItem Header="Failsafe"><sections:FailSafeView /></TabItem>
                 <TabItem Header="Initial Tune Params"><sections:InitTuneParametersView /></TabItem>

@@ -39,7 +39,6 @@
                 <TabItem Header="ESP8266"><sections:Esp8266SetupView /></TabItem>
                 <TabItem Header="Antenna Tracker"><sections:AntennaTrackerView /></TabItem>
                 <TabItem Header="FFT"><sections:FftSetupView /></TabItem>
-                <TabItem Header="Serial Ports"><sections:SerialPortsView /></TabItem>
             </TabControl>
         </Grid>
     </ContentPage>
