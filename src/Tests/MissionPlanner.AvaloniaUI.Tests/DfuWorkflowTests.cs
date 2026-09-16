@@ -58,14 +58,14 @@ public sealed class DfuWorkflowTests
         parent.DfuModel.LocalDfuFirmwarePath = "retained_with_bl.hex";
         parent.DfuModel.LocalDfuPlatform = "LocalBoard";
         var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
-            new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter),
+            new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
             new FirmwareArtifact(new Uri("https://firmware.ardupilot.org/Copter/stable/Board/arducopter.apj"), FirmwareImageFormat.Apj));
         parent.OnlineFirmwareModel.SetCatalogue([entry], [], true);
         parent.OnlineFirmwareModel.SelectedFirmware = parent.OnlineFirmwareModel.FirmwareChoices.Single();
         if (custom)
         {
             var localTarget = new FirmwareManifestEntry(entry.Version, entry.Channel,
-                new FirmwareBoardTarget(51, "LocalBoard", FirmwareVehicleType.Copter), entry.Artifact);
+                new FirmwareBoardTarget(51, "LocalBoard", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter), entry.Artifact);
             parent.OnlineFirmwareModel.SetCatalogue([entry, localTarget], [], true);
             parent.OnlineFirmwareModel.ClearSelection();
             parent.DfuModel.LocalDfuFirmwarePath = "retained_with_bl.hex";

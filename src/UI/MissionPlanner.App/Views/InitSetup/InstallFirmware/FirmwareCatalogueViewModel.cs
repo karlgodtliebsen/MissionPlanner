@@ -121,20 +121,42 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
     }
 
     /// <summary>
-    ///  Gets the distinct FrameTypes available in the catalogue.
+    ///  Gets the distinct VehicleTypes available in the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<string> FrameTypes
+    public partial ObservableRangeCollection<string> VehicleTypes
     {
         get;
         set;
     } = [];
 
+
     /// <summary>
-    /// Gets or sets the selected FrameType for filtering the catalogue.
+    ///  Gets the distinct VehicleTypes available in the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial string? SelectedFrameType
+    public partial ObservableRangeCollection<string> BuildVariants
+    {
+        get;
+        set;
+    } = [];
+
+
+    /// <summary>
+    /// Gets or sets the selected VehicleType for filtering the catalogue.
+    /// </summary>
+    [ObservableProperty]
+    public partial string? SelectedVehicleType
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// Gets or sets the selected BuildVariant for filtering the catalogue.
+    /// </summary>
+    [ObservableProperty]
+    public partial string? SelectedBuildVariant
     {
         get;
         set;
@@ -222,35 +244,41 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
         try
         {
             FiltersChanged?.Invoke(true);
-            SelectedFrameType = null;
+            SelectedVehicleType = null;
             SelectedVersion = null;
             SelectedManufacturer = null;
+            SelectedBuildVariant = null;
         }
         finally
         {
             isClearing = false;
         }
 
-        FilterData(null, null, null);
+        FilterData(null, null, null, null);
 
     }
 
     partial void OnSelectedVersionChanged(string? value)
     {
-        FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
+        FilterData(SelectedVersion, SelectedVehicleType, SelectedBuildVariant, SelectedManufacturer);
     }
 
-    partial void OnSelectedFrameTypeChanged(string? value)
+    partial void OnSelectedVehicleTypeChanged(string? value)
     {
-        FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
+        FilterData(SelectedVersion, SelectedVehicleType, SelectedBuildVariant, SelectedManufacturer);
+    }
+
+    partial void OnSelectedBuildVariantChanged(string? value)
+    {
+        FilterData(SelectedVersion, SelectedVehicleType, SelectedBuildVariant, SelectedManufacturer);
     }
 
     partial void OnSelectedManufacturerChanged(string? value)
     {
-        FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
+        FilterData(SelectedVersion, SelectedVehicleType, SelectedBuildVariant, SelectedManufacturer);
     }
 
-    private void FilterData(string? version, string? vehicleType, string? manufacturer)
+    private void FilterData(string? version, string? vehicleType, string? buildVariant, string? manufacturer)
     {
         if (isClearing)
         {
@@ -270,7 +298,11 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
             choices = choices.Where(x => x.VehicleType == vehicleType).ToList();
             Debug.Print($"Filter VehicleType {vehicleType} found {choices.Count} items");
         }
-
+        if (!string.IsNullOrEmpty(buildVariant))
+        {
+            choices = choices.Where(x => x.BuildVariant == buildVariant).ToList();
+            Debug.Print($"Filter BuildVariant {buildVariant} found {choices.Count} items");
+        }
         if (!string.IsNullOrEmpty(manufacturer))
         {
             choices = choices.Where(x => x.Manufacturer == manufacturer).ToList();
@@ -298,7 +330,7 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
     private void RebuildTargetChoices()
     {
         SelectedVersion = null;
-        SelectedFrameType = null;
+        SelectedVehicleType = null;
         SelectedManufacturer = null;
 
         // The grid may transiently clear SelectedFirmwareModel while its collection is rebuilt.
@@ -324,13 +356,21 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
         Versions.ReplaceRange(versions);
 
         //FirmwareManifestEntry -> FirmwareBoardTarget Target  -> FirmwareVehicleType VehicleType
-        var frameTypes = choices
+        var vehicleTypes = choices
             .Select(x => x.VehicleType)
             .Distinct()
             .Order()
             .ToList();
 
-        FrameTypes.ReplaceRange(frameTypes);
+        var variants = choices
+            .Select(x => x.BuildVariant)
+            .Distinct()
+            .Order()
+            .ToList();
+
+
+        VehicleTypes.ReplaceRange(vehicleTypes);
+        BuildVariants.ReplaceRange(variants);
 
         var manufacturers = choices
             .Select(x => x.Manufacturer)
@@ -338,13 +378,12 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
             .Order()
             .ToList();
 
-        Manufacturers.Clear();
-        Manufacturers.AddRange(manufacturers);
+        Manufacturers.ReplaceRange(manufacturers);
 
         // Keep the initial catalogue population on the same path as subsequent
         // filter changes. FilterData also updates HasFirmwareChoices, which controls
         // whether the Avalonia DataGrid is present in the visual tree.
-        FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
+        FilterData(SelectedVersion, SelectedVehicleType, SelectedBuildVariant, SelectedManufacturer);
 
         Debug.Print($"InstallFirmware ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
 
@@ -447,7 +486,8 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
     {
         availableEntries = entries;
         KnownPlatforms = entries.Select(entry => entry.Target.Platform)
-            .Where(platform => !string.IsNullOrWhiteSpace(platform)).Distinct(StringComparer.Ordinal)
+            .Where(platform => !string.IsNullOrWhiteSpace(platform))
+            .Distinct(StringComparer.Ordinal)
             .OrderBy(platform => platform, StringComparer.Ordinal).ToArray();
         OnPropertyChanged(nameof(KnownPlatforms));
         availableDevices = devices;

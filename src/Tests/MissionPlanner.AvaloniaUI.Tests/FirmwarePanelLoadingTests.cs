@@ -375,7 +375,7 @@ public sealed class FirmwarePanelLoadingTests
     private static FirmwareManifestEntry Entry(FirmwareReleaseChannel channel = FirmwareReleaseChannel.Stable)
     {
         return new(new FirmwareVersion("4.6.0"), channel,
-        new FirmwareBoardTarget(50, "test", FirmwareVehicleType.Copter),
+        new FirmwareBoardTarget(50, "test", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
         new FirmwareArtifact(new Uri("https://example.test/firmware.apj"), FirmwareImageFormat.Apj));
     }
 

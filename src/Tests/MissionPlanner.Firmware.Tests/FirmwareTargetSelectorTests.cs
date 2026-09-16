@@ -66,6 +66,8 @@ public sealed class FirmwareTargetSelectorTests
         FirmwareTargetSelector.Query(entries, new(ReleaseChannel: channel)).Should().ContainSingle(item => item.Entry.Channel == channel);
     }
 
-    private static FirmwareManifestEntry Entry(int boardId, string platform, UsbIdentifier? usb = null, FirmwareReleaseChannel channel = FirmwareReleaseChannel.Stable, IReadOnlyDictionary<string, string>? metadata = null) =>
-        new(new FirmwareVersion("1.0.0"), channel, new FirmwareBoardTarget(boardId, platform, FirmwareVehicleType.Copter, usb is null ? null : [usb.Value]), new FirmwareArtifact(new Uri($"https://example.test/{platform}.apj"), FirmwareImageFormat.Apj, 100), rawMetadata: metadata);
+    private static FirmwareManifestEntry Entry(int boardId, string platform, UsbIdentifier? usb = null, FirmwareReleaseChannel channel = FirmwareReleaseChannel.Stable, IReadOnlyDictionary<string, string>? metadata = null)
+    {
+        return new(new FirmwareVersion("1.0.0"), channel, new FirmwareBoardTarget(boardId, platform, FirmwareVehicleType.Copter, FirmwareVehicleType.Copter, usb is null ? null : [usb.Value]), new FirmwareArtifact(new Uri($"https://example.test/{platform}.apj"), FirmwareImageFormat.Apj, 100), rawMetadata: metadata);
+    }
 }

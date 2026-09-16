@@ -49,10 +49,11 @@
                     </Button>
                 </StackPanel>
                 <StackPanel Grid.Row="3"  Orientation="Horizontal"  Spacing="10">
-                    <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release"  ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="250"/>
-                    <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="250" />
-                    <ComboBox ItemsSource="{Binding FrameTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame" SelectedItem="{Binding SelectedFrameType}" Width="250" />
-                    <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="250" />
+                    <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release"  ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="200"/>
+                    <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="200" />
+                    <ComboBox ItemsSource="{Binding VehicleTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame/VehicleType" SelectedItem="{Binding SelectedVehicleType}" Width="200" />
+                    <ComboBox ItemsSource="{Binding BuildVariants}" PlaceholderText="Variant" ToolTip.Tip="Build Variant" SelectedItem="{Binding SelectedBuildVariant}" Width="200" />
+                    <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="200" />
                     <Button  ToolTip.Tip="Clear Filters"
                              Command="{Binding ClearCommand}"
                              Padding="8,2"
@@ -65,7 +66,7 @@
 
                     Height="400"
                     ItemsSource="{Binding FilteredFirmwareChoices}"
-                    ColumnWidths="250,100,*,2*,100,*"
+                    ColumnWidths="250,150,150,*,2*,100,*"
                     ColumnSpacing="6"
                     RowMinHeight="48"
                     ShowHeader="True"
@@ -88,12 +89,13 @@
                     <controls:VirtualizedItemsGrid.HeaderTemplate>
                         <DataTemplate>
                             <controls:VirtualizedItemsGridRow>
-                                <TextBlock Grid.Column="0" Text="Version information" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="1" Text="Vehicle type" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="2" Text="Platform" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="3" Text="Manufacturer" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="4" Text="Board ID" Classes="DataGridColumn" />
-                                <TextBlock Grid.Column="5" Text="Match reason" Classes="DataGridColumn" />
+                                <TextBlock Grid.Column="0" Text="Version" Classes="DataGridColumn" />
+                                <TextBlock Grid.Column="1" Text="Vehicle" Classes="DataGridColumn" />
+                                <TextBlock Grid.Column="2" Text="Variant" Classes="DataGridColumn" />
+                                <TextBlock Grid.Column="3" Text="Board family" Classes="DataGridColumn" />
+                                <TextBlock Grid.Column="4" Text="Manufacturer" Classes="DataGridColumn" />
+                                <TextBlock Grid.Column="5" Text="Board ID" Classes="DataGridColumn" />
+                                <TextBlock Grid.Column="6" Text="Match reason" Classes="DataGridColumn" />
                             </controls:VirtualizedItemsGridRow>
                         </DataTemplate>
                     </controls:VirtualizedItemsGrid.HeaderTemplate>
@@ -106,10 +108,11 @@
                                     <TextBlock Text="{Binding FirmwareVersion.SemanticVersion, StringFormat='Semantic version: {0}'}" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="1" Text="{Binding VehicleType}" Classes="DataGridRow" />
-                                <TextBlock Grid.Column="2" HorizontalAlignment="Center" Text="{Binding Platform}" Classes="DataGridRow" />
-                                <TextBlock Grid.Column="3" HorizontalAlignment="Center" Text="{Binding Manufacturer}" Classes="DataGridRow" />
-                                <TextBlock Grid.Column="4" HorizontalAlignment="Center" Text="{Binding BoardId}" Classes="DataGridRow" />
-                                <TextBlock Grid.Column="5" HorizontalAlignment="Center" Text="{Binding MatchReason}" Classes="DataGridRow" />
+                                <TextBlock Grid.Column="2" Text="{Binding BuildVariant}" Classes="DataGridRow" />
+                                <TextBlock Grid.Column="3" HorizontalAlignment="Center" Text="{Binding Platform}" Classes="DataGridRow" />
+                                <TextBlock Grid.Column="4" HorizontalAlignment="Center" Text="{Binding Manufacturer}" Classes="DataGridRow" />
+                                <TextBlock Grid.Column="5" HorizontalAlignment="Center" Text="{Binding BoardId}" Classes="DataGridRow" />
+                                <TextBlock Grid.Column="6" HorizontalAlignment="Center" Text="{Binding MatchReason}" Classes="DataGridRow" />
                             </controls:VirtualizedItemsGridRow>
                         </DataTemplate>
                     </controls:VirtualizedItemsGrid.RowTemplate>
@@ -119,26 +122,29 @@
                         HorizontalAlignment="Center"
                         IsVisible="{Binding SelectedFirmwareModel.HasSelectedFirmware }"
                         ColumnDefinitions="200,*"
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                         RowSpacing="2">
 
-                        <TextBlock Grid.Row="1" Text="Platform" Classes="H5" />
+                        <TextBlock Grid.Row="1" Text="Platform:" Classes="H5" />
                         <SelectableTextBlock Grid.Row="1" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Platform,FallbackValue='', TargetNullValue=''}" />
 
-                        <TextBlock Grid.Row="2"  Classes="H5" Text="Firmware board ID" />
+                        <TextBlock Grid.Row="2"  Classes="H5" Text="Firmware board ID:" />
                         <SelectableTextBlock Grid.Row="2" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.BoardId,FallbackValue='', TargetNullValue=''}" />
 
-                        <TextBlock Grid.Row="3" Text="Version" />
+                        <TextBlock Grid.Row="3" Text="Version:" />
                         <SelectableTextBlock Grid.Row="3" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Version,FallbackValue='', TargetNullValue=''}" />
 
-                        <TextBlock Grid.Row="4"  Classes="H5" Text="Channel" />
+                        <TextBlock Grid.Row="4"  Classes="H5" Text="Channel:" />
                         <SelectableTextBlock Grid.Row="4" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Channel,FallbackValue='', TargetNullValue=''}" />
 
-                        <TextBlock Grid.Row="5"  Classes="H5" Text="Vehicle" />
+                        <TextBlock Grid.Row="5"  Classes="H5" Text="Vehicle:" />
                         <SelectableTextBlock Grid.Row="5" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.VehicleType,FallbackValue='', TargetNullValue=''}" />
 
-                        <TextBlock Grid.Row="6"  Classes="H5" Text="Manufacturer" />
-                        <SelectableTextBlock Grid.Row="6" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Manufacturer,FallbackValue='', TargetNullValue=''}" />
+                        <TextBlock Grid.Row="6"  Classes="H5" Text="Build variant:" />
+                        <SelectableTextBlock Grid.Row="6" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.BuildVariant,FallbackValue='', TargetNullValue=''}" />
+
+                        <TextBlock Grid.Row="7"  Classes="H5" Text="Manufacturer:" />
+                        <SelectableTextBlock Grid.Row="7" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Manufacturer,FallbackValue='', TargetNullValue=''}" />
                     </Grid>
                 </Border>
             </Grid>

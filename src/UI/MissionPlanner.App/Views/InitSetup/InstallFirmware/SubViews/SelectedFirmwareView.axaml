@@ -16,37 +16,37 @@
               RowSpacing="10">
             <TextBlock Text="Selected firmware" Classes="H3" Margin="0,0,0,10"/>
 
-            <TextBlock Grid.Row="1" Text="Platform" />
+            <TextBlock Grid.Row="1" Text="Platform:" />
             <SelectableTextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Selected.Platform,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="2" Text="Firmware board ID" />
+            <TextBlock Grid.Row="2" Text="Firmware board ID:" />
             <SelectableTextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Selected.BoardId,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="3" Text="Version" />
+            <TextBlock Grid.Row="3" Text="Version:" />
             <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Selected.Version,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="4" Text="Channel" />
+            <TextBlock Grid.Row="4" Text="Channel:" />
             <SelectableTextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Selected.Channel,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="5" Text="Vehicle" />
+            <TextBlock Grid.Row="5" Text="Vehicle:" />
             <SelectableTextBlock Grid.Row="5" Grid.Column="1" Text="{Binding Selected.VehicleType,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="6" Text="Manufacturer" />
+            <TextBlock Grid.Row="6" Text="Manufacturer:" />
             <SelectableTextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Selected.Manufacturer,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="7" Text="Git SHA" />
+            <TextBlock Grid.Row="7" Text="Git SHA:" />
             <SelectableTextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Selected.GitSha,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="8" Text="Format" />
+            <TextBlock Grid.Row="8" Text="Format:" />
             <SelectableTextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Selected.Format,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="9" Text="Source" />
+            <TextBlock Grid.Row="9" Text="Source:" />
             <SelectableTextBlock Grid.Row="9" Grid.Column="1" Text="{Binding Selected.ArtifactUrl,FallbackValue='', TargetNullValue=''}" TextWrapping="Wrap" />
 
-            <TextBlock Grid.Row="10" Text="USB IDs" />
+            <TextBlock Grid.Row="10" Text="USB IDs:" />
             <SelectableTextBlock Grid.Row="10" Grid.Column="1" Text="{Binding Selected.UsbIdentifiers,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="11" Text="Bootloader aliases" />
+            <TextBlock Grid.Row="11" Text="Bootloader aliases:" />
             <SelectableTextBlock Grid.Row="11" Grid.Column="1" Text="{Binding Selected.BootloaderAliases,FallbackValue='', TargetNullValue=''}" />
 
 

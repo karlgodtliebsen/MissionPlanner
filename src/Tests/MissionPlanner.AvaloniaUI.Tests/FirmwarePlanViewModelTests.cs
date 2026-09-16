@@ -3,8 +3,8 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
-using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Entry;
@@ -177,7 +177,7 @@ public sealed class FirmwarePlanViewModelTests
         await page.ActivateAsync();
         page.DfuModel.SelectedDfuDevice = new(new("usb", 0x0483, 0xdf11, DfuDriverState.PresentReady));
         var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
-            new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter),
+            new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
             new FirmwareArtifact(Metadata().SourceUri, FirmwareImageFormat.Apj));
         services.GetRequiredService<IFirmwareCatalogService>()
             .GetCatalogAsync(Arg.Any<FirmwareCatalogRequest>(), Arg.Any<CancellationToken>())
@@ -633,7 +633,7 @@ public sealed class FirmwarePlanViewModelTests
     private static void PrepareOnline(InstallFirmwareViewModel page)
     {
         var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
-            new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter),
+            new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
             new FirmwareArtifact(Metadata().SourceUri, FirmwareImageFormat.Apj));
         page.OnlineFirmwareModel.SetCatalogue([entry], [], false);
         page.OnlineFirmwareModel.SelectedFirmware = page.OnlineFirmwareModel.FirmwareChoices.Single();

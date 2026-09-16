@@ -31,7 +31,6 @@ public sealed class FirmwareCatalogService(
         if (fresh && !request.ForceRefresh)
         {
             Debug.Print("GetCatalogAsync fresh && !request.ForceRefresh");
-
             selected = cached!;
         }
         else
@@ -43,7 +42,10 @@ public sealed class FirmwareCatalogService(
                 var response = await client.GetAsync(options.Value.ManifestUri, cached, cancellationToken).ConfigureAwait(false);
 
                 selected = response.NotModified && cached is not null
-                    ? cached with { RetrievedAt = now }
+                    ? cached with
+                    {
+                        RetrievedAt = now
+                    }
                     : new CachedFirmwareManifest(response.Content.ToArray(), now, response.ETag, response.LastModified, options.Value.ManifestUri);
 
                 // Validate once before caching and reuse this result below. Parsing large
@@ -83,6 +85,11 @@ public sealed class FirmwareCatalogService(
         if (request.VehicleType is { } vehicle)
         {
             entries = entries.Where(entry => entry.Target.VehicleType == vehicle);
+        }
+
+        if (request.Variant is { } variant)
+        {
+            entries = entries.Where(entry => entry.Target.MavType == variant);
         }
 
         if (request.Channel is { } channel)

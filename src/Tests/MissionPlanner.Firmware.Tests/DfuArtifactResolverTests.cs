@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
@@ -48,7 +48,7 @@ public sealed class DfuArtifactResolverTests
     {
         var downloader = new FakeDownloader();
         var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
-            new FirmwareBoardTarget(140, selectedPlatform, FirmwareVehicleType.Copter),
+            new FirmwareBoardTarget(140, selectedPlatform, FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
             new FirmwareArtifact(new Uri($"https://firmware.ardupilot.org/Copter/stable/{sourcePlatform}/arducopter-heli.apj"), FirmwareImageFormat.Apj));
         var request = new DfuInstallationRequest(selectedPlatform, 140,
             new DfuDeviceDescriptor("usb1", 0x0483, 0xDF11, DfuDriverState.PresentReady), ManifestEntry: entry);
@@ -127,29 +127,45 @@ public sealed class DfuArtifactResolverTests
 
     private static DfuInstallationRequest OfficialRequest(FirmwareVehicleType vehicle, Uri source)
     {
-        var target = new FirmwareBoardTarget(140, "CubeOrange", vehicle);
+        var target = new FirmwareBoardTarget(140, "CubeOrange", vehicle, vehicle);
         var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable, target,
             new FirmwareArtifact(source, FirmwareImageFormat.Apj));
         return new DfuInstallationRequest("CubeOrange", 140,
             new DfuDeviceDescriptor("usb1", 0x0483, 0xDF11, DfuDriverState.PresentReady), ManifestEntry: entry);
     }
 
-    private static string ValidHexText() => ":020000040800F2\n:020000000102FB\n:00000001FF\n";
+    private static string ValidHexText()
+    {
+        return ":020000040800F2\n:020000000102FB\n:00000001FF\n";
+    }
 
     private sealed class FakeDownloader : IDfuHexArtifactDownloader
     {
-        public Uri? Source { get; private set; }
-        public string? Platform { get; private set; }
-        public int? BoardId { get; private set; }
-        public Exception? Failure { get; init; }
+        public Uri? Source
+        {
+            get; private set;
+        }
+        public string? Platform
+        {
+            get; private set;
+        }
+        public int? BoardId
+        {
+            get; private set;
+        }
+        public Exception? Failure
+        {
+            get; init;
+        }
         public Task<DfuArtifact> DownloadAsync(Uri sourceUri, string platform, int? boardId, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Source = sourceUri;
             Platform = platform;
             BoardId = boardId;
-            if (Failure is not null) return Task.FromException<DfuArtifact>(Failure);
-            return Task.FromResult(new DfuArtifact(Path.GetFileName(sourceUri.AbsolutePath), "artifact.hex",
+            return Failure is not null
+                ? Task.FromException<DfuArtifact>(Failure)
+                : Task.FromResult(new DfuArtifact(Path.GetFileName(sourceUri.AbsolutePath), "artifact.hex",
                 new DfuArtifactMetadata(1, 1, 0x08000000, 0x08000000, new string('A', 64), [new DfuMemoryRange(0x08000000, new byte[] { 1 })], []),
                 sourceUri, platform, boardId));
         }
@@ -175,7 +191,16 @@ public sealed class DfuArtifactResolverTests
             CacheRoot = Path.Combine(Path.GetTempPath(), $"dfu-cache-{Guid.NewGuid():N}");
             Directory.CreateDirectory(CacheRoot);
         }
-        public string CacheRoot { get; }
-        public void Dispose() { if (Directory.Exists(CacheRoot)) Directory.Delete(CacheRoot, true); }
+        public string CacheRoot
+        {
+            get;
+        }
+        public void Dispose()
+        {
+            if (Directory.Exists(CacheRoot))
+            {
+                Directory.Delete(CacheRoot, true);
+            }
+        }
     }
 }

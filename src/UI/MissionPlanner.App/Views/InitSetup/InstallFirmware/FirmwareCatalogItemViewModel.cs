@@ -63,15 +63,38 @@ public sealed partial class FirmwareCatalogItemViewModel : ObservableObject
     /// <summary>Gets the vehicle label.</summary>
     public string VehicleType => Entry.Target.VehicleType.ToString();
 
-    /// <summary>Gets the version label.</summary>
-    public string Version => Entry.Version.ToString();
+    /// <summary>
+    /// Gets the build variant label, which is a more detailed MAV_TYPE value than the vehicle family.
+    /// </summary>
+    public string BuildVariant => UiFormat(Entry.Target.MavType);
 
     /// <summary>Gets the platform label.</summary>
     public string Platform => Entry.Target.Platform;
+
+    /// <summary>Gets the version label.</summary>
+    public string Version => Entry.Version.ToString();
+
 
     /// <summary>Gets the board identifier.</summary>
     public int BoardId => Entry.Target.BoardId;
 
     /// <summary>Gets the release channel.</summary>
     public FirmwareReleaseChannel Channel => Entry.Channel;
+
+
+    private static string UiFormat(FirmwareVehicleType vehicleType)
+    {
+        var typeName = vehicleType switch
+        {
+            FirmwareVehicleType.Copter => "MultiCopter",
+            FirmwareVehicleType.Helicopter => "Helicopter",
+            FirmwareVehicleType.Plane => "Plane",
+            FirmwareVehicleType.Rover => "Rover",
+            FirmwareVehicleType.Sub => "Sub",
+            FirmwareVehicleType.AntennaTracker => "Tracker",
+            FirmwareVehicleType.Blimp => "Blimp",
+            var _ => "Unknown"
+        };
+        return typeName;
+    }
 }

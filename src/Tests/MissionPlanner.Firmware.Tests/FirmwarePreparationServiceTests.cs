@@ -1,9 +1,9 @@
 ﻿using FluentAssertions;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Downloads;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Preparation;
-using MissionPlanner.Firmware.Configuration;
 
 namespace MissionPlanner.Firmware.Tests;
 
@@ -73,9 +73,13 @@ public sealed class FirmwarePreparationServiceTests
         await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
-    private static FirmwareManifestEntry Entry(int boardId) => new(new FirmwareVersion("1.0"), FirmwareReleaseChannel.Stable,
-        new FirmwareBoardTarget(boardId, "Test", FirmwareVehicleType.Copter),
+    private static FirmwareManifestEntry Entry(int boardId)
+    {
+        return new(new FirmwareVersion("1.0"), FirmwareReleaseChannel.Stable,
+        new FirmwareBoardTarget(boardId, "Test", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
         new FirmwareArtifact(new Uri("https://example.test/test.apj"), FirmwareImageFormat.Apj));
+    }
+
     private static DownloadedFirmwareArtifact Download(int boardId, bool cacheHit)
     {
         var metadata = new FirmwareArtifactMetadata("cache-key", new Uri("https://example.test/test.apj"), DateTimeOffset.UtcNow, 4, new string('A', 64));
@@ -83,15 +87,24 @@ public sealed class FirmwarePreparationServiceTests
     }
     private sealed class FakeDownloader(DownloadedFirmwareArtifact result) : IFirmwareArtifactDownloader
     {
-        public Task<DownloadedFirmwareArtifact> DownloadAsync(FirmwareArtifact artifact, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) => Task.FromResult(result);
+        public Task<DownloadedFirmwareArtifact> DownloadAsync(FirmwareArtifact artifact, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(result);
+        }
     }
     private sealed class CancellingDownloader : IFirmwareArtifactDownloader
     {
-        public Task<DownloadedFirmwareArtifact> DownloadAsync(FirmwareArtifact artifact, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) => Task.FromCanceled<DownloadedFirmwareArtifact>(cancellationToken);
+        public Task<DownloadedFirmwareArtifact> DownloadAsync(FirmwareArtifact artifact, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
+        {
+            return Task.FromCanceled<DownloadedFirmwareArtifact>(cancellationToken);
+        }
     }
     private sealed class Stored(FirmwareArtifactMetadata metadata) : IFirmwareStoredArtifact
     {
         public FirmwareArtifactMetadata Metadata => metadata;
-        public Task<Stream> OpenReadAsync(CancellationToken cancellationToken = default) => Task.FromResult<Stream>(new MemoryStream());
+        public Task<Stream> OpenReadAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Stream>(new MemoryStream());
+        }
     }
 }

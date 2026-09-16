@@ -66,8 +66,11 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
             var entries = accepted
                 .GroupBy(EntryKey, StringComparer.OrdinalIgnoreCase)
                 .Select(group => group.OrderByDescending(item => item.Version.SemanticVersion).First())
-                .OrderBy(item => item.Target.VehicleType).ThenBy(item => item.Target.Platform, StringComparer.OrdinalIgnoreCase)
-                .ThenByDescending(item => item.Version.SemanticVersion).ThenBy(item => item.Version.Value, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(item => item.Target.VehicleType)
+                .ThenBy(item => item.Target.MavType)
+                .ThenBy(item => item.Target.Platform, StringComparer.OrdinalIgnoreCase)
+                .ThenByDescending(item => item.Version.SemanticVersion)
+                .ThenBy(item => item.Version.Value, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
             if (accepted.Count > entries.Length)
@@ -85,6 +88,7 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
                     string.Join(", ", reasons.OrderBy(pair => pair.Key).Select(pair => $"{pair.Key}={pair.Value}")));
             }
 
+            //var res = entries.Where(e => e.Artifact.DownloadUri.ToString().Contains("BETAFPV"));
             return new FirmwareManifestParseResult(entries, new FirmwareManifestParseDiagnostics(total, entries.Length, total - entries.Length, reasons));
         }
         catch (FirmwareManifestException) { throw; }
@@ -100,11 +104,17 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
         var boardId = RequiredInt(item, "board_id");
         var platform = RequiredString(item, "platform");
         var url = new Uri(RequiredString(item, "url"), UriKind.Absolute);
+
+        //if (url.AbsoluteUri.Contains("BETAFPV"))
+        //{
+        //    Debug.Print(url.AbsoluteUri);
+        //}
+
         var versionText = GetString(item, "mav-firmware-version") ?? GetString(item, "version") ?? "unknown";
         Version.TryParse(versionText.Split('-', '+')[0], out var semantic);
         var usb = ParseUsb(item);
         var bootloaders = ParseStrings(item, "bootloader_str");
-        var target = new FirmwareBoardTarget(boardId, platform, ParseVehicle(GetString(item, "vehicletype")), usb, bootloaders);
+        var target = new FirmwareBoardTarget(boardId, platform, ParseVehicle(GetString(item, "vehicletype")), ParseVehicle(GetString(item, "mav-type")), usb, bootloaders);
         var format = ParseFormat(GetString(item, "format"), url);
         if (format == FirmwareImageFormat.Unknown)
         {
@@ -154,7 +164,7 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
 
     private static string EntryKey(FirmwareManifestEntry entry)
     {
-        return $"{entry.Target.BoardId}|{entry.Target.Platform}|{entry.Target.VehicleType}|{entry.Channel}|{entry.Version.Value}|{entry.Artifact.Format}";
+        return $"{entry.Target.BoardId}|{entry.Target.Platform}|{entry.Target.MavType}|{entry.Target.VehicleType}|{entry.Channel}|{entry.Version.Value}|{entry.Artifact.Format}";
     }
 
     private static string RequiredString(JsonElement item, string name)

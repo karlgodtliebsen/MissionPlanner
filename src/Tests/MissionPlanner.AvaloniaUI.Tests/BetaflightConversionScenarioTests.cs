@@ -23,7 +23,7 @@ public sealed class BetaflightConversionScenarioTests
         var mapping = new BetaflightArduPilotMapping("TEST", "Target", "Board", "TEST", 1, "Board", 50,
             "Test fixture only", new DateOnly(2026, 1, 1));
         var entry = new FirmwareManifestEntry(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
-            new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter),
+            new FirmwareBoardTarget(50, "Board", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
             new FirmwareArtifact(new Uri("https://example.test/Board/arducopter.apj"), FirmwareImageFormat.Apj));
         var artifact = new DfuArtifact("arducopter_with_bl.hex", "cached.hex",
             new DfuArtifactMetadata(100, 4, 0x08000000, 0x08000003, new string('a', 64),

@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -67,7 +67,12 @@ public sealed class FirmwareCatalogTests
             """;
         var result = CreateParser().ParseWithDiagnostics(System.Text.Encoding.UTF8.GetBytes(json));
         result.Entries.Should().ContainSingle().Which.RawMetadata.Should().ContainKey("future");
-        result.Diagnostics.Should().BeEquivalentTo(new { TotalEntries = 2, AcceptedEntries = 1, SkippedEntries = 1 });
+        result.Diagnostics.Should().BeEquivalentTo(new
+        {
+            TotalEntries = 2,
+            AcceptedEntries = 1,
+            SkippedEntries = 1
+        });
         result.Diagnostics.SkipReasons.Should().Contain("invalid-usb-id", 1);
     }
 
@@ -104,6 +109,7 @@ public sealed class FirmwareCatalogTests
 
         var catalog = await service.GetCatalogAsync(new FirmwareCatalogRequest(
             FirmwareVehicleType.Copter,
+            FirmwareVehicleType.Copter,
             FirmwareReleaseChannel.Stable,
             UsbIdentifier: new UsbIdentifier(0x2dae, 0x1016)), TestContext.Current.CancellationToken);
 
@@ -120,9 +126,7 @@ public sealed class FirmwareCatalogTests
         await cache.SetAsync(new CachedFirmwareManifest(FixtureBytes(), old, "\"etag\""), TestContext.Current.CancellationToken);
         var client = new StubClient { Exception = new HttpRequestException("offline") };
         var service = CreateService(client, cache, new FixedTimeProvider(old.AddDays(2)));
-
         var catalog = await service.GetCatalogAsync(new FirmwareCatalogRequest(BoardId: 9), TestContext.Current.CancellationToken);
-
         catalog.Entries.Should().ContainSingle().Which.Target.VehicleType.Should().Be(FirmwareVehicleType.Plane);
         catalog.IsStale.Should().BeTrue();
         client.CallCount.Should().Be(1);
@@ -157,8 +161,14 @@ public sealed class FirmwareCatalogTests
 
     private sealed class StubClient : IFirmwareManifestClient
     {
-        public Exception? Exception { get; init; }
-        public int CallCount { get; private set; }
+        public Exception? Exception
+        {
+            get; init;
+        }
+        public int CallCount
+        {
+            get; private set;
+        }
 
         public Task<FirmwareManifestResponse> GetAsync(Uri uri, CachedFirmwareManifest? cached, CancellationToken cancellationToken = default)
         {

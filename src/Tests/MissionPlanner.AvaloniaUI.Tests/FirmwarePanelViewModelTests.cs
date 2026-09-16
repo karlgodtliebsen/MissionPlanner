@@ -30,7 +30,7 @@ public sealed class FirmwarePanelViewModelTests
         FirmwareManifestEntry Entry(int id, string platform)
         {
             return new(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
-                new FirmwareBoardTarget(id, platform, FirmwareVehicleType.Copter, [usb]),
+                new FirmwareBoardTarget(id, platform, FirmwareVehicleType.Copter, FirmwareVehicleType.Copter, [usb]),
                 new FirmwareArtifact(new Uri($"https://example.test/{platform}.apj"), FirmwareImageFormat.Apj));
         }
 
@@ -79,7 +79,7 @@ public sealed class FirmwarePanelViewModelTests
         FirmwareManifestEntry Entry(int id, string version)
         {
             return new(new FirmwareVersion(version), FirmwareReleaseChannel.Stable,
-            new FirmwareBoardTarget(id, "board" + id, FirmwareVehicleType.Copter),
+            new FirmwareBoardTarget(id, "board" + id, FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
             new FirmwareArtifact(new Uri($"https://example.test/{id}.apj"), FirmwareImageFormat.Apj));
         }
 
@@ -117,7 +117,7 @@ public sealed class FirmwarePanelViewModelTests
         FirmwareManifestEntry Entry(int id)
         {
             return new(new FirmwareVersion("4.6.0"), FirmwareReleaseChannel.Stable,
-            new FirmwareBoardTarget(id, "board" + id, FirmwareVehicleType.Copter),
+            new FirmwareBoardTarget(id, "board" + id, FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
             new FirmwareArtifact(new Uri($"https://example.test/{id}.apj"), FirmwareImageFormat.Apj));
         }
 

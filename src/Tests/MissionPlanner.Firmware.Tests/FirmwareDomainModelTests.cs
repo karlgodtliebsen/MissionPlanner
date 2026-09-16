@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Firmware.Tests;
@@ -46,8 +46,8 @@ public sealed class FirmwareDomainModelTests
     [Fact]
     public void BoardTargetRejectsInvalidIdentity()
     {
-        var invalidBoard = () => new FirmwareBoardTarget(0, "CubeOrange", FirmwareVehicleType.Copter);
-        var missingPlatform = () => new FirmwareBoardTarget(50, " ", FirmwareVehicleType.Copter);
+        var invalidBoard = () => new FirmwareBoardTarget(0, "CubeOrange", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter);
+        var missingPlatform = () => new FirmwareBoardTarget(50, " ", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter);
 
         invalidBoard.Should().Throw<ArgumentOutOfRangeException>();
         missingPlatform.Should().Throw<ArgumentException>();
@@ -57,7 +57,7 @@ public sealed class FirmwareDomainModelTests
     public void ManifestEntryRejectsInvalidReleaseData()
     {
         var version = new FirmwareVersion("4.6.1");
-        var target = new FirmwareBoardTarget(50, "CubeOrange", FirmwareVehicleType.Copter);
+        var target = new FirmwareBoardTarget(50, "CubeOrange", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter);
         var artifact = new FirmwareArtifact(new Uri("https://firmware.example/fw.apj"), FirmwareImageFormat.Apj, 10);
 
         var customRelease = () => new FirmwareManifestEntry(version, FirmwareReleaseChannel.Custom, target, artifact);
