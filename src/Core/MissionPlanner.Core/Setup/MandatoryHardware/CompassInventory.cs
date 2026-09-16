@@ -13,6 +13,9 @@ public sealed record CompassInventory(
     IReadOnlyList<CompassOrientationOption> OrientationOptions,
     IReadOnlyList<CompassConfigurationIssue> Issues)
 {
+    /// <summary>Gets configured-versus-detected compass diagnostics, including empty slots.</summary>
+    public CompassDiagnostics? Diagnostics { get; init; }
+
     /// <summary>Gets an empty inventory for the specified vehicle.</summary>
     /// <param name="vehicleId">The vehicle identifier.</param>
     /// <returns>An inventory with no compasses.</returns>

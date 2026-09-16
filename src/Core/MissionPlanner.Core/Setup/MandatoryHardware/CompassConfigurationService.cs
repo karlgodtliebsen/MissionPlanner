@@ -89,7 +89,11 @@ public sealed class CompassConfigurationService : ICompassConfigurationService
         }
 
         var issues = DetectIssues(compasses, priorityOrder);
-        return new CompassInventory(vehicleId, compasses, orientationOptions, issues);
+        return new CompassInventory(vehicleId, compasses, orientationOptions, issues)
+        {
+            Diagnostics = CompassDiagnostics.Evaluate(values.ToDictionary(pair => pair.Key, pair => pair.Value.Value),
+                state.Health.IsSystemHealthStale(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5)) ? null : magnetometerHealthy)
+        };
     }
 
     /// <inheritdoc />
@@ -121,11 +125,15 @@ public sealed class CompassConfigurationService : ICompassConfigurationService
     public async Task RefreshAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
         _ = RequireActiveVehicle(vehicleId);
+        foreach (var name in new[] { "COMPASS_ENABLE", "EK3_SRC1_YAW", "EK3_SRC2_YAW", "EK3_SRC3_YAW" })
+        {
+            await parameterService.RequestParameterAsync(vehicleId, name, cancellationToken).ConfigureAwait(false);
+        }
         for (var slot = 1; slot <= MaximumCompassSlots; slot++)
         {
             foreach (var name in new[] { DeviceIdName(slot), UseName(slot), ExternalName(slot), OrientationName(slot) })
             {
-                if (parameterRegistry.GetParameter(vehicleId, name) is not null)
+                if (slot <= 3 || parameterRegistry.GetParameter(vehicleId, name) is not null)
                 {
                     await parameterService.RequestParameterAsync(vehicleId, name, cancellationToken).ConfigureAwait(false);
                 }

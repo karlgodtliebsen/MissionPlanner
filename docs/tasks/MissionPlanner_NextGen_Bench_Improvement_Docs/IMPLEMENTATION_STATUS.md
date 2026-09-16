@@ -12,7 +12,7 @@ Each task is implemented, verified, documented, and committed separately.
 | 4. PC telemetry recording | Complete |
 | 5. Onboard logging diagnostics | Complete |
 | 6. Accelerometer calibration | Complete |
-| 7. Compass diagnostics | Pending |
+| 7. Compass diagnostics | Complete |
 | 8. Motor start threshold assistant | Pending |
 | 9. Motor output diagnostics | Pending |
 | 10. Telemetry replay regression harness | Pending |
@@ -59,3 +59,10 @@ Each task is implemented, verified, documented, and committed separately.
 - Complete solution build passed (19 warnings, zero errors; no XML documentation warnings).
 - Extended the existing workflow and view; fixed connection ownership, synchronous-response transition ordering, and bounded full calibration/refresh lifetimes.
 - Physical calibration remains unverified.
+
+## Task 7 verification
+
+- Compass diagnostics: 6 tests passed; Core suite: 648 passed, 6 skipped.
+- Complete solution build passed (18 warnings, zero errors).
+- Existing Compass view extended; unknown and per-instance health limitations remain explicit.
+- Physical sensor verification not run. Source references are in COMPASS_DIAGNOSTICS.md.

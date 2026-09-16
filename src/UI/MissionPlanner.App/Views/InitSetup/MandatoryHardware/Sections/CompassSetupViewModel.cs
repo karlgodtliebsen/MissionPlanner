@@ -61,6 +61,13 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
         SetMessages("Load the connected vehicle's compass configuration.");
     }
 
+    /// <summary>Gets the read-only configured, detected, required, and healthy summary.</summary>
+    [ObservableProperty]
+    public partial string DiagnosticSummary { get; private set; } = "Compass diagnostics unavailable";
+
+    /// <summary>Gets raw configuration and decoded identity evidence for all primary compass slots.</summary>
+    public ObservableRangeCollection<string> DiagnosticEvidence { get; } = [];
+
     /// <summary>Gets the discovered compass instances.</summary>
     public ObservableRangeCollection<CompassInstanceViewModel> Compasses
     {
@@ -392,6 +399,8 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
 
     private void ShowInventory(CompassInventory inventory, bool preserveStatus = false)
     {
+        DiagnosticSummary = inventory.Diagnostics?.Summary ?? "Compass diagnostics unavailable";
+        DiagnosticEvidence.ReplaceRange(inventory.Diagnostics?.Evidence ?? []);
         orientationOptions = inventory.OrientationOptions;
         Compasses.ReplaceRange(inventory.Compasses.Select(x => new CompassInstanceViewModel(x, inventory.OrientationOptions, this)));
         Issues.ReplaceRange(inventory.Issues.Select(issue => issue.Message));

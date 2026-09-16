@@ -1062,3 +1062,7 @@ and arming impact; backend zero is Disabled. PC recording continues independentl
 Accelerometer calibration now uses the application connection boundary, a bounded
 six-position workflow, clear orientation labels, and post-success parameter and
 SYS_STATUS refresh. See [accelerometer calibration](ACCELEROMETER_CALIBRATION.md).
+
+Compass Setup separates configured, detected, required, and healthy states, including
+empty sensor slots, raw IDs, decoded bus/address/type, external flags, and EKF yaw
+source evidence. See [compass diagnostics](COMPASS_DIAGNOSTICS.md).
