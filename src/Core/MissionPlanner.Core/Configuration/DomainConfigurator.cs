@@ -112,6 +112,7 @@ public static class DomainConfigurator
         services.TryAddSingleton<ISimulationFleetAllocator, SimulationFleetAllocator>();
         services.TryAddSingleton<ISimulatorVehicleConnection, SimulatorVehicleConnection>();
 
+        services.TryAddTransient<MissionPlanner.Core.Setup.OptionalHardware.Motor.MotorStartThresholdService>();
         services.TryAddSingleton<TelemetryRecordingService>();
         services.TryAddSingleton<MissionPlanner.MavLink.Services.Abstractions.IMavLinkTrafficRecording>(
             provider => provider.GetRequiredService<TelemetryRecordingService>());

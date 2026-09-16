@@ -78,8 +78,8 @@ public sealed class MotorSpinParameterService(
 
         var percent = MotorSpinPercentage.ToPercent(spinArm) + marginPercent;
         percent = Math.Round(percent);
-        return percent >= MaximumSetupPercent
-            ? Failure(SpinMinName, "The recommended MOT_SPIN_MIN would be 20% or higher and is refused by this setup workflow.")
+        return percent > MaximumSetupPercent
+            ? Failure(SpinMinName, "The recommended MOT_SPIN_MIN would be above 20% and is refused by this setup workflow.")
             : Success(SpinMinName, percent);
     }
 

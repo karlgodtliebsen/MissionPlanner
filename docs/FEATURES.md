@@ -1066,3 +1066,7 @@ SYS_STATUS refresh. See [accelerometer calibration](ACCELEROMETER_CALIBRATION.md
 Compass Setup separates configured, detected, required, and healthy states, including
 empty sensor slots, raw IDs, decoded bus/address/type, external flags, and EKF yaw
 source evidence. See [compass diagnostics](COMPASS_DIAGNOSTICS.md).
+
+Motor Test includes a frame-aware guided start-threshold assistant with props-off
+acknowledgement, one-second pulses, per-motor reliable-rotation observations, and
+reviewed 0.17/0.20-style recommendations. See [motor thresholds](MOTOR_START_THRESHOLDS.md).

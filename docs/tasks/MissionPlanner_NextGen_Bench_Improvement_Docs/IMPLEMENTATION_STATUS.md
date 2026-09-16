@@ -13,7 +13,7 @@ Each task is implemented, verified, documented, and committed separately.
 | 5. Onboard logging diagnostics | Complete |
 | 6. Accelerometer calibration | Complete |
 | 7. Compass diagnostics | Complete |
-| 8. Motor start threshold assistant | Pending |
+| 8. Motor start threshold assistant | Complete |
 | 9. Motor output diagnostics | Pending |
 | 10. Telemetry replay regression harness | Pending |
 
@@ -66,3 +66,10 @@ Each task is implemented, verified, documented, and committed separately.
 - Complete solution build passed (18 warnings, zero errors).
 - Existing Compass view extended; unknown and per-instance health limitations remain explicit.
 - Physical sensor verification not run. Source references are in COMPASS_DIAGNOSTICS.md.
+
+## Task 8 verification
+
+- Threshold/spin tests: 17 passed; Core suite: 652 passed, 6 skipped.
+- Complete solution build passed (39 warnings, zero errors; no CS1591/CS1587).
+- Existing motor/output/parameter services reused. Exactly 20% minimum spin is allowed; default recommendation matches 0.17/0.20.
+- Physical motor tests not run. Non-atomic write behavior is documented.

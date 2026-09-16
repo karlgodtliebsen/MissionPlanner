@@ -26,6 +26,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private readonly IMotorSpinParameterService spinParameters;
     private readonly MotorLayoutResolver resolver;
     private readonly IUserConfirmationService confirmation;
+    private readonly MotorStartThresholdService? thresholdAssistant;
     private bool disposed;
     private bool activated;
     private bool spinInputsInitialized;
@@ -144,6 +145,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// <param name="spinParameters">The normalized motor-spin parameter workflow.</param>
     /// <param name="confirmation">The user confirmation service.</param>
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
+    /// <param name="thresholdAssistant">Guided frame-aware motor start-threshold workflow.</param>
     public MotorTestViewModel(
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
@@ -156,7 +158,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         IActuatorTestService service,
         IMotorSpinParameterService spinParameters,
         MotorLayoutResolver resolver,
-        IUserConfirmationService confirmation)
+        IUserConfirmationService confirmation, MotorStartThresholdService? thresholdAssistant = null)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.activeVehicle = activeVehicle;
@@ -165,23 +167,167 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         this.spinParameters = spinParameters;
         this.resolver = resolver;
         this.confirmation = confirmation;
+        this.thresholdAssistant = thresholdAssistant;
+    }
+
+    /// <summary>Gets motor-by-motor observed start thresholds.</summary>
+    public ObservableRangeCollection<MotorThresholdMeasurement> ThresholdMeasurements { get; } = [];
+
+    /// <summary>Gets the current assistant step and proposed values.</summary>
+    [ObservableProperty]
+    public partial string ThresholdInstruction { get; private set; } = "Start the guided threshold assistant with propellers removed.";
+
+    /// <summary>Gets the selected motor and next pulse percentage.</summary>
+    [ObservableProperty]
+    public partial string ThresholdCurrentMotor { get; private set; } = string.Empty;
+
+    /// <summary>Gets whether an assistant pulse or write is executing.</summary>
+    [ObservableProperty]
+    public partial bool ThresholdBusy { get; private set; }
+
+    [RelayCommand]
+    private async Task StartThresholdAsync(CancellationToken cancellationToken)
+    {
+        if (thresholdAssistant is null || ThresholdBusy || !await ConfirmAsync(cancellationToken))
+        {
+            return;
+        }
+        await RunThresholdAsync(() =>
+        {
+            thresholdAssistant.Start(true);
+            return Task.CompletedTask;
+        });
+    }
+
+    [RelayCommand]
+    private Task PulseThresholdAsync(CancellationToken cancellationToken)
+    {
+        return RunThresholdAsync(() => thresholdAssistant!.PulseAsync(cancellationToken));
+    }
+
+    [RelayCommand]
+    private Task IncreaseThresholdAsync()
+    {
+        return RunThresholdAsync(() =>
+        {
+            thresholdAssistant!.Increase();
+            return Task.CompletedTask;
+        });
+    }
+
+    [RelayCommand]
+    private Task ConfirmRotationAsync()
+    {
+        return RunThresholdAsync(() =>
+        {
+            thresholdAssistant!.ConfirmReliableRotation();
+            return Task.CompletedTask;
+        });
+    }
+
+    [RelayCommand]
+    private async Task CancelThresholdAsync(CancellationToken cancellationToken)
+    {
+        if (thresholdAssistant is not null)
+        {
+            await thresholdAssistant.CancelAsync(cancellationToken);
+            RefreshThreshold();
+        }
+    }
+
+    [RelayCommand]
+    private async Task ApplyThresholdAsync(CancellationToken cancellationToken)
+    {
+        if (thresholdAssistant?.IsComplete != true || ThresholdBusy)
+        {
+            return;
+        }
+        await RunThresholdAsync(async () =>
+        {
+            var recommendation = MotorStartThresholdService.Recommend(
+                thresholdAssistant.Measurements.Select(item => item.ThresholdPercent!.Value).ToArray());
+            if (!await confirmation.ConfirmAsync("Apply motor start thresholds",
+                    $"Write MOT_SPIN_ARM={recommendation.SpinArm:0.00} and MOT_SPIN_MIN={recommendation.SpinMin:0.00}? " +
+                    "These values change motor behavior. The vehicle must remain disarmed.",
+                    "Write and verify both values", cancellationToken))
+            {
+                return;
+            }
+            var result = await thresholdAssistant.ApplyAsync(true, cancellationToken);
+            SetMessages(result.Success ? result.Message : null, result.Success ? null : result.Message);
+        });
+    }
+
+    private async Task RunThresholdAsync(Func<Task> operation)
+    {
+        if (thresholdAssistant is null || ThresholdBusy)
+        {
+            return;
+        }
+        ThresholdBusy = true;
+        try
+        {
+            await operation();
+        }
+        catch (Exception exception)
+        {
+            SetMessages(errorMessage: exception.Message);
+        }
+        finally
+        {
+            ThresholdBusy = false;
+            RefreshThreshold();
+        }
+    }
+
+    private void RefreshThreshold()
+    {
+        if (thresholdAssistant is null)
+        {
+            return;
+        }
+        ThresholdMeasurements.ReplaceRange(thresholdAssistant.Measurements);
+        ThresholdInstruction = thresholdAssistant.Instruction;
+        ThresholdCurrentMotor = thresholdAssistant.CurrentMotor is { } motor
+            ? $"{motor.Display} · Next pulse {thresholdAssistant.TestPercent:0}% for 1 second"
+            : "All motor observations collected";
+        if (thresholdAssistant.IsComplete)
+        {
+            try
+            {
+                var recommendation = MotorStartThresholdService.Recommend(
+                    thresholdAssistant.Measurements.Select(item => item.ThresholdPercent!.Value).ToArray());
+                ThresholdInstruction += $" Highest reliable start: {recommendation.HighestPercent:0}% · " +
+                    $"Proposed MOT_SPIN_ARM={recommendation.SpinArm:0.00}, MOT_SPIN_MIN={recommendation.SpinMin:0.00}.";
+            }
+            catch (InvalidOperationException exception)
+            {
+                ThresholdInstruction = exception.Message;
+            }
+        }
+        TestMotorCommand.NotifyCanExecuteChanged();
+        TestSequenceCommand.NotifyCanExecuteChanged();
+        TestAllCommand.NotifyCanExecuteChanged();
+        StopCommand.NotifyCanExecuteChanged();
+        SetMotorSpinArmCommand.NotifyCanExecuteChanged();
+        SetMotorSpinMinCommand.NotifyCanExecuteChanged();
     }
 
     private bool canExecute = false;
 
     private bool CanExecuteCommand()
     {
-        return canExecute;
+        return canExecute && thresholdAssistant?.HasSession != true;
     }
 
     private bool CanSetSpinMin()
     {
-        return canExecute && HasSpinArm && HasSpinMin && SpinArm is >= 1 && SpinMin is >= 1 && SpinMinSum < 20;
+        return CanExecuteCommand() && HasSpinArm && HasSpinMin && SpinArm is >= 1 && SpinMin is >= 1 && SpinMinSum < 20;
     }
 
     private bool CanSetSpinArm()
     {
-        return canExecute && HasSpinArm && ThrottlePercent is >= 0 and < 20 && SpinArm is >= 1 && SpinArmSum < 20;
+        return CanExecuteCommand() && HasSpinArm && ThrottlePercent is >= 0 and < 20 && SpinArm is >= 1 && SpinArmSum < 20;
     }
 
     [RelayCommand(CanExecute = nameof(CanSetSpinMin))]
@@ -455,6 +601,11 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         activated = false;
         activeVehicle.Changed -= Changed;
         service.StateChanged -= StateChanged;
+        if (thresholdAssistant?.HasSession == true)
+        {
+            await thresholdAssistant.CancelAsync();
+            RefreshThreshold();
+        }
         await base.DeactivateAsync();
     }
 
@@ -471,6 +622,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         activated = false;
         activeVehicle.Changed -= Changed;
         service.StateChanged -= StateChanged;
+        thresholdAssistant?.Dispose();
         base.Dispose();
     }
 }

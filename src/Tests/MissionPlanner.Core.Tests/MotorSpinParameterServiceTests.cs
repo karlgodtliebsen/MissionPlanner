@@ -82,7 +82,7 @@ public sealed class MotorSpinParameterServiceTests
         fixture.Service.RecommendSpinArm(vehicleId, 10, 0).Success.Should().BeFalse();
         fixture.Service.RecommendSpinArm(vehicleId, 18, 2).Success.Should().BeFalse();
         fixture.Service.RecommendSpinMin(vehicleId, 0).Success.Should().BeFalse();
-        fixture.Service.RecommendSpinMin(vehicleId, 3).Success.Should().BeFalse();
+        fixture.Service.RecommendSpinMin(vehicleId, 4).Success.Should().BeFalse();
     }
 
     /// <summary>Verifies unsafe ordering and excessive motor-test throttle are rejected before writes.</summary>
