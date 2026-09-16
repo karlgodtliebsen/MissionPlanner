@@ -1,4 +1,4 @@
-# Bench improvement task progress
+﻿# Bench improvement task progress
 
 Source: [Task set](MissionPlanner_NextGen_Codex_Tasks.md).
 
@@ -14,7 +14,7 @@ Each task is implemented, verified, documented, and committed separately.
 | 6. Accelerometer calibration | Complete |
 | 7. Compass diagnostics | Complete |
 | 8. Motor start threshold assistant | Complete |
-| 9. Motor output diagnostics | Pending |
+| 9. Motor output diagnostics | Complete |
 | 10. Telemetry replay regression harness | Pending |
 
 ## Task 1 verification
@@ -73,3 +73,11 @@ Each task is implemented, verified, documented, and committed separately.
 - Complete solution build passed (39 warnings, zero errors; no CS1591/CS1587).
 - Existing motor/output/parameter services reused. Exactly 20% minimum spin is allowed; default recommendation matches 0.17/0.20.
 - Physical motor tests not run. Non-atomic write behavior is documented.
+
+## Task 9 verification
+
+- Motor summary tests: 2 passed, existing mapping tests also passed; Core suite: 654 passed, 6 skipped.
+- Complete solution build passed (39 warnings, zero errors).
+- Existing view/viewmodel and output/layout resolvers reused; diagnostic section performs no writes.
+- Board timer groups and effective protocol/reboot state remain explicitly unverified.
+- Physical/UI verification not run.

@@ -25,6 +25,12 @@
                     <Label Content="Remove ALL propellers. Motors will spin." Classes="Warning" FontWeight="Bold" />
                 </StackPanel>
                 <TextBlock Text="{Binding FrameDisplay}" FontWeight="Bold" />
+                <Expander Header="Motor output diagnostics" IsExpanded="True" HorizontalAlignment="Stretch">
+                    <StackPanel Spacing="8">
+                        <SelectableTextBlock Text="{Binding OutputConfiguration}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding OutputGuidance}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Expander>
                 <Border Padding="12" Classes="SectionCard">
                     <StackPanel Spacing="8">
                         <TextBlock Text="Guided motor start-threshold assistant" FontWeight="Bold" />

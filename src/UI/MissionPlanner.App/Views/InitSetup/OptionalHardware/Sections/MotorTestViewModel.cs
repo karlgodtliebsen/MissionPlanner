@@ -27,6 +27,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private readonly MotorLayoutResolver resolver;
     private readonly IUserConfirmationService confirmation;
     private readonly MotorStartThresholdService? thresholdAssistant;
+    private readonly IMotorOutputResolver? outputResolver;
     private bool disposed;
     private bool activated;
     private bool spinInputsInitialized;
@@ -146,6 +147,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// <param name="confirmation">The user confirmation service.</param>
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
     /// <param name="thresholdAssistant">Guided frame-aware motor start-threshold workflow.</param>
+    /// <param name="outputResolver">Existing logical-to-physical output resolver.</param>
     public MotorTestViewModel(
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
@@ -158,7 +160,8 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         IActuatorTestService service,
         IMotorSpinParameterService spinParameters,
         MotorLayoutResolver resolver,
-        IUserConfirmationService confirmation, MotorStartThresholdService? thresholdAssistant = null)
+        IUserConfirmationService confirmation, MotorStartThresholdService? thresholdAssistant = null,
+        IMotorOutputResolver? outputResolver = null)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.activeVehicle = activeVehicle;
@@ -168,6 +171,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         this.resolver = resolver;
         this.confirmation = confirmation;
         this.thresholdAssistant = thresholdAssistant;
+        this.outputResolver = outputResolver;
     }
 
     /// <summary>Gets motor-by-motor observed start thresholds.</summary>
@@ -282,6 +286,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
     private void RefreshThreshold()
     {
+        RefreshOutputDiagnostics();
         if (thresholdAssistant is null)
         {
             return;
@@ -495,6 +500,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         layout = activeVehicle.VehicleId is { } id
             ? resolver.Resolve(parameters.GetAllParameters(id))
             : null;
+        RefreshOutputDiagnostics();
         if (layout is null)
         {
             FrameDisplay = "Frame layout unavailable; testing is disabled.";
@@ -508,6 +514,30 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         IsReady = true;
         SetMotorSpinArmCommand.NotifyCanExecuteChanged();
         SetMotorSpinMinCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>Gets downloaded configuration and resolved physical motor outputs.</summary>
+    [ObservableProperty]
+    public partial string OutputConfiguration { get; private set; } = "No active vehicle.";
+
+    /// <summary>Gets motor evidence and conditional diagnostic guidance.</summary>
+    [ObservableProperty]
+    public partial string OutputGuidance { get; private set; } = string.Empty;
+
+    private void RefreshOutputDiagnostics()
+    {
+        if (activeVehicle.VehicleId is not { } id || outputResolver is null)
+        {
+            OutputConfiguration = "No active vehicle or output resolver.";
+            OutputGuidance = string.Empty;
+            return;
+        }
+        OutputConfiguration = MotorOutputDiagnostics.Describe(parameters.GetAllParameters(id), layout,
+            motor => outputResolver.Resolve(id, motor));
+        var observed = thresholdAssistant?.HasSession == true
+            ? thresholdAssistant.Measurements.Count(item => item.ThresholdPercent.HasValue) : 0;
+        OutputGuidance = MotorOutputDiagnostics.Guidance(observed, layout?.Motors.Count ?? 0,
+            service.Current.VehicleId == id ? service.Current.FailureReason : null);
     }
 
     private void RefreshSpinParameters(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId)
@@ -550,6 +580,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             if (!disposed)
             {
                 SetMessages(e.Snapshot.Instruction);
+                RefreshOutputDiagnostics();
                 NotificationManager?.Show(StatusMessage!);
 
             }
