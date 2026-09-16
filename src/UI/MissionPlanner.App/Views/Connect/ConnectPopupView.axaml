@@ -16,79 +16,76 @@
                                >
 
 
-    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-          RowSpacing="25">
-        <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="25">
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="25">
+
+
+        <Border Grid.Row="0" Grid.Column="0" Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="25"
+                IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}"
+                >
             <Grid RowDefinitions="Auto,*,Auto"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="25">
                 <TextBlock Text="{Binding Title}" HorizontalAlignment="Center" Classes="H3" />
 
-                <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="25"  HorizontalAlignment="Center"  VerticalAlignment="Center"
+                <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="25"
+                            HorizontalAlignment="Center"  VerticalAlignment="Center"
                             IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
-                            IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}"
-
+                            
                             >
-                    <Grid VerticalAlignment="Center"  ColumnDefinitions="150,150" HorizontalAlignment="Stretch">
-                        <Label Content="Channel" HorizontalAlignment="Stretch"
-                               FontSize="16" FontWeight="Bold" />
 
-                        <ComboBox Grid.Column="1"
-                                  HorizontalAlignment="Stretch"
-                                  HorizontalContentAlignment="Right"
-                                  ItemsSource="{Binding Channels}"
-                                  SelectedItem="{Binding SelectedChannel}"
-                                  DisplayMemberBinding="{Binding .}"
-                                  />
-                    </Grid >
-                    <Grid VerticalAlignment="Center"  ColumnDefinitions="150,150" HorizontalAlignment="Stretch" IsVisible="{Binding ShowSelectedHost, Converter={StaticResource InvertedBoolConverter}}">
-                        <Label Content="Baud rate" HorizontalAlignment="Stretch"
-                               FontSize="16" FontWeight="Bold" />
+                    <!--AUTO and COM grid-->
+                    <Grid VerticalAlignment="Center"  RowDefinitions="Auto,Auto"  ColumnDefinitions="150,150" RowSpacing="25" HorizontalAlignment="Stretch"
+                          IsVisible="{Binding ShowSelectedCom}">
+                        <TextBlock  Grid.Column="0" Grid.Row="0"  Text="Channel" HorizontalAlignment="Stretch" Classes="H4"  />
+                        <ComboBox  Grid.Column="1" Grid.Row="0"
+                                   HorizontalAlignment="Stretch"
+                                   HorizontalContentAlignment="Right"
+                                   ItemsSource="{Binding Channels}"
+                                   SelectedItem="{Binding SelectedChannel}"
+                                   DisplayMemberBinding="{Binding .}"
+                                   />
 
-                        <ComboBox Grid.Column="1"
+                        <TextBlock Grid.Column="0" Grid.Row="1"  Text="Baud rate" HorizontalAlignment="Stretch" Classes="H4"  />
+                        <ComboBox Grid.Column="1" Grid.Row="1"
                                   HorizontalAlignment="Stretch"
                                   HorizontalContentAlignment="Right"
                                   ItemsSource="{Binding BaudRates}"
                                   SelectedItem="{Binding SelectedBaudRate}"
                                   DisplayMemberBinding="{Binding .}"
                                   />
-                    </Grid >
-                    <Grid VerticalAlignment="Center"  ColumnDefinitions="150,150" HorizontalAlignment="Stretch" >
-
-                        <Label Content="Host" IsVisible="{Binding ShowSelectedHost}"
-                               FontSize="16" HorizontalAlignment="Stretch" FontWeight="Bold" />
-                        <u:IPv4Box Grid.Column="1" Width="150" IsVisible="{Binding ShowSelectedHost}"  IPAddress="{Binding Address}" />
 
                     </Grid >
-                    <Grid  ColumnDefinitions="150,150" HorizontalAlignment="Stretch" VerticalAlignment="Center" >
-                        <Label Content="Port" IsVisible="{Binding ShowSelectedHost}"
-                               FontSize="16" HorizontalAlignment="Stretch" FontWeight="Bold">
 
-                        </Label>
+                    <!--TCP/UDP grid-->
 
-                        <NumericUpDown Grid.Column="1" Width="150" PlaceholderText="Port"
+                    <Grid VerticalAlignment="Center" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="150,150" RowSpacing="25" HorizontalAlignment="Stretch"
+                          IsVisible="{Binding ShowSelectedHost}">
+                        <TextBlock Grid.Column="0" Grid.Row="0" Text="Channel" HorizontalAlignment="Stretch" Classes="H4"  />
+                        <ComboBox  Grid.Row="0" Grid.Column="1"
+                                   HorizontalAlignment="Stretch"
+                                   HorizontalContentAlignment="Right"
+                                   ItemsSource="{Binding Channels}"
+                                   SelectedItem="{Binding SelectedChannel}"
+                                   DisplayMemberBinding="{Binding .}"
+                                   />
+
+                        <TextBlock Grid.Column="0" Grid.Row="1" Text="Host"  Classes="H4"  HorizontalAlignment="Stretch"  />
+                        <u:IPv4Box Grid.Column="1" Grid.Row="1" Width="150" IPAddress="{Binding Address}" />
+
+                        <TextBlock Grid.Column="0"   Grid.Row="2"  Text="Port" Classes="H4"  HorizontalAlignment="Stretch"  />
+                        <NumericUpDown Grid.Column="1"  Grid.Row="2"  Width="150" PlaceholderText="Port"
                                        AllowSpin="False"
-                                       ShowButtonSpinner="False" IsVisible="{Binding ShowSelectedHost}"
+                                       ShowButtonSpinner="False"
                                        Value="{Binding SelectedIntPort, Mode=TwoWay}" FormatString="F0"
                                        VerticalAlignment="Center"  HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" />
                     </Grid >
-                    <Label Content="{Binding StatusMessage}"
-                           Margin="0,10,0,0"
-                           VerticalAlignment="Center" 
-                           FontSize="16" HorizontalAlignment="Center"  />
+
+
+
                 </StackPanel>
 
-                <StackPanel  Grid.Row="1" Orientation="Vertical"
-                             Spacing="50" Margin="0" IsVisible="{Binding IsConnected}"
-                             VerticalAlignment="Center" HorizontalAlignment="Stretch"
-                             >
-                    <TextBlock Text="{Binding StatusMessage}" FontSize="16"
-                               VerticalAlignment="Center"
-                               TextWrapping="Wrap"
-                               HorizontalAlignment="Center"  />
-                </StackPanel>
             </Grid>
         </Border>
 
-        <StackPanel  Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" VerticalAlignment="Center" 
+        <StackPanel  Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" VerticalAlignment="Center"
                      IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                      IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
 
@@ -127,7 +124,22 @@
             </Button>
         </StackPanel>
 
-        <StackPanel  Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" VerticalAlignment="Center" 
+        <Border Grid.Row="0" Grid.Column="0" Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="25"
+                IsVisible="{Binding IsConnected}"
+                >
+            <!--StatusMessage-->
+            <StackPanel  Grid.Row="1" Orientation="Vertical"
+                         Spacing="50" Margin="0" IsVisible="{Binding IsConnected}"
+                         VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                         >
+                <TextBlock Text="{Binding StatusMessage}" Classes="H4"
+                           VerticalAlignment="Center"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"  />
+            </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" VerticalAlignment="Center"
                      IsVisible="{Binding IsConnected}">
             <Button
                 ToolTip.Tip="Disconnect"
@@ -153,6 +165,7 @@
                 <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
             </Button>
         </StackPanel>
+
     </Grid>
 </utilities:UserControlViewBase>
 

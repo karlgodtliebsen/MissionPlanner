@@ -8,7 +8,7 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                x:DataType="sections:CompassSetupViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="Compass discovery and calibration" FontSize="18" FontWeight="Bold" />
@@ -63,16 +63,10 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button ToolTip.Tip="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh compass values">
-                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-            </Button>
-            <TextBlock Text="Onboard calibration" FontSize="18" FontWeight="Bold" />
-            <TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning" FontWeight="Bold" />
-            <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
-            <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
-            <TextBlock Text="{Binding ProgressSummary}" />
-            <TextBlock Text="{Binding QualitySummary}" FontStyle="Italic" />
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <Button ToolTip.Tip="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh compass values">
+                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
                 <Button ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" AutomationProperties.Name="Start calibration">
                     <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
                 </Button>
@@ -86,6 +80,14 @@
                     <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
+
+            <TextBlock Text="Onboard calibration" FontSize="18" FontWeight="Bold" />
+            <TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning" FontWeight="Bold" />
+            <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
+            <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
+            <TextBlock Text="{Binding ProgressSummary}" />
+            <TextBlock Text="{Binding QualitySummary}" FontStyle="Italic" />
+
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

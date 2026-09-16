@@ -21,17 +21,9 @@
                 <Button ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" AutomationProperties.Name="Calibrate level">
                     <mdi:MaterialIcon Kind="ScaleBalance" Classes="ActionIcon" />
                 </Button>
-            </StackPanel>
-            <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
-            <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
-            <Image Source="{Binding OrientationImage}" Height="260" Stretch="Uniform" />
-            <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" />
-            <TextBlock Text="{Binding CompletedOrientations}" />
-            <Button ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Confirm orientation">
-                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-            </Button>
-            <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" FontStyle="Italic" />
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                <Button ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Confirm orientation">
+                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                </Button>
                 <Button ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
                     <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                 </Button>
@@ -39,6 +31,16 @@
                     <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
+            <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
+            <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
+            <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" />
+            <TextBlock Text="{Binding CompletedOrientations}" />
+
+            <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" FontStyle="Italic" />
+
+            
+<!--            <Image Source="{Binding OrientationImage}" Height="260" Stretch="Uniform" />
+-->
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

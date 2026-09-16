@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
@@ -184,7 +183,9 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     /// <summary>Gets whether the active non-destructive workflow can be cancelled.</summary>
     public bool CanCancelCalibration => CalibrationState is RadioCalibrationState.Capturing or RadioCalibrationState.Review;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 
+    /// </summary>
     public void Cancel()
     {
         if (CanCancelCalibration)
@@ -272,12 +273,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         }
     }
 
-    private bool CanFinishCaptureCommand()
-    {
-        return CanFinishCapture;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanFinishCaptureCommand))]
+    [RelayCommand(CanExecute = nameof(CanFinishCapture))]
     private async Task FinishCaptureAsync()
     {
         try
@@ -291,12 +287,8 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         }
     }
 
-    private bool CanWriteCommand()
-    {
-        return CanWrite;
-    }
 
-    [RelayCommand(CanExecute = nameof(CanWriteCommand))]
+    [RelayCommand(CanExecute = nameof(CanWrite))]
     private async Task ConfirmAndWriteAsync()
     {
         var accepted = await confirmation.ConfirmAsync(
@@ -324,7 +316,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand(CanExecute = nameof(CanCancelCalibrationCommand))]
+    [RelayCommand(CanExecute = nameof(CanCancelCalibration))]
     private async Task CancelCalibrationAsync()
     {
         try
@@ -338,10 +330,6 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         }
     }
 
-    private bool CanCancelCalibrationCommand()
-    {
-        return CanCancelCalibration;
-    }
 
     [RelayCommand]
     private void Reset()
@@ -357,12 +345,11 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
 
     private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
-        if (evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Radio.ObservedAt != observedRadioAt)
+        if ((evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Radio.ObservedAt != observedRadioAt) || observedRadioAt == null)
         {
             Dispatcher.Dispatch(() =>
             {
-                if (evt.VehicleId == activeVehicle.VehicleId &&
-                    evt.VehicleState.Radio.ObservedAt != observedRadioAt)
+                if ((evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Radio.ObservedAt != observedRadioAt) || observedRadioAt == null)
                 {
                     observedRadioAt = evt.VehicleState.Radio.ObservedAt;
                     RefreshLiveChannels();
@@ -518,11 +505,17 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
 
     /// <summary>Gets the current neutral/trim assessment for a centered pilot input.</summary>
     [ObservableProperty]
-    public partial string? NeutralDiagnosticText { get; private set; }
+    public partial string? NeutralDiagnosticText
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether the neutral assessment needs user attention.</summary>
     [ObservableProperty]
-    public partial bool HasNeutralWarning { get; private set; }
+    public partial bool HasNeutralWarning
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the channel's calibration role and assignment evidence.</summary>
     [ObservableProperty]

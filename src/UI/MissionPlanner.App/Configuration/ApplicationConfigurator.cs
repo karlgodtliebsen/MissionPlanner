@@ -12,7 +12,6 @@ using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.Common;
-using MissionPlanner.App.Views.Config;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.FlightData;
@@ -222,7 +221,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FlightPlannerMissionMapViewModel>();
         services.TryAddTransient<FlightPlannerViewModel>();
         services.TryAddTransient<FlightPlannerPage>();
-        services.TryAddTransient<ConfigPage>();
         services.TryAddTransient<PreferencesViewModel>();
         services.TryAddTransient<PreferencesPage>();
         services.TryAddTransient<SimulationPage>();

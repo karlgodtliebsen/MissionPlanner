@@ -12,119 +12,124 @@
     x:DataType="sections:MotorTestViewModel"
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.MotorTestView"
     x:Name="Root">
-    <Border Padding="10" Classes="SectionCard">
-        <ScrollViewer VerticalScrollBarVisibility="Visible">
-            <StackPanel Orientation="Vertical" Margin="16" Spacing="10" HorizontalAlignment="Center">
-                <StackPanel Orientation="Horizontal" Margin="0,10,0,10" Spacing="12">
-                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBackgroundParameterLoadInProgress}" Width="20" Height="20" />
-                    <TextBlock Text="{Binding ProgressMessage}" IsVisible="{Binding IsBackgroundParameterLoadInProgress}" VerticalAlignment="Center" />
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
-                </StackPanel>
-                <StackPanel Orientation="Vertical" Spacing="10">
-                    <TextBlock Text="Motor Test" Classes="SectionTitle" />
-                    <Label Content="Remove ALL propellers. Motors will spin." Classes="Warning" FontWeight="Bold" />
-                </StackPanel>
-                <TextBlock Text="{Binding FrameDisplay}" FontWeight="Bold" />
-                <Expander Header="Motor output diagnostics" IsExpanded="True" HorizontalAlignment="Stretch">
-                    <StackPanel Spacing="8">
-                        <SelectableTextBlock Text="{Binding OutputConfiguration}" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding OutputGuidance}" TextWrapping="Wrap" />
+
+    <ScrollViewer VerticalScrollBarVisibility="Visible"  HorizontalAlignment="Stretch" Margin="25,0">
+        <StackPanel Orientation="Vertical"  Spacing="10" HorizontalAlignment="Stretch" Margin="25,0">
+            <Border  Classes="SectionCard" HorizontalAlignment="Stretch" x:Name="PanelWidth">
+                <StackPanel Orientation="Vertical" Spacing="20">
+                    <StackPanel Orientation="Vertical" Spacing="10">
+                        <TextBlock Text="Motor Test" Classes="H3" />
+                        <Label Content="Remove ALL propellers. Motors will spin." Classes="Warning H4"  />
                     </StackPanel>
-                </Expander>
-                <Border Padding="12" Classes="SectionCard">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="Guided motor start-threshold assistant" FontWeight="Bold" />
-                        <TextBlock Text="{Binding ThresholdInstruction}" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding ThresholdCurrentMotor}" TextWrapping="Wrap" />
-                        <ProgressBar IsVisible="{Binding ThresholdBusy}" IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" />
-                        <WrapPanel>
-                            <Button Content="Start — props removed" Command="{Binding StartThresholdCommand}" Margin="3" />
-                            <Button Content="Pulse selected motor (1s)" Command="{Binding PulseThresholdCommand}" Margin="3" />
-                            <Button Content="Increase by 1%" Command="{Binding IncreaseThresholdCommand}" Margin="3" />
-                            <Button Content="Rotates reliably — next motor" Command="{Binding ConfirmRotationCommand}" Margin="3" />
-                            <Button Content="Cancel and stop" Command="{Binding CancelThresholdCommand}" Margin="3" />
-                            <Button Content="Review and apply both values" Command="{Binding ApplyThresholdCommand}" Margin="3" />
-                        </WrapPanel>
-                        <ItemsControl ItemsSource="{Binding ThresholdMeasurements}">
+
+                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBackgroundParameterLoadInProgress}"  />
+                    <StackPanel Orientation="Vertical" Margin="0,10,0,10" Spacing="12">
+                        <TextBlock Text="{Binding ProgressMessage}" IsVisible="{Binding IsBackgroundParameterLoadInProgress}" VerticalAlignment="Center" />
+                        <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+                    </StackPanel>
+
+                    <TextBlock Text="{Binding FrameDisplay}" Classes="H4" />
+
+                    <Expander Header="Expand to see Motor output diagnostics" IsExpanded="False" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="8">
+                            <SelectableTextBlock Text="{Binding OutputConfiguration}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding OutputGuidance}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #PanelWidth.Bounds.Width}">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Guided motor start-threshold assistant" Classes="H3" />
+                    <TextBlock Text="{Binding ThresholdInstruction}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ThresholdCurrentMotor}" TextWrapping="Wrap" />
+                    <ProgressBar IsVisible="{Binding ThresholdBusy}" IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" />
+                    <WrapPanel>
+                        <Button Content="Start — props removed" Command="{Binding StartThresholdCommand}" Margin="3" />
+                        <Button Content="Pulse selected motor (1s)" Command="{Binding PulseThresholdCommand}" Margin="3" />
+                        <Button Content="Increase by 1%" Command="{Binding IncreaseThresholdCommand}" Margin="3" />
+                        <Button Content="Rotates reliably — next motor" Command="{Binding ConfirmRotationCommand}" Margin="3" />
+                        <Button Content="Cancel and stop" Command="{Binding CancelThresholdCommand}" Margin="3" />
+                        <Button Content="Review and apply both values" Command="{Binding ApplyThresholdCommand}" Margin="3" />
+                    </WrapPanel>
+                    <ItemsControl ItemsSource="{Binding ThresholdMeasurements}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="motor:MotorThresholdMeasurement">
+                                <TextBlock Text="{Binding Display}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+            <!--Width="{Binding #PanelWidth.Bounds.Width}"-->
+            <TextBlock  Text="{Binding SpinMessage}"  Classes="Warning H4" />
+            <Grid  ColumnDefinitions="*,*" ColumnSpacing="50" HorizontalAlignment="Stretch" Width="{Binding #PanelWidth.Bounds.Width}">
+                <Border Grid.Column="0"  Classes="SectionCard" HorizontalAlignment="Stretch">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" RowSpacing="10">
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Spacing="10" Margin="0,20,0,20">
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Spacing="5">
+                                <TextBlock Text="Throttle Percent"></TextBlock>
+                                <NumericUpDown PlaceholderText="Throttle Percent" Value="{Binding ThrottlePercent, Mode=TwoWay}" FormatString="F0" Increment="5" Minimum="5" Maximum="25"
+                                               VerticalAlignment="Center" MinWidth="200" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" />
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Spacing="5">
+                                <TextBlock Text="Duration (seconds)"></TextBlock>
+                                <NumericUpDown PlaceholderText="Duration (seconds)" Value="{Binding DurationSeconds, Mode=TwoWay}" FormatString="F0" Increment="1" Minimum="1" Maximum="10"
+                                               VerticalAlignment="Center" MinWidth="200" HorizontalAlignment="Stretch"  HorizontalContentAlignment="Right"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <ItemsControl Grid.Row="1" ItemsSource="{Binding Motors}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="motor:MotorThresholdMeasurement">
-                                    <TextBlock Text="{Binding Display}" TextWrapping="Wrap" />
+                                <DataTemplate x:DataType="motor:MotorLayoutMotor">
+                                    <Button HorizontalAlignment="Center" Width="250" Content="{Binding Label}" ToolTip.Tip="{Binding Label}"
+                                            Margin="0,10,0,10"
+                                            Command="{Binding $parent[ItemsControl].((sections:MotorTestViewModel)DataContext).TestMotorCommand}"
+                                            CommandParameter="{Binding .}" />
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+                        <StackPanel Orientation="Vertical" Grid.Row="2" Spacing="25" Margin="0,35,0,0" HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Stretch">
+                                <Button Content="Test all Motors" ToolTip.Tip="Test all Motors" HorizontalAlignment="Stretch" Command="{Binding TestAllCommand}" />
+                                <Button Content="Test all in sequence" ToolTip.Tip="Test all in sequence" HorizontalAlignment="Stretch" Command="{Binding TestSequenceCommand}" />
+                            </StackPanel>
+                            <Button  HorizontalAlignment="Stretch" Classes="Warning" Command="{Binding StopCommand}" ToolTip.Tip="Stop all motors" >
+                                <TextBlock Classes="Warning">STOP All Motors</TextBlock>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Border Grid.Column="1"   Classes="SectionCard" HorizontalAlignment="Stretch">
+                    <StackPanel Orientation="Vertical" Spacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        <TextBlock VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Text="Set the minimum output at which motors reliably spin while armed:" Margin="0,10"
+                                   Classes="H4" />
+                        <TextBlock Text="{Binding SpinArmDisplay}" FontWeight="Bold" Classes="Warning" />
+                        <TextBlock Text="Calculation:" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                        <TextBlock Text="[Motor test throttle]% + [x]% = [MOT_SPIN_ARM]%" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" />
+                        <Grid ColumnDefinitions="Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Grid.Column="0" Text="{Binding ThrottlePercent,StringFormat=[{0:F0}]% + }"  VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Column="1" PlaceholderText="" Value="{Binding SpinArm, Mode=TwoWay}" FormatString="F0"
+                                           Minimum="1" Maximum="{Binding SpinArmMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
+                            <TextBlock Grid.Column="2" Text="{Binding SpinArmSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" />
+                        </Grid>
+                        <Button VerticalAlignment="Center" HorizontalAlignment="Center" Content="Set Motor Spin Arm" ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" />
+                        <u:Divider Height="1" Orientation="Horizontal" HorizontalAlignment="Stretch" />
+                        <TextBlock Text="Set the minimum motor output while flying:" Margin="0,10" FontSize="20" FontFamily="Bold" />
+                        <TextBlock Text="{Binding SpinMinDisplay}" FontWeight="Bold" Classes="Warning" />
+                        <TextBlock Text="Calculation:" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                        <TextBlock Text="[MOT_SPIN_ARM]% + [x]% = [MOT_SPIN_MIN]%" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" />
+                        <Grid ColumnDefinitions="Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Grid.Column="0" Text="{Binding SpinArmSum,StringFormat= [{0:F0}]% +  }" VerticalAlignment="Center" />
+                            <NumericUpDown Grid.Column="1" PlaceholderText="" Value="{Binding SpinMin, Mode=TwoWay}" FormatString="F0"
+                                           Minimum="1" Maximum="{Binding SpinMinMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
+                            <TextBlock Grid.Column="2" Text="{Binding SpinMinSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" />
+                        </Grid>
+                        <Button VerticalAlignment="Center" HorizontalAlignment="Center" Content="Set Motor Spin Min" ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" />
                     </StackPanel>
                 </Border>
-                <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,Auto" ColumnSpacing="50">
-                    <TextBlock Grid.Column="1" Text="{Binding SpinMessage}" FontWeight="Bold" Classes="Warning" />
-                    <Border Grid.Column="0" Grid.Row="1" Padding="10" Classes="SectionCard">
-                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" RowSpacing="10">
-                            <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Spacing="10" Margin="0,20,0,20">
-                                <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Spacing="5">
-                                    <TextBlock Text="Throttle Percent"></TextBlock>
-                                    <NumericUpDown PlaceholderText="Throttle Percent" Value="{Binding ThrottlePercent, Mode=TwoWay}" FormatString="F0" Increment="5" Minimum="5" Maximum="25" 
-                                                   VerticalAlignment="Center" MinWidth="200" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" />
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Spacing="5">
-                                    <TextBlock Text="Duration (seconds)"></TextBlock>
-                                    <NumericUpDown PlaceholderText="Duration (seconds)" Value="{Binding DurationSeconds, Mode=TwoWay}" FormatString="F0" Increment="1" Minimum="1" Maximum="10" 
-                                                   VerticalAlignment="Center" MinWidth="200" HorizontalAlignment="Stretch"  HorizontalContentAlignment="Right"/>
-                                </StackPanel>
-                            </StackPanel>
-                            <ItemsControl Grid.Row="1" ItemsSource="{Binding Motors}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="motor:MotorLayoutMotor">
-                                        <Button HorizontalAlignment="Center" Width="250" Content="{Binding Label}" ToolTip.Tip="{Binding Label}"
-                                                Margin="0,10,0,10"
-                                                Command="{Binding $parent[ItemsControl].((sections:MotorTestViewModel)DataContext).TestMotorCommand}"
-                                                CommandParameter="{Binding .}" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <StackPanel Orientation="Vertical" Grid.Row="2" Spacing="25" Margin="0,35,0,0" HorizontalAlignment="Center">
-                                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Stretch">
-                                    <Button Content="Test all Motors" ToolTip.Tip="Test all Motors" HorizontalAlignment="Stretch" Command="{Binding TestAllCommand}" />
-                                    <Button Content="Test all in sequence" ToolTip.Tip="Test all in sequence" HorizontalAlignment="Stretch" Command="{Binding TestSequenceCommand}" />
-                                </StackPanel>
-                                <Button  HorizontalAlignment="Stretch" Classes="Warning" Command="{Binding StopCommand}" ToolTip.Tip="Stop all motors" >
-                                    <TextBlock Classes="Warning">STOP All Motors</TextBlock>
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                    <Border Grid.Column="1" Grid.Row="1" Padding="10" Classes="SectionCard">
-                        <StackPanel Orientation="Vertical" Spacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                            <TextBlock VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Text="Set the minimum output at which motors reliably spin while armed:" Margin="0,10" FontSize="20" FontFamily="Bold" />
-                            <TextBlock Text="{Binding SpinArmDisplay}" FontWeight="Bold" Classes="Warning" />
-                            <TextBlock Text="Calculation:" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-                            <TextBlock Text="[Motor test throttle]% + [x]% = [MOT_SPIN_ARM]%" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" />
-                            <Grid ColumnDefinitions="Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
 
-                                <TextBlock Grid.Column="0" Text="{Binding ThrottlePercent,StringFormat=[{0:F0}]% + }"  VerticalAlignment="Center" />
-
-                                <NumericUpDown Grid.Column="1" PlaceholderText="" Value="{Binding SpinArm, Mode=TwoWay}" FormatString="F0" 
-                                               Minimum="1" Maximum="{Binding SpinArmMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
-
-                                <TextBlock Grid.Column="2" Text="{Binding SpinArmSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" />
-
-
-                            </Grid>
-                            <Button VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Content="Set Motor Spin Arm" ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" />
-                            <u:Divider Height="1" Orientation="Horizontal" HorizontalAlignment="Stretch" />
-                            <TextBlock Text="Set the minimum motor output while flying:" Margin="0,10" FontSize="20" FontFamily="Bold" />
-                            <TextBlock Text="{Binding SpinMinDisplay}" FontWeight="Bold" Classes="Warning" />
-                            <TextBlock Text="Calculation:" VerticalAlignment="Center" HorizontalAlignment="Stretch" />
-                            <TextBlock Text="[MOT_SPIN_ARM]% + [x]% = [MOT_SPIN_MIN]%" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="16" />
-                            <Grid ColumnDefinitions="Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Grid.Column="0" Text="{Binding SpinArmSum,StringFormat= [{0:F0}]% +  }" VerticalAlignment="Center" />
-                                <NumericUpDown Grid.Column="1" PlaceholderText="" Value="{Binding SpinMin, Mode=TwoWay}" FormatString="F0" 
-                                               Minimum="1" Maximum="{Binding SpinMinMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
-                                <TextBlock Grid.Column="2" Text="{Binding SpinMinSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" />
-                            </Grid>
-                            <Button VerticalAlignment="Center" Grid.Row="7" HorizontalAlignment="Stretch" Content="Set Motor Spin Min" ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" />
-                        </StackPanel>
-                    </Border>
-                </Grid>
-            </StackPanel>
-        </ScrollViewer>
-    </Border>
 </utilities:UserControlViewBase>
