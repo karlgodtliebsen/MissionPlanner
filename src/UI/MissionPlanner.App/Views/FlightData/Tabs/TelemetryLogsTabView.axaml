@@ -18,6 +18,8 @@
                 <SelectableTextBlock Text="{Binding RecordingPath}" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding RecordingError}" Classes="Warning" TextWrapping="Wrap" />
                 <TextBlock Text="Directory: Preferences → Logging → Log directory (applies to the next connection)." TextWrapping="Wrap" />
+                <TextBlock Text="{Binding OnboardLoggingState, StringFormat='Vehicle Onboard Logging: {0}'}" FontWeight="Bold" />
+                <TextBlock Text="{Binding OnboardLoggingDetail}" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding SourceModeLabel}" FontSize="16" FontWeight="Bold"/>
                 <TextBlock Text="Replay is read-only and cannot send vehicle commands." TextWrapping="Wrap"/>
             </StackPanel>

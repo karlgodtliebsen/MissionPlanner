@@ -64,7 +64,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
         state = state with { Connection = state.Connection with { State = currentState } };
         if (currentState == VehicleConnectionState.Offline)
         {
-            ResetArmingStatus();
+            ResetDiagnostics();
         }
         return previousState == currentState
             ? null
@@ -412,6 +412,21 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
             }
         };
 
+        const uint logging = 1u << 24;
+        if ((observation.SensorsPresent & observation.SensorsEnabled & logging) != 0)
+        {
+            var healthy = (observation.SensorsHealthy & logging) != 0;
+            state = state with
+            {
+                OnboardLogging = state.OnboardLogging with
+                {
+                    Healthy = healthy,
+                    AffectsArming = !healthy && state.OnboardLogging.AffectsArming,
+                    StorageDetail = healthy ? null : state.OnboardLogging.StorageDetail
+                }
+            };
+        }
+
         // MAV_SYS_STATUS_PREARM_CHECK is bit 28; absent/disabled is not proof of readiness.
         const uint preArmCheck = 1u << 28;
         preArmHealthy = (observation.SensorsPresent & observation.SensorsEnabled & preArmCheck) != 0
@@ -655,6 +670,24 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
         }
 
         var text = message.Text.Trim();
+        if (text.Contains("log", StringComparison.OrdinalIgnoreCase) || text.Contains("ENOSPC", StringComparison.OrdinalIgnoreCase))
+        {
+            var storageFailure = text.Contains("ENOSPC", StringComparison.OrdinalIgnoreCase);
+            var failure = storageFailure || text.Contains("fail", StringComparison.OrdinalIgnoreCase) ||
+                          text.Contains("error", StringComparison.OrdinalIgnoreCase);
+            var armingFailure = failure && (text.StartsWith("PreArm:", StringComparison.OrdinalIgnoreCase) ||
+                                           text.StartsWith("Arm:", StringComparison.OrdinalIgnoreCase));
+            state = state with
+            {
+                OnboardLogging = state.OnboardLogging with
+                {
+                    LatestMessage = text,
+                    StorageDetail = storageFailure ? text : state.OnboardLogging.StorageDetail,
+                    Healthy = failure ? false : state.OnboardLogging.Healthy,
+                    AffectsArming = armingFailure || state.OnboardLogging.AffectsArming
+                }
+            };
+        }
         if (text.StartsWith("PreArm:", StringComparison.OrdinalIgnoreCase) && text.Length > 7 && !state.IsArmed)
         {
             preArmHealthy = false;
@@ -665,6 +698,13 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
         {
             state = state with { Arming = state.Arming with { LastArmFailure = text, UpdatedAt = message.ReceivedAt } };
         }
+    }
+
+    /// <summary>Clears retained arming and onboard logger evidence at a session boundary.</summary>
+    public void ResetDiagnostics()
+    {
+        ResetArmingStatus();
+        state = state with { OnboardLogging = VehicleOnboardLoggingStatus.Empty };
     }
 
     /// <summary>Clears retained arming feedback when this vehicle session ends.</summary>
@@ -686,6 +726,11 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
             };
         state = state with
         {
+            OnboardLogging = state.OnboardLogging with
+            {
+                AffectsArming = armingState is not (VehicleArmingState.Armed or VehicleArmingState.DisarmedReady)
+                    && state.OnboardLogging.AffectsArming
+            },
             Arming = state.Arming with
             {
                 State = armingState,

@@ -10,7 +10,7 @@ Each task is implemented, verified, documented, and committed separately.
 | 2. RC calibration used channels | Complete |
 | 3. RC neutral diagnostics | Complete |
 | 4. PC telemetry recording | Complete |
-| 5. Onboard logging diagnostics | Pending |
+| 5. Onboard logging diagnostics | Complete |
 | 6. Accelerometer calibration | Pending |
 | 7. Compass diagnostics | Pending |
 | 8. Motor start threshold assistant | Pending |
@@ -45,3 +45,10 @@ Each task is implemented, verified, documented, and committed separately.
 - Complete solution build passed (18 existing warnings, zero errors).
 - Exact tlog framing, direction limitations, overflow/error behavior, configurable directory, and disconnect flushing documented in TELEMETRY_RECORDING.md.
 - Physical bench connection and interactive UI verification not run.
+
+## Task 5 verification
+
+- Arming/logger tests: 12 passed; Core suite: 637 passed, 6 skipped.
+- Complete solution build passed (18 existing warnings, zero errors).
+- Simulator command-ack test now awaits connection startup; the previous fire-and-forget startup raced its first send after recording initialization.
+- Free space remains explicitly unavailable rather than inferred from unrelated camera storage. Hardware/UI verification not run.

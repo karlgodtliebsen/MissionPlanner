@@ -619,7 +619,7 @@ public class VehicleTests
 
                 return Task.CompletedTask;
             });
-        _ = Task.Run(() => connection.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
+        await connection.StartAsync(TestContext.Current.CancellationToken);
         _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         _ = Task.Run(() => simulator.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
 

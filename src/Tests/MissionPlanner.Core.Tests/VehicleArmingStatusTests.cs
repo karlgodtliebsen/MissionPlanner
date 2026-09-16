@@ -92,6 +92,68 @@ public sealed class VehicleArmingStatusTests
         Assert.Equal(VehicleArmingStatus.Empty, session.State.Arming);
     }
 
+    /// <summary>Generic logging failures retain detailed storage evidence and disabled configuration is explicit.</summary>
+    [Fact]
+    public async Task OnboardLoggingRetainsStorageCause()
+    {
+        var (session, _) = await CreateAsync();
+        Text(session, "Failed to create log directory /APM/LOGS : ENOSPC");
+        Text(session, "PreArm: Logging failed");
+        Assert.False(session.State.OnboardLogging.Healthy);
+        Assert.True(session.State.OnboardLogging.AffectsArming);
+        Assert.Contains("ENOSPC", session.State.OnboardLogging.StorageDetail);
+        Assert.Equal("PreArm: Logging failed", session.State.OnboardLogging.LatestMessage);
+        var disabled = session.State.OnboardLogging.WithBackend(0);
+        Assert.False(disabled.Enabled);
+        Assert.False(disabled.AffectsArming);
+        Assert.Equal("Disabled", disabled.DisplayState);
+        Assert.Equal("Error", session.State.OnboardLogging.WithBackend(1).DisplayState);
+    }
+
+    /// <summary>Reported logger recovery clears the active storage error, and disconnect clears evidence.</summary>
+    [Fact]
+    public async Task LoggerHealthRecoveryAndReset()
+    {
+        var (session, registry) = await CreateAsync();
+        Text(session, "PreArm: Logging failed ENOSPC");
+        const uint logging = 1u << 24;
+        session.ApplySystemHealth(new(logging, logging, logging, 0, 0, 0, Now));
+        Assert.True(session.State.OnboardLogging.Healthy);
+        Assert.False(session.State.OnboardLogging.AffectsArming);
+        Assert.Null(session.State.OnboardLogging.StorageDetail);
+        await registry.Reset(TestContext.Current.CancellationToken);
+        Assert.Equal(VehicleOnboardLoggingStatus.Empty, session.State.OnboardLogging);
+    }
+
+    /// <summary>Vehicle logging rejection cannot stop an independent PC recording.</summary>
+    [Fact]
+    public async Task OnboardFailureDoesNotAffectPcRecording()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "MissionPlannerIndependentLogs-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var settings = Substitute.For<MissionPlanner.Core.ConfigTuning.Planner.IPlannerSettingsService>();
+            settings.Current.Returns(new MissionPlanner.Core.ConfigTuning.Planner.PlannerSettings
+            {
+                Logging = new MissionPlanner.Core.ConfigTuning.Planner.PlannerLoggingSettings { LogDirectory = directory }
+            });
+            var recorder = new MissionPlanner.Core.Replay.TelemetryRecordingService(settings,
+                Substitute.For<IDomainEventHub>(), NullLogger<MissionPlanner.Core.Replay.TelemetryRecordingService>.Instance);
+            await using var recording = recorder.Start(new MissionPlanner.MavLink.Services.MavLinkInspectionTap());
+            var (session, _) = await CreateAsync();
+            Text(session, "PreArm: Logging failed ENOSPC");
+            Assert.Equal("Error", session.State.OnboardLogging.DisplayState);
+            Assert.Equal("Recording", recorder.Current.State);
+            Assert.True(File.Exists(recorder.Current.FilePath));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+    }
     private static VehicleSystemHealthObservation Health(bool supported, bool healthy)
     {
         return new(supported ? PreArmCheck : 0, supported ? PreArmCheck : 0, healthy ? PreArmCheck : 0, 0, 0, 0, Now);

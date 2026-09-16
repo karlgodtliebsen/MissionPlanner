@@ -32,3 +32,18 @@ Validation: focused recording tests cover both directions, readable framing,
 reconnect paths, graceful queue draining, invalid-directory isolation, and the
 production MavLinkConnection start/send/stop lifecycle. Hardware recording and
 interactive desktop verification have not been run.
+
+## Vehicle onboard logging
+
+Telemetry Logs separately projects the active vehicle's LOG_BACKEND_TYPE together
+with SYS_STATUS logger-health evidence and retained logger STATUSTEXT. Backend zero
+displays Disabled even when historical failure text remains visible. No backend
+value is changed by diagnostics.
+
+An ENOSPC message is retained separately from a later generic Logging failed
+message. PreArm/Arm logger failures flag arming impact; later readiness, arming, or
+reported healthy logger telemetry clears that impact. Disconnect resets retained
+evidence. Positive logger-health telemetry clears the active storage failure.
+Storage free space is explicitly unavailable: the current flight-controller
+telemetry does not provide a reliable capacity value, and camera storage reports
+are not presented as autopilot/DataFlash storage.

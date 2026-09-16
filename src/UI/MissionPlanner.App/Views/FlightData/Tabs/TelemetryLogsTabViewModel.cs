@@ -20,6 +20,8 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     private readonly TelemetryRecordingService? recordingService;
     private readonly MissionPlanner.Library.EventHub.Abstractions.IDomainEventHub? domainEvents;
     private IDisposable? recordingSubscription;
+    private IDisposable? vehicleStateSubscription;
+    private readonly IVehicleParameterRegistry? parameterRegistry;
     private CancellationTokenSource? operationCancellation;
 
 
@@ -30,15 +32,18 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     /// <param name="logger">Structured workflow logger.</param>
     /// <param name="recordingService">PC telemetry recording state.</param>
     /// <param name="domainEvents">Application recording lifecycle events.</param>
+    /// <param name="parameterRegistry">Downloaded onboard logger configuration.</param>
     public TelemetryLogsTabViewModel(
         IReplaySessionManager replaySessionManager,
         IActiveVehicleContext activeVehicle,
         IFileOpenService fileOpenService,
         ILogger<TelemetryLogsTabViewModel> logger,
         TelemetryRecordingService? recordingService = null,
-        MissionPlanner.Library.EventHub.Abstractions.IDomainEventHub? domainEvents = null)
+        MissionPlanner.Library.EventHub.Abstractions.IDomainEventHub? domainEvents = null,
+        IVehicleParameterRegistry? parameterRegistry = null)
         : base(logger)
     {
+        this.parameterRegistry = parameterRegistry;
         this.recordingService = recordingService;
         this.domainEvents = domainEvents;
         this.replaySessionManager = replaySessionManager;
@@ -60,6 +65,21 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
         {
             ApplyRecording(recordingService.Current);
         }
+        vehicleStateSubscription?.Dispose();
+        vehicleStateSubscription = domainEvents?.SubscribeDomainEventAsync<MissionPlanner.Core.DomainEvents.VehicleStateUpdated>((change, cancellationToken) =>
+        {
+            if (change.VehicleId == activeVehicle.VehicleId)
+            {
+                Dispatcher.Dispatch(ApplyOnboardLogging);
+            }
+            return Task.CompletedTask;
+        });
+        if (parameterRegistry is not null)
+        {
+            parameterRegistry.Changed += OnParameterChanged;
+        }
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        ApplyOnboardLogging();
         replaySessionManager.Changed += OnReplayChanged;
         ApplySnapshot(replaySessionManager.Snapshot);
         return Task.CompletedTask;
@@ -76,6 +96,13 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     {
         recordingSubscription?.Dispose();
         recordingSubscription = null;
+        vehicleStateSubscription?.Dispose();
+        vehicleStateSubscription = null;
+        if (parameterRegistry is not null)
+        {
+            parameterRegistry.Changed -= OnParameterChanged;
+        }
+        activeVehicle.Changed -= OnActiveVehicleChanged;
         replaySessionManager.Changed -= OnReplayChanged;
     }
     /// <inheritdoc />
@@ -97,6 +124,38 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     /// <summary>Gets a file or dropped-frame recording error.</summary>
     [ObservableProperty]
     public partial string? RecordingError { get; private set; }
+
+    /// <summary>Gets vehicle logger health and configuration, independent of PC recording.</summary>
+    [ObservableProperty]
+    public partial string OnboardLoggingState { get; private set; } = "Unknown";
+
+    /// <summary>Gets retained onboard logger and storage evidence.</summary>
+    [ObservableProperty]
+    public partial string? OnboardLoggingDetail { get; private set; }
+
+    private void OnParameterChanged(MissionPlanner.Core.Vehicles.VehicleParameterChangedEventArgs args)
+    {
+        if (args.VehicleId == activeVehicle.VehicleId && args.Parameter?.Name == "LOG_BACKEND_TYPE")
+        {
+            Dispatcher.Dispatch(ApplyOnboardLogging);
+        }
+    }
+
+    private void OnActiveVehicleChanged(MissionPlanner.Core.Vehicles.ActiveVehicleChangedEventArgs args)
+    {
+        Dispatcher.Dispatch(ApplyOnboardLogging);
+    }
+
+    private void ApplyOnboardLogging()
+    {
+        var evidence = activeVehicle.IsOnline ? activeVehicle.State?.OnboardLogging : null;
+        var parameter = activeVehicle.VehicleId is { } id ? parameterRegistry?.GetParameter(id, "LOG_BACKEND_TYPE") : null;
+        var status = (evidence ?? VehicleOnboardLoggingStatus.Empty).WithBackend(parameter is null ? null : (int)parameter.Value);
+        OnboardLoggingState = $"{status.DisplayState} · LOG_BACKEND_TYPE={status.BackendType?.ToString() ?? "unknown"}" +
+            (status.AffectsArming ? " · Blocking arming" : string.Empty);
+        OnboardLoggingDetail = string.Join(Environment.NewLine, new[] { status.LatestMessage, status.StorageDetail }
+            .Where(text => !string.IsNullOrWhiteSpace(text)).Distinct()) + Environment.NewLine + "Storage free space: unavailable";
+    }
 
     private void ApplyRecording(TelemetryRecordingStatus status)
     {

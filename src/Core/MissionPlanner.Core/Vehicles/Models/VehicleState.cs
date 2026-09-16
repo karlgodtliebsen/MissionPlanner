@@ -18,6 +18,9 @@ public sealed record VehicleState(
     VehicleNavigationState Navigation,
     VehicleHealthState Health)
 {
+    /// <summary>Gets vehicle onboard logger evidence, separate from PC recording.</summary>
+    public VehicleOnboardLoggingStatus OnboardLogging { get; init; } = VehicleOnboardLoggingStatus.Empty;
+
     /// <summary>Gets retained arming readiness and rejection reasons.</summary>
     public VehicleArmingStatus Arming { get; init; } = VehicleArmingStatus.Empty;
 
