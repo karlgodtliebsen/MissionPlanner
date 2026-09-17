@@ -6,7 +6,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPage"
     x:TypeArguments="local:NmeaViewModel" x:DataType="local:NmeaViewModel"
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ContentPage Header="NMEA Output">
+    <ContentPage >
         <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14" Margin="24">
             <StackPanel Spacing="8">
                 <TextBlock Text="NMEA navigation output" Classes="Title" />

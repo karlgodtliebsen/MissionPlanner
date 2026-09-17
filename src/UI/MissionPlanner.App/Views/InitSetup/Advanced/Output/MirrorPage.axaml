@@ -5,7 +5,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Output.MirrorPage"
     x:TypeArguments="local:MirrorViewModel" x:DataType="local:MirrorViewModel"
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ContentPage Header="MAVLink Output / Mirror">
+    <ContentPage >
         <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14" Margin="24">
             <StackPanel Spacing="8">
                 <TextBlock Text="MAVLink mirror" Classes="Title" />

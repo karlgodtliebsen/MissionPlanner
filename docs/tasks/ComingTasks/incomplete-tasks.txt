@@ -1,14 +1,30 @@
-Accelerometer page is not working.
 
+It may also be worth adding a small note to your MissionPlanner/bench documentation:
+
+ELRS major versions must match between TX module and RX.
+FC firmware version is unrelated to ELRS receiver firmware version.
+
+That one line can save a surprising amount of debugging later.
+
+*********************************************************************************************
+
+
+
+
+Accelerometer page is not working.
+*********************************************************************************************
 
 
 In the background, Look for newer version of installed Ardupilot and prompt the user for upgrade
 
-Is there a way to se vehicle Id
 
+*********************************************************************************************
+Is there a way to set a vehicle Id (flash it to the device)
+
+yes, technical done, but we should build a UI view for it
+*********************************************************************************************
 
 In Optional Hardware, PX4Flow is missing
-
 
 
 
@@ -26,7 +42,7 @@ disabled; parameter presence never makes an unknown or hazardous action safe to 
 
 
 
-
+*********************************************************************************************
 
 
 This is also a useful Next Gen diagnostic

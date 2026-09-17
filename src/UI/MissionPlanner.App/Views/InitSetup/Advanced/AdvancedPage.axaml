@@ -8,14 +8,20 @@
     x:DataType="local:AdvancedViewModel"
     x:CompileBindings="True">
     <ContentPage Header="Advanced" Background="{DynamicResource Surface}">
-        <Grid RowDefinitions="Auto,*" Margin="24" RowSpacing="16">
-            <StackPanel Spacing="8">
-                <TextBlock Text="Advanced tools" Classes="Title" />
-                <TextBlock Text="Inspect telemetry, manage outputs, and analyze recorded data. Review each tool's requirements before starting."
-                           TextWrapping="Wrap" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"
-                                     TextWrapping="Wrap" Classes="Warning" />
-            </StackPanel>
+
+        <Grid RowDefinitions="Auto,*"  RowSpacing="16">
+            <Border HorizontalAlignment="Stretch" x:Name="PanelWidth" Margin="0,20" MaxWidth="1000">
+                <StackPanel Orientation="Vertical" Spacing="25" HorizontalAlignment="Stretch" MaxWidth="1000">
+                    <TextBlock Text="Advanced tools" Classes="Title H2" />
+                    <TextBlock Text="Inspect telemetry, manage outputs, and analyze recorded data. Review each tool's requirements before starting."
+                               TextWrapping="Wrap" />
+                    <SelectableTextBlock Text="{Binding StatusMessage}"
+                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                         TextWrapping="Wrap" Classes="Warning" />
+                    <SelectableTextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                </StackPanel>
+            </Border>
             <TabControl Grid.Row="1" ItemsSource="{Binding Tools}" TabStripPlacement="Left"
                         HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                 <TabControl.ItemTemplate>
@@ -30,5 +36,6 @@
                 </TabControl.ContentTemplate>
             </TabControl>
         </Grid>
+
     </ContentPage>
 </utilities:NavigationViewBase>

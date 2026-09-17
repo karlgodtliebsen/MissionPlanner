@@ -1,17 +1,22 @@
 <utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Nmea"
-    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaOptionsView"
-    x:TypeArguments="local:NmeaOptionsViewModel" x:DataType="local:NmeaOptionsViewModel">
-    <Grid><ScrollViewer HorizontalScrollBarVisibility="Disabled">
-        <Border Classes="SectionCard"><StackPanel Spacing="12" IsEnabled="{Binding !Locked}">
-            <TextBlock Text="Sentence selection" Classes="H4" />
-            <CheckBox Content="GGA — position, fix and altitude" IsChecked="{Binding Gga}" />
-            <CheckBox Content="RMC — position, speed, course and date" IsChecked="{Binding Rmc}" />
-            <TextBlock Text="Output batches per second" />
-            <NumericUpDown Value="{Binding RateHz}" Minimum="1" Maximum="10" AutomationProperties.Name="NMEA output rate in Hz" />
-            <TextBlock Text="Each tick emits the latest complete selected sentence set. Receiver fixes older than 3 seconds are invalid. UTC fields use the GPS message reception timestamp. Missing measurements remain blank; satellite usage requires GPS_STATUS." TextWrapping="Wrap" />
-        </StackPanel></Border>
-    </ScrollViewer></Grid>
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Nmea"
+                               x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaOptionsView"
+                               x:TypeArguments="local:NmeaOptionsViewModel" x:DataType="local:NmeaOptionsViewModel">
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard">
+                <StackPanel Spacing="12" IsEnabled="{Binding !Locked}">
+                <TextBlock Text="Sentence selection" Classes="H4" />
+                <CheckBox Content="GGA — position, fix and altitude" IsChecked="{Binding Gga}" />
+                <CheckBox Content="RMC — position, speed, course and date" IsChecked="{Binding Rmc}" />
+                <TextBlock Text="Output batches per second" />
+                <NumericUpDown Value="{Binding RateHz}" Minimum="1" Maximum="10" 
+                               AutomationProperties.Name="NMEA output rate in Hz" />
+                <TextBlock Text="Each tick emits the latest complete selected sentence set. Receiver fixes older than 3 seconds are invalid. UTC fields use the GPS message reception timestamp. Missing measurements remain blank; satellite usage requires GPS_STATUS." TextWrapping="Wrap" />
+            </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
 </utilities:UserControlViewBase>

@@ -1,15 +1,15 @@
 <utilities:NavigationViewBase xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
-    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerPage"
-    x:TypeArguments="local:WarningManagerViewModel" x:DataType="local:WarningManagerViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ContentPage Header="Warning Manager">
-        <Grid RowDefinitions="Auto,Auto,*" Margin="24" RowSpacing="14">
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                              xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
+                              x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerPage"
+                              x:TypeArguments="local:WarningManagerViewModel" x:DataType="local:WarningManagerViewModel"
+                              xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    <ContentPage >
+        <Grid RowDefinitions="Auto,Auto,*"  RowSpacing="14"  MaxWidth="1000" Margin="0,20">
             <TextBlock Text="Visual warnings run while this page is open. Sources use native telemetry units. Values older than three seconds are unavailable. No speech or system notifications are enabled."
                        TextWrapping="Wrap" Classes="Warning" />
-            <StackPanel Grid.Row="1" Spacing="10">
+            <StackPanel Grid.Row="1" Spacing="10"   Margin="0,20">
                 <WrapPanel IsEnabled="{Binding !IsBusy}">
                     <Button ToolTip.Tip="Import rules (merge by ID)" Command="{Binding ImportCommand}" Margin="0,0,8,8" AutomationProperties.Name="Import rules (merge by ID)">
                         <mdi:MaterialIcon Kind="FileImportOutline" Classes="ActionIcon" />
@@ -18,19 +18,22 @@
                         <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                     </Button>
                 </WrapPanel>
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
             <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                 <TabItem Header="Rules">
                     <Grid RowDefinitions="Auto,*" RowSpacing="12">
                         <local:WarningRuleListView DataContext="{Binding Rules}" IsEnabled="{Binding !IsBusy}" />
                         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                            <local:WarningRuleEditorView DataContext="{Binding Editor}" IsEnabled="{Binding !IsBusy}" />
+                            <local:WarningRuleEditorView DataContext="{Binding Editor}" IsEnabled="{Binding !IsBusy}"  Margin="0,20"/>
                         </ScrollViewer>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Live status">
-                    <local:WarningStatusView DataContext="{Binding Status}" />
+                    <local:WarningStatusView DataContext="{Binding Status}" MinWidth="200" MinHeight="200" Margin="0,20"/>
                 </TabItem>
             </TabControl>
         </Grid>

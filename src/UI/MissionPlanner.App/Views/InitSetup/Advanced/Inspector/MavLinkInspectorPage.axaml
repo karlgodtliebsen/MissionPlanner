@@ -5,7 +5,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Inspector.MavLinkInspectorPage"
     x:TypeArguments="local:MavLinkInspectorViewModel" x:DataType="local:MavLinkInspectorViewModel"
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ContentPage Header="MAVLink Inspector">
+    <ContentPage >
         <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14" Margin="24">
             <StackPanel Spacing="8">
                 <TextBlock Text="Traffic inspection" Classes="Title" />

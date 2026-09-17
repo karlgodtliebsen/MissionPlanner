@@ -5,7 +5,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningPage"
     x:TypeArguments="local:SigningViewModel" x:DataType="local:SigningViewModel"
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ContentPage Header="MAVLink 2 Signing">
+    <ContentPage >
         <Grid RowDefinitions="Auto,*" Margin="24" RowSpacing="14">
             <TextBlock Text="MAVLink signing" Classes="Title" />
             <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">

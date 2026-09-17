@@ -3,15 +3,14 @@
              xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced"
              x:Class="MissionPlanner.App.Views.InitSetup.Advanced.AdvancedToolTabView"
              x:DataType="local:AdvancedToolCardViewModel">
-    <Grid RowDefinitions="Auto,*" Margin="16,0,0,0" RowSpacing="12">
-        <Border Classes="SectionCard" Padding="16">
-            <StackPanel Spacing="8">
-                <TextBlock Text="{Binding Feature.Description}" TextWrapping="Wrap" />
-                <TextBlock Text="{Binding Feature.Help}" Classes="Warning" TextWrapping="Wrap" />
-                <SelectableTextBlock Text="{Binding Availability.Reason}" TextWrapping="Wrap" />
-            </StackPanel>
-        </Border>
-        <ContentControl x:Name="ToolContent" Grid.Row="1"
-                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
-    </Grid>
+        <Grid RowDefinitions="Auto,*"  RowSpacing="12"  MaxWidth="1000">
+            <Border Classes="SectionCard" Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="{Binding Feature.Description}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Feature.Help}" Classes="Warning" TextWrapping="Wrap" />
+                    <SelectableTextBlock Text="{Binding Availability.Reason}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+            <ContentControl x:Name="ToolContent" Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+        </Grid>
 </UserControl>

@@ -4,7 +4,7 @@
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Proximity"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityPage"
     x:TypeArguments="local:ProximityViewModel" x:DataType="local:ProximityViewModel">
-    <ContentPage Header="Proximity Viewer">
+    <ContentPage >
         <Grid RowDefinitions="Auto,*" RowSpacing="14" Margin="24">
             <StackPanel Spacing="8">
                 <TextBlock Text="Proximity observations" Classes="Title" />

@@ -13,41 +13,49 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch" MaxWidth="1000">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                <StackPanel Orientation="Vertical" Spacing="2">
-                    <TextBlock Text="Radio Calibration" Classes="H3" />
-                    <TextBlock Text="Live receiver input and verified ArduPilot endpoint calibration" Opacity="0.7" />
-                </StackPanel>
-                <TextBlock Grid.Column="1" Text="{Binding CalibrationState}" Padding="12,6" 
-                           VerticalAlignment="Center" FontWeight="Bold" Background="{DynamicResource PrimaryContainer}" />
-            </Grid>
-            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsWriting}" />
-            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextWrapping="Wrap" />
-            <SelectableTextBlock Text="{Binding ErrorMessage}" 
-                                 IsVisible="{Binding HasError}" Classes="Danger" TextWrapping="Wrap" />
-            <WrapPanel Orientation="Horizontal" ItemSpacing="10">
-                <Button Content="Start calibration" ToolTip.Tip="Start calibration" 
-                        Command="{Binding StartCommand}" Margin="0,0,8,8" />
-                <Button ToolTip.Tip="Finish endpoint capture" 
-                        Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" AutomationProperties.Name="Finish endpoint capture">
-                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                </Button>
-                <Button ToolTip.Tip="Confirm and write" 
-                        Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" AutomationProperties.Name="Confirm and write">
-                    <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
-                </Button>
-                <Button ToolTip.Tip="Cancel" 
-                        Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" AutomationProperties.Name="Cancel">
-                    <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
-                </Button>
-                <Button ToolTip.Tip="Reset / retry" 
-                        Command="{Binding ResetCommand}" Margin="0,0,8,8" AutomationProperties.Name="Reset / retry">
-                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
-                </Button>
-            </WrapPanel>
 
-            <Border Padding="14" Classes="SectionCard">
+            <Border   HorizontalAlignment="Stretch" x:Name="PanelWidth">
+                <StackPanel Orientation="Vertical" Spacing="20">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <StackPanel Orientation="Vertical" Spacing="2">
+                            <TextBlock Text="Radio Calibration" Classes="H2" />
+                            <TextBlock Text="Live receiver input and verified ArduPilot endpoint calibration" Opacity="0.7" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding CalibrationState}" Padding="12,6"
+                                   VerticalAlignment="Center" FontWeight="Bold" Background="{DynamicResource PrimaryContainer}" />
+                    </Grid>
+                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsWriting}" />
+
+                    <TextBlock Text="{Binding StatusMessage}"
+                               IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}" Classes="H4" TextWrapping="Wrap" />
+                    <SelectableTextBlock Text="{Binding ErrorMessage}"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}" Classes="Danger" TextWrapping="Wrap" />
+
+                    <WrapPanel Orientation="Horizontal" ItemSpacing="10">
+                        <Button Content="Start calibration" ToolTip.Tip="Start calibration"
+                                Command="{Binding StartCommand}"  />
+                        <Button ToolTip.Tip="Finish endpoint capture"
+                                Command="{Binding FinishCaptureCommand}"  AutomationProperties.Name="Finish endpoint capture">
+                            <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                        </Button>
+                        <Button ToolTip.Tip="Confirm and write"
+                                Command="{Binding ConfirmAndWriteCommand}" AutomationProperties.Name="Confirm and write">
+                            <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
+                        </Button>
+                        <Button ToolTip.Tip="Cancel"
+                                Command="{Binding CancelCalibrationCommand}"  AutomationProperties.Name="Cancel">
+                            <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                        </Button>
+                        <Button ToolTip.Tip="Reset / retry"
+                                Command="{Binding ResetCommand}"  AutomationProperties.Name="Reset / retry">
+                            <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                        </Button>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #PanelWidth.Bounds.Width}">
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                     <TextBlock Text="!" FontSize="22" Classes="H4"  VerticalAlignment="Top" />
                     <StackPanel Orientation="Vertical" Grid.Column="1" Spacing="2">
@@ -56,7 +64,7 @@
                     </StackPanel>
                 </Grid>
             </Border>
-            <Border Padding="14" Classes="SectionCard">
+            <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #PanelWidth.Bounds.Width}">
                 <StackPanel Orientation="Vertical" Spacing="9">
                     <TextBlock Text="Receiver" FontSize="17" Classes="H4"  />
                     <ItemsControl>
@@ -71,11 +79,11 @@
             </Border>
 
             <TextBlock IsVisible="{Binding IsStale}" Text="RC telemetry is stale. The last values remain visible, but calibration cannot start or write until fresh input returns." Classes="H4"  />
-            <Border Padding="14" Classes="SectionCard">
+            <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #PanelWidth.Bounds.Width}">
                 <StackPanel Orientation="Vertical" Spacing="8">
                     <TextBlock Text="Next step" Classes="H4"  />
-                    <TextBlock Text="{Binding Instruction}" FontSize="16" TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding CaptureSummary}" FontSize="12" Opacity="0.75" />
+                    <TextBlock Text="{Binding Instruction}" Classes="H5" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding CaptureSummary}"  Classes="H5" Opacity="0.75" />
                 </StackPanel>
             </Border>
             <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
@@ -88,30 +96,30 @@
             <ItemsControl ItemsSource="{Binding Channels}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
-                        <Border Padding="10,8" Classes="SectionCard">
+                        <Border Padding="10,8" Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #PanelWidth.Bounds.Width}">
                             <Grid RowDefinitions="Auto,32,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-                                <TextBlock Text="{Binding Number, StringFormat='CH {0}'}" Classes="H4" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding Number, StringFormat='CH {0}'}" Classes="H3" VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="1" Text="{Binding RoleLabel}" Classes="H4" VerticalAlignment="Center" />
                                 <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="8">
                                     <TextBlock Text="REV" IsVisible="{Binding IsReversed}" Classes="H4"  />
                                     <TextBlock Text="{Binding AuxiliaryState}" Opacity="0.7" />
                                     <TextBlock Text="{Binding Pwm, StringFormat='{}{0} µs'}" Classes="H4" />
                                 </StackPanel>
-                                <models:RadioChannelMeterView Grid.Row="1" Grid.ColumnSpan="3" 
-                                                              ChannelNumber="{Binding Number}" 
-                                                              FunctionName="{Binding FunctionName}" 
-                                                              Pwm="{Binding Pwm}" 
-                                                              ConfiguredMinimum="{Binding Minimum}" 
-                                                              ConfiguredMaximum="{Binding Maximum}" 
-                                                              Trim="{Binding Trim}" 
-                                                              DeadZone="{Binding DeadZone}" 
-                                                              CapturedMinimum="{Binding CapturedMinimum}" 
-                                                              CapturedMaximum="{Binding CapturedMaximum}" 
-                                                              CandidateTrim="{Binding CandidateTrim}" 
-                                                              IsCapturing="{Binding ShowCapturedRange}" 
-                                                              IsStale="{Binding IsStale}" 
-                                                              HasSignal="{Binding HasSignal}" 
-                                                              PresentationKind="{Binding PresentationKind}" 
+                                <models:RadioChannelMeterView Grid.Row="1" Grid.ColumnSpan="3"
+                                                              ChannelNumber="{Binding Number}"
+                                                              FunctionName="{Binding FunctionName}"
+                                                              Pwm="{Binding Pwm}"
+                                                              ConfiguredMinimum="{Binding Minimum}"
+                                                              ConfiguredMaximum="{Binding Maximum}"
+                                                              Trim="{Binding Trim}"
+                                                              DeadZone="{Binding DeadZone}"
+                                                              CapturedMinimum="{Binding CapturedMinimum}"
+                                                              CapturedMaximum="{Binding CapturedMaximum}"
+                                                              CandidateTrim="{Binding CandidateTrim}"
+                                                              IsCapturing="{Binding ShowCapturedRange}"
+                                                              IsStale="{Binding IsStale}"
+                                                              HasSignal="{Binding HasSignal}"
+                                                              PresentationKind="{Binding PresentationKind}"
                                                               IsReversed="{Binding IsReversed}" />
                                 <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="{Binding Range, StringFormat='Stored MIN / TRIM / MAX   {0}'}"  Opacity="0.72" />
                                 <TextBlock Grid.Row="8" Grid.ColumnSpan="3" Text="{Binding NeutralDiagnosticText}" Classes.Warning="{Binding HasNeutralWarning}" TextWrapping="Wrap" />

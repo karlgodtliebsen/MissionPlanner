@@ -334,7 +334,15 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     [RelayCommand]
     private void Reset()
     {
-        radioService.Reset();
+        try
+        {
+            radioService.Reset();
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            Logger.LogError(exception, "Resetting radio calibration failed.");
+            SetMessages(exception);
+        }
     }
 
     private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
