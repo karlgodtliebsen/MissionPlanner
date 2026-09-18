@@ -32,7 +32,7 @@ public sealed record DialogOptions
 
     /// <summary>
     /// Gets an optional progress-dialog cancellation request. When supplied, Cancel and
-    /// window-close request cancellation; the caller disposes the handle when work safely ends.
+    /// dialog-close request cancellation; the caller disposes the handle when work safely ends.
     /// </summary>
     public Action? RequestCancellation { get; init; }
 }

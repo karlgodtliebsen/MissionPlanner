@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:dialogs="clr-namespace:MissionPlanner.App.Utilities.Dialogs"
              xmlns:subViews="clr-namespace:MissionPlanner.App.Utilities.Dialogs.SubViews"
+             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="MissionPlanner.App.Utilities.Dialogs.SubViews.ProgressDialogView"
              x:DataType="subViews:ProgressDialogViewModel"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
@@ -21,6 +22,15 @@
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch"/>
+            <Button Command="{Binding CancelCommand}"
+                    IsVisible="{Binding CanRequestCancellation}"
+                    HorizontalAlignment="Center"
+                    AutomationProperties.Name="Cancel operation">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <mdi:MaterialIcon Kind="CloseCircleOutline" Width="20" Height="20" />
+                    <TextBlock Text="Cancel operation" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
 
         </StackPanel>
     </Grid>

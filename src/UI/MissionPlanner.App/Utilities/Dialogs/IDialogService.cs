@@ -144,7 +144,7 @@ public interface IDialogService
 
 
     /// <summary>
-    /// Displays a progress dialog that closes on cancellation, or remains owner-controlled
+    /// Displays a compact overlay progress dialog that closes on cancellation, or remains owner-controlled
     /// when <see cref="DialogOptions.RequestCancellation"/> is supplied for deferred cancellation.
     /// </summary>
     /// <param name="message">A function that returns the message to display in the progress dialog.</param>
@@ -154,7 +154,7 @@ public interface IDialogService
     Task<IDisposable> DisplayProgressCancellableAsync(Func<string> message, DialogOptions options, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Closes the most recently opened window dialog.
+    /// Closes the most recently opened progress overlay, or requests its deferred cancellation.
     /// </summary>
     Task CloseAsync(CancellationToken cancellationToken = default);
 }

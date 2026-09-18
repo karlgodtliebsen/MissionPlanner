@@ -77,6 +77,23 @@ Feature ViewModels do not create windows or call platform UI APIs. Resolve an ow
 recent folder survives application restarts. Core services accept paths, streams, or neutral
 request objects and never open dialogs themselves.
 
+Progress is presented by DisplayProgressCancellableAsync through
+ShowOverlayDialogAsync with centered OverlayDialogOptions, FullScreen=false,
+no resize, no light-dismiss, and no automatic dialog buttons. It does not create a
+native window. The progress content determines its compact size. The method returns
+an IDisposable handle immediately; disposing it cancels the overlay lifetime and closes
+the overlay. The message timer is disposed when the overlay finishes.
+
+When DialogOptions.RequestCancellation is supplied, the content's Cancel operation
+button requests cancellation without closing the overlay. The operation owner retains
+the handle until work can safely end. Without that callback, cancelling the caller's
+token also closes the overlay. CloseAsync targets the latest progress overlay and
+respects the same deferred-cancellation behavior.
+
+ProgressOverlayTests cover immediate handle return, opening failures, pre-cancelled calls,
+deferred cancellation, and close/cleanup behavior. The UI suite passed all 145 tests on
+2026-09-18. Interactive overlay appearance has not been manually verified.
+
 ## Collections and large grids
 
 Use `ItemsControl` or `ListBox` only for bounded lists. Use `VirtualizedItemsGrid` for large

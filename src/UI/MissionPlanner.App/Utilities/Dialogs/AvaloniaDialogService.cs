@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.App.Utilities.Dispatching;
 using Ursa.Controls;
@@ -6,10 +7,10 @@ using Ursa.Controls;
 namespace MissionPlanner.App.Utilities.Dialogs;
 
 /// <summary>Displays reusable view/view-model dialog content in a common window or overlay shell.</summary>
-public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvider windowProvider) : IDialogService
+public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvider windowProvider, ILogger<AvaloniaDialogService>? logger = null) : IDialogService
 {
-    private readonly Lock openWindowsLock = new();
-    private readonly List<ViewDialogWindow> openWindows = [];
+    private readonly Lock openProgressDialogsLock = new();
+    private readonly List<ProgressDialogViewModel> openProgressDialogs = [];
 
     /// <summary>
     /// Creates overlay dialog options with the specified title, accept text, and cancel text.
@@ -86,15 +87,15 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
     public Task CloseAsync(CancellationToken cancellationToken = default)
     {
         return dispatcher.DispatchAsync(() =>
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        ViewDialogWindow? dialog;
-        lock (openWindowsLock)
         {
-            dialog = openWindows.LastOrDefault();
-        }
-        dialog?.Close(false);
-    });
+            cancellationToken.ThrowIfCancellationRequested();
+            ProgressDialogViewModel? dialog;
+            lock (openProgressDialogsLock)
+            {
+                dialog = openProgressDialogs.LastOrDefault();
+            }
+            dialog?.Close();
+        });
     }
 
 
@@ -219,94 +220,104 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
     public Task<IDisposable> DisplayProgressCancellableAsync(Func<string> message, DialogOptions options, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(options);
         return dispatcher.DispatchAsync<IDisposable>(() =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var owner = windowProvider.ActiveWindow ?? throw new InvalidOperationException("No active window is available.");
-            var contentViewModel = new ProgressDialogViewModel(message);
-            var effectiveOptions = Compact(options) with
+            var model = new ProgressDialogViewModel(message, options.RequestCancellation);
+            // Deferred cancellation must keep progress visible until the operation owner
+            // disposes the handle, even if the caller's token has already been cancelled.
+            var lifetime = options.RequestCancellation is null
+                ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
+                : new CancellationTokenSource();
+            var overlayOptions = new OverlayDialogOptions
             {
-                Height = options.Height,
-                Width = options.Width,
-                ShowOkButton = false,
-                ShowCloseButton = options.RequestCancellation is not null,
-                CloseText = "Cancel operation",
-                CanResize = false
+                Title = options.Title,
+                FullScreen = false,
+                HorizontalAnchor = HorizontalPosition.Center,
+                VerticalAnchor = VerticalPosition.Center,
+                Buttons = DialogButton.None,
+                IsCloseButtonVisible = false,
+                CanLightDismiss = false,
+                CanDragMove = false,
+                CanResize = false,
+                TopLevelHashCode = windowProvider.ActiveWindow?.GetHashCode()
             };
-            var dialog = CreateWindow(new ProgressDialogView(contentViewModel), effectiveOptions);
 
-            var allowClose = false;
-            void CloseProgress()
+            Task<ProgressDialogViewModel> completion;
+            try
             {
-                allowClose = true;
-                dialog.Close(false);
-            }
-            dialog.Closing += (_, args) =>
-            {
-                if (!allowClose && options.RequestCancellation is { } requestCancellation)
+                completion = ShowOverlayDialogAsync<ProgressDialogView, ProgressDialogViewModel>(
+                    model, overlayOptions, cancellationToken: lifetime.Token);
+                if (completion.IsCompleted)
                 {
-                    args.Cancel = true;
-                    requestCancellation();
+                    // Report immediate presentation failures to the operation's caller.
+                    completion.GetAwaiter().GetResult();
                 }
-            };
-            // Firmware may defer cancellation through erase/program/verify/reboot. Keep its
-            // progress visible until the operation owner disposes the handle at a safe boundary.
-            var registration = options.RequestCancellation is null
-                ? cancellationToken.Register(() => dispatcher.Dispatch(CloseProgress))
-                : default;
-            Register(dialog);
-
-            _ = dialog.ShowDialog<bool>(owner).ContinueWith(_ =>
+            }
+            catch
             {
-                Unregister(dialog);
-                contentViewModel.Dispose();
-            }, TaskScheduler.Default);
-            return new DialogHandle(() => dispatcher.Dispatch(CloseProgress), registration);
+                lifetime.Dispose();
+                model.Dispose();
+                throw;
+            }
+
+            Register(model);
+            var handle = new DialogHandle(() => dispatcher.Dispatch(lifetime.Cancel));
+            // ShowOverlayDialogAsync completes when the overlay closes. Return its handle
+            // immediately so the caller can do the work whose progress it is displaying.
+            _ = ObserveProgressDialogAsync(completion, model, lifetime, handle);
+            return handle;
         });
     }
 
-
-    private static DialogOptions Compact(DialogOptions options)
+    private async Task ObserveProgressDialogAsync(
+        Task<ProgressDialogViewModel> completion,
+        ProgressDialogViewModel model,
+        CancellationTokenSource lifetime,
+        IDisposable handle)
     {
-        return options with
+        try
         {
-            Width = options.Width is null or 800 ? 460 : options.Width,
-            Height = options.Height is null or 600 ? 300 : options.Height,
-            CanResize = false
-        };
-    }
-
-    private static ViewDialogWindow CreateWindow(Control content, DialogOptions options)
-    {
-        var dialog = new ViewDialogWindow
+            await completion;
+        }
+        catch (OperationCanceledException) when (lifetime.IsCancellationRequested)
         {
-            Title = options.Title,
-            Width = options.Width ?? 800,
-            Height = options.Height ?? 600,
-            CanResize = options.CanResize,
-        };
-        dialog.DataContext = new ViewDialogViewModel(options.Title, content, options.OkText, options.CloseText,
-            options.ShowOkButton, options.ShowCloseButton, result => dialog.Close(result));
-        return dialog;
-    }
-
-    private void Register(ViewDialogWindow dialog)
-    {
-        lock (openWindowsLock)
+            // Token cancellation and owner disposal both close the overlay normally.
+        }
+        catch (Exception exception)
         {
-            openWindows.Add(dialog);
+            logger?.LogError(exception, "Could not display the progress overlay.");
+        }
+        finally
+        {
+            await dispatcher.DispatchAsync(() =>
+            {
+                handle.Dispose();
+                Unregister(model);
+                model.Dispose();
+                lifetime.Dispose();
+            });
         }
     }
 
-    private void Unregister(ViewDialogWindow dialog)
+    private void Register(ProgressDialogViewModel dialog)
     {
-        lock (openWindowsLock)
+        lock (openProgressDialogsLock)
         {
-            openWindows.Remove(dialog);
+            openProgressDialogs.Add(dialog);
         }
     }
 
-    private sealed class DialogHandle(Action close, CancellationTokenRegistration registration) : IDisposable
+    private void Unregister(ProgressDialogViewModel dialog)
+    {
+        lock (openProgressDialogsLock)
+        {
+            openProgressDialogs.Remove(dialog);
+        }
+    }
+
+    private sealed class DialogHandle(Action close) : IDisposable
     {
         private int disposed;
         public void Dispose()
@@ -316,7 +327,6 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
                 return;
             }
 
-            registration.Dispose();
             close();
         }
     }
