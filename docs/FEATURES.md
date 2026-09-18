@@ -273,6 +273,7 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 ### Status
 
 * SERIAL/USB implemented and tested (see VEHICLE_CONNECTION.md)
+* Background stable ArduPilot update checks preserve exact target/build identity, suppress repeated notices, and preselect the existing installer without flashing.
 
 ### Missing
 

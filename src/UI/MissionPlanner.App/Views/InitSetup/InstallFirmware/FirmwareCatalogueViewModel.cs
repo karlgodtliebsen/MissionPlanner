@@ -198,6 +198,17 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
         set;
     }
 
+    /// <summary>Preselects the exact recommended stable target without preparing or flashing it.</summary>
+    public void SelectUpgrade(FirmwareManifestEntry entry)
+    {
+        Reset();
+        SetCatalogue([entry], [], false);
+        SelectedFirmware = FirmwareChoices.Single(item => item.Entry == entry);
+        SelectedVersion = SelectedFirmware.FirmwareVersion.ToString();
+        SelectedVehicleType = SelectedFirmware.VehicleType;
+        SelectedBuildVariant = SelectedFirmware.BuildVariant;
+    }
+
     public void Reset()
     {
         Clear();

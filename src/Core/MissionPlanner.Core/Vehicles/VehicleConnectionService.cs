@@ -26,7 +26,8 @@ public class VehicleConnectionService(
     IVehicleRegistry vehicleRegistry,
     IPlannerSettingsService plannerSettings,
     IVehicleParameterLoadStatusContext parameterLoadStatus,
-    ILogger<VehicleConnectionService> logger)
+    ILogger<VehicleConnectionService> logger,
+    MissionPlanner.Core.Firmware.VehicleFirmwareUpdateService? firmwareUpdates = null)
     : IVehicleConnectionService
 {
     // Single active connection (only one vehicle connection supported at a time)
@@ -62,6 +63,7 @@ public class VehicleConnectionService(
             }
 
             logger.LogInformation("Connecting to vehicle using serial port {PortName} at {BaudRate} baud", portName, baudRate);
+            var connectionStartedAt = dateTimeProvider.UtcNow;
             var linkedCts = await connectionSession.CreateSerialConnection(portName, baudRate, cancellationToken: cancellationToken);
 
             var client = connectionSession.Client;
@@ -88,6 +90,7 @@ public class VehicleConnectionService(
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "Serial", portName, dateTimeProvider.UtcNow), linkedCts.Token);
             StartParameterPreload(vehicleId.Value);
+            _ = firmwareUpdates?.Start(vehicleId.Value, connectionStartedAt);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via serial port {PortName}", vehicleId, portName);
             return new VehicleConnectionResult(true, vehicleId.Value, connectionSession, ConnectionId: connectionId);
@@ -126,6 +129,7 @@ public class VehicleConnectionService(
 
             var endpoint = $"{host}:{port}";
 
+            var connectionStartedAt = dateTimeProvider.UtcNow;
             var linkedCts = await connectionSession.CreateTcpConnection(port, host, null, cancellationToken);
             var client = connectionSession.Client;
             var transport = connectionSession.Transport;
@@ -152,6 +156,7 @@ public class VehicleConnectionService(
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
             StartParameterPreload(vehicleId.Value);
+            _ = firmwareUpdates?.Start(vehicleId.Value, connectionStartedAt);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via TCP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value, connectionSession, ConnectionId: connectionId);
@@ -206,6 +211,7 @@ public class VehicleConnectionService(
 
             var endpoint = $"UDP:{localPort}";
 
+            var connectionStartedAt = dateTimeProvider.UtcNow;
             var linkedCts = await connectionSession.CreateUdpConnection(localPort, remoteHost ?? "127.0.0.1", remotePort ?? 14550, null, token);
             var client = connectionSession.Client;
             var transport = connectionSession.Transport;
@@ -229,6 +235,7 @@ public class VehicleConnectionService(
             activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "UDP", endpoint);
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
             StartParameterPreload(vehicleId.Value);
+            _ = firmwareUpdates?.Start(vehicleId.Value, connectionStartedAt);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via UDP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value, connectionSession, ConnectionId: connectionId);
@@ -418,6 +425,7 @@ public class VehicleConnectionService(
         {
             logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
 
+            firmwareUpdates?.Cancel();
             await CancelParameterPreloadAsync().ConfigureAwait(false);
 
             // Clear active connection
@@ -634,7 +642,8 @@ public class VehicleConnectionService(
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await CancelParameterPreloadAsync().ConfigureAwait(false);
+        firmwareUpdates?.Cancel();
+            await CancelParameterPreloadAsync().ConfigureAwait(false);
 
         // Disconnect the active connection (if any)
         if (activeConnection != null)

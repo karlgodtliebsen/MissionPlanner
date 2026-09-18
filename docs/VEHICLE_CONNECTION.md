@@ -207,3 +207,34 @@ visible until session reset/disconnect. Offline transitions clear both reasons.
 
 The Flight Data HUD shows the arming/readiness label and both retained reasons below
 the flight instruments. No parameter or command is sent by this read-only feature.
+
+## Background stable firmware checks
+
+After a successful connection, VehicleFirmwareUpdateService queues a bounded, cancellable
+check without awaiting it in connection establishment. AUTOPILOT_VERSION supplies the
+installed numeric version and firmware family. Only ArduPilot official builds are eligible;
+beta, development, release-candidate, unknown and non-ArduPilot identities are skipped.
+
+The existing IFirmwareCatalogService supplies stable releases and its cache/TTL. No second
+HTTP client or parser is used. Exact target evidence comes from a complete current-connection
+ArduPilot board STATUSTEXT banner (platform followed by hexadecimal hardware identifiers).
+The name must equal a catalog platform, with matching vehicle family and MAV build variant.
+A board ID or USB hint alone never selects an update. Missing, ambiguous, stale or truncated
+board evidence produces no recommendation. Numeric comparison prevents downgrade prompts.
+
+A non-modal shell notice shows the vehicle, target, installed version and available stable
+version. View Upgrade passes the exact artifact to Install Firmware; Later dismisses it;
+Release Notes opens the official ArduPilot repository notes through the platform link service.
+No package is downloaded, prepared or flashed by the check. The installation workflow retains
+its normal identity/compatibility, operation ownership and confirmation requirements.
+
+Suppression is per hardware identity (or vehicle ID fallback), platform, build variant,
+installed version and available version for the application session. A newer release can
+notify again. Disconnect cancels work; a 45-second ceiling bounds catalog/identity waits.
+Failures are diagnostic warnings, never connection failures or modal error prompts.
+Controllers that do not send an exact board banner require manual catalog selection.
+
+Verification: numeric comparison, shared-board variants, non-ArduPilot skip, missing target,
+catalog failure, cancellation, repeated-update suppression and newer-release notification
+have automated tests. Installer tests verify exact Stable target/version/variant selection
+without firmware preparation. The original src-v.1.38 reference tree is absent in this checkout.

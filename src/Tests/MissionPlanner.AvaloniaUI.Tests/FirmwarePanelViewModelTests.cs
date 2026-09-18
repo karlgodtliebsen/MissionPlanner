@@ -22,6 +22,22 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 public sealed class FirmwarePanelViewModelTests
 {
     [Fact]
+    public void UpgradeSelectionPreservesExactArtifactAndStableBuildFilters()
+    {
+        using var services = CreateServices();
+        var catalogue = services.GetRequiredService<FirmwareCatalogueViewModel>();
+        var entry = new FirmwareManifestEntry(new FirmwareVersion("4.7.2", new Version(4, 7, 2)), FirmwareReleaseChannel.Stable,
+            new FirmwareBoardTarget(105, "BETAFPV-F405-I2C-heli", FirmwareVehicleType.Copter, FirmwareVehicleType.Helicopter),
+            new FirmwareArtifact(new Uri("https://firmware.ardupilot.org/test/firmware.apj"), FirmwareImageFormat.Apj));
+        catalogue.SelectUpgrade(entry);
+        Assert.Same(entry, catalogue.SelectedFirmware?.Entry);
+        Assert.Equal(FirmwareReleaseChannel.Stable, catalogue.SelectedChannel);
+        Assert.Equal(catalogue.SelectedFirmware!.BuildVariant, catalogue.SelectedBuildVariant);
+        Assert.Equal(catalogue.SelectedFirmware.FirmwareVersion.ToString(), catalogue.SelectedVersion);
+        Assert.Null(catalogue.ValidatedPackageModel.PreparedFirmware);
+    }
+
+    [Fact]
     public void CatalogueDoesNotAutoSelectSharedUsbTarget()
     {
         using var services = CreateServices();

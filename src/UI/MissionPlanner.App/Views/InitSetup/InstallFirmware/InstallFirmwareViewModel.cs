@@ -140,6 +140,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="dfuSafety">Checks HEX platform and target evidence.</param>
     /// <param name="filePicker">Selects files restricted to the resolved artifact family.</param>
     /// <param name="clipboard">Copies the selected artifact source URL.</param>
+    /// <param name="upgradeSelection">An exact advisory release awaiting review.</param>
     public InstallFirmwareViewModel(
         IFirmwareInstallationService installationService,
         IFirmwarePreparationService preparationService,
@@ -174,7 +175,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         IFirmwareCompatibilityService? compatibility = null,
         IDfuTargetSafetyService? dfuSafety = null,
         IFirmwareFilePicker? filePicker = null,
-        ITextClipboardService? clipboard = null
+        ITextClipboardService? clipboard = null,
+        FirmwareUpgradeSelection? upgradeSelection = null
         ) : base(logger, dispatcher, eventHub)
     {
         this.installationService = installationService;
@@ -184,6 +186,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         this.dfuSafety = dfuSafety;
         this.filePicker = filePicker;
         this.clipboard = clipboard;
+        this.upgradeSelection = upgradeSelection;
         this.preparationService = preparationService;
         this.dfuInstallationService = dfuInstallationService;
         this.dfuArtifactResolver = dfuArtifactResolver;
@@ -414,6 +417,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <summary>
     /// Observes connection state and starts child-owned discovery before enabling workflow tabs.
     /// </summary>
+    private readonly FirmwareUpgradeSelection? upgradeSelection;
+
+    /// <inheritdoc />
     public override async Task ActivateAsync()
     {
         if (active)
@@ -428,6 +434,11 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
         SubscribePanels();
+        if (upgradeSelection?.Pending is { } upgrade)
+        {
+            upgradeSelection.Pending = null;
+            OnlineFirmwareModel.SelectUpgrade(upgrade);
+        }
         LocalFirmwareModel.HasDevice = DevicesModel.HasDevice;
         LocalFirmwareModel.HasDetectedDfuDevice = DfuModel.HasDetectedDfuDevice;
         activeVehicle.Changed += OnActiveVehicleChanged;

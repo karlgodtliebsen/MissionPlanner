@@ -4,6 +4,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:imaging="clr-namespace:Avalonia.Media.Imaging;assembly=Avalonia.Base"
+    xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
     xmlns:navigation="clr-namespace:MissionPlanner.App.Views.Navigation"
     xmlns:u="https://irihi.tech/ursa"
     x:Class="MissionPlanner.App.Views.Navigation.MainShellView"
@@ -15,12 +16,13 @@
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
 
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,Auto,*">
         <Button HorizontalAlignment="Left" Margin="8,4" Command="{Binding ToggleNavigationCommand}"
                 ToolTip.Tip="Open navigation" AutomationProperties.Name="Open navigation">
             <mdi:MaterialIcon Kind="Menu" Width="22" Height="22" />
         </Button>
-        <DrawerPage Grid.Row="1"
+        <common:FirmwareUpdateNoticeView Grid.Row="1" />
+        <DrawerPage Grid.Row="2"
             x:Name="MainDrawer"
             DrawerPlacement="Left"
             DrawerLength="300"
