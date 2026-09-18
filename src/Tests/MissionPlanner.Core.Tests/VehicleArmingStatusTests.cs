@@ -137,14 +137,14 @@ public sealed class VehicleArmingStatusTests
             {
                 Logging = new MissionPlanner.Core.ConfigTuning.Planner.PlannerLoggingSettings { LogDirectory = directory }
             });
-            var recorder = new MissionPlanner.Core.Replay.TelemetryRecordingService(settings,
+            var recorder = new MissionPlanner.Core.Replay.TelemetryRecordingService(new MissionPlanner.Library.Logging.BrowserLogStorage(),
                 Substitute.For<IDomainEventHub>(), NullLogger<MissionPlanner.Core.Replay.TelemetryRecordingService>.Instance);
             await using var recording = recorder.Start(new MissionPlanner.MavLink.Services.MavLinkInspectionTap());
             var (session, _) = await CreateAsync();
             Text(session, "PreArm: Logging failed ENOSPC");
             Assert.Equal("Error", session.State.OnboardLogging.DisplayState);
             Assert.Equal("Recording", recorder.Current.State);
-            Assert.True(File.Exists(recorder.Current.FilePath));
+            Assert.Null(recorder.Current.FilePath); // No incoming frames: no empty recording.
         }
         finally
         {

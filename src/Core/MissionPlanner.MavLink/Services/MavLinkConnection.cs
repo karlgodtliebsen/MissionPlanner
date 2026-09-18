@@ -33,6 +33,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     private bool inspectionAttached;
     private readonly IMavLinkTrafficRecording? trafficRecording;
     private IAsyncDisposable? recording;
+    private readonly MavLinkInspectionTap recordingTap = new();
 
     /// <inheritdoc />
     public MavLinkInspectionTap? Inspection { get; }
@@ -102,7 +103,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
 
             if (Inspection is not null)
             {
-                recording = trafficRecording?.Start(Inspection);
+                recording = trafficRecording?.Start(recordingTap);
             }
             try
             {
@@ -191,6 +192,11 @@ public sealed class MavLinkConnection : IMavLinkConnection
 
     private void UnknownFrameObserved(MavLinkFrame frame)
     {
+        // Unsupported dialect frames retain their original bytes for future decoders.
+        if (frame.MessageId != 256 && recordingTap.HasObservers)
+        {
+            recordingTap.Publish(new(MavLinkTrafficDirection.Inbound, frame, null, false));
+        }
         if (Inspection?.HasObservers == true)
         {
             Inspection.Publish(new(MavLinkTrafficDirection.Inbound, frame, null, false));
@@ -226,6 +232,12 @@ public sealed class MavLinkConnection : IMavLinkConnection
                         }
                         var signature = Signing?.Verify(frame.RawBytes.Span)
                             ?? MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Unverified;
+                        if (recordingTap.HasObservers && signature is not
+                            (MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Invalid or
+                             MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Replay))
+                        {
+                            recordingTap.Publish(new(MavLinkTrafficDirection.Inbound, frame, null, true) { Signature = signature });
+                        }
                         var decoded = messageDecoder.TryDecode(frame, out var message);
                         if (Inspection?.HasObservers == true)
                         {

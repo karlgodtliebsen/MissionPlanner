@@ -1,65 +1,41 @@
 ﻿using System.Buffers.Binary;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Library.Logging;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.Core.Replay;
 
-/// <summary>Automatically records connection traffic as timestamped Mission Planner-compatible tlog frames.</summary>
-/// <param name="settings">Persisted Planner logging-directory preference.</param>
+/// <summary>Records received raw frames as classic Mission Planner tlogs, independently of UI lifetime.</summary>
+/// <param name="storage">Platform log storage.</param>
 /// <param name="events">Application recording-status event hub.</param>
 /// <param name="logger">Recording diagnostics.</param>
 public sealed class TelemetryRecordingService(
-    IPlannerSettingsService settings,
+    ILogStorage storage,
     IDomainEventHub events,
     ILogger<TelemetryRecordingService> logger) : IMavLinkTrafficRecording
 {
     private long latestSession;
     private TelemetryRecordingStatus current = new("Idle", null, null);
 
-    /// <summary>Gets recording state for the latest connection, including finalized file location.</summary>
+    /// <summary>Gets recording state for the latest connection.</summary>
     public TelemetryRecordingStatus Current => Volatile.Read(ref current);
 
     /// <inheritdoc />
     public IAsyncDisposable Start(MavLinkInspectionTap tap)
     {
         var session = Interlocked.Increment(ref latestSession);
-        FileStream? stream = null;
-        MavLinkInspectionLease? lease = null;
-        string? path = null;
         try
         {
-            var directory = settings.Current.Logging.LogDirectory;
-            if (string.IsNullOrWhiteSpace(directory))
-            {
-                directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MissionPlanner", "Telemetry");
-            }
-            directory = Path.GetFullPath(directory);
-            Directory.CreateDirectory(directory);
-            var stem = DateTimeOffset.UtcNow.ToString("yyyyMMdd-HHmmss-ffffff", System.Globalization.CultureInfo.InvariantCulture);
-            for (var suffix = 0; ; suffix++)
-            {
-                path = Path.Combine(directory, $"{stem}-{suffix:D3}.tlog");
-                try
-                {
-                    stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read, 65536, FileOptions.Asynchronous);
-                    break;
-                }
-                catch (IOException) when (File.Exists(path) && suffix < 999)
-                {
-                }
-            }
-            lease = tap.Subscribe(4096);
-            Update(session, new("Recording", path, null));
-            return new Recording(stream, lease, status => Update(session, status), path);
+            var lease = tap.Subscribe(4096);
+            var started = DateTimeOffset.UtcNow;
+            Update(session, new("Recording", null, null) { Started = started });
+            return new Recording(storage, lease, status => Update(session, status), started);
         }
         catch (Exception exception)
         {
-            lease?.Dispose();
-            stream?.Dispose();
-            Update(session, new("Error", path, exception.Message));
+            Update(session, new("Error", null, exception.Message));
             logger.LogWarning(exception, "PC telemetry recording could not start.");
             return EmptyRecording.Instance;
         }
@@ -71,6 +47,7 @@ public sealed class TelemetryRecordingService(
         {
             return;
         }
+
         Volatile.Write(ref current, status);
         _ = PublishAsync(status);
     }
@@ -89,65 +66,111 @@ public sealed class TelemetryRecordingService(
 
     private sealed class Recording : IAsyncDisposable
     {
-        private readonly FileStream stream;
+        private readonly ILogStorage storage;
         private readonly MavLinkInspectionLease lease;
         private readonly Action<TelemetryRecordingStatus> update;
-        private readonly string path;
+        private readonly DateTimeOffset started;
         private readonly CancellationTokenSource cancellation = new();
         private readonly Task writer;
+        private string? name;
+        private long bytes;
         private int disposed;
 
-        public Recording(FileStream stream, MavLinkInspectionLease lease, Action<TelemetryRecordingStatus> update, string path)
+        public Recording(ILogStorage storage, MavLinkInspectionLease lease, Action<TelemetryRecordingStatus> update, DateTimeOffset started)
         {
-            this.stream = stream;
+            this.storage = storage;
             this.lease = lease;
             this.update = update;
-            this.path = path;
+            this.started = started;
             writer = Task.Run(WriteAsync);
+        }
+
+        private TelemetryRecordingStatus Status(string state, string? error = null)
+            => new(state, name, error, lease.Dropped) { Started = started, BytesWritten = bytes };
+
+        private async Task<Stream> CreateAsync()
+        {
+            var stem = started.ToString("yyyy-MM-dd HH-mm-ss", System.Globalization.CultureInfo.InvariantCulture);
+            for (var suffix = 0; suffix < 10000; suffix++)
+            {
+                name = suffix == 0 ? $"{stem}.tlog" : $"{stem}-{suffix}.tlog";
+                try
+                {
+                    return await storage.CreateAsync(LogStorageArea.Telemetry, name, cancellation.Token).ConfigureAwait(false);
+                }
+                catch (IOException)
+                {
+                    // Retry only name collisions; permission and quota errors must remain visible.
+                    var existing = await storage.ListAsync(LogStorageArea.Telemetry, cancellation.Token).ConfigureAwait(false);
+                    if (!existing.Any(item => item.Id == name))
+                    {
+                        throw;
+                    }
+                }
+            }
+
+            throw new IOException("Unable to allocate a unique telemetry log name.");
         }
 
         private async Task WriteAsync()
         {
             var timestamp = new byte[8];
-            long reportedDrops = 0;
+            Stream? stream = null;
+            string? error = null;
             try
             {
                 while (await lease.Reader.WaitToReadAsync(cancellation.Token).ConfigureAwait(false))
                 {
                     while (lease.Reader.TryRead(out var observation))
                     {
+                        if (observation.Direction != MavLinkTrafficDirection.Inbound)
+                        {
+                            continue;
+                        }
+
+                        stream ??= await CreateAsync().ConfigureAwait(false);
                         var microseconds = checked((ulong)((observation.Frame.ReceivedAt - DateTimeOffset.UnixEpoch).Ticks / 10));
                         BinaryPrimitives.WriteUInt64BigEndian(timestamp, microseconds);
                         await stream.WriteAsync(timestamp, cancellation.Token).ConfigureAwait(false);
                         await stream.WriteAsync(observation.Frame.RawBytes, cancellation.Token).ConfigureAwait(false);
+                        bytes += timestamp.Length + observation.Frame.RawBytes.Length;
                     }
-                    await stream.FlushAsync(cancellation.Token).ConfigureAwait(false);
-                    if (lease.Dropped != reportedDrops)
+
+                    if (stream is not null)
                     {
-                        reportedDrops = lease.Dropped;
-                        update(new("Error", path, "Recording incomplete: traffic exceeded the recording queue.", reportedDrops));
+                        await stream.FlushAsync(cancellation.Token).ConfigureAwait(false);
                     }
+
+                    update(Status(lease.Dropped == 0 ? "Recording" : "Error",
+                        lease.Dropped == 0 ? null : "Recording incomplete: traffic exceeded the recording queue."));
                 }
-                await stream.FlushAsync(cancellation.Token).ConfigureAwait(false);
-                update(lease.Dropped == 0
-                    ? new("Completed", path, null)
-                    : new("Error", path, "Recording incomplete: traffic exceeded the recording queue.", lease.Dropped));
+
+                if (stream is not null)
+                {
+                    await stream.FlushAsync(cancellation.Token).ConfigureAwait(false);
+                }
             }
             catch (Exception exception)
             {
-                update(new("Error", path, exception.Message, lease.Dropped));
+                error = exception.Message;
             }
             finally
             {
                 lease.Dispose();
-                try
+                if (stream is not null)
                 {
-                    await stream.DisposeAsync().ConfigureAwait(false);
+                    try
+                    {
+                        await stream.DisposeAsync().ConfigureAwait(false);
+                    }
+                    catch (Exception exception)
+                    {
+                        error ??= exception.Message;
+                    }
                 }
-                catch (Exception exception)
-                {
-                    update(new("Error", path, exception.Message, lease.Dropped));
-                }
+
+                error ??= lease.Dropped == 0 ? null : "Recording incomplete: traffic exceeded the recording queue.";
+                update(Status(error is null ? "Completed" : "Error", error));
             }
         }
 
@@ -157,6 +180,7 @@ public sealed class TelemetryRecordingService(
             {
                 return;
             }
+
             lease.Complete();
             cancellation.CancelAfter(TimeSpan.FromSeconds(5));
             await writer.ConfigureAwait(false);
