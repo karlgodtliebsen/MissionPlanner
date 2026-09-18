@@ -11,10 +11,12 @@
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-        <TextBlock Text="CubeID Firmware Update" FontSize="24" FontWeight="Bold" />
+        <TextBlock Text="CubeID Firmware Update" Classes="H2" />
         <TextBlock Text="The target component identity is retained; an autopilot component cannot consume CubeID acknowledgements." />
-        <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-        <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+            <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                 IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+            <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                 IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
         <TextBox PlaceholderText="Local firmware .bin path" Text="{Binding FirmwarePath}" />
         <Button ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
             <mdi:MaterialIcon Kind="FileSearchOutline" Classes="ActionIcon" />

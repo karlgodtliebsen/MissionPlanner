@@ -19,10 +19,13 @@
           RowSpacing="25">
         <Border  Classes="SectionCard"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel Orientation="Vertical" Spacing="25">
-                <TextBlock Text="{Binding Title}" Classes="H3" HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding Title}" Classes="H2" HorizontalAlignment="Center"/>
 
-                <TextBlock Text="{Binding StatusMessage}" Classes="H4" HorizontalAlignment="Center"
-                           IsVisible="{Binding HasStatusMessage}"/>
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+
 
                 <SelectableTextBlock Text="{Binding LastDiagnosticReport}" HorizontalAlignment="Center" VerticalAlignment="Center"
                                      IsVisible="{Binding HasDiagnosticReport}"

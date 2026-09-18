@@ -2,15 +2,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
+using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dialogs;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
 using Ursa.Controls;
-using MissionPlanner.App.Models;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -22,28 +21,33 @@ public partial class ParameterComparisonViewModel : DialogViewModelBase
     private readonly IParameterEditSession? editSession;
     private readonly IParameterComparisonService comparisons;
     private readonly ParametersFileHandler parametersFileHandler;
+    private readonly ITextClipboardService clipboard;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IDialogService dialogService;
     private readonly IUserConfirmationService confirmation;
 
 
     /// <summary>Provides the parameter comparison workspace.</summary>
-    public ParameterComparisonViewModel(IParameterComparisonService comparisons, IDialogService dialogService, ParametersFileHandler parametersFileHandler, IDateTimeProvider dateTimeProvider, IUserConfirmationService confirmation, IParameterEditSession session)
+    public ParameterComparisonViewModel(IParameterComparisonService comparisons, IDialogService dialogService,
+        ParametersFileHandler parametersFileHandler,
+        ITextClipboardService clipboard,
+        IDateTimeProvider dateTimeProvider, IUserConfirmationService confirmation, IParameterEditSession session)
     {
         this.comparisons = comparisons;
         this.dialogService = dialogService;
         this.parametersFileHandler = parametersFileHandler;
+        this.clipboard = clipboard;
         this.dateTimeProvider = dateTimeProvider;
         this.confirmation = confirmation;
         editSession = session;
         Show();
     }
 
-    [RelayCommand]
-    private Task CloseAsync(CancellationToken cancellationToken)
-    {
-        return dialogService.CloseAsync(cancellationToken);
-    }
+    //[RelayCommand]
+    //private Task CloseAsync(CancellationToken cancellationToken)
+    //{
+    //    return dialogService.CloseAsync(cancellationToken);
+    //}
 
     /// <summary>Gets the currently filtered comparison rows.</summary>
     public ObservableRangeCollection<ParameterComparisonItemViewModel> Items { get; } = [];
@@ -97,6 +101,19 @@ public partial class ParameterComparisonViewModel : DialogViewModelBase
 
         allRows.ReplaceRange(rows);
         FilterRows();
+    }
+    public string CreateTextExport()
+    {
+        var fullList = SelectedItems.ToList();
+        return string.Join(Environment.NewLine, fullList.Select(item => $"{item.Name}={item.RightValueText}"));
+    }
+
+    [RelayCommand]
+    private async Task CopyAllAsync()
+    {
+
+        await clipboard.SetTextAsync(CreateTextExport());
+        SetMessages($"Copied {SelectedItems.Count} parameters.");
     }
 
     [RelayCommand]
@@ -180,6 +197,7 @@ public partial class ParameterComparisonViewModel : DialogViewModelBase
         options = AvaloniaDialogService.CreateDialogOptions(title, "Ok", null);
         await dialogService.ConfirmAsync(options, message, cancellationToken);
         Show();
+        Close();
     }
 
     [RelayCommand]

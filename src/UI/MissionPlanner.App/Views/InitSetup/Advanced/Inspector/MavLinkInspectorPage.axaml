@@ -8,8 +8,11 @@
     <ContentPage >
         <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14" Margin="24">
             <StackPanel Spacing="8">
-                <TextBlock Text="Traffic inspection" Classes="Title" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                <TextBlock Text="Traffic inspection" Classes="Title H2" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="{Binding Dropped, StringFormat='Dropped / omitted observations: {0}'}" Classes="Warning" />
             </StackPanel>
             <Button Grid.Row="1" ToolTip.Tip="Export bounded snapshot" Command="{Binding ExportCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Export bounded snapshot">

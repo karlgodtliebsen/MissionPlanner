@@ -9,38 +9,46 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SafetySetupView"
                                x:DataType="sections:SafetySetupViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <TextBlock Text="Safety and arming" FontSize="18" FontWeight="Bold" />
-            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
-            <ItemsControl IsVisible="{Binding HasWarnings}" ItemsSource="{Binding Warnings}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <TextBlock Text="{Binding .}" Classes="Warning" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <ItemsControl ItemsSource="{Binding Items}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="mandatoryHardware:SafetyCheckItem">
-                        <Grid ColumnDefinitions="220,120,*" ColumnSpacing="8">
-                            <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                            <TextBlock Grid.Column="1" Text="{Binding Status}" />
-                            <TextBlock Grid.Column="2" Text="{Binding Detail}" Opacity="0.8" />
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-            <StackPanel HorizontalAlignment="Right">
-            <Button ToolTip.Tip="Re-assess safety" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Re-assess safety">
-                <mdi:MaterialIcon Kind="ShieldCheckOutline" Classes="ActionIcon" />
-            </Button>
-            </StackPanel>
-
+            <Border  HorizontalAlignment="Center" x:Name="SourceBorder">
+                <StackPanel >
+                    <TextBlock Text="Safety and arming" Classes="H2" />
+                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                    <ItemsControl IsVisible="{Binding HasWarnings}" ItemsSource="{Binding Warnings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{Binding .}" Classes="Warning" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+                <StackPanel >
+                    <ItemsControl ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="mandatoryHardware:SafetyCheckItem">
+                                <Grid ColumnDefinitions="220,120,*" ColumnSpacing="8">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Status}" />
+                                    <TextBlock Grid.Column="2" Text="{Binding Detail}" Opacity="0.8" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <StackPanel HorizontalAlignment="Right">
+                        <Button ToolTip.Tip="Re-assess safety" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Re-assess safety">
+                            <mdi:MaterialIcon Kind="ShieldCheckOutline" Classes="ActionIcon" />
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </utilities:UserControlViewBase>

@@ -11,7 +11,10 @@
                            x:Class="MissionPlanner.App.Views.FlightData.Tabs.TransponderTabItemView"
                            x:DataType="tabs:TransponderTabViewModel">
     <Grid Margin="16" RowDefinitions="Auto,*,*" RowSpacing="10">
-        <TextBlock Text="{Binding StatusMessage}" FontSize="18" FontWeight="Bold"/>
+        <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                             IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+        <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                             IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
         <GroupBox Grid.Row="1" Header="Transponder components">
             <controls:VirtualizedItemsGrid

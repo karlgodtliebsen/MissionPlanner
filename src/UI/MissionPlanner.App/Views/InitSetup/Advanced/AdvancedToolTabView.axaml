@@ -11,6 +11,6 @@
                     <SelectableTextBlock Text="{Binding Availability.Reason}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
-            <ContentControl x:Name="ToolContent" Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+            <ContentControl x:Name="ToolContent" Grid.Row="1" MaxWidth="1000" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
         </Grid>
 </UserControl>

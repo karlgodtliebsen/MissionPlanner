@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.ParametersEditorView"
              x:DataType="tabs:ParametersEditorViewModel"
              Margin="50"
@@ -21,14 +22,20 @@
                    HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+
+            <!--FileDocumentAddOutline-->
             <Button HorizontalAlignment="Right"
-                    Content="Add Parameters" ToolTip.Tip="Add Parameters to List" Width="200" Command="{Binding UseCommand}">
+                    ToolTip.Tip="Clear" Width="100" Command="{Binding ClearCommand}">
+                <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon" />
+            </Button>
+
+            <Button HorizontalAlignment="Right"
+                    ToolTip.Tip="Add Parameters to List" Width="100" Command="{Binding UseCommand}">
+                <avalonia:MaterialIcon Kind="PlusBox" Classes="ActionIcon" />
             </Button>
             <Button HorizontalAlignment="Right"
-                    Content="Clear" ToolTip.Tip="Clear" Width="150" Command="{Binding ClearCommand}">
-            </Button>
-            <Button HorizontalAlignment="Right"
-                    Content="Cancel" ToolTip.Tip="Cancel" Width="100" Command="{Binding CancelCommand}">
+                    ToolTip.Tip="Close" Width="100" Command="{Binding CancelCommand}">
+                <avalonia:MaterialIcon Kind="Check" Classes="ActionIcon" />
             </Button>
         </StackPanel>
 

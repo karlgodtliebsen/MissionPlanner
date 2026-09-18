@@ -10,7 +10,7 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
                                x:DataType="connect:ConnectPopupViewModel"
-                               Width="400" Height="400"
+                               Width="325" Height="325"
                                Margin="50,50,50,25"
 
                                >
@@ -32,7 +32,7 @@
                             >
 
                     <!--AUTO and COM grid-->
-                    <Grid VerticalAlignment="Center"  RowDefinitions="Auto,Auto"  ColumnDefinitions="150,150" RowSpacing="25" HorizontalAlignment="Stretch"
+                    <Grid VerticalAlignment="Center"  RowDefinitions="Auto,Auto"  ColumnDefinitions="100,150" RowSpacing="25" HorizontalAlignment="Stretch"
                           IsVisible="{Binding ShowSelectedCom}">
                         <TextBlock  Grid.Column="0" Grid.Row="0"  Text="Channel" HorizontalAlignment="Stretch" Classes="H4"  />
                         <ComboBox  Grid.Column="1" Grid.Row="0"
@@ -56,7 +56,7 @@
 
                     <!--TCP/UDP grid-->
 
-                    <Grid VerticalAlignment="Center" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="150,150" RowSpacing="25" HorizontalAlignment="Stretch"
+                    <Grid VerticalAlignment="Center" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="100,150" RowSpacing="25" HorizontalAlignment="Stretch"
                           IsVisible="{Binding ShowSelectedHost}">
                         <TextBlock Grid.Column="0" Grid.Row="0" Text="Channel" HorizontalAlignment="Stretch" Classes="H4"  />
                         <ComboBox  Grid.Row="0" Grid.Column="1"
@@ -90,7 +90,7 @@
                      IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
 
             <Button
-                Width="100"
+                Width="80"
                 ToolTip.Tip="Refresh"
                 Padding="5"
                 HorizontalAlignment="Stretch"
@@ -100,7 +100,7 @@
             </Button>
 
             <Button
-                Width="100"
+                Width="80"
                 ToolTip.Tip="Connect"
                 Padding="5"
                 HorizontalAlignment="Stretch"
@@ -113,7 +113,7 @@
             </Button>
 
             <Button
-                Width="100"
+                Width="80"
                 ToolTip.Tip="Close"
                 Padding="5"
                 HorizontalAlignment="Stretch"
@@ -128,14 +128,17 @@
                 IsVisible="{Binding IsConnected}"
                 >
             <!--StatusMessage-->
-            <StackPanel  Grid.Row="1" Orientation="Vertical"
+            <StackPanel  Orientation="Vertical"
                          Spacing="50" Margin="0" IsVisible="{Binding IsConnected}"
                          VerticalAlignment="Center" HorizontalAlignment="Stretch"
                          >
-                <TextBlock Text="{Binding StatusMessage}" Classes="H4"
-                           VerticalAlignment="Center"
-                           TextWrapping="Wrap"
-                           HorizontalAlignment="Center"  />
+
+                <SelectableTextBlock Text="{Binding StatusMessage}" 
+                                     VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" 
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" 
+                                     VerticalAlignment="Center" HorizontalAlignment="Center" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
         </Border>
 
@@ -143,7 +146,7 @@
                      IsVisible="{Binding IsConnected}">
             <Button
                 ToolTip.Tip="Disconnect"
-                Width="100"
+                Width="80"
                 Padding="5"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Bottom"
@@ -155,7 +158,7 @@
             </Button>
 
             <Button
-                Width="100"
+                Width="80"
                 ToolTip.Tip="Close"
                 Padding="5"
                 HorizontalAlignment="Stretch"

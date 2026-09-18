@@ -12,10 +12,14 @@
 
         <Grid Margin="20" RowDefinitions="Auto,*"  RowSpacing="14">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <SelectableTextBlock Text="{Binding ErrorMessage}"
-                                     IsVisible="{Binding HasError}" Classes="Danger" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+
+                <!--                
                 <TextBlock Text="{Binding VehicleHeading}" Classes="H4" />
-            </StackPanel>
+-->            </StackPanel>
             <TabControl Grid.Row="1" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                 <TabItem Header="Information">
                     <local:LandingView />
@@ -34,8 +38,8 @@
                                     Command="{Binding ProbeRuntimeCommand}" >
                                 <avalonia:MaterialIcon Kind="Chip" Width="30" Height="30" />
                             </Button>
-                            <u:IconSplitButton  >
-                                <SplitButton.Flyout>
+                            <u:IconDropDownButton  >
+                                <DropDownButton.Flyout>
                                     <MenuFlyout Placement="Bottom">
                                         <MenuItem
                                             ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
@@ -51,11 +55,11 @@
                                                   IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}"
                                                   />
                                     </MenuFlyout>
-                                </SplitButton.Flyout>
+                                </DropDownButton.Flyout>
                                 <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
-                            </u:IconSplitButton>
-                            <u:IconSplitButton  >
-                                <SplitButton.Flyout>
+                            </u:IconDropDownButton>
+                            <u:IconDropDownButton  >
+                                <DropDownButton.Flyout>
                                     <MenuFlyout Placement="Bottom">
                                         <MenuItem
                                             ToolTip.Tip="Online Firmware"
@@ -69,9 +73,9 @@
                                             IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}"
                                             Header="Local Firmware" />
                                     </MenuFlyout>
-                                </SplitButton.Flyout>
+                                </DropDownButton.Flyout>
                                 <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
-                            </u:IconSplitButton>
+                            </u:IconDropDownButton>
 
                             <Button  ToolTip.Tip="Validate combined HEX"
                                      Command="{Binding PrepareSelectedHexCommand}" >

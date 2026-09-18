@@ -26,8 +26,10 @@
                     <StackPanel Orientation="Vertical" Margin="0,10,0,10" Spacing="12">
                         <TextBlock Text="{Binding ProgressMessage}" 
                                    IsVisible="{Binding IsBackgroundParameterLoadInProgress}" VerticalAlignment="Center" />
-                        <SelectableTextBlock Text="{Binding ErrorMessage}" 
-                                             IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"  Classes="Danger" />
+                        <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                             IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                        <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                             IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                     </StackPanel>
 
                     <TextBlock Text="{Binding FrameDisplay}" Classes="H4" />

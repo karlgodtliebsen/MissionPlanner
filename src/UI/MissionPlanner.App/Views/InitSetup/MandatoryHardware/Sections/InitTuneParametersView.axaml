@@ -8,15 +8,17 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.InitTuneParametersView"
                                x:DataType="sections:InitTuneParametersViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <Border Classes="SectionCard" HorizontalAlignment="Center" x:Name="SourceBorder">
+            <Border  HorizontalAlignment="Center" x:Name="SourceBorder">
                 <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-                    <TextBlock Text="Initial Tune Parameters" Classes="H4" />
+                    <TextBlock Text="Initial Tune Parameters" Classes="H2" />
                     <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                    <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                     <ItemsControl ItemsSource="{Binding Guidance}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
@@ -42,18 +44,18 @@
                                             <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
                                             <TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
                                         </StackPanel>
-                                        <ComboBox Grid.Column="1" 
+                                        <ComboBox Grid.Column="1"
                                                   HorizontalContentAlignment="Right"
-                                                  HorizontalAlignment="Stretch" 
-                                                  ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" 
-                                                  ItemsSource="{Binding Options}" 
-                                                  SelectedItem="{Binding SelectedOption}" 
+                                                  HorizontalAlignment="Stretch"
+                                                  ToolTip.Tip="Value" IsVisible="{Binding HasOptions}"
+                                                  ItemsSource="{Binding Options}"
+                                                  SelectedItem="{Binding SelectedOption}"
                                                   DisplayMemberBinding="{Binding Name}" />
-                                        <NumericUpDown Grid.Column="1" 
-                                                       
+                                        <NumericUpDown Grid.Column="1"
+
                                                        HorizontalContentAlignment="Right"
-                                                       PlaceholderText="Value" IsVisible="{Binding IsNumeric}" 
-                                                       Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1" 
+                                                       PlaceholderText="Value" IsVisible="{Binding IsNumeric}"
+                                                       Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1"
                                                        HorizontalAlignment="Stretch" />
                                         <Button Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                             <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />

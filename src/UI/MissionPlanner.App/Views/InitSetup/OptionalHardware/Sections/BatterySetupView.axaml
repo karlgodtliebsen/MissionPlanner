@@ -8,21 +8,28 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BatterySetupView"
                                x:DataType="sections:BatterySetupViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
-            <TextBlock Text="Battery monitors and failsafe" FontSize="18" FontWeight="Bold" />
+
+
+            <TextBlock Text="Battery monitors and failsafe" Classes="H2" />
             <TextBlock Text="{Binding Status}" FontStyle="Italic" />
+
+            <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                 IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+            <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                 IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+
+
             <Button ToolTip.Tip="Refresh battery values" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh battery values">
                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
             </Button>
             <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="x:String">
-<TextBlock Text="{Binding .}" Classes="Warning" />
+                        <TextBlock Text="{Binding .}" Classes="Warning" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

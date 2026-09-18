@@ -20,6 +20,7 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 public partial class FullParametersListTabViewModel : ParametersViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
+    private readonly ITextClipboardService clipboard;
     private readonly IDialogService dialogService;
     private readonly IDomainFactory domainFactory;
     private readonly ParametersFileHandler parametersFileHandler;
@@ -36,6 +37,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     /// <param name="connectionSession">The current connection-scoped services.</param>
     /// <param name="activeVehicle">The application active-vehicle context.</param>
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
+    /// <param name="clipboard"></param>
     /// <param name="dialogService">The extended dialog service.</param>
     /// <param name="domainFactory">The domain view factory.</param>
     /// <param name="parametersFileHandler">The parameter import/export adapter.</param>
@@ -49,7 +51,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     public FullParametersListTabViewModel(
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
-        IParameterEditSessionFactory editSessionFactory, IDialogService dialogService,
+        IParameterEditSessionFactory editSessionFactory,
+        ITextClipboardService clipboard,
+        IDialogService dialogService,
         IDomainFactory domainFactory,
         ParametersFileHandler parametersFileHandler,
         IUserConfirmationService confirmation,
@@ -62,6 +66,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.activeVehicle = activeVehicle;
+        this.clipboard = clipboard;
         this.userNotificationService = userNotificationService;
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
@@ -128,7 +133,29 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     {
         get; set;
     }
+    public string CreateTextExport()
+    {
+        if (EditSession is null)
+        {
+            SetMessages(errorMessage: "Refresh vehicle parameters before importing parameters.");
+            return string.Empty;
+        }
 
+        var fullList = EditSession.Fields.Select(ToVehicleParameter).ToList();
+        return string.Join(Environment.NewLine, fullList.Select(item => $"{item.Name}={item.Value}"));
+    }
+
+    [RelayCommand]
+    private async Task CopyAllAsync()
+    {
+        if (EditSession is null)
+        {
+            SetMessages(errorMessage: "Refresh vehicle parameters before importing parameters.");
+            return;
+        }
+        await clipboard.SetTextAsync(CreateTextExport());
+        SetMessages($"Copied {EditSession.Fields.Count} parameters.");
+    }
 
     [RelayCommand]
     private async Task LoadFromEditorAsync(CancellationToken cancellationToken)
@@ -244,12 +271,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var result = await parametersFileHandler.SaveParametersToFile(parameters, cancellationToken);
             if (result is not null)
             {
-                if (NotificationManager is not null)
-                {
-                    NotificationManager!.Show($"File saved to:\n{result}\nfor Vehicle: {activeVehicle.VehicleId}");
-                }
-                //await userNotificationService.NotifyAsync(
-                //    new UserNotification($"File saved to:\n{result}", VehicleId: activeVehicle.VehicleId), cancellationToken);
+                NotificationManager?.Show($"File saved to:\n{result}\nfor Vehicle: {activeVehicle.VehicleId}");
             }
         }
         catch (Exception exception)
@@ -266,12 +288,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var result = await parametersFileHandler.SaveParametersToJsonFile(Parameters, cancellationToken);
             if (result is not null)
             {
-                if (NotificationManager is not null)
-                {
-                    NotificationManager!.Show($"File saved to:\n{result}\nfor Vehicle: {activeVehicle.VehicleId}");
-                }
-                //await userNotificationService.NotifyAsync(
-                //    new UserNotification($"File saved to:\n{result}", VehicleId: activeVehicle.VehicleId), cancellationToken);
+                NotificationManager?.Show($"File saved to:\n{result}\nfor Vehicle: {activeVehicle.VehicleId}");
             }
         }
         catch (Exception exception)
@@ -401,6 +418,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             cancellationToken);
     }
 
+    /// <inheritdoc />
+    protected override bool CanCancelLoad()
+    {
+        return IsBackgroundParameterLoadInProgress;
+    }
+
     private async Task<bool> ShowMessageAsync(string title, string message, CancellationToken cancellationToken)
     {
         var options = dialogService.CreateOptions(title, "Ok", null);
@@ -481,7 +504,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     private void UpdateEditSessionCommandState()
     {
         WriteParametersCommand.NotifyCanExecuteChanged();
-        // RetryFailedCommand.NotifyCanExecuteChanged();
+        RetryFailedCommand.NotifyCanExecuteChanged();
         HasRows = Parameters.Count > 0;
     }
 

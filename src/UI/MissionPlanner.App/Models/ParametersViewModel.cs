@@ -737,7 +737,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// <returns><c>true</c> if the view model can retry failed operations; otherwise, <c>false</c>.</returns>
     protected virtual bool CanRetryFailed()
     {
-        return HasConnection && !IsBusy && EditSession is { IsValid: true } && lastApplyReport?.Retryable.Count > 0;
+        return HasConnection && !IsBusy && EditSession is { IsValid: true };// && lastApplyReport?.Retryable.Count > 0;
     }
 
 

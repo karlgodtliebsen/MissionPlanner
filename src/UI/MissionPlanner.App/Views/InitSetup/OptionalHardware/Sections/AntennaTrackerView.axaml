@@ -10,10 +10,12 @@
                                x:DataType="sections:AntennaTrackerViewModel">
 
     <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-        <TextBlock Text="Antenna Tracker Configuration" FontSize="24" FontWeight="Bold" />
-        <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-        <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+        <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+        <TextBlock Text="Antenna Tracker Configuration" Classes="H2" />
+        <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                             IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+        <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                             IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
         <TextBlock Text="{Binding TargetStatus}" />
         <TextBlock Text="Configuration and live tracker operation are deliberately separate." />
         <TextBlock Text="{Binding SafetyStatus}" Opacity="0.75" />

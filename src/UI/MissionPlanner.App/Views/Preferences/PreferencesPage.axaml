@@ -16,8 +16,12 @@
     <ContentPage Header="Preferences" >
         <ScrollViewer>
             <StackPanel Orientation="Vertical" Margin="20" Spacing="14" MaxWidth="1050" HorizontalAlignment="Center">
-                <TextBlock Text="MissionPlanner preferences" FontSize="24" FontWeight="Bold" />
+                <TextBlock Text="MissionPlanner preferences" Classes="H2" />
                 <TextBlock Text="These settings belong to MissionPlanner on this device. They never write flight-controller parameters. Credentials and tokens are stored separately in platform secure storage and are never exported." />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
                 <WrapPanel HorizontalAlignment="Right" Margin="0,10" ItemSpacing="10">
                     <Button  ToolTip.Tip="Import" Command="{Binding ImportCommand}" >
@@ -599,7 +603,6 @@
 
                 <TextBlock Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}"
                            Classes="Warning" FontWeight="Bold" />
-                <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis"/>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
 
                 <WrapPanel HorizontalAlignment="Right" Margin="0,10" ItemSpacing="5">

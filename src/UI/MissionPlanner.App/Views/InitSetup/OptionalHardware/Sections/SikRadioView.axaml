@@ -8,14 +8,16 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SikRadioView"
                                x:DataType="sections:SikRadioViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="SiK / RFD Radio" FontSize="20" FontWeight="Bold" />
-<TextBlock Text="Direct serial configuration. Disconnect any vehicle using the selected port." Classes="Warning" />
+            <TextBlock Text="SiK / RFD Radio" Classes="H2" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-            <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+            <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                 IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+            <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                 IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+            <TextBlock Text="Direct serial configuration. Disconnect any vehicle using the selected port." Classes="Warning" />
             <StackPanel Orientation="Horizontal" Spacing="50" HorizontalAlignment="Stretch" Height="75" VerticalAlignment="Stretch">
                 <ComboBox ToolTip.Tip="Serial device" VerticalAlignment="Bottom" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
                 <NumericUpDown PlaceholderText="BaudRate" FormatString="F0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Minimum="0" Value="{Binding BaudRate, Mode=TwoWay}" Width="110" />

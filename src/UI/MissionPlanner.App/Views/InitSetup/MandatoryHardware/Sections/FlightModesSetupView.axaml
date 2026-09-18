@@ -11,12 +11,14 @@
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <Border Classes="SectionCard" HorizontalAlignment="Center" x:Name="SourceBorder">
+            <Border  HorizontalAlignment="Center" x:Name="SourceBorder">
                 <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-                    <TextBlock Text="Flight-mode assignment" Classes="H3" />
+                    <TextBlock Text="Flight-mode assignment" Classes="H2" />
                     <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                    <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
+                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                     <TextBlock Text="{Binding ModeChannelDescription}" FontWeight="Bold" />
                     
                     <Button ToolTip.Tip="Refresh flight modes"

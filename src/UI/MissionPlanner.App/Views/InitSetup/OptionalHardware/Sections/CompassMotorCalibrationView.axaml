@@ -11,16 +11,15 @@
                                x:DataType="sections:CompassMotorCalibrationViewModel">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <TextBlock Text="Compass / Motor Calibration" FontSize="20" FontWeight="Bold" />
+            <TextBlock Text="Compass / Motor Calibration" Classes="H2" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
            
             <TextBlock Text="Remove ALL propellers. CompassMot may spin motors." Classes="Warning" FontWeight="Bold" />
-           
-<!--            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
--->            
-            <SelectableTextBlock Text="{Binding ErrorMessage}" 
-                       IsVisible="{Binding HasError}" 
-                       Classes="Danger" />
+            <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                 IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+            <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                 IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+
             <TextBlock Text="{Binding Instruction}" />
             <TextBlock Text="{Binding Compensation}" />
 

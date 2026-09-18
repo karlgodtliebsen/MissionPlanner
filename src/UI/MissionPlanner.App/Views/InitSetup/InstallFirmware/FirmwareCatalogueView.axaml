@@ -23,13 +23,11 @@
                 <TextBlock Grid.Row="0" Text="Select Firmware" Classes="H3"  HorizontalAlignment="Left"/>
                 <ProgressBar Grid.Row="0" IsIndeterminate="True" IsVisible="{Binding IsRefreshing}"
                              Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <TextBlock Grid.Row="1"
-                           Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                           IsVisible="{Binding HasStatusMessage}" />
-                <SelectableTextBlock Grid.Row="1"
-                           Text="{Binding ErrorMessage}" TextWrapping="Wrap"
-                           IsVisible="{Binding HasError}"
-                           Classes="Danger" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+
 
                 <StackPanel Grid.Row="2"  Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Button ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}"
