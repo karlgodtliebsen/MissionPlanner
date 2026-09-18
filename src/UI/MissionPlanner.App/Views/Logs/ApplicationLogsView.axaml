@@ -3,8 +3,143 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.Logs"
+    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:logs="clr-namespace:MissionPlanner.Library.Logging;assembly=MissionPlanner.Library"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     x:TypeArguments="local:ApplicationLogsViewModel"
     x:Class="MissionPlanner.App.Views.Logs.ApplicationLogsView"
-    x:DataType="local:ApplicationLogsViewModel">
-    <TextBlock Text="Application diagnostics" Classes="H2" />
+    x:DataType="local:ApplicationLogsViewModel"
+    x:CompileBindings="True">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,160" RowSpacing="8">
+        <StackPanel>
+            <TextBlock Text="{Binding Health}" TextWrapping="Wrap" />
+            <TextBlock Text="VERBOSE recording enabled" IsVisible="{Binding IsVerbose}" Classes="Warning" FontWeight="Bold" />
+        </StackPanel>
+        <WrapPanel Grid.Row="1" ItemSpacing="8">
+            <TextBlock Text="Minimum logging level:" VerticalAlignment="Center" />
+            <ComboBox ItemsSource="{Binding Levels}" SelectedItem="{Binding RuntimeLevel}" MinWidth="130" />
+            <CheckBox Content="Pause display" IsChecked="{Binding Paused}" />
+            <CheckBox Content="Follow tail" IsChecked="{Binding FollowTail}" />
+            <Button Command="{Binding CurrentSessionCommand}" ToolTip.Tip="Current session" AutomationProperties.Name="Current session" >
+                    <mdi:MaterialIcon Kind="Broadcast" Classes="ActionIcon" />
+                </Button>
+            <Button Command="{Binding ClearViewCommand}" ToolTip.Tip="Clear view only" AutomationProperties.Name="Clear view only" >
+                    <mdi:MaterialIcon Kind="Eraser" Classes="ActionIcon" />
+                </Button>
+            <Button Command="{Binding CopyCommand}" ToolTip.Tip="Copy selected event or current view" AutomationProperties.Name="Copy selected event or current view" >
+                    <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
+                </Button>
+            <Button Command="{Binding ExportViewCommand}" ToolTip.Tip="Export current view" AutomationProperties.Name="Export current view" >
+                    <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                </Button>
+            <Button Command="{Binding ExportSelectedCommand}" ToolTip.Tip="Export selected event" AutomationProperties.Name="Export selected event" >
+                    <mdi:MaterialIcon Kind="Export" Classes="ActionIcon" />
+                </Button>
+        </WrapPanel>
+        <WrapPanel Grid.Row="2" ItemSpacing="8">
+            <ComboBox ItemsSource="{Binding Levels}" SelectedItem="{Binding MinimumLevel}" MinWidth="120" ToolTip.Tip="Minimum display level" />
+            <ComboBox ItemsSource="{Binding ExactLevels}" SelectedItem="{Binding ExactLevel}" MinWidth="120" ToolTip.Tip="Exact display level" />
+            <TextBox Width="180" Text="{Binding SourceFilter}" PlaceholderText="Source category" />
+            <TextBox Width="200" Text="{Binding Search}" PlaceholderText="Search details" />
+            <TextBox Width="160" Text="{Binding FromTime}" PlaceholderText="From UTC" />
+            <TextBox Width="160" Text="{Binding UntilTime}" PlaceholderText="Until UTC" />
+            <CheckBox Content="Exceptions only" IsChecked="{Binding ExceptionOnly}" />
+            <Button Command="{Binding ApplyFiltersCommand}" ToolTip.Tip="Apply filters" AutomationProperties.Name="Apply filters" >
+                    <mdi:MaterialIcon Kind="FilterOutline" Classes="ActionIcon" />
+                </Button>
+        </WrapPanel>
+        <WrapPanel Grid.Row="3" ItemSpacing="8">
+            <Button Command="{Binding QuickFilterCommand}" CommandParameter="Warnings">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
+                    <TextBlock Text="Warnings+" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding QuickFilterCommand}" CommandParameter="Errors">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
+                    <TextBlock Text="Errors+" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding QuickFilterCommand}" CommandParameter="MAVLink">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
+                    <TextBlock Text="MAVLink" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding QuickFilterCommand}" CommandParameter="Transport">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
+                    <TextBlock Text="Transport" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding QuickFilterCommand}" CommandParameter="Parameters">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
+                    <TextBlock Text="Parameters" />
+                </StackPanel>
+            </Button>
+            <Button Command="{Binding QuickFilterCommand}" CommandParameter="Firmware">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
+                    <TextBlock Text="Firmware" />
+                </StackPanel>
+            </Button>
+        </WrapPanel>
+        <StackPanel Grid.Row="4" Spacing="6">
+            <WrapPanel ItemSpacing="8" IsVisible="{Binding HasFileLogging}">
+                <ComboBox ItemsSource="{Binding Files}" SelectedItem="{Binding SelectedFile}" MinWidth="320" MaxWidth="520">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="logs:LogStorageItem">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Command="{Binding RefreshFilesCommand}" ToolTip.Tip="Refresh files" AutomationProperties.Name="Refresh files" >
+                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
+                <Button Command="{Binding OpenFileCommand}" ToolTip.Tip="Open historical file" AutomationProperties.Name="Open historical file" >
+                    <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
+                </Button>
+                <Button Command="{Binding ExportFileCommand}" ToolTip.Tip="Export file" AutomationProperties.Name="Export file" >
+                    <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                </Button>
+                <Button Command="{Binding DeleteFileCommand}" ToolTip.Tip="Delete old file" AutomationProperties.Name="Delete old file" >
+                    <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
+                </Button>
+                <Button Command="{Binding OpenFolderCommand}" ToolTip.Tip="Open application log folder" AutomationProperties.Name="Open application log folder" IsVisible="{Binding CanOpenFolder}">
+                    <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
+                </Button>
+            </WrapPanel>
+            <TextBlock Text="{Binding SourceDescription}" />
+            <TextBlock Text="{Binding StatusMessage}" Classes="Warning" />
+            <ProgressBar IsVisible="{Binding IsBusy}" IsIndeterminate="True" Height="3" />
+        </StackPanel>
+        <controls:VirtualizedItemsGrid x:Name="EventsGrid" Grid.Row="5"
+            ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry, Mode=OneWayToSource}"
+            ColumnWidths="190,100,250,*" ShowSearchBar="False" ShowPagination="False" SelectionMode="Single">
+            <controls:VirtualizedItemsGrid.HeaderTemplate>
+                <DataTemplate>
+                    <controls:VirtualizedItemsGridRow>
+                        <TextBlock Grid.Column="0" Text="Timestamp" />
+                        <TextBlock Grid.Column="1" Text="Level" />
+                        <TextBlock Grid.Column="2" Text="Source" />
+                        <TextBlock Grid.Column="3" Text="Message" />
+                    </controls:VirtualizedItemsGridRow>
+                </DataTemplate>
+            </controls:VirtualizedItemsGrid.HeaderTemplate>
+            <controls:VirtualizedItemsGrid.RowTemplate>
+                <DataTemplate x:DataType="logs:ApplicationLogEntry">
+                    <controls:VirtualizedItemsGridRow>
+                        <TextBlock Grid.Column="0" Text="{Binding Timestamp, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss.fff}'}" />
+                        <TextBlock Grid.Column="1" Text="{Binding Level}" />
+                        <TextBlock Grid.Column="2" Text="{Binding SourceContext}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="3" Text="{Binding RenderedMessage}" TextTrimming="CharacterEllipsis" />
+                    </controls:VirtualizedItemsGridRow>
+                </DataTemplate>
+            </controls:VirtualizedItemsGrid.RowTemplate>
+        </controls:VirtualizedItemsGrid>
+        <TextBox Grid.Row="6" Text="{Binding Details, Mode=OneWay}" IsReadOnly="True"
+            AcceptsReturn="True" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+    </Grid>
 </utilities:UserControlViewBase>

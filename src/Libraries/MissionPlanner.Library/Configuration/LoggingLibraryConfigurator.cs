@@ -31,6 +31,8 @@ public static partial class LoggingLibraryConfigurator
     public static IServiceCollection AddSerilog(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddLogStorage();
+        services.TryAddSingleton(provider => new ApplicationLogFileState(configuration, provider.GetService<ILogPathProvider>()));
+        services.TryAddTransient<ApplicationLogHistory>();
         services.TryAddSingleton(_ => new ApplicationLogBuffer(
             configuration.GetValue<int?>("ApplicationLogging:MemoryCapacity") ?? 5000));
         services.TryAddSingleton(_ => new LoggingLevelSwitch(

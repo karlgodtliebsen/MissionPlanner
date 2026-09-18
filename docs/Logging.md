@@ -29,7 +29,7 @@ quota. Browser metadata contains no physical path.
 3. Structured application logging and runtime level control: implemented.
 4. Logs root navigation: implemented.
 5. Telemetry viewer: implemented.
-6. Application viewer: pending.
+6. Application viewer: implemented.
 7. Integration, health, retention, and final verification: pending.
 
 
@@ -71,3 +71,14 @@ Filter by text/hex, message ID/name, system, component, and maximum numeric MAV 
 Optional `.tlog.meta.json` files may contain Started, Ended, Vehicle, and Firmware. Missing or malformed sidecars do not block browsing. Opening a log fills in its actual start and duration. Complete records before a truncated final record remain readable.
 
 Validation: 20 packet-browser, recorder, and replay tests passed, including 100,000 synthetic records, bounded decoding, unknown bytes, filters, cancellation, partial records, and browser import/export without sidecars. Shared UI and browser library builds passed.
+
+
+## Application viewer
+
+Application displays structured current-session events directly from memory. Changes are coalesced into 250 ms UI batches. Pause freezes display only; Resume catches up to the retained buffer. Follow tail scrolls after each batch. Clear view advances a display cursor without clearing the sink or deleting files.
+
+Display filters include minimum/exact level, source category, text, UTC time bounds, and exception-only. Quick filters use SourceContext for MAVLink, Transport, Parameters, and Firmware. Event details include the original template, full exception, and structured properties. Copy and export operate on selected events or the filtered view. Runtime logging level is separate from display filtering, and Verbose has an explicit indicator.
+
+Desktop files can be refreshed, opened, exported, and deleted when old. The historical reader accepts the configured text template, including older rows without SourceContext, and retains the newest bounded window of events. It tolerates malformed trailing lines and retains exception continuation lines. All files in the current rolling interval are conservatively protected from deletion, including size rolls. The storage layer also rejects deletion while a writer owns the file. Browser hides desktop file controls and retains live viewing and explicit view export.
+
+Validation: nine application logging/history tests and two viewer/navigation tests passed. The viewer test emits 10,000 events into a 100-event buffer and verifies batched resume, clear-view isolation, runtime levels, filtering, and hide/reopen behavior. Browser library build passed without warnings.

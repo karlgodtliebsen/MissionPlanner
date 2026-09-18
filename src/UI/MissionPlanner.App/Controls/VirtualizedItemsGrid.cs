@@ -448,6 +448,12 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         UpdateResolvedColumnsWidth();
     }
 
+    /// <summary>Scrolls the virtualized body to its latest rows after a batched update.</summary>
+    public void ScrollToEnd()
+    {
+        _bodyScrollViewer?.ScrollToEnd();
+    }
+
     public void Refresh()
     {
         _searchDebounceTimer.Stop();
