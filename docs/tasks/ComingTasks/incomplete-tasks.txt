@@ -17,8 +17,9 @@ Make layout uniform
 
 *********************************************************************************************
 
-Replace spinner in FullParametersListView with the progress dialogue: done
-Shiftthe  Progress Dialogue in FullParametersListView to use overlay
+Replace spinner in FullParametersListView with the progress dialogue	: done
+Shift the Progress Dialogue in FullParametersListView to use overlay	: done
+
 
 *********************************************************************************************
 
