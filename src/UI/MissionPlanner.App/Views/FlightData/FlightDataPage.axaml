@@ -26,7 +26,7 @@
                     <TabItem Header="Aux Function"><tabs:AuxFunctionTabItemView /></TabItem>
                     <TabItem Header="Scripts"><tabs:ScriptsTabItemView /></TabItem>
                     <TabItem Header="Payload Control"><tabs:PayloadControlTabItemView /></TabItem>
-                    <TabItem Header="Telemetry Logs"><tabs:TelemetryLogsTabItemView /></TabItem>
+
                     <TabItem Header="DataFlash Logs"><tabs:DataFlashLogsTabItemView /></TabItem>
                 </TabControl>
             </Grid>

@@ -23,6 +23,7 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     private IDisposable? vehicleStateSubscription;
     private readonly IVehicleParameterRegistry? parameterRegistry;
     private CancellationTokenSource? operationCancellation;
+    private bool active;
 
 
     /// <summary>Initializes the telemetry-log playback view model.</summary>
@@ -55,6 +56,11 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
+        if (active)
+        {
+            return Task.CompletedTask;
+        }
+        active = true;
         recordingSubscription?.Dispose();
         recordingSubscription = domainEvents?.SubscribeDomainEventAsync<TelemetryRecordingChanged>((change, cancellationToken) =>
         {
@@ -94,6 +100,8 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
 
     private void Deactivate()
     {
+        active = false;
+        operationCancellation?.Cancel();
         recordingSubscription?.Dispose();
         recordingSubscription = null;
         vehicleStateSubscription?.Dispose();

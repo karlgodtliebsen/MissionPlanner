@@ -256,6 +256,15 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ScriptsTabViewModel>();
         services.TryAddTransient<PayloadControlTabViewModel>();
         services.TryAddTransient<TelemetryLogsTabViewModel>();
+        services.TryAddTransient<TelemetryLogsTabItemView>();
+        services.TryAddSingleton<MissionPlanner.App.Views.Logs.LogsNavigationState>();
+        services.TryAddTransient<Func<int, Avalonia.Controls.Control>>(provider => section => section == 1
+            ? provider.GetRequiredService<MissionPlanner.App.Views.Logs.ApplicationLogsView>()
+            : provider.GetRequiredService<TelemetryLogsTabItemView>());
+        services.TryAddTransient<MissionPlanner.App.Views.Logs.LogsViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.Logs.LogsView>();
+        services.TryAddTransient<MissionPlanner.App.Views.Logs.ApplicationLogsViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.Logs.ApplicationLogsView>();
         services.TryAddTransient<DataFlashLogsTabViewModel>();
 
         services.TryAddTransient<AdvancedViewModel>();

@@ -105,6 +105,7 @@ public partial class MainShellViewModel : ObservableObject
             new("Full Parameters List", MissionPlannerRoutes.ConfigFullParameters),
             new("CubeLAN 8 Port Switch", MissionPlannerRoutes.ConfigCubeLan8PortSwitch)
         ]),
+        new("Logs", MissionPlannerRoutes.Logs),
         new("Preferences", MissionPlannerRoutes.Preferences),
         new("Simulation", MissionPlannerRoutes.Simulation, LoadImage("avares://MissionPlanner.App/Resources/Images/light_simulation_icon.png")),
         new("Tutorial", MissionPlannerRoutes.Introduction),

@@ -5,6 +5,8 @@ public static class MissionPlannerRoutes
     public const string DataGridDemo = "DataGridDemo";
     public const string DialogDemo = "DialogDemo";
 
+    /// <summary>Root logging workspace.</summary>
+    public const string Logs = "Logs";
     public const string FlightData = "FlightData";
     public const string FlightPlanner = "FlightPlanner";
 

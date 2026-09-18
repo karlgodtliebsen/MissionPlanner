@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.FlightData;
@@ -30,6 +30,7 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
                 services.GetRequiredService<DialogDemoPage>(),
 
 
+            MissionPlannerRoutes.Logs => services.GetRequiredService<MissionPlanner.App.Views.Logs.LogsView>(),
             MissionPlannerRoutes.FlightData =>
                 services.GetRequiredService<FlightDataPage>(),
 

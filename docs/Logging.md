@@ -27,7 +27,7 @@ quota. Browser metadata contains no physical path.
 1. Storage contracts and platform implementations: implemented.
 2. Classic tlog recorder integration: implemented.
 3. Structured application logging and runtime level control: implemented.
-4. Logs root navigation: pending.
+4. Logs root navigation: implemented.
 5. Telemetry viewer: pending.
 6. Application viewer: pending.
 7. Integration, health, retention, and final verification: pending.
@@ -53,3 +53,10 @@ Serilog still reads appsettings. The File sink's `{ApplicationLogPath}` token re
 `IApplicationLogLevelController` changes the session's default Serilog level. Startup uses `Serilog:MinimumLevel:Default`; category overrides remain authoritative. Normal configuration uses Information with overrides for transport, protocol services, and EventHub. For development Verbose diagnostics, configure both the default and relevant category override to Verbose. The existing text output template remains the historical file format.
 
 Validation: six application logging tests passed, covering concurrent bounded ordering, structured properties/exceptions, subscriber isolation, path resolution, browser exclusion, rolling settings, and runtime levels. Browser library compilation passed.
+
+
+## Logs workspace
+
+Open Logs from the root navigation menu. Telemetry is selected initially; the last selected section is retained for the session. The existing telemetry view moved out of Flight Data without duplication. Only the selected child is attached to the visual tree. Hidden telemetry views unsubscribe, while recording and replay services remain connection/session owned.
+
+Validation: navigation section switching and selection retention passed. Shared desktop UI and browser library compilation passed; an interactive visual check remains part of final integration.
