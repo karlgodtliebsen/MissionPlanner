@@ -26,7 +26,7 @@ quota. Browser metadata contains no physical path.
 
 1. Storage contracts and platform implementations: implemented.
 2. Classic tlog recorder integration: implemented.
-3. Structured application logging and runtime level control: pending.
+3. Structured application logging and runtime level control: implemented.
 4. Logs root navigation: pending.
 5. Telemetry viewer: pending.
 6. Application viewer: pending.
@@ -42,3 +42,14 @@ Each record contains an unsigned 64-bit UTC Unix microsecond timestamp in big-en
 Disconnect and connection disposal drain the queue and close the stream. Storage failures and dropped frames report errors without stopping the vehicle connection. Recordings are never automatically deleted.
 
 Validation: storage tests (16) and recorder/onboard-status tests (18) passed on Windows. The browser library build passed. Binary tests cover v1, v2, signed v2, unknown IDs, timestamp endianness, receive-only capture, and disconnect draining.
+
+
+## Application diagnostics
+
+Serilog still reads appsettings. The File sink's `{ApplicationLogPath}` token resolves to `application/MissionPlanner.NextGen.Application-.log`; Serilog appends the rolling date. Rolling interval, file-size limit, and retention stay in appsettings. Browser configuration removes File sinks and their assembly hints before constructing the logger.
+
+`ApplicationLogBuffer` retains structured events (default 5,000, configurable through `ApplicationLogging:MemoryCapacity`) and discards the oldest when full. Snapshot sequence cursors and coalesced asynchronous notifications support batched viewers. Subscriber exceptions cannot escape into logging.
+
+`IApplicationLogLevelController` changes the session's default Serilog level. Startup uses `Serilog:MinimumLevel:Default`; category overrides remain authoritative. Normal configuration uses Information with overrides for transport, protocol services, and EventHub. For development Verbose diagnostics, configure both the default and relevant category override to Verbose. The existing text output template remains the historical file format.
+
+Validation: six application logging tests passed, covering concurrent bounded ordering, structured properties/exceptions, subscriber isolation, path resolution, browser exclusion, rolling settings, and runtime levels. Browser library compilation passed.

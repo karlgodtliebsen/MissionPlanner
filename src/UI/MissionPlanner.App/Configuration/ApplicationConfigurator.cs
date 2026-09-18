@@ -166,9 +166,7 @@ public static class ApplicationConfigurator
             .AddMapServices(configuration)
             .AddSimulationServices(configuration)
             .AddMavLinkServices(configuration)
-            .AddLogging(configuration, (s, l, c) =>
-                /*Customize logging*/
-                services.AddSerilog(c))
+            .AddLogging(configuration)
             .AddViewsModelsConfiguration();
 
         return services;

@@ -1,60 +1,76 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Library.Logging;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
+using Serilog.Extensions.Logging;
 
 namespace MissionPlanner.Library.Configuration;
 
-/// <summary>
-/// Provides extension methods for configuring logging services in the application.
-/// </summary>
+/// <summary>Configures Serilog from appsettings and adds platform diagnostics services.</summary>
 public static partial class LoggingLibraryConfigurator
 {
-    /// <summary>
-    /// Adds logging configuration to the service collection with optional customization.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="configuration">The application configuration.</param>
-    /// <param name="optionsAction">An optional action to configure logging options.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddLogging(this IServiceCollection services, IConfiguration configuration, Action<IServiceCollection, ILoggingBuilder, IConfiguration>? optionsAction = null)
+    /// <summary>Adds one Serilog provider and optional host customization.</summary>
+    public static IServiceCollection AddLogging(this IServiceCollection services, IConfiguration configuration,
+        Action<IServiceCollection, ILoggingBuilder, IConfiguration>? optionsAction = null)
     {
-        services.AddLogging((ILoggingBuilder loggingBuilder) =>
+        services.AddLogging(builder =>
         {
-            loggingBuilder.ClearProviders();
-            loggingBuilder.SetMinimumLevel(LogLevel.Trace);
-            loggingBuilder.AddFilter("Microsoft", LogLevel.Warning);
-            loggingBuilder.AddFilter("System", LogLevel.Warning);
-            loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
-            loggingBuilder.AddSerilog();
-            services.AddSerilog(configuration);
-            optionsAction?.Invoke(services, loggingBuilder, configuration);
+            builder.ClearProviders();
+            // Serilog, including its runtime switch, owns severity filtering.
+            builder.SetMinimumLevel(LogLevel.Trace);
+            optionsAction?.Invoke(services, builder, configuration);
         });
+        return services.AddSerilog(configuration);
+    }
+
+    /// <summary>Registers the structured buffer, runtime switch, and configuration-driven logger.</summary>
+    public static IServiceCollection AddSerilog(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddLogStorage();
+        services.TryAddSingleton(_ => new ApplicationLogBuffer(
+            configuration.GetValue<int?>("ApplicationLogging:MemoryCapacity") ?? 5000));
+        services.TryAddSingleton(_ => new LoggingLevelSwitch(
+            Enum.TryParse<LogEventLevel>(configuration["Serilog:MinimumLevel:Default"] ??
+                configuration["Serilog:MinimumLevel"], true, out var level) ? level : LogEventLevel.Information));
+        services.TryAddSingleton<IApplicationLogLevelController, ApplicationLogLevelController>();
+        services.TryAddSingleton<Serilog.ILogger>(provider =>
+        {
+            var resolved = ApplicationLogConfiguration.Resolve(configuration,
+                provider.GetService<ILogPathProvider>(), OperatingSystem.IsBrowser());
+            var logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(resolved)
+                .MinimumLevel.ControlledBy(provider.GetRequiredService<LoggingLevelSwitch>())
+                .Enrich.FromLogContext()
+                .WriteTo.Sink(provider.GetRequiredService<ApplicationLogBuffer>())
+                .CreateLogger();
+            Log.Logger = logger;
+            return logger;
+        });
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, ApplicationSerilogProvider>());
         return services;
     }
 
-    /// <summary>
-    /// Adds Serilog logging to the service collection using the specified configuration.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="configuration">The application configuration.</param>
-    /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddSerilog(this IServiceCollection services, IConfiguration configuration)
+    private sealed class ApplicationSerilogProvider : ILoggerProvider, ISupportExternalScope
     {
-        if (OperatingSystem.IsBrowser())
+        private readonly SerilogLoggerProvider provider;
+
+        public ApplicationSerilogProvider(Serilog.ILogger logger)
         {
-            Log.Logger = new LoggerConfiguration().MinimumLevel.Information().WriteTo.Console().CreateLogger();
-            return services;
+            provider = new SerilogLoggerProvider(logger, dispose: false);
         }
 
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Verbose()
-            .Enrich.WithMachineName()
-            .Enrich.WithThreadId()
-            .Enrich.FromLogContext()
-            .ReadFrom.Configuration(configuration)
-            .CreateLogger();
-
-        return services;
+        public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName) => provider.CreateLogger(categoryName);
+        public void Dispose() => provider.Dispose();
+        public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+        {
+            if (provider is ISupportExternalScope external)
+            {
+                external.SetScopeProvider(scopeProvider);
+            }
+        }
     }
 }
