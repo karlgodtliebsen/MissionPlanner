@@ -16,37 +16,58 @@
                           Margin="50,50,50,25"
                           >
 
-    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-          RowSpacing="25">
-        <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  >
-            <Grid RowSpacing="10" RowDefinitions="Auto,Auto,Auto,Auto,*,Auto">
-                <TextBlock Grid.Row="0" Text="Select Firmware" Classes="H3"  HorizontalAlignment="Left"/>
-                <ProgressBar Grid.Row="0" IsIndeterminate="True" IsVisible="{Binding IsRefreshing}"
-                             Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+    <Grid RowDefinitions="Auto,450,Auto"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="10">
 
+        <StackPanel  Orientation="Vertical" Spacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Border HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                <StackPanel  Orientation="Vertical" Spacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 
-                <StackPanel Grid.Row="2"  Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Button ToolTip.Tip="Refresh catalogue data" Command="{Binding RefreshCatalogCommand}"
-                            IsEnabled="{Binding !IsRefreshing}" >
-                        <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
-                    </Button>
-                    <Button ToolTip.Tip="All Version Options"
-                            Command="{Binding ShowAllOptionsCommand}"  >
-                        <avalonia:MaterialIcon Kind="AllInclusiveBoxOutline" Width="30" Height="30" />
-                    </Button>
-                    <Button
-                        ToolTip.Tip="Clear all Settings"
-                        Padding="8,2"
-                        VerticalAlignment="Center"
-                        Command="{Binding ClearCatalogueFirmwareCommand}"  >
-                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
-                    </Button>
+                    <TextBlock  Text="Select Firmware" Classes="H2"  HorizontalAlignment="Left"/>
+                    <ProgressBar  IsIndeterminate="True" IsVisible="{Binding IsRefreshing}"
+                                  Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Button ToolTip.Tip="Refresh catalogue data"
+                                Padding="8,2"
+                                Command="{Binding RefreshCatalogCommand}"
+                                IsEnabled="{Binding !IsRefreshing}" >
+                            <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                        </Button>
+                        <Button ToolTip.Tip="All Version Options"
+                                Padding="8,2"
+                                Command="{Binding ShowAllOptionsCommand}"  >
+                            <avalonia:MaterialIcon Kind="AllInclusiveBoxOutline" Width="30" Height="30" />
+                        </Button>
+                        <Button
+                            ToolTip.Tip="Clear all Settings"
+                            Padding="8,2"
+                            VerticalAlignment="Center"
+                            Command="{Binding ClearCatalogueFirmwareCommand}"  >
+                            <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                        </Button>
+                        <Button
+                            ToolTip.Tip="Close"
+                            Padding="8,2"
+                            Command="{Binding CancelCommand}" >
+                            <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
+                        </Button>
+
+                        <Button
+                            ToolTip.Tip="Use Selected firmware"
+                            Padding="8,2"
+                            Command="{Binding OKCommand}"
+                            >
+                            <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                        </Button>
+                    </StackPanel>
                 </StackPanel>
-                <StackPanel Grid.Row="3"  Orientation="Horizontal"  Spacing="10">
+            </Border>
+            <Border HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch"  Spacing="10">
                     <ComboBox ItemsSource="{Binding Channels}" PlaceholderText="Release"  ToolTip.Tip="Release" SelectedItem="{Binding SelectedChannel}" Width="200"/>
                     <ComboBox ItemsSource="{Binding Versions}" PlaceholderText="Version" ToolTip.Tip="Version" SelectedItem="{Binding SelectedVersion}" Width="200" />
                     <ComboBox ItemsSource="{Binding VehicleTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame/VehicleType" SelectedItem="{Binding SelectedVehicleType}" Width="200" />
@@ -59,10 +80,12 @@
                         <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
                     </Button>
                 </StackPanel>
-                <controls:VirtualizedItemsGrid
-                    Grid.Row="4"
+            </Border>
+        </StackPanel>
 
-                    Height="400"
+        <Border Grid.Row="1" Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  >
+            <Grid >
+                <controls:VirtualizedItemsGrid
                     ItemsSource="{Binding FilteredFirmwareChoices}"
                     ColumnWidths="250,150,150,*,2*,100,*"
                     ColumnSpacing="6"
@@ -115,55 +138,38 @@
                         </DataTemplate>
                     </controls:VirtualizedItemsGrid.RowTemplate>
                 </controls:VirtualizedItemsGrid>
-                <Border Grid.Row="5" Padding="5" Classes="SectionCard">
-                    <Grid
-                        HorizontalAlignment="Center"
-                        IsVisible="{Binding SelectedFirmwareModel.HasSelectedFirmware }"
-                        ColumnDefinitions="200,*"
-                        RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                        RowSpacing="2">
-
-                        <TextBlock Grid.Row="1" Text="Platform:" Classes="H5" />
-                        <SelectableTextBlock Grid.Row="1" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Platform,FallbackValue='', TargetNullValue=''}" />
-
-                        <TextBlock Grid.Row="2"  Classes="H5" Text="Firmware board ID:" />
-                        <SelectableTextBlock Grid.Row="2" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.BoardId,FallbackValue='', TargetNullValue=''}" />
-
-                        <TextBlock Grid.Row="3" Text="Version:" />
-                        <SelectableTextBlock Grid.Row="3" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Version,FallbackValue='', TargetNullValue=''}" />
-
-                        <TextBlock Grid.Row="4"  Classes="H5" Text="Channel:" />
-                        <SelectableTextBlock Grid.Row="4" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Channel,FallbackValue='', TargetNullValue=''}" />
-
-                        <TextBlock Grid.Row="5"  Classes="H5" Text="Vehicle:" />
-                        <SelectableTextBlock Grid.Row="5" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.VehicleType,FallbackValue='', TargetNullValue=''}" />
-
-                        <TextBlock Grid.Row="6"  Classes="H5" Text="Build variant:" />
-                        <SelectableTextBlock Grid.Row="6" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.BuildVariant,FallbackValue='', TargetNullValue=''}" />
-
-                        <TextBlock Grid.Row="7"  Classes="H5" Text="Manufacturer:" />
-                        <SelectableTextBlock Grid.Row="7" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Manufacturer,FallbackValue='', TargetNullValue=''}" />
-                    </Grid>
-                </Border>
             </Grid>
         </Border>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button
-                ToolTip.Tip="Close"
-                Padding="5"
-                Command="{Binding CancelCommand}" >
-                <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
-            </Button>
+        <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  IsVisible="{Binding SelectedFirmwareModel.HasSelectedFirmware }">
+            <Grid
+                HorizontalAlignment="Center"
+                
+                ColumnDefinitions="200,*"
+                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                RowSpacing="5">
 
-            <Button
-                ToolTip.Tip="Use Selected firmware"
-                Padding="5"
-                Command="{Binding OKCommand}"
-                >
-                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
-            </Button>
-        </StackPanel>
+                <TextBlock Grid.Row="0" Text="Platform:" Classes="H5" />
+                <SelectableTextBlock Grid.Row="0" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Platform,FallbackValue='', TargetNullValue=''}" />
 
+                <TextBlock Grid.Row="1"  Classes="H5" Text="Firmware board ID:" />
+                <SelectableTextBlock Grid.Row="1" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.BoardId,FallbackValue='', TargetNullValue=''}" />
+
+                <TextBlock Grid.Row="2" Text="Version:" />
+                <SelectableTextBlock Grid.Row="2" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Version,FallbackValue='', TargetNullValue=''}" />
+
+                <TextBlock Grid.Row="3"  Classes="H5" Text="Channel:" />
+                <SelectableTextBlock Grid.Row="3" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Channel,FallbackValue='', TargetNullValue=''}" />
+
+                <TextBlock Grid.Row="4"  Classes="H5" Text="Vehicle:" />
+                <SelectableTextBlock Grid.Row="4" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.VehicleType,FallbackValue='', TargetNullValue=''}" />
+
+                <TextBlock Grid.Row="5"  Classes="H5" Text="Build variant:" />
+                <SelectableTextBlock Grid.Row="5" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.BuildVariant,FallbackValue='', TargetNullValue=''}" />
+
+                <TextBlock Grid.Row="6"  Classes="H5" Text="Manufacturer:" />
+                <SelectableTextBlock Grid.Row="6" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Manufacturer,FallbackValue='', TargetNullValue=''}" />
+            </Grid>
+        </Border>
     </Grid>
 </view:UserControlViewBase>

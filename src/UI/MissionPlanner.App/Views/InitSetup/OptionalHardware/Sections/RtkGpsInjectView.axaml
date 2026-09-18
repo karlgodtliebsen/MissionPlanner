@@ -18,7 +18,7 @@
                       HorizontalContentAlignment="Right"
                       />
             <TextBox PlaceholderText="Serial port or caster host" Text="{Binding Endpoint}"  HorizontalContentAlignment="Right"/>
-            <NumericUpDown ShowButtonSpinner="False" PlaceholderText="Baud or caster port" Value="{Binding PortOrBaud}" Minimum="0" FormatString="F0" />
+            <NumericUpDown ShowButtonSpinner="False" PlaceholderText="Baud or caster port" Value="{Binding PortOrBaud}" Minimum="0" FormatString="F0"  HorizontalContentAlignment="Right"/>
             <TextBox PlaceholderText="NTRIP mount point" Text="{Binding MountPoint}" HorizontalContentAlignment="Right" />
             <TextBox PlaceholderText="NTRIP username" Text="{Binding Username}" HorizontalContentAlignment="Right" />
             <TextBox PlaceholderText="NTRIP password" Text="{Binding Password}" PasswordChar="●" HorizontalContentAlignment="Right" />
