@@ -202,6 +202,7 @@ public sealed class FirmwarePanelViewModelTests
         services.AddSingleton(Substitute.For<IFirmwareSerialDeviceCatalog>());
         services.AddSingleton<IFirmwarePageModeResolver, FirmwarePageModeResolver>();
         var active = Substitute.For<IActiveVehicleContext>();
+        active.Current.Returns(_ => new MissionPlanner.Core.Vehicles.Models.ActiveVehicleSnapshot(active.VehicleId, active.State));
         active.IsOnline.Returns(true); // Prevent hardware/catalogue I/O during activation.
         services.AddSingleton(active);
         services.AddSingleton(Substitute.For<IUserConfirmationService>());

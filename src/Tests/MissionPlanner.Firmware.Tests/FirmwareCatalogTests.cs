@@ -34,6 +34,50 @@ public sealed class FirmwareCatalogTests
         act.Should().Throw<FirmwareManifestException>();
     }
 
+    /// <summary>Manifest MAV types normalize to the existing family-based catalogue filter.</summary>
+    [Theory]
+    [InlineData("QUADROTOR", FirmwareVehicleType.Copter)]
+    [InlineData("HEXAROTOR", FirmwareVehicleType.Copter)]
+    [InlineData("OCTOROTOR", FirmwareVehicleType.Copter)]
+    [InlineData("TRICOPTER", FirmwareVehicleType.Copter)]
+    [InlineData("FIXED_WING", FirmwareVehicleType.Plane)]
+    [InlineData("GROUND_ROVER", FirmwareVehicleType.Rover)]
+    [InlineData("SURFACE_BOAT", FirmwareVehicleType.Rover)]
+    [InlineData("SUBMARINE", FirmwareVehicleType.Sub)]
+    [InlineData("AIRSHIP", FirmwareVehicleType.Blimp)]
+    [InlineData("HELICOPTER", FirmwareVehicleType.Helicopter)]
+    [InlineData("ANTENNA_TRACKER", FirmwareVehicleType.AntennaTracker)]
+    [InlineData(" quadrotor ", FirmwareVehicleType.Copter)]
+    [InlineData("FUTURE_TYPE", FirmwareVehicleType.Unknown)]
+    public void ParserNormalizesMavTypeWithoutReplacingVehicleFamily(string mavType, FirmwareVehicleType expected)
+    {
+        var json = $$"""
+            {"firmware":[{"board_id":50,"platform":"Board","vehicletype":"Copter","mav-type":"{{mavType}}","format":"apj","url":"https://example.test/fw.apj"}]}
+            """;
+
+        var entry = CreateParser().Parse(System.Text.Encoding.UTF8.GetBytes(json)).Should().ContainSingle().Subject;
+
+        entry.Target.VehicleType.Should().Be(FirmwareVehicleType.Copter);
+        entry.Target.MavType.Should().Be(expected);
+    }
+
+    /// <summary>Legacy entries without a MAV type retain their declared family.</summary>
+    [Theory]
+    [InlineData("")]
+    [InlineData(", \"mav-type\": null")]
+    [InlineData(", \"mav-type\": \"\"")]
+    [InlineData(", \"mav-type\": \" \"")]
+    public void ParserUsesVehicleFamilyWhenMavTypeIsMissing(string mavTypeProperty)
+    {
+        var json = $$"""
+            {"firmware":[{"board_id":50,"platform":"Board","vehicletype":"Plane"{{mavTypeProperty}},"format":"apj","url":"https://example.test/fw.apj"}]}
+            """;
+
+        var entry = CreateParser().Parse(System.Text.Encoding.UTF8.GetBytes(json)).Should().ContainSingle().Subject;
+
+        entry.Target.MavType.Should().Be(FirmwareVehicleType.Plane);
+    }
+
     [Fact]
     public void ParserRejectsCorruptGzip()
     {

@@ -114,7 +114,11 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
         Version.TryParse(versionText.Split('-', '+')[0], out var semantic);
         var usb = ParseUsb(item);
         var bootloaders = ParseStrings(item, "bootloader_str");
-        var target = new FirmwareBoardTarget(boardId, platform, ParseVehicle(GetString(item, "vehicletype")), ParseVehicle(GetString(item, "mav-type")), usb, bootloaders);
+        var vehicleType = ParseVehicle(GetString(item, "vehicletype"));
+        // Older manifests omit mav-type; retain the declared family for filtering and deduplication.
+        var mavTypeText = GetString(item, "mav-type");
+        var mavType = string.IsNullOrWhiteSpace(mavTypeText) ? vehicleType : ParseVehicle(mavTypeText);
+        var target = new FirmwareBoardTarget(boardId, platform, vehicleType, mavType, usb, bootloaders);
         var format = ParseFormat(GetString(item, "format"), url);
         if (format == FirmwareImageFormat.Unknown)
         {
@@ -282,15 +286,15 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
 
     private static FirmwareVehicleType ParseVehicle(string? value)
     {
-        return value?.Replace("-", string.Empty).Replace("_", string.Empty).ToUpperInvariant() switch
+        return value?.Trim().Replace("-", string.Empty).Replace("_", string.Empty).ToUpperInvariant() switch
         {
-            "COPTER" => FirmwareVehicleType.Copter,
+            "COPTER" or "QUADROTOR" or "HEXAROTOR" or "OCTOROTOR" or "TRICOPTER" => FirmwareVehicleType.Copter,
             "HELICOPTER" or "HELI" => FirmwareVehicleType.Helicopter,
-            "PLANE" => FirmwareVehicleType.Plane,
-            "ROVER" => FirmwareVehicleType.Rover,
-            "SUB" => FirmwareVehicleType.Sub,
+            "PLANE" or "FIXEDWING" => FirmwareVehicleType.Plane,
+            "ROVER" or "GROUNDROVER" or "SURFACEBOAT" => FirmwareVehicleType.Rover,
+            "SUB" or "SUBMARINE" => FirmwareVehicleType.Sub,
             "ANTENNATRACKER" => FirmwareVehicleType.AntennaTracker,
-            "BLIMP" => FirmwareVehicleType.Blimp,
+            "BLIMP" or "AIRSHIP" => FirmwareVehicleType.Blimp,
             var _ => FirmwareVehicleType.Unknown
         };
     }

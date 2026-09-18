@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,7 +69,8 @@ public sealed class ParameterNotificationThreadingTests
         session.IsDirty.Returns(_ => field.IsModified);
         using var model = new FullParametersListTabViewModel(
             Substitute.For<IVehicleConnectionSession>(), Substitute.For<IActiveVehicleContext>(),
-            Substitute.For<IParameterEditSessionFactory>(), Substitute.For<IDialogService>(),
+            Substitute.For<IParameterEditSessionFactory>(), Substitute.For<ITextClipboardService>(),
+            Substitute.For<IDialogService>(),
             Substitute.For<IDomainFactory>(), null!, Substitute.For<IUserConfirmationService>(),
             Substitute.For<IParameterProfileRepository>(), Substitute.For<IParameterProfileService>(),
             Substitute.For<IVehicleParameterLoadStatusContext>(), events,

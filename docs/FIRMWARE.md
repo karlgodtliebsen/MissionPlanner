@@ -50,6 +50,8 @@ sequenceDiagram
 
 ## Catalogue and package handling
 
+Catalogue variant filters normalize manifest MAV types (for example, QUADROTOR to Copter and FIXED_WING to Plane) into the existing vehicle-family model. An omitted, null, or blank mav-type falls back to the declared vehicletype, preserving legacy release filtering and mirror deduplication. An explicit unrecognized MAV type remains Unknown; it is not silently assigned the declared family.
+
 The ArduPilot manifest is retrieved over HTTPS with separate compressed-download and decompressed-document bounds, parsed into normalized data, cached with validators, and filterable by vehicle, release channel, board ID, and USB identity. Current official entries expose decoded application size as `image_size`; encoded artifact length is optional and is enforced exactly only when supplied. Stale cached data is distinguishable from a fresh response. Catalogue choices expose the complete matching hardware-target set and search platform, manufacturer/brand, and board ID instead of collapsing a vehicle family to its first entry. Automatic target selection requires one unambiguous protocol-reported bootloader board ID match. USB VID/PID and product aliases are hints only, even when only one catalogue entry matches; otherwise selection remains explicit and labelled with its evidence.
 
 APJ and PX4 GCS packages are JSON containers. Parsing checks their magic, declared and configured size limits, compressed image length, board metadata, optional external image, revision requirements, and checksum inputs before device access. Downloads use a bounded temporary file, validate length and optional SHA-256, parse it, then move it atomically into cache. Temporary and selected-file streams are disposed on every path.
