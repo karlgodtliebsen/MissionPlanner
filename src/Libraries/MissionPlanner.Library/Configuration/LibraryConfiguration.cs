@@ -19,6 +19,7 @@ public static class LibraryConfiguration
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddLibraryServices(this IServiceCollection services)
     {
+        services.AddLogStorage();
         services.TryAddSingleton<IDomainFactory, DomainFactory>();
         services.TryAddSingleton<IFactory, ActivatorFactory>();
         services.TryAddSingleton<IServiceFactory, ServiceFactory>();
