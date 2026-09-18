@@ -207,8 +207,13 @@
                                         <TextBlock Text="Enter STM32 DFU using the BOOT button" Classes="H3" />
                                         <TextBlock Text="Firmware validation checks the file. Target confirmation and flashing require a detected STM32 DFU device. For a controller requiring manual entry, disconnect USB, hold BOOT while reconnecting USB, then release BOOT. Follow the board's BOOT/RESET instructions if different. Your firmware selection will be kept."
                                                    TextWrapping="Wrap" />
-                                        <Button Content="Enter DFU using BOOT button" ToolTip.Tip="Enter DFU using BOOT button" Command="{Binding EnterManualDfuCommand}"
-                                                HorizontalAlignment="Center" />
+                                        <Button ToolTip.Tip="Enter DFU using BOOT button" Command="{Binding EnterManualDfuCommand}"
+                                                HorizontalAlignment="Center" AutomationProperties.Name="Enter DFU using BOOT button">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <avalonia:MaterialIcon Kind="Usb" Classes="ActionIcon" Width="20" Height="20" />
+                                                <TextBlock Text="Enter DFU using BOOT button" VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Button>
                                     </StackPanel>
                                 </Border>
                                 <Border Classes="SectionCard" Padding="16"

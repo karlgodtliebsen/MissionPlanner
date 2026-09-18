@@ -1,4 +1,4 @@
-<utilities:TabItemViewBase x:TypeArguments="tabs:ActionsTabViewModel"
+﻿<utilities:TabItemViewBase x:TypeArguments="tabs:ActionsTabViewModel"
                             xmlns="https://github.com/avaloniaui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
@@ -22,11 +22,36 @@
                        FontSize="11" TextWrapping="Wrap" />
 
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-                <Button  Grid.Row="0" Grid.Column="0" Content="Arm" ToolTip.Tip="Arm" Command="{Binding ArmCommand}" IsEnabled="{Binding CanArm}" />
-                <Button  Grid.Row="0" Grid.Column="1" Content="Disarm" ToolTip.Tip="Disarm" Command="{Binding DisarmCommand}" IsEnabled="{Binding CanDisarm}" />
-                <Button  Grid.Row="1" Grid.Column="0" Content="RTL" ToolTip.Tip="RTL" Command="{Binding ReturnToLaunchCommand}" IsEnabled="{Binding CanReturnToLaunch}" />
-                <Button  Grid.Row="1" Grid.Column="1" Content="Loiter / Hold" ToolTip.Tip="Loiter / Hold" Command="{Binding HoldCommand}" IsEnabled="{Binding CanHoldPosition}" />
-                <Button  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Content="Land" ToolTip.Tip="Land" Command="{Binding LandCommand}" IsEnabled="{Binding CanLand}" />
+                <Button  Grid.Row="0" Grid.Column="0" ToolTip.Tip="Arm" Command="{Binding ArmCommand}" IsEnabled="{Binding CanArm}" AutomationProperties.Name="Arm">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <mdi:MaterialIcon Kind="ShieldCheck" Classes="ActionIcon" Width="20" Height="20" />
+                        <TextBlock Text="Arm" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button  Grid.Row="0" Grid.Column="1" ToolTip.Tip="Disarm" Command="{Binding DisarmCommand}" IsEnabled="{Binding CanDisarm}" AutomationProperties.Name="Disarm">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <mdi:MaterialIcon Kind="ShieldOff" Classes="ActionIcon" Width="20" Height="20" />
+                        <TextBlock Text="Disarm" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button  Grid.Row="1" Grid.Column="0" ToolTip.Tip="RTL" Command="{Binding ReturnToLaunchCommand}" IsEnabled="{Binding CanReturnToLaunch}" AutomationProperties.Name="RTL">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <mdi:MaterialIcon Kind="HomeMapMarker" Classes="ActionIcon" Width="20" Height="20" />
+                        <TextBlock Text="RTL" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button  Grid.Row="1" Grid.Column="1" ToolTip.Tip="Loiter / Hold" Command="{Binding HoldCommand}" IsEnabled="{Binding CanHoldPosition}" AutomationProperties.Name="Loiter / Hold">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <mdi:MaterialIcon Kind="Pause" Classes="ActionIcon" Width="20" Height="20" />
+                        <TextBlock Text="Loiter / Hold" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
+                <Button  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" ToolTip.Tip="Land" Command="{Binding LandCommand}" IsEnabled="{Binding CanLand}" AutomationProperties.Name="Land">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <mdi:MaterialIcon Kind="AirplaneLanding" Classes="ActionIcon" Width="20" Height="20" />
+                        <TextBlock Text="Land" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
             </Grid>
 
             <Label Content="Flight mode" FontWeight="Bold" />
@@ -35,7 +60,12 @@
                         ItemsSource="{Binding Modes}"
                         SelectedItem="{Binding SelectedMode}"
                         DisplayMemberBinding="{Binding Name}" />
-                <Button  Grid.Column="1" Content="Set Mode" ToolTip.Tip="Set Mode" Command="{Binding SetModeCommand}" IsEnabled="{Binding CanTransmit}" />
+                <Button  Grid.Column="1" ToolTip.Tip="Set Mode" Command="{Binding SetModeCommand}" IsEnabled="{Binding CanTransmit}" AutomationProperties.Name="Set Mode">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <mdi:MaterialIcon Kind="Tune" Classes="ActionIcon" Width="20" Height="20" />
+                        <TextBlock Text="Set Mode" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
             </Grid>
 
             <Label Content="Takeoff altitude (m)" FontWeight="Bold" />
@@ -47,7 +77,12 @@
                     FormatString="F1"
                     HorizontalAlignment="Stretch" />
 
-                <Button  Grid.Column="1" Content="Takeoff" ToolTip.Tip="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" />
+                <Button  Grid.Column="1" ToolTip.Tip="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" AutomationProperties.Name="Takeoff">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <mdi:MaterialIcon Kind="AirplaneTakeoff" Classes="ActionIcon" Width="20" Height="20" />
+                        <TextBlock Text="Takeoff" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
             </Grid>
 
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
@@ -58,10 +93,14 @@
                     <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" />
                 </Button>
                 <Button Grid.Row="1" Grid.ColumnSpan="2"
-                        Content="{Binding AltitudeZeroActionText}"
                         Command="{Binding ToggleAltitudeZeroCommand}"
                         IsEnabled="{Binding CanToggleAltitudeZero}"
-                        ToolTip.Tip="Sets the current displayed relative altitude to 0. Vehicle HOME is not changed." />
+                        ToolTip.Tip="Sets the current displayed relative altitude to 0. Vehicle HOME is not changed." AutomationProperties.Name="{Binding AltitudeZeroActionText}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <mdi:MaterialIcon Kind="CrosshairsGps" Classes="ActionIcon" Width="20" Height="20" />
+                        <TextBlock Text="{Binding AltitudeZeroActionText}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Button>
             </Grid>
 
             <Border Padding="10" Classes="SectionCard" >
@@ -74,25 +113,45 @@
                                                FormatString="F0" />
 
 
-                        <Button Grid.Column="1" Content="Set Current WP" ToolTip.Tip="Set Current WP"
+                        <Button Grid.Column="1" ToolTip.Tip="Set Current WP"
                                 Command="{Binding SetCurrentMissionItemCommand}"
-                                IsEnabled="{Binding CanSetCurrentMissionItem}" />
+                                IsEnabled="{Binding CanSetCurrentMissionItem}" AutomationProperties.Name="Set Current WP">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <mdi:MaterialIcon Kind="MapMarker" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Set Current WP" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </Grid>
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                        <Button Grid.Column="0" Content="Restart Mission"
+                        <Button Grid.Column="0"
                                 Command="{Binding RestartMissionCommand}"
                                 IsEnabled="{Binding CanRestartMission}"
-                                ToolTip.Tip="Resets to the first item and resets mission state/jump counters. Does not arm or change flight mode." />
-                        <Button Grid.Column="1" Content="Resume Mission"
+                                ToolTip.Tip="Resets to the first item and resets mission state/jump counters. Does not arm or change flight mode." AutomationProperties.Name="Restart Mission">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Restart Mission" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Grid.Column="1"
                                 Command="{Binding ResumeMissionCommand}"
                                 IsEnabled="{Binding CanResumeMission}"
-                                ToolTip.Tip="Continues a paused onboard mission at its current position. Does not rewrite, arm, take off, or change mode." />
+                                ToolTip.Tip="Continues a paused onboard mission at its current position. Does not rewrite, arm, take off, or change mode." AutomationProperties.Name="Resume Mission">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Resume Mission" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </Grid>
-                    <Button Content="Abort Landing"
+                    <Button
                             IsVisible="{Binding IsAbortLandingVisible}"
                             IsEnabled="{Binding CanAbortLanding}"
                             Command="{Binding AbortLandingCommand}"
-                            ToolTip.Tip="{Binding AbortLandingReason}" />
+                            ToolTip.Tip="{Binding AbortLandingReason}" AutomationProperties.Name="Abort Landing">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <mdi:MaterialIcon Kind="AirplaneTakeoff" Classes="ActionIcon" Width="20" Height="20" />
+                            <TextBlock Text="Abort Landing" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Border>
 
@@ -118,8 +177,13 @@
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <NumericUpDown Grid.Column="0" Value="{Binding LoiterRadiusMagnitudeMeters, Mode=TwoWay}" FormatString="F1" />
-                        <Button Grid.Column="1" Content="Set Loiter Radius" Command="{Binding SetLoiterRadiusCommand}" IsEnabled="{Binding CanSetLoiterRadius}"
-                                ToolTip.Tip="{Binding LoiterRadiusReason}" />
+                        <Button Grid.Column="1" Command="{Binding SetLoiterRadiusCommand}" IsEnabled="{Binding CanSetLoiterRadius}"
+                                ToolTip.Tip="{Binding LoiterRadiusReason}" AutomationProperties.Name="Set Loiter Radius">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <mdi:MaterialIcon Kind="CircleExpand" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Set Loiter Radius" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </Grid>
                     <Label Content="Persistent vehicle parameter. Existing loiter direction is preserved." FontSize="10" />
                 </StackPanel>

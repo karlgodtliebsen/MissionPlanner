@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase
+﻿<utilities:UserControlViewBase
     x:TypeArguments="sections:JoystickViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -28,6 +28,11 @@
         <StackPanel Orientation="Horizontal">
             <CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Content="Vehicle MANUAL_CONTROL output (disabled by default)" />
         </StackPanel>
-        <Button Content="Disable and release vehicle control" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" />
+        <Button ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
+                <TextBlock Text="Disable and release vehicle control" VerticalAlignment="Center" />
+            </StackPanel>
+        </Button>
     </StackPanel>
 </utilities:UserControlViewBase>

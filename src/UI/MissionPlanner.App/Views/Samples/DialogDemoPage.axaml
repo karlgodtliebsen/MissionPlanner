@@ -1,4 +1,4 @@
-<utilities:NavigationViewBase x:TypeArguments="samples:DialogDemoViewModel" xmlns="https://github.com/avaloniaui"
+﻿<utilities:NavigationViewBase x:TypeArguments="samples:DialogDemoViewModel" xmlns="https://github.com/avaloniaui"
                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -51,116 +51,160 @@
                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                 >
                         <Button
-                                    Width="200"
-                                    Content="Connect" ToolTip.Tip="Connect"
+                                    Width="200" ToolTip.Tip="Connect"
                                     Classes="Secondary"
                                     Padding="5"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    Command="{Binding ShowConnectCommand}" >
-
-                                </Button>
-
-                        <Button
-                            Width="200"
-                            Content="Error" ToolTip.Tip="Error"
-                            Classes="Secondary"
-                            Padding="5"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Command="{Binding ShowErrorCommand}" >
-
+                                    Command="{Binding ShowConnectCommand}" AutomationProperties.Name="Connect">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="PowerPlug" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Connect" VerticalAlignment="Center" />
+                            </StackPanel>
                         </Button>
 
                         <Button
-                            Width="200"
-                            Content="Confirm" ToolTip.Tip="Confirm"
+                            Width="200" ToolTip.Tip="Error"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowConfirmCommand}" />
+                            Command="{Binding ShowErrorCommand}" AutomationProperties.Name="Error">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="AlertCircleOutline" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Error" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+
                         <Button
-                            Width="200"
-                            Content="ShowConfirm1" ToolTip.Tip="ShowConfirm1"
+                            Width="200" ToolTip.Tip="Confirm"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowConfirm1Command}" />
+                            Command="{Binding ShowConfirmCommand}" AutomationProperties.Name="Confirm">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Confirm" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button
+                            Width="200" ToolTip.Tip="ShowConfirm1"
+                            Classes="Secondary"
+                            Padding="5"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Command="{Binding ShowConfirm1Command}" AutomationProperties.Name="ShowConfirm1">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="ShowConfirm1" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
 
                         <Button
-                            Width="200"
-                            Content="ShowStringPrompt" ToolTip.Tip="ShowStringPrompt"
+                            Width="200" ToolTip.Tip="ShowStringPrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowStringPromptCommand}" />
+                            Command="{Binding ShowStringPromptCommand}" AutomationProperties.Name="ShowStringPrompt">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="FormTextbox" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="ShowStringPrompt" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
                         <Button
-                            Width="200"
-                            Content="ShowStringPrompt2" ToolTip.Tip="ShowStringPrompt2"
+                            Width="200" ToolTip.Tip="ShowStringPrompt2"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowStringPrompt2Command}" />
+                            Command="{Binding ShowStringPrompt2Command}" AutomationProperties.Name="ShowStringPrompt2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="FormTextbox" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="ShowStringPrompt2" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
 
                         <Button
-                            Width="200"
-                            Content="ShowIntPrompt" ToolTip.Tip="ShowIntPrompt"
+                            Width="200" ToolTip.Tip="ShowIntPrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowIntPromptCommand}" />
+                            Command="{Binding ShowIntPromptCommand}" AutomationProperties.Name="ShowIntPrompt">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="Numeric" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="ShowIntPrompt" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
                         <Button
-                            Width="200"
-                            Content="ShowIntPrompt2" ToolTip.Tip="ShowIntPrompt2"
+                            Width="200" ToolTip.Tip="ShowIntPrompt2"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowIntPrompt2Command}" />
+                            Command="{Binding ShowIntPrompt2Command}" AutomationProperties.Name="ShowIntPrompt2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="Numeric" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="ShowIntPrompt2" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
                         <Button
-                            Width="200"
-                            Content="ShowDoublePrompt" ToolTip.Tip="ShowDoublePrompt"
+                            Width="200" ToolTip.Tip="ShowDoublePrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowDoublePromptCommand}" />
+                            Command="{Binding ShowDoublePromptCommand}" AutomationProperties.Name="ShowDoublePrompt">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="Numeric" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="ShowDoublePrompt" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
                         <Button
-                            Width="200"
-                            Content="ShowDoublePrompt2" ToolTip.Tip="ShowDoublePrompt2"
+                            Width="200" ToolTip.Tip="ShowDoublePrompt2"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowDoublePrompt2Command}" />
+                            Command="{Binding ShowDoublePrompt2Command}" AutomationProperties.Name="ShowDoublePrompt2">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="Numeric" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="ShowDoublePrompt2" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                         <Button
-                            Width="200"
-                            Content="ShowChoosePrompt" ToolTip.Tip="ShowChoosePrompt"
+                            Width="200" ToolTip.Tip="ShowChoosePrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowChoosePromptCommand}" />
+                            Command="{Binding ShowChoosePromptCommand}" AutomationProperties.Name="ShowChoosePrompt">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="ShowChoosePrompt" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
                         <Button
-                            Width="200"
-                            Content="ShowPhrasePrompt" ToolTip.Tip="ShowPhrasePrompt"
+                            Width="200" ToolTip.Tip="ShowPhrasePrompt"
                             Classes="Secondary"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            Command="{Binding ShowPhrasePromptCommand}" />
+                            Command="{Binding ShowPhrasePromptCommand}" AutomationProperties.Name="ShowPhrasePrompt">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="TextBoxOutline" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="ShowPhrasePrompt" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
 
                     </StackPanel>
                 </Border>

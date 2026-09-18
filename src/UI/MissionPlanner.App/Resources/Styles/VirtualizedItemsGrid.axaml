@@ -1,4 +1,4 @@
-<ResourceDictionary
+﻿<ResourceDictionary
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
@@ -120,8 +120,12 @@
                               VerticalAlignment="Center"
                               >
 
-                            <Button x:Name="PART_FirstPageButton" Grid.Column="0" Content="⏮" ToolTip.Tip="First page" Padding="8,3" />
-                            <Button x:Name="PART_PreviousPageButton" Grid.Column="1" Content="◀" ToolTip.Tip="Previous page" Padding="8,3" />
+                            <Button x:Name="PART_FirstPageButton" Grid.Column="0" ToolTip.Tip="First page" Padding="8,3" AutomationProperties.Name="First page">
+                                <avalonia:MaterialIcon Kind="PageFirst" Classes="ActionIcon" Width="20" Height="20" />
+                            </Button>
+                            <Button x:Name="PART_PreviousPageButton" Grid.Column="1" ToolTip.Tip="Previous page" Padding="8,3" AutomationProperties.Name="Previous page">
+                                <avalonia:MaterialIcon Kind="ChevronLeft" Classes="ActionIcon" Width="20" Height="20" />
+                            </Button>
 
                             <TextBlock Grid.Column="2" Text="Page" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="3"
@@ -134,8 +138,12 @@
                                        FontWeight="Bold"
                                        VerticalAlignment="Center" />
 
-                            <Button x:Name="PART_NextPageButton" Grid.Column="6" Content="▶" ToolTip.Tip="Next page" Padding="8,3" />
-                            <Button x:Name="PART_LastPageButton" Grid.Column="7" Content="⏭" ToolTip.Tip="Last page" Padding="8,3" />
+                            <Button x:Name="PART_NextPageButton" Grid.Column="6" ToolTip.Tip="Next page" Padding="8,3" AutomationProperties.Name="Next page">
+                                <avalonia:MaterialIcon Kind="ChevronRight" Classes="ActionIcon" Width="20" Height="20" />
+                            </Button>
+                            <Button x:Name="PART_LastPageButton" Grid.Column="7" ToolTip.Tip="Last page" Padding="8,3" AutomationProperties.Name="Last page">
+                                <avalonia:MaterialIcon Kind="PageLast" Classes="ActionIcon" Width="20" Height="20" />
+                            </Button>
 
                             <TextBlock Grid.Column="8"
                                        Margin="12,0,0,0"

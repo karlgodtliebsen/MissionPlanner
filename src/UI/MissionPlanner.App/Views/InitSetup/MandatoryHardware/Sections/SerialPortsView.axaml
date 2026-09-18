@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
     xmlns:models="clr-namespace:MissionPlanner.App.Models"
@@ -61,8 +62,18 @@
                                Classes="H5" TextWrapping="Wrap" />
 
                     <WrapPanel Orientation="Horizontal" ItemSpacing="10">
-                        <Button Content="Reload reported parameters" Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}"  />
-                        <Button Content="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}"  />
+                        <Button Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" AutomationProperties.Name="Reload reported parameters">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Reload reported parameters" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <mdi:MaterialIcon Kind="Check" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Apply changes" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                     </WrapPanel>
                 </StackPanel>
             </Border>

@@ -33,8 +33,13 @@
                                          IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}" Classes="Danger" TextWrapping="Wrap" />
 
                     <WrapPanel Orientation="Horizontal" ItemSpacing="10">
-                        <Button Content="Start calibration" ToolTip.Tip="Start calibration"
-                                Command="{Binding StartCommand}"  />
+                        <Button ToolTip.Tip="Start calibration"
+                                Command="{Binding StartCommand}" AutomationProperties.Name="Start calibration">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
+                                <TextBlock Text="Start calibration" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
                         <Button ToolTip.Tip="Finish endpoint capture"
                                 Command="{Binding FinishCaptureCommand}"  AutomationProperties.Name="Finish endpoint capture">
                             <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
