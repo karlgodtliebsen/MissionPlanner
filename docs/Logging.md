@@ -28,7 +28,7 @@ quota. Browser metadata contains no physical path.
 2. Classic tlog recorder integration: implemented.
 3. Structured application logging and runtime level control: implemented.
 4. Logs root navigation: implemented.
-5. Telemetry viewer: pending.
+5. Telemetry viewer: implemented.
 6. Application viewer: pending.
 7. Integration, health, retention, and final verification: pending.
 
@@ -60,3 +60,14 @@ Validation: six application logging tests passed, covering concurrent bounded or
 Open Logs from the root navigation menu. Telemetry is selected initially; the last selected section is retained for the session. The existing telemetry view moved out of Flight Data without duplication. Only the selected child is attached to the visual tree. Hidden telemetry views unsubscribe, while recording and replay services remain connection/session owned.
 
 Validation: navigation section switching and selection retention passed. Shared desktop UI and browser library compilation passed; an interactive visual check remains part of final integration.
+
+
+## Telemetry viewer
+
+The Telemetry section lists stored recordings newest first and supports refresh, packet inspection, replay, import, export, delete, and desktop folder opening. Imports copy through the storage boundary and remove incomplete imports on failure. Packet inspection indexes timestamps and offsets, then decodes at most 200 rows per page (hard service limit 256) through the live decoder registry. The compact index grows with packet count; decoded messages and raw rows do not accumulate for the whole file.
+
+Filter by text/hex, message ID/name, system, component, and maximum numeric MAV severity. Timestamp jumps use binary search. Follow replay advances packet pages with the replay clock. Replay retains its isolated pipeline and outbound-transmission guard. ACK rows expose command IDs for correlation; receive-only tlogs cannot establish a complete request/response history when requests were transmitted locally.
+
+Optional `.tlog.meta.json` files may contain Started, Ended, Vehicle, and Firmware. Missing or malformed sidecars do not block browsing. Opening a log fills in its actual start and duration. Complete records before a truncated final record remain readable.
+
+Validation: 20 packet-browser, recorder, and replay tests passed, including 100,000 synthetic records, bounded decoding, unknown bytes, filters, cancellation, partial records, and browser import/export without sidecars. Shared UI and browser library builds passed.

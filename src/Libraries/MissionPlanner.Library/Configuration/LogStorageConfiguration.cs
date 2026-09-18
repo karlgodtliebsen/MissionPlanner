@@ -20,6 +20,7 @@ public static class LogStorageConfiguration
             services.TryAddSingleton<ILogStorage, DesktopLogStorage>();
         }
 
+        services.TryAddTransient<LogFileOperations>();
         return services;
     }
 }

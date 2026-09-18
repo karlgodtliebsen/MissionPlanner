@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 
 namespace MissionPlanner.Core.Replay;
 
@@ -36,6 +36,10 @@ public sealed class TelemetryLogReader : ITelemetryLogReader
         while (stream.Position < stream.Length)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (stream.Length - stream.Position < TimestampLength + packetPrefix.Length)
+            {
+                break; // A writer may have been interrupted while appending the last record.
+            }
             var timestampOffset = stream.Position;
             await ReadExactlyAsync(stream, timestampBytes, cancellationToken).ConfigureAwait(false);
             var timestamp = DecodeTimestamp(timestampBytes, timestampOffset);
@@ -51,8 +55,7 @@ public sealed class TelemetryLogReader : ITelemetryLogReader
             var packetEnd = checked(packetOffset + packetLength);
             if (packetEnd > stream.Length)
             {
-                throw new InvalidDataException(
-                    $"Telemetry log ends inside MAVLink packet {entries.Count} at byte {packetOffset}.");
+                break; // Preserve all complete records before an incomplete final frame.
             }
 
             entries.Add(new TelemetryLogIndexEntry(

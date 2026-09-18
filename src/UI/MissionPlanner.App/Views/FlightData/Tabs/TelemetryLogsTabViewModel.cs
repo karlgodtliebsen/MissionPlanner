@@ -31,6 +31,14 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     /// <param name="activeVehicle">Active-vehicle context used by the shared tab lifecycle.</param>
     /// <param name="fileOpenService">Avalonia file-selection boundary.</param>
     /// <param name="logger">Structured workflow logger.</param>
+    /// <param name="logStorage">Platform log storage.</param>
+    /// <param name="logFiles">Streaming import service.</param>
+    /// <param name="packetBrowser">Bounded packet decoder.</param>
+    /// <param name="logCatalog">Optional metadata catalog.</param>
+    /// <param name="logReader">Classic tlog index reader.</param>
+    /// <param name="fileSave">Platform export service.</param>
+    /// <param name="logFolders">Desktop folder capability.</param>
+    /// <param name="logDialogs">Cancellable loading progress.</param>
     /// <param name="recordingService">PC telemetry recording state.</param>
     /// <param name="domainEvents">Application recording lifecycle events.</param>
     /// <param name="parameterRegistry">Downloaded onboard logger configuration.</param>
@@ -39,11 +47,27 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
         IActiveVehicleContext activeVehicle,
         IFileOpenService fileOpenService,
         ILogger<TelemetryLogsTabViewModel> logger,
+        MissionPlanner.Library.Logging.ILogStorage logStorage,
+        MissionPlanner.Library.Logging.LogFileOperations logFiles,
+        TelemetryPacketBrowser packetBrowser,
+        ITelemetryLogReader logReader,
+        TelemetryLogCatalog logCatalog,
+        IFileSaveService fileSave,
+        ILogFolderService logFolders,
+        MissionPlanner.App.Utilities.Dialogs.IDialogService logDialogs,
         TelemetryRecordingService? recordingService = null,
         MissionPlanner.Library.EventHub.Abstractions.IDomainEventHub? domainEvents = null,
         IVehicleParameterRegistry? parameterRegistry = null)
         : base(logger)
     {
+        this.logStorage = logStorage;
+        this.logFiles = logFiles;
+        this.packetBrowser = packetBrowser;
+        this.logReader = logReader;
+        this.logCatalog = logCatalog;
+        this.fileSave = fileSave;
+        this.logFolders = logFolders;
+        this.logDialogs = logDialogs;
         this.parameterRegistry = parameterRegistry;
         this.recordingService = recordingService;
         this.domainEvents = domainEvents;
@@ -88,7 +112,7 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
         ApplyOnboardLogging();
         replaySessionManager.Changed += OnReplayChanged;
         ApplySnapshot(replaySessionManager.Snapshot);
-        return Task.CompletedTask;
+        return RefreshLogsAsync();
     }
 
     /// <inheritdoc />
@@ -117,6 +141,7 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     public override void Dispose()
     {
         Deactivate();
+        packetStream?.Dispose();
         base.Dispose();
     }
 
@@ -293,25 +318,18 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
                 return;
             }
 
-            var selectedStream = file.Content;
-            var ownedStream = selectedStream;
-            if (!selectedStream.CanSeek)
+            using (file)
             {
-                var temporaryPath = Path.Combine(Path.GetTempPath(), $"missionplanner-replay-{Guid.NewGuid():N}.tlog");
-                var temporaryStream = new FileStream(
-                    temporaryPath,
-                    FileMode.CreateNew,
-                    FileAccess.ReadWrite,
-                    FileShare.Read,
-                    65_536,
-                    FileOptions.Asynchronous | FileOptions.DeleteOnClose);
-                await selectedStream.CopyToAsync(temporaryStream, cancellationToken);
-                await selectedStream.DisposeAsync();
-                temporaryStream.Position = 0;
-                ownedStream = temporaryStream;
+                var id = await logFiles.ImportAsync(MissionPlanner.Library.Logging.LogStorageArea.Telemetry,
+                    file.FileName, file.Content, cancellationToken);
+                var items = await logCatalog.ListAsync(cancellationToken);
+                await Dispatcher.DispatchAsync(() =>
+                {
+                    Logs.ReplaceRange(items.Where(item => item.Name.EndsWith(".tlog", StringComparison.OrdinalIgnoreCase)));
+                    SelectedLog = items.First(item => item.Id == id);
+                });
+                await OpenPacketsAsync(SelectedLog!, cancellationToken);
             }
-
-            await replaySessionManager.LoadAsync(ownedStream, file.FileName, cancellationToken);
         });
     }
 
@@ -389,6 +407,7 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
         SeekCommand.NotifyCanExecuteChanged();
         CloseReplayCommand.NotifyCanExecuteChanged();
         ApplySpeedCommand.NotifyCanExecuteChanged();
+        FollowPacketTime(snapshot);
     }
 
     private sealed class CallbackDisposable(Action callback) : IDisposable
