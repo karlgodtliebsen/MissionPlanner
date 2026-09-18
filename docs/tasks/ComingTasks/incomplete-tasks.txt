@@ -14,6 +14,20 @@ Add information to HUD
 
 Make layout uniform
 
+
+
+Task 3:
+I have been trying to make the main layout the same, an could need a list of pages/views that are not yet correct.
+
+MandatoryHardwarePage and AdvancedPage shows how to a ContentPage
+In AccelerometerSetupView there is a sample for a TabControl TabItem
+
+Investigate the layout of the views, and note which one do not conform to the standard"
+
+
+
+
+
 *********************************************************************************************
 
 So the generic error you're seeing is almost certainly hiding a much more useful STATUSTEXT message sent just before the COMMAND_ACK.
@@ -32,15 +46,18 @@ RC calibration failed:
 *********************************************************************************************
 
 
-
 Accelerometer page is not working.
 *********************************************************************************************
 
 
 In the background, Look for newer version of installed Ardupilot and prompt the user for upgrade
 
+*********************************************************************************************
+Continously monitor connection and react when disconnected
 
 *********************************************************************************************
+
+
 Is there a way to set a vehicle Id (flash it to the device)
 
 yes, technical done, but we should build a UI view for it
