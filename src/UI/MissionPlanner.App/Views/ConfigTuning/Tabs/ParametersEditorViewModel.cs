@@ -77,11 +77,16 @@ public partial class ParametersEditorViewModel(IDialogService dialogService, Act
         var result = new List<VehicleParameter>();
 
         //format FRAME_CLASS=1//Quad
+
         var lines = Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
         foreach (var line in lines)
         {
             var data = line.Replace(" ", string.Empty);
-            var parts = data.Split(["=", "//"], StringSplitOptions.RemoveEmptyEntries);
+            if (data.Contains("//"))
+            {
+                data = data.Substring(0, data.IndexOf("//", StringComparison.Ordinal));
+            }
+            var parts = data.Split(["=", ",", ":", ";"], StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length < 2)
             {
                 continue;

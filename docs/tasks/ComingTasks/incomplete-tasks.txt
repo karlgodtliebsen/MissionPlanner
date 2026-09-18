@@ -16,6 +16,21 @@ Make layout uniform
 
 *********************************************************************************************
 
+So the generic error you're seeing is almost certainly hiding a much more useful STATUSTEXT message sent just before the COMMAND_ACK.
+
+This is also a concrete Next Gen defect:
+
+When a command returns MAV_RESULT_FAILED, the UI should correlate and display the associated STATUSTEXT, rather than only showing “The vehicle rejected the motor test with MAV_RESULT Failed”.
+
+For this case it should probably have shown:
+
+Motor Test rejected
+RC calibration failed:
+  Roll: RC1_MIN=1426, expected <=1300
+  Yaw:  RC4_MAX=1598, expected >=1700
+
+*********************************************************************************************
+
 
 
 Accelerometer page is not working.

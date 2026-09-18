@@ -33,29 +33,36 @@
         </StackPanel>
 
 
-        <Border Grid.Row="2" Margin="25" HorizontalAlignment="Stretch" 
+        <Border Grid.Row="2" Margin="25" HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 Classes="SectionCard">
+            <Grid RowDefinitions="Auto,*">
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" 
+                            VerticalAlignment="Stretch" Spacing="10">
+                    <TextBlock
+                        Classes="H4"
+                        TextWrapping="Wrap"
+                        Text="Add a List of Parameters and Values in the Editor below"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
 
-            <Grid
-                RowDefinitions="Auto,Auto,*"
-                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="20" Margin="30">
+                    <TextBlock  Classes="H5" Text="LineSeparator: &lt;10&gt;&lt;13&gt; or &lt;10&gt;"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                <TextBlock Grid.Row="0"
-                           Classes="H4"
-                           TextWrapping="Wrap"
-                           Text="Add a List of Parameters and Values in the Editor below"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-                <TextBlock  Grid.Row="1" Classes="H5" Text="Format: (name=value) or (name=value//comment)"
-                            HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <TextBlock  Classes="H5" Text="Format: (name,value) or (name,value //comment)"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-                <TextBox AcceptsReturn="True"  Grid.Row="2"
-                        
+                    <TextBlock  Classes="H5" Text="Format: (name=value) or (name=value //comment)"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    <TextBlock  Classes="H5" Text="Format: (name:value) or (name:value //comment)"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                </StackPanel>
+                <TextBox Grid.Row="1" AcceptsReturn="True"
                          VerticalContentAlignment="Top"
-                         Text="{Binding Text}" 
+                         Text="{Binding Text}"
                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                         Margin="10"></TextBox>
-
+                         Margin="10" />
             </Grid>
         </Border>
     </Grid>
