@@ -11,9 +11,10 @@
                               x:Class="MissionPlanner.App.Views.FlightData.FlightDataPage">
     <ContentPage Header="Flight Data">
         <Grid ColumnDefinitions="400,5,*">
-            <Grid Grid.Column="0" RowDefinitions="240,*" RowSpacing="4">
+            <Grid Grid.Column="0" RowDefinitions="350,5,*" RowSpacing="2">
                 <hud:HudView Grid.Row="0" />
-                <TabControl x:Name="TabView" Grid.Row="1" Margin="5" >
+                <GridSplitter Grid.Row="1" Height="5" ResizeDirection="Rows" />
+                <TabControl x:Name="TabView" Grid.Row="2" Margin="5" >
                     <TabItem Header="Quick"><tabs:QuickTabItemView /></TabItem>
                     <TabItem Header="Actions"><tabs:ActionsTabItemView /></TabItem>
                     <TabItem Header="Messages"><tabs:MessagesTabItemView /></TabItem>

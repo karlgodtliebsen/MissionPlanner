@@ -35,7 +35,7 @@ not assign that property or translate stored theme names themselves.
 Prefer semantic dynamic resources and reusable classes:
 
 ```xml
-<Border Background="{DynamicResource Surface}" Classes="Rounded Elevation1">
+<Border  Classes="SectionCard">
     <TextBlock Text="{Binding Warning}" Classes="Body Warning" />
 </Border>
 ```

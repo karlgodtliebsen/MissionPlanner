@@ -11,7 +11,7 @@
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.BasicTuningTabView"
                               x:DataType="tabs:BasicTuningTabViewModel">
 
-    <ContentPage Header="Basic Tuning" Background="{DynamicResource Surface}">
+    <ContentPage Header="Basic Tuning"  >
 
         <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Center">
 

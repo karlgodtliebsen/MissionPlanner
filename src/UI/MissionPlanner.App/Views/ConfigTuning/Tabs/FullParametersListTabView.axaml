@@ -13,7 +13,7 @@
                               xmlns:models="clr-namespace:MissionPlanner.App.Models"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
                               x:DataType="tabs:FullParametersListTabViewModel">
-    <ContentPage Header="Full Parameters List" Background="{DynamicResource Surface}">
+    <ContentPage Header="Full Parameters List"  >
         
         <Grid RowDefinitions="Auto,Auto,*"
               HorizontalAlignment="Stretch"

@@ -1,20 +1,20 @@
 <utilities:NavigationViewBase
-    x:TypeArguments="tabs:GeoFenceTabViewModel"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
-    xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:models="clr-namespace:MissionPlanner.App.Models"
-    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
-    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-    x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.GeoFenceTabView"
-    x:DataType="tabs:GeoFenceTabViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                    x:TypeArguments="tabs:GeoFenceTabViewModel"
+                    xmlns="https://github.com/avaloniaui"
+                    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                    xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:models="clr-namespace:MissionPlanner.App.Models"
+                    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                    x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.GeoFenceTabView"
+                    x:DataType="tabs:GeoFenceTabViewModel"
+                    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <ContentPage Header="GeoFence Configuration" Background="{DynamicResource Surface}"
+    <ContentPage Header="GeoFence Configuration"
                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
         <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
@@ -54,10 +54,10 @@
                                 <TextBlock Text="{Binding LocalRevisionText}" />
                                 <TextBlock Text="{Binding VehicleRevisionText}" />
                                 <TextBlock Text="{Binding ReturnPointText}" />
-<TextBlock Text="Local geometry has unapplied changes"
+                                <TextBlock Text="Local geometry has unapplied changes"
                                            Classes="Warning"
                                            IsVisible="{Binding IsGeometryDirty}" />
-<TextBlock Text="Typed geometry is not advertised by this firmware."
+                                <TextBlock Text="Typed geometry is not advertised by this firmware."
                                            Classes="Warning"
                                            IsVisible="{Binding IsTypedGeometryUnsupported}" />
                             </StackPanel>
@@ -77,7 +77,7 @@
                                                                 Value="{Binding Value, Mode=TwoWay}"
                                                                 HorizontalAlignment="Stretch"
                                                                 />
-<TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
+                                                <TextBlock Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
                                                            Text="{Binding ValidationError}"
                                                            Classes="Warning"
                                                            FontSize="12" />

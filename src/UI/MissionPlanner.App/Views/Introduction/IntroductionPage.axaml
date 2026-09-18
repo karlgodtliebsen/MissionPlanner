@@ -13,7 +13,7 @@
     d:DesignHeight="700"
     x:Class="MissionPlanner.App.Views.Introduction.IntroductionPage"
     x:DataType="introduction:IntroductionViewModel">
-    <ContentPage Header="Introduction" Background="{DynamicResource Surface}">
+    <ContentPage Header="Introduction" >
         <Grid Margin="20,0,20,10" RowDefinitions="Auto,*" RowSpacing="20">
             <StackPanel HorizontalAlignment="Center" Spacing="8">
                 <TextBlock Text="{Binding Title}" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" />

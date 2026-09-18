@@ -7,8 +7,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.AdvancedPage"
     x:DataType="local:AdvancedViewModel"
     x:CompileBindings="True">
-    <ContentPage Header="Advanced" Background="{DynamicResource Surface}">
-
+    <ContentPage Header="Advanced"  >
         <Grid RowDefinitions="Auto,*"  RowSpacing="16">
             <Border HorizontalAlignment="Stretch" x:Name="PanelWidth" Margin="0,20" MaxWidth="1000">
                 <StackPanel Orientation="Vertical" Spacing="25" HorizontalAlignment="Stretch" MaxWidth="1000">

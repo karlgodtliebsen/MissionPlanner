@@ -24,7 +24,7 @@ Use the namespace and root-element organization of a nearby production view:
     x:DataType="local:ExampleViewModel"
     x:CompileBindings="True"
     mc:Ignorable="d">
-    <ContentPage Header="Example" Background="{DynamicResource Surface}">
+    <ContentPage Header="Example"  Classes="SectionCard" >
         <!-- complete view content -->
     </ContentPage>
 </utilities:NavigationViewBase>

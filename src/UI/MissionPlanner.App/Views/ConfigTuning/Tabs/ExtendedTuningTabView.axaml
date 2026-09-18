@@ -11,7 +11,7 @@
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.ExtendedTuningTabView"
                               x:DataType="tabs:ExtendedTuningTabViewModel">
-    <ContentPage Header="Extended Tuning" Background="{DynamicResource Surface}">
+    <ContentPage Header="Extended Tuning"  >
 
         <Grid RowDefinitions="Auto,Auto,Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Center">
 

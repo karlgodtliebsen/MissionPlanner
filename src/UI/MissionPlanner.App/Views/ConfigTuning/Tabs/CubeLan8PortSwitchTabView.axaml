@@ -11,7 +11,7 @@
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.CubeLan8PortSwitchTabView"
                               x:DataType="tabs:CubeLan8PortSwitchTabViewModel"
                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ContentPage Header="CubeLAN 8 Port Switch" Background="{DynamicResource Surface}">
+    <ContentPage Header="CubeLAN 8 Port Switch"  >
 
         <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12" HorizontalAlignment="Center">
             <StackPanel Orientation="Vertical" Spacing="10">

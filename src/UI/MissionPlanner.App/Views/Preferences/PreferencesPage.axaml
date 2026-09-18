@@ -13,7 +13,7 @@
     d:DesignHeight="720"
     x:Class="MissionPlanner.App.Views.Preferences.PreferencesPage"
     x:DataType="preferences:PreferencesViewModel">
-    <ContentPage Header="Preferences" Background="{DynamicResource Surface}">
+    <ContentPage Header="Preferences" >
         <ScrollViewer>
             <StackPanel Orientation="Vertical" Margin="20" Spacing="14" MaxWidth="1050" HorizontalAlignment="Center">
                 <TextBlock Text="MissionPlanner preferences" FontSize="24" FontWeight="Bold" />

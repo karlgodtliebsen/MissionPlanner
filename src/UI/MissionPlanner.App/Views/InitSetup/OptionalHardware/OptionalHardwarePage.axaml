@@ -11,7 +11,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.OptionalHardwarePage"
     x:DataType="optional:OptionalHardwareViewModel">
 
-    <ContentPage Header="Optional Hardware" Background="{DynamicResource Surface}">
+    <ContentPage Header="Optional Hardware"  >
         <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
             <StackPanel Spacing="5" HorizontalAlignment="Center">
                 <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />

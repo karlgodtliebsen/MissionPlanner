@@ -16,7 +16,9 @@
                 <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
                     <!-- Search -->
-                    <Border Grid.Row="0" IsVisible="{TemplateBinding ShowSearchBar}" Margin="5,5,5,5">
+                    <Border Grid.Row="0" 
+                            IsVisible="{TemplateBinding ShowSearchBar}" 
+                            Margin="5,5,5,5">
                         <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
                             <TextBox Grid.Column="0"
                                      Text="{Binding SearchText, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"

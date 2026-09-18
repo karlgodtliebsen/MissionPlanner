@@ -13,7 +13,7 @@
     x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerPage"
     x:DataType="flightPlanner:FlightPlannerViewModel">
     <ContentPage Header="Flight Planner">
-        <Grid ColumnDefinitions="*,Auto,Auto" Background="{DynamicResource Surface}">
+        <Grid ColumnDefinitions="*,Auto,Auto"  >
             <Grid Grid.Column="0" RowDefinitions="Auto,*" ColumnDefinitions="*,Auto"  RowSpacing="4" Margin="5">
                
                 <WrapPanel Grid.Row="0" Grid.Column="0" Margin="10,5,0,5" HorizontalAlignment="Center" ItemSpacing="5">

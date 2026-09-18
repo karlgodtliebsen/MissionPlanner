@@ -12,7 +12,8 @@
                     Background="{DynamicResource Surface}"
                     Height="32">
 
-    <Border  Padding="2" VerticalAlignment="Stretch" Height="50" Background="{DynamicResource Surface}">
+    <Border  Padding="2" VerticalAlignment="Stretch" Height="50" 
+             >
         <Grid ColumnDefinitions="Auto,*,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center"   >
  
             <!-- Connection Info (Left) -->

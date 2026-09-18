@@ -11,7 +11,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwarePage"
     x:DataType="mandatory:MandatoryHardwareViewModel">
 
-    <ContentPage Header="Mandatory Hardware" Background="{DynamicResource Surface}">
+    <ContentPage Header="Mandatory Hardware"  >
         <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />

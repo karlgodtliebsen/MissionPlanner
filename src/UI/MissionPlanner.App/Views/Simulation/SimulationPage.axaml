@@ -1,539 +1,539 @@
 <utilities:NavigationViewBase
-                    x:TypeArguments="simulation:SimulationViewModel"
-                    xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                    xmlns:simulation="clr-namespace:MissionPlanner.App.Views.Simulation"
-                    xmlns:simulationCore="clr-namespace:MissionPlanner.Simulation;assembly=MissionPlanner.Simulation"
-                    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                    mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
-                    x:Class="MissionPlanner.App.Views.Simulation.SimulationPage"
-                    x:DataType="simulation:SimulationViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ContentPage Header="Simulation" Background="{DynamicResource Surface}">
-<Grid Margin="18" RowDefinitions="Auto,*" RowSpacing="12">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-            <StackPanel Orientation="Vertical" Spacing="3">
-                <TextBlock Text="Simulation workspace" FontSize="24" FontWeight="Bold" />
-                <TextBlock Text="Persisted profiles and an owned, observable simulator session. Launch adapters are capability-driven; unavailable runtimes fail explicitly." />
-            </StackPanel>
-            <Button Grid.Column="1" ToolTip.Tip="Export diagnostics" Command="{Binding ExportDiagnosticsCommand}" VerticalAlignment="Center" AutomationProperties.Name="Export diagnostics">
-                <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
-            </Button>
-        </Grid>
+    x:TypeArguments="simulation:SimulationViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:simulation="clr-namespace:MissionPlanner.App.Views.Simulation"
+    xmlns:simulationCore="clr-namespace:MissionPlanner.Simulation;assembly=MissionPlanner.Simulation"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+    x:Class="MissionPlanner.App.Views.Simulation.SimulationPage"
+    x:DataType="simulation:SimulationViewModel"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    <ContentPage Header="Simulation"  >
+        <Grid Margin="18" RowDefinitions="Auto,*" RowSpacing="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <StackPanel Orientation="Vertical" Spacing="3">
+                    <TextBlock Text="Simulation workspace" FontSize="24" FontWeight="Bold" />
+                    <TextBlock Text="Persisted profiles and an owned, observable simulator session. Launch adapters are capability-driven; unavailable runtimes fail explicitly." />
+                </StackPanel>
+                <Button Grid.Column="1" ToolTip.Tip="Export diagnostics" Command="{Binding ExportDiagnosticsCommand}" VerticalAlignment="Center" AutomationProperties.Name="Export diagnostics">
+                    <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                </Button>
+            </Grid>
 
-        <Grid Grid.Row="1" ColumnDefinitions="0.85*,1.15*" ColumnSpacing="14">
-            <ScrollViewer>
-                <StackPanel Orientation="Vertical" Spacing="12">
-                    <Border Padding="12">
-                        <StackPanel Orientation="Vertical" Spacing="8">
-                            <TextBlock Text="Profiles" FontSize="18" FontWeight="Bold" />
-                            <ComboBox
+            <Grid Grid.Row="1" ColumnDefinitions="0.85*,1.15*" ColumnSpacing="14">
+                <ScrollViewer>
+                    <StackPanel Orientation="Vertical" Spacing="12">
+                        <Border Padding="12">
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <TextBlock Text="Profiles" FontSize="18" FontWeight="Bold" />
+                                <ComboBox
                                     ItemsSource="{Binding Profiles}"
                                     DisplayMemberBinding="{Binding Name}"
                                     SelectedItem="{Binding SelectedProfile}" />
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button ToolTip.Tip="New" Command="{Binding NewProfileCommand}" AutomationProperties.Name="New">
-                                    <mdi:MaterialIcon Kind="PlusBoxOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Save" Command="{Binding SaveProfileCommand}" AutomationProperties.Name="Save">
-                                    <mdi:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Delete" Command="{Binding DeleteProfileCommand}" AutomationProperties.Name="Delete">
-                                    <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
-                                </Button>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button ToolTip.Tip="New" Command="{Binding NewProfileCommand}" AutomationProperties.Name="New">
+                                        <mdi:MaterialIcon Kind="PlusBoxOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Save" Command="{Binding SaveProfileCommand}" AutomationProperties.Name="Save">
+                                        <mdi:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Delete" Command="{Binding DeleteProfileCommand}" AutomationProperties.Name="Delete">
+                                        <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
+                                    </Button>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
-                    </Border>
+                        </Border>
 
-                    <Border Padding="12" Classes="SectionCard">
-                        <StackPanel Orientation="Vertical" Spacing="8">
-                            <TextBlock Text="Multi-vehicle fleet" FontSize="18" FontWeight="Bold" />
-                            <TextBlock Text="Each member receives an isolated process, MAVLink channel, SystemId, port set, home offset, and artifact directory." />
-                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
-                                <NumericUpDown
-                                    Grid.Column="0"
-                                    PlaceholderText="Count"
-                                    Value="{Binding FleetCount,Mode=TwoWay}"
-                                    FormatString="F0"
-                                    HorizontalAlignment="Stretch"
-
-
-                                    />
-                                <NumericUpDown
-                                    Grid.Column="1"
-                                    PlaceholderText="Spacing (m)"
-                                    Value="{Binding FleetSpacingMeters,Mode=TwoWay}"
-                                    FormatString="F1"
-                                    HorizontalAlignment="Stretch"
-                                     />
-
-                                <NumericUpDown
-                                    Grid.Column="2"
-                                    PlaceholderText="Port Stride"
-                                    Value="{Binding FleetPortStride,Mode=TwoWay}"
-                                    FormatString="F0"
-                                    HorizontalAlignment="Stretch"
+                        <Border Padding="12" Classes="SectionCard">
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <TextBlock Text="Multi-vehicle fleet" FontSize="18" FontWeight="Bold" />
+                                <TextBlock Text="Each member receives an isolated process, MAVLink channel, SystemId, port set, home offset, and artifact directory." />
+                                <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                                    <NumericUpDown
+                                        Grid.Column="0"
+                                        PlaceholderText="Count"
+                                        Value="{Binding FleetCount,Mode=TwoWay}"
+                                        FormatString="F0"
+                                        HorizontalAlignment="Stretch"
 
 
-                                    />
+                                        />
+                                    <NumericUpDown
+                                        Grid.Column="1"
+                                        PlaceholderText="Spacing (m)"
+                                        Value="{Binding FleetSpacingMeters,Mode=TwoWay}"
+                                        FormatString="F1"
+                                        HorizontalAlignment="Stretch"
+                                        />
 
-                                <NumericUpDown
-                                    Grid.Column="3"
-                                    PlaceholderText="Concurrency"
-                                    Value="{Binding FleetMaximumConcurrency,Mode=TwoWay}"
-                                    FormatString="F0"
-                                    HorizontalAlignment="Stretch"
+                                    <NumericUpDown
+                                        Grid.Column="2"
+                                        PlaceholderText="Port Stride"
+                                        Value="{Binding FleetPortStride,Mode=TwoWay}"
+                                        FormatString="F0"
+                                        HorizontalAlignment="Stretch"
 
 
-                                    />
+                                        />
 
-                            </Grid>
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button ToolTip.Tip="Start all" Command="{Binding StartAllCommand}" AutomationProperties.Name="Start all">
-                                    <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Stop all" Command="{Binding StopAllCommand}" AutomationProperties.Name="Stop all">
-                                    <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
-                                </Button>
+                                    <NumericUpDown
+                                        Grid.Column="3"
+                                        PlaceholderText="Concurrency"
+                                        Value="{Binding FleetMaximumConcurrency,Mode=TwoWay}"
+                                        FormatString="F0"
+                                        HorizontalAlignment="Stretch"
+
+
+                                        />
+
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button ToolTip.Tip="Start all" Command="{Binding StartAllCommand}" AutomationProperties.Name="Start all">
+                                        <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Stop all" Command="{Binding StopAllCommand}" AutomationProperties.Name="Stop all">
+                                        <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Text="{Binding FleetStatus}" />
+
+                                <DataGrid Grid.Row="1"
+                                          ItemsSource="{Binding FleetSessions}"
+                                          SelectedItem="{Binding SelectedFleetSession}"
+
+                                          SelectionMode="Single"
+
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch"
+                                          Height="150"
+                                          Background="Transparent"
+                                          AutoGenerateColumns="False">
+
+
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Width="150" Header="Timestamp">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="simulationCore:SimulationFleetSessionSnapshot">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock Text="{Binding Allocation.Profile.Name}" FontWeight="Bold" />
+                                                        <TextBlock Text="{Binding VehicleId, StringFormat='Vehicle {0}'}" FontSize="12" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Width="*" Header="Stream">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="simulationCore:SimulationFleetSessionSnapshot">
+                                                    <TextBlock Text="{Binding Session.State}" VerticalAlignment="Center" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Width="5*" Header="Text">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate x:DataType="simulationCore:SimulationFleetSessionSnapshot">
+                                                    <TextBlock Text="{Binding Allocation.Profile.EffectiveLaunchSettings.SystemId, StringFormat='SysId {0}'}" VerticalAlignment="Center" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
                             </StackPanel>
-                            <TextBlock Text="{Binding FleetStatus}" />
+                        </Border>
 
-                            <DataGrid Grid.Row="1"
-                                                  ItemsSource="{Binding FleetSessions}"
-                                                  SelectedItem="{Binding SelectedFleetSession}"
-
-                                                  SelectionMode="Single"
-
-                                                  HorizontalAlignment="Stretch"
-                                                  VerticalAlignment="Stretch"
-                                                  Height="150"
-                                                  Background="Transparent"
-                     AutoGenerateColumns="False">
-
-
-                                <DataGrid.Columns>
-                                    <DataGridTemplateColumn Width="150" Header="Timestamp">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate x:DataType="simulationCore:SimulationFleetSessionSnapshot">
-                                                <StackPanel Orientation="Vertical">
-                                                    <TextBlock Text="{Binding Allocation.Profile.Name}" FontWeight="Bold" />
-                                                    <TextBlock Text="{Binding VehicleId, StringFormat='Vehicle {0}'}" FontSize="12" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Width="*" Header="Stream">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate x:DataType="simulationCore:SimulationFleetSessionSnapshot">
-                                                <TextBlock Text="{Binding Session.State}" VerticalAlignment="Center" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                    <DataGridTemplateColumn Width="5*" Header="Text">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate x:DataType="simulationCore:SimulationFleetSessionSnapshot">
-                                                <TextBlock Text="{Binding Allocation.Profile.EffectiveLaunchSettings.SystemId, StringFormat='SysId {0}'}" VerticalAlignment="Center" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
-                                </DataGrid.Columns>
-                            </DataGrid>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Padding="12" Classes="SectionCard">
-                        <StackPanel Orientation="Vertical" Spacing="8">
-                            <TextBlock Text="SITL installations" FontSize="18" FontWeight="Bold" />
-                            <TextBlock Text="{Binding PlatformCapability}" />
-                            <ComboBox
+                        <Border Padding="12" Classes="SectionCard">
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <TextBlock Text="SITL installations" FontSize="18" FontWeight="Bold" />
+                                <TextBlock Text="{Binding PlatformCapability}" />
+                                <ComboBox
                                     ItemsSource="{Binding Installations}"
                                     DisplayMemberBinding="{Binding DisplayName}"
                                     SelectedItem="{Binding SelectedInstallation}" />
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button ToolTip.Tip="Refresh" Command="{Binding RefreshInstallationsCommand}" AutomationProperties.Name="Refresh">
-                                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Use selected" Command="{Binding UseSelectedInstallationCommand}" AutomationProperties.Name="Use selected">
-                                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Remove cached"
-                                        Command="{Binding RemoveInstallationCommand}"
-                                        IsEnabled="{Binding CanRemoveInstallation}" AutomationProperties.Name="Remove cached">
-                                    <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
-                                </Button>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button ToolTip.Tip="Refresh" Command="{Binding RefreshInstallationsCommand}" AutomationProperties.Name="Refresh">
+                                        <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Use selected" Command="{Binding UseSelectedInstallationCommand}" AutomationProperties.Name="Use selected">
+                                        <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Remove cached"
+                                            Command="{Binding RemoveInstallationCommand}"
+                                            IsEnabled="{Binding CanRemoveInstallation}" AutomationProperties.Name="Remove cached">
+                                        <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
+                                    </Button>
+                                </StackPanel>
+                                <Grid ColumnDefinitions="0.7*,1.3*" ColumnSpacing="8">
+                                    <ComboBox ItemsSource="{Binding ReleaseChannels}"
+                                              SelectedItem="{Binding SelectedReleaseChannel}" />
+                                    <ComboBox Grid.Column="1"
+                                              ToolTip.Tip="Compatible verified release"
+                                              ItemsSource="{Binding AvailableReleases}"
+                                              DisplayMemberBinding="{Binding DisplayName}"
+                                              SelectedItem="{Binding SelectedRelease}" />
+                                </Grid>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button ToolTip.Tip="Download, verify, and install"
+                                            Command="{Binding InstallReleaseCommand}"
+                                            IsEnabled="{Binding CanInstallRelease}" AutomationProperties.Name="Download, verify, and install">
+                                        <mdi:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Cancel"
+                                            Command="{Binding CancelOperationCommand}" AutomationProperties.Name="Cancel">
+                                        <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                                    </Button>
+                                </StackPanel>
+                                <ProgressBar Value="{Binding InstallProgress}" />
+                                <TextBlock Text="{Binding InstallationStatus}" />
                             </StackPanel>
-                            <Grid ColumnDefinitions="0.7*,1.3*" ColumnSpacing="8">
-                                <ComboBox ItemsSource="{Binding ReleaseChannels}"
-                                        SelectedItem="{Binding SelectedReleaseChannel}" />
-                                <ComboBox Grid.Column="1"
-                                        ToolTip.Tip="Compatible verified release"
-                                        ItemsSource="{Binding AvailableReleases}"
-                                        DisplayMemberBinding="{Binding DisplayName}"
-                                        SelectedItem="{Binding SelectedRelease}" />
-                            </Grid>
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button ToolTip.Tip="Download, verify, and install"
-                                        Command="{Binding InstallReleaseCommand}"
-                                        IsEnabled="{Binding CanInstallRelease}" AutomationProperties.Name="Download, verify, and install">
-                                    <mdi:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Cancel"
-                                        Command="{Binding CancelOperationCommand}" AutomationProperties.Name="Cancel">
-                                    <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
-                                </Button>
-                            </StackPanel>
-                            <ProgressBar Value="{Binding InstallProgress}" />
-                            <TextBlock Text="{Binding InstallationStatus}" />
-                        </StackPanel>
-                    </Border>
+                        </Border>
 
-                    <Border Padding="12" Classes="SectionCard">
-                        <StackPanel Orientation="Vertical" Spacing="8">
-                            <TextBlock Text="Launch profile" FontSize="18" FontWeight="Bold" />
-                            <TextBlock Text="Name" />
-                            <TextBox Text="{Binding ProfileName}" />
-                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock Text="Firmware" />
-                                    <ComboBox ItemsSource="{Binding FirmwareFamilies}" SelectedItem="{Binding SelectedFirmwareFamily}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical" Grid.Column="1">
-                                    <TextBlock Text="Frame / model" />
-                                    <ComboBox ItemsSource="{Binding AvailableFrames}" SelectedItem="{Binding FrameModel}" />
-                                </StackPanel>
-                            </Grid>
-                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock Text="Binary version" />
-                                    <TextBox Text="{Binding BinaryVersion}" />
+                        <Border Padding="12" Classes="SectionCard">
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <TextBlock Text="Launch profile" FontSize="18" FontWeight="Bold" />
+                                <TextBlock Text="Name" />
+                                <TextBox Text="{Binding ProfileName}" />
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Text="Firmware" />
+                                        <ComboBox ItemsSource="{Binding FirmwareFamilies}" SelectedItem="{Binding SelectedFirmwareFamily}" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Vertical" Grid.Column="1">
+                                        <TextBlock Text="Frame / model" />
+                                        <ComboBox ItemsSource="{Binding AvailableFrames}" SelectedItem="{Binding FrameModel}" />
+                                    </StackPanel>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock Text="Binary version" />
+                                        <TextBox Text="{Binding BinaryVersion}" />
 
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical" Grid.Column="1">
-                                    <TextBlock Text="Speedup" />
-                                    <NumericUpDown
-                                        Value="{Binding Speedup,Mode=TwoWay}"
-                                        FormatString="F1"
-                                        HorizontalAlignment="Stretch"
-                                         />
-                                </StackPanel>
-                            </Grid>
-                            <TextBlock Text="Absolute executable path" />
-                            <TextBox Text="{Binding BinaryPath}" PlaceholderText="Select an installed SITL binary in step 02" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Vertical" Grid.Column="1">
+                                        <TextBlock Text="Speedup" />
+                                        <NumericUpDown
+                                            Value="{Binding Speedup,Mode=TwoWay}"
+                                            FormatString="F1"
+                                            HorizontalAlignment="Stretch"
+                                            />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="Absolute executable path" />
+                                <TextBox Text="{Binding BinaryPath}" PlaceholderText="Select an installed SITL binary in step 02" />
 
-                            <TextBlock Text="Start location (latitude, longitude, altitude, heading)" />
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                <ComboBox
+                                <TextBlock Text="Start location (latitude, longitude, altitude, heading)" />
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <ComboBox
                                         ItemsSource="{Binding LocationPresets}"
                                         DisplayMemberBinding="{Binding Name}"
                                         SelectedItem="{Binding SelectedLocationPreset}" />
-                                <Button Grid.Column="1" ToolTip.Tip="Apply preset" Command="{Binding ApplyLocationPresetCommand}" AutomationProperties.Name="Apply preset">
-                                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                                </Button>
-                            </Grid>
-                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-                                <NumericUpDown
-                                    PlaceholderText="Latitude"
-                                    Value="{Binding Latitude,Mode=TwoWay}"
-                                    FormatString="F7"
-                                    HorizontalAlignment="Stretch"
-                                     />
+                                    <Button Grid.Column="1" ToolTip.Tip="Apply preset" Command="{Binding ApplyLocationPresetCommand}" AutomationProperties.Name="Apply preset">
+                                        <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                    </Button>
+                                </Grid>
+                                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                                    <NumericUpDown
+                                        PlaceholderText="Latitude"
+                                        Value="{Binding Latitude,Mode=TwoWay}"
+                                        FormatString="F7"
+                                        HorizontalAlignment="Stretch"
+                                        />
 
-                                <NumericUpDown
-                                    Grid.Column="1"
-                                    PlaceholderText="Longitude"
-                                    Value="{Binding Longitude,Mode=TwoWay}"
-                                    FormatString="F7"
-                                    HorizontalAlignment="Stretch"
-                                     />
+                                    <NumericUpDown
+                                        Grid.Column="1"
+                                        PlaceholderText="Longitude"
+                                        Value="{Binding Longitude,Mode=TwoWay}"
+                                        FormatString="F7"
+                                        HorizontalAlignment="Stretch"
+                                        />
 
-                                <NumericUpDown
-                                    Grid.Row="1"
-                                    PlaceholderText="Altitude"
-                                    Value="{Binding Altitude,Mode=TwoWay}"
-                                    FormatString="F2"
-                                    HorizontalAlignment="Stretch"
-                                     />
+                                    <NumericUpDown
+                                        Grid.Row="1"
+                                        PlaceholderText="Altitude"
+                                        Value="{Binding Altitude,Mode=TwoWay}"
+                                        FormatString="F2"
+                                        HorizontalAlignment="Stretch"
+                                        />
 
-                                <NumericUpDown
-                                    Grid.Row="1" Grid.Column="1"
-                                    PlaceholderText="Heading"
-                                    Value="{Binding Heading,Mode=TwoWay}"
-                                    FormatString="F2"
-                                    HorizontalAlignment="Stretch"
-                                     />
+                                    <NumericUpDown
+                                        Grid.Row="1" Grid.Column="1"
+                                        PlaceholderText="Heading"
+                                        Value="{Binding Heading,Mode=TwoWay}"
+                                        FormatString="F2"
+                                        HorizontalAlignment="Stretch"
+                                        />
 
-                            </Grid>
-                            <TextBlock Text="Click the map to select latitude/longitude" />
+                                </Grid>
+                                <TextBlock Text="Click the map to select latitude/longitude" />
 
-                            <simulation:SimulationLocationMapView x:Name="LocationMapView" Height="220" />
+                                <simulation:SimulationLocationMapView x:Name="LocationMapView" Height="220" />
 
-                            <TextBlock Text="Ports" />
-
-
-                            <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
-                                <NumericUpDown
-                                    PlaceholderText="MAVLink UDP"
-                                    Value="{Binding MavLinkPort,Mode=TwoWay}"
-                                    FormatString="F0"
-
-                                    HorizontalAlignment="Stretch"
-                                     />
-
-                                <NumericUpDown
-                                    Grid.Column="1"
-                                    PlaceholderText="Console TCP"
-                                    Value="{Binding ConsolePort,Mode=TwoWay}"
-                                    FormatString="F0"
-
-                                    HorizontalAlignment="Stretch"
-                                     />
-                            </Grid>
-                            <TextBlock Text="Instance identity" />
-                            <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
-                                <NumericUpDown
-                                    PlaceholderText="Instance (0-254)"
-                                    Value="{Binding InstanceNumber,Mode=TwoWay}"
-                                    FormatString="F0"
-
-                                    HorizontalAlignment="Stretch"
-                                     />
-
-                                <NumericUpDown
-                                    Grid.Column="1"
-                                    PlaceholderText="SystemId (1-255)"
-                                    Value="{Binding SystemId,Mode=TwoWay}"
-                                    FormatString="F0"
-
-                                    HorizontalAlignment="Stretch"
-                                     />
-
-                            </Grid>
+                                <TextBlock Text="Ports" />
 
 
-                            <TextBlock Text="Defaults / parameter files (one absolute path per line)" />
-                            <TextBox Text="{Binding DefaultsFilesText}" AcceptsReturn="True" MinHeight="60" />
-                            <TextBlock Text="Additional serial endpoints (index,UdpClient|TcpClient,host,port)" />
-                            <TextBox Text="{Binding SerialEndpointsText}" AcceptsReturn="True" MinHeight="60" />
-                            <StackPanel Orientation="Horizontal" Spacing="12">
-                                <CheckBox Content="Wipe state" IsChecked="{Binding WipeState}" />
-                                <CheckBox Content="Show console" IsChecked="{Binding ShowConsoleWindow}" />
-                                <CheckBox Content="Map integration" IsChecked="{Binding EnableMapIntegration}" />
+                                <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
+                                    <NumericUpDown
+                                        PlaceholderText="MAVLink UDP"
+                                        Value="{Binding MavLinkPort,Mode=TwoWay}"
+                                        FormatString="F0"
+
+                                        HorizontalAlignment="Stretch"
+                                        />
+
+                                    <NumericUpDown
+                                        Grid.Column="1"
+                                        PlaceholderText="Console TCP"
+                                        Value="{Binding ConsolePort,Mode=TwoWay}"
+                                        FormatString="F0"
+
+                                        HorizontalAlignment="Stretch"
+                                        />
+                                </Grid>
+                                <TextBlock Text="Instance identity" />
+                                <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
+                                    <NumericUpDown
+                                        PlaceholderText="Instance (0-254)"
+                                        Value="{Binding InstanceNumber,Mode=TwoWay}"
+                                        FormatString="F0"
+
+                                        HorizontalAlignment="Stretch"
+                                        />
+
+                                    <NumericUpDown
+                                        Grid.Column="1"
+                                        PlaceholderText="SystemId (1-255)"
+                                        Value="{Binding SystemId,Mode=TwoWay}"
+                                        FormatString="F0"
+
+                                        HorizontalAlignment="Stretch"
+                                        />
+
+                                </Grid>
+
+
+                                <TextBlock Text="Defaults / parameter files (one absolute path per line)" />
+                                <TextBox Text="{Binding DefaultsFilesText}" AcceptsReturn="True" MinHeight="60" />
+                                <TextBlock Text="Additional serial endpoints (index,UdpClient|TcpClient,host,port)" />
+                                <TextBox Text="{Binding SerialEndpointsText}" AcceptsReturn="True" MinHeight="60" />
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <CheckBox Content="Wipe state" IsChecked="{Binding WipeState}" />
+                                    <CheckBox Content="Show console" IsChecked="{Binding ShowConsoleWindow}" />
+                                    <CheckBox Content="Map integration" IsChecked="{Binding EnableMapIntegration}" />
+                                </StackPanel>
+                                <TextBlock Text="Additional argument tokens (one token per line)" />
+                                <TextBox Text="{Binding AdditionalArgumentsText}" AcceptsReturn="True" MinHeight="70" />
+
+                                <TextBlock Text="Environment (one NAME=VALUE per line)" />
+                                <TextBox
+                                    Text="{Binding EnvironmentText}"
+                                    AcceptsReturn="True" MinHeight="70" />
+
+
                             </StackPanel>
-                            <TextBlock Text="Additional argument tokens (one token per line)" />
-                            <TextBox Text="{Binding AdditionalArgumentsText}" AcceptsReturn="True" MinHeight="70" />
+                        </Border>
 
-                            <TextBlock Text="Environment (one NAME=VALUE per line)" />
-                            <TextBox
-                                Text="{Binding EnvironmentText}"
-                                AcceptsReturn="True" MinHeight="70" />
+                        <Border Padding="12" Classes="SectionCard">
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <TextBlock Text="Declarative scenario runner" FontSize="18" FontWeight="Bold" />
+                                <TextBlock Text="Closed schema only. Every step has a timeout; dry-run checks the exact vehicle and required capabilities." />
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button ToolTip.Tip="Load JSON" Command="{Binding LoadScenarioDocumentCommand}" AutomationProperties.Name="Load JSON">
+                                        <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Dry run" Command="{Binding DryRunScenarioCommand}" AutomationProperties.Name="Dry run">
+                                        <mdi:MaterialIcon Kind="FlaskOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Run" Command="{Binding RunScenarioCommand}" AutomationProperties.Name="Run">
+                                        <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Cancel" Command="{Binding CancelOperationCommand}" AutomationProperties.Name="Cancel">
+                                        <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                                    </Button>
+                                </StackPanel>
 
+                                <TextBox Text="{Binding ScenarioDocumentText}"
+                                         AcceptsReturn="True"
 
-                        </StackPanel>
-                    </Border>
+                                         FontFamily="Consolas"
+                                         MinHeight="220" />
 
-                    <Border Padding="12" Classes="SectionCard">
-                        <StackPanel Orientation="Vertical" Spacing="8">
-                            <TextBlock Text="Declarative scenario runner" FontSize="18" FontWeight="Bold" />
-                            <TextBlock Text="Closed schema only. Every step has a timeout; dry-run checks the exact vehicle and required capabilities." />
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button ToolTip.Tip="Load JSON" Command="{Binding LoadScenarioDocumentCommand}" AutomationProperties.Name="Load JSON">
-                                    <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Dry run" Command="{Binding DryRunScenarioCommand}" AutomationProperties.Name="Dry run">
-                                    <mdi:MaterialIcon Kind="FlaskOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Run" Command="{Binding RunScenarioCommand}" AutomationProperties.Name="Run">
-                                    <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Cancel" Command="{Binding CancelOperationCommand}" AutomationProperties.Name="Cancel">
-                                    <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
-                                </Button>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <CheckBox Content="I confirm arm, takeoff, mission start, and fault steps" IsChecked="{Binding ScenarioHazardsConfirmed}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button ToolTip.Tip="Pause at boundary" Command="{Binding PauseScenarioCommand}" AutomationProperties.Name="Pause at boundary">
+                                        <mdi:MaterialIcon Kind="PauseCircleOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Resume" Command="{Binding ResumeScenarioCommand}" AutomationProperties.Name="Resume">
+                                        <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Export JSON report" Command="{Binding ExportScenarioJsonCommand}" AutomationProperties.Name="Export JSON report">
+                                        <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                                    </Button>
+                                    <Button ToolTip.Tip="Export text report" Command="{Binding ExportScenarioTextCommand}" AutomationProperties.Name="Export text report">
+                                        <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                                    </Button>
+                                </StackPanel>
+                                <TextBlock Text="{Binding ScenarioRunnerStatus}" />
                             </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
 
-                            <TextBox Text="{Binding ScenarioDocumentText}"
-                                                AcceptsReturn="True"
-
-                                                FontFamily="Consolas"
-                                                MinHeight="220" />
-
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <CheckBox Content="I confirm arm, takeoff, mission start, and fault steps" IsChecked="{Binding ScenarioHazardsConfirmed}" />
+                <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
+                    <Border Padding="12">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <StackPanel Orientation="Vertical" Spacing="4">
+                                <TextBlock Text="{Binding SessionState}" FontSize="20" FontWeight="Bold" />
+                                <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                <SelectableTextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Classes="Danger" />
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button ToolTip.Tip="Pause at boundary" Command="{Binding PauseScenarioCommand}" AutomationProperties.Name="Pause at boundary">
-                                    <mdi:MaterialIcon Kind="PauseCircleOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Resume" Command="{Binding ResumeScenarioCommand}" AutomationProperties.Name="Resume">
-                                    <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Export JSON report" Command="{Binding ExportScenarioJsonCommand}" AutomationProperties.Name="Export JSON report">
-                                    <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
-                                </Button>
-                                <Button ToolTip.Tip="Export text report" Command="{Binding ExportScenarioTextCommand}" AutomationProperties.Name="Export text report">
-                                    <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
-                                </Button>
-                            </StackPanel>
-                            <TextBlock Text="{Binding ScenarioRunnerStatus}" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </ScrollViewer>
-
-            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
-                <Border Padding="12">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                        <StackPanel Orientation="Vertical" Spacing="4">
-                            <TextBlock Text="{Binding SessionState}" FontSize="20" FontWeight="Bold" />
-                            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
-                            <SelectableTextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Classes="Danger" />
-                        </StackPanel>
-                        <ProgressBar Grid.Column="1" IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" Width="120" />
-                    </Grid>
-                </Border>
-
-                <Border Grid.Row="1" Padding="12" Classes="SectionCard">
-                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="6">
-                        <TextBlock Text="Elapsed" FontWeight="Bold" />
-                        <TextBlock Grid.Column="1" Text="{Binding Elapsed}" />
-                        <TextBlock Grid.Row="1" Text="Runtime" FontWeight="Bold" />
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding RuntimeIdentity}" />
-                        <TextBlock Grid.Row="2" Text="Endpoints" FontWeight="Bold" />
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ConnectionEndpoints}" />
-                    </Grid>
-                </Border>
-                <Border Grid.Row="2" Padding="12" Classes="SectionCard">
-                    <StackPanel Orientation="Vertical" Spacing="8">
-
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                            <TextBlock Text="Environment, sensors, and bounded faults" FontSize="18" FontWeight="Bold" />
-                            <Button Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshControlsCommand}" AutomationProperties.Name="Refresh">
-                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                            </Button>
+                            <ProgressBar Grid.Column="1" IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" Width="120" />
                         </Grid>
-                        <ComboBox
+                    </Border>
+
+                    <Border Grid.Row="1" Padding="12" Classes="SectionCard">
+                        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="6">
+                            <TextBlock Text="Elapsed" FontWeight="Bold" />
+                            <TextBlock Grid.Column="1" Text="{Binding Elapsed}" />
+                            <TextBlock Grid.Row="1" Text="Runtime" FontWeight="Bold" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding RuntimeIdentity}" />
+                            <TextBlock Grid.Row="2" Text="Endpoints" FontWeight="Bold" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ConnectionEndpoints}" />
+                        </Grid>
+                    </Border>
+                    <Border Grid.Row="2" Padding="12" Classes="SectionCard">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <TextBlock Text="Environment, sensors, and bounded faults" FontSize="18" FontWeight="Bold" />
+                                <Button Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshControlsCommand}" AutomationProperties.Name="Refresh">
+                                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                                </Button>
+                            </Grid>
+                            <ComboBox
                                 ItemsSource="{Binding ControlCapabilities}"
                                 DisplayMemberBinding="{Binding DisplayName}"
                                 SelectedItem="{Binding SelectedControl}" />
 
-                        <TextBlock Text="{Binding SelectedControl.Reason}" />
-                        <TextBlock Text="{Binding SelectedControl.Descriptor.Description}" />
-                        <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
-                            <NumericUpDown
-                                PlaceholderText="Requested Value"
-                                Value="{Binding ControlRequestedValue,Mode=TwoWay}"
-                                FormatString="F1"
-                                HorizontalAlignment="Stretch"
-                                 />
-                            <NumericUpDown
-                                Grid.Column="1"
-                                PlaceholderText="Fault Duration Seconds"
-                                Value="{Binding FaultDurationSeconds,Mode=TwoWay}"
-                                FormatString="F1"
-                                HorizontalAlignment="Stretch"
-                                 />
-                        </Grid>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <CheckBox IsChecked="{Binding HazardConfirmed}" />
-                            <TextBlock Text="I confirm this bounded hazardous injection" VerticalAlignment="Center" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button ToolTip.Tip="Apply" Command="{Binding ApplyControlCommand}"
-                                    IsEnabled="{Binding SelectedControl.IsAvailable}" AutomationProperties.Name="Apply">
-                                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                            </Button>
-                            <Button ToolTip.Tip="Reset" Command="{Binding ResetControlCommand}" AutomationProperties.Name="Reset">
-                                <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
-                            </Button>
-                        </StackPanel>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,10,0,10" VerticalAlignment="Stretch">
-                            <TextBox Text="{Binding ScenarioPresetName}" PlaceholderText="Scenario preset name" />
+                            <TextBlock Text="{Binding SelectedControl.Reason}" />
+                            <TextBlock Text="{Binding SelectedControl.Descriptor.Description}" />
+                            <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
+                                <NumericUpDown
+                                    PlaceholderText="Requested Value"
+                                    Value="{Binding ControlRequestedValue,Mode=TwoWay}"
+                                    FormatString="F1"
+                                    HorizontalAlignment="Stretch"
+                                    />
+                                <NumericUpDown
+                                    Grid.Column="1"
+                                    PlaceholderText="Fault Duration Seconds"
+                                    Value="{Binding FaultDurationSeconds,Mode=TwoWay}"
+                                    FormatString="F1"
+                                    HorizontalAlignment="Stretch"
+                                    />
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <CheckBox IsChecked="{Binding HazardConfirmed}" />
+                                <TextBlock Text="I confirm this bounded hazardous injection" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button ToolTip.Tip="Apply" Command="{Binding ApplyControlCommand}"
+                                        IsEnabled="{Binding SelectedControl.IsAvailable}" AutomationProperties.Name="Apply">
+                                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                </Button>
+                                <Button ToolTip.Tip="Reset" Command="{Binding ResetControlCommand}" AutomationProperties.Name="Reset">
+                                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                                </Button>
+                            </StackPanel>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,10,0,10" VerticalAlignment="Stretch">
+                                <TextBox Text="{Binding ScenarioPresetName}" PlaceholderText="Scenario preset name" />
 
-                            <ComboBox Grid.Column="1"
-                                    ToolTip.Tip="Saved scenario preset"
-                                    ItemsSource="{Binding ScenarioPresets}"
-                                    DisplayMemberBinding="{Binding Name}"
-                                    SelectedItem="{Binding SelectedScenarioPreset}" />
-                        </Grid>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button ToolTip.Tip="Save preset" Command="{Binding SaveScenarioPresetCommand}" AutomationProperties.Name="Save preset">
-                                <mdi:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
-                            </Button>
-                            <Button ToolTip.Tip="Load preset" Command="{Binding LoadScenarioPresetCommand}" AutomationProperties.Name="Load preset">
-                                <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
-                            </Button>
-                            <Button ToolTip.Tip="Delete preset" Command="{Binding DeleteScenarioPresetCommand}" AutomationProperties.Name="Delete preset">
-                                <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
-                            </Button>
+                                <ComboBox Grid.Column="1"
+                                          ToolTip.Tip="Saved scenario preset"
+                                          ItemsSource="{Binding ScenarioPresets}"
+                                          DisplayMemberBinding="{Binding Name}"
+                                          SelectedItem="{Binding SelectedScenarioPreset}" />
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button ToolTip.Tip="Save preset" Command="{Binding SaveScenarioPresetCommand}" AutomationProperties.Name="Save preset">
+                                    <mdi:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
+                                </Button>
+                                <Button ToolTip.Tip="Load preset" Command="{Binding LoadScenarioPresetCommand}" AutomationProperties.Name="Load preset">
+                                    <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
+                                </Button>
+                                <Button ToolTip.Tip="Delete preset" Command="{Binding DeleteScenarioPresetCommand}" AutomationProperties.Name="Delete preset">
+                                    <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
+                                </Button>
+                            </StackPanel>
+                            <ItemsControl ItemsSource="{Binding ScenarioEvents}" Height="85">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="simulationCore:SimulationScenarioEvent">
+                                        <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
-                        <ItemsControl ItemsSource="{Binding ScenarioEvents}" Height="85">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="simulationCore:SimulationScenarioEvent">
-                                    <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
+                    </Border>
 
-                <Grid Grid.Row="3" RowDefinitions="Auto,*" RowSpacing="8">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <TextBlock Text="Live stdout / stderr" FontSize="18" FontWeight="Bold" />
-                        <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="8">
-                            <Button ToolTip.Tip="Start" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" AutomationProperties.Name="Start">
-                                <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
-                            </Button>
-                            <Button ToolTip.Tip="Stop" Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" AutomationProperties.Name="Stop">
-                                <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
-                            </Button>
-                            <Button ToolTip.Tip="Restart" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" AutomationProperties.Name="Restart">
-                                <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" />
-                            </Button>
-                        </StackPanel>
+                    <Grid Grid.Row="3" RowDefinitions="Auto,*" RowSpacing="8">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <TextBlock Text="Live stdout / stderr" FontSize="18" FontWeight="Bold" />
+                            <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="8">
+                                <Button ToolTip.Tip="Start" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" AutomationProperties.Name="Start">
+                                    <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
+                                </Button>
+                                <Button ToolTip.Tip="Stop" Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" AutomationProperties.Name="Stop">
+                                    <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
+                                </Button>
+                                <Button ToolTip.Tip="Restart" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" AutomationProperties.Name="Restart">
+                                    <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+
+                        <DataGrid Grid.Row="1"
+                                  ItemsSource="{Binding RecentOutput}"
+
+
+                                  HorizontalAlignment="Stretch"
+                                  VerticalAlignment="Stretch"
+                                  Background="Transparent"
+                                  AutoGenerateColumns="False">
+
+
+                            <DataGrid.Columns>
+
+                                <DataGridTemplateColumn Width="*" Header="Timestamp">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="simulationCore:SimulatorOutputLine">
+                                            <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Width="*" Header="Stream">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="simulationCore:SimulatorOutputLine">
+                                            <TextBlock Text="{Binding Stream}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Width="5*" Header="Text">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="simulationCore:SimulatorOutputLine">
+                                            <TextBlock Text="{Binding Text}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+
                     </Grid>
-
-                    <DataGrid Grid.Row="1"
-                                                  ItemsSource="{Binding RecentOutput}"
-
-
-                                                  HorizontalAlignment="Stretch"
-                                                  VerticalAlignment="Stretch"
-                                                  Background="Transparent"
-                     AutoGenerateColumns="False">
-
-
-                        <DataGrid.Columns>
-
-                            <DataGridTemplateColumn Width="*" Header="Timestamp">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="simulationCore:SimulatorOutputLine">
-                                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Width="*" Header="Stream">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="simulationCore:SimulatorOutputLine">
-                                        <TextBlock Text="{Binding Stream}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Width="5*" Header="Text">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="simulationCore:SimulatorOutputLine">
-                                        <TextBlock Text="{Binding Text}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
-
-
                 </Grid>
             </Grid>
         </Grid>
-    </Grid>
 
     </ContentPage>
 </utilities:NavigationViewBase>

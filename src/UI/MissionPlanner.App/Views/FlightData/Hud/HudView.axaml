@@ -8,11 +8,14 @@
     x:DataType="hud:HudViewModel">
     <Grid RowDefinitions="*,Auto">
         <hud:HudCanvas x:Name="Canvas" />
-        <Border Grid.Row="1" Background="{DynamicResource Surface}" Padding="8">
-            <StackPanel Spacing="3">
-                <TextBlock Text="{Binding ArmingLabel}" FontWeight="Bold" TextWrapping="Wrap" />
-                <TextBlock Text="{Binding PreArmReason}" Classes="Warning" TextWrapping="Wrap" />
-                <TextBlock Text="{Binding LastArmFailure}" Classes="Warning" TextWrapping="Wrap" />
+        <Border Grid.Row="1"  Padding="2" VerticalAlignment="Stretch">
+            <StackPanel Spacing="3" VerticalAlignment="Center">
+                <TextBlock Text="{Binding ArmingLabel}" Classes="H5" TextWrapping="Wrap" 
+                           IsVisible="{Binding ArmingLabel, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <TextBlock Text="{Binding PreArmReason}" Classes="Warning H5" TextWrapping="Wrap" 
+                           IsVisible="{Binding PreArmReason, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <TextBlock Text="{Binding LastArmFailure}" Classes="Warning H5" TextWrapping="Wrap" 
+                           IsVisible="{Binding LastArmFailure, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
         </Border>
     </Grid>
