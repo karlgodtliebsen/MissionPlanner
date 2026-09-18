@@ -236,7 +236,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
                 FullScreen = false,
                 HorizontalAnchor = HorizontalPosition.Center,
                 VerticalAnchor = VerticalPosition.Center,
-                Buttons = DialogButton.OKCancel,
+                Buttons = DialogButton.None,
                 IsCloseButtonVisible = true,
                 CanLightDismiss = false,
                 CanDragMove = false,
