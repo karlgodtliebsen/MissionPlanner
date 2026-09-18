@@ -28,6 +28,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [MAVFTP.md](MAVFTP.md) | MAVLink filesystem streaming, correlation, retries, and limitations |
 | [FLIGHT_DATA.md](FLIGHT_DATA.md) | Flight Data tab architecture, lifecycle, safety, and operator workflows |
 | [VEHICLE_SCRIPTS.md](VEHICLE_SCRIPTS.md) | Constrained declarative vehicle automation format and safety boundary |
+| [Logging.md](Logging.md) | Telemetry recordings, application diagnostics, storage, viewers, retention, and verification |
 | [SERILOG_QUICKSTART.md](SERILOG_QUICKSTART.md) | Logging setup and diagnostic workflow |
 | [UI_VIEW_LIFECYCLE_AND_NAVIGATION.md](UI_VIEW_LIFECYCLE_AND_NAVIGATION.md) | Coding guide for Avalonia view lifecycle and Ursa drawer/navigation pages |
 

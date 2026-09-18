@@ -26,4 +26,7 @@
   <ItemGroup>
       <ProjectReference Include="..\..\UI\MissionPlanner.App\MissionPlanner.App.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
 </Project>

@@ -10,7 +10,9 @@ public static class LogStorageConfiguration
     /// <summary>Adds browser session storage or desktop storage, preserving host overrides.</summary>
     public static IServiceCollection AddLogStorage(this IServiceCollection services, bool? browser = null)
     {
-        if (browser ?? OperatingSystem.IsBrowser())
+        services.TryAddSingleton(new LogStoragePlatform(browser ?? OperatingSystem.IsBrowser()));
+        var platform = (LogStoragePlatform)services.First(descriptor => descriptor.ServiceType == typeof(LogStoragePlatform)).ImplementationInstance!;
+        if (platform.IsBrowser)
         {
             services.TryAddSingleton<ILogStorage>(_ => new BrowserLogStorage());
         }

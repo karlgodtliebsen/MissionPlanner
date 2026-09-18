@@ -140,6 +140,6 @@
             </controls:VirtualizedItemsGrid.RowTemplate>
         </controls:VirtualizedItemsGrid>
         <TextBox Grid.Row="6" Text="{Binding Details, Mode=OneWay}" IsReadOnly="True"
-            AcceptsReturn="True" TextWrapping="Wrap" ScrollViewer.VerticalScrollBarVisibility="Auto" />
+            AcceptsReturn="True" TextWrapping="Wrap" VerticalAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" />
     </Grid>
 </utilities:UserControlViewBase>

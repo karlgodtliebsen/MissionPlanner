@@ -66,6 +66,10 @@ public sealed class TelemetryLogReader : ITelemetryLogReader
                 timestamp));
             stream.Position = packetEnd;
             previousTimestamp = timestamp;
+            if (entries.Count % 512 == 0)
+            {
+                await Task.Yield();
+            }
         }
 
         return new TelemetryLogIndex(

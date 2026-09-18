@@ -192,7 +192,9 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
 
     private void ApplyRecording(TelemetryRecordingStatus status)
     {
-        RecordingState = status.State;
+        var state = status.State is "Idle" or "Completed" ? "Stopped" : status.State;
+        RecordingState = $"{state} · {status.BytesWritten:N0} bytes" +
+            (status.Started is { } started ? $" · started {started:u}" : string.Empty);
         RecordingPath = status.FilePath;
         RecordingError = status.Error;
     }

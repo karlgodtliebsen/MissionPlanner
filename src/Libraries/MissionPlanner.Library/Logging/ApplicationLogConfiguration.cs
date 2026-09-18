@@ -33,6 +33,13 @@ public static class ApplicationLogConfiguration
 
         if (browser)
         {
+            // Native machine/process enrichers are not available in a WASM host.
+            foreach (var key in values.Keys.Where(key => key.StartsWith("Serilog:Enrich:", StringComparison.OrdinalIgnoreCase) &&
+                         values[key] is "WithMachineName" or "WithProcessId" or "WithProcessName").ToArray())
+            {
+                values.Remove(key);
+            }
+
             foreach (var key in values.Keys.Where(key =>
                          key.StartsWith("Serilog:Using:", StringComparison.OrdinalIgnoreCase) &&
                          string.Equals(values[key], "Serilog.Sinks.File", StringComparison.OrdinalIgnoreCase)).ToArray())

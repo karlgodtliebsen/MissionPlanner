@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="appsettings.json" />
+    <EmbeddedResource Include="appsettings.json" LogicalName="MissionPlanner.Browser.appsettings.json" />
   </ItemGroup>
 
   <!-- Linked external content gets the host's wwwroot as its development content root.

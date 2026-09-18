@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.App.Services;
 using MissionPlanner.App.Maps;
@@ -19,6 +19,7 @@ public static class BrowserAppConfigurator
 {
     public static IServiceCollection AddBrowserOnlyServices(this IServiceCollection services)
     {
+        MissionPlanner.Library.Configuration.LogStorageConfiguration.AddLogStorage(services, browser: true);
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.IAdvancedPlatformCapabilities, BrowserAdvancedCapabilities>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Output.IOutputSinkFactory, BrowserOutputSinkFactory>();
         services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Warnings.IWarningRuleStore, BrowserWarningRuleStore>();

@@ -66,6 +66,12 @@ public partial class MainShellViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private void ToggleNavigation()
+    {
+        IsNavigationOpen = !IsNavigationOpen;
+    }
+
+    [RelayCommand]
     private void Exit()
     {
         windowProvider.ActiveWindow?.Close();

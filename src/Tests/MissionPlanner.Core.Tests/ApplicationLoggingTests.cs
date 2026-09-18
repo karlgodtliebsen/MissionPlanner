@@ -43,6 +43,29 @@ public sealed class ApplicationLoggingTests
     }
 
     [Fact]
+    public async Task EventsEmittedDuringNotificationTriggerAnotherNotification()
+    {
+        var buffer = new ApplicationLogBuffer();
+        using var logger = new LoggerConfiguration().WriteTo.Sink(buffer).CreateLogger();
+        var delivered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var count = 0;
+        buffer.Changed += (_, _) =>
+        {
+            if (Interlocked.Increment(ref count) == 1)
+            {
+                logger.Information("During notification");
+            }
+            else
+            {
+                delivered.TrySetResult();
+            }
+        };
+        logger.Information("First");
+        await delivered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        Assert.Equal(2, buffer.Count);
+    }
+
+    [Fact]
     public void RuntimeSwitchUsesConfiguredLevelAndChangesWithoutRestart()
     {
         var configuration = Config(new()

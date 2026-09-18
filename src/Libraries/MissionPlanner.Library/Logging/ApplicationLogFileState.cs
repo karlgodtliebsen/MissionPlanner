@@ -11,12 +11,12 @@ public sealed class ApplicationLogFileState
     private readonly ILogPathProvider? paths;
 
     /// <summary>Reads the configured File sink without constructing or reflecting into a logger.</summary>
-    public ApplicationLogFileState(IConfiguration configuration, ILogPathProvider? paths = null)
+    public ApplicationLogFileState(IConfiguration configuration, ILogPathProvider? paths = null, bool browser = false)
     {
         this.paths = paths;
         var sink = configuration.GetSection("Serilog:WriteTo").GetChildren()
             .FirstOrDefault(section => string.Equals(section["Name"], "File", StringComparison.OrdinalIgnoreCase));
-        FileEnabled = !OperatingSystem.IsBrowser() && paths is not null && sink is not null;
+        FileEnabled = !browser && !OperatingSystem.IsBrowser() && paths is not null && sink is not null;
         var path = sink?["Args:path"];
         var name = path is null or "{ApplicationLogPath}" ? "MissionPlanner.NextGen.Application-.log" : Path.GetFileName(path);
         stem = Path.GetFileNameWithoutExtension(name);

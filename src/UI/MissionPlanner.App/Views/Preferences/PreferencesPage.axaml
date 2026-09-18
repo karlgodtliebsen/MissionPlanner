@@ -410,8 +410,8 @@
 
                             <TextBlock Grid.Row="4" Text="Update channel" VerticalAlignment="Center" />
                             <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding UpdateChannels}" SelectedItem="{Binding UpdateChannel}" />
-                            <TextBlock Grid.Row="5" Text="Log directory" VerticalAlignment="Center" />
-                            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding LogDirectory}" PlaceholderText="Use platform default" />
+                            <TextBlock Grid.Row="5" Text="Log storage" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="Logs → Open folder. Desktop: Documents/Mission Planner/logs. Browser: session storage." TextWrapping="Wrap" />
 
                         </Grid>
                     </StackPanel>

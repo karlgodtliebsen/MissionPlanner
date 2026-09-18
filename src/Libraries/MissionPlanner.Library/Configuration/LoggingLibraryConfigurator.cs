@@ -31,7 +31,7 @@ public static partial class LoggingLibraryConfigurator
     public static IServiceCollection AddSerilog(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddLogStorage();
-        services.TryAddSingleton(provider => new ApplicationLogFileState(configuration, provider.GetService<ILogPathProvider>()));
+        services.TryAddSingleton(provider => new ApplicationLogFileState(configuration, provider.GetService<ILogPathProvider>(), provider.GetRequiredService<LogStoragePlatform>().IsBrowser));
         services.TryAddTransient<ApplicationLogHistory>();
         services.TryAddSingleton(_ => new ApplicationLogBuffer(
             configuration.GetValue<int?>("ApplicationLogging:MemoryCapacity") ?? 5000));
@@ -42,7 +42,7 @@ public static partial class LoggingLibraryConfigurator
         services.TryAddSingleton<Serilog.ILogger>(provider =>
         {
             var resolved = ApplicationLogConfiguration.Resolve(configuration,
-                provider.GetService<ILogPathProvider>(), OperatingSystem.IsBrowser());
+                provider.GetService<ILogPathProvider>(), provider.GetRequiredService<LogStoragePlatform>().IsBrowser);
             var logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(resolved)
                 .MinimumLevel.ControlledBy(provider.GetRequiredService<LoggingLevelSwitch>())

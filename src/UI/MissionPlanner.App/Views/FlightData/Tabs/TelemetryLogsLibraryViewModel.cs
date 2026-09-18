@@ -168,7 +168,7 @@ public sealed partial class TelemetryLogsTabViewModel
     [RelayCommand]
     private Task OpenLogFolderAsync() => logFolders.OpenAsync(LogStorageArea.Telemetry);
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanLoad))]
     private void ClearPacketSelection()
     {
         packetStream?.Dispose();

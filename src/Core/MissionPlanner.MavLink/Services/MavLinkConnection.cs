@@ -33,6 +33,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     private bool inspectionAttached;
     private readonly IMavLinkTrafficRecording? trafficRecording;
     private IAsyncDisposable? recording;
+    private readonly string connectionId = Guid.NewGuid().ToString("N");
     private readonly MavLinkInspectionTap recordingTap = new();
 
     /// <inheritdoc />
@@ -205,6 +206,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
 
     private async Task ParseLoopAsync(CancellationToken cancellationToken)
     {
+        using var logScope = logger.BeginScope(new Dictionary<string, object> { ["ConnectionId"] = connectionId });
         try
         {
             await foreach (var received in client.ReceivedBytes.ReadAllAsync(cancellationToken).ConfigureAwait(false))
@@ -262,7 +264,8 @@ public sealed class MavLinkConnection : IMavLinkConnection
 
                         if (logger.IsEnabled(LogLevel.Trace))
                         {
-                            logger.LogTrace("Decoded MAVLink message {MessageType}.", message.GetType().Name);
+                            logger.LogTrace("Decoded {MessageType}. MavLinkMessageId={MavLinkMessageId}, SystemId={SystemId}, ComponentId={ComponentId}, Transport={Transport}",
+                                message.GetType().Name, frame.MessageId, frame.SystemId, frame.ComponentId, frame.EndPoint.TransportName);
                         }
                     }
                 }

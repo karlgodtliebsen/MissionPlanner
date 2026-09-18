@@ -30,7 +30,7 @@ quota. Browser metadata contains no physical path.
 4. Logs root navigation: implemented.
 5. Telemetry viewer: implemented.
 6. Application viewer: implemented.
-7. Integration, health, retention, and final verification: pending.
+7. Integration, health, retention, and final verification: implemented.
 
 
 ## Telemetry format and lifecycle
@@ -59,7 +59,7 @@ Validation: six application logging tests passed, covering concurrent bounded or
 
 Open Logs from the root navigation menu. Telemetry is selected initially; the last selected section is retained for the session. The existing telemetry view moved out of Flight Data without duplication. Only the selected child is attached to the visual tree. Hidden telemetry views unsubscribe, while recording and replay services remain connection/session owned.
 
-Validation: navigation section switching and selection retention passed. Shared desktop UI and browser library compilation passed; an interactive visual check remains part of final integration.
+Validation: navigation section switching and selection retention passed. Shared desktop UI and browser library compilation passed; final browser rendering checks are documented below.
 
 
 ## Telemetry viewer
@@ -82,3 +82,27 @@ Display filters include minimum/exact level, source category, text, UTC time bou
 Desktop files can be refreshed, opened, exported, and deleted when old. The historical reader accepts the configured text template, including older rows without SourceContext, and retains the newest bounded window of events. It tolerates malformed trailing lines and retains exception continuation lines. All files in the current rolling interval are conservatively protected from deletion, including size rolls. The storage layer also rejects deletion while a writer owns the file. Browser hides desktop file controls and retains live viewing and explicit view export.
 
 Validation: nine application logging/history tests and two viewer/navigation tests passed. The viewer test emits 10,000 events into a 100-event buffer and verifies batched resume, clear-view isolation, runtime levels, filtering, and hide/reopen behavior. Browser library build passed without warnings.
+
+## Health, enrichment, and retention
+
+Telemetry health reports Recording, Stopped, or Error, bytes written, and the UTC start time. The health label tooltip contains the current recording name. Application health reports the runtime minimum level, file logging state/current file, and memory count/capacity. `LoggingHealthService` exposes a lightweight combined snapshot without owning either pipeline.
+
+The central receive loop adds a ConnectionId scope property. Verbose decoded-message events include Transport, MavLinkMessageId, SystemId, and ComponentId. Normal operation does not enable per-packet diagnostic logging. Browser enrichment excludes machine/process lookups.
+
+Telemetry files are user data and are never automatically deleted. Application retention remains Serilog configuration: the supplied native configuration rolls daily and at 10 MiB, retaining seven files. Change these values in appsettings; runtime level changes last only for the session.
+
+GCS telemetry recordings contain received MAVLink traffic. Next Gen application logs contain software diagnostics and exceptions. Vehicle onboard DataFlash/file logging is a separate firmware feature: its status appears beside PC recording status, and neither PC log proves that onboard logging is active.
+
+The legacy LogDirectory preference no longer controls recording. Preferences points users to Logs and the platform storage policy. Native Windows and Linux paths use the same platform resolver; Browser session storage never resolves a desktop path. Serilog.Sinks.File is referenced only by native hosts, and Browser configuration removes file sinks even when supplied a native configuration. The Browser appsettings resource has an explicit manifest name matching startup.
+
+## Final verification and limits
+
+Integration tests cover the actual native Serilog configuration, resolved file creation, restart/history reading, Browser DI with native File settings, session recording/export/reimport, and serial/UDP/TCP connection pipelines using test transports. The latter verify recording before a blocked decoder and flushing on disconnect. Existing binary fixtures verify classic timestamp/frame layout, including signed frames and unknown IDs.
+
+The full supported solution builds Desktop and Browser/WASM. Browser startup and both Logs sections were rendered in the in-app browser at 1280×720; Application showed a structured startup event and disabled file logging. This check exposed and fixed the embedded-settings resource name, missing navigation toggle, and insufficient packet-table height. Temporary startup routing used for the previews was restored to Flight Data.
+
+Automated browser pointer/keyboard interaction with the Avalonia canvas could not be reliably exercised, so interactive import/export, navigation, and replay still need a manual UI check. Real serial hardware, an external classic Mission Planner application, Linux execution, and Android/iOS builds were not tested. Format compatibility is verified through binary fixtures and reader round trips. Historical JSON-formatted application logs are not supported by the text history reader.
+
+Final full-suite run (2026-09-19): 1,229 .NET tests and seven JavaScript tests passed, with 30 existing skipped .NET tests. Results: TestResults/all-tests/20260919-010141-495.
+
+Final solution build passed with zero errors and 17 existing nullable-analysis warnings; no XML documentation warnings were reported.

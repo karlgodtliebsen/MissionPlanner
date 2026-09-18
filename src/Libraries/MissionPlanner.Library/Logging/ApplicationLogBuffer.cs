@@ -84,6 +84,7 @@ public sealed class ApplicationLogBuffer : ILogEventSink
 
     private void Notify()
     {
+        var observedSequence = Interlocked.Read(ref sequence);
         try
         {
             var subscribers = Changed;
@@ -107,6 +108,11 @@ public sealed class ApplicationLogBuffer : ILogEventSink
         finally
         {
             Volatile.Write(ref notificationPending, 0);
+            if (Interlocked.Read(ref sequence) != observedSequence && Changed is not null &&
+                Interlocked.CompareExchange(ref notificationPending, 1, 0) == 0)
+            {
+                ThreadPool.QueueUserWorkItem(_ => Notify());
+            }
         }
     }
 }

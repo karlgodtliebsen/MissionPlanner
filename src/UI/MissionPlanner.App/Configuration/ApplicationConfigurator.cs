@@ -258,6 +258,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<TelemetryLogsTabViewModel>();
         services.TryAddTransient<MissionPlanner.Core.Replay.TelemetryPacketBrowser>();
         services.TryAddTransient<MissionPlanner.Core.Replay.TelemetryLogCatalog>();
+        services.TryAddSingleton<MissionPlanner.Core.Replay.LoggingHealthService>();
         services.TryAddTransient<MissionPlanner.App.Presentation.ILogFolderService, MissionPlanner.App.Presentation.LogFolderService>();
         services.TryAddTransient<TelemetryLogsTabItemView>();
         services.TryAddSingleton<MissionPlanner.App.Views.Logs.LogsNavigationState>();
