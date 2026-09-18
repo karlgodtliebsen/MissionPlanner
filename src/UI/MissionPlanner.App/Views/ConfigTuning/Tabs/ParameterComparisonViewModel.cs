@@ -114,6 +114,7 @@ public partial class ParameterComparisonViewModel : DialogViewModelBase
 
         await clipboard.SetTextAsync(CreateTextExport());
         SetMessages($"Copied {SelectedItems.Count} parameters.");
+        NotificationManager?.Show(StatusMessage ?? "");
     }
 
     [RelayCommand]

@@ -8,19 +8,19 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AdsbView"
                                x:DataType="sections:AdsbViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer VerticalScrollBarVisibility="Visible">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
             <TextBlock Text="ADSB" Classes="H2" />
             <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
-            <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+            <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                  IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                  IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             <ItemsControl ItemsSource="{Binding Guidance}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="x:String">
-<TextBlock Text="{Binding .}" Classes="Warning" />
+                        <TextBlock Text="{Binding .}" Classes="Warning" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -44,9 +44,9 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <StackPanel HorizontalAlignment="Right">
-            <Button ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh">
-                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-            </Button>
+                <Button ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh">
+                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

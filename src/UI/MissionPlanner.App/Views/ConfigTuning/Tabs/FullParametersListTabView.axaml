@@ -122,11 +122,11 @@
                                       Header="Revert Parameter Changes" />
                         </MenuFlyout>
                     </DropDownButton.Flyout>
-                    <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="25" Height="25" />
                 </u:IconDropDownButton>
 
                 <Button ToolTip.Tip="Copy all" Command="{Binding CopyAllCommand}" AutomationProperties.Name="Copy all">
-                    <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
+                    <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" Width="30" Height="30" />
                 </Button>
                 
                 <Button
@@ -138,7 +138,7 @@
 
                 
                 <Button
-                    ToolTip.Tip="Retry failed operation"
+                    ToolTip.Tip="Retry"
                     VerticalAlignment="Center"
                     Command="{Binding RetryFailedCommand}"   >
                     <avalonia:MaterialIcon Kind="ReloadAlert" Width="30" Height="30" />

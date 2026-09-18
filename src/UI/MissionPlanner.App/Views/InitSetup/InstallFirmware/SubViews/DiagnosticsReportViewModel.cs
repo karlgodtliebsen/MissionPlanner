@@ -32,9 +32,12 @@ public sealed partial class DiagnosticsReportViewModel : DialogViewModelBase
     [RelayCommand]
     private Task CopyDiagnosticReportAsync()
     {
-        return string.IsNullOrWhiteSpace(LastDiagnosticReport)
-            ? Task.CompletedTask
-            : clipboard.SetTextAsync(LastDiagnosticReport);
+        if (!string.IsNullOrWhiteSpace(LastDiagnosticReport))
+        {
+            clipboard.SetTextAsync(LastDiagnosticReport);
+            NotificationManager?.Show(LastDiagnosticReport);
+        }
+        return Task.CompletedTask;
     }
     //  partial void OnLastDiagnosticReportChanged(string? value) => OnPropertyChanged(nameof(HasDiagnosticReport));
 

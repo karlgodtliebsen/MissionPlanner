@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
@@ -20,5 +20,6 @@ public sealed partial class InspectorDetailViewModel(ITextClipboardService clipb
     private async Task CopyAsync()
     {
         await clipboard.SetTextAsync(Text);
+        NotificationManager?.Show(Text);
     }
 }

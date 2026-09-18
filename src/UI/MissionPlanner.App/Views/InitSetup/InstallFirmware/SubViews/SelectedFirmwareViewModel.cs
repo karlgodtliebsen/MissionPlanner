@@ -40,9 +40,13 @@ public sealed partial class SelectedFirmwareViewModel : ViewModelBase
     [RelayCommand]
     private Task CopyDownloadUrlAsync()
     {
-        return Selected is null
-            ? Task.CompletedTask
-            : clipboard.SetTextAsync(Selected.Entry.Artifact.DownloadUri.AbsoluteUri);
+        if (Selected is not null)
+        {
+            clipboard.SetTextAsync(Selected.Entry.Artifact.DownloadUri.AbsoluteUri);
+            NotificationManager?.Show(Selected.Entry.Artifact.DownloadUri.AbsoluteUri);
+        }
+
+        return Task.CompletedTask;
     }
 
     /// <summary>

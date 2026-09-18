@@ -15,18 +15,10 @@ Add information to HUD
 Make layout uniform
 
 
+*********************************************************************************************
 
-Task 3:
-I have been trying to make the main layout the same, an could need a list of pages/views that are not yet correct.
-
-MandatoryHardwarePage and AdvancedPage shows how to a ContentPage
-In AccelerometerSetupView there is a sample for a TabControl TabItem
-
-Investigate the layout of the views, and note which one do not conform to the standard"
-
-
-
-
+Replace spinner in FullParametersListView with the progress dialogue: done
+Shiftthe  Progress Dialogue in FullParametersListView to use overlay
 
 *********************************************************************************************
 
@@ -44,9 +36,7 @@ RC calibration failed:
   Yaw:  RC4_MAX=1598, expected >=1700
 
 *********************************************************************************************
-
-
-Accelerometer page is not working.
+Accelerometer page is not working: must be verified
 *********************************************************************************************
 
 

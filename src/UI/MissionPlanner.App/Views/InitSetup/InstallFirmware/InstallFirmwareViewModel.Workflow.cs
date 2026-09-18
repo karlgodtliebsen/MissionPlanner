@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Installation;
@@ -73,8 +72,12 @@ public sealed partial class InstallFirmwareViewModel
     [RelayCommand(CanExecute = nameof(HasOnlineArtifact))]
     private Task CopySelectedUrlAsync()
     {
-        return HasOnlineArtifact && clipboard is not null
-            ? clipboard.SetTextAsync(SelectedArtifact.OnlineUrl!.AbsoluteUri) : Task.CompletedTask;
+        if (HasOnlineArtifact && clipboard is not null)
+        {
+            clipboard.SetTextAsync(SelectedArtifact.OnlineUrl!.AbsoluteUri);
+            NotificationManager?.Show(SelectedArtifact.OnlineUrl!.AbsoluteUri);
+        }
+        return Task.CompletedTask;
     }
 
     private void DfuModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -402,8 +405,8 @@ public sealed partial class InstallFirmwareViewModel
             || DfuModel.HasLocalDfuFirmware
             || artifact.ArtifactValid;
         ShowValidationAndCompatibility = OnlineFirmwareModel.SelectedFirmware is not null
-            || HasPhysicalController && artifact.ArtifactValid
-                && (CurrentPlan.RequiredArtifactFormat != FirmwareArtifactFormat.WithBootloaderHex || DfuModel.PreparedArtifact is not null);
+            || (HasPhysicalController && artifact.ArtifactValid
+                && (CurrentPlan.RequiredArtifactFormat != FirmwareArtifactFormat.WithBootloaderHex || DfuModel.PreparedArtifact is not null));
         CanValidateCompatibility = !context.OperationInProgress && artifact.ArtifactValid
             && (dfu is not null
                 ? DfuModel.PreparedArtifact is not null && !string.IsNullOrWhiteSpace(artifact.Platform) && dfuSafety is not null
@@ -503,8 +506,11 @@ public sealed partial class InstallFirmwareViewModel
     }
 
     /// <summary>Allows manual discovery while no DFU endpoint is selected and no operation owns discovery.</summary>
-    private bool CanEnterManualDfu() => CurrentPlan.Capabilities.CanRefreshPhysicalDevices
+    private bool CanEnterManualDfu()
+    {
+        return CurrentPlan.Capabilities.CanRefreshPhysicalDevices
         && !ArePanelsRefreshing && DfuModel.SelectedDfuDevice is null;
+    }
 
     /// <summary>Probes the selected physical controller without changing boot mode.</summary>
     [RelayCommand(CanExecute = nameof(CanProbeRuntime))]

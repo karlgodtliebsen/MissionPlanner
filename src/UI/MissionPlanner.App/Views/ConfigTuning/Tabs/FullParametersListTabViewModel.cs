@@ -155,6 +155,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         }
         await clipboard.SetTextAsync(CreateTextExport());
         SetMessages($"Copied {EditSession.Fields.Count} parameters.");
+        NotificationManager?.Show(StatusMessage ?? "");
     }
 
     [RelayCommand]

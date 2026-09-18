@@ -18,7 +18,7 @@
             <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                  IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
-            <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." Classes="Warning" FontWeight="Bold" />
+            <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." Classes="Warning H4" />
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
                 <Button ToolTip.Tip="Start six-position calibration" Command="{Binding StartSixPositionCommand}" AutomationProperties.Name="Start six-position calibration">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -43,7 +43,6 @@
             <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
             <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" />
             <TextBlock Text="{Binding CompletedOrientations}" />
-
             <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" FontStyle="Italic" />
 
             

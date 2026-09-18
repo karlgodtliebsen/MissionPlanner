@@ -6,7 +6,6 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -210,6 +209,7 @@ public partial class MessagesTabViewModel : ViewModelBase
 
         await clipboard.SetTextAsync(FormatRow(SelectedMessage));
         SetMessages("Selected message copied.");
+        NotificationManager?.Show(StatusMessage ?? "");
     }
 
     [RelayCommand]
@@ -217,6 +217,7 @@ public partial class MessagesTabViewModel : ViewModelBase
     {
         await clipboard.SetTextAsync(CreateTextExport());
         SetMessages($"Copied {Items.Count} visible messages.");
+        NotificationManager?.Show(StatusMessage ?? "");
     }
 
     [RelayCommand]

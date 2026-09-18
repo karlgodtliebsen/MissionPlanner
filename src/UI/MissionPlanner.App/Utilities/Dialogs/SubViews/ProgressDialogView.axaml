@@ -8,21 +8,19 @@
              x:Class="MissionPlanner.App.Utilities.Dialogs.SubViews.ProgressDialogView"
              x:DataType="subViews:ProgressDialogViewModel"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
-             MinHeight="400"
-             MinWidth="600"
-             Margin="25"
-             Padding="25"
+             Margin="50"
              >
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-        <StackPanel Orientation="Vertical" Spacing="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Orientation="Vertical" Spacing="20">
             
             <TextBlock Text="{Binding Message}"
-                       TextWrapping="Wrap" Classes="H3" />
+                       TextWrapping="Wrap" Classes="H4" />
 
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}"
                          HorizontalAlignment="Stretch"
                          VerticalAlignment="Stretch"/>
-            <Button Command="{Binding CancelCommand}"
+
+<!--            <Button Command="{Binding CancelCommand}"
                     IsVisible="{Binding CanRequestCancellation}"
                     HorizontalAlignment="Center"
                     AutomationProperties.Name="Cancel operation">
@@ -30,8 +28,7 @@
                     <mdi:MaterialIcon Kind="CloseCircleOutline" Width="20" Height="20" />
                     <TextBlock Text="Cancel operation" VerticalAlignment="Center" />
                 </StackPanel>
-            </Button>
-
+            </Button>-->
         </StackPanel>
     </Grid>
 </UserControl>
