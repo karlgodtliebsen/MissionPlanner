@@ -44,6 +44,8 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
 
     private ParameterApplyReport? lastApplyReport;
     private IDisposable? progressDialog;
+    private int progressDialogGeneration;
+    private bool backgroundProgressDialog;
 
     private int sessionRefreshScheduled;
     private int cachedLoadScheduled;
@@ -207,8 +209,12 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             CompleteBusyState();
             if (changed && vehicleChangedEventArgs.Current.VehicleId is { } vehicleId)
             {
-                await ApplyParameterLoadStatusAsync(parameterLoadStatus.Get(vehicleId));
-                await ScheduleCachedParameterLoadAsync(vehicleId);
+                var status = parameterLoadStatus.Get(vehicleId);
+                await ApplyParameterLoadStatusAsync(status);
+                if (status?.State != ParameterLoadState.Completed)
+                {
+                    await ScheduleCachedParameterLoadAsync(vehicleId);
+                }
             }
         });
     }
@@ -366,7 +372,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     protected virtual async Task OnParameterLoadStatusChanged(VehicleParameterLoadStatusChanged evt, CancellationToken cancellationToken)
     {
         var status = evt.Status;
-        if (disposed || activeVehicle.VehicleId != status.VehicleId)
+        if (disposed || !activated || activeVehicle.VehicleId != status.VehicleId)
         {
             return;
         }
@@ -374,7 +380,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         await Dispatcher.DispatchAsync(async () =>
         {
             var latest = parameterLoadStatus.Get(status.VehicleId);
-            if (latest != status)
+            if (disposed || !activated || activeVehicle.VehicleId != status.VehicleId || latest != status)
             {
                 return;
             }
@@ -389,7 +395,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// <param name="status"></param>
     protected virtual async Task ApplyParameterLoadStatusAsync(ParameterLoadStatus? status)
     {
-        if (status is null || activeVehicle.VehicleId != status.VehicleId)
+        if (disposed || !activated || status is null || activeVehicle.VehicleId != status.VehicleId)
         {
             return;
         }
@@ -405,6 +411,10 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
                 ShowLoadingCompletedWithError = false;
                 ShowLoadingCancelled = false;
                 SetMessages(status.Message);
+                if (loadCancellation is null)
+                {
+                    await ShowProgressDialogAsync(activeVehicle.ConnectionCancellationToken, background: true);
+                }
                 break;
             case ParameterLoadState.Completed:
                 ShowLoadingCompletedWithError = false;
@@ -421,6 +431,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
                 SetMessages(errorMessage: status.Message);
                 break;
         }
+        CloseBackgroundProgressDialogIfIdle();
     }
 
     /// <summary>
@@ -446,7 +457,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     protected virtual async Task ScheduleCachedParameterLoadAsync(VehicleId vehicleId)
     {
         Debug.Print("ScheduleCachedParameterLoadAsync-Scheduling cached parameter load for {0}.", vehicleId);
-        if (disposed || IsBusy || !HasCompleteCachedParameterSet(vehicleId) || Interlocked.CompareExchange(ref cachedLoadScheduled, 1, 0) != 0)
+        if (disposed || !activated || IsBusy || EditSession is not null || !HasCompleteCachedParameterSet(vehicleId) || Interlocked.CompareExchange(ref cachedLoadScheduled, 1, 0) != 0)
         {
             return;
         }
@@ -479,13 +490,19 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         try
         {
             Debug.Print("LoadCachedParametersAsync-Loading cached parameters for {0}.", vehicleId);
+            await Dispatcher.DispatchAsync(async () =>
+            {
+                ProgressMessage = "Loading parameter metadata...";
+                await ShowProgressDialogAsync(cancellation.Token, background: true);
+            });
+            cancellation.Token.ThrowIfCancellationRequested();
             var session = editSessionFactory.Create(vehicleId);
             await session.LoadAsync(cancellationToken: cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
 
             await Dispatcher.DispatchAsync(() =>
             {
-                if (disposed || !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
+                if (disposed || !activated || !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
                 {
                     return;
                 }
@@ -518,6 +535,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             Interlocked.CompareExchange(ref cachedLoadCancellation, null, cancellation);
             cancellation.Dispose();
             Interlocked.Exchange(ref cachedLoadScheduled, 0);
+            await Dispatcher.DispatchAsync(CloseBackgroundProgressDialogIfIdle);
         }
     }
 
@@ -623,9 +641,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         try
         {
             await SetLoadStateAsync();
-            IsShowingProgressDialog = true;
-            var options = new DialogOptions() { Title = "Loading parameters" };
-            progressDialog = await dialogService.DisplayProgressCancellableAsync(() => ProgressMessage, options, cancellationToken: cancellationToken);
+            await ShowProgressDialogAsync(cancellationToken);
             var progress = CreateProgress();
             cancellationToken.ThrowIfCancellationRequested();
             Logger.LogInformation("Loading the Full Parameters List for {VehicleId}.", vehicleId);
@@ -649,7 +665,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             cancellationToken.ThrowIfCancellationRequested();
             await Dispatcher.DispatchAsync(() =>
             {
-                if (disposed || !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
+                if (disposed || !activated || !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
                 {
                     return;
                 }
@@ -850,8 +866,12 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
 
         if (activeVehicle.VehicleId is { } vehicleId && HasConnection)
         {
-            await ApplyParameterLoadStatusAsync(parameterLoadStatus.Get(vehicleId));
-            await ScheduleCachedParameterLoadAsync(vehicleId);
+            var status = parameterLoadStatus.Get(vehicleId);
+            await ApplyParameterLoadStatusAsync(status);
+            if (status?.State != ParameterLoadState.Completed)
+            {
+                await ScheduleCachedParameterLoadAsync(vehicleId);
+            }
         }
 
     }
@@ -899,11 +919,67 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     }
 
 
+    private Task ShowProgressDialogAsync(CancellationToken cancellationToken, bool background = false)
+    {
+        return Dispatcher.DispatchAsync(async () =>
+        {
+            if (disposed || !activated || cancellationToken.IsCancellationRequested || IsShowingProgressDialog)
+            {
+                return;
+            }
+
+            var generation = ++progressDialogGeneration;
+            IsShowingProgressDialog = true;
+            backgroundProgressDialog = background;
+            try
+            {
+                var options = new DialogOptions { Title = "Loading parameters" };
+                var dialog = await dialogService.DisplayProgressCancellableAsync(
+                    () => ProgressMessage ?? string.Empty, options, cancellationToken);
+                if (generation != progressDialogGeneration || disposed || !activated || cancellationToken.IsCancellationRequested)
+                {
+                    dialog.Dispose();
+                    if (generation == progressDialogGeneration)
+                    {
+                        CloseProgressDialog();
+                    }
+                    return;
+                }
+                progressDialog = dialog;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                if (generation == progressDialogGeneration)
+                {
+                    CloseProgressDialog();
+                }
+            }
+            catch
+            {
+                if (generation == progressDialogGeneration)
+                {
+                    CloseProgressDialog();
+                }
+                throw;
+            }
+        });
+    }
+
+    private void CloseBackgroundProgressDialogIfIdle()
+    {
+        if (backgroundProgressDialog && !IsBackgroundParameterLoadInProgress && cachedLoadCancellation is null)
+        {
+            CloseProgressDialog();
+        }
+    }
+
     /// <summary>
     /// Closes the progress dialog if it is currently shown.
     /// </summary>
     protected virtual void CloseProgressDialog()
     {
+        ++progressDialogGeneration;
+        backgroundProgressDialog = false;
         IsShowingProgressDialog = false;
         progressDialog?.Dispose();
         progressDialog = null;

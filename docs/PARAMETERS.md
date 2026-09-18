@@ -101,6 +101,30 @@ timeout is 30 s.
 
 ---
 
+## Parameter-loading progress in the UI
+
+Pages derived from ParametersViewModel (Full Parameters List and Motor Test) use the
+same "Loading parameters" dialog for background connection downloads, cached parameter
+metadata projection, and an explicit Refresh. The dialog reads the live ProgressMessage;
+repeated progress events update one dialog rather than opening additional windows.
+The inline background-loading spinner and progress label have been removed.
+
+Background progress observes the existing connection-owned download; opening a page
+does not request a second download. The dialog remains visible through metadata loading
+and row creation, then closes on completion, failure, cancellation, vehicle change, or
+page deactivation. Leaving the page closes its dialog and cancels local cache projection;
+it does not cancel the connection-owned download. Refresh retains its existing cancellation
+token and owns its dialog independently of background status events. A late dialog-open
+result from an earlier page lifetime is disposed without replacing the current dialog.
+
+Regression coverage is in ParameterProgressDialogTests, including retained status on
+activation, repeated updates, terminal states, metadata completion/failure, late dialog
+creation, and concurrent background notifications during Refresh.
+
+Verified 2026-09-18: all 1,183 .NET tests and seven browser tests passed; 30 existing external/hardware/local-only tests remained skipped. The full solution build passed. Results: TestResults/all-tests/20260918-213708-079/. Interactive dialog appearance was not manually verified.
+
+---
+
 ## Parameter metadata
 
 Rich, human-readable information about each parameter (description, range, units,
