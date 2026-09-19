@@ -38,7 +38,7 @@ public sealed partial class ProgressDialogViewModel : DialogViewModelBase
     /// <summary>Requests deferred cancellation, or closes ordinary progress.</summary>
     public override void Close()
     {
-        if (disposed)
+        if (disposed || Closed)
         {
             return;
         }
@@ -54,6 +54,18 @@ public sealed partial class ProgressDialogViewModel : DialogViewModelBase
     public override void Cancel()
     {
         Close();
+    }
+
+    /// <summary>Closes completed progress without requesting cancellation of its operation.</summary>
+    public void Complete()
+    {
+        if (disposed || Closed)
+        {
+            return;
+        }
+
+        timer.Stop();
+        base.Close();
     }
 
     /// <inheritdoc />

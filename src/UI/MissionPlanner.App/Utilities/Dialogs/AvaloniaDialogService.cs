@@ -263,7 +263,9 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
             }
 
             Register(model);
-            var handle = new DialogHandle(() => dispatcher.Dispatch(lifetime.Cancel));
+            // Ursa routes token cancellation through model.Close(), which requests deferred
+            // operation cancellation. Owner completion must instead raise RequestClose directly.
+            var handle = new DialogHandle(() => dispatcher.Dispatch(model.Complete));
             // ShowOverlayDialogAsync completes when the overlay closes. Return its handle
             // immediately so the caller can do the work whose progress it is displaying.
             _ = ObserveProgressDialogAsync(completion, model, lifetime, handle);

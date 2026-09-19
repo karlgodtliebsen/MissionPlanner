@@ -24,3 +24,18 @@ typed result to the dialog service rather than walking the visual tree to find a
 Exercise accept, cancel, title-bar close, owner-window close, repeated open/close, and
 activation cancellation. Verify that no callback updates disposed state and that exceptions
 are observed and logged.
+
+## Progress completion versus cancellation
+
+For deferred progress, a user close requests operation cancellation and leaves the overlay
+visible until the operation unwinds. Disposing the progress handle calls
+`ProgressDialogViewModel.Complete` on the UI thread, raising the actual dialog-close event
+without invoking the operation's cancellation callback. Ursa routes cancellation of its
+presentation token through the model's `Close` method, so cancelling that token is not an
+owner-completion mechanism for deferred progress.
+
+Telemetry packet indexing disposes its handle before loading replay. Successful indexing
+therefore closes the overlay without cancelling the token needed by the following replay
+load. Completion also dismisses progress after failure or user cancellation, and repeated
+completion/late close requests are harmless. `ProgressOverlayTests` exercises the real Ursa
+custom dialog close contract for successful and cancelled indexing.

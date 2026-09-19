@@ -110,6 +110,35 @@ public sealed class ProgressOverlayTests
         Assert.Equal(1, closed);
     }
 
+    /// <summary>Completed indexing dismisses deferred progress without cancelling the replay that follows.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompletedProgressClosesUrsaOverlayWithoutCancellingFollowingWork(bool cancelFirst)
+    {
+        using var fixture = new Fixture();
+        using var operation = new CancellationTokenSource();
+        using var model = new ProgressDialogViewModel(() => "Indexing telemetry packets...", operation.Cancel);
+        var overlay = new Ursa.Controls.CustomDialogControl { DataContext = model };
+        var completion = overlay.ShowAsync<bool>();
+        if (cancelFirst)
+        {
+            overlay.Close();
+            Assert.True(operation.IsCancellationRequested);
+            Assert.False(completion.IsCompleted);
+        }
+
+        model.Complete();
+        await completion.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        Assert.True(model.Closed);
+        Assert.Equal(cancelFirst, operation.IsCancellationRequested);
+
+        // Late title-bar/owner close requests must not cancel the next operation.
+        model.Complete();
+        model.Close();
+        Assert.Equal(cancelFirst, operation.IsCancellationRequested);
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly ServiceProvider services;
