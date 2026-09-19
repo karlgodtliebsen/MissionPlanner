@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -104,10 +103,7 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
             }
             return Task.CompletedTask;
         });
-        if (parameterRegistry is not null)
-        {
-            parameterRegistry.Changed += OnParameterChanged;
-        }
+        parameterRegistry?.Changed += OnParameterChanged;
         activeVehicle.Changed += OnActiveVehicleChanged;
         ApplyOnboardLogging();
         replaySessionManager.Changed += OnReplayChanged;
@@ -130,10 +126,7 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
         recordingSubscription = null;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
-        if (parameterRegistry is not null)
-        {
-            parameterRegistry.Changed -= OnParameterChanged;
-        }
+        parameterRegistry?.Changed -= OnParameterChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         replaySessionManager.Changed -= OnReplayChanged;
     }
@@ -150,13 +143,34 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
     [ObservableProperty]
     public partial string RecordingState { get; private set; } = "Idle";
 
+
+    /// <summary>Gets PC recording health, independent of vehicle onboard logging.</summary>
+    [ObservableProperty]
+    public partial string RecordingStateBytes { get; private set; } = "0";
+
+
+    /// <summary>Gets PC recording health, independent of vehicle onboard logging.</summary>
+    [ObservableProperty]
+    public partial string RecordingStateStarted
+    {
+        get;
+        private set;
+    } = string.Empty;
+
+
     /// <summary>Gets the exact PC telemetry file location.</summary>
     [ObservableProperty]
-    public partial string? RecordingPath { get; private set; }
+    public partial string? RecordingPath
+    {
+        get; private set;
+    }
 
     /// <summary>Gets a file or dropped-frame recording error.</summary>
     [ObservableProperty]
-    public partial string? RecordingError { get; private set; }
+    public partial string? RecordingError
+    {
+        get; private set;
+    }
 
     /// <summary>Gets vehicle logger health and configuration, independent of PC recording.</summary>
     [ObservableProperty]
@@ -164,7 +178,10 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
 
     /// <summary>Gets retained onboard logger and storage evidence.</summary>
     [ObservableProperty]
-    public partial string? OnboardLoggingDetail { get; private set; }
+    public partial string? OnboardLoggingDetail
+    {
+        get; private set;
+    }
 
     private void OnParameterChanged(MissionPlanner.Core.Vehicles.VehicleParameterChangedEventArgs args)
     {
@@ -192,9 +209,10 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
 
     private void ApplyRecording(TelemetryRecordingStatus status)
     {
-        var state = status.State is "Idle" or "Completed" ? "Stopped" : status.State;
-        RecordingState = $"{state} · {status.BytesWritten:N0} bytes" +
-            (status.Started is { } started ? $" · started {started:u}" : string.Empty);
+        RecordingState = status.State is "Idle" or "Completed" ? "Stopped" : status.State;
+        RecordingStateBytes = $"{status.BytesWritten:N0}";
+        RecordingStateStarted = status.Started is { } started ? $"{started:u}" : string.Empty;
+
         RecordingPath = status.FilePath;
         RecordingError = status.Error;
     }

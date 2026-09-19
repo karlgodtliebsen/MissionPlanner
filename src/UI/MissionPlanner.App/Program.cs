@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.Versioning;
 using Avalonia;
@@ -47,8 +47,6 @@ public static class MissionPlannerProgram
     public static async Task<AppBuilder> BuildAvaloniaAppAsync(
         Action<IServiceCollection> serviceAction, IConfiguration? configuration = null)
     {
-        IServiceProvider? serviceProvider = null;
-
         List<IConfigurationSource> configurationSources = [new JsonConfigurationSource
         {
             Path = "appsettings.json", Optional = false, ReloadOnChange = true
@@ -63,7 +61,7 @@ public static class MissionPlannerProgram
         serviceAction.Invoke(services);
         services.AddApplicationConfiguration(configuration ?? configurationBuilder.Build());
         services.AddSingleton(cancellationTokenSource);
-        serviceProvider = services.BuildServiceProvider();
+        IServiceProvider serviceProvider = services.BuildServiceProvider();
         DomainException.ThrowIfNull(serviceProvider);
         await serviceProvider.UseApplicationAsync();
 

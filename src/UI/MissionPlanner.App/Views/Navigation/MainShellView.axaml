@@ -13,24 +13,18 @@
     d:DesignWidth="1200"
     d:DesignHeight="700"
     mc:Ignorable="d"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-
-
-    <Grid RowDefinitions="Auto,Auto,*">
-        <Button HorizontalAlignment="Left" Margin="8,4" Command="{Binding ToggleNavigationCommand}"
-                ToolTip.Tip="Open navigation" AutomationProperties.Name="Open navigation">
-            <mdi:MaterialIcon Kind="Menu" Width="22" Height="22" />
-        </Button>
-        <common:FirmwareUpdateNoticeView Grid.Row="1" />
-        <DrawerPage Grid.Row="2"
-            x:Name="MainDrawer"
-            DrawerPlacement="Left"
-            DrawerLength="300"
-            DrawerBehavior="Flyout"
-            DrawerLayoutBehavior="Overlay"
-            DrawerBreakpointLength="900"
-            IsOpen="{Binding IsNavigationOpen, Mode=TwoWay}"
-            Content="{Binding Content}">
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    <Grid RowDefinitions="Auto,*">
+        <common:FirmwareUpdateNoticeView Grid.Row="0" />
+        <DrawerPage Grid.Row="1"
+                    x:Name="MainDrawer"
+                    DrawerPlacement="Left"
+                    DrawerLength="300"
+                    DrawerBehavior="Flyout"
+                    DrawerLayoutBehavior="Overlay"
+                    DrawerBreakpointLength="900"
+                    IsOpen="{Binding IsNavigationOpen, Mode=TwoWay}"
+                    Content="{Binding Content}">
 
             <DrawerPage.DrawerIcon>
                 <PathIcon Data="M3,6 H21 V8 H3 Z M3,11 H21 V13 H3 Z M3,16 H21 V18 H3 Z" />
@@ -66,7 +60,7 @@
                         IsHorizontalCollapsed="{Binding IsNavigationCollapsed, Mode=TwoWay}">
 
                         <u:NavMenu.IconTemplate>
-                        <DataTemplate x:DataType="imaging:Bitmap">
+                            <DataTemplate x:DataType="imaging:Bitmap">
                                 <Image Width="20" Height="20" Source="{Binding}" />
                             </DataTemplate>
                         </u:NavMenu.IconTemplate>

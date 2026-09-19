@@ -77,17 +77,13 @@ public static class ApplicationConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddApplicationConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
-        //TODO: add app-settings/config file
         var applicationOptions = configuration.GetSection(ApplicationOptions.SectionName).Get<ApplicationOptions>();
         DomainException.ThrowIfNull(applicationOptions, ApplicationOptions.Template);
 
         services.AddSingleton(Options.Create(applicationOptions));
         services.TryAddSingleton(new CancellationTokenSource());
 
-        //services.AddSingleton<IFileSaver>(FileSaver.Default);
-        //services.AddSingleton<AppShellContentViewModel>();
-
-        //// Register shared state service as singleton for runtime state management
+        // Register shared state service as singleton for runtime state management
 
         services.TryAddSingleton<Dispatcher>(sp => Dispatcher.UIThread);
         services.TryAddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
@@ -361,7 +357,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<PreferencesViewModel>();
         services.TryAddTransient<CubeLan8PortSwitchTabViewModel>();
 
-        ////remove
         services.TryAddTransient<FirmwareSetupViewModel>();
 
         services.TryAddTransient<InstallFirmwarePage>();
@@ -372,13 +367,12 @@ public static class ApplicationConfigurator
         services.TryAddTransient<OptionalHardwarePage>();
 
 
-        //// Workflow Tabs on Setup Mandatory Hardware View
+        // Workflow Tabs on Setup Mandatory Hardware View
         services.TryAddTransient<FrameSetupViewModel>();
         services.TryAddTransient<AccelerometerSetupViewModel>();
         services.TryAddTransient<CompassSetupViewModel>();
         services.TryAddTransient<RadioSetupViewModel>();
         services.TryAddTransient<ServoOutputSetupViewModel>();
-        ////services.TryAddTransient<SerialPortsViewModel>();
         services.TryAddTransient<EscMotorSetupViewModel>();
         services.TryAddTransient<FlightModesSetupViewModel>();
         services.TryAddTransient<FailSafeViewModel>();
@@ -442,7 +436,11 @@ public static class ApplicationConfigurator
     {
         return serviceProvider.UseApplicationAsync().GetAwaiter().GetResult();
     }
-
+    /// <summary>
+    /// Post ServiceProvider Build Setup - This method is called after the ServiceProvider has been built and is used to perform any additional setup or initialization that requires access to the fully constructed service provider.
+    /// </summary>
+    /// <param name="serviceProvider"></param>
+    /// <returns></returns>
     public static async Task<IServiceProvider> UseApplicationAsync(this IServiceProvider serviceProvider)
     {
         var logger = serviceProvider.GetRequiredService<ILogger<ApplicationOptions>>();

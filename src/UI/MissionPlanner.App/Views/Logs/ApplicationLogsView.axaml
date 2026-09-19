@@ -10,7 +10,7 @@
     x:Class="MissionPlanner.App.Views.Logs.ApplicationLogsView"
     x:DataType="local:ApplicationLogsViewModel"
     x:CompileBindings="True">
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,160" RowSpacing="8">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*,5,160" RowSpacing="8">
         <StackPanel>
             <TextBlock Text="{Binding Health}" TextWrapping="Wrap" />
             <TextBlock Text="VERBOSE recording enabled" IsVisible="{Binding IsVerbose}" Classes="Warning" FontWeight="Bold" />
@@ -139,7 +139,11 @@
                 </DataTemplate>
             </controls:VirtualizedItemsGrid.RowTemplate>
         </controls:VirtualizedItemsGrid>
-        <TextBox Grid.Row="6" Text="{Binding Details, Mode=OneWay}" IsReadOnly="True"
+
+        <GridSplitter Grid.Row="6" Height="5" ResizeDirection="Rows" />
+
+
+        <TextBox Grid.Row="7" Text="{Binding Details, Mode=OneWay}" IsReadOnly="True"
             AcceptsReturn="True" TextWrapping="Wrap" VerticalAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Auto" />
     </Grid>
 </utilities:UserControlViewBase>
