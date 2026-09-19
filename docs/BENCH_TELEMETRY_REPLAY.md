@@ -1,8 +1,13 @@
-﻿# Bench telemetry replay regression harness
+# Bench telemetry replay regression harness
 
 The existing Telemetry Logs playback view uses ReplaySessionManager: load a standard tlog, play at
 0.1–50 times recorded speed, pause, seek, or close to stop. Playback is isolated from live vehicles.
 Outbound MAVLink transmission stays disabled until the replay is closed.
+
+The telemetry packet table displays each loaded page newest first, ordered by recorded UTC
+timestamp and then source packet index descending for equal timestamps. This also applies
+when filtering, paging, jumping to a timestamp, or following replay. Replay-follow range
+checks use the newest row at the top and the oldest row at the bottom.
 
 For fast deterministic regression playback, construct ReplaySessionManager with ImmediateReplayDelay.
 It reads every indexed packet in file order without wall-clock waits. The same TelemetryLogReader,

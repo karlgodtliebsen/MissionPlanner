@@ -224,7 +224,7 @@ public sealed partial class TelemetryLogsTabViewModel
         var status = $"{packetIndex.Entries.Count:N0} packets · {packetIndex.Duration:g} · {packetIndex.StartedAt:O} · showing {page.Rows.Count} (source {start}–{nextPacket})";
         await Dispatcher.DispatchAsync(() =>
         {
-            Packets.ReplaceRange(page.Rows);
+            Packets.ReplaceRange(page.Rows.OrderByDescending(row => row.Time).ThenByDescending(row => row.Index));
             PacketStatus = status;
         });
     }
@@ -244,7 +244,7 @@ public sealed partial class TelemetryLogsTabViewModel
     private void FollowPacketTime(ReplaySessionSnapshot snapshot)
     {
         if (FollowReplay && active && !IsBusy && packetIndex?.SourceName == snapshot.Index?.SourceName &&
-            snapshot.Clock is { } clock && (Packets.Count == 0 || clock.LogTime > Packets[^1].Time || clock.LogTime < Packets[0].Time))
+            snapshot.Clock is { } clock && (Packets.Count == 0 || clock.LogTime > Packets[0].Time || clock.LogTime < Packets[^1].Time))
         {
             _ = LibraryOperationAsync(token => ReadPacketPageAsync(TelemetryPacketBrowser.FindIndex(packetIndex!, clock.LogTime), token));
         }
