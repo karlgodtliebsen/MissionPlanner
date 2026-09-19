@@ -17,6 +17,22 @@ namespace MissionPlanner.Core.Vehicles;
 /// <param name="dateTimeProvider">The provider for current date and time.</param>
 public class VehicleSession(VehicleState initialState, TransportEndPoint endPoint, IDateTimeProvider dateTimeProvider)
 {
+    /// <summary>Applies connection health while preserving the last known telemetry and heartbeat.</summary>
+    public void ApplyConnectionHealth(VehicleConnectionState connectionState, DateTimeOffset? lastPacketAt,
+        string? disconnectReason, string? warning)
+    {
+        state = state with
+        {
+            Connection = state.Connection with
+            {
+                State = connectionState,
+                LastPacketAt = lastPacketAt ?? state.Connection.LastPacketAt,
+                DisconnectReason = disconnectReason,
+                Warning = warning
+            }
+        };
+    }
+
     private const byte MavModeFlagSafetyArmed = 0b1000_0000;
     private VehicleState state = initialState;
     private bool? preArmHealthy;
@@ -52,7 +68,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     public VehicleConnectionStateChanged? UpdateConnectionState(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter)
     {
         var previousState = state.Connection.State;
-        var age = now - state.Connection.LastHeartbeatAt;
+        var age = now - (state.Connection.LastPacketAt ?? state.Connection.LastHeartbeatAt);
         var currentState = age > offlineAfter
             ? VehicleConnectionState.Offline
             : age > degradedAfter
@@ -85,7 +101,23 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
             identity = new VehicleIdentityState(observation.VehicleType, observation.Autopilot, observation.MavLinkVersion, firmware);
         }
 
-        state = state with { Identity = identity, Flight = new VehicleFlightState(observation.CustomMode, observation.BaseMode, observation.SystemStatus, MapMode(observation.CustomMode), (observation.BaseMode & MavModeFlagSafetyArmed) != 0), Connection = new VehicleConnectionData(VehicleConnectionState.Online, observation.ObservedAt) };
+        state = state with
+        {
+            Identity = identity,
+            Flight = new VehicleFlightState(
+                observation.CustomMode,
+                observation.BaseMode,
+                observation.SystemStatus,
+                MapMode(observation.CustomMode),
+                (observation.BaseMode & MavModeFlagSafetyArmed) != 0),
+            Connection = state.Connection with
+            {
+                LastHeartbeatAt = observation.ObservedAt,
+                LastPacketAt = observation.ObservedAt,
+                State = state.Connection.DisconnectReason is null ? VehicleConnectionState.Online : state.Connection.State,
+                Warning = state.Connection.DisconnectReason is null ? null : state.Connection.Warning
+            }
+        };
         UpdateArmingStatus(observation.ObservedAt);
     }
 

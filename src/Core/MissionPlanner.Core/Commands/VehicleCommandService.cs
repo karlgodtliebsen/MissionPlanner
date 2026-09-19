@@ -206,13 +206,15 @@ public sealed class VehicleCommandService(
         using (operationLease)
         {
             var packet = encoder.EncodeCommandLong(vehicleId.SystemId, vehicleId.ComponentId, commandId, parameters);
-            using var ackLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var targetSession = simulationChannels?.Find(vehicleId)?.ConnectionSession ?? connectionSession;
+            var targetConnection = targetSession.Connection;
+            var connectionToken = targetConnection.Activity?.LifetimeToken ?? targetSession.ConnectionCancellationToken;
+            using var ackLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionToken);
             var waitForAck = commandAckTracker.WaitForAckAsync(vehicleId, commandId, commandAckTimeout, ackLifetime.Token);
 
             try
             {
-                var connection = connectionSession.Connection;
-                var targetConnection = simulationChannels?.Find(vehicleId)?.ConnectionSession.Connection ?? connection;
+                ackLifetime.Token.ThrowIfCancellationRequested();
                 await targetConnection.SendRawAsync(packet, session.EndPoint, ackLifetime.Token).ConfigureAwait(false);
                 var ack = await waitForAck.ConfigureAwait(false);
                 var response = new VehicleCommandResponse(vehicleId, MapResult(ack.Result), ack.ReceivedAt,
@@ -223,6 +225,11 @@ public sealed class VehicleCommandService(
                 }
 
                 return response;
+            }
+            catch (OperationCanceledException) when (connectionToken.IsCancellationRequested)
+            {
+                return new VehicleCommandResponse(vehicleId, VehicleCommandResult.ConnectionLost, clock.UtcNow,
+                    "Connection lost while waiting for command acknowledgement.");
             }
             catch (TimeoutException)
             {

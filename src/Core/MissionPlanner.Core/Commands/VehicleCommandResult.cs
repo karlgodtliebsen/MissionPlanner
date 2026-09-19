@@ -33,6 +33,8 @@ public enum VehicleCommandResult
     /// Another command is already pending for the target vehicle.
     /// </summary>
     Busy = 6,
+    /// <summary>The owning connection ended before acknowledgement.</summary>
+    ConnectionLost = 7,
     /// <summary>
     /// Provides the public API for Timeout.
     /// </summary>

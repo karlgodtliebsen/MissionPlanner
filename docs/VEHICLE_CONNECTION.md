@@ -31,7 +31,7 @@ public interface IVehicleConnectionService : IAsyncDisposable
 - Registered vehicles (heartbeats) are tracked by `IVehicleRegistry`. Application and presentation
   consumers use the singleton `IActiveVehicleContext` for the selected `VehicleId`, latest immutable
   `VehicleState`, and online state instead of selecting directly from registry order.
-- Connection status transitions (stale/degraded/offline based on heartbeat age) are driven
+- Connection status transitions (online/degraded/offline based on valid packet age) are driven
   by `VehicleConnectionMonitor`.
 
 ### Connect flow
@@ -93,8 +93,9 @@ to the connection infrastructure that constructs and implements
 `ActiveVehicleContext` follows `VehicleConnected`, `VehicleStateUpdated`, `VehicleDisconnected`,
 and registry-reset events. `VehicleStateUpdated` refreshes its latest immutable snapshot, but
 heartbeat and telemetry updates do not raise the context's compatibility `Changed` event.
-`Changed` is raised, and `ConnectionCancellationToken` is replaced, only when the active
-vehicle changes or crosses the online boundary. This gives UI workflows a common cancellation
+`Changed` is raised when the active vehicle changes or crosses the online boundary.
+`ConnectionCancellationToken` changes only on vehicle replacement or definitive disconnect/reconnect;
+degradation and recovery preserve the connection lifetime. This gives UI workflows a common cancellation
 boundary without turning high-rate domain state into presentation lifecycle notifications.
 Views and services that need live telemetry subscribe to `VehicleStateUpdated` directly for their
 active lifetime; they do not use `IActiveVehicleContext.Changed` as a telemetry stream.
@@ -192,8 +193,8 @@ Test hygiene (serial hardware tests):
 
 - Serial/USB is implemented and tested against hardware.
 - TCP and UDP connect paths exist but still need real-world testing (see FEATURES.md).
-- Reconnect-on-link-loss (automatic re-establish) is not implemented — the monitor marks
-  the vehicle stale/offline but does not redial.
+- Reconnect-on-link-loss (automatic re-establish) is not implemented — the monitor performs
+  owned disconnect cleanup on sustained loss, but does not redial.
 
 ## Arming readiness and retained feedback
 
@@ -238,3 +239,61 @@ Verification: numeric comparison, shared-board variants, non-ArduPilot skip, mis
 catalog failure, cancellation, repeated-update suppression and newer-release notification
 have automated tests. Installer tests verify exact Stable target/version/variant selection
 without firmware preparation. The original src-v.1.38 reference tree is absent in this checkout.
+
+## Continuous connection health
+
+VehicleConnectionMonitor is a singleton application service, with one cancellable low-frequency
+timer for the active connection. It is started by the connection owner, independent of view
+activation. Each watch is keyed by VehicleId and connection generation; cleanup verifies the
+generation so an old watch cannot disconnect a replacement connection.
+
+MavLinkConnectionActivity records accepted frames before decoding, with fixed per-system
+counters/timestamps rather than per-frame event allocations. Invalid CRC/signatures and unknown
+unverified parser candidates do not count as liveness. Any valid traffic from the vehicle's
+system on that connection counts; heartbeat timestamps remain separate. TimeProvider's
+monotonic timestamps drive age and warning throttling, while UTC receipt times serve the UI.
+Transport read-loop completion bypasses decode backlog and cancels connection-owned operations.
+
+The ConnectionHealth configuration section supports:
+
+| Option | Default |
+|---|---|
+| DegradedAfter | 00:00:03 |
+| DisconnectedAfter | 00:00:10 |
+| NotificationGracePeriod | 00:00:30 |
+| WarningRepeatInterval | 00:00:05 |
+| PollInterval | 00:00:00.250 |
+
+Online becomes Degraded after three seconds without valid packets and recovers when traffic
+resumes. Ten seconds of silence becomes Offline (the existing model's disconnected state).
+Serial EOF, TCP closure, transport failures and pipeline termination disconnect immediately;
+UDP silence disconnects even when its local socket is still open. Notifications have startup
+grace; domain state does not. Armed loss shows elapsed time in a persistent warning and uses
+throttled Error notifications after grace. Recovery clears the warning. Only transitions are
+logged at Information level, with vehicle/connection/transport, packet age, heartbeat age,
+armed state and disconnect reason.
+
+Hard disconnect goes through the existing serialized owner and VehicleDisconnected event.
+Reasons include UserRequested, ApplicationShutdown, CommunicationTimeout and TransportFault.
+The protocol lifetime cancels ACK waiters, parameter streams, mission transfers and MAVFTP
+requests. Commands and parameter results identify connection loss; MAVFTP cancellation also
+carries that message. Calibration/edit workflows receive the existing active-vehicle lifetime.
+Temporary degradation does not replace that lifetime or dispose the session.
+
+Cleanup stops protocol loops, flushes/closes the telemetry recorder and removes live registry
+ownership. The active snapshot retains last telemetry with Offline status for inspection.
+Delayed online events cannot revive it; a new successful connection is required. Connect/
+Disconnect ownership and navigation remain available. No generic auto-reconnect or serial-port
+scanning was added; intentional reboot/reconnection remains owned by existing firmware workflows.
+
+Validation uses fake transports and ManualTimeProvider: packet versus heartbeat freshness,
+other-system isolation, degradation/recovery, hard timeout, duplicate faults, notification
+grace/throttle, explicit stop, active-context cancellation and late-event rejection. Real
+ACK, parameter and MAVFTP waiters cancel promptly; parser/recorder tests prove monitor-triggered
+flush and one stop for serial/TCP/UDP test endpoints. Hardware unplug/replug and real vehicle
+firmware-server checks were not performed. The classic source tree is absent in this checkout.
+
+Verification on 2026-09-19: the full solution builds with zero errors. Run-AllTests.ps1
+passes 1,250 .NET tests (30 skipped) and seven browser JavaScript tests. The final
+Core rerun after cleanup review passes 729 tests (six skipped). Physical hardware
+validation remains outstanding.

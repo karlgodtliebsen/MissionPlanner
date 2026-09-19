@@ -27,11 +27,13 @@ public class VehicleConnectionService(
     IPlannerSettingsService plannerSettings,
     IVehicleParameterLoadStatusContext parameterLoadStatus,
     ILogger<VehicleConnectionService> logger,
-    MissionPlanner.Core.Firmware.VehicleFirmwareUpdateService? firmwareUpdates = null)
+    MissionPlanner.Core.Firmware.VehicleFirmwareUpdateService? firmwareUpdates = null,
+    IVehicleConnectionMonitor? connectionMonitor = null)
     : IVehicleConnectionService
 {
     // Single active connection (only one vehicle connection supported at a time)
     private ActiveConnection? activeConnection;
+    private IDisposable? monitorLease;
     private readonly SemaphoreSlim connectionLock = new(1, 1);
     private CancellationTokenSource? parameterPreloadCancellation;
     private Task? parameterPreloadTask;
@@ -73,7 +75,7 @@ public class VehicleConnectionService(
 
             if (vehicleId == null)
             {
-                await connectionSession.DisconnectAsync(vehicleId, linkedCts.Token);
+                await connectionSession.DisconnectAsync(vehicleId, CancellationToken.None);
                 await PublishConnectionFailed("SERIAL", $"{portName} {baudRate}", "No heartbeat received from vehicle");
                 return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
             }
@@ -89,6 +91,8 @@ public class VehicleConnectionService(
 
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "Serial", portName, dateTimeProvider.UtcNow), linkedCts.Token);
+            monitorLease = connectionMonitor?.Track(vehicleId.Value, connectionId, connectionSession,
+                reason => DisconnectLostConnectionAsync(connectionId, reason));
             StartParameterPreload(vehicleId.Value);
             _ = firmwareUpdates?.Start(vehicleId.Value, connectionStartedAt);
 
@@ -98,6 +102,7 @@ public class VehicleConnectionService(
         catch (Exception ex) //"A connection is already established."
         {
             logger.LogError(ex, "Failed to connect to vehicle via serial port {PortName}", portName);
+            await CleanupFailedConnectionAsync().ConfigureAwait(false);
             await PublishConnectionFailed("Serial", portName, ex.Message);
             return new VehicleConnectionResult(false, null, null, ex.Message);
         }
@@ -138,7 +143,7 @@ public class VehicleConnectionService(
 
             if (vehicleId == null)
             {
-                await connectionSession.DisconnectAsync(vehicleId, linkedCts.Token);
+                await connectionSession.DisconnectAsync(vehicleId, CancellationToken.None);
                 await PublishConnectionFailed("TCP", endpoint, "No heartbeat received from vehicle");
                 return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
             }
@@ -155,6 +160,8 @@ public class VehicleConnectionService(
 
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
+            monitorLease = connectionMonitor?.Track(vehicleId.Value, connectionId, connectionSession,
+                reason => DisconnectLostConnectionAsync(connectionId, reason));
             StartParameterPreload(vehicleId.Value);
             _ = firmwareUpdates?.Start(vehicleId.Value, connectionStartedAt);
 
@@ -164,6 +171,7 @@ public class VehicleConnectionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to connect to vehicle via TCP {Host}:{Port}", host, port);
+            await CleanupFailedConnectionAsync().ConfigureAwait(false);
             await PublishConnectionFailed("TCP", $"{host}:{port}", ex.Message);
             return new VehicleConnectionResult(false, null, null, ex.Message);
         }
@@ -220,7 +228,7 @@ public class VehicleConnectionService(
 
             if (vehicleId == null)
             {
-                await connectionSession.DisconnectAsync(vehicleId, linkedCts.Token);
+                await connectionSession.DisconnectAsync(vehicleId, CancellationToken.None);
                 await PublishConnectionFailed("UDP", endpoint, "No heartbeat received from vehicle");
                 return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
             }
@@ -234,6 +242,8 @@ public class VehicleConnectionService(
             var connectionId = Guid.NewGuid();
             activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "UDP", endpoint);
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
+            monitorLease = connectionMonitor?.Track(vehicleId.Value, connectionId, connectionSession,
+                reason => DisconnectLostConnectionAsync(connectionId, reason));
             StartParameterPreload(vehicleId.Value);
             _ = firmwareUpdates?.Start(vehicleId.Value, connectionStartedAt);
 
@@ -243,16 +253,7 @@ public class VehicleConnectionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to connect to vehicle via UDP local port {LocalPort}", localPort);
-            try
-            {
-                await connectionSession.DisconnectAsync(activeConnection?.VehicleId, token);
-            }
-            catch (Exception cleanupException)
-            {
-                logger.LogWarning(cleanupException, "Failed to clean up unsuccessful UDP connection attempt on port {LocalPort}", localPort);
-            }
-
-            activeConnection = null;
+            await CleanupFailedConnectionAsync().ConfigureAwait(false);
             await PublishConnectionFailed("UDP", $"UDP:{localPort}", ex.Message);
             return new VehicleConnectionResult(false, null, null, ex.Message);
         }
@@ -283,7 +284,13 @@ public class VehicleConnectionService(
             // The connection session has already started MavLinkConnection, which starts the client.
             // Do not call client.StartAsync() here; doing so can race with connection.StartAsync() and create
             // multiple serial receive loops against the same COM port.
-            var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout, timeoutCts.Token));
+            var existing = vehicleRegistry.Vehicles.FirstOrDefault();
+            if (existing is not null)
+            {
+                tcs.TrySetResult(existing.Id);
+            }
+            var delay = Task.Delay(timeout, timeoutCts.Token);
+            var completedTask = await Task.WhenAny(tcs.Task, delay, connectionSession.Client.Completion ?? delay);
 
             if (completedTask == tcs.Task)
             {
@@ -363,6 +370,27 @@ public class VehicleConnectionService(
         logger.LogWarning("AUTOPILOT_VERSION was not received from {VehicleId}", vehicleId);
     }
 
+    private async Task CleanupFailedConnectionAsync()
+    {
+        monitorLease?.Dispose();
+        monitorLease = null;
+        firmwareUpdates?.Cancel();
+        try
+        {
+            await CancelParameterPreloadAsync().ConfigureAwait(false);
+            connectionSession.DisconnectReason = "ConnectionFailed";
+            await connectionSession.DisconnectAsync(activeConnection?.VehicleId, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Cleanup of a failed connection attempt failed.");
+        }
+        finally
+        {
+            activeConnection = null;
+        }
+    }
+
     private async Task PublishConnectionFailed(string connectionType, string endpoint, string error)
     {
         await domainEventHub.PublishDomainEventAsync(new ConnectionFailed(connectionType, endpoint, error, dateTimeProvider.UtcNow));
@@ -413,33 +441,70 @@ public class VehicleConnectionService(
     /// <summary>
     /// Internal disconnect method - must be called with connectionLock held or from single-threaded context
     /// </summary>
-    private async Task DisconnectInternalAsync(CancellationToken cancellationToken = default)
+    private async Task DisconnectLostConnectionAsync(Guid connectionId, string reason)
+    {
+        await connectionLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            if (activeConnection?.ConnectionId == connectionId)
+            {
+                await DisconnectInternalAsync(CancellationToken.None, reason).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            connectionLock.Release();
+        }
+    }
+
+    private async Task DisconnectInternalAsync(CancellationToken cancellationToken = default, string reason = "UserRequested")
     {
         if (activeConnection == null)
         {
             return;
         }
 
+        monitorLease?.Dispose();
+        monitorLease = null;
+        connectionSession.DisconnectReason = reason;
         var vehicleId = activeConnection.VehicleId;
         try
         {
-            logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
+            logger.LogInformation("Disconnecting vehicle {VehicleId}: {DisconnectReason}", vehicleId, reason);
+            connectionSession.Connection.Activity?.End(reason);
+            var vehicle = vehicleRegistry.GetRequired(vehicleId);
+            if (vehicle is not null)
+            {
+                lock (vehicle)
+                {
+                    vehicle.ApplyConnectionHealth(VehicleConnectionState.Offline, vehicle.State.Connection.LastPacketAt, reason,
+                        reason is "UserRequested" or "ApplicationShutdown" ? null : vehicle.State.Connection.Warning);
+                }
+                await domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), CancellationToken.None).ConfigureAwait(false);
+            }
 
             firmwareUpdates?.Cancel();
             await CancelParameterPreloadAsync().ConfigureAwait(false);
 
-            // Clear active connection
-            activeConnection = null;
-            await connectionSession.DisconnectAsync(vehicleId, cancellationToken);
-            logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error while executing internal disconnecting vehicle {VehicleId}", vehicleId);
+            logger.LogError(ex, "Error while updating disconnect state for vehicle {VehicleId}", vehicleId);
         }
-
-        // Still clear the connection even if there were errors
-        activeConnection = null;
+        finally
+        {
+            // Closing the session must not depend on successful state notification.
+            activeConnection = null;
+            try
+            {
+                await connectionSession.DisconnectAsync(vehicleId, CancellationToken.None).ConfigureAwait(false);
+                logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error while closing disconnected vehicle {VehicleId}", vehicleId);
+            }
+        }
     }
 
     private void StartParameterPreload(VehicleId vehicleId)
@@ -642,19 +707,15 @@ public class VehicleConnectionService(
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        firmwareUpdates?.Cancel();
-            await CancelParameterPreloadAsync().ConfigureAwait(false);
-
-        // Disconnect the active connection (if any)
-        if (activeConnection != null)
+        await connectionLock.WaitAsync().ConfigureAwait(false);
+        try
         {
-            await connectionSession.DisposeAsync();
+            await DisconnectInternalAsync(CancellationToken.None, "ApplicationShutdown").ConfigureAwait(false);
         }
-
-        activeConnection = null;
-        // Dispose the semaphore and cancellation token source
-        connectionLock.Dispose();
-
+        finally
+        {
+            connectionLock.Release();
+        }
         GC.SuppressFinalize(this);
     }
 

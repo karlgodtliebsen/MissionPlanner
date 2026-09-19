@@ -29,8 +29,9 @@ public sealed class VehicleFirmwareUpdateService(
     IDomainEventHub events,
     IUserNotificationService notifications,
     TimeProvider clock,
-    ILogger<VehicleFirmwareUpdateService> logger) : IAsyncDisposable
+    ILogger<VehicleFirmwareUpdateService> logger) : IAsyncDisposable, IDisposable
 {
+    private readonly Lock stateSync = new();
     private readonly HashSet<string> notified = [];
     private readonly SemaphoreSlim gate = new(1, 1);
     private CancellationTokenSource? lifetime;
@@ -55,8 +56,11 @@ public sealed class VehicleFirmwareUpdateService(
     /// <summary>Cancels the current check immediately when the connection ends.</summary>
     public void Cancel()
     {
-        lifetime?.Cancel();
-        Current = null;
+        lock (stateSync)
+        {
+            lifetime?.Cancel();
+            Current = null;
+        }
     }
 
     /// <summary>Dismisses the banner without forgetting session suppression.</summary>
@@ -118,11 +122,15 @@ public sealed class VehicleFirmwareUpdateService(
                 }
 
                 var key = $"{identity.HardwareUid2 ?? identity.HardwareUid?.ToString() ?? vehicleId.ToString()}|{platform}|{identity.MavType}|{identity.FlightVersion}|{available.Version.Value}";
-                if (!notified.Add(key))
+                lock (stateSync)
                 {
-                    return;
+                    token.ThrowIfCancellationRequested();
+                    if (!notified.Add(key))
+                    {
+                        return;
+                    }
+                    Current = new VehicleFirmwareUpdate(vehicleId, identity, available);
                 }
-                Current = new VehicleFirmwareUpdate(vehicleId, identity, available);
                 logger.LogInformation("Firmware update available for {VehicleId}: {Platform} {AvailableVersion}", vehicleId, platform, available.Version.Value);
                 await events.PublishDomainEventAsync(new VehicleFirmwareUpdateChanged(Current), token).ConfigureAwait(false);
                 await notifications.NotifyAsync(new UserNotification(
@@ -155,6 +163,12 @@ public sealed class VehicleFirmwareUpdateService(
                 parts.Skip(1).All(part => part.Length >= 8 && part.All(Uri.IsHexDigit)))
             .Select(parts => parts[0]).Distinct(StringComparer.Ordinal).Take(2).ToArray();
         return reported.Length == 1 ? reported[0] : null;
+    }
+
+    /// <summary>Cancels background work when a synchronous service scope ends.</summary>
+    public void Dispose()
+    {
+        Cancel();
     }
 
     /// <summary>Cancels and awaits background work during application shutdown.</summary>

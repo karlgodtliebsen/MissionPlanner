@@ -123,7 +123,9 @@ public static class DomainConfigurator
         services.TryAddSingleton<IMavLinkTransmissionPolicy, ReplayTransmissionPolicy>();
 
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();
-        services.TryAddTransient<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
+        services.AddOptions<VehicleConnectionHealthOptions>().Bind(configuration.GetSection("ConnectionHealth"));
+        services.TryAddSingleton(TimeProvider.System);
+        services.TryAddSingleton<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
 
         services.TryAddSingleton<IReplayClock>(provider => provider.GetRequiredService<IReplaySessionManager>());
 

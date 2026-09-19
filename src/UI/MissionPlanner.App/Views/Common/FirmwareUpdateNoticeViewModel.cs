@@ -65,7 +65,7 @@ public sealed partial class FirmwareUpdateNoticeViewModel : ViewModelBase
         {
             return;
         }
-        selection.Pending = update.Available;
+        selection.Request(update.Available);
         await navigation.NavigateAsync(MissionPlannerRoutes.SetupInstallFirmware);
         await updates.DismissAsync();
         IsVisible = false;

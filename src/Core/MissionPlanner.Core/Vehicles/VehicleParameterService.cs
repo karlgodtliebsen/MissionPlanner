@@ -14,6 +14,9 @@ namespace MissionPlanner.Core.Vehicles;
 /// </summary>
 public sealed class VehicleParameterService : IVehicleParameterService
 {
+    /// <inheritdoc />
+    public CancellationToken ConnectionCancellationToken => connectionSession.ConnectionCancellationToken;
+
     private readonly IVehicleConnectionSession connectionSession;
     private readonly IMavLinkParameterEncoder encoder;
     private readonly IVehicleRegistry vehicleRegistry;
@@ -35,6 +38,9 @@ public sealed class VehicleParameterService : IVehicleParameterService
     /// <inheritdoc/>
     public async Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ConnectionCancellationToken);
+        cancellationToken = lifetime.Token;
+        cancellationToken.ThrowIfCancellationRequested();
         var client = connectionSession.Client;
         if (!client.IsConnected)
         {
@@ -66,6 +72,9 @@ public sealed class VehicleParameterService : IVehicleParameterService
     /// <inheritdoc/>
     public async Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
     {
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ConnectionCancellationToken);
+        cancellationToken = lifetime.Token;
+        cancellationToken.ThrowIfCancellationRequested();
         var client = connectionSession.Client;
         if (!client.IsConnected)
         {
@@ -109,6 +118,9 @@ public sealed class VehicleParameterService : IVehicleParameterService
     /// <inheritdoc/>
     public async Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default)
     {
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ConnectionCancellationToken);
+        cancellationToken = lifetime.Token;
+        cancellationToken.ThrowIfCancellationRequested();
         var client = connectionSession.Client;
         if (!client.IsConnected)
         {
@@ -141,6 +153,9 @@ public sealed class VehicleParameterService : IVehicleParameterService
     /// <inheritdoc/>
     public async Task<bool> SetParameterAsync(VehicleId vehicleId, string parameterName, float value, MavParamType paramType, CancellationToken cancellationToken = default)
     {
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, ConnectionCancellationToken);
+        cancellationToken = lifetime.Token;
+        cancellationToken.ThrowIfCancellationRequested();
         var client = connectionSession.Client;
         if (!client.IsConnected)
         {

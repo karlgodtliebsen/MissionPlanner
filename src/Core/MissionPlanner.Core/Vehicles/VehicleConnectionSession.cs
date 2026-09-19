@@ -51,6 +51,12 @@ public sealed class VehicleConnectionSession(
     public string? ActiveTransportProtocol { get; private set; }
 
     /// <inheritdoc />
+    public CancellationToken ConnectionCancellationToken => connectionSession?.Connection.Activity?.LifetimeToken ?? serviceCts.Token;
+
+    /// <inheritdoc />
+    public string? DisconnectReason { get; set; }
+
+    /// <inheritdoc />
     public string? ActiveSerialPort { get; private set; }
 
     /// <summary>
@@ -108,6 +114,7 @@ public sealed class VehicleConnectionSession(
     public async Task<CancellationTokenSource> CreateSerialConnection(string portName, int baudRate = 57600, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
     {
         serviceCts = new CancellationTokenSource();
+        DisconnectReason = null;
 
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
@@ -131,7 +138,8 @@ public sealed class VehicleConnectionSession(
 
         parameterService = domainFactory.Create<IVehicleParameterService, IVehicleConnectionSession>(this!);
         parameterStreamService = CreateParameterStreamService();
-        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
+        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token,
+            connectionSession.Connection.Activity?.LifetimeToken ?? CancellationToken.None);
 
         return linkedCts;
     }
@@ -141,6 +149,7 @@ public sealed class VehicleConnectionSession(
     public async Task<CancellationTokenSource> CreateTcpConnection(int port, string host, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
     {
         serviceCts = new CancellationTokenSource();
+        DisconnectReason = null;
         var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
         transportOptions.Value.Protocol = "tcp";
         transportOptions.Value.RemoteHost = host;
@@ -163,7 +172,8 @@ public sealed class VehicleConnectionSession(
         parameterService = domainFactory.Create<IVehicleParameterService, IVehicleConnectionSession>(this!);
         parameterStreamService = CreateParameterStreamService();
 
-        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
+        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token,
+            connectionSession.Connection.Activity?.LifetimeToken ?? CancellationToken.None);
 
         return linkedCts;
     }
@@ -173,6 +183,7 @@ public sealed class VehicleConnectionSession(
     public async Task<CancellationTokenSource> CreateUdpConnection(int localPort, string? remoteHost = null, int? remotePort = null, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
     {
         serviceCts = new CancellationTokenSource();
+        DisconnectReason = null;
         var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
         transportOptions.Value.Protocol = "udp";
         transportOptions.Value.LocalPort = localPort;
@@ -195,7 +206,8 @@ public sealed class VehicleConnectionSession(
         parameterService = domainFactory.Create<IVehicleParameterService, IVehicleConnectionSession>(this!);
         parameterStreamService = CreateParameterStreamService();
 
-        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
+        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token,
+            connectionSession.Connection.Activity?.LifetimeToken ?? CancellationToken.None);
 
         return linkedCts;
     }
@@ -254,13 +266,14 @@ public sealed class VehicleConnectionSession(
     {
         try
         {
+            connectionSession?.Connection.Activity?.End(DisconnectReason ?? "UserRequested");
             // Publish disconnect event
             if (vehicleId is not null)
             {
                 try
                 {
                     logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
-                    await domainEventHub.PublishDomainEventAsync(new VehicleDisconnected(vehicleId.Value, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
+                    await domainEventHub.PublishDomainEventAsync(new VehicleDisconnected(vehicleId.Value, dateTimeProvider.UtcNow, DisconnectReason ?? "UserRequested"), cancellationToken);
                 }
                 catch (Exception ex)
                 {

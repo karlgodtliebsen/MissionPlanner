@@ -56,6 +56,10 @@ public sealed class MissionTransferService(
             return new MissionUploadResult(false, null, "Plan items must be contiguous and match the requested mission type.");
         }
 
+        var operationConnection = GetConnection(vehicleId);
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, operationConnection.Activity?.LifetimeToken ?? CancellationToken.None);
+        cancellationToken = lifetime.Token;
+        cancellationToken.ThrowIfCancellationRequested();
         var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
         var requests = Channel.CreateUnbounded<MavLinkMessage>(new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
         using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (m, _) =>
@@ -72,7 +76,7 @@ public sealed class MissionTransferService(
 
         for (var attempt = 0; attempt < MaxAttempts; attempt++)
         {
-            await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionCount(vehicleId.SystemId, vehicleId.ComponentId, checked((ushort)items.Count), (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
+            await operationConnection.SendRawAsync(encoder.EncodeMissionCount(vehicleId.SystemId, vehicleId.ComponentId, checked((ushort)items.Count), (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
             var sent = new HashSet<ushort>();
             while (true)
             {
@@ -105,7 +109,7 @@ public sealed class MissionTransferService(
                     return new MissionUploadResult(false, null, $"Vehicle requested invalid mission sequence {request.Sequence}.");
                 }
 
-                await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionItemInt(vehicleId.SystemId, vehicleId.ComponentId, items[request.Sequence]), session.EndPoint, cancellationToken);
+                await operationConnection.SendRawAsync(encoder.EncodeMissionItemInt(vehicleId.SystemId, vehicleId.ComponentId, items[request.Sequence]), session.EndPoint, cancellationToken);
                 sent.Add(request.Sequence);
                 progress?.Report(new MissionUploadProgress(sent.Count, items.Count, request.Sequence));
             }
@@ -127,6 +131,10 @@ public sealed class MissionTransferService(
         IProgress<MissionDownloadProgress>? progress,
         CancellationToken cancellationToken = default)
     {
+        var operationConnection = GetConnection(vehicleId);
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, operationConnection.Activity?.LifetimeToken ?? CancellationToken.None);
+        cancellationToken = lifetime.Token;
+        cancellationToken.ThrowIfCancellationRequested();
         var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
         var messages = Channel.CreateUnbounded<MavLinkMessage>(new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
         using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (m, _) =>
@@ -138,7 +146,7 @@ public sealed class MissionTransferService(
 
             return Task.CompletedTask;
         });
-        await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionRequestList(vehicleId.SystemId, vehicleId.ComponentId,
+        await operationConnection.SendRawAsync(encoder.EncodeMissionRequestList(vehicleId.SystemId, vehicleId.ComponentId,
             (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
         MissionCountMessage count;
         var pendingItems = new Dictionary<ushort, MissionItemIntMessage>();
@@ -167,7 +175,7 @@ public sealed class MissionTransferService(
             pendingItems.Remove(seq, out var item);
             for (var attempt = 0; attempt < MaxAttempts && item is null; attempt++)
             {
-                await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionRequestInt(vehicleId.SystemId, vehicleId.ComponentId, seq,
+                await operationConnection.SendRawAsync(encoder.EncodeMissionRequestInt(vehicleId.SystemId, vehicleId.ComponentId, seq,
                     (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
                 try
                 {
@@ -202,7 +210,7 @@ public sealed class MissionTransferService(
             progress?.Report(new MissionDownloadProgress(seq + 1, count.Count, seq));
         }
 
-        await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionAck(vehicleId.SystemId, vehicleId.ComponentId, 0,
+        await operationConnection.SendRawAsync(encoder.EncodeMissionAck(vehicleId.SystemId, vehicleId.ComponentId, 0,
             (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
         var missionId = count.OpaqueId is > 0 ? count.OpaqueId : null;
         var retrievedAt = DateTimeOffset.UtcNow;
@@ -215,6 +223,10 @@ public sealed class MissionTransferService(
     /// <inheritdoc/>
     public async Task<MissionUploadResult> ClearAsync(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission, CancellationToken cancellationToken = default)
     {
+        var operationConnection = GetConnection(vehicleId);
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, operationConnection.Activity?.LifetimeToken ?? CancellationToken.None);
+        cancellationToken = lifetime.Token;
+        cancellationToken.ThrowIfCancellationRequested();
         var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
         var acknowledgements = Channel.CreateUnbounded<MavLinkMessage>(new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
         using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (message, _) =>
@@ -230,7 +242,7 @@ public sealed class MissionTransferService(
 
         for (var attempt = 0; attempt < MaxAttempts; attempt++)
         {
-            await GetConnection(vehicleId).SendRawAsync(
+            await operationConnection.SendRawAsync(
                 encoder.EncodeMissionClearAll(vehicleId.SystemId, vehicleId.ComponentId, (MavMissionType)(byte)missionType),
                 session.EndPoint,
                 cancellationToken);

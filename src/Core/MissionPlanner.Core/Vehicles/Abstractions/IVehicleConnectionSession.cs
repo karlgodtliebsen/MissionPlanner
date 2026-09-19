@@ -15,6 +15,12 @@ public interface IVehicleConnectionSession : IAsyncDisposable
     /// <summary>Gets the protocol of the transport being acquired or currently owned.</summary>
     string? ActiveTransportProtocol => null;
 
+    /// <summary>Connection-owned token cancelled for all in-flight vehicle operations.</summary>
+    CancellationToken ConnectionCancellationToken => CancellationToken.None;
+
+    /// <summary>Reason supplied by the connection owner for the next disconnect event.</summary>
+    string? DisconnectReason { get => null; set { } }
+
     /// <summary>Gets the serial port being acquired or owned, until session disposal.</summary>
     string? ActiveSerialPort => null;
 

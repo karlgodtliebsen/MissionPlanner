@@ -362,6 +362,10 @@ public sealed class MavFtpClient : IMavFtpClient
 
     private async Task CleanupSessionAsync(MavFtpTarget target, byte session)
     {
+        if (connection.Activity?.LifetimeToken.IsCancellationRequested == true)
+        {
+            return;
+        }
         using var cleanupCancellation = new CancellationTokenSource(options.CleanupTimeout);
         try
         {
@@ -377,8 +381,18 @@ public sealed class MavFtpClient : IMavFtpClient
 
     private async Task<T> InOperationLockAsync<T>(MavFtpTarget target, Func<CancellationToken, Task<T>> action, CancellationToken ct)
     {
-        using var lease = await sequenceStore.EnterOperationAsync(target, ct).ConfigureAwait(false);
-        return await action(ct).ConfigureAwait(false);
+        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(ct, connection.Activity?.LifetimeToken ?? CancellationToken.None);
+        ct = lifetime.Token;
+        ct.ThrowIfCancellationRequested();
+        try
+        {
+            using var lease = await sequenceStore.EnterOperationAsync(target, ct).ConfigureAwait(false);
+            return await action(ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException exception) when (connection.Activity?.LifetimeToken.IsCancellationRequested == true)
+        {
+            throw new OperationCanceledException("Connection lost during MAVFTP operation.", exception, connection.Activity.LifetimeToken);
+        }
     }
 
     private static byte[] PathBytes(string path)

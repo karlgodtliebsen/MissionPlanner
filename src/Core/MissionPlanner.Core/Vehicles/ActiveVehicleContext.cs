@@ -17,6 +17,7 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
     private ActiveVehicleSnapshot current = ActiveVehicleSnapshot.Empty;
     private CancellationTokenSource connectionLifetime = new();
     private bool disposed;
+    private readonly HashSet<VehicleId> disconnectedVehicles = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ActiveVehicleContext"/> class.
@@ -94,6 +95,10 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
 
     private Task OnConnectedAsync(VehicleConnected evt, CancellationToken cancellationToken)
     {
+        lock (sync)
+        {
+            disconnectedVehicles.Remove(evt.VehicleId);
+        }
         var state = vehicleRegistry.GetRequired(evt.VehicleId)?.State;
         SetCurrent(new ActiveVehicleSnapshot(evt.VehicleId, state));
         return Task.CompletedTask;
@@ -103,6 +108,10 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
 
     private Task OnDisconnectedAsync(VehicleDisconnected evt, CancellationToken cancellationToken)
     {
+        lock (sync)
+        {
+            disconnectedVehicles.Add(evt.VehicleId);
+        }
         disconnecting = true;
         try
         {
@@ -132,6 +141,13 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
 
     private Task OnStateUpdatedAsync(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
+        lock (sync)
+        {
+            if (disconnectedVehicles.Contains(evt.VehicleId))
+            {
+                return Task.CompletedTask;
+            }
+        }
         if (disconnecting)
         {
             // return Task.CompletedTask;
@@ -187,11 +203,13 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
             previous = current;
             connectionBoundaryChanged = previous.VehicleId != next.VehicleId || previous.IsOnline != next.IsOnline;
             current = next;
-            if (connectionBoundaryChanged)
+            var wasConnected = previous.State?.ConnectionState is VehicleConnectionState.Online or VehicleConnectionState.Degraded or VehicleConnectionState.Stale;
+            var isConnected = next.State?.ConnectionState is VehicleConnectionState.Online or VehicleConnectionState.Degraded or VehicleConnectionState.Stale;
+            if (previous.VehicleId != next.VehicleId || wasConnected != isConnected)
             {
                 lifetimeToCancel = connectionLifetime;
                 connectionLifetime = new CancellationTokenSource();
-                if (!next.IsOnline)
+                if (!isConnected)
                 {
                     connectionLifetime.Cancel();
                 }

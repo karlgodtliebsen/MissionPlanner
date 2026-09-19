@@ -54,9 +54,13 @@ public sealed class MavLinkClient : IMavLinkClient
     /// </summary>
     public ChannelReader<PooledMavLinkDataReceived> ReceivedBytes => receivedBytes.Reader;
 
-    /// <summary>
-    /// Gets a value indicating whether the MAVLink client is running.
-    /// </summary>  
+    /// <inheritdoc />
+    public Task? Completion => receiveTask;
+
+    /// <inheritdoc />
+    public Exception? ReceiveFailure { get; private set; }
+
+    /// <inheritdoc />
     public bool IsRunning => receiveTask is { IsCompleted: false };
 
     /// <summary>
@@ -81,6 +85,7 @@ public sealed class MavLinkClient : IMavLinkClient
             cancellationTokenSource?.Dispose();
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
+            ReceiveFailure = null;
             receivedBytes = CreateReceiveChannel();
 
             await transport.ConnectAsync(cancellationTokenSource.Token).ConfigureAwait(false);
@@ -145,10 +150,12 @@ public sealed class MavLinkClient : IMavLinkClient
         }
         catch (ObjectDisposedException ex)
         {
+            ReceiveFailure = ex;
             receivedBytes.Writer.TryComplete(ex);
         }
         catch (Exception ex)
         {
+            ReceiveFailure = ex;
             logger.LogError(ex, "Unexpected exception in MAVLink receive loop.");
             receivedBytes.Writer.TryComplete(ex);
         }
@@ -179,7 +186,19 @@ public sealed class MavLinkClient : IMavLinkClient
             throw new InvalidOperationException("Transport is not connected.");
         }
 
-        await transport.WriteAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await transport.WriteAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is IOException or System.Net.Sockets.SocketException or ObjectDisposedException)
+        {
+            ReceiveFailure = exception;
+            if (cancellationTokenSource is not null)
+            {
+                await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+            }
+            throw;
+        }
 
         if (logger.IsEnabled(LogLevel.Trace))
         {

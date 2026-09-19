@@ -27,6 +27,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     private Channel<DecodedMavLinkMessage>? decodedMessages;
 
     private CancellationTokenSource? cancellationTokenSource;
+    private Task? receiveCompletionTask;
     private Task? parseTask;
     private Task? publishTask;
     private bool disposed;
@@ -38,6 +39,9 @@ public sealed class MavLinkConnection : IMavLinkConnection
 
     /// <inheritdoc />
     public MavLinkInspectionTap? Inspection { get; }
+
+    /// <inheritdoc />
+    public MavLinkConnectionActivity Activity { get; }
     /// <inheritdoc />
     public MissionPlanner.MavLink.Signing.MavLinkSigningSession? Signing { get; }
 
@@ -53,6 +57,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     /// <param name="transmissionPolicy">Optional application safety policy for outbound frames.</param>
     /// <param name="inspection">Optional connection-owned bounded traffic observers.</param>
     /// <param name="signing">Optional connection-owned signing and verification.</param>
+    /// <param name="clock">Monotonic receipt clock, shared with connection monitoring.</param>
     /// <param name="trafficRecording">Optional connection-boundary telemetry recorder.</param>
     /// <exception cref="ArgumentNullException"></exception>
     public MavLinkConnection(
@@ -64,7 +69,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         ILogger<MavLinkConnection> logger,
         IMavLinkTransmissionPolicy? transmissionPolicy = null,
         MavLinkInspectionTap? inspection = null,
-        MissionPlanner.MavLink.Signing.MavLinkSigningSession? signing = null, IMavLinkTrafficRecording? trafficRecording = null)
+        MissionPlanner.MavLink.Signing.MavLinkSigningSession? signing = null, IMavLinkTrafficRecording? trafficRecording = null, TimeProvider? clock = null)
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
         this.frameParser = frameParser ?? throw new ArgumentNullException(nameof(frameParser));
@@ -74,6 +79,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         this.transmissionPolicy = transmissionPolicy;
         Inspection = inspection ?? (trafficRecording is null ? null : new MavLinkInspectionTap());
         this.trafficRecording = trafficRecording;
+        Activity = new MavLinkConnectionActivity(clock ?? TimeProvider.System);
         Signing = signing;
         this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.options.Validate();
@@ -120,6 +126,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
                 throw;
             }
 
+            receiveCompletionTask = ObserveReceiveCompletionAsync();
             parseTask = Task.Run(() => ParseLoopAsync(cancellationTokenSource.Token), CancellationToken.None);
             publishTask = Task.Run(() => PublishLoopAsync(cancellationTokenSource.Token), CancellationToken.None);
 
@@ -204,6 +211,24 @@ public sealed class MavLinkConnection : IMavLinkConnection
         }
     }
 
+    private async Task ObserveReceiveCompletionAsync()
+    {
+        if (client.Completion is not { } completion)
+        {
+            return;
+        }
+        try
+        {
+            await completion.ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            Activity.End("TransportFault");
+            return;
+        }
+        Activity.End(client.ReceiveFailure is null ? "TransportClosed" : "TransportFault");
+    }
+
     private async Task ParseLoopAsync(CancellationToken cancellationToken)
     {
         using var logScope = logger.BeginScope(new Dictionary<string, object> { ["ConnectionId"] = connectionId });
@@ -240,6 +265,10 @@ public sealed class MavLinkConnection : IMavLinkConnection
                         {
                             recordingTap.Publish(new(MavLinkTrafficDirection.Inbound, frame, null, true) { Signature = signature });
                         }
+                        if (signature is not (MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Invalid or MissionPlanner.MavLink.Signing.MavLinkSignatureStatus.Replay))
+                        {
+                            Activity.ReportValidFrame(frame.SystemId, frame.MessageId == 0, received.ReceivedAt);
+                        }
                         var decoded = messageDecoder.TryDecode(frame, out var message);
                         if (Inspection?.HasObservers == true)
                         {
@@ -272,6 +301,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
             }
 
             decodedMessages?.Writer.TryComplete();
+            Activity.End("TransportClosed");
         }
         catch (OperationCanceledException ex)
         {
@@ -279,6 +309,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         }
         catch (Exception ex)
         {
+            Activity.End("TransportFault");
             logger.LogError(ex, "Unexpected exception in MAVLink parse loop.");
             decodedMessages?.Writer.TryComplete(ex);
         }
@@ -302,6 +333,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
         }
         catch (Exception ex)
         {
+            Activity.End("PipelineFault");
             logger.LogError(ex, "Unexpected exception in MAVLink publish loop.");
             throw;
         }
@@ -327,8 +359,13 @@ public sealed class MavLinkConnection : IMavLinkConnection
                 return;
             }
 
+            Activity.End("UserRequested");
             await cancellationTokenSource.CancelAsync();
             await client.StopAsync();
+            if (receiveCompletionTask is not null)
+            {
+                await receiveCompletionTask.ConfigureAwait(false);
+            }
 
             if (parseTask is not null)
             {

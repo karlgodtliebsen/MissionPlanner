@@ -101,11 +101,13 @@ public sealed class LoggingIntegrationTests
         var client = Substitute.For<IMavLinkClient>();
         var channel = System.Threading.Channels.Channel.CreateUnbounded<PooledMavLinkDataReceived>();
         client.ReceivedBytes.Returns(channel.Reader);
+        client.Completion.Returns((Task?)null);
+        var healthClock = new MissionPlanner.Test.Support.ManualTimeProvider(DateTimeOffset.UtcNow);
         using var decoder = new BlockingDecoder();
         await using var connection = new MavLinkConnection(client,
             new MavLinkV2FrameParser(new MavLinkMessageDefinitionRegistry()), decoder,
             Substitute.For<IEventHub>(), Options.Create(new MavLinkConnectionPipelineOptions()),
-            NullLogger<MavLinkConnection>.Instance, trafficRecording: recorder);
+            NullLogger<MavLinkConnection>.Instance, trafficRecording: recorder, clock: healthClock);
         try
         {
             await connection.StartAsync(TestContext.Current.CancellationToken);
@@ -124,8 +126,30 @@ public sealed class LoggingIntegrationTests
 
             // Decoder is still blocked: persistence cannot depend on decoded domain messages.
             Assert.False(decoder.Release.IsSet);
+            Assert.NotNull(connection.Activity.LastPacketAt(1));
             decoder.Release.Set();
-            await connection.StopAsync();
+            var registry = Substitute.For<MissionPlanner.Core.Vehicles.Abstractions.IVehicleRegistry>();
+            var vehicleId = new MissionPlanner.Shared.Models.Vehicles.Models.VehicleId(1, 1);
+            var state = new MissionPlanner.Core.Vehicles.Models.VehicleState(vehicleId, 0, 2, 3, 0, 4, 3,
+                MissionPlanner.Shared.Models.Vehicles.Models.VehicleConnectionState.Online, healthClock.GetUtcNow(),
+                MissionPlanner.Shared.Models.Vehicles.Models.VehicleMode.Unknown, false, null, null, null, null, null, null, null, null);
+            registry.GetRequired(vehicleId).Returns(new MissionPlanner.Core.Vehicles.VehicleSession(state, new TransportEndPoint(transport),
+                Substitute.For<MissionPlanner.Library.DateTime.Domain.IDateTimeProvider>()));
+            var applicationSession = Substitute.For<MissionPlanner.Core.Vehicles.Abstractions.IVehicleConnectionSession>();
+            applicationSession.Connection.Returns(connection);
+            await using var monitor = new MissionPlanner.Core.Vehicles.VehicleConnectionMonitor(registry,
+                Substitute.For<IDomainEventHub>(), healthClock, Options.Create(new MissionPlanner.Core.Vehicles.VehicleConnectionHealthOptions()),
+                NullLogger<MissionPlanner.Core.Vehicles.VehicleConnectionMonitor>.Instance);
+            var stopCount = 0;
+            using var lease = monitor.Track(vehicleId, Guid.NewGuid(), applicationSession, async _ =>
+            {
+                Interlocked.Increment(ref stopCount);
+                await connection.StopAsync();
+            });
+            healthClock.Advance(TimeSpan.FromSeconds(11));
+            await monitor.UpdateConnectionStatesAsync(TestContext.Current.CancellationToken);
+            await monitor.UpdateConnectionStatesAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(1, stopCount);
             Assert.Equal("Completed", recorder.Current.State);
             var file = Assert.Single(await storage.ListAsync(LogStorageArea.Telemetry, TestContext.Current.CancellationToken));
             await using var stream = await storage.OpenReadAsync(LogStorageArea.Telemetry, file.Id, TestContext.Current.CancellationToken);

@@ -10,6 +10,9 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// </summary>
 public interface IVehicleParameterService
 {
+    /// <summary>Connection lifetime shared by parameter requests and streaming operations.</summary>
+    CancellationToken ConnectionCancellationToken => CancellationToken.None;
+
     /// <summary>
     /// Requests all parameters from the specified vehicle.
     /// The vehicle will respond with PARAM_VALUE messages for each parameter.

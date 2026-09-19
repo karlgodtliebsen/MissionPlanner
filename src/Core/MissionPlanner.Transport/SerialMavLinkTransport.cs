@@ -104,7 +104,7 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
 
         var bytesRead = await serialPort.BaseStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
         logger.LogTrace("Read {BytesRead} bytes from serial port {PortName}.", bytesRead, serialPort.PortName);
-        return new TransportReceiveResult(bytesRead, endpoint);
+        return bytesRead == 0 ? throw new IOException("Serial transport read ended.") : new TransportReceiveResult(bytesRead, endpoint);
     }
 
     /// <inheritdoc />

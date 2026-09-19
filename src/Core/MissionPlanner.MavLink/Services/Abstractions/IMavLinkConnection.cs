@@ -1,4 +1,4 @@
-using MissionPlanner.Transport;
+﻿using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Services.Abstractions;
 
@@ -13,6 +13,8 @@ namespace MissionPlanner.MavLink.Services.Abstractions;
 /// </summary>
 public interface IMavLinkConnection : IAsyncDisposable
 {
+    /// <summary>Gets validated frame liveness and the request cancellation boundary.</summary>
+    MavLinkConnectionActivity? Activity => null;
     /// <summary>Gets the connection's read-only inspection tap when implemented.</summary>
     MavLinkInspectionTap? Inspection => null;
     /// <summary>Gets connection-owned signing state, when supported.</summary>

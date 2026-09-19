@@ -414,9 +414,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
 
 
-    /// <summary>
-    /// Observes connection state and starts child-owned discovery before enabling workflow tabs.
-    /// </summary>
     private readonly FirmwareUpgradeSelection? upgradeSelection;
 
     /// <inheritdoc />
@@ -434,10 +431,13 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
         SubscribePanels();
-        if (upgradeSelection?.Pending is { } upgrade)
+        if (upgradeSelection is not null)
         {
-            upgradeSelection.Pending = null;
-            OnlineFirmwareModel.SelectUpgrade(upgrade);
+            upgradeSelection.Requested += OnUpgradeRequested;
+            if (upgradeSelection.Pending is { } upgrade)
+            {
+                OnUpgradeRequested(upgrade);
+            }
         }
         LocalFirmwareModel.HasDevice = DevicesModel.HasDevice;
         LocalFirmwareModel.HasDetectedDfuDevice = DfuModel.HasDetectedDfuDevice;
@@ -460,6 +460,15 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         return DeactivatePanelsAsync();
     }
 
+    private void OnUpgradeRequested(FirmwareManifestEntry upgrade)
+    {
+        if (!IsOperationInProgress)
+        {
+            upgradeSelection!.Pending = null;
+            OnlineFirmwareModel.SelectUpgrade(upgrade);
+        }
+    }
+
     private async Task DeactivatePanelsAsync()
     {
         if (disposed)
@@ -472,6 +481,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
 
         active = false;
+        if (upgradeSelection is not null)
+        {
+            upgradeSelection.Requested -= OnUpgradeRequested;
+        }
         DevicesModel.DiscoveryOwnedByPage = DfuModel.DiscoveryOwnedByPage = false;
 
         UnsubscribePanels();

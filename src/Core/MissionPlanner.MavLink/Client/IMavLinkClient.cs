@@ -13,6 +13,12 @@ public interface IMavLinkClient : IAsyncDisposable
     /// </summary>
     bool IsRunning { get; }
 
+    /// <summary>Completes when the transport read loop ends, independently of decode backlog.</summary>
+    Task? Completion => null;
+
+    /// <summary>Gets the last definitive read failure, if any.</summary>
+    Exception? ReceiveFailure => null;
+
     /// <summary>
     /// Gets a value indicating whether the MAVLink client is connected.
     /// </summary>  

@@ -22,6 +22,25 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 public sealed class FirmwarePanelViewModelTests
 {
     [Fact]
+    public async Task UpgradeRequestUpdatesAnAlreadyOpenInstallerAndUnsubscribesWhenHidden()
+    {
+        var selection = new FirmwareUpgradeSelection();
+        using var services = CreateServices(services => services.AddSingleton(selection));
+        var parent = services.GetRequiredService<InstallFirmwareViewModel>();
+        await parent.ActivateAsync();
+        var entry = new FirmwareManifestEntry(new FirmwareVersion("4.7.2", new Version(4, 7, 2)), FirmwareReleaseChannel.Stable,
+            new FirmwareBoardTarget(105, "BETAFPV-F405", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
+            new FirmwareArtifact(new Uri("https://firmware.ardupilot.org/test/firmware.apj"), FirmwareImageFormat.Apj));
+        selection.Request(entry);
+        Assert.Same(entry, parent.OnlineFirmwareModel.SelectedFirmware?.Entry);
+        Assert.Null(selection.Pending);
+        await parent.DeactivateAsync();
+        selection.Request(entry);
+        Assert.Same(entry, selection.Pending);
+        Assert.Null(parent.OnlineFirmwareModel.SelectedFirmware);
+    }
+
+    [Fact]
     public void UpgradeSelectionPreservesExactArtifactAndStableBuildFilters()
     {
         using var services = CreateServices();

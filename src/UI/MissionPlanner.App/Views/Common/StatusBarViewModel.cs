@@ -60,6 +60,10 @@ public partial class StatusBarViewModel : ViewModelBase
     [ObservableProperty]
     public partial string ConnectionStatus { get; private set; } = "Offline";
 
+    /// <summary>High-visibility armed connection-loss warning.</summary>
+    [ObservableProperty]
+    public partial string? ConnectionWarning { get; private set; }
+
     /// <summary>
     /// Gets the freshness of the latest general telemetry observation.
     /// </summary>
@@ -148,10 +152,12 @@ public partial class StatusBarViewModel : ViewModelBase
         Dispatcher.Dispatch(() =>
         {
             VehicleDisplayName = snapshot.DisplayName;
-            ConnectionStatus = snapshot.State?.ConnectionState.ToString() ?? "Offline";
+            ConnectionStatus = snapshot.State?.Connection.DisconnectReason is { } reason
+                ? $"Disconnected: {reason}" : snapshot.State?.ConnectionState.ToString() ?? "Offline";
+            ConnectionWarning = snapshot.State?.Connection.Warning;
             TelemetryFreshness = snapshot.State is null
                 ? "Telemetry: unavailable"
-                : $"Telemetry: {FormatAge(snapshot.State.LastHeartbeatAt)}";
+                : $"Telemetry: {FormatAge(snapshot.State.Connection.LastPacketAt ?? snapshot.State.LastHeartbeatAt)}";
             HasStatusMessage = !string.IsNullOrEmpty(StatusMessage);
         });
     }

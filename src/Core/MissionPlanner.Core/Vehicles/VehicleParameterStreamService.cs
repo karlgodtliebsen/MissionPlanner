@@ -54,6 +54,8 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
         CancellationToken cancellationToken = default)
     {
         var actualTimeout = timeout ?? defaultTimeout;
+        using var connectionLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, parameterService.ConnectionCancellationToken);
+        cancellationToken = connectionLifetime.Token;
         var stopwatch = Stopwatch.StartNew();
 
         logger.LogInformation("Starting parameter stream for vehicle {VehicleId} with timeout {Timeout}s", vehicleId, actualTimeout.TotalSeconds);
@@ -147,6 +149,7 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
                 }
             }
 
+            cts.Token.ThrowIfCancellationRequested();
             // Timeout or stall
             var finalParams = parameterRegistry.GetAllParameters(vehicleId);
             logger.LogWarning("Parameter stream incomplete after {Duration}s. Received {Received}/{Total} unique indices ({Stored} stored)",
@@ -156,6 +159,10 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
         }
         catch (OperationCanceledException)
         {
+            if (parameterService.ConnectionCancellationToken.IsCancellationRequested)
+            {
+                return ParameterStreamResult.CreateFailure("Connection lost", stopwatch.Elapsed);
+            }
             var finalParams = parameterRegistry.GetAllParameters(vehicleId);
             if (totalCount > 0 && receivedIndices.Count >= totalCount)
             {
@@ -176,6 +183,8 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
     /// <inheritdoc/>
     public async Task<ParameterStreamResult> StreamAllParametersWithRetryAsync(VehicleId vehicleId, IProgress<ParameterStreamProgress>? progress = null, int maxRetries = 3, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
+        using var connectionLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, parameterService.ConnectionCancellationToken);
+        cancellationToken = connectionLifetime.Token;
         var overallStopwatch = Stopwatch.StartNew();
 
         progress?.Report(new ParameterStreamProgress(Message: "Reading parameters using MAVLink stream..."));
@@ -184,7 +193,7 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                return ParameterStreamResult.CreateFailure("Operation cancelled", overallStopwatch.Elapsed);
+                return ParameterStreamResult.CreateFailure(parameterService.ConnectionCancellationToken.IsCancellationRequested ? "Connection lost" : "Operation cancelled", overallStopwatch.Elapsed);
             }
 
             if (attempt > 0)
@@ -196,6 +205,10 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
             }
 
             var result = await StreamAllParametersAsync(vehicleId, progress, timeout, cancellationToken);
+            if (parameterService.ConnectionCancellationToken.IsCancellationRequested)
+            {
+                return ParameterStreamResult.CreateFailure("Connection lost", overallStopwatch.Elapsed);
+            }
 
             if (result.Success)
             {

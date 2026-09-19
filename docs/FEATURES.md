@@ -273,6 +273,7 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 ### Status
 
 * SERIAL/USB implemented and tested (see VEHICLE_CONNECTION.md)
+* Continuous valid-frame monitoring with degraded/recovery states, transport-fault and UDP timeout cleanup, armed warnings, and shared operation cancellation.
 * Background stable ArduPilot update checks preserve exact target/build identity, suppress repeated notices, and preselect the existing installer without flashing.
 
 ### Missing

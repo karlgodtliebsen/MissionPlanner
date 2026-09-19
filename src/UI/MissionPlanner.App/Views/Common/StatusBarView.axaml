@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <utilities:UserControlViewBase x:TypeArguments="common:StatusBarViewModel" xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -29,6 +29,7 @@
                     </Label.Triggers>-->
                 </Label>
   
+                <TextBlock Text="{Binding ConnectionWarning}" Classes="Warning" FontWeight="Bold" VerticalAlignment="Center" />
                 <Label Content="{Binding VehicleDisplayName}" VerticalAlignment="Center" VerticalContentAlignment="Center" />
                     
                 <Label Content="•" FontSize="16"  VerticalAlignment="Center"/>
