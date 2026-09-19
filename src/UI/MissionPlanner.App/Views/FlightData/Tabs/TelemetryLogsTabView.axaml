@@ -141,7 +141,8 @@
                                 <TextBlock Grid.Column="3" Text="{Binding ComponentId}" />
                                 <TextBlock Grid.Column="4" Text="{Binding MessageId}" />
                                 <TextBlock Grid.Column="5" Text="{Binding Name}" />
-                                <TextBlock Grid.Column="6" Text="{Binding Summary}" ToolTip.Tip="{Binding RawHex}" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Grid.Column="6" Text="{Binding Summary}" 
+                                           ToolTip.Tip="{Binding RawHex}" TextTrimming="CharacterEllipsis" />
                             </controls:VirtualizedItemsGridRow>
                         </DataTemplate>
                     </controls:VirtualizedItemsGrid.RowTemplate>
