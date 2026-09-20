@@ -65,6 +65,45 @@ public sealed class ApplicationLogsViewModelTests
         await model.DeactivateAsync();
     }
 
+    [Fact]
+    public async Task SnapshotIncludesHiddenEventsStructuredPropertiesAndExceptions()
+    {
+        var buffer = new ApplicationLogBuffer(100);
+        var storage = new BrowserLogStorage();
+        var state = new ApplicationLogFileState(new ConfigurationBuilder().Build());
+        var clipboard = Substitute.For<ITextClipboardService>();
+        string? copied = null;
+        clipboard.SetTextAsync(Arg.Any<string>()).Returns(call =>
+        {
+            copied = call.Arg<string>();
+            return Task.CompletedTask;
+        });
+        using var model = new ApplicationLogsViewModel(buffer,
+            new ApplicationLogLevelController(new LoggingLevelSwitch(LogEventLevel.Information)),
+            new ApplicationLogHistory(storage, state), state, storage, Substitute.For<IFileSaveService>(),
+            clipboard, Substitute.For<ILogFolderService>(), NullLogger<ApplicationLogsViewModel>.Instance,
+            new InlineDispatcher(), Substitute.For<IDomainEventHub>());
+        using var logger = new LoggerConfiguration().WriteTo.Sink(buffer).CreateLogger();
+        logger.Information("First {@Data}", new { Nested = new { Value = 42 }, Items = new[] { 1, 2 } });
+        model.RefreshLiveView();
+        model.SelectedEntry = Assert.Single(model.Entries);
+        model.ClearViewCommand.Execute(null);
+        model.Paused = true;
+        logger.Error(new InvalidOperationException("outer", new Exception("inner")), "Failure {Code}", 17);
+        model.Search = "no match";
+        model.ApplyFiltersCommand.Execute(null);
+        await model.CopySnapshotCommand.ExecuteAsync(null);
+        Assert.Empty(model.Entries);
+        Assert.Null(model.ErrorMessage);
+        using var json = System.Text.Json.JsonDocument.Parse(copied!);
+        var events = json.RootElement.GetProperty("Events");
+        Assert.Equal(2, events.GetArrayLength());
+        Assert.Contains("inner", events[0].GetProperty("Exception").GetString());
+        Assert.Equal(17, events[0].GetProperty("Properties").GetProperty("Code").GetInt32());
+        Assert.Equal(42, events[1].GetProperty("Properties").GetProperty("Data").GetProperty("Nested").GetProperty("Value").GetInt32());
+        Assert.Equal(2, events[1].GetProperty("Properties").GetProperty("Data").GetProperty("Items").GetArrayLength());
+    }
+
     private sealed class InlineDispatcher : IUiDispatcher
     {
         public bool CheckAccess() => true;

@@ -29,6 +29,9 @@
             <Button Command="{Binding CopyCommand}" ToolTip.Tip="Copy selected event or current view" AutomationProperties.Name="Copy selected event or current view" >
                     <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
                 </Button>
+            <Button Command="{Binding CopySnapshotCommand}" ToolTip.Tip="Copy complete log snapshot to clipboard" AutomationProperties.Name="Copy complete log snapshot to clipboard">
+                <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
+            </Button>
             <Button Command="{Binding ExportViewCommand}" ToolTip.Tip="Export current view" AutomationProperties.Name="Export current view" >
                     <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                 </Button>

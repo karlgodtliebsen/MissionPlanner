@@ -83,6 +83,26 @@ Desktop files can be refreshed, opened, exported, and deleted when old. The hist
 
 Validation: nine application logging/history tests and two viewer/navigation tests passed. The viewer test emits 10,000 events into a 100-event buffer and verifies batched resume, clear-view isolation, runtime levels, filtering, and hide/reopen behavior. Browser library build passed without warnings.
 
+## Clipboard snapshots
+
+Both log toolbars offer a complete snapshot as indented JSON. Application's existing
+selected-event/filtered-view copy remains available. Its separate snapshot button copies
+all retained live-buffer events, ignoring pause, clear-view and display filters, or all
+loaded historical events when viewing a file. Exports include timestamps, templates,
+rendered messages, severity, source context, full exception text and nested structured
+properties. Historical snapshots remain limited to the loaded history window.
+
+Telemetry's snapshot button copies every indexed packet from the selected recording,
+ignoring the displayed page and filters. It includes recording metadata, index statistics,
+packet timestamps, identities, decoded summaries, severity/command fields and complete raw
+frame hex. Packets are newest first. A separate stream and bounded decode batches preserve
+browser/replay cursors; a cancellable progress dialog covers indexing and copying.
+The resulting JSON text occupies memory until clipboard submission. An actively growing
+recording is represented only through the stream length indexed for this capture.
+
+Both formats include a schema version, UTC capture time and scope. Formatting runs on
+demand off the UI thread. No recording or logging settings are changed.
+
 ## Health, enrichment, and retention
 
 Telemetry health reports Recording, Stopped, or Error, bytes written, and the UTC start time. The health label tooltip contains the current recording name. Application health reports the runtime minimum level, file logging state/current file, and memory count/capacity. `LoggingHealthService` exposes a lightweight combined snapshot without owning either pipeline.

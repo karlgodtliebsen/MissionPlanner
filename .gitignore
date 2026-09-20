@@ -44,6 +44,8 @@ dlldata.c
 
 #log files
 logs/
+# Log views are source code, not generated log output.
+!/src/UI/MissionPlanner.App/Views/Logs/
 
 # DNX
 project.lock.json
