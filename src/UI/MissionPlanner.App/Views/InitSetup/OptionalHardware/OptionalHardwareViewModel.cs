@@ -14,6 +14,7 @@ namespace MissionPlanner.App.Views.InitSetup.OptionalHardware;
 public sealed partial class OptionalHardwareViewModel : ViewModelBase
 {
     private readonly OptionalHardwareTabCatalog catalog;
+    private readonly Views.Diagnostics.LiveTelemetryInspectorViewModel? inspector;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameters;
     private CancellationTokenSource? refreshCancellation;
@@ -21,9 +22,11 @@ public sealed partial class OptionalHardwareViewModel : ViewModelBase
     /// <summary>Initializes the workspace.</summary>
     public OptionalHardwareViewModel(OptionalHardwareTabCatalog catalog,
         IActiveVehicleContext activeVehicle,
-        IVehicleParameterRegistry parameters, ILogger<OptionalHardwareViewModel> logger
+        IVehicleParameterRegistry parameters, ILogger<OptionalHardwareViewModel> logger,
+        Views.Diagnostics.LiveTelemetryInspectorViewModel? inspector = null
         ) : base(logger)
     {
+        this.inspector = inspector;
         this.catalog = catalog;
         this.activeVehicle = activeVehicle;
         this.parameters = parameters;
@@ -48,6 +51,11 @@ public sealed partial class OptionalHardwareViewModel : ViewModelBase
     /// <summary>Gets the availability summary.</summary>
     [ObservableProperty]
     public partial string AvailabilitySummary { get; private set; } = string.Empty;
+
+    partial void OnSelectedTabChanged(TabItemViewModel? value)
+    {
+        inspector?.SuggestContext(value?.Descriptor.Key);
+    }
 
     private void Refresh()
     {

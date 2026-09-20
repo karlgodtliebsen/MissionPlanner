@@ -1,0 +1,112 @@
+<utilities:UserControlViewBase
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.Diagnostics"
+    xmlns:diagnostics="clr-namespace:MissionPlanner.Core.Diagnostics;assembly=MissionPlanner.Core"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    x:Class="MissionPlanner.App.Views.Diagnostics.LiveTelemetryInspectorView"
+    x:TypeArguments="local:LiveTelemetryInspectorViewModel"
+    x:DataType="local:LiveTelemetryInspectorViewModel"
+    x:CompileBindings="True">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,2*" Margin="12">
+        <TextBlock Text="Live Telemetry Inspector" Classes="H4" />
+        <StackPanel Grid.Row="1" Spacing="6" Margin="0,8">
+            <ComboBox ItemsSource="{Binding Vehicles}" SelectedItem="{Binding SelectedVehicle}" HorizontalAlignment="Stretch" />
+            <TextBlock Text="{Binding Header}" TextWrapping="Wrap" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding LiveLabel}" TextWrapping="Wrap" />
+        </StackPanel>
+        <WrapPanel Grid.Row="2" ItemSpacing="5">
+            <Button Command="{Binding FreezeCommand}"
+                    ToolTip.Tip="Freeze / resume presentation">
+                <mdi:MaterialIcon Kind="Pause"  Width="30" Height="30"/>
+            </Button>
+            <Button Command="{Binding ClearEventsCommand}" ToolTip.Tip="Clear diagnostic events">
+                <mdi:MaterialIcon Kind="Delete"  Width="30" Height="30"/>
+            </Button>
+            <Button Command="{Binding CopyEventsCommand}" ToolTip.Tip="Copy diagnostic events">
+                <mdi:MaterialIcon Kind="ContentCopy"  Width="30" Height="30"/>
+            </Button>
+            <Button Command="{Binding DetachCommand}" IsVisible="{Binding CanDetach}" ToolTip.Tip="Detach Inspector">
+                <mdi:MaterialIcon Kind="OpenInNew" Width="30" Height="30" />
+            </Button>
+            <Button Command="{Binding CloseCommand}" ToolTip.Tip="Close Inspector">
+                <mdi:MaterialIcon Kind="Close"  Width="30" Height="30"/>
+            </Button>
+        </WrapPanel>
+        <StackPanel Grid.Row="3" Margin="0,8" Spacing="4"  >
+            <ComboBox ItemsSource="{Binding Panels}" SelectedItem="{Binding SelectedPanel}" HorizontalAlignment="Stretch" />
+            <Slider Minimum="360" Maximum="760" Value="{Binding DrawerWidth}" ToolTip.Tip="Inspector width" />
+        </StackPanel>
+        <Grid Grid.Row="4" RowDefinitions="Auto,Auto,*"  >
+            <ListBox ItemsSource="{Binding Details}" MaxHeight="300">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <SelectableTextBlock Text="{Binding}" TextWrapping="Wrap" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <ListBox Grid.Row="1" ItemsSource="{Binding Channels}"
+                     IsVisible="{Binding ShowRc}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="diagnostics:VehicleDiagnosticChannel">
+                        <StackPanel Opacity="{Binding Opacity}" Margin="0,4" Spacing="3">
+                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                            <ProgressBar Minimum="0" Maximum="100"
+                                         Value="{Binding Position}" Height="8" />
+                            <TextBlock Text="{Binding Calibration}" FontSize="12" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Grid Grid.Row="2" RowDefinitions="Auto,*"
+                  IsVisible="{Binding ShowRaw}">
+                <StackPanel Spacing="4">
+                    <TextBox Text="{Binding RawFilter}" PlaceholderText="Message name / ID" />
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBox Text="{Binding RawSystem}" PlaceholderText="SysID" Width="90" />
+                        <TextBox Text="{Binding RawComponent}" PlaceholderText="CompID" Width="90" />
+                        <CheckBox IsChecked="{Binding FollowRaw}" VerticalAlignment="Center" Content="Follow / uncheck to pause" />
+                    </StackPanel>
+                </StackPanel>
+                <ListBox Grid.Row="1" ItemsSource="{Binding Raw}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="diagnostics:VehicleRawDiagnostic">
+                            <StackPanel Margin="0,4">
+                                <TextBlock Text="{Binding At, StringFormat='{}{0:HH:mm:ss.fff}'}" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="{Binding SystemId, StringFormat='Sys {0}'}" />
+                                    <TextBlock Text="{Binding ComponentId, StringFormat='Comp {0}'}" />
+                                    <TextBlock Text="{Binding MessageId}" />
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding Summary}" />
+                                <Expander Header="Payload">
+                                    <SelectableTextBlock Text="{Binding Payload}" TextWrapping="Wrap" />
+                                </Expander>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="5" ColumnDefinitions="*,Auto" Margin="0,8" ColumnSpacing="5">
+            <TextBox Text="{Binding MarkerText}" PlaceholderText="Optional marker text" MaxLength="256" />
+            <Button Grid.Column="1" Command="{Binding AddMarkerCommand}" ToolTip.Tip="Add marker">
+                <mdi:MaterialIcon Kind="Flag"  Width="30" Height="30"/>
+            </Button>
+        </Grid>
+        <ListBox Grid.Row="6" ItemsSource="{Binding Events}" >
+            <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="diagnostics:VehicleDiagnosticEvent">
+                    <StackPanel Margin="0,4">
+                        <TextBlock Text="{Binding At, StringFormat='{}{0:HH:mm:ss.fff}'}" Opacity="0.7" />
+                        <TextBlock Text="{Binding Category}" FontWeight="SemiBold" />
+                        <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</utilities:UserControlViewBase>

@@ -1076,3 +1076,10 @@ reviewed 0.17/0.20-style recommendations. See [motor thresholds](MOTOR_START_THR
 Motor Test includes a read-only [motor output diagnostic summary](MOTOR_OUTPUT_DIAGNOSTICS.md) joining frame, output, protocol and observed-rotation evidence.
 
 [Bench telemetry replay regressions](BENCH_TELEMETRY_REPLAY.md) cover retained arming feedback, logger faults, readiness and armed transitions using the existing isolated playback pipeline.
+
+## Live Telemetry Inspector
+
+A persistent nonmodal Inspector provides Status/Arming, RC, Outputs, Power, Sensors and Raw
+panels with a separate telemetry EventHub singleton, bounded per-vehicle history, 10 Hz
+presentation, freeze/resume, markers, context suggestions and desktop detachment.
+See [LiveTelemetryInspector.md](LiveTelemetryInspector.md) for ownership, evidence and limits.

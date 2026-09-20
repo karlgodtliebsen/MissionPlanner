@@ -28,6 +28,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
     private readonly IMavLinkCommandEncoder encoder;
     private readonly IVehicleOperationGate operationGate;
     private readonly ILogger<ArduPilotCompassCalibrationService> logger;
+    private readonly IVehicleTelemetryEventHub? telemetry;
     private readonly TimeSpan startTimeout;
     private readonly SortedDictionary<int, CompassCalibrationProgress> progress = [];
     private readonly SortedDictionary<int, CompassCalibrationReport> reports = [];
@@ -49,6 +50,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
     /// <param name="operationGate">The shared vehicle operation gate.</param>
     /// <param name="options">The bounded protocol wait configuration.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="telemetry">Optional isolated workflow diagnostic publisher.</param>
     public ArduPilotCompassCalibrationService(
         IActiveVehicleContext activeVehicle,
         IVehicleRegistry vehicleRegistry,
@@ -57,7 +59,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
         IMavLinkCommandEncoder encoder,
         IVehicleOperationGate operationGate,
         IOptions<CompassCalibrationOptions> options,
-        ILogger<ArduPilotCompassCalibrationService> logger)
+        ILogger<ArduPilotCompassCalibrationService> logger, IVehicleTelemetryEventHub? telemetry = null)
     {
         this.activeVehicle = activeVehicle;
         this.vehicleRegistry = vehicleRegistry;
@@ -66,6 +68,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
         this.encoder = encoder;
         this.operationGate = operationGate;
         this.logger = logger;
+        this.telemetry = telemetry;
         startTimeout = options.Value.StartTimeout > TimeSpan.Zero ? options.Value.StartTimeout : TimeSpan.FromSeconds(8);
         activeVehicle.Changed += OnActiveVehicleChanged;
     }
@@ -467,6 +470,11 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
 
     private void Transition(CompassCalibrationSnapshot snapshot)
     {
+        if (snapshot.VehicleId is { } id && (Current.State != snapshot.State || Current.Instruction != snapshot.Instruction))
+        {
+            _ = telemetry?.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleDiagnosticEvent(
+                id, DateTimeOffset.UtcNow, "Calibration", $"{snapshot.State}: {snapshot.Instruction}"));
+        }
         Current = snapshot;
         StateChanged?.Invoke(new CompassCalibrationStateChangedEventArgs(snapshot));
     }

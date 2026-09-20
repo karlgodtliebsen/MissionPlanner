@@ -21,17 +21,20 @@ public sealed class VehicleParameterService : IVehicleParameterService
     private readonly IMavLinkParameterEncoder encoder;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly ILogger<VehicleParameterService> logger;
+    private readonly MissionPlanner.Library.EventHub.Abstractions.IVehicleTelemetryEventHub? telemetry;
 
     /// <summary>
     /// Service for managing vehicle parameters via MAVLink.
     /// Handles parameter requests and updates through the MAVLink protocol.
     /// </summary>
-    public VehicleParameterService(IVehicleConnectionSession connectionSession, IMavLinkParameterEncoder encoder, IVehicleRegistry vehicleRegistry, ILogger<VehicleParameterService> logger)
+    public VehicleParameterService(IVehicleConnectionSession connectionSession, IMavLinkParameterEncoder encoder, IVehicleRegistry vehicleRegistry, ILogger<VehicleParameterService> logger,
+        MissionPlanner.Library.EventHub.Abstractions.IVehicleTelemetryEventHub? telemetry = null)
     {
         this.connectionSession = connectionSession;
         this.encoder = encoder;
         this.vehicleRegistry = vehicleRegistry;
         this.logger = logger;
+        this.telemetry = telemetry;
     }
 
 
@@ -185,6 +188,11 @@ public sealed class VehicleParameterService : IVehicleParameterService
 
             await client.SendAsync(packet, endpoint, cancellationToken);
 
+            if (telemetry is not null)
+            {
+                await telemetry.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleDiagnosticEvent(
+                    vehicleId, DateTimeOffset.UtcNow, "Parameter", $"Write requested: {parameterName} = {value}"));
+            }
             logger.LogInformation("📤 Sent PARAM_SET to {VehicleId}: param={ParameterName} value={Value} type={Type}", vehicleId, parameterName, value, paramType);
 
             return true;

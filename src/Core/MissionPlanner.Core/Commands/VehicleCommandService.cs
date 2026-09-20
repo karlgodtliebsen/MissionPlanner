@@ -25,7 +25,8 @@ public sealed class VehicleCommandService(
     IVehicleCommandPolicy commandPolicy,
     IArduPilotModeCatalog modeCatalog,
     IVehicleOperationGate? operationGate = null,
-    ISimulationVehicleChannelRegistry? simulationChannels = null)
+    ISimulationVehicleChannelRegistry? simulationChannels = null,
+    IVehicleTelemetryEventHub? telemetry = null)
     : IVehicleCommandService
 {
     private static readonly TimeSpan commandAckTimeout = TimeSpan.FromSeconds(5);
@@ -210,13 +211,26 @@ public sealed class VehicleCommandService(
             var targetConnection = targetSession.Connection;
             var connectionToken = targetConnection.Activity?.LifetimeToken ?? targetSession.ConnectionCancellationToken;
             using var ackLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionToken);
+            var correlationId = Guid.NewGuid();
             var waitForAck = commandAckTracker.WaitForAckAsync(vehicleId, commandId, commandAckTimeout, ackLifetime.Token);
 
             try
             {
                 ackLifetime.Token.ThrowIfCancellationRequested();
                 await targetConnection.SendRawAsync(packet, session.EndPoint, ackLifetime.Token).ConfigureAwait(false);
+                if (telemetry is not null)
+                {
+                    await telemetry.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleCommandDiagnostic(
+                        vehicleId, clock.UtcNow, commandId, correlationId, "TX",
+                        $"Command {commandId}: {string.Join(", ", parameters)}", commandId == 400 && parameters[0] == 1));
+                }
                 var ack = await waitForAck.ConfigureAwait(false);
+                if (telemetry is not null)
+                {
+                    await telemetry.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleCommandDiagnostic(
+                        vehicleId, ack.ReceivedAt, commandId, correlationId, "ACK",
+                        $"Command {commandId}: {MapResult(ack.Result)}", commandId == 400 && parameters[0] == 1));
+                }
                 var response = new VehicleCommandResponse(vehicleId, MapResult(ack.Result), ack.ReceivedAt,
                     $"MAVLink ACK result {ack.Result}.");
                 if (response.Result == VehicleCommandResult.Accepted && onAccepted is not null)

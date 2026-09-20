@@ -37,6 +37,8 @@ public sealed class ActuatorTestService : IActuatorTestService
     private IReadOnlyList<int> activeMotorTestOrders = [];
     private bool disposed;
     private readonly IVehicleConnectionSession session;
+    private readonly IVehicleTelemetryEventHub? telemetry;
+    private Guid motorCorrelation;
 
     /// <summary>Initializes the actuator-test service.</summary>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
@@ -48,6 +50,7 @@ public sealed class ActuatorTestService : IActuatorTestService
     /// <param name="parameterRegistry">The live parameter registry.</param>
     /// <param name="clock">The application clock.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="telemetry">Optional isolated diagnostic evidence.</param>
     public ActuatorTestService(
         IActiveVehicleContext activeVehicle,
         IVehicleRegistry vehicleRegistry,
@@ -57,7 +60,7 @@ public sealed class ActuatorTestService : IActuatorTestService
         IVehicleOperationGate operationGate,
         IVehicleParameterRegistry parameterRegistry,
         IDateTimeProvider clock,
-        ILogger<ActuatorTestService> logger)
+        ILogger<ActuatorTestService> logger, IVehicleTelemetryEventHub? telemetry = null)
     {
         this.activeVehicle = activeVehicle;
         this.vehicleRegistry = vehicleRegistry;
@@ -68,6 +71,7 @@ public sealed class ActuatorTestService : IActuatorTestService
         this.parameterRegistry = parameterRegistry;
         this.clock = clock;
         this.logger = logger;
+        this.telemetry = telemetry;
         activeVehicle.Changed += OnActiveVehicleChanged;
     }
 
@@ -247,6 +251,7 @@ public sealed class ActuatorTestService : IActuatorTestService
             if (message is CommandAckMessage acknowledgement && acknowledgement.Command == MotorTestCommand &&
                 message.SystemId == vehicleId.SystemId && message.ComponentId == vehicleId.ComponentId)
             {
+                ReportAcknowledgement(vehicleId, acknowledgement);
                 ackSignal.TrySetResult((MavResult)acknowledgement.Result);
             }
 
@@ -320,6 +325,7 @@ public sealed class ActuatorTestService : IActuatorTestService
                     if (message is CommandAckMessage acknowledgement && acknowledgement.Command == MotorTestCommand &&
                         message.SystemId == vehicleId.SystemId && message.ComponentId == vehicleId.ComponentId)
                     {
+                        ReportAcknowledgement(vehicleId, acknowledgement);
                         acknowledgementSignal.TrySetResult((MavResult)acknowledgement.Result);
                     }
 
@@ -398,7 +404,21 @@ public sealed class ActuatorTestService : IActuatorTestService
     {
         var vehicleSession = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException("The target vehicle session is unavailable.");
         var packet = encoder.EncodeCommandLong(vehicleId.SystemId, vehicleId.ComponentId, command, parameters);
+        motorCorrelation = Guid.NewGuid();
+        if (telemetry is not null)
+        {
+            await telemetry.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleCommandDiagnostic(
+                vehicleId, clock.UtcNow, command, motorCorrelation, "TX",
+                $"Command {command}: motor {parameters[0]}, throttle {parameters[2]} (type {parameters[1]}), duration {parameters[3]} s"));
+        }
         await session.Connection.SendRawAsync(packet, vehicleSession.EndPoint, cancellationToken).ConfigureAwait(false);
+    }
+
+    private void ReportAcknowledgement(VehicleId vehicleId, CommandAckMessage acknowledgement)
+    {
+        _ = telemetry?.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleCommandDiagnostic(
+            vehicleId, acknowledgement.ReceivedAt, MotorTestCommand, motorCorrelation, "ACK",
+            $"Command {MotorTestCommand}: {(MavResult)acknowledgement.Result}"));
     }
 
     private void Finish(MotorTestState state, string instruction, string description, string outcome)
@@ -422,6 +442,11 @@ public sealed class ActuatorTestService : IActuatorTestService
                 state is MotorTestState.Failed or MotorTestState.Disconnected ? instruction : null);
         }
 
+        if (vehicleId is { } id)
+        {
+            _ = telemetry?.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleDiagnosticEvent(
+                id, clock.UtcNow, "Motor", $"{state}: {description} · {outcome}. Physical movement unknown.", motorCorrelation));
+        }
         StateChanged?.Invoke(new MotorTestStateChangedEventArgs(Current));
     }
 

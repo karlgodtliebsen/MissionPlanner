@@ -15,6 +15,7 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Library.EventHub.Events;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using Notification = Ursa.Controls.Notification;
 using WindowNotificationManager = Ursa.Controls.WindowNotificationManager;
@@ -32,9 +33,9 @@ public partial class TopBarViewModel : ViewModelBase
     }
 
     private readonly ApplicationStateService stateService;
-    private readonly IDomainFactory domainFactory;
     private readonly IServiceFactory serviceFactory;
     private readonly IDialogService dialogService;
+    private readonly IDomainEventHub domainEventHub;
     private const string ConnectImage = "avares://MissionPlanner.App/Resources/Images/light_disconnect_icon.png";
     private const string DisConnectImage = "avares://MissionPlanner.App/Resources/Images/light_connect_icon.png";
     private readonly IList<IDisposable> disposables = [];
@@ -124,9 +125,11 @@ public partial class TopBarViewModel : ViewModelBase
     {
         get; set;
     }
+
     [ObservableProperty] public partial bool ShowCom { get; set; } = true;
     [ObservableProperty] public partial bool ShowVehicleName { get; set; } = true;
     [ObservableProperty] public partial string DataSourceMode { get; private set; } = "LIVE / SIMULATION";
+
     [ObservableProperty]
     public partial bool IsReplayReadOnly
     {
@@ -151,7 +154,6 @@ public partial class TopBarViewModel : ViewModelBase
     /// Initializes a new instance of the <see cref="TopBarViewModel"/> class.
     /// </summary>
     /// <param name="stateService">The application state service.</param>
-    /// <param name="domainFactory">The domain factory.</param>
     /// <param name="serviceFactory">The service factory.</param>
     /// <param name="dialogService">The dialog service.</param>
     /// <param name="domainEventHub">The domain event hub.</param>
@@ -161,7 +163,6 @@ public partial class TopBarViewModel : ViewModelBase
     /// <param name="logger">The logger instance.</param>
     public TopBarViewModel(
         ApplicationStateService stateService,
-        IDomainFactory domainFactory,
         IServiceFactory serviceFactory,
         IDialogService dialogService,
         IDomainEventHub domainEventHub,
@@ -171,9 +172,9 @@ public partial class TopBarViewModel : ViewModelBase
         ILogger<TopBarViewModel> logger) : base(logger)
     {
         this.stateService = stateService;
-        this.domainFactory = domainFactory;
         this.serviceFactory = serviceFactory;
         this.dialogService = dialogService;
+        this.domainEventHub = domainEventHub;
         this.replaySessionManager = replaySessionManager;
         this.navigationService = navigationService;
         this.settingsService = settingsService;
@@ -276,13 +277,15 @@ public partial class TopBarViewModel : ViewModelBase
         var viewModel = serviceFactory.Create<ConnectPopupViewModel>();
         await dialogService.ShowOverlayDialogAsync<ConnectPopupView, ConnectPopupViewModel>(viewModel, options);
     }
+    [RelayCommand]
+    private async Task ShowTelemetry(CancellationToken cancellationToken)
+    {
+        await domainEventHub.PublishDomainEventAsync(new ShowTelemetryEvent("ToggleTelemetry"), cancellationToken);
+    }
 
     [RelayCommand]
     private async Task OpenPreferencesAsync(CancellationToken cancellationToken)
     {
-        //var viewModel = domainFactory.Create<ErrorViewModel, string>("Ensure there is a connection and try again");
-        //var options = dialogService.CreateOptions("Load from Json file failed", "Ok", null);
-        // await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         await navigationService.NavigateAsync(MissionPlannerRoutes.Preferences);
     }
 
@@ -350,5 +353,27 @@ public partial class TopBarViewModel : ViewModelBase
             OnPropertyChanged(nameof(CanOpenConnection));
             ConnectCommand.NotifyCanExecuteChanged();
         });
+    }
+}
+public sealed class ShowTelemetryEvent : DomainEvent
+{
+    /// <inheritdoc />
+    public ShowTelemetryEvent(string name) : base(name)
+    {
+    }
+
+    /// <inheritdoc />
+    public ShowTelemetryEvent(string name, object? data, MetaData metadata) : base(name, data, metadata)
+    {
+    }
+
+    /// <inheritdoc />
+    public ShowTelemetryEvent(string name, object? data) : base(name, data)
+    {
+    }
+
+    /// <inheritdoc />
+    public ShowTelemetryEvent(string name, MetaData md) : base(name, md)
+    {
     }
 }

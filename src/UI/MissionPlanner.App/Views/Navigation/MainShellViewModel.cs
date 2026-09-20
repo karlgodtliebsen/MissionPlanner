@@ -5,21 +5,57 @@ using Avalonia.Platform;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.App.Utilities.Dialogs;
+using MissionPlanner.App.Views.Common;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.Navigation;
 
-public partial class MainShellViewModel : ObservableObject
+/// <summary>
+/// ViewModel for the main shell of the application, responsible for managing navigation and menu items.
+/// </summary>
+public partial class MainShellViewModel : ObservableObject, IDisposable
 {
     private readonly INavigationService navigationService;
     private readonly IWindowProvider windowProvider;
+    private IDisposable? eventHubDisposable;
 
-    public MainShellViewModel(INavigationService navigationService, IWindowProvider windowProvider)
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MainShellViewModel"/> class.
+    /// </summary>
+    /// <param name="navigationService"></param>
+    /// <param name="windowProvider"></param>
+    /// <param name="domainEventHub"></param>
+    /// <param name="inspector"></param>
+    public MainShellViewModel(INavigationService navigationService, IWindowProvider windowProvider, IDomainEventHub domainEventHub, Diagnostics.LiveTelemetryInspectorViewModel inspector)
     {
+        Inspector = inspector;
         this.navigationService = navigationService;
         this.windowProvider = windowProvider;
-        navigationService.CurrentPageChanged += page => Content = page;
+        navigationService.CurrentPageChanged += page =>
+        {
+            Content = page;
+            Inspector.SuggestContext(page.GetType().Name);
+        };
         MenuItems = CreateMenuItems();
         SelectedMenuItem = MenuItems[0];
+
+        eventHubDisposable = domainEventHub.SubscribeDomainEventAsync<ShowTelemetryEvent>(async (evt, ct) => ToggleTelemetry());
+    }
+
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        eventHubDisposable?.Dispose();
+        eventHubDisposable = null;
+    }
+
+
+    /// <summary>Session-owned live telemetry Inspector.</summary>
+    public Diagnostics.LiveTelemetryInspectorViewModel Inspector
+    {
+        get;
     }
 
     public ObservableCollection<NavigationMenuItemViewModel> MenuItems
@@ -30,25 +66,29 @@ public partial class MainShellViewModel : ObservableObject
     [ObservableProperty]
     public partial Page? Content
     {
-        get; private set;
+        get;
+        private set;
     }
 
     [ObservableProperty]
     public partial bool IsNavigationCollapsed
     {
-        get; set;
+        get;
+        set;
     }
 
     [ObservableProperty]
     public partial bool IsNavigationOpen
     {
-        get; set;
+        get;
+        set;
     }
 
     [ObservableProperty]
     public partial NavigationMenuItemViewModel? SelectedMenuItem
     {
-        get; set;
+        get;
+        set;
     }
 
 
@@ -65,10 +105,9 @@ public partial class MainShellViewModel : ObservableObject
         return navigationService.NavigateAsync(MissionPlannerRoutes.FlightData);
     }
 
-    [RelayCommand]
-    private void ToggleNavigation()
+    private void ToggleTelemetry()
     {
-        IsNavigationOpen = !IsNavigationOpen;
+        Inspector.Toggle();
     }
 
     [RelayCommand]
@@ -91,31 +130,33 @@ public partial class MainShellViewModel : ObservableObject
 
     private static ObservableCollection<NavigationMenuItemViewModel> CreateMenuItems()
     {
-        return [
-        new("Flight Data", MissionPlannerRoutes.FlightData, LoadImage("avares://MissionPlanner.App/Resources/Images/light_flightdata_icon.png")),
-        new("Flight Planner", MissionPlannerRoutes.FlightPlanner, LoadImage("avares://MissionPlanner.App/Resources/Images/light_flightplan_icon.png")),
-        new("Setup", icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_initialsetup_icon.png"), children:
+        return
         [
-            new("Install Firmware", MissionPlannerRoutes.SetupInstallFirmware),
-            new("Mandatory Hardware", MissionPlannerRoutes.SetupMandatoryHardware),
-            new("Optional Hardware", MissionPlannerRoutes.SetupOptionalHardware),
-            new("Advanced", MissionPlannerRoutes.SetupAdvanced)
-        ]),
-        new("Config", icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_tuningconfig_icon.png"), children:
-        [
-            new("Geo Fence", MissionPlannerRoutes.ConfigGeoFence),
-            new("Basic Tuning", MissionPlannerRoutes.ConfigBasicTuning),
-            new("Extended Tuning", MissionPlannerRoutes.ConfigExtendedTuning),
-            new("Onboard OSD", MissionPlannerRoutes.ConfigOnboardOSD),
-            new("MAV FTP", MissionPlannerRoutes.ConfigMavFtp),
-            new("Full Parameters List", MissionPlannerRoutes.ConfigFullParameters),
-            new("CubeLAN 8 Port Switch", MissionPlannerRoutes.ConfigCubeLan8PortSwitch)
-        ]),
-        new("Logs", MissionPlannerRoutes.Logs),
-        new("Preferences", MissionPlannerRoutes.Preferences),
-        new("Simulation", MissionPlannerRoutes.Simulation, LoadImage("avares://MissionPlanner.App/Resources/Images/light_simulation_icon.png")),
-        new("Tutorial", MissionPlannerRoutes.Introduction),
-        new("Help", MissionPlannerRoutes.Help, LoadImage("avares://MissionPlanner.App/Resources/Images/light_help_icon.png"))
-    ];
+            new("Flight Data", MissionPlannerRoutes.FlightData, LoadImage("avares://MissionPlanner.App/Resources/Images/light_flightdata_icon.png")),
+            new("Flight Planner", MissionPlannerRoutes.FlightPlanner, LoadImage("avares://MissionPlanner.App/Resources/Images/light_flightplan_icon.png")),
+            new("Setup", icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_initialsetup_icon.png"), children:
+            [
+                new("Install Firmware", MissionPlannerRoutes.SetupInstallFirmware),
+                new("Mandatory Hardware", MissionPlannerRoutes.SetupMandatoryHardware),
+                new("Optional Hardware", MissionPlannerRoutes.SetupOptionalHardware),
+                new("Advanced", MissionPlannerRoutes.SetupAdvanced)
+            ]),
+            new("Config", icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_tuningconfig_icon.png"), children:
+            [
+                new("Geo Fence", MissionPlannerRoutes.ConfigGeoFence),
+                new("Basic Tuning", MissionPlannerRoutes.ConfigBasicTuning),
+                new("Extended Tuning", MissionPlannerRoutes.ConfigExtendedTuning),
+                new("Onboard OSD", MissionPlannerRoutes.ConfigOnboardOSD),
+                new("MAV FTP", MissionPlannerRoutes.ConfigMavFtp),
+                new("Full Parameters List", MissionPlannerRoutes.ConfigFullParameters),
+                new("CubeLAN 8 Port Switch", MissionPlannerRoutes.ConfigCubeLan8PortSwitch)
+            ]),
+            new("Logs", MissionPlannerRoutes.Logs),
+            new("Preferences", MissionPlannerRoutes.Preferences),
+            new("Simulation", MissionPlannerRoutes.Simulation, LoadImage("avares://MissionPlanner.App/Resources/Images/light_simulation_icon.png")),
+            new("Tutorial", MissionPlannerRoutes.Introduction),
+            new("Help", MissionPlannerRoutes.Help, LoadImage("avares://MissionPlanner.App/Resources/Images/light_help_icon.png"))
+        ];
     }
 }
+

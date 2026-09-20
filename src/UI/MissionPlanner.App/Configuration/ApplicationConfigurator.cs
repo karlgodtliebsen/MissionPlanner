@@ -61,6 +61,8 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
+using TelemetryLogsTabItemView = MissionPlanner.App.Views.Logs.TelemetryLogsTabItemView;
+using TelemetryLogsTabViewModel = MissionPlanner.App.Views.Logs.TelemetryLogsTabViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -145,7 +147,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IDfuUserInteraction, FirmwareInteractionService>();
 
         services.TryAddTransient<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
-        services.TryAddTransient<MissionPlanner.Firmware.Betaflight.IArduPilotRuntimeVerifier, TemporaryMavLinkBootloaderGateway>();
+        services.TryAddTransient<Firmware.Betaflight.IArduPilotRuntimeVerifier, TemporaryMavLinkBootloaderGateway>();
         services.TryAddTransient<ITextClipboardService, TextClipboardService>();
         services.TryAddSingleton<ISetupCompletionStore, JsonSetupCompletionStore>();
 
@@ -201,6 +203,8 @@ public static class ApplicationConfigurator
 
         services.TryAddSingleton<INavigationService, AvaloniaNavigationService>();
 
+        services.TryAddSingleton<Views.Diagnostics.IInspectorWindowService, Views.Diagnostics.InspectorWindowService>();
+        services.TryAddSingleton<Views.Diagnostics.LiveTelemetryInspectorViewModel>();
         services.TryAddSingleton<MainShellViewModel>();
         services.TryAddSingleton<FirmwareCatalogueViewModel>();
         services.TryAddSingleton<CustomFirmwareViewModel>();
@@ -255,77 +259,77 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ScriptsTabViewModel>();
         services.TryAddTransient<PayloadControlTabViewModel>();
         services.TryAddTransient<TelemetryLogsTabViewModel>();
-        services.TryAddTransient<MissionPlanner.Core.Replay.TelemetryPacketBrowser>();
-        services.TryAddTransient<MissionPlanner.Core.Replay.TelemetryLogCatalog>();
-        services.TryAddSingleton<MissionPlanner.Core.Replay.LoggingHealthService>();
-        services.TryAddTransient<MissionPlanner.App.Presentation.ILogFolderService, MissionPlanner.App.Presentation.LogFolderService>();
+        services.TryAddTransient<Core.Replay.TelemetryPacketBrowser>();
+        services.TryAddTransient<Core.Replay.TelemetryLogCatalog>();
+        services.TryAddSingleton<Core.Replay.LoggingHealthService>();
+        services.TryAddTransient<ILogFolderService, LogFolderService>();
         services.TryAddTransient<TelemetryLogsTabItemView>();
-        services.TryAddSingleton<MissionPlanner.App.Views.Logs.LogsNavigationState>();
+        services.TryAddSingleton<Views.Logs.LogsNavigationState>();
         services.TryAddTransient<Func<int, Avalonia.Controls.Control>>(provider => section => section == 1
-            ? provider.GetRequiredService<MissionPlanner.App.Views.Logs.ApplicationLogsView>()
+            ? provider.GetRequiredService<Views.Logs.ApplicationLogsView>()
             : provider.GetRequiredService<TelemetryLogsTabItemView>());
-        services.TryAddTransient<MissionPlanner.App.Views.Logs.LogsViewModel>();
-        services.TryAddTransient<MissionPlanner.App.Views.Logs.LogsView>();
-        services.TryAddTransient<MissionPlanner.App.Views.Logs.ApplicationLogsViewModel>();
-        services.TryAddTransient<MissionPlanner.App.Views.Logs.ApplicationLogsView>();
+        services.TryAddTransient<Views.Logs.LogsViewModel>();
+        services.TryAddTransient<Views.Logs.LogsView>();
+        services.TryAddTransient<Views.Logs.ApplicationLogsViewModel>();
+        services.TryAddTransient<Views.Logs.ApplicationLogsView>();
         services.TryAddTransient<DataFlashLogsTabViewModel>();
 
         services.TryAddTransient<AdvancedViewModel>();
-        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.IAdvancedPlatformCapabilities, MissionPlanner.Core.Setup.Advanced.AdvancedPlatformCapabilitySource>();
-        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.AdvancedAvailabilityService>();
+        services.TryAddSingleton<Core.Setup.Advanced.IAdvancedPlatformCapabilities, Core.Setup.Advanced.AdvancedPlatformCapabilitySource>();
+        services.TryAddSingleton<Core.Setup.Advanced.AdvancedAvailabilityService>();
         services.TryAddSingleton<AdvancedToolRegistry>();
-        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Proximity.ProximityOptions>();
-        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Output.OutputEndpointOwners>();
-        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Nmea.NmeaSession>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaOptionsViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPreviewViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaViewModel>();
-        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPage>();
-        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Nmea,
-            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPage>()));
-        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Output.BoundedOutputSession>();
-        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Output.MirrorSession>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Output.OutputEndpointViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Output.OutputStatusViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Output.MirrorViewModel>();
-        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Output.MirrorPage>();
-        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Mirror,
-            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Output.MirrorPage>()));
-        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Signing.SigningKeyRepository>();
-        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Signing.SigningSetupOptions>();
-        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Signing.SigningSetupService>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningKeyViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningViewModel>();
-        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningPage>();
-        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Signing,
-            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Signing.SigningPage>()));
-        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Proximity.ProximityAggregator>();
-        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Proximity.ProximitySession>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityRadarViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityDiagnosticsViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityViewModel>();
-        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityPage>();
-        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Proximity,
-            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityPage>()));
-        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Inspector.InspectorAggregator>();
-        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Inspector.InspectorSession>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorListViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorDetailViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.MavLinkInspectorViewModel>();
-        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.MavLinkInspectorPage>();
-        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Inspector,
-            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Inspector.MavLinkInspectorPage>()));
+        services.TryAddSingleton<Core.Setup.Advanced.Proximity.ProximityOptions>();
+        services.TryAddSingleton<Core.Setup.Advanced.Output.OutputEndpointOwners>();
+        services.TryAddTransient<Core.Setup.Advanced.Nmea.NmeaSession>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Nmea.NmeaOptionsViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Nmea.NmeaPreviewViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Nmea.NmeaViewModel>();
+        services.TryAddTransient<Views.InitSetup.Advanced.Nmea.NmeaPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(Core.Setup.Advanced.AdvancedFeatureId.Nmea,
+            () => provider.GetRequiredService<Views.InitSetup.Advanced.Nmea.NmeaPage>()));
+        services.TryAddTransient<Core.Setup.Advanced.Output.BoundedOutputSession>();
+        services.TryAddTransient<Core.Setup.Advanced.Output.MirrorSession>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Output.OutputEndpointViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Output.OutputStatusViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Output.MirrorViewModel>();
+        services.TryAddTransient<Views.InitSetup.Advanced.Output.MirrorPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(Core.Setup.Advanced.AdvancedFeatureId.Mirror,
+            () => provider.GetRequiredService<Views.InitSetup.Advanced.Output.MirrorPage>()));
+        services.TryAddSingleton<Core.Setup.Advanced.Signing.SigningKeyRepository>();
+        services.TryAddSingleton<Core.Setup.Advanced.Signing.SigningSetupOptions>();
+        services.TryAddSingleton<Core.Setup.Advanced.Signing.SigningSetupService>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Signing.SigningKeyViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Signing.SigningViewModel>();
+        services.TryAddTransient<Views.InitSetup.Advanced.Signing.SigningPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(Core.Setup.Advanced.AdvancedFeatureId.Signing,
+            () => provider.GetRequiredService<Views.InitSetup.Advanced.Signing.SigningPage>()));
+        services.TryAddTransient<Core.Setup.Advanced.Proximity.ProximityAggregator>();
+        services.TryAddTransient<Core.Setup.Advanced.Proximity.ProximitySession>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Proximity.ProximityRadarViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Proximity.ProximityDiagnosticsViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Proximity.ProximityViewModel>();
+        services.TryAddTransient<Views.InitSetup.Advanced.Proximity.ProximityPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(Core.Setup.Advanced.AdvancedFeatureId.Proximity,
+            () => provider.GetRequiredService<Views.InitSetup.Advanced.Proximity.ProximityPage>()));
+        services.TryAddTransient<Core.Setup.Advanced.Inspector.InspectorAggregator>();
+        services.TryAddTransient<Core.Setup.Advanced.Inspector.InspectorSession>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Inspector.InspectorListViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Inspector.InspectorDetailViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Inspector.MavLinkInspectorViewModel>();
+        services.TryAddTransient<Views.InitSetup.Advanced.Inspector.MavLinkInspectorPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(Core.Setup.Advanced.AdvancedFeatureId.Inspector,
+            () => provider.GetRequiredService<Views.InitSetup.Advanced.Inspector.MavLinkInspectorPage>()));
         services.TryAddSingleton(TimeProvider.System);
-        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Warnings.WarningSources>();
-        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Warnings.WarningEngine>();
-        services.TryAddSingleton<MissionPlanner.Core.Setup.Advanced.Warnings.WarningRuleRepository>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleListViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleEditorViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningStatusViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerViewModel>();
-        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerPage>();
-        services.AddSingleton(provider => new AdvancedToolRegistration(MissionPlanner.Core.Setup.Advanced.AdvancedFeatureId.Warnings,
-            () => provider.GetRequiredService<MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerPage>()));
+        services.TryAddSingleton<Core.Setup.Advanced.Warnings.WarningSources>();
+        services.TryAddTransient<Core.Setup.Advanced.Warnings.WarningEngine>();
+        services.TryAddSingleton<Core.Setup.Advanced.Warnings.WarningRuleRepository>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Warnings.WarningRuleListViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Warnings.WarningRuleEditorViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Warnings.WarningStatusViewModel>();
+        services.TryAddSingleton<Views.InitSetup.Advanced.Warnings.WarningManagerViewModel>();
+        services.TryAddTransient<Views.InitSetup.Advanced.Warnings.WarningManagerPage>();
+        services.AddSingleton(provider => new AdvancedToolRegistration(Core.Setup.Advanced.AdvancedFeatureId.Warnings,
+            () => provider.GetRequiredService<Views.InitSetup.Advanced.Warnings.WarningManagerPage>()));
         services.TryAddTransient<AdvancedPage>();
         services.TryAddTransient<InstallFirmwareViewModel>();
         services.TryAddTransient<OptionalHardwareViewModel>();

@@ -2,14 +2,18 @@
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles.Handlers;
 
-/// <inheritdoc />
+/// <summary>
+/// Handles battery status messages from vehicles and updates the vehicle state accordingly.
+/// </summary>
+/// <param name="vehicleRegistry"></param>
+/// <param name="domainEventHub"></param>
+/// <param name="logger"></param>
 public sealed class BatteryVehicleHandler(IVehicleRegistry vehicleRegistry, IDomainEventHub domainEventHub, ILogger<BatteryVehicleHandler> logger) : IBatteryVehicleHandler
 {
     /// <inheritdoc />

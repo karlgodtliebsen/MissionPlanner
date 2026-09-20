@@ -1,18 +1,8 @@
 ﻿using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
-using MissionPlanner.App.Views.FlightData.Tabs;
 
 namespace MissionPlanner.App.Views.Logs;
-
-/// <summary>Remembers the chosen logs section for this application session.</summary>
-public sealed class LogsNavigationState
-{
-    /// <summary>Telemetry is zero; application diagnostics is one.</summary>
-    public int SelectedSection { get; set; }
-}
 
 /// <summary>Hosts existing telemetry tools and application diagnostics using DI-resolved views.</summary>
 public sealed partial class LogsViewModel : ViewModelBase
@@ -23,9 +13,8 @@ public sealed partial class LogsViewModel : ViewModelBase
     private Control? application;
 
     /// <summary>Initializes the root Logs host and restores its selected section.</summary>
-    public LogsViewModel(Func<int, Control> createView, LogsNavigationState state, ILogger<LogsViewModel> logger,
-        MissionPlanner.App.Utilities.Dispatching.IUiDispatcher dispatcher,
-        MissionPlanner.Library.EventHub.Abstractions.IDomainEventHub events) : base(logger, dispatcher, events)
+    public LogsViewModel(Func<int, Control> createView, LogsNavigationState state,
+        Utilities.Dispatching.IUiDispatcher dispatcher, Library.EventHub.Abstractions.IDomainEventHub events, ILogger<LogsViewModel> logger) : base(logger, dispatcher, events)
     {
         this.createView = createView;
         this.state = state;

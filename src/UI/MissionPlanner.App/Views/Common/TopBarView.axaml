@@ -12,7 +12,7 @@
     x:Class="MissionPlanner.App.Views.Common.TopBarView"
     >
     <Border Height="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  >
-        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto"
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Center"
               RowDefinitions="49"
@@ -48,7 +48,6 @@
                 <Label Content="•" FontSize="16"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
                 <Label Content="{Binding FirmwareIdentity}" FontSize="12" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
             </StackPanel>
-
             <Button Grid.Column="3"
                     CornerRadius="10"
                     Classes="Tertiary"
@@ -63,7 +62,7 @@
                     Command="{Binding ConnectCommand}"
                     Width="35"
                     Height="35"
-                    >
+            >
                 <Image Source="{Binding ConnectionImage}"
                        Width="30"
                        Height="30"
@@ -71,6 +70,22 @@
             </Button>
 
             <Button Grid.Column="4"
+                    CornerRadius="10"
+                    Classes="Tertiary"
+                    Theme="{DynamicResource BorderlessButton}"
+                    ToolTip.Tip="Live Telemetry Inspector"
+                    FontWeight="Normal"
+                    Padding="5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Command="{Binding ShowTelemetryCommand}"
+                    Width="35"
+                    Height="35"
+                    >
+                <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+            </Button>
+
+            <Button Grid.Column="5"
                     Classes="Tertiary"
                     CornerRadius="10"
                     IsEnabled="{Binding CanOpenConnection}"
@@ -100,7 +115,7 @@
                 </Button.Flyout>
             </Button>
 
-            <Button Grid.Column="5"
+            <Button Grid.Column="6"
                     CornerRadius="10"
                     Classes="Tertiary"
                     Theme="{DynamicResource BorderlessButton}"

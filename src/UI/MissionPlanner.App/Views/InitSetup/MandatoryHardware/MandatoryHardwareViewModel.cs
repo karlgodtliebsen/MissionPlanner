@@ -18,6 +18,7 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 public partial class MandatoryHardwareViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
+    private readonly Views.Diagnostics.LiveTelemetryInspectorViewModel? inspector;
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly ISetupWorkflowCatalog catalog;
     private readonly INavigationService navigation;
@@ -34,12 +35,15 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
     /// <param name="catalog">The setup workflow catalog.</param>
     /// <param name="navigation">The Config navigation adapter.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="inspector">Optional existing Inspector presentation context.</param>
     public MandatoryHardwareViewModel(
         IActiveVehicleContext activeVehicle,
         IVehicleParameterRegistry parameterRegistry,
         ISetupWorkflowCatalog catalog,
-        INavigationService navigation, ILogger<MandatoryHardwareViewModel> logger) : base(logger)
+        INavigationService navigation, ILogger<MandatoryHardwareViewModel> logger,
+        Views.Diagnostics.LiveTelemetryInspectorViewModel? inspector = null) : base(logger)
     {
+        this.inspector = inspector;
         this.activeVehicle = activeVehicle;
         this.parameterRegistry = parameterRegistry;
         this.catalog = catalog;
@@ -62,6 +66,12 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
     /// <summary>
     /// Gets whether the selected workflow links to a Config page.
     /// </summary>
+    partial void OnSelectedTabChanged(TabItemViewModel? value)
+    {
+        inspector?.SuggestContext(value?.Descriptor.Key);
+    }
+
+    /// <summary>Whether the selected setup workflow has a Config destination.</summary>
     public bool HasConfigDestination => SelectedTab?.Descriptor.ConfigDestination is not null;
 
     /// <summary>Gets the active vehicle heading.</summary>

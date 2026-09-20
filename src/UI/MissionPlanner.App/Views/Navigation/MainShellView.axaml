@@ -5,6 +5,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:imaging="clr-namespace:Avalonia.Media.Imaging;assembly=Avalonia.Base"
     xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+    xmlns:diagnostics="clr-namespace:MissionPlanner.App.Views.Diagnostics"
     xmlns:navigation="clr-namespace:MissionPlanner.App.Views.Navigation"
     xmlns:u="https://irihi.tech/ursa"
     x:Class="MissionPlanner.App.Views.Navigation.MainShellView"
@@ -15,7 +16,9 @@
     mc:Ignorable="d"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,*">
-        <common:FirmwareUpdateNoticeView Grid.Row="0" />
+        <DockPanel Grid.Row="0">
+            <common:FirmwareUpdateNoticeView />
+        </DockPanel>
         <DrawerPage Grid.Row="1"
                     x:Name="MainDrawer"
                     DrawerPlacement="Left"
@@ -85,6 +88,11 @@
             </DrawerPage.Drawer>
 
         </DrawerPage>
+        <Border Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                Width="{Binding Inspector.DrawerWidth}" MinWidth="360" MaxWidth="760"
+                IsVisible="{Binding Inspector.IsDrawerOpen}" Theme="{DynamicResource CardBorder}">
+            <diagnostics:LiveTelemetryInspectorView />
+        </Border>
     </Grid>
 
 </UserControl>

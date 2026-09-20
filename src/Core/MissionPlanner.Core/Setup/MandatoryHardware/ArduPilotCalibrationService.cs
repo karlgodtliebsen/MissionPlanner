@@ -38,6 +38,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly IVehicleParameterService parameterService;
     private readonly ILogger<ArduPilotCalibrationService> logger;
+    private readonly IVehicleTelemetryEventHub? telemetry;
     private readonly TimeSpan startTimeout;
     private readonly TimeSpan levelTimeout;
     private readonly TimeSpan sixPositionTimeout;
@@ -63,6 +64,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     /// <param name="parameterService">The parameter request service.</param>
     /// <param name="options">The bounded protocol wait configuration.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="telemetry">Optional isolated workflow diagnostic publisher.</param>
     public ArduPilotCalibrationService(
         IActiveVehicleContext activeVehicle,
         IVehicleRegistry vehicleRegistry,
@@ -74,7 +76,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         IVehicleParameterRegistry parameterRegistry,
         IVehicleParameterService parameterService,
         IOptions<CalibrationOptions> options,
-        ILogger<ArduPilotCalibrationService> logger)
+        ILogger<ArduPilotCalibrationService> logger, IVehicleTelemetryEventHub? telemetry = null)
     {
         this.activeVehicle = activeVehicle;
         this.vehicleRegistry = vehicleRegistry;
@@ -86,6 +88,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         this.parameterRegistry = parameterRegistry;
         this.parameterService = parameterService;
         this.logger = logger;
+        this.telemetry = telemetry;
         startTimeout = options.Value.StartTimeout > TimeSpan.Zero ? options.Value.StartTimeout : TimeSpan.FromSeconds(8);
         levelTimeout = options.Value.LevelTimeout > TimeSpan.Zero ? options.Value.LevelTimeout : TimeSpan.FromSeconds(30);
         sixPositionTimeout = options.Value.SixPositionTimeout > TimeSpan.Zero ? options.Value.SixPositionTimeout : TimeSpan.FromMinutes(5);
@@ -555,6 +558,11 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
 
     private void Transition(CalibrationSnapshot snapshot)
     {
+        if (snapshot.VehicleId is { } id && (Current.State != snapshot.State || Current.Instruction != snapshot.Instruction))
+        {
+            _ = telemetry?.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleDiagnosticEvent(
+                id, DateTimeOffset.UtcNow, "Calibration", $"{snapshot.State}: {snapshot.Instruction}"));
+        }
         Current = snapshot;
         StateChanged?.Invoke(new CalibrationStateChangedEventArgs(snapshot));
     }

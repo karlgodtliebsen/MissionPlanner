@@ -11,8 +11,13 @@ namespace MissionPlanner.Library.EventHub;
 /// 
 /// </summary>
 /// <param name="logger"></param>
-public class EventHub(ILogger<EventHub> logger) : IEventHub
+public partial class EventHub(ILogger<EventHub> logger) : IEventHub
 {
+    private void LogTelemetryFailure(Exception exception)
+    {
+        logger.LogError(exception, "Telemetry diagnostic subscriber failed");
+    }
+
     private readonly ConcurrentDictionary<string, IList<Action>> subscribers = new();
     private readonly ConcurrentDictionary<string, IList<Delegate>> genericDataSubscribers = new();
     private readonly ConcurrentDictionary<string, IList<Func<CancellationToken, Task>>> asyncSubscribers = new();

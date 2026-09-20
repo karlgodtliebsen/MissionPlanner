@@ -75,7 +75,8 @@ public static class MotorOutputDiagnostics
         return $"{longitudinal}/{lateral} (frame roll {motor.Roll:0.###}, pitch {motor.Pitch:0.###})";
     }
 
-    private static string Protocol(float value) => value switch
+    /// <summary>Names the downloaded MOT_PWM_TYPE value without assuming effective hardware support.</summary>
+    public static string Protocol(float value) => value switch
     {
         0 => "Normal PWM",
         1 => "OneShot",

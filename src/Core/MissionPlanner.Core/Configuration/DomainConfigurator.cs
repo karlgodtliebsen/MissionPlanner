@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
+using MissionPlanner.Library.EventHub;
+using MissionPlanner.Library.EventHub.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
@@ -62,6 +64,10 @@ public static class DomainConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton<IVehicleTelemetryEventHub, EventHub>();
+        services.AddOptions<MissionPlanner.Core.Diagnostics.VehicleLiveDiagnosticOptions>().Bind(configuration.GetSection("LiveTelemetryInspector"));
+        services.AddSingleton<MissionPlanner.Core.Diagnostics.IVehicleLiveDiagnostics, MissionPlanner.Core.Diagnostics.VehicleLiveDiagnostics>();
+        services.AddSingleton<MissionPlanner.Core.Diagnostics.VehicleRawDiagnosticsSource>();
         services.Configure<SimulationWorkspaceOptions>(configuration.GetSection(SimulationWorkspaceOptions.SectionName));
         services.Configure<SimulationControlOptions>(configuration.GetSection(SimulationControlOptions.SectionName));
         services.Configure<SimulationScenarioOptions>(configuration.GetSection(SimulationScenarioOptions.SectionName));
@@ -262,6 +268,8 @@ public static class DomainConfigurator
     /// <returns>The updated service provider.</returns>
     public static IServiceProvider UseDomainServices(this IServiceProvider serviceProvider)
     {
+        _ = serviceProvider.GetRequiredService<MissionPlanner.Core.Diagnostics.IVehicleLiveDiagnostics>();
+        _ = serviceProvider.GetRequiredService<MissionPlanner.Core.Diagnostics.VehicleRawDiagnosticsSource>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         domainFactory.Add<IVehicleFileSystemService, VehicleFileSystemService>();
 

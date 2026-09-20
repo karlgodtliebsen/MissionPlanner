@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Logging;
@@ -48,9 +47,9 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
     }
 
     /// <summary>Virtualized display rows, bounded by the memory/history capacity.</summary>
-    public ObservableRangeCollection<ApplicationLogEntry> Entries { get; } = new();
+    public ObservableRangeCollection<ApplicationLogEntry> Entries { get; } = [];
     /// <summary>Stored diagnostic file metadata.</summary>
-    public ObservableRangeCollection<LogStorageItem> Files { get; } = new();
+    public ObservableRangeCollection<LogStorageItem> Files { get; } = [];
     /// <summary>Available severity choices.</summary>
     public IReadOnlyList<LogEventLevel> Levels { get; } = Enum.GetValues<LogEventLevel>();
     /// <summary>Exact-level choices including no exact restriction.</summary>
@@ -58,7 +57,10 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
 
     /// <summary>Temporarily freezes UI ingestion, without changing the logger.</summary>
     [ObservableProperty]
-    public partial bool Paused { get; set; }
+    public partial bool Paused
+    {
+        get; set;
+    }
     /// <summary>Scrolls to the latest event after each batch.</summary>
     [ObservableProperty]
     public partial bool FollowTail { get; set; } = true;
@@ -88,16 +90,28 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
     public partial string UntilTime { get; set; } = "";
     /// <summary>Restricts display to exception-bearing events.</summary>
     [ObservableProperty]
-    public partial bool ExceptionOnly { get; set; }
+    public partial bool ExceptionOnly
+    {
+        get; set;
+    }
     /// <summary>The session's actual recording threshold.</summary>
     [ObservableProperty]
-    public partial LogEventLevel RuntimeLevel { get; set; }
+    public partial LogEventLevel RuntimeLevel
+    {
+        get; set;
+    }
     /// <summary>Selected structured event.</summary>
     [ObservableProperty]
-    public partial ApplicationLogEntry? SelectedEntry { get; set; }
+    public partial ApplicationLogEntry? SelectedEntry
+    {
+        get; set;
+    }
     /// <summary>Selected historical file.</summary>
     [ObservableProperty]
-    public partial LogStorageItem? SelectedFile { get; set; }
+    public partial LogStorageItem? SelectedFile
+    {
+        get; set;
+    }
     /// <summary>Complete selected event details.</summary>
     [ObservableProperty]
     public partial string Details { get; private set; } = "";
@@ -171,7 +185,10 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
         base.Dispose();
     }
 
-    private void BufferChanged(object? sender, EventArgs args) => Interlocked.Exchange(ref dirty, 1);
+    private void BufferChanged(object? sender, EventArgs args)
+    {
+        Interlocked.Exchange(ref dirty, 1);
+    }
 
     private async Task PumpAsync(CancellationToken token)
     {
@@ -218,7 +235,11 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
     [RelayCommand]
     private void ApplyFilters()
     {
-        DateTimeOffset? Parse(string value) => DateTimeOffset.TryParse(value, out var parsed) ? parsed : null;
+        DateTimeOffset? Parse(string value)
+        {
+            return DateTimeOffset.TryParse(value, out var parsed) ? parsed : null;
+        }
+
         var filter = new ApplicationLogFilter(MinimumLevel,
             Enum.TryParse<LogEventLevel>(ExactLevel, out var exact) ? exact : null,
             SourceFilter, Search, Parse(FromTime), Parse(UntilTime), ExceptionOnly);
@@ -265,20 +286,28 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private Task CopyAsync() => clipboard.SetTextAsync(SelectedEntry is null
+    private Task CopyAsync()
+    {
+        return clipboard.SetTextAsync(SelectedEntry is null
         ? string.Join(Environment.NewLine, Entries.Select(ApplicationLogFilter.Details))
         : ApplicationLogFilter.Details(SelectedEntry));
+    }
 
     [RelayCommand]
-    private Task ExportViewAsync() => FileOperationAsync(async token =>
+    private Task ExportViewAsync()
+    {
+        return FileOperationAsync(async token =>
     {
         var text = string.Join(Environment.NewLine, Entries.Select(ApplicationLogFilter.Details));
         await using var content = new MemoryStream(Encoding.UTF8.GetBytes(text));
         await save.SaveAsync("application-log-view.txt", content, token);
     });
+    }
 
     [RelayCommand]
-    private Task ExportSelectedAsync() => FileOperationAsync(async token =>
+    private Task ExportSelectedAsync()
+    {
+        return FileOperationAsync(async token =>
     {
         if (SelectedEntry is null)
         {
@@ -288,16 +317,22 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
         await using var content = new MemoryStream(Encoding.UTF8.GetBytes(ApplicationLogFilter.Details(SelectedEntry)));
         await save.SaveAsync("application-log-event.txt", content, token);
     });
+    }
 
     [RelayCommand]
-    private Task RefreshFilesAsync() => FileOperationAsync(async token =>
+    private Task RefreshFilesAsync()
+    {
+        return FileOperationAsync(async token =>
     {
         var files = await history.ListAsync(token);
         await Dispatcher.DispatchAsync(() => Files.ReplaceRange(files));
     });
+    }
 
     [RelayCommand]
-    private Task OpenFileAsync() => FileOperationAsync(async token =>
+    private Task OpenFileAsync()
+    {
+        return FileOperationAsync(async token =>
     {
         if (SelectedFile is not { } file)
         {
@@ -314,9 +349,12 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
             ApplyFilters();
         });
     });
+    }
 
     [RelayCommand]
-    private Task ExportFileAsync() => FileOperationAsync(async token =>
+    private Task ExportFileAsync()
+    {
+        return FileOperationAsync(async token =>
     {
         if (SelectedFile is { } file)
         {
@@ -324,9 +362,12 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
             await save.SaveAsync(export.FileName, export.Content, token);
         }
     });
+    }
 
     [RelayCommand]
-    private Task DeleteFileAsync() => FileOperationAsync(async token =>
+    private Task DeleteFileAsync()
+    {
+        return FileOperationAsync(async token =>
     {
         if (SelectedFile is { } file)
         {
@@ -338,10 +379,16 @@ public sealed partial class ApplicationLogsViewModel : ViewModelBase
             });
         }
     });
+    }
 
     [RelayCommand]
-    private Task OpenFolderAsync() => folders.OpenAsync(LogStorageArea.Application);
+    private Task OpenFolderAsync()
+    {
+        return folders.OpenAsync(LogStorageArea.Application);
+    }
 
     private Task FileOperationAsync(Func<CancellationToken, Task> operation)
-        => RunAsync(lifetime?.Token ?? CancellationToken.None, operation);
+    {
+        return RunAsync(lifetime?.Token ?? CancellationToken.None, operation);
+    }
 }
