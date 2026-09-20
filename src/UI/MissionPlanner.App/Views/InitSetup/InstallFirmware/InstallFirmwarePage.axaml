@@ -129,8 +129,8 @@
                                     <TextBlock Grid.Row="0"
                                                Text="Progress:" Classes="H4 Warning"  TextWrapping="Wrap"
                                                IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                                    <TextBlock Grid.Row="1" Text="{Binding WorkflowProgress}" Classes="H4 Warning"  TextWrapping="Wrap"
-                                               IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                    <SelectableTextBlock Grid.Row="1" Text="{Binding WorkflowProgress}" Classes="H4 Warning"  TextWrapping="Wrap"
+                                                         IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                                 </Grid>
 
                                 <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch">
