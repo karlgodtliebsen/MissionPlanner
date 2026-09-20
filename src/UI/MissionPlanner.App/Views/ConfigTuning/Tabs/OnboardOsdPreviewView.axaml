@@ -5,12 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.OnboardOsdPreviewView"
-             x:CompileBindings="False">
-
-    <Border Padding="10" Classes="SectionCard">
+             x:DataType="local:OnboardOsdTabViewModel"
+             x:CompileBindings="True">
         <local:OsdPreviewCanvas
             x:Name="PreviewCanvas"
             ViewModel="{Binding}"
             MinHeight="480" />
-    </Border>
 </UserControl>

@@ -1,9 +1,11 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using MissionPlanner.Core.Setup.Advanced;
 
 namespace MissionPlanner.App.Views.InitSetup.Advanced;
 
-/// <summary>Registers a tool's page factory without constructing it before navigation.</summary>
+/// <summary>
+/// Registers a tool's page factory without constructing it before navigation.
+/// </summary>
 public sealed record AdvancedToolRegistration(AdvancedFeatureId Id, Func<Page> CreatePage);
 
 /// <summary>Validates explicit child routes and creates only registered pages.</summary>
@@ -24,16 +26,17 @@ public sealed class AdvancedToolRegistry
     }
 
     /// <summary>Gets whether the feature has an implemented destination.</summary>
-    public bool Contains(AdvancedFeatureId id) => registrations.ContainsKey(id);
+    public bool Contains(AdvancedFeatureId id)
+    {
+        return registrations.ContainsKey(id);
+    }
 
     /// <summary>Creates the exact registered destination, rejecting missing targets.</summary>
     public Page Create(string route)
     {
         var feature = AdvancedFeatureCatalog.All.SingleOrDefault(item => item.Route == route);
-        if (feature is null || !registrations.TryGetValue(feature.Id, out var registration))
-        {
-            throw new ArgumentException("No Advanced tool is registered for this route.", nameof(route));
-        }
-        return registration.CreatePage() ?? throw new InvalidOperationException("The Advanced page factory returned no page.");
+        return feature is null || !registrations.TryGetValue(feature.Id, out var registration)
+            ? throw new ArgumentException("No Advanced tool is registered for this route.", nameof(route))
+            : registration.CreatePage() ?? throw new InvalidOperationException("The Advanced page factory returned no page.");
     }
 }

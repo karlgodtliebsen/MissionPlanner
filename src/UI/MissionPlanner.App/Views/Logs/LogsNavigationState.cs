@@ -3,8 +3,8 @@
 /// <summary>Remembers the chosen logs section for this application session.</summary>
 public sealed class LogsNavigationState
 {
-    /// <summary>Telemetry is zero; application diagnostics is one.</summary>
-    public int SelectedSection
+    /// <summary>Remembers the selected logging section.</summary>
+    public LogsSection SelectedSection
     {
         get; set;
     }

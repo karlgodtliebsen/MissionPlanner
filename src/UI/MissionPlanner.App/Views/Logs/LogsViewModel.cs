@@ -4,42 +4,48 @@ using Microsoft.Extensions.Logging;
 
 namespace MissionPlanner.App.Views.Logs;
 
-/// <summary>Hosts existing telemetry tools and application diagnostics using DI-resolved views.</summary>
+/// <summary>Hosts logging sections using typed DI activation.</summary>
 public sealed partial class LogsViewModel : ViewModelBase
 {
-    private readonly Func<int, Control> createView;
+    private readonly ILogsViewFactory views;
     private readonly LogsNavigationState state;
-    private Control? telemetry;
-    private Control? application;
+    private readonly Dictionary<LogsSection, Control> children = [];
 
-    /// <summary>Initializes the root Logs host and restores its selected section.</summary>
-    public LogsViewModel(Func<int, Control> createView, LogsNavigationState state,
-        Utilities.Dispatching.IUiDispatcher dispatcher, Library.EventHub.Abstractions.IDomainEventHub events, ILogger<LogsViewModel> logger) : base(logger, dispatcher, events)
+    /// <summary>Initializes the Logs host and restores its selected section.</summary>
+    public LogsViewModel(ILogsViewFactory views, LogsNavigationState state,
+        Utilities.Dispatching.IUiDispatcher dispatcher, Library.EventHub.Abstractions.IDomainEventHub events,
+        ILogger<LogsViewModel> logger) : base(logger, dispatcher, events)
     {
-        this.createView = createView;
+        this.views = views;
         this.state = state;
         selectedSection = state.SelectedSection;
         SelectContent();
     }
 
-    /// <summary>Gets or sets the selected section index.</summary>
-    [ObservableProperty]
-    private int selectedSection;
+    /// <summary>Available sections in display order.</summary>
+    public IReadOnlyList<LogsSection> Sections { get; } = [LogsSection.Telemetry, LogsSection.Application];
 
-    /// <summary>Gets the selected child view; only this view is attached to the visual tree.</summary>
+    /// <summary>Gets or sets the selected section.</summary>
+    [ObservableProperty]
+    private LogsSection selectedSection;
+
+    /// <summary>Gets the selected child view.</summary>
     [ObservableProperty]
     private Control? content;
 
-    partial void OnSelectedSectionChanged(int value)
+    partial void OnSelectedSectionChanged(LogsSection value)
     {
-        state.SelectedSection = value == 1 ? 1 : 0;
         SelectContent();
+        state.SelectedSection = value;
     }
 
     private void SelectContent()
     {
-        Content = SelectedSection == 1
-            ? application ??= createView(1)
-            : telemetry ??= createView(0);
+        if (!children.TryGetValue(SelectedSection, out var view))
+        {
+            view = views.Create(SelectedSection);
+            children.Add(SelectedSection, view);
+        }
+        Content = view;
     }
 }

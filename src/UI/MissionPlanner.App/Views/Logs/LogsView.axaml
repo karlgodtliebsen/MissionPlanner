@@ -9,10 +9,10 @@
     x:CompileBindings="True">
     <ContentPage Header="Logs">
         <Grid Margin="16" RowDefinitions="Auto,*" RowSpacing="12">
-            <ComboBox SelectedIndex="{Binding SelectedSection}" HorizontalAlignment="Left" MinWidth="220">
-                <ComboBoxItem Content="Telemetry" />
-                <ComboBoxItem Content="Application" />
-            </ComboBox>
+            <ComboBox 
+                ItemsSource="{Binding Sections}" 
+                SelectedItem="{Binding SelectedSection}"
+                      HorizontalAlignment="Left" MinWidth="220" />
             <ContentControl Grid.Row="1" Content="{Binding Content}" />
         </Grid>
     </ContentPage>

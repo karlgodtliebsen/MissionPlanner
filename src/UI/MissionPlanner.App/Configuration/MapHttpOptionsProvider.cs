@@ -7,7 +7,10 @@ namespace MissionPlanner.App.Configuration;
 /// </summary>
 public class MapHttpOptionsProvider
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Gets the HTTP options for map requests.
+    /// </summary>
+    /// <returns></returns>
     public MapHttpOptions GetOptions()
     {
         return new MapHttpOptions(

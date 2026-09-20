@@ -17,24 +17,23 @@ public sealed class LogsNavigationTests
         var events = Substitute.For<IDomainEventHub>();
         var telemetry = new UserControl();
         var application = new UserControl();
-        Control Create(int section)
-        {
-            return section == 1 ? application : telemetry;
-        }
+        var factory = Substitute.For<ILogsViewFactory>();
+        factory.Create(LogsSection.Telemetry).Returns(telemetry);
+        factory.Create(LogsSection.Application).Returns(application);
 
-        using (var model = new LogsViewModel(Create, state, dispatcher, events, NullLogger<LogsViewModel>.Instance))
+        using (var model = new LogsViewModel(factory, state, dispatcher, events, NullLogger<LogsViewModel>.Instance))
         {
             Assert.Same(telemetry, model.Content);
-            model.SelectedSection = 1;
+            model.SelectedSection = LogsSection.Application;
             Assert.Same(application, model.Content);
             await model.DeactivateAsync();
             await model.ActivateAsync();
-            Assert.Equal(1, model.SelectedSection);
+            Assert.Equal(LogsSection.Application, model.SelectedSection);
         }
 
-        using var reopened = new LogsViewModel(Create, state, dispatcher, events, NullLogger<LogsViewModel>.Instance);
+        using var reopened = new LogsViewModel(factory, state, dispatcher, events, NullLogger<LogsViewModel>.Instance);
         Assert.Same(application, reopened.Content);
-        reopened.SelectedSection = 0;
+        reopened.SelectedSection = LogsSection.Telemetry;
         Assert.Same(telemetry, reopened.Content);
     }
 }

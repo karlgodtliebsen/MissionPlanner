@@ -6,14 +6,12 @@ using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.Core.ConfigTuning.Osd;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using ParameterItemViewModel = MissionPlanner.App.Models.ParameterItemViewModel;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -268,15 +266,13 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
                 }
             }
 
-            var result = await osdService.ApplyScreenAsync(
-                workspace,
-                SelectedScreen.Number,
-                allowWarnings,
-                cancellationToken);
+            var result = await osdService.ApplyScreenAsync(workspace, SelectedScreen.Number, allowWarnings, cancellationToken);
             RefreshAll();
             SetMessages(result.Success
                 ? $"{SelectedScreen.Title} changes applied and confirmed."
                 : $"{SelectedScreen.Title} was not fully confirmed; failed values remain pending.");
+            NotificationManager?.Show(StatusMessage ?? "");
+
         }).ConfigureAwait(false);
     }
 
@@ -308,6 +304,8 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
                 osdService.Export(workspace),
                 cancellationToken);
             SetMessages(path is null ? "OSD export was cancelled." : $"OSD layout exported to {path}.");
+            NotificationManager?.Show(StatusMessage ?? "");
+
         }).ConfigureAwait(false);
     }
 
@@ -333,6 +331,7 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
             SetMessages(result.Success
                 ? $"Imported {result.ImportedCount} OSD values; {result.IgnoredNames.Count} unsupported names ignored. Review each screen before apply."
                 : string.Join(" ", result.Errors.Concat(result.Issues.Select(issue => issue.Message))));
+            NotificationManager?.Show(StatusMessage ?? "");
         }).ConfigureAwait(false);
     }
 
@@ -419,7 +418,7 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
         HasOsdConfiguration = false;
         if (!snapshot.IsOnline || snapshot.VehicleId is not { } vehicleId)
         {
-            SetMessages("Connect a vehicle to discover onboard OSD parameters.");
+            SetMessages(errorMessage: "Connect a vehicle to discover onboard OSD parameters.");
             NotificationManager!.Show(StatusMessage!);
             return;
         }
@@ -429,8 +428,9 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
             workspace = await osdService.OpenAsync(vehicleId, cancellationToken);
             if (workspace is null)
             {
-                SetMessages("The connected firmware exposes no supported onboard OSD parameters.");
+                SetMessages(errorMessage: "The connected firmware exposes no supported onboard OSD parameters.");
                 SetWarning(StatusMessage);
+                NotificationManager?.Show(StatusMessage ?? "");
                 return;
             }
 
@@ -469,7 +469,7 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            SetMessages(activeVehicle.IsOnline ? "OSD operation cancelled." : "Vehicle disconnected; OSD operation cancelled.");
+            SetMessages(errorMessage: activeVehicle.IsOnline ? "OSD operation cancelled." : "Vehicle disconnected; OSD operation cancelled.");
         }
         catch (Exception exception)
         {

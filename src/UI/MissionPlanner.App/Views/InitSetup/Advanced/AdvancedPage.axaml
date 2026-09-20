@@ -9,7 +9,8 @@
     x:CompileBindings="True">
     <ContentPage Header="Advanced"  >
         <Grid RowDefinitions="Auto,*" Margin="20"  RowSpacing="14">
-            <Border HorizontalAlignment="Stretch" x:Name="PanelWidth" Margin="0,20" MaxWidth="1000">
+            <Border HorizontalAlignment="Stretch" x:Name="SourceBorder" 
+                    Margin="0,20" MaxWidth="1000">
                 <StackPanel Orientation="Vertical" Spacing="25" HorizontalAlignment="Center" >
                     <TextBlock Text="Advanced tools" Classes="Title H2" />
                     <TextBlock Text="Inspect telemetry, manage outputs, and analyze recorded data. Review each tool's requirements before starting."
@@ -21,11 +22,13 @@
                                          IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 </StackPanel>
             </Border>
-            <TabControl Grid.Row="1" ItemsSource="{Binding Tools}" TabStripPlacement="Left"
+            <TabControl Grid.Row="1" ItemsSource="{Binding Tools}" 
+                        TabStripPlacement="Left"
                         HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                 <TabControl.ItemTemplate>
                     <DataTemplate x:DataType="local:AdvancedToolCardViewModel">
-                        <TextBlock Text="{Binding Feature.Title}" MaxWidth="220" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Feature.Title}" 
+                                   MaxWidth="220" TextWrapping="Wrap" />
                     </DataTemplate>
                 </TabControl.ItemTemplate>
                 <TabControl.ContentTemplate>
