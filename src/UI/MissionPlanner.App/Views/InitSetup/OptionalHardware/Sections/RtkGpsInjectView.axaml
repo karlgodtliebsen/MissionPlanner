@@ -6,15 +6,15 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RtkGpsInjectView"
                                x:DataType="sections:RtkGpsInjectViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <ScrollViewer>
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <TextBlock Text="RTK / GPS Correction Injection" FontSize="20" FontWeight="Bold" />
+            <TextBlock Text="RTK / GPS Correction Injection" Classes="H2" HorizontalAlignment="Center"/>
             <TextBlock Text="RTCM3 source → active vehicle via MAVLink GPS_RTCM_DATA" Opacity="0.75" />
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" />
             <ComboBox HorizontalAlignment="Stretch"
-                      ToolTip.Tip="Source" ItemsSource="{Binding SourceKinds}" SelectedItem="{Binding SourceKind}" 
+                      ToolTip.Tip="Source" ItemsSource="{Binding SourceKinds}" SelectedItem="{Binding SourceKind}"
                       HorizontalContentAlignment="Right"
                       />
             <TextBox PlaceholderText="Serial port or caster host" Text="{Binding Endpoint}"  HorizontalContentAlignment="Right"/>

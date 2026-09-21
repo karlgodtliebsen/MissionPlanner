@@ -238,7 +238,7 @@ public sealed class ParameterProgressDialogTests
                     active,
                     factory,
                     Substitute.For<ITextClipboardService>(),
-                    Substitute.For<ParametersFileHandler>(),
+                    new ParametersFileHandler(Substitute.For<IFileOpenService>(), Substitute.For<IFileSaveService>()),
                     Substitute.For<IUserConfirmationService>(),
                     Substitute.For<IParameterProfileRepository>(),
                     Substitute.For<IParameterProfileService>(),

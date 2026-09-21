@@ -74,7 +74,7 @@ public sealed class ParameterNotificationThreadingTests
             Substitute.For<IActiveVehicleContext>(),
             Substitute.For<IParameterEditSessionFactory>(),
             Substitute.For<ITextClipboardService>(),
-                     Substitute.For<ParametersFileHandler>(),
+                     new ParametersFileHandler(Substitute.For<IFileOpenService>(), Substitute.For<IFileSaveService>()),
 
              Substitute.For<IUserConfirmationService>(),
             Substitute.For<IParameterProfileRepository>(),

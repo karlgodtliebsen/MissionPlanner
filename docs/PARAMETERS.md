@@ -379,3 +379,28 @@ stale telemetry yields unknown live neutral status.
 Warnings suggest checking transmitter trim/subtrim, mixer/input/output offsets,
 stick calibration, or stale vehicle trim. Diagnostics never modify parameters;
 the existing reviewed calibration write remains a separate explicit action.
+
+## Vehicle naming / identifiers
+
+Optional Hardware > Naming requests fresh `MAV_SYSID` and `BRD_SERIAL_NUM` values from
+the active connected vehicle whenever the page activates or the connection changes.
+With no online vehicle it clears the fields, disables editing/Apply and displays the
+standard connection message. No COM port is hard-coded.
+
+Apply validates integer values (`MAV_SYSID`: 1–255; `BRD_SERIAL_NUM`: -8388608–8388607),
+writes only changed values using each parameter's reported wire type, and waits up to
+five seconds for a matching vehicle parameter response. A successful send alone is not
+reported as a saved value. The board serial number is written before the system ID;
+a new system ID may require reconnecting. There is no automatic reboot.
+
+Confirmed partial changes remain tracked if a later write fails, so retrying does not
+resend them. Missing parameters, failed sends and unconfirmed writes show explicit
+errors. Leaving the page or changing the active vehicle cancels pending operations;
+late responses cannot populate a different vehicle's fields.
+
+Verification: NamingViewModelTests covers fresh loading, disconnected presentation,
+changed-only ordered writes, integer validation, failed reads, partial write retry,
+unconfirmed writes, deactivation and disconnect. Hardware identifier writes are left
+to the user's Apply action.
+
+Naming verification: the UI project builds successfully and all 188 UI tests pass, including 16 Naming regressions. Two existing parameter test fixtures now construct the sealed ParametersFileHandler with mocked file-service dependencies. No hardware identifier values were changed during verification.
