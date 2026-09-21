@@ -80,6 +80,16 @@
                         <TextBlock Text="{Binding VehicleSafetyStatus}" Classes="H4"  />
                     </ItemsControl>
                     <TextBlock Text="{Binding ChannelMapSummary, StringFormat='Pilot map: {0}'}" />
+                    <TextBlock Text="{Binding BindAvailability}" TextWrapping="Wrap" />
+                    <Button Command="{Binding BindReceiverCommand}" ToolTip.Tip="Request receiver binding through the flight controller"
+                            AutomationProperties.Name="Bind receiver" HorizontalAlignment="Left">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <mdi:MaterialIcon Kind="LinkVariant" Classes="ActionIcon" />
+                            <TextBlock Text="Bind receiver" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <TextBlock Text="{Binding BindState, StringFormat='Bind state: {0}'}" />
+                    <TextBlock Text="{Binding BindMessage}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -27,9 +28,13 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     private readonly ISetupWorkflowCatalog workflowCatalog;
     private readonly IUserConfirmationService confirmation;
     private readonly IDateTimeProvider clock;
+    private readonly IVehicleCommandService commands;
+    private readonly IVehicleTelemetryEventHub telemetry;
+    private CancellationTokenSource? bindCancellation;
     private CancellationTokenSource? operationCancellation;
     private IDisposable? vehicleStateSubscription;
     private DateTimeOffset? observedRadioAt;
+    private (bool Armed, bool Online)? observedBindSafety;
     private IReadOnlyList<RadioValidationIssue> liveIssues = [];
     private IReadOnlyList<RadioValidationIssue> calibrationIssues = [];
 
@@ -43,6 +48,9 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     /// <param name="confirmation">The shared confirmation service.</param>
     /// <param name="clock">The application clock.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="commands">Safety-gated receiver commands.</param>
+    /// <param name="telemetry">Shared diagnostic event hub.</param>
+    /// <param name="dispatcher">UI-thread dispatcher.</param>
     public RadioSetupViewModel(
         IActiveVehicleContext activeVehicle,
         IRadioCalibrationService radioService,
@@ -51,8 +59,10 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         ISetupCompletionStore completionStore,
         ISetupWorkflowCatalog workflowCatalog,
         IUserConfirmationService confirmation,
-        IDateTimeProvider clock, ILogger<RadioSetupViewModel> logger)
-        : base(logger)
+        IDateTimeProvider clock, ILogger<RadioSetupViewModel> logger,
+        IVehicleCommandService commands, IVehicleTelemetryEventHub telemetry,
+        MissionPlanner.App.Utilities.Dispatching.IUiDispatcher dispatcher)
+        : base(logger, dispatcher, domainEventHub)
     {
         this.activeVehicle = activeVehicle;
         this.radioService = radioService;
@@ -62,6 +72,8 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         this.workflowCatalog = workflowCatalog;
         this.confirmation = confirmation;
         this.clock = clock;
+        this.commands = commands;
+        this.telemetry = telemetry;
     }
 
     /// <summary>Gets the live RC channels.</summary>
@@ -203,6 +215,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     {
         radioService.StateChanged += OnCalibrationStateChanged;
         activeVehicle.Changed += OnActiveVehicleChanged;
+        parameterRegistry.Changed += OnBindParametersChanged;
         observedRadioAt = activeVehicle.State?.Radio.ObservedAt;
         vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         Show(radioService.Current);
@@ -218,6 +231,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         await radioService.CancelAsync();
         radioService.StateChanged -= OnCalibrationStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        parameterRegistry.Changed -= OnBindParametersChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
         observedRadioAt = null;
@@ -226,6 +240,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
 
     private void CancelLocalOperation()
     {
+        bindCancellation?.Cancel();
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = null;
@@ -234,13 +249,14 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     /// <inheritdoc />
     public override void Dispose()
     {
+        CancelLocalOperation();
         radioService.Dispose();
         base.Dispose();
     }
 
     private bool CanStartCommand()
     {
-        return CanStart && activeVehicle.IsOnline;
+        return CanStart && activeVehicle.IsOnline && bindCancellation is null;
     }
 
     [RelayCommand(CanExecute = nameof(CanStartCommand))]
@@ -347,12 +363,23 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
 
     private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
+        bindCancellation?.Cancel();
         observedRadioAt = args.Current.State?.Radio.ObservedAt;
         Dispatcher.Dispatch(RefreshLiveChannels);
     }
 
     private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
+        var safety = (evt.VehicleState.IsArmed, evt.VehicleState.ConnectionState == MissionPlanner.Shared.Models.Vehicles.Models.VehicleConnectionState.Online);
+        if (evt.VehicleId == activeVehicle.VehicleId && observedBindSafety != safety)
+        {
+            observedBindSafety = safety;
+            Dispatcher.Dispatch(() =>
+            {
+                OnPropertyChanged(nameof(BindAvailability));
+                BindReceiverCommand.NotifyCanExecuteChanged();
+            });
+        }
         if ((evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Radio.ObservedAt != observedRadioAt) || observedRadioAt == null)
         {
             Dispatcher.Dispatch(() =>
@@ -375,6 +402,8 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
 
     private void RefreshLiveChannels()
     {
+        OnPropertyChanged(nameof(BindAvailability));
+        BindReceiverCommand.NotifyCanExecuteChanged();
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
             Channels.Clear();
@@ -471,6 +500,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         FinishCaptureCommand.NotifyCanExecuteChanged();
         ConfirmAndWriteCommand.NotifyCanExecuteChanged();
         CancelCalibrationCommand.NotifyCanExecuteChanged();
+        BindReceiverCommand.NotifyCanExecuteChanged();
 
         if (snapshot.State == RadioCalibrationState.Success && snapshot.VehicleId is { } vehicleId &&
             activeVehicle.State is { } state && state.VehicleId == vehicleId)

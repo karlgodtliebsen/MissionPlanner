@@ -1,10 +1,13 @@
-namespace MissionPlanner.MavLink.Commands;
+﻿namespace MissionPlanner.MavLink.Commands;
 
 /// <summary>
 /// Provides compatibility constants backed by the generated <see cref="Generated.MavCmd"/> enum.
 /// </summary>
 public static class MavLinkCommandIds
 {
+    /// <summary>Requests receiver pairing through the autopilot RC backend.</summary>
+    public const ushort StartRxPair = (ushort)Generated.MavCmd.StartRxPair;
+
     /// <summary>Arms or disarms a vehicle component.</summary>
     public const ushort ComponentArmDisarm = (ushort)Generated.MavCmd.ComponentArmDisarm;
 

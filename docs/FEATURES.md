@@ -1083,3 +1083,5 @@ A persistent nonmodal Inspector provides Status/Arming, RC, Outputs, Power, Sens
 panels with a separate telemetry EventHub singleton, bounded per-vehicle history, 10 Hz
 presentation, freeze/resume, markers, context suggestions and desktop detachment.
 See [LiveTelemetryInspector.md](LiveTelemetryInspector.md) for ownership, evidence and limits.
+
+Radio Setup supports safety-gated [receiver binding](RECEIVER_BIND.md) for explicitly configured CRSF/ExpressLRS, with truthful command acknowledgements and bounded RC input recovery monitoring.

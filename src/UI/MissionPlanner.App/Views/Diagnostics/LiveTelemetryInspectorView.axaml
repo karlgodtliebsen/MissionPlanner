@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase
+﻿<utilities:UserControlViewBase
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
@@ -81,7 +81,7 @@
                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" />
                                 </StackPanel>
                                 <TextBlock Text="{Binding Summary}" />
-                                <Expander Header="Payload">
+                                <Expander Header="Complete wire payload (hex)">
                                     <SelectableTextBlock Text="{Binding Payload}" TextWrapping="Wrap" />
                                 </Expander>
                             </StackPanel>

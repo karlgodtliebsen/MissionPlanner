@@ -143,3 +143,11 @@ Core passed 739 tests (six skipped) and UI passed 153 tests. Across the suites t
 1,264 passing .NET tests, 30 skipped .NET tests and seven passing JavaScript tests.
 No CS1591, CS1587 or CS1573 warnings remain in the final build log. Changes are intentionally
 uncommitted for review.
+
+## Raw wire integrity and receiver binding
+
+Raw entries retain immutable complete frame bytes and payload bytes, wire payload/frame lengths, CRC verification, signature presence and verification status, direction, wire version, dialect base/full lengths and the associated decoded message ID. The existing full hexadecimal Payload export remains available. Details identify the complete wire payload rather than a preview.
+
+MAVLink 2 may legitimately carry only 3–4 bytes for messages with zero-valued trailing fields. This is wire zero trimming, not necessarily a capture defect. Short payloads are labelled with their dialect length; exports preserve exact wire bytes and do not synthesize missing zeros. Some custom decoders retain these through the lossless raw fallback. No recorder or .tlog format changes are involved. See [capture investigation and tests](tasks/receiver-bind-and-follow-up/EXECUTION_RESULTS.md).
+
+Receiver binding request, command ACK and bounded input recovery observations share a correlation ID. An accepted bind command does not prove physical pairing; continuous existing traffic is not interpreted as a successful rebind. See [receiver binding](RECEIVER_BIND.md).

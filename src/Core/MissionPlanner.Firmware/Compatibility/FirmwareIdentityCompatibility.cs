@@ -102,6 +102,36 @@ public static class FirmwareIdentityCompatibility
         return Result(FirmwareCompatibilityStatus.Compatible, "Available target identities match.", true);
     }
 
+    /// <summary>Guards writing the bootloader bundled in the running application, never the selected download.</summary>
+    /// <param name="identity">Independent running, bootloader and selected target evidence.</param>
+    /// <param name="usesCombinedDfuImage">Whether the chosen DFU recovery image already includes its bootloader.</param>
+    /// <returns>The normal identity decision plus embedded-update-specific restrictions.</returns>
+    public static FirmwareCompatibilityResult EvaluateEmbeddedBootloaderUpdate(
+        FirmwareIdentitySnapshot identity, bool usesCombinedDfuImage = false)
+    {
+        if (usesCombinedDfuImage)
+        {
+            return new(false, "bootloader-update.included-in-dfu",
+                "The with_bl HEX recovery image already includes the bootloader. A separate embedded update is unavailable.");
+        }
+        if (identity.Running?.BoardId is null || string.IsNullOrWhiteSpace(identity.Running.Target))
+        {
+            return new(false, "bootloader-update.identity-unknown",
+                "Running firmware identity is unknown. Verify the running target before updating its embedded bootloader.")
+            { Status = FirmwareCompatibilityStatus.IdentityInsufficient };
+        }
+        var decision = Evaluate(identity, FirmwareInstallMode.NormalUpgrade);
+        if (!decision.CanProceed)
+        {
+            return decision with
+            {
+                Summary = $"Embedded bootloader update unavailable: {decision.Summary} Recover/install the correct target first.",
+                CanOfferRecovery = false
+            };
+        }
+        return decision with { Summary = "Running and selected targets match. The update uses the bootloader bundled in the running firmware." };
+    }
+
     private static bool Same(string left, string right) => string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
     private static bool McuCompatible(string observed, string expected)
     {

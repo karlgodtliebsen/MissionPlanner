@@ -1,8 +1,11 @@
-namespace MissionPlanner.Firmware.Connected;
+﻿namespace MissionPlanner.Firmware.Connected;
 
 /// <summary>Provides the existing host command/ACK route to a connected ArduPilot vehicle.</summary>
 public interface IConnectedVehicleFirmwareGateway
 {
+    /// <summary>Gets current connection-scoped running identity; absent when it cannot be established.</summary>
+    MissionPlanner.Firmware.Model.RunningFirmwareIdentity? RunningIdentity => null;
+
     /// <summary>Gets whether a vehicle is connected.</summary>
     bool IsConnected { get; }
 

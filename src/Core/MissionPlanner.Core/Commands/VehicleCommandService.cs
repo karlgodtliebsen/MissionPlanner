@@ -26,11 +26,58 @@ public sealed class VehicleCommandService(
     IArduPilotModeCatalog modeCatalog,
     IVehicleOperationGate? operationGate = null,
     ISimulationVehicleChannelRegistry? simulationChannels = null,
-    IVehicleTelemetryEventHub? telemetry = null)
+    IVehicleTelemetryEventHub? telemetry = null,
+    IVehicleParameterRegistry? parameters = null)
     : IVehicleCommandService
 {
     private static readonly TimeSpan commandAckTimeout = TimeSpan.FromSeconds(5);
     private readonly IVehicleOperationGate operationGate = operationGate ?? new VehicleOperationGate();
+
+    /// <inheritdoc />
+    public ReceiverBindAvailability GetReceiverBindAvailability(VehicleId vehicleId)
+    {
+        // RC_PROTOCOLS bit 9 exclusively selects CRSF. All/automatic or mixed masks
+        // cannot establish which backend is in use; a generic serial port cannot either.
+        var crsf = parameters?.GetParameter(vehicleId, "RC_PROTOCOLS")?.Value == 512;
+        var protocol = crsf ? "CRSF / ExpressLRS" : "Unknown";
+        var capability = crsf ? "Expected" : "Unknown";
+        var state = registry.GetRequired(vehicleId)?.State;
+        var decision = state is null ? VehicleCommandDecision.Deny("Vehicle is not registered.")
+            : commandPolicy.Evaluate(state, VehicleAction.ReceiverBind);
+        return new ReceiverBindAvailability(crsf && decision.IsAllowed, protocol, capability,
+            !decision.IsAllowed ? decision.Reason ?? "Binding unavailable."
+            : crsf ? "CRSF is explicitly selected. FC-initiated binding is expected."
+            : "Receiver bind capability is unknown. Use Bind in the ExpressLRS Lua script.");
+    }
+
+    /// <inheritdoc />
+    public async Task<ReceiverBindResult> StartReceiverBindAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var correlationId = Guid.NewGuid();
+        var availability = GetReceiverBindAvailability(vehicleId);
+        if (!availability.IsAvailable)
+        {
+            return new ReceiverBindResult(Denied(vehicleId, availability.Reason), correlationId);
+        }
+
+        if (telemetry is not null)
+        {
+            await telemetry.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleCommandDiagnostic(
+                vehicleId, clock.UtcNow, MavLinkCommandIds.StartRxPair, correlationId,
+                "ReceiverBindRequested", $"ReceiverProtocol={availability.ReceiverProtocol}; Capability={availability.Capability}; MavCommand=START_RX_PAIR")
+            { ReceiverProtocol = availability.ReceiverProtocol });
+        }
+
+        var response = await ExecuteAsync(vehicleId, VehicleAction.ReceiverBind, MavLinkCommandIds.StartRxPair,
+            [1, 0, 0, 0, 0, 0, 0], false, cancellationToken, transactionId: correlationId).ConfigureAwait(false);
+        return new ReceiverBindResult(response with
+        {
+            Message = response.Result == VehicleCommandResult.Accepted
+                ? "Bind command accepted/sent. This does not confirm that the receiver entered bind mode."
+                : response.Message
+        }, correlationId);
+    }
 
     /// <inheritdoc />
     public Task<VehicleCommandResponse> ArmAsync(VehicleId vehicleId, CancellationToken cancellationToken)
@@ -131,7 +178,7 @@ public sealed class VehicleCommandService(
         ArgumentNullException.ThrowIfNull(command);
         return command.CommandId == 0 || command.Parameters.Count != 7 || command.Parameters.Any(value => !float.IsFinite(value))
             ? Task.FromResult(Denied(command.VehicleId, "Expert command requires a non-zero ID and exactly seven finite parameters."))
-            : command.CommandId is MavLinkCommandIds.ComponentArmDisarm or MavLinkCommandIds.DoSetMode or MavLinkCommandIds.PreflightRebootShutdown
+            : command.CommandId is MavLinkCommandIds.ComponentArmDisarm or MavLinkCommandIds.DoSetMode or MavLinkCommandIds.PreflightRebootShutdown or MavLinkCommandIds.StartRxPair
                 ? Task.FromResult(Denied(command.VehicleId, "Use the typed safety-aware action for arm, mode, or reboot commands."))
                 : ExecuteAsync(command.VehicleId, VehicleAction.ExpertCommand, command.CommandId, command.Parameters, safetyConfirmed, cancellationToken);
     }
@@ -179,7 +226,8 @@ public sealed class VehicleCommandService(
         IReadOnlyList<float> parameters,
         bool safetyConfirmed,
         CancellationToken cancellationToken,
-        Func<VehicleCommandResponse, CancellationToken, Task>? onAccepted = null)
+        Func<VehicleCommandResponse, CancellationToken, Task>? onAccepted = null,
+        Guid? transactionId = null)
     {
         var session = registry.GetRequired(vehicleId);
         if (session is null)
@@ -211,7 +259,7 @@ public sealed class VehicleCommandService(
             var targetConnection = targetSession.Connection;
             var connectionToken = targetConnection.Activity?.LifetimeToken ?? targetSession.ConnectionCancellationToken;
             using var ackLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, connectionToken);
-            var correlationId = Guid.NewGuid();
+            var correlationId = transactionId ?? Guid.NewGuid();
             var waitForAck = commandAckTracker.WaitForAckAsync(vehicleId, commandId, commandAckTimeout, ackLifetime.Token);
 
             try
@@ -229,7 +277,8 @@ public sealed class VehicleCommandService(
                 {
                     await telemetry.PublishAsync(new MissionPlanner.Core.Diagnostics.VehicleCommandDiagnostic(
                         vehicleId, ack.ReceivedAt, commandId, correlationId, "ACK",
-                        $"Command {commandId}: {MapResult(ack.Result)}", commandId == 400 && parameters[0] == 1));
+                        $"Command {commandId}: {MapResult(ack.Result)}; CommandAck={ack.Result}; VehicleReason={ack.ResultParameter2}", commandId == 400 && parameters[0] == 1)
+                    { CommandAck = ack.Result, VehicleReason = ack.ResultParameter2 });
                 }
                 var response = new VehicleCommandResponse(vehicleId, MapResult(ack.Result), ack.ReceivedAt,
                     $"MAVLink ACK result {ack.Result}.");

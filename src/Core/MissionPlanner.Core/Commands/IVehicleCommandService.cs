@@ -8,6 +8,17 @@ namespace MissionPlanner.Core.Commands;
 /// </summary>
 public interface IVehicleCommandService : IAsyncDisposable
 {
+    /// <summary>Evaluates receiver configuration and current binding safety.</summary>
+    /// <param name="vehicleId">Target vehicle.</param>
+    /// <returns>Evidence-based availability.</returns>
+    ReceiverBindAvailability GetReceiverBindAvailability(VehicleId vehicleId);
+
+    /// <summary>Asks the autopilot to dispatch receiver binding without changing parameters or rebooting.</summary>
+    /// <param name="vehicleId">Target vehicle.</param>
+    /// <param name="cancellationToken">Cancels the command and ACK waiter.</param>
+    /// <returns>The command outcome; acceptance does not establish physical receiver binding.</returns>
+    Task<ReceiverBindResult> StartReceiverBindAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Arms the specified vehicle.
     /// </summary>

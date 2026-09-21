@@ -6,8 +6,16 @@ using MissionPlanner.Firmware.Connected;
 namespace MissionPlanner.Core.Firmware;
 
 /// <summary>Adapts the existing acknowledged command service to connected bootloader updates.</summary>
-public sealed class ConnectedVehicleFirmwareGateway(IActiveVehicleContext activeVehicle, IVehicleCommandService commandService) : IConnectedVehicleFirmwareGateway
+public sealed class ConnectedVehicleFirmwareGateway(IActiveVehicleContext activeVehicle, IVehicleCommandService commandService,
+    IVehicleMessageStore? messages = null) : IConnectedVehicleFirmwareGateway
 {
+    /// <inheritdoc />
+    public MissionPlanner.Firmware.Model.RunningFirmwareIdentity? RunningIdentity =>
+        activeVehicle.IsOnline && activeVehicle.State is { } state
+            ? MissionPlanner.Firmware.Model.RunningFirmwareIdentity.FromTelemetry(state.Identity.Firmware,
+                messages?.GetMessages(state.VehicleId).Select(item => item.Text) ?? [])
+            : null;
+
     private const ushort FlashBootloaderCommand = 42650;
     private const float ArduPilotConfirmation = 290876;
 

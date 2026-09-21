@@ -14,3 +14,7 @@ The first two tasks add FC-initiated CRSF/ExpressLRS receiver binding through Ar
 The third addresses the unsafe/ambiguous `Update Embedded Bootloader` action when running firmware identity and selected target disagree.
 
 The fourth addresses a separate issue observed in exported Live Telemetry diagnostics: several raw MAVLink entries appear to retain only 3–4 payload bytes for messages whose actual payloads are much larger.
+
+## Implementation
+
+See [execution results](EXECUTION_RESULTS.md) for implemented behavior, the raw payload investigation and verification. Changes are left uncommitted for review.

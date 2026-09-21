@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Commands;
+﻿using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
@@ -26,6 +26,9 @@ public sealed class VehicleCommandPolicy(IDateTimeProvider clock) : IVehicleComm
 
         return action switch
         {
+            VehicleAction.ReceiverBind => state.IsArmed
+                ? VehicleCommandDecision.Deny("Receiver binding is blocked while armed.")
+                : VehicleCommandDecision.Allow(),
             VehicleAction.Arm => ValidateArmAction(state),
             VehicleAction.Disarm => !state.IsArmed
                 ? VehicleCommandDecision.Deny("Vehicle is already disarmed.")

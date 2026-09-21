@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Model;
+﻿using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Operations;
 
 namespace MissionPlanner.Firmware.Connected;
@@ -17,6 +17,14 @@ public sealed class EmbeddedBootloaderUpdateService(
         if (gateway.IsArmed) return Finish(ConnectedFirmwareCommandResult.Denied, "bootloader-update.vehicle-armed");
         if (!gateway.IsSupportedArduPilot) return Finish(ConnectedFirmwareCommandResult.Unsupported, "bootloader-update.unsupported-autopilot");
         if (!request.WarningAccepted) return Finish(ConnectedFirmwareCommandResult.Denied, "bootloader-update.warning-not-accepted");
+
+        var identity = request.Identity ?? new FirmwareIdentitySnapshot(null, null, null, null);
+        var decision = MissionPlanner.Firmware.Compatibility.FirmwareIdentityCompatibility.EvaluateEmbeddedBootloaderUpdate(
+            identity with { Running = gateway.RunningIdentity }, request.UsesCombinedDfuImage);
+        if (!decision.CanProceed)
+        {
+            return Finish(ConnectedFirmwareCommandResult.Denied, decision.Code);
+        }
 
         operation.Transition(new FirmwareProgress(FirmwareOperationState.CheckingCompatibility, null, "bootloader-update.preconditions-passed"));
         operation.Transition(new FirmwareProgress(FirmwareOperationState.Programming, null, "bootloader-update.command-pending"));

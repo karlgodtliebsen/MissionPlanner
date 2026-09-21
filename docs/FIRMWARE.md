@@ -185,3 +185,7 @@ See [execution and hardware evidence](tasks/ardupilot-bootloader-upgrade/EXECUTI
 ## Identity-aware target recovery
 
 See [Firmware identity and recovery](FirmwareIdentityAndRecovery.md) for source attribution, strict normal upgrades, explicit recovery confirmation, local APJ metadata, and bootloader conflict handling.
+
+## Embedded bootloader maintenance
+
+Update Embedded Bootloader writes the image bundled in the running firmware. It is available only when running and selected target/board identities are known and compatible under the shared normal-upgrade identity policy. Unknown identity, target mismatch and board mismatch block the UI and service. The service reads current connected identity again before dispatch. A selected with_bl HEX/DFU recovery disables the separate action because that image already includes its bootloader. Recovery mode never overrides this embedded-update guard.

@@ -71,10 +71,9 @@ public sealed class VehicleRawDiagnosticsSource : IDisposable
                 {
                     continue;
                 }
-                var name = definitions.TryGet(frame.MessageId, out var definition) ? definition.Name : "Unknown";
-                await telemetry.PublishAsync(new VehicleRawDiagnostic(vehicle, frame.ReceivedAt, frame.SystemId,
-                    frame.ComponentId, frame.MessageId, name, $"RX · CRC {(item.CrcVerified ? "verified" : "unknown dialect")} · {frame.Payload.Length} bytes",
-                    Convert.ToHexString(frame.Payload.Span)), lifetime.Token).ConfigureAwait(false);
+                definitions.TryGet(frame.MessageId, out var definition);
+                await telemetry.PublishAsync(VehicleRawDiagnostic.Capture(vehicle, item, definition),
+                    lifetime.Token).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested)

@@ -643,6 +643,46 @@ public sealed class FirmwarePlanViewModelTests
         await page.DeactivateAsync();
     }
 
+    /// <summary>Embedded maintenance uses the same running/selected identity gate as the service.</summary>
+    [Theory]
+    [InlineData("Board", 50, false, true)]
+    [InlineData("speedybeef4", 134, false, false)]
+    [InlineData("Other", 50, false, false)]
+    [InlineData("Board", 134, false, false)]
+    [InlineData(null, 50, false, false)]
+    [InlineData("Board", 50, true, false)]
+    public async Task EmbeddedBootloaderButtonRequiresMatchingIdentity(string? target, int board, bool combinedHex, bool expected)
+    {
+        using var services = Services(null);
+        var active = services.GetRequiredService<IActiveVehicleContext>();
+        var now = DateTimeOffset.UtcNow;
+        active.State.Returns(new MissionPlanner.Core.Vehicles.Models.VehicleState(new(1, 1), 0, 2, 3, 0, 4, 3,
+            MissionPlanner.Shared.Models.Vehicles.Models.VehicleConnectionState.Online, now,
+            MissionPlanner.Shared.Models.Vehicles.Models.VehicleMode.Unknown, false, null, null, null, null, null, null, null, null));
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        PrepareOnline(page);
+        var telemetry = active.State!.Identity.Firmware;
+        page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM12")
+        {
+            RuntimeProbe = new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "test", false)
+            {
+                Verification = FirmwareRuntimeVerification.Verified,
+                RunningIdentity = new(target, board, FirmwareVehicleType.Copter, "4.7.1", null, telemetry)
+            }
+        }, false, "Runtime");
+        if (combinedHex)
+        {
+            page.DfuModel.LocalDfuFirmwarePath = "Board_with_bl.hex";
+        }
+        Assert.Equal(expected && OperatingSystem.IsWindows(), page.UpdateBootloaderCommand.CanExecute(null));
+        if (combinedHex)
+        {
+            Assert.Contains("already includes", page.BootloaderUpdateExplanation);
+        }
+        await page.DeactivateAsync();
+    }
+
     private static ServiceProvider Services(ConnectionTransportKind? transport)
     {
         return FirmwarePanelViewModelTests.CreateServices(services =>

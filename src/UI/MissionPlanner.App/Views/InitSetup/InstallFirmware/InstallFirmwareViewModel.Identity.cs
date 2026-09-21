@@ -8,6 +8,22 @@ namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 public sealed partial class InstallFirmwareViewModel
 {
     private string? identitySelectionKey;
+    private FirmwareIdentitySnapshot bootloaderUpdateIdentity = new(null, null, null, null);
+
+    /// <summary>Gets the reason the embedded update is available or blocked.</summary>
+    [ObservableProperty]
+    public partial string BootloaderUpdateExplanation { get; private set; } = "Verify the running and selected firmware targets.";
+
+    private bool UsesCombinedDfuRecovery => DfuModel.HasLocalDfuFirmware || DfuModel.SelectedDfuDevice is not null;
+
+    private void RefreshEmbeddedBootloaderAvailability()
+    {
+        var decision = FirmwareIdentityCompatibility.EvaluateEmbeddedBootloaderUpdate(bootloaderUpdateIdentity, UsesCombinedDfuRecovery);
+        BootloaderUpdateExplanation = decision.Summary;
+        CanUpdateBootloader = OperatingSystem.IsWindows() && activeVehicle.IsOnline &&
+            activeVehicle.State?.IsArmed == false && !IsOperationInProgress && decision.CanProceed;
+    }
+
 
     /// <summary>Gets explicit operation intent, reset when controller or artifact changes.</summary>
     [ObservableProperty]
@@ -66,6 +82,8 @@ public sealed partial class InstallFirmwareViewModel
         var snapshot = new FirmwareIdentitySnapshot(
             device is null ? null : new(null, device.UsbIdentifier, device.UsbSerialNumber),
             device?.BootloaderIdentity, device is null ? null : upgradeConnection?.ReadRunningIdentity(device) ?? device.RuntimeProbe?.RunningIdentity, selected);
+        bootloaderUpdateIdentity = snapshot;
+        RefreshEmbeddedBootloaderAvailability();
         IdentityEvidenceText = FirmwareIdentityPresentation.Format(snapshot);
         var normal = selected is not null && device is not null
             ? FirmwareIdentityCompatibility.Evaluate(snapshot, FirmwareInstallMode.NormalUpgrade, package) : null;

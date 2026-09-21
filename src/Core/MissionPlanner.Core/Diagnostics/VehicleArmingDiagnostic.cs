@@ -23,4 +23,14 @@ public sealed record VehicleArmingDiagnostic(string Summary, bool IsArmed, bool?
 /// <param name="Detail">Human-readable command parameters or result.</param>
 /// <param name="IsArmRequest">True only for a request to arm, rather than disarm.</param>
 public sealed record VehicleCommandDiagnostic(VehicleId VehicleId, DateTimeOffset At, ushort CommandId,
-    Guid CorrelationId, string Stage, string Detail, bool IsArmRequest = false);
+    Guid CorrelationId, string Stage, string Detail, bool IsArmRequest = false)
+{
+    /// <summary>Receiver protocol evidence for a binding request.</summary>
+    public string? ReceiverProtocol { get; init; }
+
+    /// <summary>Original MAVLink result byte, when an ACK was received.</summary>
+    public byte? CommandAck { get; init; }
+
+    /// <summary>Command-specific reason supplied by the vehicle.</summary>
+    public int? VehicleReason { get; init; }
+}

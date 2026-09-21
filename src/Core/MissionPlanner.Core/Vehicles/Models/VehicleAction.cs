@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Vehicles.Models;
+﻿namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
 /// Identifies a safety-relevant action that can be requested for an active vehicle.
@@ -38,5 +38,7 @@ public enum VehicleAction
     /// <summary>Persist the vehicle loiter-radius parameter.</summary>
     SetLoiterRadius,
     /// <summary>Execute a validated expert MAVLink command.</summary>
-    ExpertCommand
+    ExpertCommand,
+    /// <summary>Request receiver binding while disarmed.</summary>
+    ReceiverBind
 }

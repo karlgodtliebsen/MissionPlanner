@@ -770,8 +770,19 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 return;
             }
 
+            ResolveCurrentPlan();
+            if (!CanStartBootloaderUpdate())
+            {
+                SetMessages(null, BootloaderUpdateExplanation);
+                return;
+            }
+            var request = new BootloaderUpdateRequest(true)
+            {
+                Identity = bootloaderUpdateIdentity,
+                UsesCombinedDfuImage = UsesCombinedDfuRecovery
+            };
             SetOperation(true, FirmwareOperationState.Programming);
-            var result = await bootloaderUpdateService.UpdateAsync(new BootloaderUpdateRequest(true), cancellationToken);
+            var result = await bootloaderUpdateService.UpdateAsync(request, cancellationToken);
             SetMessages(result.Code + (result.RebootRequired ? " — reboot the flight controller to use the new bootloader." : string.Empty));
             RecordWorkflowResult(StatusMessage ?? result.Code);
 
@@ -912,10 +923,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             IsConnectedMode = false;
             IsDisconnectedMode = OperatingSystem.IsWindows();
             IsUnsupportedMode = !OperatingSystem.IsWindows();
-            CanUpdateBootloader = OperatingSystem.IsWindows() && activeVehicle.IsOnline
-                && activeVehicle.State?.IsArmed == false
-                && activeVehicle.State.Identity.Firmware.Family != FirmwareFamily.Unknown
-                && !IsOperationInProgress;
+            RefreshEmbeddedBootloaderAvailability();
             UpdatePanelCapabilities();
         });
     }
