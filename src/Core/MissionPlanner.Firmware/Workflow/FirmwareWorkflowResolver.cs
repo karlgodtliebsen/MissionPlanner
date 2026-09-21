@@ -29,6 +29,9 @@ public static class FirmwareWorkflowResolver
             { PhysicalTarget: FirmwarePhysicalTarget.None } => ("target.absent", "Select a physical controller. Firmware preparation is available."),
             { TargetPortOwned: true, CanHandoffConnectedTarget: false } => ("target.port-owned", "Disconnect the telemetry session that owns the selected serial port."),
             { TargetArmed: true } => ("target.armed", "Disarm the selected controller before firmware operations."),
+            { IdentityDecision.CanProceed: false } when !(context.IdentityDecision.Status == Model.FirmwareCompatibilityStatus.IdentityInsufficient
+                && context.Bootloader is null && automaticArduPilotEntry)
+                => (context.IdentityDecision.Code, context.IdentityDecision.Summary),
             _ when format == FirmwareArtifactFormat.None => ("target.runtime-unknown", "Probe the controller runtime or use manual BOOT/RESET recovery."),
             _ when context.BootEnvironment == FirmwareBootEnvironment.None && serial && !automaticArduPilotEntry => ("target.boot-entry-required",
                 format == FirmwareArtifactFormat.Apj ? "Enter the ArduPilot bootloader to identify the board." : "Enter STM32 DFU before installation."),

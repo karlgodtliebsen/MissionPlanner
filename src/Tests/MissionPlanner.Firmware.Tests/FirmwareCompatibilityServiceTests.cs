@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Model;
 
@@ -24,7 +24,7 @@ public sealed class FirmwareCompatibilityServiceTests
 
         result.IsCompatible.Should().BeFalse();
         result.Code.Should().Be("compatibility.board-id-mismatch");
-        result.TechnicalDetail.Should().Contain("Firmware board ID: 50").And.Contain("Detected board ID: 9");
+        result.TechnicalDetail.Should().Contain("Firmware board ID: 50").And.Contain("Bootloader board ID: 9");
     }
 
     [Fact]

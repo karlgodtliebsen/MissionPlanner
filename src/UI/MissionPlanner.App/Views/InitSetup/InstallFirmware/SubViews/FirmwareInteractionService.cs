@@ -28,10 +28,17 @@ public sealed class FirmwareInteractionService(IUserConfirmationService userConf
     {
         var message = $"Firmware source: {request.Source}\n" +
                       $"Firmware package board ID: {request.FirmwareBoardId}\n" +
-                      $"Detected bootloader board ID: {request.DetectedBoardId}\n" +
+                      $"Detected bootloader board ID: {request.BootloaderBoardId}\n" +
                       $"Application image size: {request.ImageSize:N0} bytes\n" +
                       $"Detected bootloader revision: {request.BootloaderRevision}\n\n" +
                       "Keep power connected during erase, programming, and verification.";
+        if (request.Mode == FirmwareInstallMode.Recovery && request.RequiredPhrase is { } recoveryPhrase)
+        {
+            return confirmation.ConfirmPhraseAsync("Recovery / Change Firmware Target",
+                string.Join(Environment.NewLine, request.IdentityDecision?.Evidence ?? []) +
+                "\n\nRecovery will replace the current firmware target.\n\n" + message,
+                recoveryPhrase, cancellationToken);
+        }
         if (request.BoardIdMismatchOverrideUsed && request.RequiredPhrase is { Length: > 0 } phrase)
         {
             return confirmation.ConfirmPhraseAsync(

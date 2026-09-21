@@ -1,4 +1,4 @@
-namespace MissionPlanner.Firmware.Workflow;
+﻿namespace MissionPlanner.Firmware.Workflow;
 
 /// <summary>Protocol-observed runtime and boot state for one physical presence generation.</summary>
 /// <param name="Runtime">Application runtime proven by protocol.</param>
@@ -8,6 +8,9 @@ namespace MissionPlanner.Firmware.Workflow;
 public sealed record FirmwareRuntimeProbeResult(FirmwareRuntimeKind Runtime, FirmwareBootEnvironment BootEnvironment,
     string Code, bool? IsArmed = null)
 {
+    /// <summary>Gets attributed application claims read during this presence-bound probe.</summary>
+    public Model.RunningFirmwareIdentity? RunningIdentity { get; init; }
+
     /// <summary>Gets the source of the runtime evidence, kept separate from exact-board identity.</summary>
     public FirmwareRuntimeEvidence Evidence { get; init; } = FirmwareRuntimeEvidence.None;
 

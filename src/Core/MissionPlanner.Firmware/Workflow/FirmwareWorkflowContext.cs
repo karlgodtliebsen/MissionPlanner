@@ -65,6 +65,11 @@ public enum FirmwareArtifactFormat
 /// <summary>Immutable evidence used to resolve preparation, entry and installation capabilities.</summary>
 public sealed record FirmwareWorkflowContext
 {
+    /// <summary>Gets explicit install intent.</summary>
+    public FirmwareInstallMode InstallMode { get; init; }
+    /// <summary>Gets source-aware identity policy when available.</summary>
+    public FirmwareCompatibilityResult? IdentityDecision { get; init; }
+
     /// <summary>Gets whether this host supports hardware operations.</summary>
     public bool HardwareSupported { get; init; } = true;
     /// <summary>Gets the selected physical connection.</summary>

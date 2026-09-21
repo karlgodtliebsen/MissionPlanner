@@ -28,6 +28,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
 
     private bool UsesLocalDfuHex => DfuModel.HasLocalDfuFirmware;
+    private readonly IFirmwareUpgradeConnection? upgradeConnection;
     private readonly IFirmwarePreparationService preparationService;
     private readonly IFirmwareConnectionGateway? connectionGateway;
     private readonly IBootloaderEntryService? bootloaderEntry;
@@ -140,6 +141,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="dfuSafety">Checks HEX platform and target evidence.</param>
     /// <param name="filePicker">Selects files restricted to the resolved artifact family.</param>
     /// <param name="clipboard">Copies the selected artifact source URL.</param>
+    /// <param name="upgradeConnection">Reads source-attributed running firmware identity.</param>
     /// <param name="upgradeSelection">An exact advisory release awaiting review.</param>
     public InstallFirmwareViewModel(
         IFirmwareInstallationService installationService,
@@ -176,9 +178,11 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         IDfuTargetSafetyService? dfuSafety = null,
         IFirmwareFilePicker? filePicker = null,
         ITextClipboardService? clipboard = null,
-        FirmwareUpgradeSelection? upgradeSelection = null
+        FirmwareUpgradeSelection? upgradeSelection = null,
+        IFirmwareUpgradeConnection? upgradeConnection = null
         ) : base(logger, dispatcher, eventHub)
     {
+        this.upgradeConnection = upgradeConnection;
         this.installationService = installationService;
         this.connectionGateway = connectionGateway;
         this.bootloaderEntry = bootloaderEntry;
@@ -558,12 +562,13 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                         target?.UsbIdentifiers,
                         target?.BootloaderNames),
                     DevicesModel.SelectedDevice?.Descriptor),
-                prepared is null ? OnlineFirmwareModel.SelectedFirmware?.Entry.Artifact : null,
+                LocalFirmwareModel.CustomPackage is null && prepared is null ? OnlineFirmwareModel.SelectedFirmware?.Entry.Artifact : null,
                 LocalFirmwareModel.CustomPackage ?? prepared?.Package,
                 LocalFirmwareModel.CustomPackage is not null ? FirmwareInstallationSource.LocalCustom : FirmwareInstallationSource.OfficialCatalogue,
                 FirmwareCompatibilityPolicy.Strict,
                 LocalFirmwareModel.CustomPackage is not null ? LocalFirmwareModel.CustomFirmwareName : null)
             {
+                Mode = InstallMode,
                 ExpectedRelease = LocalFirmwareModel.CustomPackage is null ? OnlineFirmwareModel.SelectedFirmware?.Entry : null
             };
 

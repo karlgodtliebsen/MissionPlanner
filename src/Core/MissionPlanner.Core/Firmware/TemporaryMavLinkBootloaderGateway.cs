@@ -34,7 +34,7 @@ public sealed class TemporaryMavLinkBootloaderGateway(
         cancellationToken.ThrowIfCancellationRequested();
         frameParser.Reset();
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        deadline.CancelAfter(options.Value.BootloaderPortOpenTimeout + options.Value.TemporaryMavLinkHeartbeatTimeout);
+        deadline.CancelAfter(options.Value.BootloaderPortOpenTimeout + options.Value.TemporaryMavLinkHeartbeatTimeout + TimeSpan.FromSeconds(2));
         try
         {
             await using var port = await serialPortFactory.OpenAsync(new SerialPortOpenOptions(device.PortName,
@@ -50,8 +50,10 @@ public sealed class TemporaryMavLinkBootloaderGateway(
             {
                 return Failed(FirmwareRuntimeProbeOutcome.OtherAutopilot, "runtime.other-autopilot");
             }
+            var running = await ReadRunningIdentityAsync(port.Stream, heartbeat, device, deadline.Token).ConfigureAwait(false);
             return new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "runtime.ardupilot", (heartbeat.BaseMode & 128) != 0)
             {
+                RunningIdentity = running,
                 Evidence = FirmwareRuntimeEvidence.MavLinkProbe,
                 Verification = FirmwareRuntimeVerification.Verified,
                 Outcome = FirmwareRuntimeProbeOutcome.Success
@@ -81,7 +83,7 @@ public sealed class TemporaryMavLinkBootloaderGateway(
     {
         frameParser.Reset();
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        deadline.CancelAfter(options.Value.BootloaderPortOpenTimeout + options.Value.TemporaryMavLinkHeartbeatTimeout);
+        deadline.CancelAfter(options.Value.BootloaderPortOpenTimeout + options.Value.TemporaryMavLinkHeartbeatTimeout + TimeSpan.FromSeconds(2));
         try
         {
             await using var port = await serialPortFactory.OpenAsync(new SerialPortOpenOptions(device.PortName,
@@ -153,6 +155,64 @@ public sealed class TemporaryMavLinkBootloaderGateway(
             heartbeat.SystemId,
             applicationDevice.PortName);
         return true;
+    }
+
+    private async Task<RunningFirmwareIdentity?> ReadRunningIdentityAsync(Stream stream, HeartbeatMessage heartbeat,
+        SerialDeviceDescriptor device, CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(2));
+        var identity = Vehicles.Models.VehicleFirmwareIdentityFactory.FromHeartbeat(heartbeat.VehicleType, heartbeat.Autopilot);
+        var text = new List<string>();
+        try
+        {
+            foreach (var command in new[] { (ushort)MavCmd.RequestAutopilotCapabilities, (ushort)MavCmd.DoSendBanner })
+            {
+                var packet = commandEncoder.EncodeCommandLong(heartbeat.SystemId, heartbeat.ComponentId, command, [1, 0, 0, 0, 0, 0, 0]);
+                await stream.WriteAsync(packet, timeout.Token).AsTask().WaitAsync(timeout.Token).ConfigureAwait(false);
+            }
+            var buffer = new byte[1024];
+            while (identity.FlightVersion is null || !text.Any(value => RunningFirmwareIdentity.ParseTarget(value) is not null))
+            {
+                var count = await stream.ReadAsync(buffer, CancellationToken.None).AsTask().WaitAsync(timeout.Token).ConfigureAwait(false);
+                if (count == 0)
+                {
+                    break;
+                }
+                foreach (var frame in frameParser.Parse(buffer.AsSpan(0, count),
+                    new TransportEndPoint("firmware-identity", device.PortName), DateTimeOffset.UtcNow))
+                {
+                    if (!messageDecoder.TryDecode(frame, out var decoded) || decoded is null ||
+                        decoded.SystemId != heartbeat.SystemId || decoded.ComponentId != heartbeat.ComponentId)
+                    {
+                        continue;
+                    }
+                    if (decoded is AutopilotVersionMessage version)
+                    {
+                        identity = identity with
+                        {
+                            FlightVersion = MissionPlanner.Firmware.FirmwareSemanticVersion.FromPacked(version.FlightSoftwareVersion),
+                            FlightGitHash = Convert.ToHexString(version.FlightCustomVersion).ToLowerInvariant(),
+                            BoardVersion = version.BoardVersion,
+                            HardwareUid = version.Uid == 0 ? null : version.Uid,
+                            HardwareUid2 = version.Uid2.Any(value => value != 0) ? Convert.ToHexString(version.Uid2).ToLowerInvariant() : null
+                        };
+                    }
+                    else if (decoded is StatusTextMessage status && status.IsTextTerminated && status.ChunkSequence is null or 0)
+                    {
+                        if (text.Count < 64)
+                        {
+                            text.Add(status.Text);
+                        }
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // Partial identity is still attributed; absence must not become a fabricated target.
+        }
+        return RunningFirmwareIdentity.FromTelemetry(identity, text);
     }
 
     private async Task<TMessage?> ReadMessageAsync<TMessage>(Stream stream, TransportEndPoint endpoint, TimeSpan timeout, CancellationToken cancellationToken,

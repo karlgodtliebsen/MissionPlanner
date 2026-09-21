@@ -75,6 +75,15 @@ public sealed class FirmwarePreparationService(IFirmwareArtifactDownloader downl
             throw new FirmwarePackageException($"Manifest board ID {request.ManifestEntry.Target.BoardId} does not match package board ID {downloaded.Package.BoardId}.");
         }
 
+        var embedded = downloaded.Package.Identity;
+        if ((embedded.Target is not null && !string.Equals(embedded.Target, request.ManifestEntry.Target.Platform, StringComparison.OrdinalIgnoreCase)) ||
+            (embedded.VehicleType != FirmwareVehicleType.Unknown && embedded.VehicleType != request.ManifestEntry.Target.MavType &&
+                !(embedded.VehicleType == FirmwareVehicleType.Copter && !embedded.IsVehicleVariantKnown && request.ManifestEntry.Target.MavType == FirmwareVehicleType.Helicopter)) ||
+            (embedded.Version is not null && !string.Equals(embedded.Version, request.ManifestEntry.Version.Value, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new FirmwarePackageException("Embedded APJ target, vehicle variant or firmware version conflicts with the catalogue.");
+        }
+
         var warnings = downloaded.Package.ExternalImage.IsEmpty ? [] : new[] { "Package contains an external-flash image; installation requires reported external capacity." };
         return new FirmwarePreparationResult(request.ManifestEntry, downloaded.Metadata, downloaded.Package, downloaded.Metadata.Sha256,
             downloaded.FromCache, downloaded.Metadata.CacheKey, warnings);

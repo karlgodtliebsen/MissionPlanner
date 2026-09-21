@@ -606,6 +606,43 @@ public sealed class FirmwarePlanViewModelTests
         await page.DeactivateAsync();
     }
 
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(50, true)]
+    [InlineData(134, false)]
+    public async Task RecoveryVisibilityUsesIndependentRunningAndBootloaderEvidence(int bootBoard, bool offered)
+    {
+        using var services = Services(null);
+        var page = services.GetRequiredService<InstallFirmwareViewModel>();
+        await page.ActivateAsync();
+        PrepareOnline(page);
+        var telemetry = new VehicleFirmwareIdentity(MissionPlanner.Firmware.FirmwareFamily.ArduCopter, 2, 3,
+            new(4, 7, 1, MissionPlanner.Firmware.FirmwareReleaseType.Official), null, 0, 134u << 16, 0, 0, null, null);
+        page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM12")
+        {
+            BootloaderIdentity = bootBoard > 0 ? new(bootBoard, 5, 1024) : null,
+            RuntimeProbe = new(FirmwareRuntimeKind.ArduPilot, FirmwareBootEnvironment.None, "test", false)
+            {
+                Verification = FirmwareRuntimeVerification.Verified,
+                RunningIdentity = RunningFirmwareIdentity.FromTelemetry(telemetry,
+                    ["speedybeef4 003D0052 32355116 38393232"])
+            }
+        }, false, "Runtime");
+        Assert.Equal(offered, page.CanOfferRecovery);
+        Assert.False(page.InstallCommand.CanExecute(null));
+        Assert.Contains("Running firmware board ID: 134 [AutopilotVersion]", page.IdentityEvidenceText);
+        Assert.DoesNotContain("Detected board ID", page.IdentityEvidenceText);
+        if (offered)
+        {
+            page.BeginRecoveryCommand.Execute(null);
+            Assert.True(page.IsRecovery);
+            Assert.True(page.CurrentPlan.CanExecute);
+            page.DevicesModel.SelectedDevice = new(new SerialDeviceDescriptor("COM99"), false, "Other controller");
+            Assert.False(page.IsRecovery);
+        }
+        await page.DeactivateAsync();
+    }
+
     private static ServiceProvider Services(ConnectionTransportKind? transport)
     {
         return FirmwarePanelViewModelTests.CreateServices(services =>
@@ -622,7 +659,8 @@ public sealed class FirmwarePlanViewModelTests
 
     private static ApjFirmwarePackage Package()
     {
-        return new(50, new byte[] { 1, 2, 3 }, 1024);
+        return new(50, new byte[] { 1, 2, 3 }, 1024, summary: "Board",
+            rawMetadata: new Dictionary<string, string> { ["vehicle_type"] = "\"Copter\"" });
     }
 
     private static MissionPlanner.Firmware.Downloads.FirmwareArtifactMetadata Metadata()

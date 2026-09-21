@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Model;
+﻿using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Firmware.Compatibility;
 
@@ -12,7 +12,7 @@ public sealed class FirmwareCompatibilityService : IFirmwareCompatibilityService
         ArgumentNullException.ThrowIfNull(bootloader);
         policy ??= FirmwareCompatibilityPolicy.Strict;
         if (!policy.AllowBoardIdMismatch && firmware.BoardId != bootloader.BoardId && !(bootloader.BoardId == 33 && firmware.BoardId == 9))
-            return Blocked("compatibility.board-id-mismatch", $"Firmware board ID: {firmware.BoardId}; Detected board ID: {bootloader.BoardId}");
+            return Blocked("compatibility.board-id-mismatch", $"Firmware board ID: {firmware.BoardId}; Bootloader board ID: {bootloader.BoardId}");
         if (firmware.BoardRevision > 0 && bootloader.BoardRevision < firmware.BoardRevision)
             return Blocked("compatibility.board-revision-too-old", $"Required board revision: {firmware.BoardRevision}; Detected board revision: {bootloader.BoardRevision}");
         if (firmware.BoardRevisionMaximum is { } maximum && bootloader.BoardRevision > maximum)

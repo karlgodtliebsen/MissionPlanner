@@ -9,7 +9,7 @@ public sealed record FirmwareDiagnosticReport(
     FirmwareOperationState State,
     string? FirmwareSource = null,
     int? FirmwareBoardId = null,
-    int? DetectedBoardId = null,
+    int? BootloaderBoardId = null,
     int? BootloaderRevision = null,
     string? OriginalDevice = null,
     string? BootloaderDevice = null,
@@ -23,15 +23,25 @@ public sealed record FirmwareDiagnosticReport(
     FirmwareBoardIdOverrideState? BoardIdOverride = null,
     string? InstalledFirmware = null)
 {
+    /// <summary>Gets explicit operation intent.</summary>
+    public FirmwareInstallMode Mode { get; init; }
+    /// <summary>Gets attributed identity evidence.</summary>
+    public IReadOnlyList<string> IdentityEvidence { get; init; } = [];
+
     /// <summary>Creates a copyable multiline diagnostic report.</summary>
     public string CreateReport()
     {
         var text = new StringBuilder()
             .AppendLine($"Operation: {OperationId}")
             .AppendLine($"State: {State}");
+        Add("Install mode", Mode);
+        foreach (var evidence in IdentityEvidence)
+        {
+            text.AppendLine(evidence);
+        }
         Add("Firmware source", FirmwareSource);
         Add("Firmware board ID", FirmwareBoardId);
-        Add("Detected board ID", DetectedBoardId);
+        Add("Bootloader board ID [BootloaderProtocol]", BootloaderBoardId);
         Add("Board ID override", BoardIdOverride);
         Add("Bootloader revision", BootloaderRevision);
         Add("Original device", OriginalDevice);

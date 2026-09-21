@@ -1,4 +1,4 @@
-namespace MissionPlanner.Firmware.Model;
+﻿namespace MissionPlanner.Firmware.Model;
 
 /// <summary>Represents a validated APJ firmware image.</summary>
 public sealed record ApjFirmwarePackage
@@ -65,6 +65,9 @@ public sealed record ApjFirmwarePackage
         GitIdentity = gitIdentity;
         RawMetadata = rawMetadata ?? new Dictionary<string, string>();
     }
+
+    /// <summary>Gets identity parsed from embedded package metadata.</summary>
+    public SelectedFirmwareIdentity Identity => SelectedFirmwareIdentity.FromPackage(this);
 
     /// <summary>Gets the target board ID.</summary>
     public int BoardId { get; }

@@ -14,6 +14,9 @@ public sealed record FirmwareInstallationRequest(
     FirmwareCompatibilityPolicy? CompatibilityPolicy = null,
     string? LocalFileName = null)
 {
+    /// <summary>Explicit normal upgrade or target recovery intent.</summary>
+    public FirmwareInstallMode Mode { get; init; }
+
     /// <summary>Selected catalogue identity requiring normal reconnect and post-flash verification.</summary>
     public FirmwareManifestEntry? ExpectedRelease { get; init; }
 }

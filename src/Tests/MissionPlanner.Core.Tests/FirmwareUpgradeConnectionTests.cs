@@ -106,7 +106,8 @@ public sealed class FirmwareUpgradeConnectionTests
             Session.ActiveSerialPort.Returns("COM11");
             Session.ActiveTransportProtocol.Returns("serial");
             Connection.ReleaseForFirmwareUpgradeAsync(Id, "COM11", Arg.Any<CancellationToken>()).Returns(true);
-            Messages.GetMessages(Id).Returns([]);
+            Messages.GetMessages(Id).Returns(_ => [new(Id, 1, 1, MissionPlanner.MavLink.MavSeverity.Info,
+                "omnibusf4 002E005B 33355109 34313432", DateTimeOffset.UtcNow)]);
             var registry = Substitute.For<IVehicleRegistry>();
             registry.GetRequired(Id).Returns(new VehicleSession(State, new TransportEndPoint("test"), Substitute.For<IDateTimeProvider>()));
             Service = new(Active, Connection, Session, registry, Messages, NullLogger<FirmwareUpgradeConnection>.Instance);

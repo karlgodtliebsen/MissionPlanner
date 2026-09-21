@@ -56,7 +56,7 @@ public sealed class FirmwareInstallationServiceTests
 
         result.State.Should().Be(FirmwareOperationState.Completed);
         // Confirmation and compatibility used the authoritative bootloader board ID, never the USB hint.
-        fixture.Interaction.LastConfirmation!.DetectedBoardId.Should().Be(50);
+        fixture.Interaction.LastConfirmation!.BootloaderBoardId.Should().Be(50);
         fixture.Client.Calls.Should().Equal("erase", "program", "verify", "reboot", "dispose");
     }
 
@@ -275,13 +275,95 @@ public sealed class FirmwareInstallationServiceTests
         fixture.Client.Calls.Should().Equal("dispose");
     }
 
+    [Theory]
+    [InlineData(1002, true, FirmwareOperationState.Completed)]
+    [InlineData(134, true, FirmwareOperationState.Failed)]
+    [InlineData(1002, false, FirmwareOperationState.Cancelled)]
+    public async Task ExplicitWrongTargetRecoveryRequiresMatchingBootloaderAndConfirmation(int board, bool confirm, FirmwareOperationState expected)
+    {
+        var upgrade = new FakeUpgrade(1, true);
+        var fixture = new Fixture(connected: true, confirm: confirm, bootloader: new(board, 5, 16), upgrade: upgrade);
+        var release = new FirmwareManifestEntry(new("4.7.1", new Version(4, 7, 1)), FirmwareReleaseChannel.Stable,
+            new(1002, "omnibusf4", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
+            new(new Uri("https://example.test/test.apj"), FirmwareImageFormat.Apj));
+        var request = fixture.Request with
+        {
+            EntryContext = new(new(new SerialDeviceDescriptor("COM12")), new("COM12")),
+            Package = new(1002, new byte[] { 1, 2, 3, 4 }, 16, summary: "omnibusf4"),
+            ExpectedRelease = release,
+            Mode = FirmwareInstallMode.Recovery
+        };
+        var result = await fixture.Service.InstallAsync(request, cancellationToken: TestContext.Current.CancellationToken);
+        result.State.Should().Be(expected);
+        fixture.Client.Calls.Contains("erase").Should().Be(expected == FirmwareOperationState.Completed);
+        if (board == 1002)
+        {
+            fixture.Interaction.LastConfirmation!.RequiredPhrase.Should().Be("RECOVER omnibusf4");
+            fixture.Interaction.LastConfirmation.IdentityDecision!.RequiresExplicitConfirmation.Should().BeTrue();
+        }
+        else
+        {
+            fixture.Interaction.ConfirmCalls.Should().Be(0);
+        }
+    }
+
+    [Fact]
+    public async Task LocalRecoveryUsesEmbeddedIdentityWithoutCatalogueProvenance()
+    {
+        var upgrade = new FakeUpgrade(1, true);
+        var fixture = new Fixture(connected: true, upgrade: upgrade);
+        var package = new ApjFirmwarePackage(50, new byte[] { 1, 2, 3, 4 }, 16, summary: "omnibusf4",
+            rawMetadata: new Dictionary<string, string>
+            {
+                ["firmware_version"] = "\"4.7.1\"",
+                ["vehicle_type"] = "\"Copter\""
+            });
+        var request = fixture.Request with
+        {
+            EntryContext = new(new(new SerialDeviceDescriptor("COM12")), new("COM12")),
+            Package = package,
+            Source = FirmwareInstallationSource.LocalCustom,
+            LocalFileName = "misleading-speedybeef4.apj",
+            Mode = FirmwareInstallMode.Recovery
+        };
+        var result = await fixture.Service.InstallAsync(request, cancellationToken: TestContext.Current.CancellationToken);
+        result.State.Should().Be(FirmwareOperationState.Completed);
+        result.DiagnosticReport!.CreateReport().Should().Contain("ApjManifest").And.NotContain("OfficialCatalogue");
+        upgrade.LocalReconnectCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task RecoveryCancellationDuringBootloaderTransitionNeverErases()
+    {
+        var fixture = new Fixture(upgrade: new FakeUpgrade(1), entryFailure: new OperationCanceledException());
+        var request = fixture.Request with { Mode = FirmwareInstallMode.Recovery, ExpectedRelease = UpgradeRelease() };
+        var result = await fixture.Service.InstallAsync(request, cancellationToken: TestContext.Current.CancellationToken);
+        result.State.Should().Be(FirmwareOperationState.Cancelled);
+        fixture.Client.Calls.Should().NotContain("erase");
+    }
+
     private static FirmwareManifestEntry UpgradeRelease() => new(new FirmwareVersion("4.7.1", new Version(4, 7, 1)),
         FirmwareReleaseChannel.Stable, new FirmwareBoardTarget(50, "omnibusf4", FirmwareVehicleType.Copter, FirmwareVehicleType.Copter),
         new FirmwareArtifact(new Uri("https://example.test/test.apj"), FirmwareImageFormat.Apj));
 
-    private sealed class FakeUpgrade(int patch) : IFirmwareUpgradeConnection
+    private sealed class FakeUpgrade(int patch, bool wrongTarget = false) : IFirmwareUpgradeConnection
     {
+        public RunningFirmwareIdentity? ReadRunningIdentity(SerialDeviceDescriptor device) => wrongTarget
+            ? RunningFirmwareIdentity.FromTelemetry(Identity(1) with { BoardVersion = 134u << 16 },
+                ["speedybeef4 003D0052 32355116 38393232"]) : null;
+        public Task<VehicleFirmwareIdentity> ReleaseForRecoveryAsync(SerialDeviceDescriptor device, CancellationToken cancellationToken)
+        {
+            ReleaseCalls++;
+            return Task.FromResult(Identity(1));
+        }
         public int ReleaseCalls { get; private set; }
+        public int LocalReconnectCalls { get; private set; }
+        public Task<VehicleFirmwareIdentity> ReconnectAsync(SerialDeviceDescriptor device, SelectedFirmwareIdentity selected,
+            VehicleFirmwareIdentity? original, CancellationToken cancellationToken)
+        {
+            LocalReconnectCalls++;
+            return Task.FromResult(Identity(patch));
+        }
         public int ReconnectCalls { get; private set; }
         public Task<VehicleFirmwareIdentity> ReleaseAsync(SerialDeviceDescriptor device, FirmwareManifestEntry release, CancellationToken cancellationToken)
         {

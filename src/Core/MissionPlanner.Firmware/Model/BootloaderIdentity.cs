@@ -47,6 +47,12 @@ public sealed record BootloaderIdentity
         IsSecure = isSecure;
     }
 
+    /// <summary>Gets the exact platform if the protocol supplies it; never inferred from board ID alone.</summary>
+    public string? Target { get; init; }
+
+    /// <summary>Gets the source of this queried identity.</summary>
+    public FirmwareIdentitySource Source => FirmwareIdentitySource.BootloaderProtocol;
+
     /// <summary>Gets the bootloader board ID.</summary>
     public int BoardId { get; }
 

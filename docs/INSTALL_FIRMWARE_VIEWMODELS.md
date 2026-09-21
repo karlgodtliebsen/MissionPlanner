@@ -107,3 +107,12 @@ guard. Guidance identifies ArduPilot Bootloader and automatic reboot/upload/reco
 DFU remains an explicit recovery action. The install request carries ExpectedRelease and
 the result carries InstalledIdentity only after the running release is verified.
 The page reports verified identity on success; a checksum-only upload cannot produce that result.
+## Source-attributed identity and explicit recovery
+
+The page displays physical, bootloader, running and selected identity separately. The
+Recovery / Change Firmware Target action is policy-gated and never selected automatically.
+Changing the controller or artifact resets recovery intent. Final recovery confirmation
+uses the existing dialog coordinator and requires RECOVER <target> with attributed evidence.
+Local packages use embedded identity for reconnect verification without a fabricated catalogue
+entry. Missing target/vehicle-variant/release metadata blocks installation.
+See [Firmware identity and recovery](FirmwareIdentityAndRecovery.md).

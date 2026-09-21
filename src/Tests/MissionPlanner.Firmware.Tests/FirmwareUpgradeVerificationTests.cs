@@ -26,10 +26,12 @@ public sealed class FirmwareUpgradeVerificationTests
     [InlineData("uid")]
     [InlineData("git")]
     [InlineData("missing")]
+    [InlineData("variant")]
     public void RejectsWrongOrMissingPostFlashIdentity(string mismatch)
     {
         var identity = mismatch switch
         {
+            "variant" => Identity() with { MavType = 4 },
             "version" => Identity() with { FlightVersion = new(4, 7, 0, FirmwareReleaseType.Official) },
             "family" => Identity() with { Family = FirmwareFamily.ArduPlane },
             "board" => Identity() with { BoardVersion = 9u << 16 },

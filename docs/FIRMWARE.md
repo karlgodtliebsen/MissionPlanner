@@ -179,6 +179,9 @@ Same-port application return is supported without requiring a USB removal event.
 uses stable hardware evidence and does not select an unrelated port by VID/PID alone.
 Bounded reconnect retries tolerate USB enumeration before MAVLink startup. Completion requires
 the selected running version/family and available board, UID and Git identity checks.
-Custom APJ callers lacking selected release metadata retain their existing completion policy.
+Local APJs must supply sufficient embedded target, vehicle/variant and release metadata for verified installation; missing identity blocks installation.
 
 See [execution and hardware evidence](tasks/ardupilot-bootloader-upgrade/EXECUTION_RESULTS.md).
+## Identity-aware target recovery
+
+See [Firmware identity and recovery](FirmwareIdentityAndRecovery.md) for source attribution, strict normal upgrades, explicit recovery confirmation, local APJ metadata, and bootloader conflict handling.

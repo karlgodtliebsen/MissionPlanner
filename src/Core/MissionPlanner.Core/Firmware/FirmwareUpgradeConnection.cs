@@ -12,7 +12,31 @@ public sealed class FirmwareUpgradeConnection(IActiveVehicleContext activeVehicl
     ILogger<FirmwareUpgradeConnection> logger) : IFirmwareUpgradeConnection
 {
     /// <inheritdoc />
-    public async Task<VehicleFirmwareIdentity> ReleaseAsync(SerialDeviceDescriptor device, FirmwareManifestEntry release,
+    public Task<VehicleFirmwareIdentity> ReleaseAsync(SerialDeviceDescriptor device, FirmwareManifestEntry release,
+        CancellationToken cancellationToken) => ReleaseCoreAsync(device, SelectedFirmwareIdentity.FromRelease(release), cancellationToken);
+
+    /// <inheritdoc />
+    public Task<VehicleFirmwareIdentity> ReleaseAsync(SerialDeviceDescriptor device, SelectedFirmwareIdentity selected,
+        CancellationToken cancellationToken) => ReleaseCoreAsync(device, selected, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<VehicleFirmwareIdentity> ReleaseForRecoveryAsync(SerialDeviceDescriptor device, CancellationToken cancellationToken) =>
+        ReleaseCoreAsync(device, null, cancellationToken);
+
+    /// <inheritdoc />
+    public RunningFirmwareIdentity? ReadRunningIdentity(SerialDeviceDescriptor device)
+    {
+        if (activeVehicle.VehicleId is not { } id || activeVehicle.State is not { } state ||
+            !activeVehicle.IsOnline || !string.Equals(session.ActiveSerialPort, device.PortName, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+        return RunningFirmwareIdentity.FromTelemetry(state.Identity.Firmware,
+            messages.GetMessages(id).Where(message => !message.IsTruncated && message.SourceComponentId == id.ComponentId)
+                .Select(message => message.Text));
+    }
+
+    private async Task<VehicleFirmwareIdentity> ReleaseCoreAsync(SerialDeviceDescriptor device, SelectedFirmwareIdentity? release,
         CancellationToken cancellationToken)
     {
         var id = activeVehicle.VehicleId;
@@ -24,8 +48,11 @@ public sealed class FirmwareUpgradeConnection(IActiveVehicleContext activeVehicl
             throw new FirmwareConnectionConflictException("The selected controller must be the connected, disarmed serial vehicle.");
         }
         var identity = state.Identity.Firmware;
-        FirmwareUpgradeVerification.Validate(identity, release, false);
-        CheckReportedTarget(id.Value, release, DateTimeOffset.MinValue);
+        if (release is not null)
+        {
+            FirmwareUpgradeVerification.Validate(identity, release, false);
+            CheckReportedTarget(id.Value, release, DateTimeOffset.MinValue);
+        }
         logger.LogInformation("FirmwareInstallStrategy={FirmwareInstallStrategy} VehicleId={VehicleId} OriginalPort={OriginalPort} RunningFirmwareIdentity={RunningFirmwareIdentity} SelectedFirmwareIdentity={SelectedFirmwareIdentity}",
             "ArduPilotBootloader", id, device.PortName, identity, release);
         if (!await connection.ReleaseForFirmwareUpgradeAsync(id.Value, device.PortName, cancellationToken).ConfigureAwait(false))
@@ -36,7 +63,12 @@ public sealed class FirmwareUpgradeConnection(IActiveVehicleContext activeVehicl
     }
 
     /// <inheritdoc />
-    public async Task<VehicleFirmwareIdentity> ReconnectAsync(SerialDeviceDescriptor device, FirmwareManifestEntry release,
+    public Task<VehicleFirmwareIdentity> ReconnectAsync(SerialDeviceDescriptor device, FirmwareManifestEntry release,
+        VehicleFirmwareIdentity? original, CancellationToken cancellationToken) =>
+        ReconnectAsync(device, SelectedFirmwareIdentity.FromRelease(release), original, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<VehicleFirmwareIdentity> ReconnectAsync(SerialDeviceDescriptor device, SelectedFirmwareIdentity release,
         VehicleFirmwareIdentity? original, CancellationToken cancellationToken)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -63,7 +95,10 @@ public sealed class FirmwareUpgradeConnection(IActiveVehicleContext activeVehicl
             }
             var id = result.VehicleId!.Value;
             VehicleFirmwareIdentity? identity;
-            while ((identity = registry.GetRequired(id)?.State.Identity.Firmware)?.FlightVersion is null)
+            while ((identity = registry.GetRequired(id)?.State.Identity.Firmware)?.FlightVersion is null ||
+                !messages.GetMessages(id).Any(message => message.ReceivedAt >= started &&
+                    message.SourceComponentId == id.ComponentId && !message.IsTruncated &&
+                    RunningFirmwareIdentity.ParseTarget(message.Text) is not null))
             {
                 await Task.Delay(100, deadline.Token).ConfigureAwait(false);
             }
@@ -80,14 +115,14 @@ public sealed class FirmwareUpgradeConnection(IActiveVehicleContext activeVehicl
 
 
     private void CheckReportedTarget(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId id,
-        FirmwareManifestEntry release, DateTimeOffset since)
+        SelectedFirmwareIdentity release, DateTimeOffset since)
     {
         var targets = messages.GetMessages(id)
             .Where(message => message.ReceivedAt >= since && !message.IsTruncated && message.SourceComponentId == id.ComponentId)
             .Select(message => message.Text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
             .Where(parts => parts.Length == 4 && parts.Skip(1).All(part => part.Length == 8 && part.All(Uri.IsHexDigit)))
             .Select(parts => parts[0]).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-        if (targets.Any(target => !string.Equals(target, release.Target.Platform, StringComparison.OrdinalIgnoreCase)))
+        if (targets.Any(target => !string.Equals(target, release.Target, StringComparison.OrdinalIgnoreCase)))
         {
             throw new FirmwareCompatibilityException("Reported controller target differs from the selected platform. Use explicit recovery.");
         }

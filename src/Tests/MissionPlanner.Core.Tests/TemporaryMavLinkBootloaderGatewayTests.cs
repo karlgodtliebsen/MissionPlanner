@@ -21,15 +21,27 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
     [Theory]
     [InlineData(3, FirmwareRuntimeProbeOutcome.Success)]
     [InlineData(12, FirmwareRuntimeProbeOutcome.OtherAutopilot)]
-    public async Task DiscoveryProbeReportsAutopilotEvidenceWithoutWrites(byte autopilot, FirmwareRuntimeProbeOutcome outcome)
+    public async Task DiscoveryProbeRequestsOnlyIdentityAndBanner(byte autopilot, FirmwareRuntimeProbeOutcome outcome)
     {
-        var stream = new ScriptedStream([1]);
+        var stream = new ScriptedStream([1], [3], [4]);
         var factory = new FakePortFactory(stream);
+        var encoder = new FakeEncoder();
         var gateway = new TemporaryMavLinkBootloaderGateway(factory, new MarkerParser(), new MarkerDecoder(MavResult.Accepted, autopilot: autopilot),
-            new FakeEncoder(), Options.Create(new FirmwareOptions()), NullLogger<TemporaryMavLinkBootloaderGateway>.Instance);
+            encoder, Options.Create(new FirmwareOptions()), NullLogger<TemporaryMavLinkBootloaderGateway>.Instance);
         var result = await gateway.ProbeAsync(new("COM10"), TestContext.Current.CancellationToken);
         Assert.Equal(outcome, result.Outcome);
-        Assert.Equal(0, stream.Written.Length);
+        Assert.DoesNotContain(MavLinkCommandIds.PreflightRebootShutdown, encoder.Commands);
+        if (autopilot == 3)
+        {
+            Assert.Equal(new ushort[] { 520, 42428 }, encoder.Commands);
+            Assert.Equal(134, result.RunningIdentity!.BoardId);
+            Assert.Equal("speedybeef4", result.RunningIdentity.Target);
+            Assert.Equal("4.7.1", result.RunningIdentity.Version);
+        }
+        else
+        {
+            Assert.Empty(encoder.Commands);
+        }
         Assert.True(factory.PortDisposed);
     }
 
@@ -235,6 +247,10 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
             {
                 1 => new HeartbeatMessage(1, 1, frame.EndPoint, 0, 2, autopilot, baseMode, 0, 3, frame.ReceivedAt),
                 2 => new CommandAckMessage(1, 1, frame.EndPoint, MavLinkCommandIds.PreflightRebootShutdown, (byte)result, frame.ReceivedAt),
+                3 => new AutopilotVersionMessage(1, 1, frame.EndPoint, 0, 0x040701ff, 0, 0, 134u << 16,
+                    [], [], [], 0x1209, 0x5741, 0, [], frame.ReceivedAt),
+                4 => new StatusTextMessage(1, 1, frame.EndPoint, MissionPlanner.MavLink.MavSeverity.Info,
+                    "speedybeef4 003D0052 32355116 38393232", null, null, frame.ReceivedAt),
                 var _ => null
             };
             return message is not null;
@@ -243,11 +259,13 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
 
     private sealed class FakeEncoder : IMavLinkCommandEncoder
     {
+        public List<ushort> Commands { get; } = [];
         public IReadOnlyList<float>? Parameters { get; private set; }
 
         public byte[] EncodeCommandLong(byte targetSystemId, byte targetComponentId, ushort commandId, IReadOnlyList<float> parameters)
         {
-            commandId.Should().Be(MavLinkCommandIds.PreflightRebootShutdown);
+            Commands.Add(commandId);
+            Assert.Contains(commandId, new ushort[] { MavLinkCommandIds.PreflightRebootShutdown, 520, 42428 });
             Parameters = parameters;
             return [9];
         }

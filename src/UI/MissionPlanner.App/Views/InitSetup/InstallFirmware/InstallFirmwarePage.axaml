@@ -1,4 +1,4 @@
-﻿<utilities:NavigationViewBase
+<utilities:NavigationViewBase
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
@@ -79,6 +79,18 @@
                                 <avalonia:MaterialIcon Kind="FileCheckOutline" Width="30" Height="30" />
                             </Button>
 
+                            <Button ToolTip.Tip="Recovery / Change Firmware Target"
+                                    Command="{Binding BeginRecoveryCommand}"
+                                    IsVisible="{Binding CanOfferRecovery}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <avalonia:MaterialIcon Kind="Wrench" Width="30" Height="30" />
+                                    <TextBlock Text="Recovery / Change Firmware Target" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button ToolTip.Tip="Return to normal upgrade"
+                                    Command="{Binding EndRecoveryCommand}" IsVisible="{Binding IsRecovery}">
+                                <avalonia:MaterialIcon Kind="Undo" Width="30" Height="30" />
+                            </Button>
                             <Button ToolTip.Tip="Install firmware"
                                     Command="{Binding ExecuteCurrentPlanCommand}"
                                     IsEnabled="{Binding CurrentPlan.CanExecute}" >
@@ -150,6 +162,14 @@
                         <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="12" HorizontalAlignment="Center">
 
+                                <Border Classes="SectionCard" Padding="16">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="{Binding InstallMode}" Classes="H3" />
+                                        <SelectableTextBlock Text="{Binding IdentityEvidenceText}" TextWrapping="Wrap" />
+                                        <TextBlock Text="Recovery will replace the current firmware target. Bootloader evidence and explicit confirmation are required before erase."
+                                                   IsVisible="{Binding IsRecovery}" TextWrapping="Wrap" Classes="Warning" />
+                                    </StackPanel>
+                                </Border>
                                 <Border Classes="SectionCard" Padding="16" x:Name="PhysicalCtrl">
                                     <StackPanel Orientation="Vertical" >
                                         <StackPanel Spacing="10"  IsVisible="{Binding ShowPhysicalController}" >

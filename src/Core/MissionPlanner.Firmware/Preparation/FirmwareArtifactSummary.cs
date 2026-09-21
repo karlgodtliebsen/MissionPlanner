@@ -66,7 +66,10 @@ public sealed record FirmwareArtifactSummary
         {
             Source = "Local file", LocalFile = prepared.OriginalPath ?? prepared.FileName,
             ImportedAt = prepared.ArtifactMetadata.DownloadedAt, Sha256 = prepared.ArtifactMetadata.Sha256,
-            CacheIdentity = prepared.ArtifactMetadata.CacheKey, CacheHit = prepared.WasCacheHit
+            CacheIdentity = prepared.ArtifactMetadata.CacheKey, CacheHit = prepared.WasCacheHit,
+            Warnings = prepared.Package.Identity.Target is { } target &&
+                !Path.GetFileNameWithoutExtension(prepared.FileName).Equals(target, StringComparison.OrdinalIgnoreCase)
+                ? $"File name is not target evidence. Embedded APJ target: {target}; board ID: {prepared.Package.BoardId}." : null
         };
     }
 
@@ -90,8 +93,9 @@ public sealed record FirmwareArtifactSummary
     {
         return new()
         {
-            Format = FirmwareArtifactFormat.Apj, Platform = package.Summary, BoardId = package.BoardId,
-            Version = package.Version, GitSha = package.GitIdentity, ImageSize = package.Image.Length,
+            Format = FirmwareArtifactFormat.Apj, Platform = package.Identity.Target, BoardId = package.BoardId,
+            VehicleFamily = package.Identity.VehicleType == FirmwareVehicleType.Unknown ? null : package.Identity.VehicleType.ToString(),
+            Version = package.Identity.Version, GitSha = package.GitIdentity, ImageSize = package.Image.Length,
             ArtifactValid = true
         };
     }

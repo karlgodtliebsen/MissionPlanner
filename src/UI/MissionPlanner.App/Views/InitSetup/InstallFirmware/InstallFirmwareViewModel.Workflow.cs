@@ -365,8 +365,11 @@ public sealed partial class InstallFirmwareViewModel
             : serial?.RuntimeProbe?.BootEnvironment ?? FirmwareBootEnvironment.None;
         var reviewed = DfuModel.HasCorrelatedSource && DfuModel.CorrelatedHandoff?.Source.BetaflightIdentity is { } source
             ? betaflightCompatibility.Resolve(source) : null;
+        ResolveIdentityEvidence(serial, package);
         var context = new FirmwareWorkflowContext
         {
+            InstallMode = InstallMode,
+            IdentityDecision = dfu is null ? IdentityDecision : null,
             HardwareSupported = OperatingSystem.IsWindows(),
             PhysicalTarget = dfu is not null ? FirmwarePhysicalTarget.Stm32Dfu : serial is not null ? FirmwarePhysicalTarget.Serial : FirmwarePhysicalTarget.None,
             Endpoint = dfu?.ProviderId ?? serial?.PortName,
@@ -383,7 +386,7 @@ public sealed partial class InstallFirmwareViewModel
             Release = OnlineFirmwareModel.SelectedFirmware?.Entry,
             ActiveConnection = connectionGateway?.ActiveTransportKind,
             TargetPortOwned = dfu is null && serial is not null && (connectionGateway?.OwnsSerialPort(serial.PortName) ?? activeVehicle.IsOnline),
-            CanHandoffConnectedTarget = dfu is null && serial is not null && OnlineFirmwareModel.SelectedFirmware is not null
+            CanHandoffConnectedTarget = dfu is null && serial is not null && (OnlineFirmwareModel.SelectedFirmware is not null || package?.Identity.HasVerifiableRelease == true)
                 && connectionGateway?.IdentifyOwnedSerialRuntime(serial.PortName) == FirmwareRuntimeKind.ArduPilot,
             TargetArmed = dfu is null && (serial?.RuntimeProbe?.IsArmed == true || (connectionGateway?.OwnsSerialPort(serial?.PortName) == true && activeVehicle.State?.IsArmed == true)),
             OperationInProgress = IsOperationInProgress || ArePanelsRefreshing,
@@ -392,6 +395,11 @@ public sealed partial class InstallFirmwareViewModel
             TargetCompatible = compatible,
             TargetSafetyConfirmed = safetyConfirmed
         };
+        if (dfu is null && IdentityDecision is { } identityDecision)
+        {
+            CompatibilityStatus = identityDecision.Summary;
+            compatible = compatible && identityDecision.CanProceed;
+        }
         SelectedArtifact = artifact with
         {
             TargetCompatible = compatible

@@ -8,9 +8,14 @@ public static class FirmwareUpgradeVerification
 {
     /// <summary>Checks firmware family, and after flash the exact version and original hardware identity.</summary>
     public static void Validate(VehicleFirmwareIdentity identity, FirmwareManifestEntry release,
+        bool afterFlash, VehicleFirmwareIdentity? original = null) =>
+        Validate(identity, SelectedFirmwareIdentity.FromRelease(release), afterFlash, original);
+
+    /// <summary>Verifies embedded or catalogue expectations without inventing a catalogue entry for local firmware.</summary>
+    public static void Validate(VehicleFirmwareIdentity identity, SelectedFirmwareIdentity release,
         bool afterFlash, VehicleFirmwareIdentity? original = null)
     {
-        var family = release.Target.VehicleType switch
+        var family = release.VehicleType switch
         {
             FirmwareVehicleType.Copter or FirmwareVehicleType.Helicopter => FirmwareFamily.ArduCopter,
             FirmwareVehicleType.Plane => FirmwareFamily.ArduPlane,
@@ -20,8 +25,7 @@ public static class FirmwareUpgradeVerification
             FirmwareVehicleType.Blimp => FirmwareFamily.Blimp,
             _ => FirmwareFamily.Unknown
         };
-        var expected = release.Version.SemanticVersion;
-        if (expected is null && !Version.TryParse(release.Version.Value, out expected))
+        if (!Version.TryParse(release.Version, out var expected))
         {
             throw new FirmwareCompatibilityException("The selected release has no verifiable semantic version.");
         }
@@ -31,7 +35,7 @@ public static class FirmwareUpgradeVerification
         }
         // ArduPilot encodes APJ_BOARD_ID in AUTOPILOT_VERSION.board_version's upper word.
         var reportedBoard = identity.BoardVersion >> 16;
-        if (reportedBoard != 0 && reportedBoard != release.Target.BoardId)
+        if (reportedBoard != 0 && reportedBoard != release.BoardId)
         {
             throw new FirmwareCompatibilityException("Running controller board ID differs from the selected APJ target.");
         }
@@ -39,11 +43,16 @@ public static class FirmwareUpgradeVerification
         {
             return;
         }
+        if ((release.VehicleType == FirmwareVehicleType.Helicopter && identity.MavType != 4) ||
+            (release.VehicleType == FirmwareVehicleType.Copter && identity.MavType == 4))
+        {
+            throw new FirmwareVerificationException("Post-flash vehicle variant differs from the selected release.");
+        }
         if (identity.FlightVersion is not { } version || version.Major != expected.Major ||
             version.Minor != expected.Minor || version.Patch != expected.Build ||
-            (release.Channel == FirmwareReleaseChannel.Stable && version.ReleaseType != FirmwareReleaseType.Official))
+            (release.RequireOfficialRelease && version.ReleaseType != FirmwareReleaseType.Official))
         {
-            throw new FirmwareVerificationException($"Post-flash version mismatch: expected {release.Version.Value}, received {identity.FlightVersion}.");
+            throw new FirmwareVerificationException($"Post-flash version mismatch: expected {release.Version}, received {identity.FlightVersion}.");
         }
         if (original is not null &&
             ((original.HardwareUid is > 0 && identity.HardwareUid != original.HardwareUid) ||
@@ -60,7 +69,7 @@ public static class FirmwareUpgradeVerification
                 actual = ascii;
             }
         }
-        if (release.GitSha is { Length: >= 8 } git && actual is { Length: >= 8 } &&
+        if (release.GitHash is { Length: >= 8 } git && actual is { Length: >= 8 } &&
             !git.AsSpan(0, 8).Equals(actual.AsSpan(0, 8), StringComparison.OrdinalIgnoreCase))
         {
             throw new FirmwareVerificationException("Post-flash source identity differs from the selected release.");
