@@ -562,7 +562,10 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 LocalFirmwareModel.CustomPackage ?? prepared?.Package,
                 LocalFirmwareModel.CustomPackage is not null ? FirmwareInstallationSource.LocalCustom : FirmwareInstallationSource.OfficialCatalogue,
                 FirmwareCompatibilityPolicy.Strict,
-                LocalFirmwareModel.CustomPackage is not null ? LocalFirmwareModel.CustomFirmwareName : null);
+                LocalFirmwareModel.CustomPackage is not null ? LocalFirmwareModel.CustomFirmwareName : null)
+            {
+                ExpectedRelease = LocalFirmwareModel.CustomPackage is null ? OnlineFirmwareModel.SelectedFirmware?.Entry : null
+            };
 
             var progress = CreateProgress();
             var result = await installationService.InstallAsync(request, progress, ownedCancellation.Token);
@@ -571,7 +574,9 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
             var succeeded = result.State == FirmwareOperationState.Completed;
             var message = result.State == FirmwareOperationState.Completed
-                ? result.ApplicationDevice is null
+                ? result.InstalledIdentity is { } installed
+                    ? $"Firmware upgrade complete. {request.ExpectedRelease?.Target.Platform}: {installed.Family} {installed.FlightVersion?.Major}.{installed.FlightVersion?.Minor}.{installed.FlightVersion?.Patch} {installed.FlightVersion?.ReleaseType} on {result.ApplicationDevice?.PortName}."
+                    : result.ApplicationDevice is null
                     ? "Firmware installation completed; reconnect was not detected. Reconnect the flight controller manually."
                     : $"Firmware installation completed. ArduPilot returned on {result.ApplicationDevice.PortName}; reconnect is available."
                 : result.Failure?.TechnicalDetail is { Length: > 0 } detail

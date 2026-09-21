@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Discovery;
+﻿using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Compatibility;
@@ -12,4 +12,8 @@ public sealed record FirmwareInstallationRequest(
     ApjFirmwarePackage? Package = null,
     FirmwareInstallationSource Source = FirmwareInstallationSource.OfficialCatalogue,
     FirmwareCompatibilityPolicy? CompatibilityPolicy = null,
-    string? LocalFileName = null);
+    string? LocalFileName = null)
+{
+    /// <summary>Selected catalogue identity requiring normal reconnect and post-flash verification.</summary>
+    public FirmwareManifestEntry? ExpectedRelease { get; init; }
+}

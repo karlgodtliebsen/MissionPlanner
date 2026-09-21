@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Discovery;
+﻿using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Firmware.Entry;
@@ -11,6 +11,8 @@ public sealed record BootloaderEntryContext(
 {
     /// <summary>Reports ordered entry stages to the owning firmware operation.</summary>
     public Action<FirmwareProgress>? Progress { get; init; }
+    /// <summary>Allows an operator reconnect prompt for disconnected recovery; normal upgrades fail with explicit recovery guidance.</summary>
+    public bool AllowManualFallback { get; init; } = true;
     /// <summary>Gets the explicitly requested bootloader type.</summary>
     public BootloaderEntryTarget Target { get; init; } = BootloaderEntryTarget.ArduPilotSerial;
 }

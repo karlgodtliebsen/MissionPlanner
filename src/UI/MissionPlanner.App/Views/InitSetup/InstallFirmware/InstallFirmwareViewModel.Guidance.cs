@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Workflow;
@@ -158,10 +158,12 @@ public sealed partial class InstallFirmwareViewModel
                     : "Click Validate combined HEX, then confirm the controller target below."
             : !SelectedArtifact.ArtifactValid ? "Download and validate the selected firmware."
             : !HasPhysicalController ? "Connect and select the physical controller."
-            : CurrentPlan.Context.TargetPortOwned || CurrentPlan.Context.TargetArmed ? CurrentPlan.BlockReason
+            : (CurrentPlan.Context.TargetPortOwned && !CurrentPlan.Context.CanHandoffConnectedTarget) || CurrentPlan.Context.TargetArmed ? CurrentPlan.BlockReason
             : ShowDfuConfirmation && !CurrentPlan.Context.TargetSafetyConfirmed
                 ? $"Check that {SelectedArtifact.Platform} is the exact controller platform. {DfuConfirmationPlaceholder}, then click Confirm DFU target."
-            : CurrentPlan.CanExecute ? "Click Install firmware to program the selected controller."
+            : CurrentPlan.CanExecute ? CurrentPlan.Transport == MissionPlanner.Firmware.Entry.BootloaderEntryTarget.ArduPilotSerial
+                ? "Install method: ArduPilot Bootloader. Click Install firmware to reboot, upload, reconnect and verify the selected release. Manual DFU is not required."
+                : "Install method: STM32 DFU recovery. Click Install firmware after reviewing the target."
             : CurrentPlan.BlockReason ?? "Review the controller and firmware selection.";
     }
 

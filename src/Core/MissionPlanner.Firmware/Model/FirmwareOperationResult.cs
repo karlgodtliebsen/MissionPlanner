@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Diagnostics;
+﻿using MissionPlanner.Firmware.Diagnostics;
 
 namespace MissionPlanner.Firmware.Model;
 
@@ -10,4 +10,5 @@ public sealed record FirmwareOperationResult(
     FirmwareOperationFailure? Failure = null,
     SerialDeviceDescriptor? ApplicationDevice = null,
     bool ReconnectSuggested = false,
-    FirmwareDiagnosticReport? DiagnosticReport = null);
+    FirmwareDiagnosticReport? DiagnosticReport = null,
+    VehicleFirmwareIdentity? InstalledIdentity = null);

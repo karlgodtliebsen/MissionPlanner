@@ -133,11 +133,11 @@ After successful verification the workflow uses only a documented detach capabil
 ## Troubleshooting
 
 - Catalogue unavailable: retry Refresh; a valid cached catalogue may be shown as stale.
-- Selected COM port owned: disconnect that serial session before probing or installation. Unrelated UDP/TCP telemetry can remain connected.
+- Selected COM port owned: catalogue upgrades can hand off the connected, disarmed ArduPilot controller automatically. Independent probing and legacy/custom APJ installation still require releasing that port.
 - Bootloader not found: unplug/replug the controller or use its reset button; confirm no other program owns the serial port.
 - Board mismatch or insufficient flash: select firmware for the protocol-identified board. Local and online packages use identical strict checks; a known mismatch cannot be confirmed away.
 - Verification failed: do not treat the controller as updated; copy the diagnostic report and retry only after checking cable and power.
-- Flash completed but reconnect not detected: reconnect manually and select the newly enumerated port. The flash itself remains successful.
+- Catalogue upgrade reconnect/identity verification failed: upload may have verified, but the upgrade is not reported complete. Inspect the diagnostic report and verify the running controller. Legacy/custom APJ installs without selected release metadata retain their reconnect suggestion.
 - Embedded update denied/unsupported: preserve the reported ACK outcome and verify the vehicle family, disarmed state, firmware support, and permissions.
 
 Run the [Firmware Download user protocol](tasks/firmware/Step-2/02-Firmware-Download-User-Test-Protocol.md) first to validate catalogue, target, package, cache, offline, and cancellation behavior without hardware. The separate operator procedure and evidence record for required physical F4/H7 validation is maintained in [Hardware smoke test](tasks/firmware/Hardware%20smoke%20test.md). Pending entries are not release evidence.
@@ -167,3 +167,18 @@ APJ reinstall remains available after compatibility succeeds.
 Progress belongs to the page, with confirmation sequencing and distinct Cancelled,
 Failed and Completed diagnostics. See [workflow details](INSTALL_FIRMWARE_VIEWMODELS.md)
 and [execution results](tasks/InstallFirmware-take-3/EXECUTION_RESULTS.md).
+
+## Connected ArduPilot catalogue upgrades
+
+The normal APJ path uses ArduPilot Bootloader. The Core connection adapter releases the
+selected disarmed serial session with the expected FirmwareUpgradeReboot reason. Existing
+bootloader entry and upload services perform reboot, discovery, compatibility checks,
+erase, program, checksum verification and reboot. Manual STM32 DFU remains explicit recovery.
+
+Same-port application return is supported without requiring a USB removal event. Discovery
+uses stable hardware evidence and does not select an unrelated port by VID/PID alone.
+Bounded reconnect retries tolerate USB enumeration before MAVLink startup. Completion requires
+the selected running version/family and available board, UID and Git identity checks.
+Custom APJ callers lacking selected release metadata retain their existing completion policy.
+
+See [execution and hardware evidence](tasks/ardupilot-bootloader-upgrade/EXECUTION_RESULTS.md).

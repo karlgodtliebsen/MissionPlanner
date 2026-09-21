@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
@@ -68,6 +68,34 @@ public sealed class FirmwareApplicationDiscoveryServiceTests
             TestContext.Current.CancellationToken);
 
         result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task SamePortSnapshotNeedsNoRemovalEvent()
+    {
+        var bootloader = new SerialDeviceDescriptor("COM14", usbSerialNumber: "ABC");
+        var application = new SerialDeviceDescriptor("COM14", usbSerialNumber: "ABC");
+        var result = await Create([application], []).FindAsync(new(bootloader), TestContext.Current.CancellationToken);
+        Assert.Equal(application, result);
+    }
+
+    [Fact]
+    public async Task IdenticalUsbProductWithDifferentSerialNeverMatches()
+    {
+        var bootloader = new SerialDeviceDescriptor("COM14", usbIdentifier: new(0x1209, 0x5741), usbSerialNumber: "ABC");
+        var unrelated = new SerialDeviceDescriptor("COM15", usbIdentifier: bootloader.UsbIdentifier, usbSerialNumber: "OTHER", productName: "ArduPilot");
+        var result = await Create([unrelated], []).FindAsync(new(bootloader, Timeout: TimeSpan.FromMilliseconds(20)),
+            TestContext.Current.CancellationToken);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task DiscoveryHonorsCallerCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Create([], []).FindAsync(
+            new(new SerialDeviceDescriptor("COM14")), cancellation.Token));
     }
 
     private static FirmwareApplicationDiscoveryService Create(

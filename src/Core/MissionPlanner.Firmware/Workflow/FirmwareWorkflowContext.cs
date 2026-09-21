@@ -93,6 +93,8 @@ public sealed record FirmwareWorkflowContext
     public ConnectionTransportKind? ActiveConnection { get; init; }
     /// <summary>Gets whether the selected resource is owned by a telemetry session.</summary>
     public bool TargetPortOwned { get; init; }
+    /// <summary>Gets whether the host can safely hand off this exact connected ArduPilot target.</summary>
+    public bool CanHandoffConnectedTarget { get; init; }
     /// <summary>Gets whether a firmware operation owns the operation lease.</summary>
     public bool OperationInProgress { get; init; }
     /// <summary>Gets whether the selected target is known armed.</summary>

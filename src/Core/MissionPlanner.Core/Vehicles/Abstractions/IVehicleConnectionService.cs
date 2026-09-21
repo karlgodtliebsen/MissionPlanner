@@ -27,6 +27,12 @@ public interface IVehicleConnectionService : IAsyncDisposable
     /// <returns>Connection result with vehicle ID if successful</returns>
     Task<VehicleConnectionResult> ConnectSerialAsync(string portName, int baudRate = 57600, CancellationToken cancellationToken = default);
 
+    /// <summary>Connects a returning firmware target without replacing an unrelated connection.</summary>
+    Task<VehicleConnectionResult> ConnectSerialExclusiveAsync(string portName, int baudRate = 115200, CancellationToken cancellationToken = default);
+
+    /// <summary>Releases only the selected disarmed serial vehicle with an expected firmware-transition reason.</summary>
+    Task<bool> ReleaseForFirmwareUpgradeAsync(VehicleId vehicleId, string portName, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Connects to a vehicle via TCP.
     /// </summary>

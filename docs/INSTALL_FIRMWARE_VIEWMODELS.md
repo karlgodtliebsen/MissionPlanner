@@ -98,3 +98,12 @@ and format matrix. `FirmwarePlanViewModelTests`, `DfuWorkflowTests`,
 fresh runtime rediscovery, including verification failure. Existing firmware service,
 protocol, cache, ownership and cancellation suites remain in place. Physical F4/H7
 flash and visual desktop acceptance remain separate hardware checks.
+
+## Connected normal upgrade
+
+CanHandoffConnectedTarget allows the plan to install a compatible catalogue APJ while its
+disarmed ArduPilot serial controller is connected. Probing retains its separate ownership
+guard. Guidance identifies ArduPilot Bootloader and automatic reboot/upload/reconnect/verify;
+DFU remains an explicit recovery action. The install request carries ExpectedRelease and
+the result carries InstalledIdentity only after the running release is verified.
+The page reports verified identity on success; a checksum-only upload cannot produce that result.

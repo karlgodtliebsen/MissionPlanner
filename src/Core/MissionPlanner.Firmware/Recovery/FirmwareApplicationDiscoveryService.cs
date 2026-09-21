@@ -1,117 +1,93 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Firmware.Recovery;
 
-/// <summary>Matches bootloader-to-application USB transitions independently of transient port names.</summary>
+/// <summary>Finds the same physical controller after reboot, including same-port transitions without USB events.</summary>
 public sealed class FirmwareApplicationDiscoveryService(
     IFirmwareSerialDeviceCatalog catalog,
     IFirmwareDeviceMonitor monitor,
     IOptions<FirmwareOptions> options) : IFirmwareApplicationDiscoveryService
 {
-    private const int MinimumMatchScore = 25;
-
     /// <inheritdoc />
-    public async Task<SerialDeviceDescriptor?> FindAsync(
-        FirmwareApplicationDiscoveryRequest request,
+    public async Task<SerialDeviceDescriptor?> FindAsync(FirmwareApplicationDiscoveryRequest request,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        var timeout = request.Timeout ?? options.Value.BootloaderDiscoveryTimeout;
-        using var timeoutSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        timeoutSource.CancelAfter(timeout);
-        var token = timeoutSource.Token;
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(request.Timeout ?? options.Value.BootloaderDiscoveryTimeout);
+        using var watch = CancellationTokenSource.CreateLinkedTokenSource(deadline.Token);
+        var changes = monitor.WatchAsync(watch.Token).GetAsyncEnumerator(watch.Token);
+        Task<bool>? next = null;
         try
         {
-            var current = await catalog.GetDevicesAsync(token).ConfigureAwait(false);
-            var removalObserved = current.All(device => !SameBootloaderInstance(device, request.BootloaderDevice));
-            var existing = BestMatch(current, request, true);
-            if (removalObserved && existing is not null)
+            next = changes.MoveNextAsync().AsTask();
+            while (true)
             {
-                return existing;
-            }
-
-            await foreach (var change in monitor.WatchAsync(token).ConfigureAwait(false))
-            {
-                if (change.Kind == FirmwareDeviceChangeKind.Removed && SameBootloaderInstance(change.Device, request.BootloaderDevice))
+                var matches = (await catalog.GetDevicesAsync(deadline.Token).ConfigureAwait(false))
+                    .Where(device => Matches(device, request)).ToArray();
+                if (matches.Length == 1)
                 {
-                    removalObserved = true;
-                    continue;
+                    // This is only endpoint discovery; the caller must prove application identity by MAVLink.
+                    return matches[0];
                 }
-
-                if (change.Kind == FirmwareDeviceChangeKind.Arrived && removalObserved && Score(change.Device, request) >= MinimumMatchScore)
+                var poll = Task.Delay(options.Value.BootloaderDiscoveryPollInterval, deadline.Token);
+                if (next is not null && await Task.WhenAny(next, poll).ConfigureAwait(false) == next)
                 {
-                    return change.Device;
+                    if (!await next.ConfigureAwait(false))
+                    {
+                        next = null;
+                        continue;
+                    }
+                    var change = changes.Current;
+                    next = changes.MoveNextAsync().AsTask();
+                    if (change.Kind == FirmwareDeviceChangeKind.Arrived && Matches(change.Device, request))
+                    {
+                        return change.Device;
+                    }
+                }
+                else
+                {
+                    await poll.ConfigureAwait(false);
                 }
             }
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
-
-        cancellationToken.ThrowIfCancellationRequested();
-        return null;
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return null;
+        }
+        finally
+        {
+            watch.Cancel();
+            if (next is not null)
+            {
+                try
+                {
+                    await next.ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            }
+            await changes.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
-    private static SerialDeviceDescriptor? BestMatch(
-        IEnumerable<SerialDeviceDescriptor> devices,
-        FirmwareApplicationDiscoveryRequest request,
-        bool requirePositiveIdentity) => devices
-        .Select(device => (Device: device, Score: Score(device, request)))
-        .Where(candidate => !requirePositiveIdentity || candidate.Score >= MinimumMatchScore)
-        .OrderByDescending(candidate => candidate.Score)
-        .ThenByDescending(candidate => candidate.Device.ArrivedAt)
-        .Select(candidate => candidate.Device)
-        .FirstOrDefault();
-
-    private static int Score(SerialDeviceDescriptor candidate, FirmwareApplicationDiscoveryRequest request)
+    private static bool Matches(SerialDeviceDescriptor candidate, FirmwareApplicationDiscoveryRequest request)
     {
-        var original = request.OriginalApplicationDevice;
-        var score = 0;
-        if (original?.UsbSerialNumber is not null && candidate.UsbSerialNumber == original.UsbSerialNumber)
+        var original = request.OriginalApplicationDevice ?? request.BootloaderDevice;
+        var serial = original.UsbSerialNumber ?? request.BootloaderDevice.UsbSerialNumber;
+        if (serial is not null)
         {
-            score += 100;
+            return string.Equals(candidate.UsbSerialNumber, serial, StringComparison.OrdinalIgnoreCase);
         }
-
-        if (original?.OsDeviceId is not null && candidate.OsDeviceId == original.OsDeviceId)
+        if (original.OsDeviceId is not null && candidate.OsDeviceId is not null)
         {
-            score += 80;
+            return string.Equals(candidate.OsDeviceId, original.OsDeviceId, StringComparison.OrdinalIgnoreCase);
         }
-
-        if (request.BootloaderDevice.UsbSerialNumber is not null && candidate.UsbSerialNumber == request.BootloaderDevice.UsbSerialNumber)
-        {
-            score += 70;
-        }
-
-        if (original?.UsbIdentifier is not null && candidate.UsbIdentifier == original.UsbIdentifier)
-        {
-            score += 40;
-        }
-
-        if (request.BootloaderDevice.UsbIdentifier is not null && candidate.UsbIdentifier == request.BootloaderDevice.UsbIdentifier)
-        {
-            score += 25;
-        }
-
-        if (candidate.ArrivedAt >= request.BootloaderDevice.ArrivedAt)
-        {
-            score += 5;
-        }
-
-        if (candidate.ProductName is not null && !candidate.ProductName.Contains("bootloader", StringComparison.OrdinalIgnoreCase))
-        {
-            score += 5;
-            if (request.BootloaderDevice.ProductName?.Contains("bootloader", StringComparison.OrdinalIgnoreCase) == true &&
-                candidate.ProductName.Contains("ArduPilot", StringComparison.OrdinalIgnoreCase))
-            {
-                score += 20;
-            }
-        }
-
-        return score;
+        // Without stable identity, only the explicitly selected endpoint is eligible.
+        return string.Equals(candidate.PortName, original.PortName, StringComparison.OrdinalIgnoreCase);
     }
-
-    private static bool SameBootloaderInstance(SerialDeviceDescriptor left, SerialDeviceDescriptor right) =>
-        (left.OsDeviceId is not null && right.OsDeviceId is not null && left.OsDeviceId == right.OsDeviceId) ||
-        left.PortName.Equals(right.PortName, StringComparison.OrdinalIgnoreCase);
 }

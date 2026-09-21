@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Firmware.Diagnostics;
@@ -20,7 +20,8 @@ public sealed record FirmwareDiagnosticReport(
     TimeSpan? Elapsed = null,
     FirmwareOperationState? FailureStage = null,
     string? FailureDetail = null,
-    FirmwareBoardIdOverrideState? BoardIdOverride = null)
+    FirmwareBoardIdOverrideState? BoardIdOverride = null,
+    string? InstalledFirmware = null)
 {
     /// <summary>Creates a copyable multiline diagnostic report.</summary>
     public string CreateReport()
@@ -38,6 +39,7 @@ public sealed record FirmwareDiagnosticReport(
         Add("Application device", ApplicationDevice);
         Add("Bytes programmed", BytesProgrammed);
         Add("Verification", VerificationResult);
+        Add("Installed firmware", InstalledFirmware);
         Add("Failure", FailureCode);
         Add("Failure stage", FailureStage);
         Add("Failure detail", FailureDetail);

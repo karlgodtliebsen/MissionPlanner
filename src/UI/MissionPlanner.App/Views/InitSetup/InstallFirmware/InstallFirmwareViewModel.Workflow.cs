@@ -383,7 +383,9 @@ public sealed partial class InstallFirmwareViewModel
             Release = OnlineFirmwareModel.SelectedFirmware?.Entry,
             ActiveConnection = connectionGateway?.ActiveTransportKind,
             TargetPortOwned = dfu is null && serial is not null && (connectionGateway?.OwnsSerialPort(serial.PortName) ?? activeVehicle.IsOnline),
-            TargetArmed = dfu is null && serial?.RuntimeProbe?.IsArmed == true,
+            CanHandoffConnectedTarget = dfu is null && serial is not null && OnlineFirmwareModel.SelectedFirmware is not null
+                && connectionGateway?.IdentifyOwnedSerialRuntime(serial.PortName) == FirmwareRuntimeKind.ArduPilot,
+            TargetArmed = dfu is null && (serial?.RuntimeProbe?.IsArmed == true || (connectionGateway?.OwnsSerialPort(serial?.PortName) == true && activeVehicle.State?.IsArmed == true)),
             OperationInProgress = IsOperationInProgress || ArePanelsRefreshing,
             ArtifactFormat = artifact.Format,
             ArtifactValid = artifact.ArtifactValid,

@@ -27,7 +27,7 @@ public static class FirmwareWorkflowResolver
             { OperationInProgress: true } => ("workflow.busy", "A firmware operation is in progress."),
             { HardwareSupported: false } => ("workflow.unsupported", "Hardware installation is unavailable on this platform."),
             { PhysicalTarget: FirmwarePhysicalTarget.None } => ("target.absent", "Select a physical controller. Firmware preparation is available."),
-            { TargetPortOwned: true } => ("target.port-owned", "Disconnect the telemetry session that owns the selected serial port."),
+            { TargetPortOwned: true, CanHandoffConnectedTarget: false } => ("target.port-owned", "Disconnect the telemetry session that owns the selected serial port."),
             { TargetArmed: true } => ("target.armed", "Disarm the selected controller before firmware operations."),
             _ when format == FirmwareArtifactFormat.None => ("target.runtime-unknown", "Probe the controller runtime or use manual BOOT/RESET recovery."),
             _ when context.BootEnvironment == FirmwareBootEnvironment.None && serial && !automaticArduPilotEntry => ("target.boot-entry-required",

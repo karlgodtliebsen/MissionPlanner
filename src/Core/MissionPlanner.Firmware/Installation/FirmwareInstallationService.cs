@@ -20,7 +20,8 @@ public sealed class FirmwareInstallationService(
     IFirmwareCompatibilityService compatibility,
     IFirmwareUserInteraction interaction,
     IFirmwareApplicationDiscoveryService applicationDiscovery,
-    ILogger<FirmwareInstallationService> logger) : IFirmwareInstallationService
+    ILogger<FirmwareInstallationService> logger,
+    IFirmwareUpgradeConnection? upgradeConnection = null) : IFirmwareInstallationService
 {
     /// <inheritdoc />
     public async Task<FirmwareOperationResult> InstallAsync(
@@ -42,6 +43,8 @@ public sealed class FirmwareInstallationService(
         string? firmwareSource = request.Artifact?.DownloadUri.AbsoluteUri ?? (isLocalCustom
             ? request.LocalFileName ?? "local/custom"
             : request.Package is null ? null : "official/catalogue (prepared package)");
+        VehicleFirmwareIdentity? originalIdentity = null;
+        VehicleFirmwareIdentity? installedIdentity = null;
         BootloaderIdentity? diagnosticBootloader = null;
         SerialDeviceDescriptor? diagnosticBootloaderDevice = null;
         long? bytesProgrammed = null;
@@ -49,7 +52,7 @@ public sealed class FirmwareInstallationService(
         using var logScope = logger.BeginScope(new Dictionary<string, object?> { ["FirmwareOperationId"] = operation.OperationId });
         try
         {
-            if (connectionGateway.OwnsSerialPort(request.EntryContext.ApplicationDevice?.PortName
+            if (request.ExpectedRelease is null && connectionGateway.OwnsSerialPort(request.EntryContext.ApplicationDevice?.PortName
                 ?? request.EntryContext.DiscoveryRequest.SelectedDevice?.PortName))
             {
                 Transition(FirmwareOperationState.Failed, "installation.connection-conflict");
@@ -79,10 +82,25 @@ public sealed class FirmwareInstallationService(
             }
 
             Transition(FirmwareOperationState.ValidatingPackage, "installation.package-validated");
+            if (request.ExpectedRelease is { } expected)
+            {
+                if (upgradeConnection is null || package.BoardId != expected.Target.BoardId)
+                {
+                    throw new FirmwareCompatibilityException("A verified reconnect service and a package matching the selected release board are required.");
+                }
+                if (request.EntryContext.ApplicationDevice is { } selected && connectionGateway.OwnsSerialPort(selected.PortName))
+                {
+                    originalIdentity = await upgradeConnection.ReleaseAsync(selected, expected, cancellationToken).ConfigureAwait(false);
+                }
+                logger.LogInformation("FirmwareInstallStrategy={FirmwareInstallStrategy} SelectedFirmwareIdentity={SelectedFirmwareIdentity}",
+                    "ArduPilotBootloader", expected);
+            }
             Transition(FirmwareOperationState.WaitingForDevice, "installation.waiting-for-device");
             Transition(FirmwareOperationState.EnteringBootloader, "installation.entering-bootloader");
+            var discoveryStarted = DateTimeOffset.UtcNow;
             var entry = await entryService.EnterAsync(request.EntryContext with
             {
+                AllowManualFallback = request.ExpectedRelease is null,
                 Progress = value => Transition(value.State, value.MessageCode, value.TechnicalDetail)
             }, cancellationToken).ConfigureAwait(false);
             DiscoveredBootloader found;
@@ -96,9 +114,11 @@ public sealed class FirmwareInstallationService(
                 // device transition. A final blind discovery here merely repeats the full timeout
                 // and loses the strategy that actually failed.
                 throw new FirmwareDeviceNotFoundException(
-                    $"Bootloader entry failed ({entry.Code}). {entry.TechnicalDetail ?? "No ArduPilot serial bootloader was protocol-confirmed."}");
+                    $"ArduPilot bootloader could not be reached ({entry.Code}). {entry.TechnicalDetail} Check USB re-enumeration or a missing/damaged bootloader. Use STM32 DFU / Repair Bootloader explicitly for recovery.");
             }
 
+            logger.LogInformation("DetectedBootloaderPort={DetectedBootloaderPort} BootloaderIdentity={BootloaderIdentity} BootloaderDiscoveryDuration={BootloaderDiscoveryDuration}",
+                found.Device.PortName, found.Identity, DateTimeOffset.UtcNow - discoveryStarted);
             var bootloaderDevice = found.Device;
             diagnosticBootloader = found.Identity;
             diagnosticBootloaderDevice = found.Device;
@@ -173,14 +193,28 @@ public sealed class FirmwareInstallationService(
             var applicationDevice = await applicationDiscovery.FindAsync(
                 new FirmwareApplicationDiscoveryRequest(bootloaderDevice, request.EntryContext.ApplicationDevice),
                 cancellationToken).ConfigureAwait(false);
+            if (request.ExpectedRelease is { } expectedRelease)
+            {
+                if (applicationDevice is null)
+                {
+                    throw new FirmwareVerificationException("Upload verified, but the matching ArduPilot application did not return. Upgrade is not complete.");
+                }
+                progress?.Report(new FirmwareProgress(FirmwareOperationState.WaitingForApplication, null,
+                    "installation.verifying-running-firmware", technicalDetail: $"Reconnecting on {applicationDevice.PortName} and verifying {expectedRelease.Version.Value}."));
+                installedIdentity = await upgradeConnection!.ReconnectAsync(applicationDevice, expectedRelease, originalIdentity, cancellationToken).ConfigureAwait(false);
+                FirmwareUpgradeVerification.Validate(installedIdentity, expectedRelease, true, originalIdentity);
+            }
+            logger.LogInformation("UploadResult={UploadResult} VerifyResult={VerifyResult} PostFlashFirmwareIdentity={PostFlashFirmwareIdentity}",
+                "Programmed", verificationResult, installedIdentity);
             Transition(FirmwareOperationState.Completed, "installation.completed");
             return new FirmwareOperationResult(
                 operation.OperationId,
                 operation.Kind,
                 FirmwareOperationState.Completed,
                 ApplicationDevice: applicationDevice,
-                ReconnectSuggested: applicationDevice is not null,
-                DiagnosticReport: CreateDiagnostic(FirmwareOperationState.Completed, applicationDevice));
+                ReconnectSuggested: applicationDevice is not null && installedIdentity is null,
+                DiagnosticReport: CreateDiagnostic(FirmwareOperationState.Completed, applicationDevice),
+                InstalledIdentity: installedIdentity);
         }
         catch (FirmwareConnectionConflictException exception)
         {
@@ -258,7 +292,8 @@ public sealed class FirmwareInstallationService(
                 DateTimeOffset.UtcNow - startedAt,
                 failureStage,
                 failureDetail,
-                boardIdOverride);
+                boardIdOverride,
+                installedIdentity?.ToString());
         }
     }
 

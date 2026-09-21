@@ -47,7 +47,14 @@ public class VehicleConnectionService(
 
 
     /// <inheritdoc/>
-    public async Task<VehicleConnectionResult> ConnectSerialAsync(string portName, int baudRate = 115200, CancellationToken cancellationToken = default)
+    public Task<VehicleConnectionResult> ConnectSerialAsync(string portName, int baudRate = 115200, CancellationToken cancellationToken = default)
+        => ConnectSerialCoreAsync(portName, baudRate, true, cancellationToken);
+
+    /// <inheritdoc />
+    public Task<VehicleConnectionResult> ConnectSerialExclusiveAsync(string portName, int baudRate = 115200, CancellationToken cancellationToken = default)
+        => ConnectSerialCoreAsync(portName, baudRate, false, cancellationToken);
+
+    private async Task<VehicleConnectionResult> ConnectSerialCoreAsync(string portName, int baudRate, bool replaceExisting, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(portName))
         {
@@ -60,6 +67,10 @@ public class VehicleConnectionService(
             // Disconnect existing connection if any
             if (activeConnection != null)
             {
+                if (!replaceExisting)
+                {
+                    return new VehicleConnectionResult(false, null, null, "An unrelated connection is already active.");
+                }
                 logger.LogInformation("Disconnecting existing connection before establishing new one");
                 await DisconnectInternalAsync(cancellationToken);
             }
@@ -418,6 +429,29 @@ public class VehicleConnectionService(
     }
 
     /// <inheritdoc />
+    public async Task<bool> ReleaseForFirmwareUpgradeAsync(VehicleId vehicleId, string portName, CancellationToken cancellationToken = default)
+    {
+        await connectionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (activeConnection?.VehicleId != vehicleId ||
+                !string.Equals(connectionSession.ActiveSerialPort, portName, StringComparison.OrdinalIgnoreCase) ||
+                vehicleRegistry.GetRequired(vehicleId)?.State is not { IsArmed: false })
+            {
+                return false;
+            }
+            // The owner disables monitoring, cancels pending operations and drains the recorder
+            // before temporary MAVLink reboot/bootloader probing acquires the port.
+            await DisconnectInternalAsync(CancellationToken.None, "FirmwareUpgradeReboot").ConfigureAwait(false);
+            return true;
+        }
+        finally
+        {
+            connectionLock.Release();
+        }
+    }
+
+    /// <inheritdoc />
     public async Task<bool> DisconnectOwnedAsync(Guid connectionId, CancellationToken cancellationToken = default)
     {
         await connectionLock.WaitAsync(cancellationToken);
@@ -478,7 +512,7 @@ public class VehicleConnectionService(
                 lock (vehicle)
                 {
                     vehicle.ApplyConnectionHealth(VehicleConnectionState.Offline, vehicle.State.Connection.LastPacketAt, reason,
-                        reason is "UserRequested" or "ApplicationShutdown" ? null : vehicle.State.Connection.Warning);
+                        reason is "UserRequested" or "ApplicationShutdown" or "FirmwareUpgradeReboot" ? null : vehicle.State.Connection.Warning);
                 }
                 await domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), CancellationToken.None).ConfigureAwait(false);
             }

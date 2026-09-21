@@ -22,6 +22,10 @@ public sealed class FirmwareInstallationPlanTests
         Assert.Null(plan.Context.Bootloader);
         Assert.Equal(FirmwareBootEntryRequirement.ArduPilotRebootOrManualReconnect, plan.BootEntry);
         Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { TargetPortOwned = true }).CanExecute);
+        var connected = FirmwareInstallationPlanResolver.Resolve(context with { TargetPortOwned = true, CanHandoffConnectedTarget = true });
+        Assert.True(connected.CanExecute);
+        Assert.Equal(BootloaderEntryTarget.ArduPilotSerial, connected.Transport);
+        Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { TargetPortOwned = true, CanHandoffConnectedTarget = true, TargetArmed = true }).CanExecute);
         Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { TargetArmed = true }).CanExecute);
         Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { Runtime = FirmwareRuntimeKind.Unknown }).CanExecute);
         Assert.False(FirmwareInstallationPlanResolver.Resolve(context with { RuntimeVerification = FirmwareRuntimeVerification.None }).CanExecute);

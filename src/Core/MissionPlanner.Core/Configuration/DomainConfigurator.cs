@@ -188,6 +188,7 @@ public static class DomainConfigurator
         services.TryAddTransient<ISafetyAssessmentService, SafetyAssessmentService>();
         services.TryAddTransient<ISetupSummaryService, SetupSummaryService>();
         services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();
+        services.TryAddSingleton<MissionPlanner.Firmware.Installation.IFirmwareUpgradeConnection, FirmwareUpgradeConnection>();
         services.TryAddTransient<IFirmwarePackageManager, FirmwarePackageManager>();
         services.TryAddSingleton<IFirmwareFlashingService, UnsupportedFirmwareFlashingService>();
         services.TryAddTransient<IFirmwareUpdateCoordinator, FirmwareUpdateCoordinator>();

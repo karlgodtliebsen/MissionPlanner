@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Exceptions;
 
@@ -33,6 +33,10 @@ public sealed class BootloaderEntryService(
         foreach (var strategy in strategies.Where(strategy => strategy.Target == context.Target).OrderBy(strategy => strategy.Priority))
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (!context.AllowManualFallback && strategy is ManualReconnectBootloaderEntryStrategy)
+            {
+                continue;
+            }
             var result = await strategy.TryEnterAsync(context, cancellationToken).ConfigureAwait(false);
             logger.LogInformation("Bootloader entry strategy {Strategy} returned {Outcome} ({Code}).", strategy.GetType().Name, result.Outcome, result.Code);
             last = result;
