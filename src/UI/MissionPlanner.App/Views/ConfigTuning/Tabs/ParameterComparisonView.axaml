@@ -21,12 +21,12 @@
         RowSpacing="10"
         Margin="12">
 
-        <WrapPanel Orientation="Horizontal" ItemSpacing="10">
+        <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
             <!--
             <Button Grid.Column="0" Content="Select all safe differences" ToolTip.Tip="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
             <Button Grid.Column="1" Content="Stage selected" ToolTip.Tip="Stage selected" Command="{Binding StageSelectedDifferencesCommand}" />
             -->
-            <Button
+<!--            <Button
                 ToolTip.Tip="Select all safe differences"
                 VerticalAlignment="Center" Width="100" 
                 Command="{Binding SelectAllSafeDifferencesCommand}"  >
@@ -37,10 +37,23 @@
                 VerticalAlignment="Center" Width="100" 
                 Command="{Binding StageSelectedDifferencesCommand}"  >
                 <avalonia:MaterialIcon Kind="Select" Width="30" Height="30" />
-            </Button>
+            </Button>-->
+            <u:IconDropDownButton  >
+                <DropDownButton.Flyout>
+                    <MenuFlyout Placement="Bottom">
+                        <MenuItem
+                            ToolTip.Tip="Select all safe differences"
+                            Command="{Binding SelectAllSafeDifferencesCommand}" AutomationProperties.Name="Select all safe differences"
+                            Header="Select all safe differences" />
+                        <MenuItem ToolTip.Tip="Stage selected"
+                                  Command="{Binding StageSelectedDifferencesCommand}" AutomationProperties.Name="Stage selected"
+                                  Header="Stage selected" />
+                    </MenuFlyout>
+                </DropDownButton.Flyout>
+                <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
+            </u:IconDropDownButton>
 
-
- <!--           <Button  ToolTip.Tip="Export JSON" Width="100"  Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON">
+ <!--       <Button  ToolTip.Tip="Export JSON" Width="100"  Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON">
                 <avalonia:MaterialIcon Kind="FileDocumentAddOutline" Classes="ActionIcon" />
             </Button>
             <Button  ToolTip.Tip="Export CSV" Width="100"  Command="{Binding ExportCsvCommand}" AutomationProperties.Name="Export CSV">

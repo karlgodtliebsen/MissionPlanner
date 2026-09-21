@@ -14,14 +14,13 @@
     <ContentPage Header="Optional Hardware"  >
         <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
             <StackPanel Spacing="5" HorizontalAlignment="Center">
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-<!--                <TextBlock Text="{Binding VehicleHeading}"  Classes="H4"/>
-                <TextBlock Text="{Binding AvailabilitySummary}" Opacity="0.75" />
--->            </StackPanel>
+            </StackPanel>
             <TabControl TabStripPlacement="Left" Grid.Row="1">
+                <TabItem Header="Naming"><sections:NamingView /></TabItem>
                 <TabItem Header="RTK/GPS Inject"><sections:RtkGpsInjectView /></TabItem>
                 <TabItem Header="CubeID Update"><sections:CubeIdUpdateView /></TabItem>
                 <TabItem Header="SiK Radio"><sections:SikRadioView /></TabItem>

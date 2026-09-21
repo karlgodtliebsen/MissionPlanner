@@ -275,7 +275,7 @@ public partial class TopBarViewModel : ViewModelBase
     {
         var options = dialogService.CreateOptions("Connect Vehicle", "Ok", null);
         var viewModel = serviceFactory.Create<ConnectPopupViewModel>();
-        await dialogService.ShowOverlayDialogAsync<ConnectPopupView, ConnectPopupViewModel>(viewModel, options);
+        await dialogService.ShowCustomDialogAsync<ConnectPopupView, ConnectPopupViewModel>(viewModel, options);
     }
     [RelayCommand]
     private async Task ShowTelemetry(CancellationToken cancellationToken)

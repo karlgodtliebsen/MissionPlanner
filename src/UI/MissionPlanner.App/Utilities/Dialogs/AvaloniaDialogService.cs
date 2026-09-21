@@ -54,9 +54,59 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         return options;
     }
 
+    /// <inheritdoc/>
+    public async Task<TViewModel?> ShowStandardAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null, CancellationToken cancellationToken = default)
+        where TView : UserControl, new()
+        where TViewModel : ViewModelBase
+    {
+        return await dispatcher.DispatchAsync(async () =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            //Task<DialogResult> ShowStandardAsync<TView, TViewModel>(TViewModel vm, string? hostId = null, OverlayDialogOptions? options = null, CancellationToken? token = null) where TView : Control, new()
+            var dialogResult = await OverlayDialog.ShowStandardAsync<TView, TViewModel>(model, overLayHost, options: options, token: cancellationToken);
+            return dialogResult is DialogResult.OK or DialogResult.Yes ? model : null;
+        });
+    }
 
     /// <inheritdoc/>
-    public async Task<TViewModel> ShowOverlayDialogAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null, CancellationToken cancellationToken = default)
+    public async Task<TViewModel?> ShowStandardAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, CancellationToken cancellationToken = default)
+        where TView : UserControl, new()
+        where TViewModel : ViewModelBase
+    {
+        return await dispatcher.DispatchAsync(async () =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            //void ShowStandard<TView, TViewModel>(TViewModel vm, string? hostId = null, OverlayDialogOptions? options = null) where TView : Control, new()
+            var dialogResult = await OverlayDialog.ShowStandardAsync<TView, TViewModel>(model, hostId: null, options: options, token: cancellationToken);
+            return dialogResult is DialogResult.OK or DialogResult.Yes ? model : null;
+        });
+    }
+
+    //Task<DialogResult> ShowStandardAsync(Control control, object? vm, string? hostId = null, OverlayDialogOptions? options = null, CancellationToken? token = null)
+    //void ShowStandard(object? vm, string? hostId = null, OverlayDialogOptions? options = null)
+
+
+    /// <inheritdoc/>
+    public TViewModel ShowStandard<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null)
+        where TView : UserControl, new()
+        where TViewModel : ViewModelBase
+    {
+        dispatcher.Dispatch(() => OverlayDialog.ShowStandard<TView, TViewModel>(model, overLayHost, options: options));
+        return model;
+    }
+
+    /// <inheritdoc/>
+    public void ShowStandard(Control control, object? model, string? hostId = null, OverlayDialogOptions? options = null)
+    {
+        dispatcher.Dispatch(() =>
+            //void ShowStandard(Control control, object? vm, string? hostId = null, OverlayDialogOptions? options = null)
+            OverlayDialog.ShowStandard(control, model, hostId, options: options));
+    }
+
+
+    /// <inheritdoc/>
+    public async Task<TViewModel> ShowCustomDialogAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null, CancellationToken cancellationToken = default)
         where TView : UserControl, new()
         where TViewModel : DialogViewModelBase
     {
@@ -70,7 +120,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
     }
 
     /// <inheritdoc/>
-    public TViewModel ShowOverlayDialog<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null)
+    public TViewModel ShowCustomDialog<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null)
         where TView : UserControl, new()
         where TViewModel : DialogViewModelBase
     {
@@ -105,7 +155,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         return await dispatcher.DispatchAsync(async () =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var result = await ShowOverlayDialogAsync<ConfirmDialogView, ConfirmDialogViewModel>(new ConfirmDialogViewModel(message), options, cancellationToken: cancellationToken);
+            var result = await ShowCustomDialogAsync<ConfirmDialogView, ConfirmDialogViewModel>(new ConfirmDialogViewModel(message), options, cancellationToken: cancellationToken);
             return result.Confirmation;
         });
     }
@@ -117,7 +167,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         {
             cancellationToken.ThrowIfCancellationRequested();
             var viewModel = new PromptInputDialogViewModel(initialValue, message);
-            var result = await ShowOverlayDialogAsync<PromptInputDialogView, PromptInputDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
+            var result = await ShowCustomDialogAsync<PromptInputDialogView, PromptInputDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
             return result.Confirmation ? result.PromptText : null;
         });
     }
@@ -138,7 +188,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
             return null;
         }
         var viewModel = new ChoiceDialogViewModel(choices);
-        var result = await ShowOverlayDialogAsync<ChoiceDialogView, ChoiceDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
+        var result = await ShowCustomDialogAsync<ChoiceDialogView, ChoiceDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
         return result.Confirmation ? result.SelectedChoice : null;
     }
 
@@ -147,7 +197,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
     public async Task<int?> PromptAsync(OverlayDialogOptions options, string? message, int initialValue, int minimum, int maximum, CancellationToken cancellationToken = default)
     {
         var viewModel = new PromptIntDialogViewModel(options.Title ?? "", message ?? "", initialValue, minimum, maximum);
-        var result = await ShowOverlayDialogAsync<PromptIntDialogView, PromptIntDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
+        var result = await ShowCustomDialogAsync<PromptIntDialogView, PromptIntDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
         if (!result.Confirmation)
         {
             return null;
@@ -167,7 +217,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         var options = CreateDialogOptions(title, accept, cancel);
 
         var viewModel = new PromptIntDialogViewModel(title, message, initialValue, minimum, maximum);
-        var result = await ShowOverlayDialogAsync<PromptIntDialogView, PromptIntDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
+        var result = await ShowCustomDialogAsync<PromptIntDialogView, PromptIntDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
         if (!result.Confirmation)
         {
             return null;
@@ -186,7 +236,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
     {
         var options = CreateDialogOptions(title, accept, cancel);
         var viewModel = new PromptDoubleDialogViewModel(title, message, initialValue, minimum, maximum);
-        var result = await ShowOverlayDialogAsync<PromptDoubleDialogView, PromptDoubleDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
+        var result = await ShowCustomDialogAsync<PromptDoubleDialogView, PromptDoubleDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
         if (!result.Confirmation)
         {
             return null;
@@ -203,7 +253,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
     public async Task<double?> PromptAsync(OverlayDialogOptions options, string? message, double initialValue, double? minimum = null, double? maximum = null, CancellationToken cancellationToken = default)
     {
         var viewModel = new PromptDoubleDialogViewModel(options.Title ?? "", message ?? "", initialValue, minimum, maximum);
-        var result = await ShowOverlayDialogAsync<PromptDoubleDialogView, PromptDoubleDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
+        var result = await ShowCustomDialogAsync<PromptDoubleDialogView, PromptDoubleDialogViewModel>(viewModel, options, cancellationToken: cancellationToken);
         if (!result.Confirmation)
         {
             return null;
@@ -247,7 +297,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
             Task<ProgressDialogViewModel> completion;
             try
             {
-                completion = ShowOverlayDialogAsync<ProgressDialogView, ProgressDialogViewModel>(
+                completion = ShowCustomDialogAsync<ProgressDialogView, ProgressDialogViewModel>(
                     model, overlayOptions, cancellationToken: lifetime.Token);
                 if (completion.IsCompleted)
                 {
@@ -266,7 +316,7 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
             // Ursa routes token cancellation through model.Close(), which requests deferred
             // operation cancellation. Owner completion must instead raise RequestClose directly.
             var handle = new DialogHandle(() => dispatcher.Dispatch(model.Complete));
-            // ShowOverlayDialogAsync completes when the overlay closes. Return its handle
+            // ShowCustomDialogAsync completes when the overlay closes. Return its handle
             // immediately so the caller can do the work whose progress it is displaying.
             _ = ObserveProgressDialogAsync(completion, model, lifetime, handle);
             return handle;

@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -29,7 +28,7 @@ public sealed partial class DialogDemoViewModel : ViewModelBase
     {
         var options = AvaloniaDialogService.CreateDialogOptions("Connect Vehicle", "Ok", null);
         var viewModel = serviceFactory.Create<ConnectPopupViewModel>();
-        var result = await dialogService.ShowOverlayDialogAsync<ConnectPopupView, ConnectPopupViewModel>(viewModel, options, cancellationToken: cancellationToken);
+        var result = await dialogService.ShowCustomDialogAsync<ConnectPopupView, ConnectPopupViewModel>(viewModel, options, cancellationToken: cancellationToken);
         StatusMessage = result.SelectedChannel;
     }
 
@@ -38,7 +37,7 @@ public sealed partial class DialogDemoViewModel : ViewModelBase
     {
         var options = AvaloniaDialogService.CreateDialogOptions("Error Occured", "Ok", null);
         var viewModel = domainFactory.Create<ErrorViewModel, string>("The exception Message" + "\nEnsure there is a connection and try again");
-        var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
+        var result = await dialogService.ShowCustomDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         StatusMessage = result.ErrorMessage;
     }
 

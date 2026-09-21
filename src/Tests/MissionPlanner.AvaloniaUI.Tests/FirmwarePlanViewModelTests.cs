@@ -94,7 +94,7 @@ public sealed class FirmwarePlanViewModelTests
             .Returns(new FirmwareOperationResult(Guid.NewGuid(), FirmwareOperationKind.InstallApplicationFirmware,
                 FirmwareOperationState.Completed));
         services.GetRequiredService<IDialogService>()
-            .ShowOverlayDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(Arg.Any<DiagnosticsReportViewModel>(),
+            .ShowCustomDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(Arg.Any<DiagnosticsReportViewModel>(),
                 Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<DiagnosticsReportViewModel>(null!));
         await page.InstallCommand.ExecuteAsync(null);
@@ -132,7 +132,7 @@ public sealed class FirmwarePlanViewModelTests
         var shown = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var closed = new TaskCompletionSource<DiagnosticsReportViewModel>(TaskCreationOptions.RunContinuationsAsynchronously);
         services.GetRequiredService<IDialogService>()
-            .ShowOverlayDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(Arg.Any<DiagnosticsReportViewModel>(),
+            .ShowCustomDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(Arg.Any<DiagnosticsReportViewModel>(),
                 Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(_ =>
             {
@@ -216,7 +216,7 @@ public sealed class FirmwarePlanViewModelTests
             .CreateOptions(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>())
             .Returns(new Ursa.Controls.OverlayDialogOptions());
         services.GetRequiredService<IDialogService>()
-            .ShowOverlayDialogAsync<FirmwareCatalogueView, FirmwareCatalogueViewModel>(
+            .ShowCustomDialogAsync<FirmwareCatalogueView, FirmwareCatalogueViewModel>(
                 Arg.Any<FirmwareCatalogueViewModel>(), Arg.Any<Ursa.Controls.OverlayDialogOptions>(),
                 Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(_ =>

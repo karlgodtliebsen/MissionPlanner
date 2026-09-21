@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using MissionPlanner.Library.Configuration;
+﻿using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Logging;
 
 namespace MissionPlanner.Core.Tests;
@@ -54,27 +53,27 @@ public sealed class LogStorageTests : IDisposable
     {
         ILogStorage storage = browser ? new BrowserLogStorage() : new DesktopLogStorage(new DesktopLogPathProvider(_ => temporary));
         Assert.Empty(await storage.ListAsync(LogStorageArea.Application));
-        await using (var writer = await storage.CreateAsync(LogStorageArea.Telemetry, "flight.tlog"))
+        await using (var writer = await storage.CreateAsync(LogStorageArea.Telemetry, "flight.tlog", TestContext.Current.CancellationToken))
         {
-            await writer.WriteAsync(new byte[] { 1, 2, 3 });
-            await writer.FlushAsync();
-            await Assert.ThrowsAsync<IOException>(() => storage.CreateAsync(LogStorageArea.Telemetry, "flight.tlog"));
-            await Assert.ThrowsAsync<IOException>(() => storage.DeleteAsync(LogStorageArea.Telemetry, "flight.tlog"));
+            await writer.WriteAsync(new byte[] { 1, 2, 3 }, TestContext.Current.CancellationToken);
+            await writer.FlushAsync(TestContext.Current.CancellationToken);
+            await Assert.ThrowsAsync<IOException>(() => storage.CreateAsync(LogStorageArea.Telemetry, "flight.tlog", TestContext.Current.CancellationToken));
+            await Assert.ThrowsAsync<IOException>(() => storage.DeleteAsync(LogStorageArea.Telemetry, "flight.tlog", TestContext.Current.CancellationToken));
         }
 
-        var item = Assert.Single(await storage.ListAsync(LogStorageArea.Telemetry));
+        var item = Assert.Single(await storage.ListAsync(LogStorageArea.Telemetry, TestContext.Current.CancellationToken));
         Assert.Equal(3, item.Size);
         Assert.Equal(browser, item.PhysicalPath is null);
-        await using (var export = await storage.ExportAsync(LogStorageArea.Telemetry, item.Id))
+        await using (var export = await storage.ExportAsync(LogStorageArea.Telemetry, item.Id, TestContext.Current.CancellationToken))
         {
             Assert.Equal("flight.tlog", export.FileName);
             using var content = new MemoryStream();
-            await export.Content.CopyToAsync(content);
+            await export.Content.CopyToAsync(content, TestContext.Current.CancellationToken);
             Assert.Equal(new byte[] { 1, 2, 3 }, content.ToArray());
         }
 
-        await storage.DeleteAsync(LogStorageArea.Telemetry, item.Id);
-        Assert.Empty(await storage.ListAsync(LogStorageArea.Telemetry));
+        await storage.DeleteAsync(LogStorageArea.Telemetry, item.Id, TestContext.Current.CancellationToken);
+        Assert.Empty(await storage.ListAsync(LogStorageArea.Telemetry, TestContext.Current.CancellationToken));
     }
 
     [Theory]
@@ -86,11 +85,11 @@ public sealed class LogStorageTests : IDisposable
     [InlineData("bad:stream")]
     public async Task RejectsTraversalOnBothPlatforms(string name)
     {
-        foreach (ILogStorage storage in new ILogStorage[] { new BrowserLogStorage(), new DesktopLogStorage(new DesktopLogPathProvider(_ => temporary)) })
+        foreach (var storage in new ILogStorage[] { new BrowserLogStorage(), new DesktopLogStorage(new DesktopLogPathProvider(_ => temporary)) })
         {
-            await Assert.ThrowsAsync<ArgumentException>(() => storage.CreateAsync(LogStorageArea.Telemetry, name));
-            await Assert.ThrowsAsync<ArgumentException>(() => storage.OpenReadAsync(LogStorageArea.Telemetry, name));
-            await Assert.ThrowsAsync<ArgumentException>(() => storage.DeleteAsync(LogStorageArea.Telemetry, name));
+            await Assert.ThrowsAsync<ArgumentException>(() => storage.CreateAsync(LogStorageArea.Telemetry, name, TestContext.Current.CancellationToken));
+            await Assert.ThrowsAsync<ArgumentException>(() => storage.OpenReadAsync(LogStorageArea.Telemetry, name, TestContext.Current.CancellationToken));
+            await Assert.ThrowsAsync<ArgumentException>(() => storage.DeleteAsync(LogStorageArea.Telemetry, name, TestContext.Current.CancellationToken));
         }
 
         Assert.False(Directory.Exists(temporary));
@@ -100,17 +99,17 @@ public sealed class LogStorageTests : IDisposable
     public async Task BrowserQuotaDoesNotEvictLogsAndDeletionReclaimsBytes()
     {
         var storage = new BrowserLogStorage(3, 1);
-        await using (var writer = await storage.CreateAsync(LogStorageArea.Telemetry, "one.tlog"))
+        await using (var writer = await storage.CreateAsync(LogStorageArea.Telemetry, "one.tlog", TestContext.Current.CancellationToken))
         {
-            await writer.WriteAsync(new byte[] { 1, 2, 3 });
-            await Assert.ThrowsAsync<IOException>(async () => await writer.WriteAsync(new byte[] { 4 }));
-            await Assert.ThrowsAsync<IOException>(() => storage.CreateAsync(LogStorageArea.Telemetry, "two.tlog"));
+            await writer.WriteAsync(new byte[] { 1, 2, 3 }, TestContext.Current.CancellationToken);
+            await Assert.ThrowsAsync<IOException>(async () => await writer.WriteAsync(new byte[] { 4 }, TestContext.Current.CancellationToken));
+            await Assert.ThrowsAsync<IOException>(() => storage.CreateAsync(LogStorageArea.Telemetry, "two.tlog", TestContext.Current.CancellationToken));
         }
 
-        Assert.Equal(3, Assert.Single(await storage.ListAsync(LogStorageArea.Telemetry)).Size);
-        await storage.DeleteAsync(LogStorageArea.Telemetry, "one.tlog");
-        await using var next = await storage.CreateAsync(LogStorageArea.Telemetry, "two.tlog");
-        await next.WriteAsync(new byte[] { 5, 6, 7 });
+        Assert.Equal(3, Assert.Single(await storage.ListAsync(LogStorageArea.Telemetry, TestContext.Current.CancellationToken)).Size);
+        await storage.DeleteAsync(LogStorageArea.Telemetry, "one.tlog", TestContext.Current.CancellationToken);
+        await using var next = await storage.CreateAsync(LogStorageArea.Telemetry, "two.tlog", TestContext.Current.CancellationToken);
+        await next.WriteAsync(new byte[] { 5, 6, 7 }, TestContext.Current.CancellationToken);
     }
 
     [Theory]

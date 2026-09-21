@@ -47,7 +47,7 @@ public interface IDialogService
     /// <typeparam name="TView">The type of the view.</typeparam>
     /// <typeparam name="TViewModel">The type of the view model.</typeparam>
     /// <returns>A task that represents the asynchronous operation. The task result contains the view model.</returns>
-    Task<TViewModel> ShowOverlayDialogAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null, CancellationToken cancellationToken = default)
+    Task<TViewModel> ShowCustomDialogAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null, CancellationToken cancellationToken = default)
         where TView : UserControl, new()
         where TViewModel : DialogViewModelBase;
 
@@ -60,9 +60,24 @@ public interface IDialogService
     /// <typeparam name="TView">The type of the view.</typeparam>
     /// <typeparam name="TViewModel">The type of the view model.</typeparam>
     /// <returns>The view model.</returns>
-    TViewModel ShowOverlayDialog<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null)
+    TViewModel ShowCustomDialog<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null)
         where TView : UserControl, new()
         where TViewModel : DialogViewModelBase;
+
+    Task<TViewModel?> ShowStandardAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null, CancellationToken cancellationToken = default)
+        where TView : UserControl, new()
+        where TViewModel : ViewModelBase;
+
+    Task<TViewModel?> ShowStandardAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, CancellationToken cancellationToken = default)
+        where TView : UserControl, new()
+        where TViewModel : ViewModelBase;
+
+    void ShowStandard(Control control, object? model, string? hostId = null, OverlayDialogOptions? options = null);
+
+    TViewModel ShowStandard<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null)
+        where TView : UserControl, new()
+        where TViewModel : ViewModelBase;
+
 
     /// <summary>
     /// Displays a prompt dialog with the specified options, message, and initial value.

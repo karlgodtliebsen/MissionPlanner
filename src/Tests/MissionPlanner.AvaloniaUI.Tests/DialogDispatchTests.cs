@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
@@ -43,7 +43,7 @@ public sealed class DialogDispatchTests
             .Returns(call => call.Arg<Func<Task<DialogViewModelBase>>>()!());
         var service = new AvaloniaDialogService(dispatcher, Substitute.For<IWindowProvider>());
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            service.ShowOverlayDialogAsync<UserControl, DialogViewModelBase>(null!, new OverlayDialogOptions(),
+            service.ShowCustomDialogAsync<UserControl, DialogViewModelBase>(null!, new OverlayDialogOptions(),
                 cancellationToken: new CancellationToken(true)));
         await dispatcher.Received(1).DispatchAsync(Arg.Any<Func<Task<DialogViewModelBase>>>());
     }

@@ -165,7 +165,7 @@ public partial class FlightPlannerViewModel : ViewModelBase
         {
             var options = dialogService.CreateOptions("Mission editor", "Close", null);
             options.FullScreen = true;
-            await dialogService.ShowOverlayDialogAsync<MissionItemListViewPage, MissionMapViewModel>(
+            await dialogService.ShowCustomDialogAsync<MissionItemListViewPage, MissionMapViewModel>(
                 Map,
                 options,
                 cancellationToken: cancellationToken);

@@ -3,6 +3,9 @@ using MissionPlanner.App.Utilities.Dispatching;
 
 namespace MissionPlanner.App.Views.Navigation;
 
+/// <summary>
+/// Implements a navigation service for Avalonia applications, allowing navigation between pages and managing the navigation stack.
+/// </summary>
 public sealed class AvaloniaNavigationService : INavigationService
 {
     private readonly INavigationPageFactory pageFactory;
@@ -11,6 +14,11 @@ public sealed class AvaloniaNavigationService : INavigationService
     private readonly List<NavigationEntry> navigationStack = [];
     private string? currentRoute;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AvaloniaNavigationService"/> class with the specified page factory and UI dispatcher. 
+    /// </summary>
+    /// <param name="pageFactory"></param>
+    /// <param name="dispatcher"></param>
     public AvaloniaNavigationService(INavigationPageFactory pageFactory, IUiDispatcher dispatcher)
     {
         this.pageFactory = pageFactory;
@@ -25,7 +33,9 @@ public sealed class AvaloniaNavigationService : INavigationService
         try
         {
             if (route == currentRoute && navigationStack.Count == 1)
+            {
                 return;
+            }
 
             await dispatcher.DispatchAsync(() =>
             {
@@ -70,7 +80,9 @@ public sealed class AvaloniaNavigationService : INavigationService
             await dispatcher.DispatchAsync(() =>
             {
                 if (navigationStack.Count <= 1)
+                {
                     return Task.CompletedTask;
+                }
 
                 navigationStack.RemoveAt(navigationStack.Count - 1);
                 var entry = navigationStack[^1];

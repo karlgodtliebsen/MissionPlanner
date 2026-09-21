@@ -8,7 +8,6 @@ using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Firmware;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Dfu;
@@ -267,7 +266,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     {
         var options = dialogService.CreateOptions("Select Online Firmware", "Close", "Cancel");
         options.FullScreen = true;
-        var result = await dialogService.ShowOverlayDialogAsync<FirmwareCatalogueView, FirmwareCatalogueViewModel>(
+        var result = await dialogService.ShowCustomDialogAsync<FirmwareCatalogueView, FirmwareCatalogueViewModel>(
             OnlineFirmwareModel,
             options,
             cancellationToken: cancellationToken);
@@ -485,10 +484,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
 
         active = false;
-        if (upgradeSelection is not null)
-        {
-            upgradeSelection.Requested -= OnUpgradeRequested;
-        }
+        upgradeSelection?.Requested -= OnUpgradeRequested;
         DevicesModel.DiscoveryOwnedByPage = DfuModel.DiscoveryOwnedByPage = false;
 
         UnsubscribePanels();
@@ -595,7 +591,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             {
                 var options = dialogService.CreateOptions("Firmware installation completed.", "Ok", null);
                 var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
-                await dialogService.ShowOverlayDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options,
+                await dialogService.ShowCustomDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options,
                     cancellationToken: lifetime?.Token ?? CancellationToken.None);
                 returnToLanding = true;
             }
@@ -604,7 +600,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
                 var options = dialogService.CreateOptions(result.State == FirmwareOperationState.Cancelled
                     ? "Firmware installation cancelled." : "Firmware installation failed.", "Ok", null);
                 var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticsReport ?? "", message);
-                dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+                dialogService.ShowCustomDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
             }
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
@@ -623,7 +619,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             CloseOperationDialog();
             var options = dialogService.CreateOptions(message, "Ok", null);
             var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(message, exception.Message);
-            dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+            dialogService.ShowCustomDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
         }
         finally
         {
@@ -711,13 +707,13 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticReport ?? "", "");
             if (result.State == DfuOperationState.Completed)
             {
-                await dialogService.ShowOverlayDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options,
+                await dialogService.ShowCustomDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options,
                     cancellationToken: lifetime?.Token ?? CancellationToken.None);
                 returnToLanding = true;
             }
             else
             {
-                dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+                dialogService.ShowCustomDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
             }
 
         }
@@ -734,7 +730,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             CloseOperationDialog();
             var options = dialogService.CreateOptions("Initial STM32 DFU installation failed.", "Ok", null);
             var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(message ?? "", exception.Message);
-            dialogService.ShowOverlayDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
+            dialogService.ShowCustomDialog<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options);
 
         }
         finally

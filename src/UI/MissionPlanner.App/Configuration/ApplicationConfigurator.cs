@@ -340,6 +340,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<WarningStatusViewModel>();
         services.TryAddSingleton<WarningManagerViewModel>();
         services.TryAddTransient<WarningManagerPage>();
+        services.TryAddSingleton<NamingViewModel>();
 
         services.TryAddTransient<InstallFirmwareViewModel>();
         services.TryAddTransient<OptionalHardwareViewModel>();

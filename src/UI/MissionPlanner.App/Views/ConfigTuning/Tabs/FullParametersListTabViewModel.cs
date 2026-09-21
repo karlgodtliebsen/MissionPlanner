@@ -8,11 +8,12 @@ using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
-using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
+using Ursa.Controls;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -30,7 +31,6 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     private ParameterApplyReport? lastApplyReport;
     private bool disposed;
     private int sessionRefreshScheduled;
-    private readonly IUserNotificationService userNotificationService;
 
 
     /// <summary>Initializes the Full Parameters List tab.</summary>
@@ -46,28 +46,25 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     /// <param name="profileWorkflow">The profile compatibility and staging workflow.</param>
     /// <param name="parameterLoadStatus"></param>
     /// <param name="domainEventHub"></param>
-    /// <param name="userNotificationService"></param>
     /// <param name="logger">The logger.</param>
     public FullParametersListTabViewModel(
+        IDialogService dialogService,
+        IDomainFactory domainFactory,
+        IDomainEventHub domainEventHub,
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
         IParameterEditSessionFactory editSessionFactory,
         ITextClipboardService clipboard,
-        IDialogService dialogService,
-        IDomainFactory domainFactory,
         ParametersFileHandler parametersFileHandler,
         IUserConfirmationService confirmation,
         IParameterProfileRepository profiles,
         IParameterProfileService profileWorkflow,
         IVehicleParameterLoadStatusContext parameterLoadStatus,
-        IDomainEventHub domainEventHub,
-        IUserNotificationService userNotificationService,
         ILogger<FullParametersListTabViewModel> logger)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.activeVehicle = activeVehicle;
         this.clipboard = clipboard;
-        this.userNotificationService = userNotificationService;
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
         this.parametersFileHandler = parametersFileHandler;
@@ -133,11 +130,13 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     {
         get; set;
     }
-    public string CreateTextExport()
+
+    private string CreateTextExport()
     {
         if (EditSession is null)
         {
             SetMessages(errorMessage: "Refresh vehicle parameters before importing parameters.");
+            NotificationManager?.Show(ErrorMessage ?? "");
             return string.Empty;
         }
 
@@ -159,44 +158,59 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     }
 
     [RelayCommand]
-    private async Task LoadFromEditorAsync(CancellationToken cancellationToken)
+    private async Task UseQuickEditorAsync(CancellationToken cancellationToken)
     {
         if (EditSession is null)
         {
             SetMessages(errorMessage: "Refresh vehicle parameters before importing parameters.");
+            NotificationManager?.Show(ErrorMessage ?? "");
             return;
         }
-
         try
         {
-            var viewModel = domainFactory.Create<ParametersEditorViewModel, Action<ParametersEditorViewModel>>(vm =>
+            var viewModel = domainFactory.Create<ParametersEditorViewModel>();
+            var options = dialogService.CreateOptions("", null, null);
+            options.FullScreen = false;
+            options.CanDragMove = true;
+            options.CanResize = true;
+            options.Buttons = DialogButton.OKCancel;
+
+            var returnModel = await dialogService.ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(viewModel, options, cancellationToken: cancellationToken);
+            if (returnModel is not null)
             {
-                var fullList = EditSession.Fields.Select(ToVehicleParameter).ToList();
-                var parameters = vm.UpdateParameters(fullList);
-                using var notifications = EditSession.DeferChangeNotifications();
-                foreach (var parameter in parameters)
-                {
-                    EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
-                }
-
-                SetMessages($"Imported {parameters.Count} matching values as unapplied edits.");
-                HasRows = Parameters.Count > 0;
-            });
-
-            var options = dialogService.CreateOptions("Parameter file preview", "Close", null);
-            options.FullScreen = true;
-            await dialogService.ShowOverlayDialogAsync<ParametersEditorView, ParametersEditorViewModel>(
-                viewModel,
-                options,
-                cancellationToken: cancellationToken);
+                UpdateEditSession(returnModel);
+            }
         }
         catch (Exception exception)
         {
             var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
             var options = dialogService.CreateOptions("Load failed", "Ok", null);
-            var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
+            await dialogService.ShowCustomDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         }
 
+        HasRows = Parameters.Count > 0;
+    }
+
+    private void UpdateEditSession(ParametersEditorViewModel vm)
+    {
+        DomainException.ThrowIfNull(EditSession);
+        var fullList = EditSession.Fields.Select(ToVehicleParameter).ToList();
+        var parameters = vm.UpdateParameters(fullList);
+        if (parameters.Count == 0)
+        {
+            SetMessages($"No valid parameters where found.");
+            NotificationManager?.Show(StatusMessage ?? "");
+            return;
+        }
+
+        using var notifications = EditSession.DeferChangeNotifications();
+        foreach (var parameter in parameters)
+        {
+            EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
+        }
+
+        SetMessages($"Imported {parameters.Count} matching values as unapplied edits.");
+        NotificationManager?.Show(StatusMessage ?? "");
         HasRows = Parameters.Count > 0;
     }
 
@@ -207,6 +221,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         if (EditSession is null)
         {
             SetMessages(errorMessage: "Refresh vehicle parameters before importing a parameter file.");
+            NotificationManager?.Show(ErrorMessage ?? "");
             return;
         }
 
@@ -222,12 +237,13 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             }
 
             SetMessages($"Imported {loaded.Count} matching values as unapplied edits.");
+            NotificationManager?.Show(StatusMessage ?? "");
         }
         catch (Exception exception)
         {
             var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
             var options = dialogService.CreateOptions("Load from file failed", "Ok", null);
-            var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
+            var result = await dialogService.ShowCustomDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         }
 
         HasRows = Parameters.Count > 0;
@@ -239,6 +255,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         if (EditSession is null)
         {
             SetMessages(errorMessage: "Refresh vehicle parameters before importing a parameter file.");
+            NotificationManager?.Show(ErrorMessage ?? "");
             return;
         }
 
@@ -252,12 +269,13 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             }
 
             SetMessages($"Imported {loaded.Count} matching values as unapplied edits.");
+            NotificationManager?.Show(StatusMessage ?? "");
         }
         catch (Exception exception)
         {
             var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
             var options = dialogService.CreateOptions("Load from Json file failed", "Ok", null);
-            var result = await dialogService.ShowOverlayDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
+            var result = await dialogService.ShowCustomDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
         }
 
         HasRows = Parameters.Count > 0;
@@ -320,17 +338,19 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             if (plan.Entries.Count == 0)
             {
                 SetMessages(errorMessage: $"No safe modified parameters can be written. {BuildResultSummary(new ParameterApplyReport(false, plan.Skipped, false))}");
+                NotificationManager?.Show(ErrorMessage ?? "");
                 return;
             }
             var accepted = await confirmation.ConfirmAsync(
                 "Review parameter writes",
                 $"{preview}{skippedPreview}{Environment.NewLine}{Environment.NewLine}{rebootCount} change(s) require reboot.",
-                $"Write {plan.Entries.Count} parameters",
+                $" {plan.Entries.Count} parameters",
                 connectionCancellation.Token);
             if (!accepted)
             {
                 Logger.LogInformation("Parameter write plan was cancelled for {VehicleId}.", EditSession.VehicleId);
                 SetMessages("Parameter write cancelled. No values were sent.");
+                NotificationManager?.Show(StatusMessage ?? "");
                 return;
             }
 
@@ -347,6 +367,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 var statusMessage = report.Success ? $"Confirmed {report.Confirmed.Count} parameter changes by vehicle readback." : null;
                 var errorMessage = report.Success ? null : BuildResultSummary(report);
                 SetMessages(statusMessage, errorMessage);
+                NotificationManager?.Show(StatusMessage ?? "");
+                NotificationManager?.Show(ErrorMessage ?? "");
+
             });
 
 
@@ -378,7 +401,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
         var options = dialogService.CreateOptions("Compare parameters", "Close", null);
         options.FullScreen = true;
-        await dialogService.ShowOverlayDialogAsync<ParameterComparisonView, ParameterComparisonViewModel>(
+        await dialogService.ShowCustomDialogAsync<ParameterComparisonView, ParameterComparisonViewModel>(
             viewModel,
             options,
             cancellationToken: cancellationToken);
@@ -409,10 +432,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             {
                 var staged = profileWorkflow.Stage(review, EditSession, safe);
                 SetMessages($"Staged {staged.Count} profile values as unapplied edits. Review and apply them separately.");
+                NotificationManager?.Show(StatusMessage ?? "");
             }
 
             return;
         }
+
         await ShowMessageAsync("Parameter profiles", saved.Count == 0
             ? "No previously saved parameter profiles have been found."
             : string.Join(Environment.NewLine, saved.Select(profile => $"{profile.Name} — {profile.Values.Count} values — {profile.UpdatedAt:g}")),
@@ -448,6 +473,8 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             lastApplyReport = retry;
             RebootRequired |= retry.RebootRequired;
             SetMessages(retry.Success ? $"Confirmed {retry.Confirmed.Count} retried changes." : null, retry.Success ? null : BuildResultSummary(retry));
+            NotificationManager?.Show(StatusMessage ?? "");
+            NotificationManager?.Show(ErrorMessage ?? "");
         }
         finally
         {
@@ -464,12 +491,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
     private bool CanRevertChanges()
     {
-        return HasConnection && HasRows && EditSession is { IsDirty: true, IsValid: true };
+        return HasConnection && HasRows && !IsBusy && EditSession is { IsDirty: true, IsValid: true };
     }
 
     private bool CanCompareParameters()
     {
-        return HasConnection && HasRows;
+        return HasConnection && HasRows && !IsBusy && EditSession is { IsDirty: true, IsValid: true };
     }
 
     private bool CanSave()
@@ -479,7 +506,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
     private bool CanWriteParameters()
     {
-        return HasConnection && !IsBusy && EditSession is { IsDirty: true, IsValid: true };
+        return HasConnection && HasRows && !IsBusy && EditSession is { IsDirty: true, IsValid: true };
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -488,24 +515,23 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         {
             return;
         }
-        WriteParametersCommand.NotifyCanExecuteChanged();
-        CompareParametersCommand.NotifyCanExecuteChanged();
-        RevertChangesCommand.NotifyCanExecuteChanged();
-        SaveToFileCommand.NotifyCanExecuteChanged();
-        SaveToJsonFileCommand.NotifyCanExecuteChanged();
+        UpdateCommandState();
     }
 
     /// <inheritdoc />
     protected override void OnEditSessionSynchronized()
     {
         base.OnEditSessionSynchronized();
-        UpdateEditSessionCommandState();
+        UpdateCommandState();
     }
 
-    private void UpdateEditSessionCommandState()
+    private void UpdateCommandState()
     {
         WriteParametersCommand.NotifyCanExecuteChanged();
-        RetryFailedCommand.NotifyCanExecuteChanged();
+        CompareParametersCommand.NotifyCanExecuteChanged();
+        RevertChangesCommand.NotifyCanExecuteChanged();
+        SaveToFileCommand.NotifyCanExecuteChanged();
+        SaveToJsonFileCommand.NotifyCanExecuteChanged();
         HasRows = Parameters.Count > 0;
     }
 

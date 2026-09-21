@@ -2,6 +2,7 @@
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
@@ -9,7 +10,6 @@ using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -179,7 +179,10 @@ public sealed class ParameterProgressDialogTests
         internal readonly List<DialogOptions> Options = [];
         internal Func<string>? Message;
         internal Func<Task<IDisposable>>? OpenDialog;
-        internal FullParametersListTabViewModel Model { get; }
+        internal FullParametersListTabViewModel Model
+        {
+            get;
+        }
 
         internal Fixture()
         {
@@ -226,11 +229,23 @@ public sealed class ParameterProgressDialogTests
                     Handles.Add(handle);
                     return OpenDialog?.Invoke() ?? Task.FromResult(handle);
                 });
-            Model = new FullParametersListTabViewModel(connection, active, factory,
-                Substitute.For<ITextClipboardService>(), dialogs, Substitute.For<IDomainFactory>(), null!,
-                Substitute.For<IUserConfirmationService>(), Substitute.For<IParameterProfileRepository>(),
-                Substitute.For<IParameterProfileService>(), statusContext, events,
-                Substitute.For<IUserNotificationService>(), NullLogger<FullParametersListTabViewModel>.Instance);
+            Model = new
+                FullParametersListTabViewModel(
+                    dialogs,
+                    Substitute.For<IDomainFactory>(),
+                    events,
+                    connection,
+                    active,
+                    factory,
+                    Substitute.For<ITextClipboardService>(),
+                    Substitute.For<ParametersFileHandler>(),
+                    Substitute.For<IUserConfirmationService>(),
+                    Substitute.For<IParameterProfileRepository>(),
+                    Substitute.For<IParameterProfileService>(),
+                    statusContext,
+                    NullLogger<FullParametersListTabViewModel>.Instance);
+
+
         }
 
         internal void SetCompleteCache()

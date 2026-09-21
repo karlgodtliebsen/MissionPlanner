@@ -5,12 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Utilities.Dialogs;
+using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
-using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -68,13 +67,24 @@ public sealed class ParameterNotificationThreadingTests
         session.IsValid.Returns(true);
         session.IsDirty.Returns(_ => field.IsModified);
         using var model = new FullParametersListTabViewModel(
-            Substitute.For<IVehicleConnectionSession>(), Substitute.For<IActiveVehicleContext>(),
-            Substitute.For<IParameterEditSessionFactory>(), Substitute.For<ITextClipboardService>(),
-            Substitute.For<IDialogService>(),
-            Substitute.For<IDomainFactory>(), null!, Substitute.For<IUserConfirmationService>(),
-            Substitute.For<IParameterProfileRepository>(), Substitute.For<IParameterProfileService>(),
-            Substitute.For<IVehicleParameterLoadStatusContext>(), events,
-            Substitute.For<IUserNotificationService>(), NullLogger<FullParametersListTabViewModel>.Instance);
+          Substitute.For<IDialogService>(),
+            Substitute.For<IDomainFactory>(),
+              events,
+           Substitute.For<IVehicleConnectionSession>(),
+            Substitute.For<IActiveVehicleContext>(),
+            Substitute.For<IParameterEditSessionFactory>(),
+            Substitute.For<ITextClipboardService>(),
+                     Substitute.For<ParametersFileHandler>(),
+
+             Substitute.For<IUserConfirmationService>(),
+            Substitute.For<IParameterProfileRepository>(),
+            Substitute.For<IParameterProfileService>(),
+            Substitute.For<IVehicleParameterLoadStatusContext>(),
+            NullLogger<FullParametersListTabViewModel>.Instance);
+
+
+
+
         await model.ActivateAsync();
         typeof(ParametersViewModel).GetMethod("AttachSession", BindingFlags.Instance | BindingFlags.NonPublic)!
             .Invoke(model, [session]);
@@ -88,7 +98,11 @@ public sealed class ParameterNotificationThreadingTests
             Assert.Equal(uiThread, Environment.CurrentManagedThreadId);
             notifications++;
         };
-        field = field with { LiveValue = 2, WriteStatus = ParameterEditWriteStatus.Confirmed };
+        field = field with
+        {
+            LiveValue = 2,
+            WriteStatus = ParameterEditWriteStatus.Confirmed
+        };
         await Task.Factory.StartNew(() => session.FieldChanged?.Invoke(fieldName),
             CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         uiThread = Environment.CurrentManagedThreadId;

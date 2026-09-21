@@ -21,7 +21,7 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
 {
     public Page Create(string route)
     {
-        Page page = route switch
+        var page = route switch
         {
             MissionPlannerRoutes.DataGridDemo =>
                   services.GetRequiredService<DataGridPage>(),
@@ -49,14 +49,6 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
             MissionPlannerRoutes.SetupAdvanced =>
                 services.GetRequiredService<AdvancedPage>(),
 
-            //MissionPlannerRoutes.ConfigGeoFence => CreateViewPage<GeoFenceTabView>("Geo Fence"),
-            //MissionPlannerRoutes.ConfigBasicTuning => CreateViewPage<BasicTuningTabView>("Basic Tuning"),
-            //MissionPlannerRoutes.ConfigExtendedTuning => CreateViewPage<ExtendedTuningTabView>("Extended Tuning"),
-            //MissionPlannerRoutes.ConfigOnboardOSD => CreateViewPage<OnboardOSDTabView>("Onboard OSD"),
-            //MissionPlannerRoutes.ConfigMavFtp => CreateViewPage<MAVFtpTabView>("MAV FTP"),
-            //MissionPlannerRoutes.ConfigFullParameters => CreateViewPage<FullParametersListTabView>("Full Parameters List"),
-            //MissionPlannerRoutes.ConfigCubeLan8PortSwitch => CreateViewPage<CubeLan8PortSwitchTabView>("CubeLAN 8 Port Switch"),
-
             MissionPlannerRoutes.ConfigGeoFence => services.GetRequiredService<GeoFenceTabView>(),
             MissionPlannerRoutes.ConfigBasicTuning => services.GetRequiredService<BasicTuningTabView>(),
             MissionPlannerRoutes.ConfigExtendedTuning => services.GetRequiredService<ExtendedTuningTabView>(),
@@ -64,7 +56,6 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
             MissionPlannerRoutes.ConfigMavFtp => services.GetRequiredService<MAVFtpTabView>(),
             MissionPlannerRoutes.ConfigFullParameters => services.GetRequiredService<FullParametersListTabView>(),
             MissionPlannerRoutes.ConfigCubeLan8PortSwitch => services.GetRequiredService<CubeLan8PortSwitchTabView>(),
-
 
             MissionPlannerRoutes.Preferences =>
                 services.GetRequiredService<PreferencesPage>(),
@@ -89,13 +80,4 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
 
         return page;
     }
-
-    //private ContentPage CreateViewPage<TView>(string header) where TView : Control
-    //{
-    //    return new ContentPage
-    //    {
-    //        Header = header,
-    //        Content = services.GetRequiredService<TView>()
-    //    };
-    //}
 }

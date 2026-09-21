@@ -4,7 +4,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>
-/// 
+/// View model for the AntennaTrackerView, providing data and logic for the Antenna Tracker setup workflow. 
 /// </summary>
 /// <param name="vehicle"></param>
 /// <param name="logger"></param>

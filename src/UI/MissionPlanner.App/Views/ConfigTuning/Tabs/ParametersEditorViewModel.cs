@@ -10,8 +10,7 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 /// It allows users to input parameter values and updates the corresponding parameters in a provided list.
 /// </summary>
 /// <param name="dialogService"></param>
-/// <param name="callback"></param>
-public partial class ParametersEditorViewModel(IDialogService dialogService, Action<ParametersEditorViewModel> callback) : DialogViewModelBase
+public partial class ParametersEditorViewModel(IDialogService dialogService) : ViewModelBase
 {
     /// <summary>
     /// Gets or sets the text input by the user, which contains parameter values in a specific format. This property is bound to the view and is used to update the parameters in the provided list.
@@ -32,35 +31,42 @@ public partial class ParametersEditorViewModel(IDialogService dialogService, Act
         set;
     }
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the operation was cancelled.
-    /// </summary>
-    public bool Cancelled
-    {
-        get;
-        set;
-    }
+    ///// <summary>
+    ///// Gets or sets a value indicating whether the operation was cancelled.
+    ///// </summary>
+    //public bool Cancelled
+    //{
+    //    get;
+    //    set;
+    //}
 
-    [RelayCommand]
-    private Task CancelAsync(CancellationToken cancellationToken)
-    {
-        Cancelled = true;
-        return dialogService.CloseAsync(cancellationToken);
-    }
+    //[RelayCommand]
+    //private Task CancelAsync(CancellationToken cancellationToken)
+    //{
+    //    Cancelled = true;
+    //    return dialogService.CloseAsync(cancellationToken);
+    //}
 
-    [RelayCommand]
-    private Task UseAsync(CancellationToken cancellationToken)
-    {
-        UseParameters = true;
-        callback(this);
-        return dialogService.CloseAsync(cancellationToken);
-    }
+    //[RelayCommand]
+    //private Task UseParametersAsync(CancellationToken cancellationToken)
+    //{
+    //    UseParameters = true;
+    //    useCallback(this);
+    //    return dialogService.CloseAsync(cancellationToken);
+    //}
 
     [RelayCommand]
     private void Clear()
     {
         Text = string.Empty;
     }
+
+    //[RelayCommand]
+    //private Task WriteParametersAsync(CancellationToken cancellationToken)
+    //{
+    //    applyCallback(this);
+    //    return dialogService.CloseAsync(cancellationToken);
+    //}
 
     /// <summary>
     /// Updates the parameters in the provided list based on the current Text property.
@@ -76,7 +82,11 @@ public partial class ParametersEditorViewModel(IDialogService dialogService, Act
 
         var result = new List<VehicleParameter>();
 
-        //format FRAME_CLASS=1//Quad
+        //accepted format
+        //FRAME_CLASS=1//Quad
+        //FRAME_CLASS,1//Quad
+        //FRAME_CLASS:1//Quad
+        //FRAME_CLASS;1//Quad
 
         var lines = Text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
         foreach (var line in lines)
@@ -115,6 +125,10 @@ public partial class ParametersEditorViewModel(IDialogService dialogService, Act
                 };
                 fullParametersList.Add(param);
                 result.Add(param);
+            }
+            else
+            {
+                NotificationManager?.Show($"Unknown Parameter {data}");
             }
         }
 
