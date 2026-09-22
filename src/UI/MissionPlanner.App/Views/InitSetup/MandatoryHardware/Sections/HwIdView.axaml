@@ -11,8 +11,8 @@
                                x:DataType="sections:HwIdViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border HorizontalAlignment="Center" Padding="12"  x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Spacing="10">
                 <TextBlock Text="Hardware ID" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -20,17 +20,19 @@
                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <Border Classes="SectionCard" Padding="12">
-                    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="140,*" RowSpacing="6">
-                        <TextBlock Text="Autopilot board" FontWeight="Bold" />
-                        <TextBlock Grid.Column="1" Text="{Binding Board}" />
-                        <TextBlock Grid.Row="1" Text="Firmware" FontWeight="Bold" />
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Firmware}" />
-                    </Grid>
-                </Border>
             </StackPanel>
         </Border>
-        <Border Grid.Row="1"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+
+        <Border Grid.Row="1" Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="140,*" RowSpacing="6">
+                <TextBlock Text="Autopilot board:" FontWeight="Bold" />
+                <TextBlock Grid.Column="1" Text="{Binding Board}" />
+                <TextBlock Grid.Row="1" Text="Firmware:" FontWeight="Bold" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Firmware}" />
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="2"  Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                 <Button ToolTip.Tip="Refresh hardware IDs" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh hardware IDs">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
@@ -38,23 +40,21 @@
             </StackPanel>
         </Border>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16" >
-            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-                <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Center" >
+            <Border Classes="SectionCard SourceBorder" Padding="12" x:Name="SourceBorder" >
+                <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Items}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="hardware:HwIdItem">
-                                <Grid ColumnDefinitions="220,*" ColumnSpacing="10" Margin="8">
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" />
-                                    <TextBlock Grid.Column="1" Text="{Binding Description}" />
+                                <Grid ColumnDefinitions="150,*" ColumnSpacing="10" Margin="8">
+                                    <TextBlock Text="{Binding Name}" Classes="H4" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Description}" Classes="H5" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
                 </StackPanel>
             </Border>
         </ScrollViewer>
     </Grid>
-
 </utilities:UserControlViewBase>

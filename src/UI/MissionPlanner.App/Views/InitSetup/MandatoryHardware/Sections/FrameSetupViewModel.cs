@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -28,6 +29,12 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     private readonly IUserConfirmationService confirmation;
     private readonly IDateTimeProvider clock;
     private readonly IDomainEventHub domainEventHub;
+    private readonly IVehicleParameterLoadStatusContext parameterLoadStatus;
+    private readonly IDialogService dialogService;
+    private IDisposable? progressDialog;
+    private bool showingProgressDialog;
+    private int progressDialogGeneration;
+    private string progressMessage = string.Empty;
     private IDisposable? parameterLoadSubscription;
     private CancellationTokenSource? operationCancellation;
 
@@ -42,6 +49,8 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     /// <param name="logger">The logger.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="domainEventHub">The parameter load event source.</param>
+    /// <param name="parameterLoadStatus">The latest parameter download status.</param>
+    /// <param name="dialogService">The shared progress dialog service.</param>
     public FrameSetupViewModel(
         IActiveVehicleContext activeVehicle,
         IFrameConfigurationService frameService,
@@ -50,7 +59,8 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
         ISetupWorkflowCatalog workflowCatalog,
         IUserConfirmationService confirmation,
         IDateTimeProvider clock, ILogger<FrameSetupViewModel> logger,
-        IUiDispatcher dispatcher, IDomainEventHub domainEventHub)
+        IUiDispatcher dispatcher, IDomainEventHub domainEventHub,
+        IVehicleParameterLoadStatusContext parameterLoadStatus, IDialogService dialogService)
         : base(logger, dispatcher, domainEventHub)
     {
         this.activeVehicle = activeVehicle;
@@ -61,6 +71,8 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
         this.confirmation = confirmation;
         this.clock = clock;
         this.domainEventHub = domainEventHub;
+        this.parameterLoadStatus = parameterLoadStatus;
+        this.dialogService = dialogService;
     }
 
     /// <summary>Gets frame parameters supported by both live values and firmware metadata.</summary>
@@ -104,7 +116,14 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
+            CloseProgressDialog();
             SetMessages("Connect a vehicle before loading frame configuration.");
+            return;
+        }
+
+        if (parameterLoadStatus.Get(vehicleId) is { IsInProgress: true } status)
+        {
+            await ApplyParameterLoadStatusAsync(status);
             return;
         }
 
@@ -158,9 +177,17 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     {
         parameterLoadSubscription?.Dispose();
         parameterLoadSubscription = null;
+        CloseProgressDialog();
         Cancel();
         activeVehicle.Changed -= OnActiveVehicleChanged;
         return base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+        base.Dispose();
     }
 
 
@@ -272,25 +299,114 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {
-            Dispatcher.DispatchAsync(LoadAsync);
+            Dispatcher.DispatchAsync(async () =>
+            {
+                if (parameterLoadSubscription is null)
+                {
+                    return;
+                }
+                Cancel();
+                CloseProgressDialog();
+                await LoadAsync();
+            });
         }
     }
 
     private Task OnParameterLoadStatusChanged(VehicleParameterLoadStatusChanged evt, CancellationToken cancellationToken)
     {
-        if (evt.Status.State != ParameterLoadState.Completed)
-        {
-            return Task.CompletedTask;
-        }
-
         return Dispatcher.DispatchAsync(async () =>
         {
             if (parameterLoadSubscription is not null && !cancellationToken.IsCancellationRequested &&
-                activeVehicle.IsOnline && activeVehicle.VehicleId == evt.Status.VehicleId)
+                activeVehicle.IsOnline && activeVehicle.VehicleId == evt.Status.VehicleId &&
+                parameterLoadStatus.Get(evt.Status.VehicleId) == evt.Status)
             {
-                await LoadAsync();
+                await ApplyParameterLoadStatusAsync(evt.Status);
             }
         });
+    }
+
+    private async Task ApplyParameterLoadStatusAsync(ParameterLoadStatus status)
+    {
+        progressMessage = status.Message;
+        SetMessages(status.Message);
+        if (status.IsInProgress)
+        {
+            Cancel();
+            await ShowProgressDialogAsync();
+            return;
+        }
+
+        var generation = progressDialogGeneration;
+        try
+        {
+            if (status.State == ParameterLoadState.Completed)
+            {
+                progressMessage = "Loading frame configuration...";
+                await LoadAsync();
+            }
+            else
+            {
+                SetMessages(errorMessage: status.Message);
+            }
+        }
+        finally
+        {
+            if (generation == progressDialogGeneration)
+            {
+                CloseProgressDialog();
+            }
+        }
+    }
+
+    private async Task ShowProgressDialogAsync()
+    {
+        var token = activeVehicle.ConnectionCancellationToken;
+        if (showingProgressDialog || parameterLoadSubscription is null || token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        var generation = ++progressDialogGeneration;
+        showingProgressDialog = true;
+        try
+        {
+            var dialog = await dialogService.DisplayProgressCancellableAsync(
+                () => progressMessage, new DialogOptions { Title = "Loading parameters" }, token);
+            if (generation != progressDialogGeneration || parameterLoadSubscription is null || token.IsCancellationRequested)
+            {
+                dialog.Dispose();
+                if (generation == progressDialogGeneration)
+                {
+                    CloseProgressDialog();
+                }
+                return;
+            }
+            progressDialog = dialog;
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            if (generation == progressDialogGeneration)
+            {
+                CloseProgressDialog();
+            }
+        }
+        catch (Exception exception)
+        {
+            if (generation == progressDialogGeneration)
+            {
+                CloseProgressDialog();
+                SetMessages(exception);
+            }
+            Logger.LogError(exception, "Showing frame parameter loading progress failed.");
+        }
+    }
+
+    private void CloseProgressDialog()
+    {
+        ++progressDialogGeneration;
+        showingProgressDialog = false;
+        progressDialog?.Dispose();
+        progressDialog = null;
     }
 
     private void ShowConfiguration(FrameConfigurationSnapshot configuration, bool preserveStatus = false)

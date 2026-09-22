@@ -13,7 +13,7 @@
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
     <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border HorizontalAlignment="Center" Padding="12"  x:Name="SourceBorder"  >
+        <Border HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Spacing="10">
                 <TextBlock Text="Setup summary" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -21,12 +21,12 @@
                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <TextBlock Text="{Binding Heading}" FontWeight="Bold" />
+                <TextBlock Text="{Binding Heading}" Classes="H4" />
                 <TextBlock Text="This report describes configuration evidence only and is not a safe-to-fly certification." Opacity="0.75" />
             </StackPanel>
         </Border>
 
-      <Border Grid.Row="1"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                 <Button ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" AutomationProperties.Name="Rebuild summary">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
@@ -40,8 +40,8 @@
             </StackPanel>
         </Border>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16" >
-            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16,0" HorizontalAlignment="Center" >
+            <Border Classes="SourceBorder" Padding="12" x:Name="SourceBorder" >
                 <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
                     <ItemsControl ItemsSource="{Binding Sections}">
                         <ItemsControl.ItemTemplate>
@@ -73,8 +73,6 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
-
                     <TextBox AcceptsReturn="True" Text="{Binding ExportedText}" IsReadOnly="True"
                              Height="180" IsVisible="{Binding HasExport}" />
                 </StackPanel>

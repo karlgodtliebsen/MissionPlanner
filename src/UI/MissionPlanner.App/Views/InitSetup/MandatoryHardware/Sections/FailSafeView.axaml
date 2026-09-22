@@ -10,7 +10,7 @@
                                x:DataType="sections:FailSafeViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border HorizontalAlignment="Center" Padding="12"  x:Name="SourceBorder"  >
+        <Border HorizontalAlignment="Center" Padding="12" Classes="SourceBorder"  x:Name="SourceBorder"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Failsafe" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -29,17 +29,17 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-            <StackPanel HorizontalAlignment="Right">
+        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <StackPanel HorizontalAlignment="Center">
                 <Button ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
         </Border>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16" >
-            <Border Classes="SectionCard" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
-                <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16,0" HorizontalAlignment="Center" >
+            <Border Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+                <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Settings}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>

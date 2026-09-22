@@ -11,7 +11,8 @@
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
     <Grid RowDefinitions="Auto,Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" x:Name="SourceBorder" Padding="12"  >
+       
+        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}" >
             <StackPanel Spacing="10">
                 <TextBlock Text="Compass discovery and calibration" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
@@ -31,9 +32,9 @@
                 </StackPanel>
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12"  Classes="SectionCard"  Width="{Binding #SourceBorder.Bounds.Width}">
-            <StackPanel Spacing="10">
-                <TextBlock Text="Configured versus detected hardware" FontWeight="Bold" />
+        <Border Grid.Row="1" Padding="12"  Classes="SectionCard SourceBorder" x:Name="SourceBorder" >
+            <StackPanel Spacing="15">
+                <TextBlock Text="Configured versus detected hardware:" Classes="H3" />
                 <TextBlock Text="{Binding DiagnosticSummary}" TextWrapping="Wrap" />
                 <ItemsControl ItemsSource="{Binding DiagnosticEvidence}">
                     <ItemsControl.ItemTemplate>
@@ -45,7 +46,7 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="2"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="2" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                 <Button ToolTip.Tip="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh compass values">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
@@ -67,7 +68,7 @@
 
         <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Visible" Margin="16">
             <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-                <StackPanel Spacing="10"   HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                <StackPanel Spacing="10" >
                     <ItemsControl ItemsSource="{Binding Compasses}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="sections:CompassInstanceViewModel">
@@ -94,14 +95,12 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-
                     <TextBlock Text="Onboard calibration" Classes="H3" />
-                    <TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning" FontWeight="Bold" />
-                    <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
-                    <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
-                    <TextBlock Text="{Binding ProgressSummary}" />
-                    <TextBlock Text="{Binding QualitySummary}" FontStyle="Italic" />
-
+                    <TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning H4"   TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}"  Classes="H4"   TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Instruction}" Classes="H4"   TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ProgressSummary}"  Classes="H4" TextWrapping="Wrap"  />
+                    <TextBlock Text="{Binding QualitySummary}"  Classes="H4" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
         </ScrollViewer>

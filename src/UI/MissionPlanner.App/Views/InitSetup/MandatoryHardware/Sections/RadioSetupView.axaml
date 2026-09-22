@@ -11,8 +11,8 @@
                                x:DataType="sections:RadioSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border HorizontalAlignment="Center" Padding="12"  x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}" >
             <StackPanel Spacing="10">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                     <StackPanel Orientation="Vertical" Spacing="2">
@@ -28,34 +28,8 @@
                            IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}" Classes="H4" TextWrapping="Wrap" />
                 <SelectableTextBlock Text="{Binding ErrorMessage}"
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}" Classes="Danger" TextWrapping="Wrap" />
-                <WrapPanel Orientation="Horizontal" ItemSpacing="10">
-                    <Button ToolTip.Tip="Start calibration"
-                            Command="{Binding StartCommand}" AutomationProperties.Name="Start calibration">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
-                            <TextBlock Text="Start calibration" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                    <Button ToolTip.Tip="Finish endpoint capture"
-                            Command="{Binding FinishCaptureCommand}"  AutomationProperties.Name="Finish endpoint capture">
-                        <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                    </Button>
-                    <Button ToolTip.Tip="Confirm and write"
-                            Command="{Binding ConfirmAndWriteCommand}" AutomationProperties.Name="Confirm and write">
-                        <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
-                    </Button>
-                    <Button ToolTip.Tip="Cancel"
-                            Command="{Binding CancelCalibrationCommand}"  AutomationProperties.Name="Cancel">
-                        <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
-                    </Button>
-                    <Button ToolTip.Tip="Reset / retry"
-                            Command="{Binding ResetCommand}"  AutomationProperties.Name="Reset / retry">
-                        <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
-                    </Button>
-                </WrapPanel>
             </StackPanel>
         </Border>
-
         <Border Grid.Row="1"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                 <TextBlock Text="!" FontSize="22" Classes="H4"  VerticalAlignment="Top" />
@@ -65,43 +39,65 @@
                 </StackPanel>
             </Grid>
         </Border>
-
-        <Border Grid.Row="2" Padding="12" Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #SourceBorder.Bounds.Width}">
-
-            <StackPanel Orientation="Vertical" Spacing="9">
-
-                <TextBlock Text="Receiver" FontSize="17" Classes="H4"  />
-                <ItemsControl>
-                    <TextBlock Text="●" FontSize="18" Margin="0,0,5,0" />
-                    <TextBlock Text="{Binding SignalStatus}" Classes="H4" Margin="0,0,20,0" />
-                    <TextBlock Text="{Binding ChannelCount, StringFormat='{}{0} channels'}" Margin="0,0,20,0" />
-                    <TextBlock Text="{Binding RssiText}" Margin="0,0,20,0" />
-                    <TextBlock Text="{Binding VehicleSafetyStatus}" Classes="H4"  />
-                </ItemsControl>
-                <TextBlock Text="{Binding ChannelMapSummary, StringFormat='Pilot map: {0}'}" />
-                <TextBlock Text="{Binding BindAvailability}" TextWrapping="Wrap" />
-                <Button Command="{Binding BindReceiverCommand}" ToolTip.Tip="Request receiver binding through the flight controller"
-                        AutomationProperties.Name="Bind receiver" HorizontalAlignment="Left">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <mdi:MaterialIcon Kind="LinkVariant" Classes="ActionIcon" />
-                        <TextBlock Text="Bind receiver" VerticalAlignment="Center" />
-                    </StackPanel>
+        <Border Grid.Row="2" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
+                <Button ToolTip.Tip="Start calibration"
+                        Command="{Binding StartCommand}" AutomationProperties.Name="Start calibration">
+                    <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <TextBlock Text="{Binding BindState, StringFormat='Bind state: {0}'}" />
-                <TextBlock Text="{Binding BindMessage}" TextWrapping="Wrap" />
-                <TextBlock IsVisible="{Binding IsStale}" Text="RC telemetry is stale. The last values remain visible, but calibration cannot start or write until fresh input returns." Classes="H4"  />
-            </StackPanel>
+                <Button ToolTip.Tip="Finish endpoint capture"
+                        Command="{Binding FinishCaptureCommand}"  AutomationProperties.Name="Finish endpoint capture">
+                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Confirm and write"
+                        Command="{Binding ConfirmAndWriteCommand}" AutomationProperties.Name="Confirm and write">
+                    <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Cancel"
+                        Command="{Binding CancelCalibrationCommand}"  AutomationProperties.Name="Cancel">
+                    <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Reset / retry"
+                        Command="{Binding ResetCommand}"  AutomationProperties.Name="Reset / retry">
+                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                </Button>
+                <Button Command="{Binding BindReceiverCommand}"
+                        ToolTip.Tip="Request receiver binding through the flight controller"
+                        AutomationProperties.Name="Bind receiver" HorizontalAlignment="Left">
+                    <mdi:MaterialIcon Kind="LinkVariant" Classes="ActionIcon" />
+                </Button>
+            </WrapPanel>
         </Border>
-
-        <Border Grid.Row="3" Padding="12" Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="3" Padding="12" Classes="SectionCard"  Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Vertical" Spacing="8">
                 <TextBlock Text="Next step" Classes="H4"  />
                 <TextBlock Text="{Binding Instruction}" Classes="H5" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding CaptureSummary}"  Classes="H5" Opacity="0.75" />
             </StackPanel>
         </Border>
+        <Border Grid.Row="4" Padding="12" Classes="SectionCard SourceBorder" x:Name="SourceBorder" 
+                 HorizontalAlignment="Center">
+            <StackPanel Orientation="Vertical" Spacing="10">
+                <TextBlock Text="Receiver:" Classes="H4"  />
+                <ItemsControl>
+                    <!--<TextBlock Text="●" Margin="0,0,5,0" />-->
+                    <TextBlock Text="{Binding SignalStatus}" Classes="H4" Margin="0,0,20,0" />
+                    <TextBlock Text="{Binding ChannelCount, StringFormat='{}{0} channels'}" Margin="0,0,20,0" />
+                    <TextBlock Text="{Binding RssiText}" Margin="0,0,20,0" />
+                    <TextBlock Text="{Binding VehicleSafetyStatus}" Classes="H4"  />
+                </ItemsControl>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="4" Margin="16" >
+                <TextBlock Text="{Binding ChannelMapSummary, StringFormat='Pilot map: {0}'}" />
+                <TextBlock Text="{Binding BindAvailability}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding BindState, StringFormat='Bind state: {0}'}" />
+                <TextBlock Text="{Binding BindMessage}" TextWrapping="Wrap" />
+                <TextBlock IsVisible="{Binding IsStale}" 
+                           Text="RC telemetry is stale. The last values remain visible, but calibration cannot start or write until fresh input returns." 
+                           Classes="H4"  />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Center" >
             <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
                 <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
                     <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">

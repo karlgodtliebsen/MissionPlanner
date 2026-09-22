@@ -8,23 +8,23 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AccelerometerSetupView"
                                x:DataType="sections:AccelerometerSetupViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ScrollViewer VerticalScrollBarVisibility="Visible">
-        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <TextBlock Text="Accelerometer and level calibration" Classes="H2" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
-            <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
-                                 IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-            <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                 IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-
-            <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." Classes="Warning H4" />
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border Grid.Row="0" HorizontalAlignment="Center" Classes="SourceBorder" Padding="12" x:Name="SourceBorder"  >
+            <StackPanel Spacing="10">
+                <TextBlock Text="Accelerometer and level calibration" Classes="H2" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." Classes="Warning H4" />
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                 <Button ToolTip.Tip="Start six-position calibration" Command="{Binding StartSixPositionCommand}" AutomationProperties.Name="Start six-position calibration">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
-                        <TextBlock Text="Start six-position calibration" VerticalAlignment="Center" />
-                    </StackPanel>
+                    <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
                 <Button ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" AutomationProperties.Name="Calibrate level">
                     <mdi:MaterialIcon Kind="ScaleBalance" Classes="ActionIcon" />
@@ -39,15 +39,17 @@
                     <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
-            <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
-            <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
-            <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" />
-            <TextBlock Text="{Binding CompletedOrientations}" />
-            <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" FontStyle="Italic" />
+        </Border>
 
-            
-<!--            <Image Source="{Binding OrientationImage}" Height="260" Stretch="Uniform" />
--->
-        </StackPanel>
-    </ScrollViewer>
+        <Border Grid.Row="2"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <StackPanel Spacing="10">
+                <TextBlock Text="{Binding Instruction}" Classes="H4" />
+                <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}"  Classes="H4" />
+                <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" />
+                <TextBlock Text="{Binding CompletedOrientations}" />
+                <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" FontStyle="Italic" />
+            </StackPanel>
+        </Border>
+
+    </Grid>
 </utilities:UserControlViewBase>
