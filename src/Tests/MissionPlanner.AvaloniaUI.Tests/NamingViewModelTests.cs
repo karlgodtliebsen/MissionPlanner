@@ -174,7 +174,12 @@ public sealed class NamingViewModelTests
         string? initialMessage = null;
         fixture.Dialogs.DisplayProgressCancellableAsync(Arg.Any<Func<string>>(),
             Arg.Any<MissionPlanner.App.Utilities.Dialogs.DialogOptions>(), Arg.Any<CancellationToken>())
-            .Returns(call => { initialMessage = call.Arg<Func<string>>()!(); return overlay; });
+            .Returns(call =>
+            {
+                Assert.Empty(fixture.Writes);
+                initialMessage = call.Arg<Func<string>>()!();
+                return overlay;
+            });
         fixture.Connections.ReconnectAsync(target, Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
             .Returns(call =>
             {
@@ -186,7 +191,8 @@ public sealed class NamingViewModelTests
         await fixture.Model.ActivateAsync();
         fixture.Model.MavSystemId = "9";
         await fixture.Model.ApplyCommand.ExecuteAsync(null);
-        Assert.Contains("COM11", initialMessage);
+        Assert.Contains("Saving vehicle identifiers", initialMessage);
+        Assert.Single(fixture.Dialogs.ReceivedCalls(), call => call.GetMethodInfo().Name == "DisplayProgressCancellableAsync");
         Assert.Contains("confirmed", fixture.Model.StatusMessage);
         Assert.Equal("9", fixture.Model.MavSystemId);
         Assert.True(fixture.Model.CanEdit);
@@ -285,7 +291,8 @@ public sealed class NamingViewModelTests
         fixture.Model.MavSystemId = "9";
         await fixture.Model.ApplyCommand.ExecuteAsync(null);
         Assert.Contains("cancelled", fixture.Model.ErrorMessage);
-        Assert.True(fixture.Model.ReconnectCommand.CanExecute(null));
+        Assert.Empty(fixture.Writes);
+        Assert.True(fixture.Model.CanEdit);
         Assert.DoesNotContain(fixture.Connections.ReceivedCalls(), call => call.GetMethodInfo().Name == "ReconnectAsync");
         overlay.Received(1).Dispose();
     }

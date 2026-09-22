@@ -193,9 +193,19 @@ public partial class NamingViewModel(
         var attemptedWrite = false;
         CanEdit = false;
         var changedSystem = requestedSystem != systemId!.Value;
+        IDisposable? overlay = null;
         try
         {
             SetMessages("Applying changed vehicle identifiers…");
+            reconnectMessage = "Saving vehicle identifiers. Waiting for the vehicle to confirm the changes…";
+            overlay = await dialogs.DisplayProgressCancellableAsync(() => reconnectMessage,
+                new DialogOptions
+                {
+                    Title = "Updating vehicle identifiers",
+                    RequestCancellation = () => lifetime.Cancel()
+                }, lifetime.Token);
+            await Task.Yield();
+            lifetime.Token.ThrowIfCancellationRequested();
             // Write the system ID last because it can change how the target is addressed.
             if (requestedSerial != serialNumber!.Value)
             {
@@ -210,7 +220,7 @@ public partial class NamingViewModel(
             lifetime.Token.ThrowIfCancellationRequested();
             if (changedSystem && reconnectTarget is not null)
             {
-                await RecoverAsync(lifetime, requestedSystem, requestedSerial);
+                await RecoverAsync(lifetime, requestedSystem, requestedSerial, progressAlreadyShown: true);
                 return;
             }
             RequireTarget(id);
@@ -223,11 +233,11 @@ public partial class NamingViewModel(
         }
         catch (OperationCanceledException) when (!lifetime.IsCancellationRequested && active && attemptedWrite && reconnectTarget is not null)
         {
-            await RecoverAsync(lifetime, requestedSystem, requestedSerial);
+            await RecoverAsync(lifetime, requestedSystem, requestedSerial, progressAlreadyShown: true);
         }
         catch (TimeoutException) when (!lifetime.IsCancellationRequested && active && attemptedWrite && reconnectTarget is not null)
         {
-            await RecoverAsync(lifetime, requestedSystem, requestedSerial);
+            await RecoverAsync(lifetime, requestedSystem, requestedSerial, progressAlreadyShown: true);
         }
         catch (OperationCanceledException)
         {
@@ -246,6 +256,7 @@ public partial class NamingViewModel(
         }
         finally
         {
+            overlay?.Dispose();
             applying = false;
             if (ReferenceEquals(operation, lifetime))
             {

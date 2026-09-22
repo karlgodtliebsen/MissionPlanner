@@ -393,7 +393,9 @@ five seconds for a matching vehicle parameter response. A successful send alone 
 reported as a saved value. The board serial number is written before the system ID;
 a system ID change automatically reconnects using the captured connection settings.
 A disconnect or missing acknowledgement during a write also triggers recovery. The
-progress overlay explains the disconnect stabilization delay and reconnect attempts;
+progress overlay opens before the first parameter write, yields to the UI, and stays
+open through readback and any reconnect. It explains saving, the disconnect
+stabilization delay, and reconnect attempts;
 its close button cancels recovery. There is no automatic reboot.
 
 Confirmed partial changes remain tracked if a later write fails, so retrying does not

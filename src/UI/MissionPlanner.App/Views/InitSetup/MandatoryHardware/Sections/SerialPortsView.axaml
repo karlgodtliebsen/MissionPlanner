@@ -55,24 +55,21 @@
                     <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Theme="{DynamicResource ProgressRing}" />
                     <TextBlock Text="{Binding StatusMessage}"
                                IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"  TextWrapping="Wrap" />
-                    <TextBlock Text="{Binding ErrorMessage}" 
+                    <TextBlock Text="{Binding ErrorMessage}"
                                IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"  Classes="Danger" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding Diagnostic}" IsVisible="{Binding Diagnostic, Converter={StaticResource StringNotNullEmptyConverter}}"  Classes="Warning" TextWrapping="Wrap" />
                     <TextBlock Text="Receiver diagnostics include pending edits. No settings are written until Apply changes."
                                Classes="H5" TextWrapping="Wrap" />
 
                     <WrapPanel Orientation="Horizontal" ItemSpacing="10">
-                        <Button Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}" AutomationProperties.Name="Reload reported parameters">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" Width="20" Height="20" />
-                                <TextBlock Text="Reload reported parameters" VerticalAlignment="Center" />
-                            </StackPanel>
+                        <Button Command="{Binding RefreshCommand}"
+                                ToolTip.Tip="Reload reported parameters"
+                                IsEnabled="{Binding !IsBusy}"
+                                AutomationProperties.Name="Reload reported parameters">
+                            <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" Width="20" Height="20" />
                         </Button>
-                        <Button Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <mdi:MaterialIcon Kind="Check" Classes="ActionIcon" Width="20" Height="20" />
-                                <TextBlock Text="Apply changes" VerticalAlignment="Center" />
-                            </StackPanel>
+                        <Button ToolTip.Tip="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
+                            <mdi:MaterialIcon Kind="Check" Classes="ActionIcon" Width="20" Height="20" />
                         </Button>
                     </WrapPanel>
                 </StackPanel>

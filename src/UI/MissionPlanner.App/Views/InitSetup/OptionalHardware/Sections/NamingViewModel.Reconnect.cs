@@ -30,7 +30,7 @@ public partial class NamingViewModel
         }
     }
 
-    private async Task RecoverAsync(CancellationTokenSource lifetime, int? expectedSystem = null, int? expectedSerial = null)
+    private async Task RecoverAsync(CancellationTokenSource lifetime, int? expectedSystem = null, int? expectedSerial = null, bool progressAlreadyShown = false)
     {
         var target = reconnectTarget!;
         recovering = true;
@@ -40,12 +40,16 @@ public partial class NamingViewModel
         IDisposable? overlay = null;
         try
         {
-            overlay = await dialogs.DisplayProgressCancellableAsync(() => reconnectMessage,
-                new DialogOptions
-                {
-                    Title = "Reconnecting vehicle",
-                    RequestCancellation = () => lifetime.Cancel()
-                }, lifetime.Token);
+            if (!progressAlreadyShown)
+            {
+                overlay = await dialogs.DisplayProgressCancellableAsync(() => reconnectMessage,
+                    new DialogOptions
+                    {
+                        Title = "Reconnecting vehicle",
+                        RequestCancellation = () => lifetime.Cancel()
+                    }, lifetime.Token);
+            }
+            await Task.Yield();
             lifetime.Token.ThrowIfCancellationRequested();
             var progress = new Progress<string>(text => reconnectMessage = text);
             var result = await connections.ReconnectAsync(target, progress, lifetime.Token);
