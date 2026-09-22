@@ -10,27 +10,29 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SafetySetupView"
                                x:DataType="sections:SafetySetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ScrollViewer VerticalScrollBarVisibility="Visible">
-        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <Border  HorizontalAlignment="Center" x:Name="SourceBorder">
-                <StackPanel >
-                    <TextBlock Text="Safety and arming" Classes="H2" />
-                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <ItemsControl IsVisible="{Binding HasWarnings}" ItemsSource="{Binding Warnings}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="x:String">
-                                <TextBlock Text="{Binding .}" Classes="Warning" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+        <Border HorizontalAlignment="Center" Padding="12"  x:Name="SourceBorder"  >
+            <StackPanel Spacing="10">
+                <TextBlock Text="Safety and arming" Classes="H2" />
+                <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <ItemsControl IsVisible="{Binding HasWarnings}" ItemsSource="{Binding Warnings}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock Text="{Binding .}" Classes="Warning" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1" Margin="16" >
             <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-                <StackPanel >
+                <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
                     <ItemsControl ItemsSource="{Binding Items}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="mandatoryHardware:SafetyCheckItem">
@@ -49,6 +51,6 @@
                     </StackPanel>
                 </StackPanel>
             </Border>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </Grid>
 </utilities:UserControlViewBase>

@@ -30,7 +30,7 @@
                 <TabItem Header="Flight Modes"><sections:FlightModesSetupView /></TabItem>
                 <TabItem Header="Failsafe"><sections:FailSafeView /></TabItem>
                 <TabItem Header="Initial Tune Params"><sections:InitTuneParametersView /></TabItem>
-                <TabItem Header="HW ID"><sections:HwIdView /></TabItem>
+                <TabItem Header="Hardware ID"><sections:HwIdView /></TabItem>
                 <TabItem Header="ADSB"><sections:AdsbView /></TabItem>
                 <TabItem Header="Safety"><sections:SafetySetupView /></TabItem>
                 <TabItem Header="Summary"><sections:SetupSummaryView /></TabItem>

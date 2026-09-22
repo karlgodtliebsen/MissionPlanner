@@ -2,15 +2,18 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -24,6 +27,8 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     private readonly ISetupWorkflowCatalog workflowCatalog;
     private readonly IUserConfirmationService confirmation;
     private readonly IDateTimeProvider clock;
+    private readonly IDomainEventHub domainEventHub;
+    private IDisposable? parameterLoadSubscription;
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes the frame setup workflow.</summary>
@@ -35,6 +40,8 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     /// <param name="confirmation">The shared confirmation service.</param>
     /// <param name="clock">The application clock.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="domainEventHub">The parameter load event source.</param>
     public FrameSetupViewModel(
         IActiveVehicleContext activeVehicle,
         IFrameConfigurationService frameService,
@@ -42,8 +49,9 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
         ISetupCompletionStore completionStore,
         ISetupWorkflowCatalog workflowCatalog,
         IUserConfirmationService confirmation,
-        IDateTimeProvider clock, ILogger<FrameSetupViewModel> logger)
-        : base(logger)
+        IDateTimeProvider clock, ILogger<FrameSetupViewModel> logger,
+        IUiDispatcher dispatcher, IDomainEventHub domainEventHub)
+        : base(logger, dispatcher, domainEventHub)
     {
         this.activeVehicle = activeVehicle;
         this.frameService = frameService;
@@ -52,6 +60,7 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
         this.workflowCatalog = workflowCatalog;
         this.confirmation = confirmation;
         this.clock = clock;
+        this.domainEventHub = domainEventHub;
     }
 
     /// <summary>Gets frame parameters supported by both live values and firmware metadata.</summary>
@@ -103,7 +112,13 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
         try
         {
             var configuration = await frameService.GetConfigurationAsync(vehicleId, token);
-            Dispatcher.Dispatch(() => ShowConfiguration(configuration));
+            Dispatcher.Dispatch(() =>
+            {
+                if (!token.IsCancellationRequested && activeVehicle.IsOnline && activeVehicle.VehicleId == vehicleId)
+                {
+                    ShowConfiguration(configuration);
+                }
+            });
         }
         catch (OperationCanceledException)
         {
@@ -126,20 +141,27 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     /// <inheritdoc />
     public override async Task ActivateAsync()
     {
+        if (parameterLoadSubscription is not null)
+        {
+            return;
+        }
+
         SetMessages("Load the connected vehicle's supported frame choices.");
+        parameterLoadSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(OnParameterLoadStatusChanged);
         activeVehicle.Changed += OnActiveVehicleChanged;
-        await LoadAsync();
         await base.ActivateAsync();
+        await LoadAsync();
     }
 
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        parameterLoadSubscription?.Dispose();
+        parameterLoadSubscription = null;
         Cancel();
         activeVehicle.Changed -= OnActiveVehicleChanged;
         return base.DeactivateAsync();
     }
-
 
 
     [RelayCommand]
@@ -252,6 +274,23 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
         {
             Dispatcher.DispatchAsync(LoadAsync);
         }
+    }
+
+    private Task OnParameterLoadStatusChanged(VehicleParameterLoadStatusChanged evt, CancellationToken cancellationToken)
+    {
+        if (evt.Status.State != ParameterLoadState.Completed)
+        {
+            return Task.CompletedTask;
+        }
+
+        return Dispatcher.DispatchAsync(async () =>
+        {
+            if (parameterLoadSubscription is not null && !cancellationToken.IsCancellationRequested &&
+                activeVehicle.IsOnline && activeVehicle.VehicleId == evt.Status.VehicleId)
+            {
+                await LoadAsync();
+            }
+        });
     }
 
     private void ShowConfiguration(FrameConfigurationSnapshot configuration, bool preserveStatus = false)

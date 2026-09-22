@@ -9,45 +9,60 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AdsbView"
                                x:DataType="sections:AdsbViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ScrollViewer VerticalScrollBarVisibility="Visible">
-        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <TextBlock Text="ADSB" Classes="H2" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
-            <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                 IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-            <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                 IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-            <ItemsControl ItemsSource="{Binding Guidance}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="x:String">
-                        <TextBlock Text="{Binding .}" Classes="Warning" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <ItemsControl ItemsSource="{Binding Settings}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
-                        <Border Classes="SectionCard" Padding="12">
-                            <Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="10">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
-                                    <TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
-                                </StackPanel>
-                                <ComboBox Grid.Column="1" ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" DisplayMemberBinding="{Binding Name}" />
-                                <TextBox Grid.Column="1" PlaceholderText="Value" IsVisible="{Binding IsNumeric}" Text="{Binding NumericValue}" />
-                                <Button Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
-                                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                                </Button>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-            <StackPanel HorizontalAlignment="Right">
-                <Button ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh">
+
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12"   x:Name="SourceBorder" >
+            <StackPanel Spacing="10">
+                <TextBlock Text="ADSB" Classes="H2" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <Button ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+        </Border>
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" Margin="16">
+            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+                <StackPanel Spacing="10"  HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                    <ItemsControl ItemsSource="{Binding Guidance}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{Binding .}" Classes="Warning" TextWrapping="Wrap"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding Settings}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
+                                <Border Classes="SectionCard" Padding="12">
+                                    <Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="10">
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
+                                            <TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
+                                        </StackPanel>
+                                        <ComboBox Grid.Column="1" ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" DisplayMemberBinding="{Binding Name}" />
+                                        <TextBox Grid.Column="1" PlaceholderText="Value" IsVisible="{Binding IsNumeric}" Text="{Binding NumericValue}" />
+                                        <Button Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                            <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+
+    </Grid>
 </utilities:UserControlViewBase>

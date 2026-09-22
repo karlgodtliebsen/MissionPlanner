@@ -10,27 +10,39 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
                                x:DataType="sections:SetupSummaryViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <ScrollViewer VerticalScrollBarVisibility="Visible">
-        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <Border  HorizontalAlignment="Center" x:Name="SourceBorder">
-                <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border HorizontalAlignment="Center" Padding="12"  x:Name="SourceBorder"  >
+            <StackPanel Spacing="10">
+                <TextBlock Text="Setup summary" Classes="H2" />
+                <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <TextBlock Text="{Binding Heading}" FontWeight="Bold" />
+                <TextBlock Text="This report describes configuration evidence only and is not a safe-to-fly certification." Opacity="0.75" />
+            </StackPanel>
+        </Border>
 
-                    <TextBlock Text="Setup summary" Classes="H2" />
-                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
-                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <TextBlock Text="{Binding Heading}" FontWeight="Bold" />
-                    <TextBlock Text="This report describes configuration evidence only and is not a safe-to-fly certification." Opacity="0.75" />
-                </StackPanel>
-            </Border>
+      <Border Grid.Row="1"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <Button ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" AutomationProperties.Name="Rebuild summary">
+                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON">
+                    <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                </Button>
+                <Button ToolTip.Tip="Export Markdown" Command="{Binding ExportMarkdownCommand}" AutomationProperties.Name="Export Markdown">
+                    <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                </Button>
+            </StackPanel>
+        </Border>
 
-            <Border Classes="SectionCard" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
-                <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch">
-
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16" >
+            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+                <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
                     <ItemsControl ItemsSource="{Binding Sections}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models1:SetupSummarySectionViewModel">
@@ -54,8 +66,6 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-
-
                     <ItemsControl IsVisible="{Binding HasWarnings}" ItemsSource="{Binding Warnings}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
@@ -64,22 +74,12 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                        <Button ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" AutomationProperties.Name="Rebuild summary">
-                            <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                        </Button>
-                        <Button ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON">
-                            <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
-                        </Button>
-                        <Button ToolTip.Tip="Export Markdown" Command="{Binding ExportMarkdownCommand}" AutomationProperties.Name="Export Markdown">
-                            <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
-                        </Button>
-                    </StackPanel>
 
-                    <TextBox AcceptsReturn="True" Text="{Binding ExportedText}" IsReadOnly="True" 
+                    <TextBox AcceptsReturn="True" Text="{Binding ExportedText}" IsReadOnly="True"
                              Height="180" IsVisible="{Binding HasExport}" />
                 </StackPanel>
             </Border>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+
+    </Grid>
 </utilities:UserControlViewBase>

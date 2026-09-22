@@ -10,82 +10,82 @@
                                x:DataType="sections:ServoOutputSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <ScrollViewer VerticalScrollBarVisibility="Visible">
-        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            
-            <Grid RowDefinitions="Auto,*" Margin="26" RowSpacing="16" HorizontalAlignment="Stretch">
-                <Border  HorizontalAlignment="Center" x:Name="SourceBorder">
-                    <StackPanel Orientation="Vertical" Spacing="12" HorizontalAlignment="Stretch">
-                        <TextBlock  Text="Servo output functions" Classes="H2" />
-                        <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" 
-                                     IsVisible="{Binding IsBusy}" />
-                        <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"  
-                                             IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                        <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger" 
-                                             IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
-                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,10">
-                            <Button ToolTip.Tip="Refresh servo outputs" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh servo outputs">
-                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                            </Button>
-                            <Button ToolTip.Tip="Write" Command="{Binding WriteCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Write">
-                                <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
-                            </Button>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-                <Border Grid.Row="1" HorizontalAlignment="Center"  Width="{Binding #SourceBorder.Bounds.Width}">
-                    <DataGrid AutoGenerateColumns="False"  ItemsSource="{Binding Outputs}"
-                              RowHeight="60" HorizontalAlignment="Center" VerticalAlignment="Stretch">
 
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Width="75" Binding="{Binding Header}" Header="" />
-                            <DataGridTemplateColumn Header="Output PWM" Width="160">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
-                                        <TextBlock Text="{Binding LiveDescription}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Reverse" Width="120">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
-                                        <CheckBox IsChecked="{Binding Reversed, Mode=TwoWay}" HorizontalAlignment="Center" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Function" Width="200">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
-                                        <ComboBox VerticalAlignment="Center" HorizontalAlignment="Stretch" ToolTip.Tip="Function" ItemsSource="{Binding Functions}" SelectedItem="{Binding SelectedFunction}" DisplayMemberBinding="{Binding Name}" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Min" Width="160">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
-                                        <NumericUpDown Value="{Binding MinimumPwm, Mode=TwoWay}" FormatString="F0" Minimum="{Binding AllowedMinimumPwm}" Maximum="{Binding AllowedMaximumPwm}" VerticalAlignment="Center" MinWidth="150" HorizontalAlignment="Stretch" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Trim" Width="160">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
-                                        <NumericUpDown Value="{Binding TrimPwm, Mode=TwoWay}" FormatString="F0" Minimum="{Binding AllowedMinimumPwm}" Maximum="{Binding AllowedMaximumPwm}" VerticalAlignment="Center" MinWidth="150" HorizontalAlignment="Stretch" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                            <DataGridTemplateColumn Header="Max" Width="160">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
-                                        <NumericUpDown Value="{Binding MaximumPwm, Mode=TwoWay}" FormatString="F0" Minimum="{Binding AllowedMinimumPwm}" Maximum="{Binding AllowedMaximumPwm}" VerticalAlignment="Center" MinWidth="150" HorizontalAlignment="Stretch" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Border>
-            </Grid>
-        </StackPanel>
-    </ScrollViewer>
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border HorizontalAlignment="Center" Padding="12"  x:Name="SourceBorder"  >
+            <StackPanel Spacing="10">
+                <TextBlock  Text="Servo output functions" Classes="H2" />
+                <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}"
+                             IsVisible="{Binding IsBusy}" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,10">
+                    <Button ToolTip.Tip="Refresh servo outputs" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh servo outputs">
+                        <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                    </Button>
+                    <Button ToolTip.Tip="Write" Command="{Binding WriteCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Write">
+                        <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="1"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <DataGrid AutoGenerateColumns="False"  ItemsSource="{Binding Outputs}"
+                          RowHeight="60" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Width="75" Binding="{Binding Header}" Header="" />
+                        <DataGridTemplateColumn Header="Output PWM" Width="160">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+                                    <TextBlock Text="{Binding LiveDescription}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Reverse" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+                                    <CheckBox IsChecked="{Binding Reversed, Mode=TwoWay}" HorizontalAlignment="Center" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Function" Width="200">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+                                    <ComboBox VerticalAlignment="Center" HorizontalAlignment="Stretch" ToolTip.Tip="Function" ItemsSource="{Binding Functions}" SelectedItem="{Binding SelectedFunction}" DisplayMemberBinding="{Binding Name}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Min" Width="160">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+                                    <NumericUpDown Value="{Binding MinimumPwm, Mode=TwoWay}" FormatString="F0" Minimum="{Binding AllowedMinimumPwm}" Maximum="{Binding AllowedMaximumPwm}" VerticalAlignment="Center" MinWidth="150" HorizontalAlignment="Stretch" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Trim" Width="160">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+                                    <NumericUpDown Value="{Binding TrimPwm, Mode=TwoWay}" FormatString="F0" Minimum="{Binding AllowedMinimumPwm}" Maximum="{Binding AllowedMaximumPwm}" VerticalAlignment="Center" MinWidth="150" HorizontalAlignment="Stretch" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                        <DataGridTemplateColumn Header="Max" Width="160">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+                                    <NumericUpDown Value="{Binding MaximumPwm, Mode=TwoWay}" FormatString="F0" Minimum="{Binding AllowedMinimumPwm}" Maximum="{Binding AllowedMaximumPwm}" VerticalAlignment="Center" MinWidth="150" HorizontalAlignment="Stretch" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </Border>
+    </Grid>
+
 </utilities:UserControlViewBase>

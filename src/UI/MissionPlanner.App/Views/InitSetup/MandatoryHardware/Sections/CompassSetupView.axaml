@@ -9,62 +9,43 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                x:DataType="sections:CompassSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ScrollViewer VerticalScrollBarVisibility="Visible">
-        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <TextBlock Text="Compass discovery and calibration" Classes="H2" />
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
-            <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
-                                 IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-            <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                 IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-            <StackPanel Orientation="Vertical" IsVisible="{Binding HasIssues}" Spacing="4">
-                <TextBlock Text="Configuration warnings" FontWeight="Bold" Classes="Warning" />
-                <ItemsControl ItemsSource="{Binding Issues}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                            <TextBlock Text="{Binding .}" Classes="Warning" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </StackPanel>
-            <Border Padding="12" Classes="SectionCard">
-                <StackPanel Spacing="6">
-                    <TextBlock Text="Configured versus detected hardware" FontWeight="Bold" />
-                    <TextBlock Text="{Binding DiagnosticSummary}" TextWrapping="Wrap" />
-                    <ItemsControl ItemsSource="{Binding DiagnosticEvidence}">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border Grid.Row="0" HorizontalAlignment="Center" x:Name="SourceBorder" Padding="12"  >
+            <StackPanel Spacing="10">
+                <TextBlock Text="Compass discovery and calibration" Classes="H2" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <StackPanel Orientation="Vertical" IsVisible="{Binding HasIssues}" Spacing="4">
+                    <TextBlock Text="Configuration warnings" FontWeight="Bold" Classes="Warning" />
+                    <ItemsControl ItemsSource="{Binding Issues}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
-                                <TextBlock Text="{Binding .}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding .}" Classes="Warning" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
-            </Border>
-            <ItemsControl ItemsSource="{Binding Compasses}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="sections:CompassInstanceViewModel">
-                        <Border Padding="10" Classes="SectionCard">
-                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
-                                <TextBlock Text="{Binding Header}" FontWeight="Bold" />
-                                <TextBlock Grid.Column="1" Text="{Binding HealthLabel}" />
-                                <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DeviceLabel}" />
-                                <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding OffsetsLabel}" Opacity="0.75" />
-                                <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding MotorCompensationLabel}" Opacity="0.75" />
-                                <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="2" Spacing="10">
-                                    <TextBlock Text="Use" VerticalAlignment="Center" />
-                                    <ToggleSwitch IsChecked="{Binding IsUsed}" />
-                                    <TextBlock Text="External" VerticalAlignment="Center" IsVisible="{Binding SupportsExternal}" />
-                                    <ToggleSwitch IsChecked="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
-                                    <ComboBox ToolTip.Tip="Orientation" ItemsSource="{Binding Orientations}" SelectedItem="{Binding SelectedOrientation}" DisplayMemberBinding="{Binding Name}" />
-                                    <Button HorizontalAlignment="Right" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
-                                        <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
-                                    </Button>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="1" Padding="12"  Classes="SectionCard"  Width="{Binding #SourceBorder.Bounds.Width}">
+            <StackPanel Spacing="10">
+                <TextBlock Text="Configured versus detected hardware" FontWeight="Bold" />
+                <TextBlock Text="{Binding DiagnosticSummary}" TextWrapping="Wrap" />
+                <ItemsControl ItemsSource="{Binding DiagnosticEvidence}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock Text="{Binding .}" TextWrapping="Wrap" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                 <Button ToolTip.Tip="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh compass values">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
@@ -82,14 +63,49 @@
                     <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
+        </Border>
 
-            <TextBlock Text="Onboard calibration" FontSize="18" FontWeight="Bold" />
-            <TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning" FontWeight="Bold" />
-            <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
-            <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
-            <TextBlock Text="{Binding ProgressSummary}" />
-            <TextBlock Text="{Binding QualitySummary}" FontStyle="Italic" />
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Visible" Margin="16">
+            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+                <StackPanel Spacing="10"   HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                    <ItemsControl ItemsSource="{Binding Compasses}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="sections:CompassInstanceViewModel">
+                                <Border Padding="10" Classes="SectionCard">
+                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+                                        <TextBlock Text="{Binding Header}" FontWeight="Bold" />
+                                        <TextBlock Grid.Column="1" Text="{Binding HealthLabel}" />
+                                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DeviceLabel}" />
+                                        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding OffsetsLabel}" Opacity="0.75" />
+                                        <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding MotorCompensationLabel}" Opacity="0.75" />
+                                        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="2" Spacing="10">
+                                            <TextBlock Text="Use" VerticalAlignment="Center" />
+                                            <ToggleSwitch IsChecked="{Binding IsUsed}" />
+                                            <TextBlock Text="External" VerticalAlignment="Center" IsVisible="{Binding SupportsExternal}" />
+                                            <ToggleSwitch IsChecked="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
+                                            <ComboBox ToolTip.Tip="Orientation" ItemsSource="{Binding Orientations}" SelectedItem="{Binding SelectedOrientation}" DisplayMemberBinding="{Binding Name}" />
+                                            <Button HorizontalAlignment="Right" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
+                                                <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
-        </StackPanel>
-    </ScrollViewer>
+
+                    <TextBlock Text="Onboard calibration" Classes="H3" />
+                    <TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Classes="Warning" FontWeight="Bold" />
+                    <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
+                    <TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
+                    <TextBlock Text="{Binding ProgressSummary}" />
+                    <TextBlock Text="{Binding QualitySummary}" FontStyle="Italic" />
+
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+
+
+    </Grid>
 </utilities:UserControlViewBase>

@@ -9,32 +9,35 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.InitTuneParametersView"
                                x:DataType="sections:InitTuneParametersViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ScrollViewer VerticalScrollBarVisibility="Visible">
-        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-            <Border  HorizontalAlignment="Center" x:Name="SourceBorder">
-                <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
-                    <TextBlock Text="Initial Tune Parameters" Classes="H2" />
-                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <ItemsControl ItemsSource="{Binding Guidance}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="x:String">
-                                <TextBlock Text="{Binding .}" Classes="Warning" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-            <Border Classes="SectionCard" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
-                <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch">
-                    <StackPanel HorizontalAlignment="Right">
-                        <Button ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
-                            <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                        </Button>
-                    </StackPanel>
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        
+        <Border HorizontalAlignment="Center" Padding="12"  x:Name="SourceBorder"  >
+            <StackPanel Spacing="10">
+                <TextBlock Text="Initial Tune Parameters" Classes="H2" />
+                <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <ItemsControl ItemsSource="{Binding Guidance}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <TextBlock Text="{Binding .}" Classes="Warning" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+        <Border Grid.Row="1"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <Button ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
+                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
+            </StackPanel>
+        </Border>
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16" >
+            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+                <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
                     <ItemsControl ItemsSource="{Binding Settings}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
@@ -67,6 +70,6 @@
                     </ItemsControl>
                 </StackPanel>
             </Border>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </Grid>
 </utilities:UserControlViewBase>
