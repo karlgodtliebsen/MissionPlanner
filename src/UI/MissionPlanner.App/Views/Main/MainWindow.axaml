@@ -13,7 +13,7 @@
     Title="MissionPlanner Next Generation">
 
     <u:UrsaWindow.TitleBarContent>
-        <common:TopBarView />
+        <common:TopBarView Height="50" VerticalContentAlignment="Center" />
     </u:UrsaWindow.TitleBarContent>
 
     <Grid RowDefinitions="50,*,Auto">
