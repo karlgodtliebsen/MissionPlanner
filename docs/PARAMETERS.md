@@ -1,4 +1,4 @@
-# Vehicle Parameters
+﻿# Vehicle Parameters
 
 How MissionPlanner requests, streams, stores, edits and enriches ArduPilot parameters.
 
@@ -391,16 +391,25 @@ Apply validates integer values (`MAV_SYSID`: 1–255; `BRD_SERIAL_NUM`: -8388608
 writes only changed values using each parameter's reported wire type, and waits up to
 five seconds for a matching vehicle parameter response. A successful send alone is not
 reported as a saved value. The board serial number is written before the system ID;
-a new system ID may require reconnecting. There is no automatic reboot.
+a system ID change automatically reconnects using the captured connection settings.
+A disconnect or missing acknowledgement during a write also triggers recovery. The
+progress overlay explains the disconnect stabilization delay and reconnect attempts;
+its close button cancels recovery. There is no automatic reboot.
 
 Confirmed partial changes remain tracked if a later write fails, so retrying does not
 resend them. Missing parameters, failed sends and unconfirmed writes show explicit
-errors. Leaving the page or changing the active vehicle cancels pending operations;
-late responses cannot populate a different vehicle's fields.
+errors. Recovery reads both identifiers afresh and compares them with the requested
+values; it never resends writes automatically. A Reconnect button allows a manual retry
+after cancellation, failure, or a later disconnect. Leaving the page cancels recovery.
+The old connection's cancellation token cancels parameter exchanges but not recovery;
+expected connection changes during recovery do not start competing page loads.
 
 Verification: NamingViewModelTests covers fresh loading, disconnected presentation,
 changed-only ordered writes, integer validation, failed reads, partial write retry,
 unconfirmed writes, deactivation and disconnect. Hardware identifier writes are left
 to the user's Apply action.
 
-Naming verification: the UI project builds successfully and all 188 UI tests pass, including 16 Naming regressions. Two existing parameter test fixtures now construct the sealed ParametersFileHandler with mocked file-service dependencies. No hardware identifier values were changed during verification.
+Reconnect regressions cover confirmed writes, lost acknowledgements with old-session
+cancellation, fresh readback, manual retry, and overlay cancellation/disposal. Core tests
+cover endpoint preservation, disconnect stabilization, retries, cancellation, and refusal
+to replace another connection. No hardware identifier values are changed by these tests.

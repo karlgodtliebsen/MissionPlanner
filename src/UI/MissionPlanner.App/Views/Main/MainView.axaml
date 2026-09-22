@@ -6,8 +6,8 @@
              x:Class="MissionPlanner.App.Views.Main.MainView"
              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
     <Grid>
-        <Grid RowDefinitions="50,*,Auto">
-            <common:TopBarView Grid.Row="0" />
+        <Grid RowDefinitions="35,*,Auto">
+            <common:TopBarView Grid.Row="0" VerticalAlignment="Stretch" VerticalContentAlignment="Bottom"/>
             <navigation:MainShellView Grid.Row="1" />
             <common:StatusBarView Grid.Row="2" />
         </Grid>

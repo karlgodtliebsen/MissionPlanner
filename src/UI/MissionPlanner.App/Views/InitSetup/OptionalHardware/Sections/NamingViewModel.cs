@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -18,7 +19,9 @@ public partial class NamingViewModel(
     IVehicleParameterRegistry registry,
     IUiDispatcher dispatcher,
     IDomainEventHub eventHub,
-    ILogger<NamingViewModel> logger) : OptionalHardwareBaseViewModel(logger, dispatcher, eventHub)
+    ILogger<NamingViewModel> logger,
+    IVehicleConnectionService connections,
+    IDialogService dialogs) : OptionalHardwareBaseViewModel(logger, dispatcher, eventHub)
 {
     private const string systemIdName = "MAV_SYSID";
     private const string serialNumberName = "BRD_SERIAL_NUM";
@@ -27,6 +30,10 @@ public partial class NamingViewModel(
     private VehicleParameter? systemId;
     private VehicleParameter? serialNumber;
     private bool active;
+    private bool applying;
+    private bool recovering;
+    private VehicleReconnectTarget? reconnectTarget;
+    private string reconnectMessage = string.Empty;
 
     /// <summary>Gets or sets the pending MAVLink system ID (1–255).</summary>
     [ObservableProperty]
@@ -41,7 +48,10 @@ public partial class NamingViewModel(
     /// <summary>Gets whether both identifiers are loaded and can be edited.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
-    public partial bool CanEdit { get; private set; }
+    public partial bool CanEdit
+    {
+        get; private set;
+    }
 
     /// <inheritdoc />
     public override async Task ActivateAsync()
@@ -75,6 +85,10 @@ public partial class NamingViewModel(
 
     private void OnVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
+        if (applying || recovering)
+        {
+            return; // Recovery owns the expected connection transition and reload.
+        }
         // Invalidate the old target before queued UI work or delayed parameter replies run.
         operation?.Cancel();
         Dispatcher.Dispatch(() =>
@@ -105,6 +119,7 @@ public partial class NamingViewModel(
                 return;
             }
 
+            reconnectTarget = connections.CaptureReconnectTarget() ?? reconnectTarget;
             SetMessages("Loading vehicle identifiers…");
             // Subscribe before each request: cached values must not masquerade as fresh responses.
             var loadedSystem = await ExchangeAsync(id, systemIdName, null, lifetime.Token);
@@ -140,6 +155,7 @@ public partial class NamingViewModel(
             {
                 operation = null;
                 ApplyCommand.NotifyCanExecuteChanged();
+                ReconnectCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -170,8 +186,11 @@ public partial class NamingViewModel(
             return;
         }
 
-        using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(vehicle.ConnectionCancellationToken);
+        using var lifetime = new CancellationTokenSource();
         operation = lifetime;
+        applying = true;
+        reconnectTarget = connections.CaptureReconnectTarget() ?? reconnectTarget;
+        var attemptedWrite = false;
         CanEdit = false;
         var changedSystem = requestedSystem != systemId!.Value;
         try
@@ -180,25 +199,41 @@ public partial class NamingViewModel(
             // Write the system ID last because it can change how the target is addressed.
             if (requestedSerial != serialNumber!.Value)
             {
+                attemptedWrite = true;
                 serialNumber = await ExchangeAsync(id, serialNumberName, requestedSerial, lifetime.Token);
             }
             if (changedSystem)
             {
+                attemptedWrite = true;
                 systemId = await ExchangeAsync(id, systemIdName, requestedSystem, lifetime.Token);
             }
             lifetime.Token.ThrowIfCancellationRequested();
+            if (changedSystem && reconnectTarget is not null)
+            {
+                await RecoverAsync(lifetime, requestedSystem, requestedSerial);
+                return;
+            }
             RequireTarget(id);
             MavSystemId = Format(systemId.Value);
             BoardSerialNumber = Format(serialNumber.Value);
             SetMessages(changedSystem
                 ? "Changed identifiers confirmed. Reconnect if the vehicle starts using its new system ID."
                 : "Changed identifiers confirmed by the vehicle.");
+            NotificationManager?.Show(StatusMessage ?? "");
+        }
+        catch (OperationCanceledException) when (!lifetime.IsCancellationRequested && active && attemptedWrite && reconnectTarget is not null)
+        {
+            await RecoverAsync(lifetime, requestedSystem, requestedSerial);
+        }
+        catch (TimeoutException) when (!lifetime.IsCancellationRequested && active && attemptedWrite && reconnectTarget is not null)
+        {
+            await RecoverAsync(lifetime, requestedSystem, requestedSerial);
         }
         catch (OperationCanceledException)
         {
-            if (ReferenceEquals(operation, lifetime) && active)
+            if (active)
             {
-                SetMessages(null, "Connection changed while applying identifiers. Reconnect and reload to verify the vehicle values.");
+                SetMessages(null, "Identifier update/reconnect cancelled. Reload the vehicle values before retrying.");
             }
         }
         catch (Exception exception)
@@ -211,16 +246,20 @@ public partial class NamingViewModel(
         }
         finally
         {
+            applying = false;
             if (ReferenceEquals(operation, lifetime))
             {
                 operation = null;
-                CanEdit = active && vehicle.IsOnline && vehicle.VehicleId == id;
+                CanEdit = active && vehicle.IsOnline && loadedVehicle is not null && vehicle.VehicleId == loadedVehicle;
+                ReconnectCommand.NotifyCanExecuteChanged();
             }
         }
     }
 
     private async Task<VehicleParameter> ExchangeAsync(VehicleId id, string name, int? value, CancellationToken token)
     {
+        using var connectionLifetime = CancellationTokenSource.CreateLinkedTokenSource(token, vehicle.ConnectionCancellationToken);
+        token = connectionLifetime.Token;
         token.ThrowIfCancellationRequested();
         RequireTarget(id);
         var response = new TaskCompletionSource<VehicleParameter>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -272,5 +311,8 @@ public partial class NamingViewModel(
         }
     }
 
-    private static string Format(float value) => value.ToString("0", CultureInfo.InvariantCulture);
+    private static string Format(float value)
+    {
+        return value.ToString("0", CultureInfo.InvariantCulture);
+    }
 }

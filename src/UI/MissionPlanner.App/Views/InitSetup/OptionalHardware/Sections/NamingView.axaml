@@ -26,6 +26,10 @@
                         Command="{Binding ApplyCommand}" >
                     <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                 </Button>
+                <Button ToolTip.Tip="Reconnect to the previous vehicle connection"
+                        Command="{Binding ReconnectCommand}" AutomationProperties.Name="Reconnect vehicle">
+                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                </Button>
             </StackPanel>
 
             <Border HorizontalAlignment="Stretch" Padding="25" Classes="SectionCard" MaxWidth="450" IsEnabled="{Binding CanEdit}">

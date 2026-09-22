@@ -297,3 +297,23 @@ Verification on 2026-09-19: the full solution builds with zero errors. Run-AllTe
 passes 1,250 .NET tests (30 skipped) and seven browser JavaScript tests. The final
 Core rerun after cleanup review passes 729 tests (six skipped). Physical hardware
 validation remains outstanding.
+
+## Reconnecting after identifier changes
+
+Naming captures an immutable `VehicleReconnectTarget` before Apply. It retains the
+connection generation and exact serial port/baud, TCP host/port, or UDP local/remote
+settings. `IVehicleConnectionService.ReconnectAsync` closes only that generation and
+shares the normal connection lock with monitor-driven teardown. It waits two seconds
+for the endpoint to settle, then makes up to three attempts with two seconds between
+failures and a 30-second overall deadline. Each attempt waits for the normal vehicle
+heartbeat. Exclusive connect paths refuse to replace an unrelated active connection,
+including one opened during the delay. No port scanning is performed.
+
+Recovery has a separate cancellation lifetime from the disconnected vehicle. Naming
+shows the existing cancellable progress overlay through teardown, retries, and fresh
+identifier readback. Closing the overlay or leaving the page cancels recovery; all
+completion paths dispose the overlay. Readback has a separate 12-second limit and
+must confirm the requested identifiers before the UI reports them saved. Recovery
+never repeats parameter writes. A manual Reconnect button supports another attempt
+after failure/cancellation or a later disconnect. This is a Naming workflow, not a
+global reconnect policy for ordinary connection loss.

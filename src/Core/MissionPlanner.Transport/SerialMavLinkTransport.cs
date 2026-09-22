@@ -133,13 +133,21 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
                 serialPort.DiscardInBuffer();
                 serialPort.DiscardOutBuffer();
                 //do not break for exceptions here, we want to close the port even if discarding buffers fails
-                serialPort.Close();
-
+                if (serialPort.IsOpen)
+                {
+                    try
+                    {
+                        serialPort.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogTrace(ex, "Non Fatal Error. Failed to close serial port {PortName}.", serialPort.PortName);
+                    }
+                }
                 // Give the OS time to fully release the port (Windows-specific issue)
                 // This prevents "Access denied" errors when reopening quickly
                 await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
-
             logger.LogTrace("Serial port {PortName} closed.", serialPort.PortName);
         }
         catch (OperationCanceledException)

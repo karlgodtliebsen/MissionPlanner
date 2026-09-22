@@ -18,7 +18,7 @@ namespace MissionPlanner.Core.Vehicles;
 /// Service for managing vehicle connections via MAVLink transport.
 /// Orchestrates transport creation, connection establishment, and vehicle registration.
 /// </summary>
-public class VehicleConnectionService(
+public partial class VehicleConnectionService(
     IVehicleConnectionSession connectionSession,
     IDomainEventHub domainEventHub,
     IDateTimeProvider dateTimeProvider,
@@ -98,7 +98,10 @@ public class VehicleConnectionService(
 
             // Store active connection
             var connectionId = Guid.NewGuid();
-            activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "Serial", portName);
+            activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "Serial", portName)
+            {
+                ReconnectTarget = new(connectionId, "Serial", portName, 0, baudRate)
+            };
 
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "Serial", portName, dateTimeProvider.UtcNow), linkedCts.Token);
@@ -124,7 +127,10 @@ public class VehicleConnectionService(
     }
 
     /// <inheritdoc/>
-    public async Task<VehicleConnectionResult> ConnectTcpAsync(string host, int port, CancellationToken cancellationToken = default)
+    public Task<VehicleConnectionResult> ConnectTcpAsync(string host, int port, CancellationToken cancellationToken = default)
+        => ConnectTcpCoreAsync(host, port, true, cancellationToken);
+
+    private async Task<VehicleConnectionResult> ConnectTcpCoreAsync(string host, int port, bool replaceExisting, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(host))
         {
@@ -137,6 +143,10 @@ public class VehicleConnectionService(
             // Disconnect existing connection if any
             if (activeConnection != null)
             {
+                if (!replaceExisting)
+                {
+                    return new VehicleConnectionResult(false, null, null, "Another connection is already active.");
+                }
                 logger.LogInformation("Disconnecting existing connection before establishing new one");
                 await DisconnectInternalAsync(cancellationToken);
             }
@@ -167,7 +177,10 @@ public class VehicleConnectionService(
 
             // Store active connection
             var connectionId = Guid.NewGuid();
-            activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "TCP", endpoint);
+            activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "TCP", endpoint)
+            {
+                ReconnectTarget = new(connectionId, "TCP", host, port, 0)
+            };
 
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
@@ -251,7 +264,10 @@ public class VehicleConnectionService(
 
             // Store active connection
             var connectionId = Guid.NewGuid();
-            activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "UDP", endpoint);
+            activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "UDP", endpoint)
+            {
+                ReconnectTarget = new(connectionId, "UDP", remoteHost, localPort, 0) { RemotePort = remotePort }
+            };
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
             monitorLease = connectionMonitor?.Track(vehicleId.Value, connectionId, connectionSession,
                 reason => DisconnectLostConnectionAsync(connectionId, reason));
@@ -762,5 +778,8 @@ public class VehicleConnectionService(
         IMavLinkTransport Transport,
         IMavLinkClient Client,
         string ConnectionType,
-        string Endpoint);
+        string Endpoint)
+    {
+        public VehicleReconnectTarget? ReconnectTarget { get; init; }
+    }
 }

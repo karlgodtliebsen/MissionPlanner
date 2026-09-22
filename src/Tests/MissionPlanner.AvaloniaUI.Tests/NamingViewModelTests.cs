@@ -163,6 +163,133 @@ public sealed class NamingViewModelTests
         Assert.Contains("Connect a vehicle", fixture.Model.StatusMessage);
     }
 
+    /// <summary>A changed system ID reconnects to the saved endpoint and verifies both values.</summary>
+    [Fact]
+    public async Task SystemIdChangeReconnectsAndClosesOverlayAfterReadback()
+    {
+        using var fixture = new Fixture();
+        var target = new VehicleReconnectTarget(Guid.NewGuid(), "Serial", "COM11", 0, 57600);
+        fixture.Connections.CaptureReconnectTarget().Returns(target);
+        var overlay = Substitute.For<IDisposable>();
+        string? initialMessage = null;
+        fixture.Dialogs.DisplayProgressCancellableAsync(Arg.Any<Func<string>>(),
+            Arg.Any<MissionPlanner.App.Utilities.Dialogs.DialogOptions>(), Arg.Any<CancellationToken>())
+            .Returns(call => { initialMessage = call.Arg<Func<string>>()!(); return overlay; });
+        fixture.Connections.ReconnectAsync(target, Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                Assert.False(call.Arg<CancellationToken>().IsCancellationRequested);
+                fixture.Active.VehicleId.Returns(new VehicleId(9, 1));
+                fixture.Active.Changed += Raise.Event<Action<ActiveVehicleChangedEventArgs>>(new ActiveVehicleChangedEventArgs(new(null, null), new(null, null)));
+                return new VehicleConnectionResult(true, new(9, 1), null);
+            });
+        await fixture.Model.ActivateAsync();
+        fixture.Model.MavSystemId = "9";
+        await fixture.Model.ApplyCommand.ExecuteAsync(null);
+        Assert.Contains("COM11", initialMessage);
+        Assert.Contains("confirmed", fixture.Model.StatusMessage);
+        Assert.Equal("9", fixture.Model.MavSystemId);
+        Assert.True(fixture.Model.CanEdit);
+        Assert.Equal(4, fixture.Reads.Count);
+        overlay.Received(1).Dispose();
+        Assert.Single(fixture.Writes);
+    }
+
+    /// <summary>Loss of the old connection cancels its readback, but not the reconnect operation.</summary>
+    [Fact]
+    public async Task LostAckRecoversWithIndependentLifetime()
+    {
+        using var fixture = new Fixture();
+        using var oldConnection = new CancellationTokenSource();
+        fixture.Active.ConnectionCancellationToken.Returns(oldConnection.Token);
+        var target = new VehicleReconnectTarget(Guid.NewGuid(), "Serial", "COM11", 0, 115200);
+        fixture.Connections.CaptureReconnectTarget().Returns(target);
+        var overlay = Substitute.For<IDisposable>();
+        fixture.Dialogs.DisplayProgressCancellableAsync(Arg.Any<Func<string>>(),
+            Arg.Any<MissionPlanner.App.Utilities.Dialogs.DialogOptions>(), Arg.Any<CancellationToken>()).Returns(overlay);
+        fixture.Parameters.SetParameterAsync(Arg.Any<VehicleId>(), "MAV_SYSID", 9, Arg.Any<MavParamType>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                fixture.CurrentSystem = 9;
+                fixture.Active.IsOnline.Returns(false);
+                oldConnection.Cancel();
+                fixture.Active.Changed += Raise.Event<Action<ActiveVehicleChangedEventArgs>>(new ActiveVehicleChangedEventArgs(new(null, null), new(null, null)));
+                return true;
+            });
+        fixture.Connections.ReconnectAsync(target, Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                Assert.False(call.Arg<CancellationToken>().IsCancellationRequested);
+                fixture.Active.IsOnline.Returns(true);
+                fixture.Active.VehicleId.Returns(new VehicleId(9, 1));
+                fixture.Active.ConnectionCancellationToken.Returns(CancellationToken.None);
+                return new VehicleConnectionResult(true, new(9, 1), null);
+            });
+        await fixture.Model.ActivateAsync();
+        fixture.Model.MavSystemId = "9";
+        await fixture.Model.ApplyCommand.ExecuteAsync(null);
+        Assert.Contains("confirmed", fixture.Model.StatusMessage);
+        Assert.True(fixture.Model.CanEdit);
+        overlay.Received(1).Dispose();
+    }
+
+    /// <summary>Failed reconnects close progress, retain a manual retry and do not claim saved values.</summary>
+    [Fact]
+    public async Task FailedReconnectAllowsManualRetry()
+    {
+        using var fixture = new Fixture();
+        var target = new VehicleReconnectTarget(Guid.NewGuid(), "Serial", "COM11", 0, 115200);
+        fixture.Connections.CaptureReconnectTarget().Returns(target);
+        var overlay = Substitute.For<IDisposable>();
+        fixture.Dialogs.DisplayProgressCancellableAsync(Arg.Any<Func<string>>(),
+            Arg.Any<MissionPlanner.App.Utilities.Dialogs.DialogOptions>(), Arg.Any<CancellationToken>()).Returns(overlay);
+        fixture.Connections.ReconnectAsync(target, Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                fixture.Active.IsOnline.Returns(false);
+                return new VehicleConnectionResult(false, null, null, "Port still busy");
+            });
+        await fixture.Model.ActivateAsync();
+        fixture.Model.MavSystemId = "9";
+        await fixture.Model.ApplyCommand.ExecuteAsync(null);
+        Assert.Contains("Port still busy", fixture.Model.ErrorMessage);
+        Assert.True(fixture.Model.ReconnectCommand.CanExecute(null));
+        Assert.False(fixture.Model.CanEdit);
+        overlay.Received(1).Dispose();
+        fixture.Connections.ReconnectAsync(target, Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                fixture.Active.IsOnline.Returns(true);
+                return new VehicleConnectionResult(true, new(1, 1), null);
+            });
+        await fixture.Model.ReconnectCommand.ExecuteAsync(null);
+        Assert.Contains("confirmed", fixture.Model.StatusMessage);
+        overlay.Received(2).Dispose();
+    }
+
+    /// <summary>Closing progress cancels recovery before any connection attempt.</summary>
+    [Fact]
+    public async Task OverlayCancellationClosesWithoutConnecting()
+    {
+        using var fixture = new Fixture();
+        fixture.Connections.CaptureReconnectTarget().Returns(new VehicleReconnectTarget(Guid.NewGuid(), "Serial", "COM11", 0, 115200));
+        var overlay = Substitute.For<IDisposable>();
+        fixture.Dialogs.DisplayProgressCancellableAsync(Arg.Any<Func<string>>(),
+            Arg.Any<MissionPlanner.App.Utilities.Dialogs.DialogOptions>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                call.Arg<MissionPlanner.App.Utilities.Dialogs.DialogOptions>()!.RequestCancellation!();
+                return overlay;
+            });
+        await fixture.Model.ActivateAsync();
+        fixture.Model.MavSystemId = "9";
+        await fixture.Model.ApplyCommand.ExecuteAsync(null);
+        Assert.Contains("cancelled", fixture.Model.ErrorMessage);
+        Assert.True(fixture.Model.ReconnectCommand.CanExecute(null));
+        Assert.DoesNotContain(fixture.Connections.ReceivedCalls(), call => call.GetMethodInfo().Name == "ReconnectAsync");
+        overlay.Received(1).Dispose();
+    }
+
     private sealed class Fixture : IDisposable
     {
         internal readonly IActiveVehicleContext Active = Substitute.For<IActiveVehicleContext>();
@@ -170,7 +297,11 @@ public sealed class NamingViewModelTests
         internal readonly VehicleParameterRegistry Registry = new();
         internal readonly List<string> Reads = [];
         internal readonly List<(VehicleId Id, string Name, float Value, MavParamType Type)> Writes = [];
+        internal readonly IVehicleConnectionService Connections = Substitute.For<IVehicleConnectionService>();
+        internal readonly MissionPlanner.App.Utilities.Dialogs.IDialogService Dialogs = Substitute.For<MissionPlanner.App.Utilities.Dialogs.IDialogService>();
         internal readonly NamingViewModel Model;
+        internal float CurrentSystem = 1;
+        internal float CurrentSerial = 42;
         internal bool ConfirmReads = true;
         internal bool ConfirmWrites = true;
         internal bool RejectSystem;
@@ -186,7 +317,7 @@ public sealed class NamingViewModelTests
                     Reads.Add(name);
                     if (ConfirmReads)
                     {
-                        Store(name, name == "MAV_SYSID" ? 1 : 42);
+                        Store(name, name == "MAV_SYSID" ? CurrentSystem : CurrentSerial);
                     }
                     return true;
                 });
@@ -202,16 +333,24 @@ public sealed class NamingViewModelTests
                     }
                     if (ConfirmWrites)
                     {
+                        if (name == "MAV_SYSID")
+                        {
+                            CurrentSystem = value;
+                        }
+                        else
+                        {
+                            CurrentSerial = value;
+                        }
                         Store(name, value);
                     }
                     return true;
                 });
-            Model = new(Active, Parameters, Registry, new InlineDispatcher(), Substitute.For<IDomainEventHub>(), NullLogger<NamingViewModel>.Instance);
+            Model = new(Active, Parameters, Registry, new InlineDispatcher(), Substitute.For<IDomainEventHub>(), NullLogger<NamingViewModel>.Instance, Connections, Dialogs);
         }
 
         internal void Store(string name, float value)
         {
-            Registry.StoreParameter(new(1, 1), new(name, value, name == "MAV_SYSID" ? MavParamType.Int16 : MavParamType.Int32, 0, 2),
+            Registry.StoreParameter(Active.VehicleId!.Value, new(name, value, name == "MAV_SYSID" ? MavParamType.Int16 : MavParamType.Int32, 0, 2),
                 TestContext.Current.CancellationToken);
         }
 

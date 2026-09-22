@@ -8,6 +8,18 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// </summary>
 public interface IVehicleConnectionService : IAsyncDisposable
 {
+    /// <summary>Captures the current connection's exact endpoint/settings before an identifier change.</summary>
+    /// <returns>A reconnect target, or null when there is no active connection.</returns>
+    VehicleReconnectTarget? CaptureReconnectTarget();
+
+    /// <summary>Closes only the captured connection, waits for teardown, and retries its original endpoint.</summary>
+    /// <param name="target">Previously captured connection settings.</param>
+    /// <param name="progress">Human-readable delay and retry progress.</param>
+    /// <param name="cancellationToken">Operation lifetime independent of the old connection.</param>
+    /// <returns>The new heartbeat-confirmed connection, or a bounded failure.</returns>
+    Task<VehicleConnectionResult> ReconnectAsync(VehicleReconnectTarget target, IProgress<string>? progress = null,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Gets a value indicating whether any vehicle is currently connected.
     /// </summary>
