@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:CubeIdUpdateViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="sections:CubeIdUpdateViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -18,7 +18,7 @@
             <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                  IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
         <TextBox PlaceholderText="Local firmware .bin path" Text="{Binding FirmwarePath}" />
-        <Button ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
+        <Button Classes="IsToolbarButton" ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
             <mdi:MaterialIcon Kind="FileSearchOutline" Classes="ActionIcon" />
         </Button>
         <TextBlock Text="{Binding FirmwareSummary}" />

@@ -35,13 +35,13 @@
 
         <Border Grid.Row="1" Padding="12" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Test motor" Command="{Binding TestMotorCommand}" AutomationProperties.Name="Test motor">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Test motor" Command="{Binding TestMotorCommand}" AutomationProperties.Name="Test motor">
                     <mdi:MaterialIcon Kind="Fan" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button ToolTip.Tip="Test sequence" Command="{Binding TestSequenceCommand}" AutomationProperties.Name="Test sequence">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Test sequence" Command="{Binding TestSequenceCommand}" AutomationProperties.Name="Test sequence">
                     <mdi:MaterialIcon Kind="PlaylistPlay" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Foreground="{DynamicResource Warning}" FontWeight="Bold" ToolTip.Tip="STOP" Command="{Binding StopCommand}" AutomationProperties.Name="STOP">
+                <Button Classes="IsToolbarButton" Foreground="{DynamicResource Warning}" FontWeight="Bold" ToolTip.Tip="STOP" Command="{Binding StopCommand}" AutomationProperties.Name="STOP">
                     <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
 
                 </Button>

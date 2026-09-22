@@ -1,4 +1,4 @@
-<view:UserControlViewBase x:TypeArguments="local:FirmwareCatalogueViewModel"
+﻿<view:UserControlViewBase x:TypeArguments="local:FirmwareCatalogueViewModel"
                           xmlns="https://github.com/avaloniaui"
                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -31,18 +31,18 @@
                                          IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Button ToolTip.Tip="Refresh catalogue data"
+                        <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh catalogue data"
                                 Padding="8,2"
                                 Command="{Binding RefreshCatalogCommand}"
                                 IsEnabled="{Binding !IsRefreshing}" >
                             <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                         </Button>
-                        <Button ToolTip.Tip="All Version Options"
+                        <Button Classes="IsToolbarButton" ToolTip.Tip="All Version Options"
                                 Padding="8,2"
                                 Command="{Binding ShowAllOptionsCommand}"  >
                             <avalonia:MaterialIcon Kind="AllInclusiveBoxOutline" Width="30" Height="30" />
                         </Button>
-                        <Button
+                        <Button Classes="IsToolbarButton"
                             ToolTip.Tip="Clear all Settings"
                             Padding="8,2"
                             VerticalAlignment="Center"
@@ -56,7 +56,7 @@
                             <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
                         </Button>
 
-                        <Button
+                        <Button Classes="IsToolbarButton"
                             ToolTip.Tip="Use Selected firmware"
                             Padding="8,2"
                             Command="{Binding OKCommand}"
@@ -73,7 +73,7 @@
                     <ComboBox ItemsSource="{Binding VehicleTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame/VehicleType" SelectedItem="{Binding SelectedVehicleType}" Width="200" />
                     <ComboBox ItemsSource="{Binding BuildVariants}" PlaceholderText="Variant" ToolTip.Tip="Build Variant" SelectedItem="{Binding SelectedBuildVariant}" Width="200" />
                     <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="200" />
-                    <Button  ToolTip.Tip="Clear Filters"
+                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Clear Filters"
                              Command="{Binding ClearCommand}"
                              Padding="8,2"
                              VerticalAlignment="Center" >

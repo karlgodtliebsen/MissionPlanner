@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:HwIdViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="sections:HwIdViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -34,7 +34,7 @@
 
         <Border Grid.Row="2"  Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Refresh hardware IDs" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh hardware IDs">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh hardware IDs" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh hardware IDs">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </StackPanel>

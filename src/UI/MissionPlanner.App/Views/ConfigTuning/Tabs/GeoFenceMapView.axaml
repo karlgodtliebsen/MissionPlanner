@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase x:TypeArguments="tabs:GeoFenceTabViewModel" xmlns="https://github.com/avaloniaui"
+﻿<utilities:UserControlViewBase x:TypeArguments="tabs:GeoFenceTabViewModel" xmlns="https://github.com/avaloniaui"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:mapsui="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -18,19 +18,19 @@
                     VerticalAlignment="Center"
                     Margin="0,0,12,0"
                     Spacing="6">
-            <Button Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+            <Button  Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
                     ToolTip.Tip="Zoom in" Click="OnZoomInClicked" AutomationProperties.Name="+">
                 <mdi:MaterialIcon Kind="MagnifyPlusOutline" Classes="ActionIcon" />
             </Button>
-            <Button Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+            <Button  Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
                     ToolTip.Tip="Zoom out" Click="OnZoomOutClicked" AutomationProperties.Name="−">
                 <mdi:MaterialIcon Kind="MagnifyMinusOutline" Classes="ActionIcon" />
             </Button>
-            <Button Width="38" Height="38" Padding="0" FontSize="25" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+            <Button  Width="38" Height="38" Padding="0" FontSize="25" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
                     ToolTip.Tip="Center on my location" Click="OnCenterOnMyLocationClicked" AutomationProperties.Name="◎">
                 <mdi:MaterialIcon Kind="CrosshairsGps" Classes="ActionIcon" />
             </Button>
-            <Button Width="38" Height="38" Padding="0" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+            <Button  Width="38" Height="38" Padding="0" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
                     ToolTip.Tip="Reset map rotation to north" FontWeight="SemiBold" Click="OnResetNorthClicked" AutomationProperties.Name="Reset map rotation to north">
                 <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
             </Button>
@@ -48,8 +48,10 @@
                 Margin="8"
                 Padding="8,4"
                 MaxWidth="520"
+                MinWidth="100"
                 FontSize="11"
-                Content="{Binding AttributionText}" ToolTip.Tip="{Binding AttributionText}"
+                Content="{Binding AttributionText}" 
+                ToolTip.Tip="{Binding AttributionText}"
                 IsVisible="{Binding IsAttributionVisible}"
                 Click="OnAttributionClicked" />
 

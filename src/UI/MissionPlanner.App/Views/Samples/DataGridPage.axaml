@@ -24,7 +24,7 @@
 
             <StackPanel Orientation="Horizontal" Grid.Row="0" MinHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center"
                         Margin="8,10" Spacing="12" >
-                <Button ToolTip.Tip="Load sample data from json file"
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Load sample data from json file"
                     Padding="10,4"
                     VerticalAlignment="Center"
                     Command="{Binding LoadFromJsonFileCommand}" AutomationProperties.Name="Load sample data from json file">

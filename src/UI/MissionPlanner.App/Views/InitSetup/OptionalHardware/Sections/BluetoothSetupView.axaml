@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:BluetoothSetupViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="sections:BluetoothSetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -20,10 +20,10 @@
                                  IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             <StackPanel Orientation="Horizontal" Spacing="25" VerticalAlignment="Center">
                 <ComboBox ToolTip.Tip="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
-                <Button ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh ports">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh ports">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" AutomationProperties.Name="Probe module">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" AutomationProperties.Name="Probe module">
                     <mdi:MaterialIcon Kind="BluetoothConnect" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
@@ -31,7 +31,7 @@
             <TextBox PlaceholderText="Module name" Text="{Binding Name}" />
             <TextBox PlaceholderText="PIN" Text="{Binding Pin}" PasswordChar="●" />
             <NumericUpDown PlaceholderText="Baud" Value="{Binding BaudRate}" Minimum="0" FormatString="F0" />
-            <Button ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply supported settings">
+            <Button Classes="IsToolbarButton" ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply supported settings">
                 <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
             </Button>
         </StackPanel>

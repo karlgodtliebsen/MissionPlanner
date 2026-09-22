@@ -1,4 +1,4 @@
-<utilities:NavigationViewBase xmlns="https://github.com/avaloniaui"
+﻿<utilities:NavigationViewBase xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
@@ -13,10 +13,10 @@
             </StackPanel>
             <WrapPanel Grid.Row="1">
                 <ComboBox ItemsSource="{Binding Directions}" SelectedItem="{Binding Direction}" IsEnabled="{Binding !Running}" MinWidth="150" Margin="0,0,12,8" AutomationProperties.Name="Mirror direction" />
-                <Button ToolTip.Tip="Start mirror" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" AutomationProperties.Name="Start mirror">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Start mirror" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" AutomationProperties.Name="Start mirror">
                     <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
                 </Button>
-                <Button ToolTip.Tip="Stop mirror" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" AutomationProperties.Name="Stop mirror">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Stop mirror" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" AutomationProperties.Name="Stop mirror">
                     <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

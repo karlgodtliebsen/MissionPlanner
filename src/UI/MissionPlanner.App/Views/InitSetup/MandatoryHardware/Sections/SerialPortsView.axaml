@@ -65,13 +65,13 @@
         </Border>
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Command="{Binding RefreshCommand}"
+                <Button Classes="IsToolbarButton" Command="{Binding RefreshCommand}"
                         ToolTip.Tip="Reload reported parameters"
                         IsEnabled="{Binding !IsBusy}"
                         AutomationProperties.Name="Reload reported parameters">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button ToolTip.Tip="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
                     <mdi:MaterialIcon Kind="Check" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </WrapPanel>

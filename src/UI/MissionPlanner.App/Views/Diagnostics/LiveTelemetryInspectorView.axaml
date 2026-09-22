@@ -5,33 +5,42 @@
     xmlns:local="clr-namespace:MissionPlanner.App.Views.Diagnostics"
     xmlns:diagnostics="clr-namespace:MissionPlanner.Core.Diagnostics;assembly=MissionPlanner.Core"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:u="https://irihi.tech/ursa"
     x:Class="MissionPlanner.App.Views.Diagnostics.LiveTelemetryInspectorView"
     x:TypeArguments="local:LiveTelemetryInspectorViewModel"
     x:DataType="local:LiveTelemetryInspectorViewModel"
     x:CompileBindings="True">
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,2*" Margin="12">
-        <TextBlock Text="Live Telemetry Inspector" Classes="H4" />
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <TextBlock x:Name="InspectorTitle" Text="Live Telemetry Inspector" Classes="H4"
+                       VerticalAlignment="Center" TextWrapping="Wrap" />
+            <Button Grid.Column="1" Command="{Binding CloseCommand}"
+                    ToolTip.Tip="Close Inspector" AutomationProperties.Name="Close Inspector"
+                    Name="{x:Static u:DrawerControlBase.PART_CloseButton}"
+                    Width="32" Height="32" Padding="4"
+                    DockPanel.Dock="Right"
+                    Theme="{DynamicResource OverlayCloseButton}" >
+                <mdi:MaterialIcon Kind="Close" Width="24" Height="24"/>
+            </Button>
+        </Grid>
         <StackPanel Grid.Row="1" Spacing="6" Margin="0,8">
             <ComboBox ItemsSource="{Binding Vehicles}" SelectedItem="{Binding SelectedVehicle}" HorizontalAlignment="Stretch" />
             <TextBlock Text="{Binding Header}" TextWrapping="Wrap" FontWeight="SemiBold" />
             <TextBlock Text="{Binding LiveLabel}" TextWrapping="Wrap" />
         </StackPanel>
         <WrapPanel Grid.Row="2" ItemSpacing="5">
-            <Button Command="{Binding FreezeCommand}"
+            <Button Classes="IsToolbarButton" Command="{Binding FreezeCommand}"
                     ToolTip.Tip="Freeze / resume presentation">
                 <mdi:MaterialIcon Kind="Pause"  Width="30" Height="30"/>
             </Button>
-            <Button Command="{Binding ClearEventsCommand}" ToolTip.Tip="Clear diagnostic events">
+            <Button Classes="IsToolbarButton" Command="{Binding ClearEventsCommand}" ToolTip.Tip="Clear diagnostic events">
                 <mdi:MaterialIcon Kind="Delete"  Width="30" Height="30"/>
             </Button>
-            <Button Command="{Binding CopyEventsCommand}" ToolTip.Tip="Copy diagnostic events">
+            <Button Classes="IsToolbarButton" Command="{Binding CopyEventsCommand}" ToolTip.Tip="Copy diagnostic events">
                 <mdi:MaterialIcon Kind="ContentCopy"  Width="30" Height="30"/>
             </Button>
-            <Button Command="{Binding DetachCommand}" IsVisible="{Binding CanDetach}" ToolTip.Tip="Detach Inspector">
+            <Button Classes="IsToolbarButton" Command="{Binding DetachCommand}" IsVisible="{Binding CanDetach}" ToolTip.Tip="Detach Inspector">
                 <mdi:MaterialIcon Kind="OpenInNew" Width="30" Height="30" />
-            </Button>
-            <Button Command="{Binding CloseCommand}" ToolTip.Tip="Close Inspector">
-                <mdi:MaterialIcon Kind="Close"  Width="30" Height="30"/>
             </Button>
         </WrapPanel>
         <StackPanel Grid.Row="3" Margin="0,8" Spacing="4"  >
@@ -93,7 +102,7 @@
 
         <Grid Grid.Row="5" ColumnDefinitions="*,Auto" Margin="0,8" ColumnSpacing="5">
             <TextBox Text="{Binding MarkerText}" PlaceholderText="Optional marker text" MaxLength="256" />
-            <Button Grid.Column="1" Command="{Binding AddMarkerCommand}" ToolTip.Tip="Add marker">
+            <Button Classes="IsToolbarButton" Grid.Column="1" Command="{Binding AddMarkerCommand}" ToolTip.Tip="Add marker">
                 <mdi:MaterialIcon Kind="Flag"  Width="30" Height="30"/>
             </Button>
         </Grid>

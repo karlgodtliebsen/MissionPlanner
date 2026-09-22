@@ -1,4 +1,4 @@
-<subViews:DiagnosticsReportView
+﻿<subViews:DiagnosticsReportView
     xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -34,7 +34,7 @@
         </Border>
         
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button ToolTip.Tip="Copy diagnostic report"
+            <Button Classes="IsToolbarButton" ToolTip.Tip="Copy diagnostic report"
                     Width="100"
                     Padding="8,2"
                     HorizontalAlignment="Center"
@@ -44,7 +44,7 @@
                     >
                 <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
             </Button>
-            <Button
+            <Button Classes="IsToolbarButton"
                 Width="100"
                 Padding="8,2"
                 HorizontalAlignment="Center"

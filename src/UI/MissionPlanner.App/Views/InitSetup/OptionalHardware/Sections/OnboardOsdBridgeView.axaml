@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase
+﻿<utilities:UserControlViewBase
     x:TypeArguments="sections:OnboardOsdBridgeViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -19,7 +19,7 @@
                              IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
         <TextBlock Text="Configure screens, elements, positions, units and supported options in the existing Onboard OSD workspace." />
         <TextBlock Text="This entry uses the same OSD configuration service and editing session as Config; it does not create a second configuration engine." Opacity="0.75" />
-        <Button ToolTip.Tip="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Open Onboard OSD configuration">
+        <Button Classes="IsToolbarButton" ToolTip.Tip="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Open Onboard OSD configuration">
             <mdi:MaterialIcon Kind="OpenInNew" Classes="ActionIcon" />
         </Button>
     </StackPanel>

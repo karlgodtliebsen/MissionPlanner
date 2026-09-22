@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:FftSetupViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="sections:FftSetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
@@ -21,7 +21,7 @@
             <NumericUpDown  PlaceholderText="Sample rate Hz" Value="{Binding SampleRateHz}" Minimum="0" FormatString="F0" />
             <TextBox AcceptsReturn="True" PlaceholderText="Paste comma/newline-separated samples from an existing log artifact" Text="{Binding SamplesText}" Height="180" />
             
-            <Button ToolTip.Tip="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Analyze samples">
+            <Button Classes="IsToolbarButton" ToolTip.Tip="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Analyze samples">
                 <mdi:MaterialIcon Kind="ChartBellCurve" Classes="ActionIcon" />
             </Button>
         </StackPanel>

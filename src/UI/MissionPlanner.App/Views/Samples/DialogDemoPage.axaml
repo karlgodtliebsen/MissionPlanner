@@ -52,7 +52,7 @@
                                 >
                         <Button
                                     Width="200" ToolTip.Tip="Connect"
-                                    Classes="Secondary"
+                                    Classes="Secondary IsToolbarButton"
                                     Padding="5"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
@@ -65,7 +65,7 @@
 
                         <Button
                             Width="200" ToolTip.Tip="Error"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -78,7 +78,7 @@
 
                         <Button
                             Width="200" ToolTip.Tip="Confirm"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -90,7 +90,7 @@
                         </Button>
                         <Button
                             Width="200" ToolTip.Tip="ShowConfirm1"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -104,7 +104,7 @@
 
                         <Button
                             Width="200" ToolTip.Tip="ShowStringPrompt"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -117,7 +117,7 @@
 
                         <Button
                             Width="200" ToolTip.Tip="ShowStringPrompt2"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -131,7 +131,7 @@
 
                         <Button
                             Width="200" ToolTip.Tip="ShowIntPrompt"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -144,7 +144,7 @@
 
                         <Button
                             Width="200" ToolTip.Tip="ShowIntPrompt2"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -157,7 +157,7 @@
 
                         <Button
                             Width="200" ToolTip.Tip="ShowDoublePrompt"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -170,7 +170,7 @@
 
                         <Button
                             Width="200" ToolTip.Tip="ShowDoublePrompt2"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -182,7 +182,7 @@
                         </Button>
                         <Button
                             Width="200" ToolTip.Tip="ShowChoosePrompt"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -195,7 +195,7 @@
 
                         <Button
                             Width="200" ToolTip.Tip="ShowPhrasePrompt"
-                            Classes="Secondary"
+                            Classes="Secondary IsToolbarButton"
                             Padding="5"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"

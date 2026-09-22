@@ -47,7 +47,7 @@
                             </DataTemplate>
                         </controls:VirtualizedItemsGrid.RowTemplate>
                     </controls:VirtualizedItemsGrid>
-                    <TextBox Grid.Row="1" Text="{Binding ExportJson}" IsReadOnly="True" AcceptsReturn="True"/>
+                    <TextBox Text="{Binding ExportJson}" IsReadOnly="True" AcceptsReturn="True"/>
                 </StackPanel>
             </Border>
         </Grid>

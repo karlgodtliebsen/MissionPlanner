@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase x:TypeArguments="connect:ConnectPopupViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="connect:ConnectPopupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -89,7 +89,7 @@
                      IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                      IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
 
-            <Button
+            <Button Classes="IsToolbarButton"
                 Width="80"
                 ToolTip.Tip="Refresh"
                 Padding="5"
@@ -99,7 +99,7 @@
                 <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
             </Button>
 
-            <Button
+            <Button Classes="IsToolbarButton"
                 Width="80"
                 ToolTip.Tip="Connect"
                 Padding="5"
@@ -112,7 +112,7 @@
                        Stretch="Uniform"/>
             </Button>
 
-            <Button
+            <Button Classes="IsToolbarButton"
                 Width="80"
                 ToolTip.Tip="Close"
                 Padding="5"
@@ -144,7 +144,7 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" VerticalAlignment="Center"
                      IsVisible="{Binding IsConnected}">
-            <Button
+            <Button Classes="IsToolbarButton"
                 ToolTip.Tip="Disconnect"
                 Width="80"
                 Padding="5"
@@ -157,7 +157,7 @@
                        Stretch="Uniform"/>
             </Button>
 
-            <Button
+            <Button Classes="IsToolbarButton"
                 Width="80"
                 ToolTip.Tip="Close"
                 Padding="5"

@@ -387,7 +387,7 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center">
 
-                                                        <Button
+                                                        <Button Classes="IsToolbarButton"
                                                             ToolTip.Tip="Move Up"
                                                             Padding="4,2"
                                                             HorizontalAlignment="Center"
@@ -396,7 +396,7 @@
                                                             <avalonia:MaterialIcon Kind="ArrowUp" Width="20" Height="20" />
                                                         </Button>
 
-                                                        <Button
+                                                        <Button Classes="IsToolbarButton"
                                                             ToolTip.Tip="Move Down"
                                                             Padding="4,2"
                                                             HorizontalAlignment="Center"
@@ -405,7 +405,7 @@
                                                             <avalonia:MaterialIcon Kind="ArrowDown" Width="20" Height="20" />
                                                         </Button>
 
-                                                        <Button
+                                                        <Button Classes="IsToolbarButton"
                                                             ToolTip.Tip="Delete"
                                                             Padding="4,2"
                                                             HorizontalAlignment="Center"

@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:InitTuneParametersViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="sections:InitTuneParametersViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -30,7 +30,7 @@
         </Border>
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
@@ -60,7 +60,7 @@
                                                        PlaceholderText="Value" IsVisible="{Binding IsNumeric}"
                                                        Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1"
                                                        HorizontalAlignment="Stretch" />
-                                        <Button Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                        <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                             <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                         </Button>
                                     </Grid>

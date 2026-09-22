@@ -20,7 +20,7 @@
         <TextBlock Text="{Binding PlatformStatus}" />
         <Grid ColumnDefinitions="Auto,Auto" VerticalAlignment="Stretch" ColumnSpacing="25" HorizontalAlignment="Stretch">
             <ComboBox ToolTip.Tip="Local device" ItemsSource="{Binding Devices}" VerticalAlignment="Bottom" DisplayMemberBinding="{Binding Name}" SelectedItem="{Binding SelectedDevice}" Width="300" />
-            <Button Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
+            <Button Classes="IsToolbarButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
             </Button>
         </Grid>
@@ -28,7 +28,7 @@
         <StackPanel Orientation="Horizontal">
             <CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Content="Vehicle MANUAL_CONTROL output (disabled by default)" />
         </StackPanel>
-        <Button ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
+        <Button Classes="IsToolbarButton" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                 <TextBlock Text="Disable and release vehicle control" VerticalAlignment="Center" />

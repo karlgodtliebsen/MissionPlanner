@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+﻿<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
@@ -47,12 +47,12 @@
             <TextBlock Text="Message template: use {name} and {value}" />
             <TextBox Text="{Binding Message}" AutomationProperties.Name="Warning message" />
             <TextBlock Text="{Binding MessageError}" Classes="Warning" TextWrapping="Wrap" />
-            <Button ToolTip.Tip="Save rule" Command="{Binding SaveCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Save rule">
+            <Button Classes="IsToolbarButton" ToolTip.Tip="Save rule" Command="{Binding SaveCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Save rule">
                 <mdi:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
             </Button>
             <TextBlock Text="Preview input (does not affect the live warning)" />
             <NumericUpDown Value="{Binding PreviewValue}" AutomationProperties.Name="Preview value" />
-            <Button ToolTip.Tip="Test comparison" Command="{Binding PreviewCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Test comparison">
+            <Button Classes="IsToolbarButton" ToolTip.Tip="Test comparison" Command="{Binding PreviewCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Test comparison">
                 <mdi:MaterialIcon Kind="FlaskOutline" Classes="ActionIcon" />
             </Button>
             <TextBlock Text="{Binding PreviewResult}" TextWrapping="Wrap" />

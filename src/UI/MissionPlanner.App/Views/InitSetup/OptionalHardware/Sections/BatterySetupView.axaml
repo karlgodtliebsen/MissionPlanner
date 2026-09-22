@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:BatterySetupViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="sections:BatterySetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -23,7 +23,7 @@
                                  IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
 
-            <Button ToolTip.Tip="Refresh battery values" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh battery values">
+            <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh battery values" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh battery values">
                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
             </Button>
             <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
@@ -44,7 +44,7 @@
                                 <Grid ColumnDefinitions="140,*,Auto" RowSpacing="6" ColumnSpacing="8" IsVisible="{Binding SupportsCapacity}">
                                     <TextBlock Text="Capacity (mAh)" VerticalAlignment="Center" />
                                     <NumericUpDown Grid.Column="1" Value="{Binding Capacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2" ToolTip.Tip="Write" Command="{Binding ApplyCapacityCommand}" AutomationProperties.Name="Write">
+                                    <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Write" Command="{Binding ApplyCapacityCommand}" AutomationProperties.Name="Write">
                                         <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                                     </Button>
                                 </Grid>
@@ -55,7 +55,7 @@
                                         <NumericUpDown Grid.Column="1" Value="{Binding LowVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
                                         <TextBlock Grid.Column="2" Text="Critical" VerticalAlignment="Center" />
                                         <NumericUpDown Grid.Column="3" Value="{Binding CriticalVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                        <Button Grid.Column="4" ToolTip.Tip="Write" Command="{Binding ApplyVoltageFailsafeCommand}" AutomationProperties.Name="Write">
+                                        <Button Classes="IsToolbarButton" Grid.Column="4" ToolTip.Tip="Write" Command="{Binding ApplyVoltageFailsafeCommand}" AutomationProperties.Name="Write">
                                             <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                                         </Button>
                                     </Grid>
@@ -67,7 +67,7 @@
                                         <NumericUpDown Grid.Column="1" Value="{Binding LowCapacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
                                         <TextBlock Grid.Column="2" Text="Critical" VerticalAlignment="Center" />
                                         <NumericUpDown Grid.Column="3" Value="{Binding CriticalCapacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                        <Button Grid.Column="4" ToolTip.Tip="Write" Command="{Binding ApplyCapacityFailsafeCommand}" AutomationProperties.Name="Write">
+                                        <Button Classes="IsToolbarButton" Grid.Column="4" ToolTip.Tip="Write" Command="{Binding ApplyCapacityFailsafeCommand}" AutomationProperties.Name="Write">
                                             <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                                         </Button>
                                     </Grid>
@@ -75,14 +75,14 @@
                                 <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsVoltageCalibration}">
                                     <TextBlock Text="Measured voltage (V)" VerticalAlignment="Center" />
                                     <NumericUpDown Grid.Column="1" Value="{Binding ReferenceVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2" ToolTip.Tip="Calibrate voltage" Command="{Binding CalibrateVoltageCommand}" AutomationProperties.Name="Calibrate voltage">
+                                    <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Calibrate voltage" Command="{Binding CalibrateVoltageCommand}" AutomationProperties.Name="Calibrate voltage">
                                         <mdi:MaterialIcon Kind="SineWave" Classes="ActionIcon" />
                                     </Button>
                                 </Grid>
                                 <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsCurrentCalibration}">
                                     <TextBlock Text="Measured current (A)" VerticalAlignment="Center" />
                                     <NumericUpDown Grid.Column="1" Value="{Binding ReferenceCurrent, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                    <Button Grid.Column="2" ToolTip.Tip="Calibrate current" Command="{Binding CalibrateCurrentCommand}" AutomationProperties.Name="Calibrate current">
+                                    <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Calibrate current" Command="{Binding CalibrateCurrentCommand}" AutomationProperties.Name="Calibrate current">
                                         <mdi:MaterialIcon Kind="CurrentDc" Classes="ActionIcon" />
                                     </Button>
                                 </Grid>

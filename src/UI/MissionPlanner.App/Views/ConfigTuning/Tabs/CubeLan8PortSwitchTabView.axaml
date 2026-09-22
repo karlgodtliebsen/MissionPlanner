@@ -1,4 +1,4 @@
-<utilities:NavigationViewBase x:TypeArguments="tabs:CubeLan8PortSwitchTabViewModel"
+﻿<utilities:NavigationViewBase x:TypeArguments="tabs:CubeLan8PortSwitchTabViewModel"
                               xmlns="https://github.com/avaloniaui"
                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" 
                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -28,7 +28,7 @@
                                    Classes="Danger"/>
 
                     </StackPanel>
-                    <Button  Grid.Column="2" ToolTip.Tip="Discover / read" Command="{Binding RefreshCommand}" VerticalAlignment="Center" AutomationProperties.Name="Discover / read">
+                    <Button Classes="IsToolbarButton"  Grid.Column="2" ToolTip.Tip="Discover / read" Command="{Binding RefreshCommand}" VerticalAlignment="Center" AutomationProperties.Name="Discover / read">
                         <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                     </Button>
                 </Grid>
@@ -98,13 +98,13 @@
             <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <TextBlock Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalAlignment="Center" />
                 <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="10">
-                    <Button ToolTip.Tip="Export" Command="{Binding ExportCommand}" AutomationProperties.Name="Export">
+                    <Button Classes="IsToolbarButton" ToolTip.Tip="Export" Command="{Binding ExportCommand}" AutomationProperties.Name="Export">
                         <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                     </Button>
-                    <Button ToolTip.Tip="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Revert">
+                    <Button Classes="IsToolbarButton" ToolTip.Tip="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Revert">
                         <mdi:MaterialIcon Kind="FileUndoOutline" Classes="ActionIcon" />
                     </Button>
-                    <Button ToolTip.Tip="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply and verify">
+                    <Button Classes="IsToolbarButton" ToolTip.Tip="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply and verify">
                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                     </Button>
                 </StackPanel>

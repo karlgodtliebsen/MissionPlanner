@@ -22,11 +22,11 @@
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-                <Button Width="100" ToolTip.Tip="Apply changed identifiers" AutomationProperties.Name="Apply changed identifiers"
+                <Button Classes="IsToolbarButton" Width="100" ToolTip.Tip="Apply changed identifiers" AutomationProperties.Name="Apply changed identifiers"
                         Command="{Binding ApplyCommand}" >
                     <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                 </Button>
-                <Button ToolTip.Tip="Reconnect to the previous vehicle connection"
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Reconnect to the previous vehicle connection"
                         Command="{Binding ReconnectCommand}" AutomationProperties.Name="Reconnect vehicle">
                     <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                 </Button>

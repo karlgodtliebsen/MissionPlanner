@@ -1,4 +1,4 @@
-<UserControl
+﻿<UserControl
     x:Class="MissionPlanner.App.Utilities.Dialogs.OverlayViewDialog"
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -45,15 +45,15 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button
-                MinWidth="90"
+                Classes="Primary IsToolbarButton"
                 ToolTip.Tip="{Binding CloseText}"
                 Command="{Binding CancelCommand}"
                 IsVisible="{Binding ShowCloseButton}"
             >
                 <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
             </Button>
-            <Button
-                MinWidth="90"
+            <Button 
+                Classes="Primary IsToolbarButton"
                 ToolTip.Tip="{Binding OkText}"
                 Command="{Binding OkCommand}"
                 IsVisible="{Binding ShowOkButton}"

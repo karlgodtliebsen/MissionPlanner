@@ -40,8 +40,7 @@
         </Border>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-                <Button
-                    Width="100"
+                <Button Classes="IsToolbarButton"
                     Padding="5"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"

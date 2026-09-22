@@ -45,11 +45,8 @@
                 <NumericUpDown Value="{Binding Channel}" Minimum="1"/>
                 <NumericUpDown  Value="{Binding Pwm}"/>
                 <CheckBox  Content="Confirm disarmed test" IsChecked="{Binding IsConfirmed}"/>
-                <Button  ToolTip.Tip="Set servo" Command="{Binding SetServoCommand}" AutomationProperties.Name="Set servo">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <mdi:MaterialIcon Kind="Tune" Classes="ActionIcon" Width="20" Height="20" />
-                        <TextBlock Text="Set servo" VerticalAlignment="Center" />
-                    </StackPanel>
+                <Button Classes="IsToolbarButton"  ToolTip.Tip="Set servo" Command="{Binding SetServoCommand}" AutomationProperties.Name="Set servo">
+                    <mdi:MaterialIcon Kind="Tune" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </StackPanel>
             <TextBlock Grid.Row="3" Text="{Binding Result}"/>

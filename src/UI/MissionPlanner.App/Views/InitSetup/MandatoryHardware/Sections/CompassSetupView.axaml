@@ -33,7 +33,7 @@
             </StackPanel>
         </Border>
         <Border Grid.Row="1" Padding="12"  Classes="SectionCard SourceBorder" x:Name="SourceBorder" >
-            <StackPanel Spacing="15">
+            <StackPanel Spacing="15"  HorizontalAlignment="Center">
                 <TextBlock Text="Configured versus detected hardware:" Classes="H3" />
                 <TextBlock Text="{Binding DiagnosticSummary}" TextWrapping="Wrap" />
                 <ItemsControl ItemsSource="{Binding DiagnosticEvidence}">
@@ -47,20 +47,20 @@
         </Border>
 
         <Border Grid.Row="2" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh compass values">
+            <StackPanel Orientation="Horizontal" Spacing="15" HorizontalAlignment="Center">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh compass values">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" AutomationProperties.Name="Start calibration">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" AutomationProperties.Name="Start calibration">
                     <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
                 </Button>
-                <Button ToolTip.Tip="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" AutomationProperties.Name="Accept results">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" AutomationProperties.Name="Accept results">
                     <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                 </Button>
-                <Button ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
                     <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                 </Button>
-                <Button ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
                     <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
@@ -85,7 +85,7 @@
                                             <TextBlock Text="External" VerticalAlignment="Center" IsVisible="{Binding SupportsExternal}" />
                                             <ToggleSwitch IsChecked="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
                                             <ComboBox ToolTip.Tip="Orientation" ItemsSource="{Binding Orientations}" SelectedItem="{Binding SelectedOrientation}" DisplayMemberBinding="{Binding Name}" />
-                                            <Button HorizontalAlignment="Right" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
+                                            <Button Classes="IsToolbarButton" HorizontalAlignment="Right" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
                                                 <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                                             </Button>
                                         </StackPanel>

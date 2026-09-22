@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+﻿<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -33,7 +33,7 @@
             </StackPanel>
         </Border>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button ToolTip.Tip="Confirm"
+            <Button Classes="IsToolbarButton" ToolTip.Tip="Confirm"
                     Width="100"
                     Padding="8,2"
                     HorizontalAlignment="Center"

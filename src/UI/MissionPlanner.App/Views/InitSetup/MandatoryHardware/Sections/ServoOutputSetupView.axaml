@@ -1,4 +1,4 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:ServoOutputSetupViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="sections:ServoOutputSetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -27,10 +27,10 @@
 
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Refresh servo outputs" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh servo outputs">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh servo outputs" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh servo outputs">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button ToolTip.Tip="Write" Command="{Binding WriteCommand}" AutomationProperties.Name="Write">
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Write" Command="{Binding WriteCommand}" AutomationProperties.Name="Write">
                     <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

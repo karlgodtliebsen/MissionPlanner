@@ -1,4 +1,4 @@
-<view:UserControlViewBase x:TypeArguments="subViews:FirmwareHelpViewModel"
+﻿<view:UserControlViewBase x:TypeArguments="subViews:FirmwareHelpViewModel"
                           xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
                           xmlns="https://github.com/avaloniaui"
                           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -37,7 +37,7 @@
                             <TextBlock Text="{Binding Title}" FontWeight="Bold" Classes="H4" />
                             <TextBlock Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" />
 
-                            <Button
+                            <Button Classes="IsToolbarButton"
                                 Grid.Column="1" Grid.RowSpan="2"
                                 ToolTip.Tip="Open firmware help resource"
                                 Command="{Binding $parent[ItemsControl].((subViews:FirmwareHelpViewModel)DataContext).OpenSupportLinkCommand}"
@@ -51,7 +51,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button
+            <Button Classes="IsToolbarButton"
                 ToolTip.Tip="Open Windows Device Manager"
                 Command="{Binding OpenDeviceManagerCommand}"
                 IsVisible="{Binding CanOpenDeviceManager}" 
