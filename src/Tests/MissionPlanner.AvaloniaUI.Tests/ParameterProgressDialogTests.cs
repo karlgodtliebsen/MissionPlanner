@@ -163,6 +163,59 @@ public sealed class ParameterProgressDialogTests
         Assert.Contains("Test download failed", fixture.Model.ErrorMessage);
     }
 
+    /// <summary>Only confirmed reboot-required changes reconnect, retaining the reboot indication.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ApplyReconnectsOnlyWhenReportRequiresReboot(bool rebootRequired)
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        fixture.ConfigureWrite(rebootRequired);
+        var target = new MissionPlanner.Core.Vehicles.VehicleReconnectTarget(Guid.NewGuid(), "Serial", "COM11", 0, 57600);
+        fixture.Connections.CaptureReconnectTarget().Returns(target);
+        fixture.Connections.ReconnectAsync(target, Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                Assert.Contains("disconnect", fixture.Message!());
+                Assert.False(call.Arg<CancellationToken>().IsCancellationRequested);
+                return new MissionPlanner.Core.Vehicles.VehicleConnectionResult(true, fixture.VehicleId, null);
+            });
+        var before = fixture.Handles.Count;
+        await fixture.Model.WriteParametersCommand.ExecuteAsync(null);
+        Assert.Equal(rebootRequired, fixture.Model.RebootRequired);
+        Assert.Equal(rebootRequired ? 1 : 0, fixture.Connections.ReceivedCalls().Count(call => call.GetMethodInfo().Name == "ReconnectAsync"));
+        Assert.Equal(before + (rebootRequired ? 1 : 0), fixture.Handles.Count);
+        if (rebootRequired)
+        {
+            fixture.Handles[^1].Received(1).Dispose();
+            Assert.Contains("Reconnected", fixture.Model.StatusMessage);
+        }
+    }
+
+    /// <summary>Closing the reconnect overlay prevents transport activity and retains confirmed changes.</summary>
+    [Fact]
+    public async Task CancelReconnectOverlayRetainsRebootRequirement()
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        fixture.ConfigureWrite(true);
+        fixture.Connections.CaptureReconnectTarget().Returns(
+            new MissionPlanner.Core.Vehicles.VehicleReconnectTarget(Guid.NewGuid(), "Serial", "COM11", 0, 57600));
+        fixture.OpenDialog = () =>
+        {
+            fixture.Options[^1].RequestCancellation!();
+            return Task.FromResult(fixture.Handles[^1]);
+        };
+        await fixture.Model.WriteParametersCommand.ExecuteAsync(null);
+        Assert.True(fixture.Model.RebootRequired);
+        Assert.Contains("cancelled", fixture.Model.ErrorMessage);
+        Assert.DoesNotContain(fixture.Connections.ReceivedCalls(), call => call.GetMethodInfo().Name == "ReconnectAsync");
+        fixture.Handles[^1].Received(1).Dispose();
+    }
+
     private sealed class Fixture : IDisposable
     {
         private readonly ServiceProvider services;
@@ -173,6 +226,8 @@ public sealed class ParameterProgressDialogTests
         private ParameterLoadStatus? latest;
 
         internal readonly VehicleId VehicleId = new(1, 1);
+        internal readonly IVehicleConnectionService Connections = Substitute.For<IVehicleConnectionService>();
+        internal readonly IUserConfirmationService Confirmation = Substitute.For<IUserConfirmationService>();
         internal readonly IParameterEditSession Session = Substitute.For<IParameterEditSession>();
         internal readonly IVehicleParameterStreamService Stream = Substitute.For<IVehicleParameterStreamService>();
         internal readonly List<IDisposable> Handles = [];
@@ -239,13 +294,27 @@ public sealed class ParameterProgressDialogTests
                     factory,
                     Substitute.For<ITextClipboardService>(),
                     new ParametersFileHandler(Substitute.For<IFileOpenService>(), Substitute.For<IFileSaveService>()),
-                    Substitute.For<IUserConfirmationService>(),
+                    Confirmation,
                     Substitute.For<IParameterProfileRepository>(),
                     Substitute.For<IParameterProfileService>(),
                     statusContext,
-                    NullLogger<FullParametersListTabViewModel>.Instance);
+                    NullLogger<FullParametersListTabViewModel>.Instance,
+                    Connections);
 
 
+        }
+
+        internal void ConfigureWrite(bool rebootRequired)
+        {
+            Session.IsDirty.Returns(true);
+            Session.CreateWritePlan().Returns(new ParameterWritePlan(
+                new ParameterEditScope(VehicleId, null!), DateTimeOffset.UtcNow,
+                [new ParameterWritePlanEntry("TEST_PARAM", "Test", 1, 2, null, 1, rebootRequired, false, null)]));
+            Session.ApplyAsync(Arg.Any<ParameterWritePlan>(), Arg.Any<IProgress<ParameterApplyProgress>>(), Arg.Any<CancellationToken>())
+                .Returns(new ParameterApplyReport(true,
+                    [new ParameterWriteResult("TEST_PARAM", ParameterWriteOutcome.Confirmed, "Confirmed")], rebootRequired));
+            Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(true);
         }
 
         internal void SetCompleteCache()

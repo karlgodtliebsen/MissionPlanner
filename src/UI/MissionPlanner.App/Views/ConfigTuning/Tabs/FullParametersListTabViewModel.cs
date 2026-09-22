@@ -8,6 +8,7 @@ using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -30,6 +31,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     private readonly IParameterProfileService profileWorkflow;
     private ParameterApplyReport? lastApplyReport;
     private bool disposed;
+    private bool pageActive;
+    private readonly IVehicleConnectionService connections;
+    private CancellationTokenSource? reconnectCancellation;
     private int sessionRefreshScheduled;
 
 
@@ -46,6 +50,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     /// <param name="profileWorkflow">The profile compatibility and staging workflow.</param>
     /// <param name="parameterLoadStatus"></param>
     /// <param name="domainEventHub"></param>
+    /// <param name="connections">Captures and reconnects the current transport.</param>
     /// <param name="logger">The logger.</param>
     public FullParametersListTabViewModel(
         IDialogService dialogService,
@@ -60,9 +65,11 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         IParameterProfileRepository profiles,
         IParameterProfileService profileWorkflow,
         IVehicleParameterLoadStatusContext parameterLoadStatus,
-        ILogger<FullParametersListTabViewModel> logger)
+        ILogger<FullParametersListTabViewModel> logger,
+        IVehicleConnectionService connections)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
+        this.connections = connections;
         this.activeVehicle = activeVehicle;
         this.clipboard = clipboard;
         this.dialogService = dialogService;
@@ -80,6 +87,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         {
             return;
         }
+        pageActive = true;
         PropertyChanged += OnViewModelPropertyChanged;
         await base.ActivateAsync();
     }
@@ -91,6 +99,8 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         {
             return;
         }
+        pageActive = false;
+        reconnectCancellation?.Cancel();
         PropertyChanged -= OnViewModelPropertyChanged;
         await base.DeactivateAsync();
         Interlocked.Exchange(ref sessionRefreshScheduled, 0);
@@ -106,6 +116,8 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         {
             return;
         }
+        pageActive = false;
+        reconnectCancellation?.Cancel();
         base.Dispose();
         disposed = true;
     }
@@ -327,6 +339,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         try
         {
             using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
+            var reconnectTarget = connections.CaptureReconnectTarget();
             var plan = EditSession.CreateWritePlan();
             var preview = string.Join(Environment.NewLine, plan.Entries.Select(entry => $"{entry.DisplayName} ({entry.Name}): {entry.LiveValue:R} → {entry.PendingValue:R} {entry.Units}".TrimEnd()));
             var skippedPreview = plan.Skipped.Count == 0
@@ -369,7 +382,10 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 SetMessages(statusMessage, errorMessage);
                 NotificationManager?.Show(StatusMessage ?? "");
                 NotificationManager?.Show(ErrorMessage ?? "");
-
+                if (report.RebootRequired)
+                {
+                    await ReconnectAfterApplyAsync(reconnectTarget, cancellationToken);
+                }
             });
 
 
@@ -469,12 +485,17 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         SetBusy();
         try
         {
+            var reconnectTarget = connections.CaptureReconnectTarget();
             var retry = await EditSession.RetryFailedAsync(lastApplyReport, cancellationToken: cancellationToken);
             lastApplyReport = retry;
             RebootRequired |= retry.RebootRequired;
             SetMessages(retry.Success ? $"Confirmed {retry.Confirmed.Count} retried changes." : null, retry.Success ? null : BuildResultSummary(retry));
             NotificationManager?.Show(StatusMessage ?? "");
             NotificationManager?.Show(ErrorMessage ?? "");
+            if (retry.RebootRequired)
+            {
+                await ReconnectAfterApplyAsync(reconnectTarget, cancellationToken);
+            }
         }
         finally
         {

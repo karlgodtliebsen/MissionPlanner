@@ -80,7 +80,8 @@ public sealed class ParameterNotificationThreadingTests
             Substitute.For<IParameterProfileRepository>(),
             Substitute.For<IParameterProfileService>(),
             Substitute.For<IVehicleParameterLoadStatusContext>(),
-            NullLogger<FullParametersListTabViewModel>.Instance);
+            NullLogger<FullParametersListTabViewModel>.Instance,
+            Substitute.For<IVehicleConnectionService>());
 
 
 

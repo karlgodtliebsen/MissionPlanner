@@ -415,3 +415,12 @@ Reconnect regressions cover confirmed writes, lost acknowledgements with old-ses
 cancellation, fresh readback, manual retry, and overlay cancellation/disposal. Core tests
 cover endpoint preservation, disconnect stabilization, retries, cancellation, and refusal
 to replace another connection. No hardware identifier values are changed by these tests.
+
+Full Parameters List also reconnects when an Apply or Retry Failed report contains
+confirmed reboot-required changes. It captures the transport settings before writing
+and uses the same owned disconnect, two-second stabilization delay, and bounded
+retries as Naming. The cancellable progress overlay opens before teardown and yields
+to the UI. Expected connection changes and parameter loading are deferred until the
+reconnect overlay closes. Leaving the page cancels recovery. Failed or cancelled
+reconnects are reported without resending parameter writes. The reboot-required flag
+remains set: reconnecting a transport does not itself reboot the controller.
