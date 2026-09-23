@@ -1,10 +1,13 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
-namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
-/// <summary>Draws one live RC channel with configured and calibration markers.</summary>
+/// <summary>
+/// Draws one live RC channel with configured and calibration markers.
+/// </summary>
 public sealed class RadioChannelMeterView : Control
 {
     public static readonly StyledProperty<int> ChannelNumberProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(ChannelNumber));
@@ -25,37 +28,95 @@ public sealed class RadioChannelMeterView : Control
     public static readonly StyledProperty<RadioChannelPresentationKind> PresentationKindProperty = AvaloniaProperty.Register<RadioChannelMeterView, RadioChannelPresentationKind>(nameof(PresentationKind));
     public static readonly StyledProperty<bool> IsReversedProperty = AvaloniaProperty.Register<RadioChannelMeterView, bool>(nameof(IsReversed));
 
-    static RadioChannelMeterView() => AffectsRender<RadioChannelMeterView>(
+    static RadioChannelMeterView()
+    {
+        AffectsRender<RadioChannelMeterView>(
         PwmProperty, DisplayMinimumProperty, DisplayMaximumProperty, ConfiguredMinimumProperty,
         ConfiguredMaximumProperty, TrimProperty, DeadZoneProperty, CapturedMinimumProperty,
         CapturedMaximumProperty, CandidateTrimProperty, IsCapturingProperty, IsStaleProperty,
         HasSignalProperty, PresentationKindProperty, IsReversedProperty);
+    }
 
-    public RadioChannelMeterView() { Height = 32; MinHeight = 24; }
+    public RadioChannelMeterView()
+    {
+        Height = 32;
+        MinHeight = 24;
+    }
 
-    public int ChannelNumber { get => GetValue(ChannelNumberProperty); set => SetValue(ChannelNumberProperty, value); }
-    public string? FunctionName { get => GetValue(FunctionNameProperty); set => SetValue(FunctionNameProperty, value); }
-    public int Pwm { get => GetValue(PwmProperty); set => SetValue(PwmProperty, value); }
-    public int DisplayMinimum { get => GetValue(DisplayMinimumProperty); set => SetValue(DisplayMinimumProperty, value); }
-    public int DisplayMaximum { get => GetValue(DisplayMaximumProperty); set => SetValue(DisplayMaximumProperty, value); }
-    public int ConfiguredMinimum { get => GetValue(ConfiguredMinimumProperty); set => SetValue(ConfiguredMinimumProperty, value); }
-    public int ConfiguredMaximum { get => GetValue(ConfiguredMaximumProperty); set => SetValue(ConfiguredMaximumProperty, value); }
-    public int Trim { get => GetValue(TrimProperty); set => SetValue(TrimProperty, value); }
-    public int DeadZone { get => GetValue(DeadZoneProperty); set => SetValue(DeadZoneProperty, value); }
-    public int? CapturedMinimum { get => GetValue(CapturedMinimumProperty); set => SetValue(CapturedMinimumProperty, value); }
-    public int? CapturedMaximum { get => GetValue(CapturedMaximumProperty); set => SetValue(CapturedMaximumProperty, value); }
-    public int? CandidateTrim { get => GetValue(CandidateTrimProperty); set => SetValue(CandidateTrimProperty, value); }
-    public bool IsCapturing { get => GetValue(IsCapturingProperty); set => SetValue(IsCapturingProperty, value); }
-    public bool IsStale { get => GetValue(IsStaleProperty); set => SetValue(IsStaleProperty, value); }
-    public bool HasSignal { get => GetValue(HasSignalProperty); set => SetValue(HasSignalProperty, value); }
-    public RadioChannelPresentationKind PresentationKind { get => GetValue(PresentationKindProperty); set => SetValue(PresentationKindProperty, value); }
-    public bool IsReversed { get => GetValue(IsReversedProperty); set => SetValue(IsReversedProperty, value); }
+    public int ChannelNumber
+    {
+        get => GetValue(ChannelNumberProperty); set => SetValue(ChannelNumberProperty, value);
+    }
+    public string? FunctionName
+    {
+        get => GetValue(FunctionNameProperty); set => SetValue(FunctionNameProperty, value);
+    }
+    public int Pwm
+    {
+        get => GetValue(PwmProperty); set => SetValue(PwmProperty, value);
+    }
+    public int DisplayMinimum
+    {
+        get => GetValue(DisplayMinimumProperty); set => SetValue(DisplayMinimumProperty, value);
+    }
+    public int DisplayMaximum
+    {
+        get => GetValue(DisplayMaximumProperty); set => SetValue(DisplayMaximumProperty, value);
+    }
+    public int ConfiguredMinimum
+    {
+        get => GetValue(ConfiguredMinimumProperty); set => SetValue(ConfiguredMinimumProperty, value);
+    }
+    public int ConfiguredMaximum
+    {
+        get => GetValue(ConfiguredMaximumProperty); set => SetValue(ConfiguredMaximumProperty, value);
+    }
+    public int Trim
+    {
+        get => GetValue(TrimProperty); set => SetValue(TrimProperty, value);
+    }
+    public int DeadZone
+    {
+        get => GetValue(DeadZoneProperty); set => SetValue(DeadZoneProperty, value);
+    }
+    public int? CapturedMinimum
+    {
+        get => GetValue(CapturedMinimumProperty); set => SetValue(CapturedMinimumProperty, value);
+    }
+    public int? CapturedMaximum
+    {
+        get => GetValue(CapturedMaximumProperty); set => SetValue(CapturedMaximumProperty, value);
+    }
+    public int? CandidateTrim
+    {
+        get => GetValue(CandidateTrimProperty); set => SetValue(CandidateTrimProperty, value);
+    }
+    public bool IsCapturing
+    {
+        get => GetValue(IsCapturingProperty); set => SetValue(IsCapturingProperty, value);
+    }
+    public bool IsStale
+    {
+        get => GetValue(IsStaleProperty); set => SetValue(IsStaleProperty, value);
+    }
+    public bool HasSignal
+    {
+        get => GetValue(HasSignalProperty); set => SetValue(HasSignalProperty, value);
+    }
+    public RadioChannelPresentationKind PresentationKind
+    {
+        get => GetValue(PresentationKindProperty); set => SetValue(PresentationKindProperty, value);
+    }
+    public bool IsReversed
+    {
+        get => GetValue(IsReversedProperty); set => SetValue(IsReversedProperty, value);
+    }
 
     public override void Render(DrawingContext context)
     {
         base.Render(context);
         const double padding = 8;
-        var width = Math.Max(1, Bounds.Width - padding * 2);
+        var width = Math.Max(1, Bounds.Width - (padding * 2));
         var center = Bounds.Height / 2;
         context.DrawRectangle(new SolidColorBrush(Color.Parse("#596673")), null, new Rect(padding, center - 3, width, 6), 3, 3);
         var left = Position(ConfiguredMinimum, padding, width);
@@ -64,8 +125,16 @@ public sealed class RadioChannelMeterView : Control
         DrawTick(context, left, center, 8, "#B8C4CE", 1.5);
         DrawTick(context, right, center, 8, "#B8C4CE", 1.5);
         DrawTick(context, Position(Trim, padding, width), center, 11, "#F0B44D", 2);
-        if (IsCapturing && CapturedMinimum is { } min) DrawTick(context, Position(min, padding, width), center, 13, "#56C7A5", 2.5);
-        if (IsCapturing && CapturedMaximum is { } max) DrawTick(context, Position(max, padding, width), center, 13, "#56C7A5", 2.5);
+        if (IsCapturing && CapturedMinimum is { } min)
+        {
+            DrawTick(context, Position(min, padding, width), center, 13, "#56C7A5", 2.5);
+        }
+
+        if (IsCapturing && CapturedMaximum is { } max)
+        {
+            DrawTick(context, Position(max, padding, width), center, 13, "#56C7A5", 2.5);
+        }
+
         if (HasSignal)
         {
             var brush = new SolidColorBrush(Color.Parse(IsStale ? "#9AA4AD" : "#67B7E8"));
@@ -73,9 +142,13 @@ public sealed class RadioChannelMeterView : Control
         }
     }
 
-    private double Position(int pwm, double left, double width) =>
-        RadioChannelMeterGeometry.Position(pwm, DisplayMinimum, DisplayMaximum, (float)left, (float)width);
+    private double Position(int pwm, double left, double width)
+    {
+        return RadioChannelMeterGeometry.Position(pwm, DisplayMinimum, DisplayMaximum, (float)left, (float)width);
+    }
 
-    private static void DrawTick(DrawingContext context, double x, double center, double halfHeight, string color, double thickness) =>
+    private static void DrawTick(DrawingContext context, double x, double center, double halfHeight, string color, double thickness)
+    {
         context.DrawLine(new Pen(new SolidColorBrush(Color.Parse(color)), thickness), new Point(x, center - halfHeight), new Point(x, center + halfHeight));
+    }
 }

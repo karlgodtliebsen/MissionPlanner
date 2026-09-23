@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -143,7 +142,7 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
         try
         {
             var inventory = await compassService.GetInventoryAsync(vehicleId, token);
-            Dispatcher.Dispatch(() => ShowInventory(inventory));
+            await Dispatcher.DispatchAsync(() => ShowInventory(inventory));
         }
         catch (OperationCanceledException)
         {
@@ -202,7 +201,7 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
 
             SetMessages(messages.Count == 0 ? "No compass changes were pending." : string.Join(Environment.NewLine, messages));
             var inventory = await compassService.GetInventoryAsync(vehicleId, token);
-            Dispatcher.Dispatch(() => ShowInventory(inventory, true));
+            await Dispatcher.DispatchAsync(() => ShowInventory(inventory, true));
         }
         catch (OperationCanceledException)
         {
@@ -235,7 +234,7 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
         {
             await compassService.RefreshAsync(vehicleId, token);
             var inventory = await compassService.GetInventoryAsync(vehicleId, token);
-            Dispatcher.Dispatch(() => ShowInventory(inventory));
+            await Dispatcher.DispatchAsync(() => ShowInventory(inventory));
         }
         catch (OperationCanceledException)
         {
