@@ -17,10 +17,16 @@
         <Setter Property="Margin" Value="4" />
     </Style>
 
-<!--    <Style Selector="Border">
-        <Setter Property="Theme" Value="{DynamicResource SolidIconButton}"></Setter>
-    </Style>-->
+    <Style Selector="Border.SourceBorder">
+        <Setter Property="MinWidth" Value="400"></Setter>
+<!--       
+<Setter Property="Background" Value="IndianRed"></Setter>
+-->    
+    </Style>
 
+    <!--        
+    <Setter Property="Background" Value="IndianRed"></Setter>
+    -->  
     <Style Selector="TextBlock.SectionTitle">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="14" />
@@ -37,9 +43,7 @@
         <Setter Property="Theme" Value="{DynamicResource SolidIconButton}"></Setter>
     </Style>
 
-    <!--        
-    <Setter Property="Background" Value="IndianRed"></Setter>
-    -->    
+  
     <Style Selector="Button.H5">
         <Setter Property="FontSize" Value="13"></Setter>
         <Setter Property="FontWeight" Value="Light"></Setter>
@@ -57,9 +61,6 @@
         <Setter Property="VerticalAlignment" Value="Center"></Setter>
     </Style>
 
-    <Style Selector="Border.SourceBorder">
-        <Setter Property="MinWidth" Value="400"></Setter>
-    </Style>
 
     <Style Selector="TextBox.H1">
         <Setter Property="FontSize" Value="48"></Setter>

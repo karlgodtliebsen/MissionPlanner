@@ -8,11 +8,12 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                x:DataType="sections:CompassSetupViewModel"
-                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:u="https://irihi.tech/ursa">
 
     <Grid RowDefinitions="Auto,Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-       
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}" >
+
+        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}" >
             <StackPanel Spacing="10">
                 <TextBlock Text="Compass discovery and calibration" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
@@ -32,8 +33,9 @@
                 </StackPanel>
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12"  Classes="SectionCard SourceBorder" x:Name="SourceBorder" >
-            <StackPanel Spacing="15"  HorizontalAlignment="Center">
+
+        <Border Grid.Row="1" Padding="12" HorizontalAlignment="Center" Classes="SectionCard SourceBorder" x:Name="SourceBorder" >
+            <StackPanel Spacing="10" >
                 <TextBlock Text="Configured versus detected hardware:" Classes="H3" />
                 <TextBlock Text="{Binding DiagnosticSummary}" TextWrapping="Wrap" />
                 <ItemsControl ItemsSource="{Binding DiagnosticEvidence}">
@@ -66,30 +68,33 @@
             </StackPanel>
         </Border>
 
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Visible" Margin="16">
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Visible"
+                      Margin="16,0" HorizontalAlignment="Center">
             <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-                <StackPanel Spacing="10" >
+                <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Compasses}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="sections:CompassInstanceViewModel">
-                                <Border Padding="10" Classes="SectionCard">
-                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
-                                        <TextBlock Text="{Binding Header}" FontWeight="Bold" />
-                                        <TextBlock Grid.Column="1" Text="{Binding HealthLabel}" />
-                                        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DeviceLabel}" />
-                                        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding OffsetsLabel}" Opacity="0.75" />
-                                        <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding MotorCompensationLabel}" Opacity="0.75" />
-                                        <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="2" Spacing="10">
-                                            <TextBlock Text="Use" VerticalAlignment="Center" />
-                                            <ToggleSwitch IsChecked="{Binding IsUsed}" />
-                                            <TextBlock Text="External" VerticalAlignment="Center" IsVisible="{Binding SupportsExternal}" />
-                                            <ToggleSwitch IsChecked="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
-                                            <ComboBox ToolTip.Tip="Orientation" ItemsSource="{Binding Orientations}" SelectedItem="{Binding SelectedOrientation}" DisplayMemberBinding="{Binding Name}" />
-                                            <Button Classes="IsToolbarButton" HorizontalAlignment="Right" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
-                                                <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
-                                            </Button>
-                                        </StackPanel>
-                                    </Grid>
+                                <Border  Classes="SectionCard" Padding="12" >
+                                    <StackPanel Orientation="Vertical" Spacing="20" >
+                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+                                            <TextBlock Text="{Binding Header}" FontWeight="Bold" />
+                                            <TextBlock Grid.Column="1" Text="{Binding HealthLabel}" />
+                                            <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DeviceLabel}" />
+                                            <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding OffsetsLabel}" Opacity="0.75" />
+                                            <TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding MotorCompensationLabel}" Opacity="0.75" />
+                                            <StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="2" Spacing="10">
+                                                <TextBlock Text="Use" VerticalAlignment="Center" />
+                                                <ToggleSwitch IsChecked="{Binding IsUsed}" />
+                                                <TextBlock Text="External" VerticalAlignment="Center" IsVisible="{Binding SupportsExternal}" />
+                                                <ToggleSwitch IsChecked="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
+                                                <ComboBox ToolTip.Tip="Orientation" ItemsSource="{Binding Orientations}" SelectedItem="{Binding SelectedOrientation}" DisplayMemberBinding="{Binding Name}" />
+                                                <Button Classes="IsToolbarButton" HorizontalAlignment="Right" ToolTip.Tip="Write and verify" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
+                                                    <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -104,7 +109,5 @@
                 </StackPanel>
             </Border>
         </ScrollViewer>
-
-
     </Grid>
 </utilities:UserControlViewBase>
