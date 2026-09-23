@@ -3,6 +3,7 @@
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                xmlns:models="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core"
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                x:DataType="sections:CompassSetupViewModel">
@@ -33,7 +34,9 @@
                 <TextBlock Text="{Binding ValidationText}" FontWeight="SemiBold" TextWrapping="Wrap" />
                 <TextBlock Text="Arming impact" FontWeight="SemiBold" />
                 <TextBlock Text="{Binding ArmingImpact}" TextWrapping="Wrap" />
-                <Button Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Refresh values" Command="{Binding RefreshInventoryCommand}" AutomationProperties.Name="Refresh compass values" />
+                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
+                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                </Button>
             </StackPanel>
         </Border>
 
@@ -53,9 +56,13 @@
                             </ItemsControl>
                         </ScrollViewer>
                         <Grid ColumnDefinitions="*,Auto">
-                            <Button Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Discard" Command="{Binding DiscardCommand}" HorizontalAlignment="Left"
-                                    IsEnabled="{Binding !IsBusy}" />
-                            <Button Grid.Column="1" Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Apply" Command="{Binding ApplyCommand}" />
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Discard" AutomationProperties.Name="Discard" Command="{Binding DiscardCommand}" HorizontalAlignment="Left"
+                                    IsEnabled="{Binding !IsBusy}">
+                                <mdi:MaterialIcon Kind="FileUndoOutline" Classes="ActionIcon" />
+                            </Button>
+                            <Button Grid.Column="1" Classes="IsToolbarButton" ToolTip.Tip="Apply" AutomationProperties.Name="Apply" Command="{Binding ApplyCommand}">
+                                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                            </Button>
                         </Grid>
                     </StackPanel>
                 </Border>
@@ -70,14 +77,24 @@
                         <TextBlock Text="{Binding ProgressSummary}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding QualitySummary}" TextWrapping="Wrap" />
                         <WrapPanel>
-                            <Button Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Start calibration" Command="{Binding StartCalibrationCommand}" Margin="0,0,8,8" />
-                            <Button Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Accept results" Command="{Binding AcceptCalibrationCommand}" Margin="0,0,8,8" />
-                            <Button Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Cancel calibration" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
-                            <Button Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Reset / retry" Command="{Binding ResetCommand}" IsEnabled="{Binding CanStart}" Margin="0,0,8,8" />
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Start calibration" AutomationProperties.Name="Start calibration" Command="{Binding StartCalibrationCommand}" Margin="0,0,8,8">
+                                <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Accept results" AutomationProperties.Name="Accept results" Command="{Binding AcceptCalibrationCommand}" Margin="0,0,8,8">
+                                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Cancel calibration" AutomationProperties.Name="Cancel calibration" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8">
+                                <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reset / retry" AutomationProperties.Name="Reset / retry" Command="{Binding ResetCommand}" IsEnabled="{Binding CanStart}" Margin="0,0,8,8">
+                                <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                            </Button>
                         </WrapPanel>
                         <StackPanel IsVisible="{Binding RequiresReboot}" Spacing="8">
                             <TextBlock Text="Changes applied. Reboot required." Classes="Warning" TextWrapping="Wrap" />
-                            <Button Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Reboot vehicle" Command="{Binding RebootCommand}" />
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reboot vehicle" AutomationProperties.Name="Reboot vehicle" Command="{Binding RebootCommand}">
+                                <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" />
+                            </Button>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -92,7 +109,9 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <Button Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Open Full Parameters" Command="{Binding OpenFullParametersCommand}" />
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters" Command="{Binding OpenFullParametersCommand}">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
                         </StackPanel>
                     </Border>
                 </Expander>
@@ -128,8 +147,10 @@
                                             <TextBlock Text="{Binding ParameterText}" Opacity="0.65" FontSize="12" TextWrapping="Wrap" />
                                             <WrapPanel>
                                                 <TextBlock Text="{Binding DefaultText}" Margin="0,0,12,0" VerticalAlignment="Center" />
-                                                <Button Classes="IsToolbarButton" Width="NaN" MinWidth="100" Content="Reset to default" Command="{Binding ResetDefaultCommand}" 
-                                                        IsEnabled="{Binding CanReset}" />
+                                                <Button Classes="IsToolbarButton" ToolTip.Tip="Reset to default" AutomationProperties.Name="Reset to default" Command="{Binding ResetDefaultCommand}"
+                                                        IsEnabled="{Binding CanReset}">
+                                                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                                                </Button>
                                             </WrapPanel>
 
                                         </StackPanel>
