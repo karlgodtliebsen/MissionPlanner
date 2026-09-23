@@ -1,4 +1,4 @@
-using AsyncAwaitBestPractices;
+﻿using AsyncAwaitBestPractices;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Mapsui;
@@ -10,7 +10,6 @@ using Mapsui.UI.Avalonia;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Maps;
 using MissionPlanner.App.Services;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Vehicles.Abstractions;

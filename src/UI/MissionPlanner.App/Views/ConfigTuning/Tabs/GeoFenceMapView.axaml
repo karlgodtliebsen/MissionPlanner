@@ -67,6 +67,7 @@
                     ItemsSource="{Binding MapStyles}"
                     SelectedItem="{Binding SelectedMapStyle}"
                     DisplayMemberBinding="{Binding .}"
+                    HorizontalContentAlignment="Right"
                     />
 
                 <TextBlock Text="•" VerticalAlignment="Center"/>
