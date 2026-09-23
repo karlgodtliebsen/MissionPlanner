@@ -89,7 +89,7 @@
                      IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                      IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
 
-            <Button Classes="IsToolbarButton"
+            <Button Classes=" Primary IsToolbarButton"
                 Width="80"
                 ToolTip.Tip="Refresh"
                 Padding="5"
@@ -99,7 +99,7 @@
                 <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
             </Button>
 
-            <Button Classes="IsToolbarButton"
+            <Button Classes="Primary IsToolbarButton"
                 Width="80"
                 ToolTip.Tip="Connect"
                 Padding="5"
@@ -112,7 +112,7 @@
                        Stretch="Uniform"/>
             </Button>
 
-            <Button Classes="IsToolbarButton"
+            <Button Classes="Primary IsToolbarButton"
                 Width="80"
                 ToolTip.Tip="Close"
                 Padding="5"
@@ -144,7 +144,7 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" VerticalAlignment="Center"
                      IsVisible="{Binding IsConnected}">
-            <Button Classes="IsToolbarButton"
+            <Button Classes="Primary IsToolbarButton"
                 ToolTip.Tip="Disconnect"
                 Width="80"
                 Padding="5"
@@ -157,7 +157,7 @@
                        Stretch="Uniform"/>
             </Button>
 
-            <Button Classes="IsToolbarButton"
+            <Button Classes="Primary IsToolbarButton"
                 Width="80"
                 ToolTip.Tip="Close"
                 Padding="5"
