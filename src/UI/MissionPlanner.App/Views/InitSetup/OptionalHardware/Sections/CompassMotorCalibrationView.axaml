@@ -10,7 +10,7 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CompassMotorCalibrationView"
                                x:DataType="sections:CompassMotorCalibrationViewModel">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Compass / Motor Calibration" Classes="H2" />

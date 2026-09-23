@@ -10,7 +10,7 @@
                                x:DataType="sections:BatterySetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Battery monitors and failsafe" Classes="H2" />
                 <TextBlock Text="{Binding Status}" FontStyle="Italic" />
@@ -31,7 +31,7 @@
         </Border>
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible"
                       Margin="16,0" HorizontalAlignment="Center">
-            <Border Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <Border Padding="12" Classes="SourceBorder" x:Name="SourceBorder">
                 <StackPanel>
                     <ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
                         <ItemsControl.ItemTemplate>
@@ -43,53 +43,55 @@
                     <ItemsControl ItemsSource="{Binding Instances}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="sections:BatteryInstanceViewModel">
-                                <Border Padding="12" Classes="SectionCard">
+                                <Border Padding="12" Classes="SectionCard SourceBorder"  Width="{Binding #SourceBorder.Bounds.Width}">
                                     <StackPanel Orientation="Vertical" Spacing="6">
+                                        
                                         <TextBlock Text="{Binding Header}" FontWeight="Bold" FontSize="16" />
                                         <TextBlock Text="{Binding LiveReadings}" />
                                         <TextBlock Text="Remaining percentage is an estimate, not a measured capacity truth." Opacity="0.7" FontSize="12" />
-                                        <Grid ColumnDefinitions="140,*,Auto" RowSpacing="6" ColumnSpacing="8" IsVisible="{Binding SupportsCapacity}">
+                                       
+                                        <Grid ColumnDefinitions="140,*,Auto" RowSpacing="6" ColumnSpacing="10" IsVisible="{Binding SupportsCapacity}">
                                             <TextBlock Text="Capacity (mAh)" VerticalAlignment="Center" />
-                                            <NumericUpDown Grid.Column="1" Value="{Binding Capacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                            <NumericUpDown Grid.Column="1"  HorizontalContentAlignment="Right" Value="{Binding Capacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
                                             <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Write" Command="{Binding ApplyCapacityCommand}" AutomationProperties.Name="Write">
                                                 <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                                             </Button>
                                         </Grid>
                                         <StackPanel Orientation="Vertical" IsVisible="{Binding SupportsVoltageFailsafe}" Spacing="4">
-                                            <TextBlock Text="Voltage failsafe (V)" FontWeight="Bold" />
-                                            <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
+                                            <TextBlock Text="Voltage failsafe (V):" FontWeight="Bold" />
+                                            <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="10">
                                                 <TextBlock Text="Low" VerticalAlignment="Center" />
-                                                <NumericUpDown Grid.Column="1" Value="{Binding LowVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                                <NumericUpDown Grid.Column="1" HorizontalContentAlignment="Right" Value="{Binding LowVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
                                                 <TextBlock Grid.Column="2" Text="Critical" VerticalAlignment="Center" />
-                                                <NumericUpDown Grid.Column="3" Value="{Binding CriticalVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                                <Button Classes="IsToolbarButton" Grid.Column="4" ToolTip.Tip="Write" Command="{Binding ApplyVoltageFailsafeCommand}" AutomationProperties.Name="Write">
+                                                <NumericUpDown Grid.Column="3"  HorizontalContentAlignment="Right" Value="{Binding CriticalVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                                <Button Grid.Column="4" Classes="IsToolbarButton" ToolTip.Tip="Write" Command="{Binding ApplyVoltageFailsafeCommand}" AutomationProperties.Name="Write">
                                                     <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                                                 </Button>
                                             </Grid>
                                         </StackPanel>
                                         <StackPanel Orientation="Vertical" IsVisible="{Binding SupportsCapacityFailsafe}" Spacing="4">
-                                            <TextBlock Text="Capacity failsafe (mAh)" FontWeight="Bold" />
-                                            <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
+                                            <TextBlock Text="Capacity failsafe (mAh):" FontWeight="Bold" />
+                                            <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="10">
                                                 <TextBlock Text="Low" VerticalAlignment="Center" />
-                                                <NumericUpDown Grid.Column="1" Value="{Binding LowCapacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                                <NumericUpDown Grid.Column="1"  HorizontalContentAlignment="Right" Value="{Binding LowCapacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
                                                 <TextBlock Grid.Column="2" Text="Critical" VerticalAlignment="Center" />
-                                                <NumericUpDown Grid.Column="3" Value="{Binding CriticalCapacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                                <Button Classes="IsToolbarButton" Grid.Column="4" ToolTip.Tip="Write" Command="{Binding ApplyCapacityFailsafeCommand}" AutomationProperties.Name="Write">
+                                                <NumericUpDown Grid.Column="3" HorizontalContentAlignment="Right"  Value="{Binding CriticalCapacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                                <Button Grid.Column="4" Classes="IsToolbarButton" ToolTip.Tip="Write" Command="{Binding ApplyCapacityFailsafeCommand}" AutomationProperties.Name="Write">
                                                     <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                                                 </Button>
                                             </Grid>
                                         </StackPanel>
-                                        <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsVoltageCalibration}">
+                                        <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="10" IsVisible="{Binding SupportsVoltageCalibration}">
                                             <TextBlock Text="Measured voltage (V)" VerticalAlignment="Center" />
-                                            <NumericUpDown Grid.Column="1" Value="{Binding ReferenceVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                            <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Calibrate voltage" Command="{Binding CalibrateVoltageCommand}" AutomationProperties.Name="Calibrate voltage">
+                                            <NumericUpDown Grid.Column="1"  HorizontalContentAlignment="Right" Value="{Binding ReferenceVoltage, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                            <Button Grid.Column="2" Classes="IsToolbarButton" ToolTip.Tip="Calibrate voltage" Command="{Binding CalibrateVoltageCommand}" AutomationProperties.Name="Calibrate voltage">
                                                 <mdi:MaterialIcon Kind="SineWave" Classes="ActionIcon" />
                                             </Button>
                                         </Grid>
-                                        <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsCurrentCalibration}">
+                                        <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="10" IsVisible="{Binding SupportsCurrentCalibration}">
                                             <TextBlock Text="Measured current (A)" VerticalAlignment="Center" />
-                                            <NumericUpDown Grid.Column="1" Value="{Binding ReferenceCurrent, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                            <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Calibrate current" Command="{Binding CalibrateCurrentCommand}" AutomationProperties.Name="Calibrate current">
+                                            <NumericUpDown Grid.Column="1" HorizontalContentAlignment="Right"  Value="{Binding ReferenceCurrent, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                            <Button Grid.Column="2" Classes="IsToolbarButton" ToolTip.Tip="Calibrate current" Command="{Binding CalibrateCurrentCommand}" AutomationProperties.Name="Calibrate current">
                                                 <mdi:MaterialIcon Kind="CurrentDc" Classes="ActionIcon" />
                                             </Button>
                                         </Grid>

@@ -7,7 +7,7 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RtkGpsInjectView"
                                x:DataType="sections:RtkGpsInjectViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="RTK / GPS Correction Injection" Classes="H2" HorizontalAlignment="Center"/>
@@ -32,6 +32,11 @@
         </Border>
         <Border Grid.Row="2" HorizontalAlignment="Center" Classes="SectionCard" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Spacing="10">
+
+                <TextBlock Text="{Binding SourceStatus}" FontWeight="Bold" />
+                <TextBlock Text="{Binding TargetStatus}" />
+                <TextBlock Text="{Binding Statistics}" />
+
                 <ComboBox HorizontalAlignment="Stretch"
                           ToolTip.Tip="Source" ItemsSource="{Binding SourceKinds}" SelectedItem="{Binding SourceKind}"
                           HorizontalContentAlignment="Right"
@@ -45,9 +50,6 @@
                     <CheckBox IsChecked="{Binding UseTls}" Content="Use TLS" />
                 </StackPanel>
 
-                <TextBlock Text="{Binding SourceStatus}" FontWeight="Bold" />
-                <TextBlock Text="{Binding TargetStatus}" />
-                <TextBlock Text="{Binding Statistics}" />
             </StackPanel>
         </Border>
     </Grid>

@@ -9,7 +9,7 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RangefinderView"
                                x:DataType="sections:RangefinderViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Rangefinder" Classes="H2" />
@@ -24,14 +24,18 @@
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible"
                       Margin="16,0" HorizontalAlignment="Center">
-            <Border Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+            <Border Padding="12" Classes="SectionCard SourceBorder" x:Name="SourceBorder"  >
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Settings}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="sections:ParameterSettingViewModel">
                                 <Grid ColumnDefinitions="175,150,120" ColumnSpacing="25" Margin="0,10">
                                     <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Value="{Binding PendingValue}" Minimum="0" />
+                                    <NumericUpDown Grid.Column="1" 
+                                                   HorizontalAlignment="Stretch"
+                                                   HorizontalContentAlignment="Right"
+                                                   Value="{Binding PendingValue}" 
+                                                   Minimum="0" />
                                     <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                     </Button>

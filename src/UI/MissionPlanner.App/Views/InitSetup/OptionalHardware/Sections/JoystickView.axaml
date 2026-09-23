@@ -35,9 +35,15 @@
             </WrapPanel>
         </Border>
 
-        <Border Grid.Row="2" HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-            <StackPanel Spacing="10">
-                <ComboBox ToolTip.Tip="Local device" ItemsSource="{Binding Devices}" VerticalAlignment="Bottom" DisplayMemberBinding="{Binding Name}" SelectedItem="{Binding SelectedDevice}" Width="300" />
+        <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <StackPanel Spacing="20">
+                <ComboBox ToolTip.Tip="Local device" 
+                          ItemsSource="{Binding Devices}" 
+                          VerticalAlignment="Bottom" 
+                          HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Right"
+                          DisplayMemberBinding="{Binding Name}" 
+                          SelectedItem="{Binding SelectedDevice}" />
                 <TextBlock Text="Local calibration is separate from vehicle RC calibration." />
                 <StackPanel Orientation="Horizontal">
                     <CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Content="Vehicle MANUAL_CONTROL output (disabled by default)" />

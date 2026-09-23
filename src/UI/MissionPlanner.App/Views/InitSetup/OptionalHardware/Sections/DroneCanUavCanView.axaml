@@ -9,7 +9,7 @@
                                x:DataType="sections:DroneCanUavCanViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="DroneCAN / UAVCAN v0" Classes="H2" />
@@ -37,13 +37,20 @@
             <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
                 <StackPanel Spacing="10">
                   
-                    <ComboBox ToolTip.Tip="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}" />
+                    <ComboBox ToolTip.Tip="Transport" 
+                              HorizontalAlignment="Stretch"
+                              HorizontalContentAlignment="Right"
+                              ItemsSource="{Binding TransportKinds}" 
+                              SelectedItem="{Binding TransportKind}" />
                     
-                    <ListBox ItemsSource="{Binding Nodes}" SelectionMode="Single" SelectedItem="{Binding SelectedNode}">
+                    <ListBox HorizontalAlignment="Stretch"
+                             ItemsSource="{Binding Nodes}" 
+                             SelectionMode="Single" 
+                             SelectedItem="{Binding SelectedNode}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="50,*,100,100" Margin="4">
-                                    <TextBlock Text="{Binding NodeId}" />
+                                    <TextBlock Grid.Column="0" Text="{Binding NodeId}" />
                                     <TextBlock Grid.Column="1" Text="{Binding Name}" />
                                     <TextBlock Grid.Column="2" Text="{Binding Health}" />
                                     <TextBlock Grid.Column="3" Text="{Binding Version}" />

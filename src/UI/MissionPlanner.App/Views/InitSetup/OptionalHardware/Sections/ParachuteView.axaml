@@ -8,7 +8,9 @@
                                x:DataType="sections:ParachuteViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" 
+                Width="{Binding #SourceBorder.Bounds.Width}"
+                  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Parachute" Classes="H2"/>
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
@@ -21,14 +23,15 @@
         </Border>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible"
                       Margin="16,0" HorizontalAlignment="Center">
-            <Border Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <Border Padding="12" Classes="SourceBorder" x:Name="SourceBorder" >
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Settings}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="sections:ParameterSettingViewModel">
-                                <Grid ColumnDefinitions="220,*,90">
+                                <Grid ColumnDefinitions="300,100,120">
                                     <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                    <TextBox Grid.Column="1" Text="{Binding PendingValue}" />
+                                    <TextBox Grid.Column="1" HorizontalContentAlignment="Right" 
+                                                   Text="{Binding PendingValue, FallbackValue=0}" />
                                     <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                     </Button>

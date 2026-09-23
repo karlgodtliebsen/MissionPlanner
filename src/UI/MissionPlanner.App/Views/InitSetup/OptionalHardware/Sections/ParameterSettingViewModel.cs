@@ -10,7 +10,9 @@ public sealed partial class ParameterSettingViewModel(PeripheralSetting setting,
     public string Name => setting.Name;
     public string DisplayName => setting.DisplayName;
     public double CurrentValue => setting.CurrentValue;
-    [ObservableProperty] public partial double PendingValue { get; set; } = setting.CurrentValue;
+
+    [ObservableProperty]
+    public partial double PendingValue { get; set; } = setting.CurrentValue;
 
     [RelayCommand]
     private Task ApplyAsync()

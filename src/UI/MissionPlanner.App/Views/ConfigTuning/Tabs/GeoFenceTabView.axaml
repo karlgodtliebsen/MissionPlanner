@@ -18,7 +18,7 @@
                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 
         <Grid RowDefinitions="Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Vertical" Margin="0,0">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                     <Button Classes="IsToolbarButton" ToolTip.Tip="Download" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download">
                         <mdi:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
@@ -39,8 +39,11 @@
                         <mdi:MaterialIcon Kind="FileUndoOutline" Classes="ActionIcon" />
                     </Button>
                 </StackPanel>
+                <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Stretch" Margin="0,10">
+
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
                 <ProgressBar IsIndeterminate="True"  Value="{Binding TransferPercent}"  Theme="{DynamicResource ProgressRing}" />
+            </StackPanel>
             </StackPanel>
  
             <Grid Grid.Row="1" ColumnDefinitions="380,*" ColumnSpacing="12">

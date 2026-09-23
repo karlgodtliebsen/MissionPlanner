@@ -13,7 +13,7 @@
         <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Classic Serial Bluetooth Setup" Classes="H2" />
-                <TextBlock Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Opacity="0.75" />
+                <TextBlock Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Classes="H4" Opacity="0.75" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
@@ -36,13 +36,15 @@
                 </Button>
             </WrapPanel>
         </Border>
-        <Border Grid.Row="2" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+
+        <Border Classes="SectionCard"  Grid.Row="2" Padding="12" 
+                Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Spacing="10">
 
                 <TextBlock Text="{Binding ModuleIdentity}" FontWeight="Bold" />
-                <TextBox PlaceholderText="Module name" Text="{Binding Name}" />
-                <TextBox PlaceholderText="PIN" Text="{Binding Pin}" PasswordChar="●" />
-                <NumericUpDown PlaceholderText="Baud" Value="{Binding BaudRate}" Minimum="0" FormatString="F0" />
+                <TextBox PlaceholderText="Module name" HorizontalContentAlignment="Right" Text="{Binding Name}" />
+                <TextBox PlaceholderText="PIN" HorizontalContentAlignment="Right" Text="{Binding Pin}" PasswordChar="●" />
+                <NumericUpDown PlaceholderText="Baud" HorizontalContentAlignment="Right" Value="{Binding BaudRate}" Minimum="0" FormatString="F0" />
 
             </StackPanel>
         </Border>

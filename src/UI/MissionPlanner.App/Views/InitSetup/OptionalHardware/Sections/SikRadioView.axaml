@@ -36,13 +36,36 @@
             </WrapPanel>
         </Border>
 
-        <Border Grid.Row="2" HorizontalAlignment="Center" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Center" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Spacing="10">
+
                 <StackPanel Orientation="Horizontal" Spacing="50" HorizontalAlignment="Stretch" Height="75" VerticalAlignment="Stretch">
-                    <ComboBox ToolTip.Tip="Serial device" VerticalAlignment="Bottom" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
-                    <NumericUpDown PlaceholderText="BaudRate" FormatString="F0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Minimum="0" Value="{Binding BaudRate, Mode=TwoWay}" Width="110" />
+                    <StackPanel Orientation="Vertical" Spacing="10">
+                        <TextBlock Text="Serial device" />
+
+                        <ComboBox ToolTip.Tip="Serial device"
+                                  VerticalAlignment="Bottom"
+                                  HorizontalContentAlignment="Right"
+                                  ItemsSource="{Binding Ports}"
+                                  SelectedItem="{Binding SelectedPort}"
+                                  Width="180" />
+                    </StackPanel>
+                    <StackPanel Orientation="Vertical" Spacing="10">
+                        <TextBlock Text="BaudRate" />
+                        <NumericUpDown PlaceholderText="BaudRate"
+                                       FormatString="F0"
+                                       VerticalAlignment="Bottom"
+                                       HorizontalAlignment="Right"
+                                       HorizontalContentAlignment="Right"
+                                       Minimum="0"
+                                       Value="{Binding BaudRate, Mode=TwoWay}"
+                                       Width="110" />
+                    </StackPanel>
                 </StackPanel>
+
                 <TextBlock Text="{Binding Identity}" FontWeight="Bold" />
+
+                <TextBlock Text="Editor" />
                 <TextBox AcceptsReturn="True" Text="{Binding SettingsText}" Height="260" PlaceholderText="S0=value, one setting per line" />
             </StackPanel>
         </Border>

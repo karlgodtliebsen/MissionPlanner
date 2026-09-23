@@ -20,7 +20,7 @@
                 <StackPanel Orientation="Vertical" Spacing="20">
                     <StackPanel Orientation="Vertical" Spacing="10">
                         <TextBlock Text="Motor Test" Classes="H2" />
-                        <Label Content="Remove ALL propellers. Motors will spin." Classes="Warning H4"  />
+                        <TextBlock Text="Remove ALL propellers. Motors will spin." Classes="Warning H4"  />
                     </StackPanel>
 
                     <StackPanel Orientation="Vertical" Margin="0,10,0,10" Spacing="12">
@@ -31,14 +31,16 @@
                     </StackPanel>
 
                     <TextBlock Text="{Binding FrameDisplay}" Classes="H4" />
-
-                    <Expander Header="Expand to see Motor output diagnostics" IsExpanded="False" HorizontalAlignment="Stretch">
-                        <StackPanel Spacing="8">
-                            <SelectableTextBlock Text="{Binding OutputConfiguration}" TextWrapping="Wrap" />
-                            <TextBlock Text="{Binding OutputGuidance}" TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Expander>
                 </StackPanel>
+            </Border>
+
+            <Border Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #SourceBorder.Bounds.Width}">
+                <Expander Header="Expand to see Motor output diagnostics" IsExpanded="False" HorizontalAlignment="Stretch">
+                    <StackPanel Spacing="8">
+                        <SelectableTextBlock Text="{Binding OutputConfiguration}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding OutputGuidance}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Expander>
             </Border>
 
             <Border Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #SourceBorder.Bounds.Width}">

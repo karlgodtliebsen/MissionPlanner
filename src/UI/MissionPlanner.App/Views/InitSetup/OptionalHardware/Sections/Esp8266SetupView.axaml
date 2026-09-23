@@ -10,7 +10,7 @@
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.Esp8266SetupView"
     x:DataType="sections:Esp8266SetupViewModel"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="ESP8266 MAVLink Bridge" Classes="H2" />
@@ -19,10 +19,6 @@
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="{Binding Target}" />
-                <TextBox PlaceholderText="Access-point SSID" Text="{Binding Ssid}" />
-                <TextBox PlaceholderText="Access-point password" Text="{Binding Password}" PasswordChar="●" />
-                <TextBox PlaceholderText="Station SSID" Text="{Binding StationSsid}" />
-                <TextBox PlaceholderText="Station password" Text="{Binding StationPassword}" PasswordChar="●" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
         </Border>
@@ -32,6 +28,15 @@
                     <mdi:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
+        </Border>
+        <Border Grid.Row="2" HorizontalAlignment="Center" Padding="12" 
+                Classes="SectionCard" Width="{Binding #SourceBorder.Bounds.Width}"  >
+            <StackPanel Spacing="10">
+                <TextBox PlaceholderText="Access-point SSID" Text="{Binding Ssid}" />
+                <TextBox PlaceholderText="Access-point password" Text="{Binding Password}" PasswordChar="●" />
+                <TextBox PlaceholderText="Station SSID" Text="{Binding StationSsid}" />
+                <TextBox PlaceholderText="Station password" Text="{Binding StationPassword}" PasswordChar="●" />
+            </StackPanel>
         </Border>
     </Grid>
 </utilities:UserControlViewBase>
