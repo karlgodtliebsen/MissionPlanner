@@ -9,6 +9,7 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.AntennaTrackerView"
                                x:DataType="sections:AntennaTrackerViewModel">
 
+
     <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
         <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
         <TextBlock Text="Antenna Tracker Configuration" Classes="H2" />
@@ -20,4 +21,6 @@
         <TextBlock Text="Configuration and live tracker operation are deliberately separate." />
         <TextBlock Text="{Binding SafetyStatus}" Opacity="0.75" />
     </StackPanel>
+
+
 </utilities:UserControlViewBase>

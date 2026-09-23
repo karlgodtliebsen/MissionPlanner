@@ -10,18 +10,23 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.NamingView"
                                x:DataType="sections:NamingViewModel"
                                >
-    <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Stretch" Margin="25,0">
-        <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch" MaxWidth="1000">
-            <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center">
-                <TextBlock Text="Vehicle Naming" Classes="H2" />
+    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+            <StackPanel Spacing="10">
+                <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center">
+                    <TextBlock Text="Vehicle Naming" Classes="H2" />
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Margin="0,10,0,10" Spacing="12" HorizontalAlignment="Center">
+                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Vertical" Margin="0,10,0,10" Spacing="12" HorizontalAlignment="Center">
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+        </Border>
+
+        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+            <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
                 <Button Classes="IsToolbarButton" Width="100" ToolTip.Tip="Apply changed identifiers" AutomationProperties.Name="Apply changed identifiers"
                         Command="{Binding ApplyCommand}" >
                     <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
@@ -30,19 +35,19 @@
                         Command="{Binding ReconnectCommand}" AutomationProperties.Name="Reconnect vehicle">
                     <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                 </Button>
-            </StackPanel>
+            </WrapPanel>
+        </Border>
 
-            <Border HorizontalAlignment="Stretch" Padding="25" Classes="SectionCard" MaxWidth="450" IsEnabled="{Binding CanEdit}">
-                <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,130" RowSpacing="10" ColumnSpacing="10" HorizontalAlignment="Center">
-
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Mav System ID" Classes="H4" />
-                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding MavSystemId, Mode=TwoWay}" Classes="H4" HorizontalContentAlignment="Right"/>
-
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Board Serial Number" Classes="H4" />
-                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding BoardSerialNumber, Mode=TwoWay}" Classes="H4" HorizontalContentAlignment="Right"/>
-                </Grid>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+        <Border Grid.Row="2" HorizontalAlignment="Stretch" Padding="25" Classes="SectionCard" MaxWidth="450"
+                Width="{Binding #SourceBorder.Bounds.Width}"
+                IsEnabled="{Binding CanEdit}">
+            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,130" RowSpacing="10" ColumnSpacing="10" HorizontalAlignment="Center">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Mav System ID" Classes="H4" />
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding MavSystemId, Mode=TwoWay}" Classes="H4" HorizontalContentAlignment="Right"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Board Serial Number" Classes="H4" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding BoardSerialNumber, Mode=TwoWay}" Classes="H4" HorizontalContentAlignment="Right"/>
+            </Grid>
+        </Border>
+    </Grid>
 
 </utilities:UserControlViewBase>

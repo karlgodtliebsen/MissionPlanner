@@ -16,7 +16,7 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Visible"  HorizontalAlignment="Stretch" Margin="25,0">
         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch" MaxWidth="1000">
-            <Border   HorizontalAlignment="Stretch" x:Name="PanelWidth">
+            <Border HorizontalAlignment="Stretch" x:Name="SourceBorder">
                 <StackPanel Orientation="Vertical" Spacing="20">
                     <StackPanel Orientation="Vertical" Spacing="10">
                         <TextBlock Text="Motor Test" Classes="H2" />
@@ -24,7 +24,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Vertical" Margin="0,10,0,10" Spacing="12">
-                        <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                        <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                              IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                         <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                              IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
@@ -41,44 +41,44 @@
                 </StackPanel>
             </Border>
 
-            <Border Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #PanelWidth.Bounds.Width}">
+            <Border Classes="SectionCard" HorizontalAlignment="Stretch" Width="{Binding #SourceBorder.Bounds.Width}">
                 <StackPanel Spacing="8">
                     <TextBlock Text="Guided motor start-threshold assistant" Classes="H3" />
                     <TextBlock Text="{Binding ThresholdInstruction}" TextWrapping="Wrap" />
                     <TextBlock Text="{Binding ThresholdCurrentMotor}" TextWrapping="Wrap" />
                     <ProgressBar IsVisible="{Binding ThresholdBusy}" IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" />
                     <WrapPanel>
-                        <Button Classes="IsToolbarButton" Command="{Binding StartThresholdCommand}" Margin="3" AutomationProperties.Name="Start — props removed">
+                        <Button Classes="IsToolbarButton" Width="200" Command="{Binding StartThresholdCommand}" Margin="3" AutomationProperties.Name="Start — props removed">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
                                 <TextBlock Text="Start — props removed" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
-                        <Button Classes="IsToolbarButton" Command="{Binding PulseThresholdCommand}" Margin="3" AutomationProperties.Name="Pulse selected motor (1s)">
+                        <Button Classes="IsToolbarButton" Width="200" Command="{Binding PulseThresholdCommand}" Margin="3" AutomationProperties.Name="Pulse selected motor (1s)">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <mdi:MaterialIcon Kind="Fan" Classes="ActionIcon" Width="20" Height="20" />
                                 <TextBlock Text="Pulse selected motor (1s)" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
-                        <Button Classes="IsToolbarButton" Command="{Binding IncreaseThresholdCommand}" Margin="3" AutomationProperties.Name="Increase by 1%">
+                        <Button Classes="IsToolbarButton" Width="200" Command="{Binding IncreaseThresholdCommand}" Margin="3" AutomationProperties.Name="Increase by 1%">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <mdi:MaterialIcon Kind="Plus" Classes="ActionIcon" Width="20" Height="20" />
                                 <TextBlock Text="Increase by 1%" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
-                        <Button Classes="IsToolbarButton" Command="{Binding ConfirmRotationCommand}" Margin="3" AutomationProperties.Name="Rotates reliably — next motor">
+                        <Button Classes="IsToolbarButton" Width="200" Command="{Binding ConfirmRotationCommand}" Margin="3" AutomationProperties.Name="Rotates reliably — next motor">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <mdi:MaterialIcon Kind="Check" Classes="ActionIcon" Width="20" Height="20" />
                                 <TextBlock Text="Rotates reliably — next motor" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
-                        <Button Classes="IsToolbarButton" Command="{Binding CancelThresholdCommand}" Margin="3" AutomationProperties.Name="Cancel and stop">
+                        <Button Classes="IsToolbarButton" Width="200" Command="{Binding CancelThresholdCommand}" Margin="3" AutomationProperties.Name="Cancel and stop">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                                 <TextBlock Text="Cancel and stop" VerticalAlignment="Center" />
                             </StackPanel>
                         </Button>
-                        <Button Classes="IsToolbarButton" Command="{Binding ApplyThresholdCommand}" Margin="3" AutomationProperties.Name="Review and apply both values">
+                        <Button Classes="IsToolbarButton" Width="200" Command="{Binding ApplyThresholdCommand}" Margin="3" AutomationProperties.Name="Review and apply both values">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <mdi:MaterialIcon Kind="CheckAll" Classes="ActionIcon" Width="20" Height="20" />
                                 <TextBlock Text="Review and apply both values" VerticalAlignment="Center" />
@@ -94,9 +94,8 @@
                     </ItemsControl>
                 </StackPanel>
             </Border>
-            <!--Width="{Binding #PanelWidth.Bounds.Width}"-->
             <TextBlock  Text="{Binding SpinMessage}"  Classes="Warning H4" />
-            <Grid  ColumnDefinitions="*,*" ColumnSpacing="50" HorizontalAlignment="Stretch" Width="{Binding #PanelWidth.Bounds.Width}">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="50" HorizontalAlignment="Stretch" Width="{Binding #SourceBorder.Bounds.Width}">
                 <Border Grid.Column="0"  Classes="SectionCard" HorizontalAlignment="Stretch">
                     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" RowSpacing="10">
                         <StackPanel Orientation="Horizontal" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Spacing="10" Margin="0,20,0,20">
@@ -128,20 +127,20 @@
                         </ItemsControl>
                         <StackPanel Orientation="Vertical" Grid.Row="2" Spacing="25" Margin="0,35,0,0" HorizontalAlignment="Center">
                             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Stretch">
-                                <Button Classes="IsToolbarButton" ToolTip.Tip="Test all Motors" HorizontalAlignment="Stretch" Command="{Binding TestAllCommand}" AutomationProperties.Name="Test all Motors">
+                                <Button Classes="IsToolbarButton" Width="200" ToolTip.Tip="Test all Motors" HorizontalAlignment="Stretch" Command="{Binding TestAllCommand}" AutomationProperties.Name="Test all Motors">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <mdi:MaterialIcon Kind="Fan" Classes="ActionIcon" Width="20" Height="20" />
                                         <TextBlock Text="Test all Motors" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                                <Button Classes="IsToolbarButton" ToolTip.Tip="Test all in sequence" HorizontalAlignment="Stretch" Command="{Binding TestSequenceCommand}" AutomationProperties.Name="Test all in sequence">
+                                <Button Classes="IsToolbarButton" Width="200" ToolTip.Tip="Test all in sequence" HorizontalAlignment="Stretch" Command="{Binding TestSequenceCommand}" AutomationProperties.Name="Test all in sequence">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
                                         <mdi:MaterialIcon Kind="PlaylistPlay" Classes="ActionIcon" Width="20" Height="20" />
                                         <TextBlock Text="Test all in sequence" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
-                            <Button  HorizontalAlignment="Stretch" Classes="Warning IsToolbarButton" Command="{Binding StopCommand}" ToolTip.Tip="Stop all motors" AutomationProperties.Name="STOP All Motors">
+                            <Button  HorizontalAlignment="Stretch" Classes="Warning IsToolbarButton" Width="200" Command="{Binding StopCommand}" ToolTip.Tip="Stop all motors" AutomationProperties.Name="STOP All Motors">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                                     <TextBlock Classes="Warning" VerticalAlignment="Center">STOP All Motors</TextBlock>
@@ -163,7 +162,7 @@
                                            Minimum="1" Maximum="{Binding SpinArmMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
                             <TextBlock Grid.Column="2" Text="{Binding SpinArmSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" />
                         </Grid>
-                        <Button Classes="IsToolbarButton" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" AutomationProperties.Name="Set Motor Spin Arm">
+                        <Button Classes="IsToolbarButton" Width="200" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" AutomationProperties.Name="Set Motor Spin Arm">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" Width="20" Height="20" />
                                 <TextBlock Text="Set Motor Spin Arm" VerticalAlignment="Center" />
@@ -180,7 +179,7 @@
                                            Minimum="1" Maximum="{Binding SpinMinMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
                             <TextBlock Grid.Column="2" Text="{Binding SpinMinSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" />
                         </Grid>
-                        <Button Classes="IsToolbarButton" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" AutomationProperties.Name="Set Motor Spin Min">
+                        <Button Classes="IsToolbarButton" Width="200" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" AutomationProperties.Name="Set Motor Spin Min">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" Width="20" Height="20" />
                                 <TextBlock Text="Set Motor Spin Min" VerticalAlignment="Center" />
