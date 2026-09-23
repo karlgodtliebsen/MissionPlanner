@@ -42,7 +42,7 @@
 
         <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible"  Margin="16" >
             <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                <Border  Classes="SectionCard" Padding="12"   IsVisible="{Binding HasPendingChanges}" 
+                <Border  Classes="SectionCard" Padding="12" IsVisible="{Binding HasPendingChanges}" 
                          Width="{Binding #SourceBorder.Bounds.Width}">
                     <StackPanel Spacing="8">
                         <TextBlock Text="{Binding PendingSummary}" Classes="H3" TextWrapping="Wrap" />
