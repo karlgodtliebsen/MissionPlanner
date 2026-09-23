@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Implements the Windows-only Device Manager host action.</summary>
 public sealed class DeviceManagerLauncher : IDeviceManagerLauncher

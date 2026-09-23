@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Dfu;

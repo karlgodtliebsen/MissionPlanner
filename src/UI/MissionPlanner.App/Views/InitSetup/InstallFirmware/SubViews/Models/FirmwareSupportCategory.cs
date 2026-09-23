@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Groups firmware support links by owner and purpose.</summary>
 public enum FirmwareSupportCategory

@@ -1,4 +1,4 @@
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Owns one panel's cancellable read operation across load/unload cycles. Called on the UI context.</summary>
 internal sealed class FirmwarePanelLoader

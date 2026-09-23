@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Describes one curated firmware support destination.</summary>
 public sealed record FirmwareSupportLink

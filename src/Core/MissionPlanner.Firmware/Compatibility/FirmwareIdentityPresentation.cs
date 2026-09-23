@@ -16,19 +16,22 @@ public static class FirmwareIdentityPresentation
                 lines.Add($"  {label}: {value} [{source}]");
             }
         }
-        lines.Add("Physical device");
+        lines.Add("Physical device:");
         Add("MCU", snapshot.Physical?.McuFamily, snapshot.Physical?.Source.ToString() ?? "");
         Add("USB", snapshot.Physical?.Usb, "UsbDevice");
         Add("UID / serial", snapshot.Physical?.HardwareUid, "UsbDevice");
-        lines.Add("Bootloader");
+        lines.Add("");
+        lines.Add("Bootloader:");
         Add("Target", snapshot.Bootloader?.Target, "BootloaderProtocol");
         Add("Bootloader board ID", snapshot.Bootloader?.BoardId, "BootloaderProtocol");
         Add("Revision", snapshot.Bootloader?.BootloaderRevision, "BootloaderProtocol");
-        lines.Add("Running firmware");
+        lines.Add("");
+        lines.Add("Running firmware:");
         Add("Target", snapshot.Running?.Target, "StatusText");
         Add("Running firmware board ID", snapshot.Running?.BoardId, "AutopilotVersion");
         Add("Version", snapshot.Running?.Version, "AutopilotVersion");
-        lines.Add("Selected firmware");
+        lines.Add("");
+        lines.Add("Selected firmware:");
         var source = snapshot.Selected?.Source.ToString() ?? "";
         Add("Target", snapshot.Selected?.Target, source);
         Add("Board ID", snapshot.Selected?.BoardId, source);

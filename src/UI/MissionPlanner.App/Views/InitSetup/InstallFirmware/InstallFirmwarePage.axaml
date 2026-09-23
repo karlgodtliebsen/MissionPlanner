@@ -12,7 +12,7 @@
 
         <Grid Margin="20" RowDefinitions="Auto,*"  RowSpacing="14">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
@@ -35,7 +35,7 @@
                                     Command="{Binding ProbeRuntimeCommand}" >
                                 <avalonia:MaterialIcon Kind="Chip" Width="30" Height="30" />
                             </Button>
-                            <u:IconDropDownButton  >
+                            <u:IconDropDownButton  ToolTip.Tip="Bootloaders">
                                 <DropDownButton.Flyout>
                                     <MenuFlyout Placement="Bottom">
                                         <MenuItem
@@ -55,7 +55,7 @@
                                 </DropDownButton.Flyout>
                                 <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" />
                             </u:IconDropDownButton>
-                            <u:IconDropDownButton  >
+                            <u:IconDropDownButton   ToolTip.Tip="Select Firmware" >
                                 <DropDownButton.Flyout>
                                     <MenuFlyout Placement="Bottom">
                                         <MenuItem
@@ -75,17 +75,14 @@
                             </u:IconDropDownButton>
 
                             <Button Classes="IsToolbarButton"  ToolTip.Tip="Validate combined HEX"
-                                     Command="{Binding PrepareSelectedHexCommand}" >
+                                    Command="{Binding PrepareSelectedHexCommand}" >
                                 <avalonia:MaterialIcon Kind="FileCheckOutline" Width="30" Height="30" />
                             </Button>
 
                             <Button Classes="IsToolbarButton" ToolTip.Tip="Recovery / Change Firmware Target"
                                     Command="{Binding BeginRecoveryCommand}"
                                     IsVisible="{Binding CanOfferRecovery}">
-                                <StackPanel Orientation="Horizontal" Spacing="8">
                                     <avalonia:MaterialIcon Kind="Wrench" Width="30" Height="30" />
-                                    <TextBlock Text="Recovery / Change Firmware Target" VerticalAlignment="Center" />
-                                </StackPanel>
                             </Button>
                             <Button Classes="IsToolbarButton" ToolTip.Tip="Return to normal upgrade"
                                     Command="{Binding EndRecoveryCommand}" IsVisible="{Binding IsRecovery}">
@@ -113,21 +110,21 @@
                                 <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
                             </Button>
                             <Button Classes="IsToolbarButton"  ToolTip.Tip="{Binding BootloaderUpdateExplanation}"
-                                     Command="{Binding UpdateBootloaderCommand}" >
+                                    Command="{Binding UpdateBootloaderCommand}" >
                                 <avalonia:MaterialIcon Kind="Memory" Width="30" Height="30" />
                             </Button>
 
                             <Button Classes="IsToolbarButton"  ToolTip.Tip="Review DFU target"
-                                     Command="{Binding ReviewDfuTargetCommand}"
-                                     IsVisible="{Binding HasDetectedDfuDevice}"
-                                     IsEnabled="{Binding !IsOperationInProgress}"
-                                     >
+                                    Command="{Binding ReviewDfuTargetCommand}"
+                                    IsVisible="{Binding HasDetectedDfuDevice}"
+                                    IsEnabled="{Binding !IsOperationInProgress}"
+                                    >
                                 <avalonia:MaterialIcon Kind="UsbPort" Width="30" Height="30" />
                             </Button>
 
                             <Button Classes="IsToolbarButton"  ToolTip.Tip="Cancel operation"
-                                     Command="{Binding CancelCommand}"
-                                     IsVisible="{Binding IsOperationInProgress}">
+                                    Command="{Binding CancelCommand}"
+                                    IsVisible="{Binding IsOperationInProgress}">
                                 <avalonia:MaterialIcon Kind="CloseCircleOutline" Width="30" Height="30" />
                             </Button>
                         </WrapPanel>
@@ -138,99 +135,96 @@
 
                                 <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch">
 
-                                    <TextBlock Grid.Row="0"
-                                               Text="Progress:" Classes="H4 Warning"  TextWrapping="Wrap"
-                                               IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                    <SelectableTextBlock Grid.Row="0"
+                                                         Text="Progress:" Classes="H4 Warning"  TextWrapping="Wrap"
+                                                         IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                                     <SelectableTextBlock Grid.Row="1" Text="{Binding WorkflowProgress}" Classes="H4 Warning"  TextWrapping="Wrap"
                                                          IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                                 </Grid>
 
                                 <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch">
-                                    <TextBlock Grid.Row="0" Text="Next:" Classes="H4 Warning"  TextWrapping="Wrap"
-                                               IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                    <SelectableTextBlock Grid.Row="0" Text="Next:" Classes="H4 Warning" TextWrapping="Wrap"
+                                                         IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
-                                    <TextBlock Grid.Row="1" Text="{Binding WorkflowNextStep}" Classes="H4 Warning"  TextWrapping="Wrap"
-                                               IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                    <SelectableTextBlock Grid.Row="1" Text="{Binding WorkflowNextStep}" Classes="H4 Warning"  TextWrapping="Wrap"
+                                                         IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
                                 </Grid>
-
-
-                                <SelectableTextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap"
+                                <SelectableTextBlock Text="{Binding ErrorMessage}" Classes="H4 Danger" TextWrapping="Wrap"
                                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                             </StackPanel>
                         </Border>
                         <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="12" HorizontalAlignment="Center">
-
                                 <Border Classes="SectionCard" Padding="16">
                                     <StackPanel Spacing="8">
-                                        <TextBlock Text="{Binding InstallMode}" Classes="H3" />
-                                        <SelectableTextBlock Text="{Binding IdentityEvidenceText}" TextWrapping="Wrap" />
-                                        <TextBlock Text="{Binding BootloaderUpdateExplanation}" TextWrapping="Wrap" />
-                                        <TextBlock Text="Recovery will replace the current firmware target. Bootloader evidence and explicit confirmation are required before erase."
-                                                   IsVisible="{Binding IsRecovery}" TextWrapping="Wrap" Classes="Warning" />
+                                        <SelectableTextBlock Text="{Binding InstallMode}" Classes="H3" />
+                                        <SelectableTextBlock Text="{Binding IdentityEvidenceText}" TextWrapping="Wrap"  Classes="H4"/>
+                                        <SelectableTextBlock Text="{Binding BootloaderUpdateExplanation}" TextWrapping="Wrap" Classes="H4" />
+                                        <SelectableTextBlock Text="Recovery will replace the current firmware target. Bootloader evidence and explicit confirmation are required before erase."
+                                                             IsVisible="{Binding IsRecovery}" TextWrapping="Wrap" Classes="Warning H4" />
                                     </StackPanel>
                                 </Border>
                                 <Border Classes="SectionCard" Padding="16" x:Name="PhysicalCtrl">
                                     <StackPanel Orientation="Vertical" >
                                         <StackPanel Spacing="10"  IsVisible="{Binding ShowPhysicalController}" >
-                                            <TextBlock Text="Physical controller" Classes="H3" />
-                                            <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" 
+                                            <SelectableTextBlock Text="Physical controller" Classes="H3" />
+                                            <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                                                   ColumnSpacing="16" RowSpacing="10">
 
-                                                <ComboBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"  
-                                                          ItemsSource="{Binding DevicesModel.DetectedDevices}" 
+                                                <ComboBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"
+                                                          HorizontalContentAlignment="Right"
+                                                          ItemsSource="{Binding DevicesModel.DetectedDevices}"
                                                           SelectedItem="{Binding DevicesModel.SelectedDevice}"
                                                           PlaceholderText="Select serial controller" HorizontalAlignment="Stretch"
                                                           IsEnabled="{Binding !IsOperationInProgress}" />
 
-                                                <ComboBox  Grid.Column="0" Grid.Row="1"  Grid.ColumnSpan="2" 
-                                                           ItemsSource="{Binding DfuModel.DfuDevices}" 
+                                                <ComboBox  Grid.Column="0" Grid.Row="1"  Grid.ColumnSpan="2"
+                                                           HorizontalContentAlignment="Right"
+                                                           ItemsSource="{Binding DfuModel.DfuDevices}"
                                                            SelectedItem="{Binding DfuModel.SelectedDfuDevice}"
                                                            PlaceholderText="Select STM32 DFU endpoint" HorizontalAlignment="Stretch"
                                                            IsEnabled="{Binding !IsOperationInProgress}" />
 
 
-                                                <TextBlock Grid.Column="0" Grid.Row="2"  Text="STM32 ROM DFU:" TextWrapping="Wrap" />
-                                                <TextBlock Grid.Column="1" Grid.Row="2"  Text="{Binding DfuProviderId}" TextWrapping="Wrap" />
-                                                <TextBlock Grid.Column="0" Grid.Row="3"  Text="USB:" TextWrapping="Wrap" />
-                                                <TextBlock Grid.Column="1" Grid.Row="3"  Text="{Binding DfuVendorId}" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="0" Grid.Row="2"  Text="STM32 ROM DFU:" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="1" Grid.Row="2"  Text="{Binding DfuProviderId}" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="0" Grid.Row="3"  Text="USB:" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="1" Grid.Row="3"  Text="{Binding DfuVendorId}" TextWrapping="Wrap" />
 
-                                                <TextBlock Grid.Column="0" Grid.Row="4"  Text="Product Id:" TextWrapping="Wrap" />
-                                                <TextBlock Grid.Column="1" Grid.Row="4"  Text="{Binding DfuProductId}" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="0" Grid.Row="4"  Text="Product Id:" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="1" Grid.Row="4"  Text="{Binding DfuProductId}" TextWrapping="Wrap" />
 
-                                                <TextBlock Grid.Column="0" Grid.Row="5"  Text="Correlated Source:" TextWrapping="Wrap" />
-                                                <TextBlock Grid.Column="1" Grid.Row="5"  Text="{Binding DfuCorrelatedSource}" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="0" Grid.Row="5"  Text="Correlated Source:" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="1" Grid.Row="5"  Text="{Binding DfuCorrelatedSource}" TextWrapping="Wrap" />
 
-                                                <TextBlock Grid.Column="0" Grid.Row="6"  Text="Message:" TextWrapping="Wrap" />
-                                                <TextBlock Grid.Column="1" Grid.Row="6"  Text="{Binding DfuMessage}" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="0" Grid.Row="6"  Text="Message:" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="1" Grid.Row="6"  Text="{Binding DfuMessage}" TextWrapping="Wrap" />
 
 
-                                                <TextBlock Grid.Column="0" Grid.Row="7" Text="Device Status:" TextWrapping="Wrap" />
-                                                <TextBlock Grid.Column="1" Grid.Row="7"  Text="{Binding DevicesModel.DeviceStatus}" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="0" Grid.Row="7" Text="Device Status:" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="1" Grid.Row="7"  Text="{Binding DevicesModel.DeviceStatus}" TextWrapping="Wrap" />
 
-                                                <TextBlock Grid.Column="0" Grid.Row="8"  Text="Tool Readiness:" TextWrapping="Wrap" />
-                                                <TextBlock Grid.Column="1" Grid.Row="8"  Text="{Binding DfuModel.ToolReadiness}" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="0" Grid.Row="8"  Text="Tool Readiness:" TextWrapping="Wrap" />
+                                                <SelectableTextBlock Grid.Column="1" Grid.Row="8"  Text="{Binding DfuModel.ToolReadiness}" TextWrapping="Wrap" />
 
                                             </Grid>
                                         </StackPanel>
                                         <StackPanel  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  MinWidth="600"
                                                      IsVisible="{Binding ShowPhysicalController, Converter={StaticResource InvertedBoolConverter}}" >
-                                            <TextBlock Text="No Physical controller Detected" Classes="H3" />
+                                            <SelectableTextBlock Text="No Physical controller Detected" Classes="H3" />
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>
                                 <Border Classes="SectionCard" Padding="16" IsVisible="{Binding RequiresDfuEntry}" Width="{Binding #PhysicalCtrl.Bounds.Width}">
                                     <StackPanel Spacing="8">
-                                        <TextBlock Text="Enter STM32 DFU using the BOOT button" Classes="H3" />
-                                        <TextBlock Text="Firmware validation checks the file. Target confirmation and flashing require a detected STM32 DFU device. For a controller requiring manual entry, disconnect USB, hold BOOT while reconnecting USB, then release BOOT. Follow the board's BOOT/RESET instructions if different. Your firmware selection will be kept."
-                                                   TextWrapping="Wrap" />
-                                        <Button Classes="IsToolbarButton" ToolTip.Tip="Enter DFU using BOOT button" Command="{Binding EnterManualDfuCommand}"
+                                        <SelectableTextBlock Text="Enter STM32 DFU using the BOOT button" Classes="H3" />
+                                        <SelectableTextBlock Text="Firmware validation checks the file. Target confirmation and flashing require a detected STM32 DFU device. For a controller requiring manual entry, disconnect USB, hold BOOT while reconnecting USB, then release BOOT. Follow the board's BOOT/RESET instructions if different. Your firmware selection will be kept."
+                                                             TextWrapping="Wrap" />
+                                        <Button Classes="IsToolbarButton" ToolTip.Tip="Enter DFU using BOOT button"
+                                                Command="{Binding EnterManualDfuCommand}"
                                                 HorizontalAlignment="Center" AutomationProperties.Name="Enter DFU using BOOT button">
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <avalonia:MaterialIcon Kind="Usb" Classes="ActionIcon" Width="20" Height="20" />
-                                                <TextBlock Text="Enter DFU using BOOT button" VerticalAlignment="Center" />
-                                            </StackPanel>
+                                            <avalonia:MaterialIcon Kind="Usb" Classes="ActionIcon" Width="20" Height="20" />
                                         </Button>
                                     </StackPanel>
                                 </Border>
@@ -238,62 +232,62 @@
                                         IsVisible="{Binding IsFirmwareSelected}"
                                         Width="{Binding #PhysicalCtrl.Bounds.Width}">
                                     <StackPanel Spacing="8">
-                                        <TextBlock Text="Selected Firmware" Classes="H3" />
+                                        <SelectableTextBlock Text="Selected Firmware" Classes="H3" />
                                         <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
 
-                                            <TextBlock Text="Source:" />
+                                            <SelectableTextBlock Text="Source:" />
                                             <SelectableTextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.Source}" />
 
-                                            <TextBlock Grid.Column="0" Grid.Row="1" Text="Format:" />
+                                            <SelectableTextBlock Grid.Column="0" Grid.Row="1" Text="Format:" />
                                             <SelectableTextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedArtifact.Format}" />
 
-                                            <TextBlock Grid.Row="2" Grid.Column="0"  Text="Platform / board ID:" />
+                                            <SelectableTextBlock Grid.Row="2" Grid.Column="0"  Text="Platform / board ID:" />
                                             <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="12">
                                                 <SelectableTextBlock Text="{Binding SelectedArtifact.Platform}" />
                                                 <SelectableTextBlock Text="{Binding SelectedArtifact.BoardId}" />
                                             </StackPanel>
 
-                                            <TextBlock Grid.Column="0"  Grid.Row="3" Text="Vehicle / build:" />
+                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="3" Text="Vehicle / build:" />
                                             <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Spacing="12">
                                                 <SelectableTextBlock Text="{Binding SelectedArtifact.VehicleFamily}" />
                                                 <SelectableTextBlock Text="{Binding SelectedArtifact.Version}" />
                                             </StackPanel>
 
-                                            <TextBlock Grid.Column="0"  Grid.Row="4" Text="Image bytes:" />
+                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="4" Text="Image bytes:" />
                                             <SelectableTextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedArtifact.ImageSize}" />
 
-                                            <TextBlock Grid.Column="0"  Grid.Row="5" Text="SHA-256:" />
+                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="5" Text="SHA-256:" />
                                             <SelectableTextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedArtifact.Sha256}" TextWrapping="Wrap" />
 
-                                            <TextBlock Grid.Column="0"  Grid.Row="6" Text="Cache identity:" />
+                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="6" Text="Cache identity:" />
                                             <SelectableTextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedArtifact.CacheIdentity}" TextWrapping="Wrap" />
 
-                                            <TextBlock Grid.Column="0"  Grid.Row="7" Text="Online source:"
-                                                       IsVisible="{Binding HasOnlineArtifact}" />
+                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="7" Text="Online source:"
+                                                                 IsVisible="{Binding HasOnlineArtifact}" />
                                             <SelectableTextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedArtifact.OnlineUrl}"
                                                                  TextWrapping="Wrap" IsVisible="{Binding HasOnlineArtifact}" />
 
-                                            <TextBlock Grid.Column="0"  Grid.Row="8" Text="Channel / Git SHA:" IsVisible="{Binding HasOnlineArtifact}" />
+                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="8" Text="Channel / Git SHA:" IsVisible="{Binding HasOnlineArtifact}" />
                                             <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Spacing="12" IsVisible="{Binding HasOnlineArtifact}">
-                                                <TextBlock Text="{Binding SelectedArtifact.Channel}" />
+                                                <SelectableTextBlock Text="{Binding SelectedArtifact.Channel}" />
                                                 <SelectableTextBlock Text="{Binding SelectedArtifact.GitSha}"  TextWrapping="Wrap" />
                                             </StackPanel>
 
-                                            <TextBlock Grid.Column="0"  Grid.Row="9" Text="Local source:" IsVisible="{Binding HasLocalArtifact}" />
+                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="9" Text="Local source:" IsVisible="{Binding HasLocalArtifact}" />
                                             <SelectableTextBlock Grid.Row="9" Grid.Column="1" Text="{Binding SelectedArtifact.LocalFile}" TextWrapping="Wrap" IsVisible="{Binding HasLocalArtifact}" />
 
-                                            <TextBlock Grid.Column="0"  Grid.Row="10" Text="Imported:" IsVisible="{Binding HasLocalArtifact}" />
+                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="10" Text="Imported:" IsVisible="{Binding HasLocalArtifact}" />
                                             <SelectableTextBlock Grid.Row="10" Grid.Column="1" Text="{Binding SelectedArtifact.ImportedAt}" TextWrapping="Wrap"  IsVisible="{Binding HasLocalArtifact}" />
 
-                                            <TextBlock Grid.Row="11" Grid.Column="0" Text="Reused cache:" />
-                                            <TextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SelectedArtifact.CacheHit}" />
+                                            <SelectableTextBlock Grid.Row="11" Grid.Column="0" Text="Reused cache:" />
+                                            <SelectableTextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SelectedArtifact.CacheHit}" />
 
-                                            <TextBlock Grid.Row="12" Grid.Column="0" Text="Address Ranges:" />
-                                            <TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding SelectedArtifact.AddressRanges}" TextWrapping="Wrap" />
+                                            <SelectableTextBlock Grid.Row="12" Grid.Column="0" Text="Address Ranges:" />
+                                            <SelectableTextBlock Grid.Row="12" Grid.Column="1" Text="{Binding SelectedArtifact.AddressRanges}" TextWrapping="Wrap" />
 
-                                            <TextBlock Grid.Row="13" Grid.Column="0"  Text="To validate:"
-                                                       IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
-                                                       TextWrapping="Wrap" />
+                                            <SelectableTextBlock Grid.Row="13" Grid.Column="0"  Text="To validate:"
+                                                                 IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
+                                                                 TextWrapping="Wrap" />
                                             <SelectableTextBlock Grid.Row="13" Grid.Column="1" Text="Choose the intended controller platform. HEX validation does not establish board identity. Use the file supplier's target information; if unknown, select an online release for your exact controller."
                                                                  IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
                                                                  TextWrapping="Wrap" />
@@ -304,13 +298,14 @@
                                                 ItemsSource="{Binding OnlineFirmwareModel.KnownPlatforms}"
                                                 SelectedItem="{Binding LocalDfuPlatform}"
                                                 PlaceholderText="Select intended controller platform from catalogue"
+                                                HorizontalContentAlignment="Right"
                                                 HorizontalAlignment="Stretch" />
 
                                         </Grid>
 
                                         <StackPanel HorizontalAlignment="Stretch" IsVisible="{Binding ShowHexPreparation}" >
                                             <Button Classes="IsToolbarButton"
-                                                HorizontalAlignment="Center" ToolTip.Tip="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}" AutomationProperties.Name="Validate combined HEX">
+                                                    HorizontalAlignment="Center" ToolTip.Tip="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}" AutomationProperties.Name="Validate combined HEX">
                                                 <avalonia:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
                                             </Button>
                                         </StackPanel>
@@ -318,7 +313,7 @@
                                 </Border>
                                 <Border Classes="SectionCard" Padding="16" IsVisible="{Binding ShowValidationAndCompatibility}" Width="{Binding #PhysicalCtrl.Bounds.Width}">
                                     <StackPanel Spacing="8">
-                                        <TextBlock  Text="Validation and compatibility" Classes="H3" />
+                                        <SelectableTextBlock  Text="Validation and compatibility" Classes="H3" />
                                         <Button Classes="IsToolbarButton" ToolTip.Tip="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
                                                 IsVisible="{Binding ShowOnlineValidation}" IsEnabled="{Binding !IsOperationInProgress}"
                                                 HorizontalAlignment="Center" AutomationProperties.Name="Validate selected firmware">
@@ -326,45 +321,46 @@
                                         </Button>
                                         <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
 
-                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Artifact valid:" />
-                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.ArtifactValid}" />
+                                            <SelectableTextBlock Grid.Row="0" Grid.Column="0" Text="Artifact valid:" />
+                                            <SelectableTextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.ArtifactValid}" />
 
-                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Target compatible:"
-                                                       IsVisible="{Binding !HasCompatibilityFailure}"/>
-                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
-                                                       IsVisible="{Binding !HasCompatibilityFailure}"/>
+                                            <SelectableTextBlock Grid.Row="1" Grid.Column="0" Text="Target compatible:"
+                                                                 IsVisible="{Binding !HasCompatibilityFailure}"/>
+                                            <SelectableTextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
+                                                                 IsVisible="{Binding !HasCompatibilityFailure}"/>
 
-                                            <TextBlock Grid.Row="1" Grid.Column="0"
-                                                       IsVisible="{Binding HasCompatibilityFailure}"
-                                                       Text="Target compatible:" Foreground="Red"/>
-                                            <TextBlock Grid.Row="1" Grid.Column="1"
-                                                       Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
-                                                       IsVisible="{Binding HasCompatibilityFailure}" Foreground="Red"/>
-
-
-                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Compatibility Status:" TextWrapping="Wrap" />
-                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CompatibilityStatus}" TextWrapping="Wrap" />
+                                            <SelectableTextBlock Grid.Row="1" Grid.Column="0"
+                                                                 IsVisible="{Binding HasCompatibilityFailure}"
+                                                                 Text="Target compatible:" Foreground="Red"/>
+                                            <SelectableTextBlock Grid.Row="1" Grid.Column="1"
+                                                                 Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
+                                                                 IsVisible="{Binding HasCompatibilityFailure}" Foreground="Red"/>
 
 
-                                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Status:" TextWrapping="Wrap"
-                                                       IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                            <SelectableTextBlock Grid.Row="2" Grid.Column="0" Text="Compatibility Status:" TextWrapping="Wrap" />
+                                            <SelectableTextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CompatibilityStatus}" TextWrapping="Wrap" />
+
+
+                                            <SelectableTextBlock Grid.Row="3" Grid.Column="0" Text="Status:" TextWrapping="Wrap"
+                                                                 IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                                             <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding InstallStatus}"
                                                                  IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}"
                                                                  TextWrapping="Wrap" />
 
-                                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Warnings:" Classes="Warning" TextWrapping="Wrap"
-                                                       IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                                            <TextBlock Grid.Row="3" Grid.Column="1"
-                                                       Text="{Binding SelectedArtifact.Warnings}" Classes="Warning" TextWrapping="Wrap"
-                                                       IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                            <SelectableTextBlock Grid.Row="3" Grid.Column="0" Text="Warnings:" Classes="Warning" TextWrapping="Wrap"
+                                                                 IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                            <SelectableTextBlock Grid.Row="3" Grid.Column="1"
+                                                                 Text="{Binding SelectedArtifact.Warnings}" Classes="Warning" TextWrapping="Wrap"
+                                                                 IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
-                                            <TextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-                                                       Text="Cancellation is deferred through verification and reboot. Keep power connected."
-                                                       Classes="Warning" TextWrapping="Wrap"
-                                                       IsVisible="{Binding IsCancellationDeferred}"
-                                                       />
+                                            <SelectableTextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
+                                                                 Text="Cancellation is deferred through verification and reboot. Keep power connected."
+                                                                 Classes="Warning" TextWrapping="Wrap"
+                                                                 IsVisible="{Binding IsCancellationDeferred}"
+                                            />
 
                                             <TextBox
+                                                HorizontalContentAlignment="Right"
                                                 Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
                                                 IsVisible="{Binding ShowDfuConfirmation}"
                                                 IsEnabled="{Binding !IsOperationInProgress}"
@@ -375,15 +371,15 @@
                                         <StackPanel   HorizontalAlignment="Stretch">
                                             <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
                                                 <Button Classes="IsToolbarButton"
-                                                    HorizontalAlignment="Center" ToolTip.Tip="Confirm DFU target" Command="{Binding ReviewDfuTargetCommand}"
-                                                    IsVisible="{Binding HasDetectedDfuDevice}"
-                                                    IsEnabled="{Binding !IsOperationInProgress}" AutomationProperties.Name="Confirm DFU target">
+                                                        HorizontalAlignment="Center" ToolTip.Tip="Confirm DFU target" Command="{Binding ReviewDfuTargetCommand}"
+                                                        IsVisible="{Binding HasDetectedDfuDevice}"
+                                                        IsEnabled="{Binding !IsOperationInProgress}" AutomationProperties.Name="Confirm DFU target">
                                                     <avalonia:MaterialIcon Kind="ShieldCheckOutline" Classes="ActionIcon" />
                                                 </Button>
 
                                                 <Button Classes="IsToolbarButton"
-                                                    HorizontalAlignment="Center" ToolTip.Tip="Cancel operation" Command="{Binding CancelCommand}"
-                                                    IsVisible="{Binding IsOperationInProgress}" AutomationProperties.Name="Cancel operation">
+                                                        HorizontalAlignment="Center" ToolTip.Tip="Cancel operation" Command="{Binding CancelCommand}"
+                                                        IsVisible="{Binding IsOperationInProgress}" AutomationProperties.Name="Cancel operation">
                                                     <avalonia:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                                                 </Button>
 

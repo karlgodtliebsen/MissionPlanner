@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 using MissionPlanner.App.Views.Introduction.Models;
 using MissionPlanner.App.Views.Navigation;
 

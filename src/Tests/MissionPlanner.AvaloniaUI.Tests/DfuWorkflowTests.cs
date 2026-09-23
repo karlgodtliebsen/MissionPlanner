@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Model;

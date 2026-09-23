@@ -7,6 +7,7 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Connected;
@@ -18,6 +19,7 @@ using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Preparation;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using FirmwareHelpViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models.FirmwareHelpViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 

@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Firmware.Model;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Captures presentation evidence used to choose concise contextual guidance.</summary>
 public sealed record FirmwareSupportContext(

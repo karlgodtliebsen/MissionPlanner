@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Uses the host launcher for external HTTPS destinations.</summary>
 public sealed class ExternalLinkLauncher : IExternalLinkLauncher

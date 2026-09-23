@@ -23,13 +23,13 @@
                 <StackPanel  Orientation="Vertical" Spacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 
                     <TextBlock  Text="Select Firmware" Classes="H2"  HorizontalAlignment="Left"/>
-                    <ProgressBar  IsIndeterminate="True" IsVisible="{Binding IsRefreshing}"
-                                  Width="120" HorizontalAlignment="Right" VerticalAlignment="Center" />
                     <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                          IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                     <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                          IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
+                    <ProgressBar  IsIndeterminate="True" IsVisible="{Binding IsRefreshing}"
+                                  HorizontalAlignment="Stretch" VerticalAlignment="Center" />
                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh catalogue data"
                                 Padding="8,2"
@@ -49,12 +49,12 @@
                             Command="{Binding ClearCatalogueFirmwareCommand}"  >
                             <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
                         </Button>
-                        <Button
+<!--                        <Button Classes="IsToolbarButton"
                             ToolTip.Tip="Close"
                             Padding="8,2"
                             Command="{Binding CancelCommand}" >
                             <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
-                        </Button>
+                        </Button>-->
 
                         <Button Classes="IsToolbarButton"
                             ToolTip.Tip="Use Selected firmware"

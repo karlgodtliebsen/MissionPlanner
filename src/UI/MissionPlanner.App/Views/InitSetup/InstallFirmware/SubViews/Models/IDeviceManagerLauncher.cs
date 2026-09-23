@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Opens Windows Device Manager through a host-specific boundary.</summary>
 public interface IDeviceManagerLauncher

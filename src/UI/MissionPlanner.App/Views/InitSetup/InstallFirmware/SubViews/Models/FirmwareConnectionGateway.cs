@@ -2,7 +2,7 @@
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Workflow;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Adapts active Mission Planner connection ownership to firmware policy.</summary>
 public sealed class FirmwareConnectionGateway(IActiveVehicleContext activeVehicle, IVehicleConnectionService connection,

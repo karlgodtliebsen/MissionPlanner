@@ -2,7 +2,7 @@
 using Avalonia.Interactivity;
 using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
-using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 namespace MissionPlanner.AvaloniaUI.Tests;
 

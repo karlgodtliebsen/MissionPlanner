@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Identifies an offline firmware-help topic.</summary>
 public enum FirmwareSupportTopic

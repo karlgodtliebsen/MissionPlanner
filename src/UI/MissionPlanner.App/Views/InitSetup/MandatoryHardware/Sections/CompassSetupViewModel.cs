@@ -1,10 +1,9 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
-using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
@@ -13,10 +12,8 @@ using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -88,21 +85,41 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     /// <summary>Current EKF yaw source.</summary>
     [ObservableProperty] public partial string YawSourceText { get; private set; } = "Unknown";
     /// <summary>Whether staged values differ from current values.</summary>
-    [ObservableProperty] public partial bool HasPendingChanges { get; private set; }
+    [ObservableProperty]
+    public partial bool HasPendingChanges
+    {
+        get; private set;
+    }
     /// <summary>Whether live values changed underneath local edits.</summary>
-    [ObservableProperty] public partial bool HasConflict { get; private set; }
+    [ObservableProperty]
+    public partial bool HasConflict
+    {
+        get; private set;
+    }
     /// <summary>Whether a confirmed mutation still requires a vehicle reboot.</summary>
-    [ObservableProperty] public partial bool RequiresReboot { get; private set; }
+    [ObservableProperty]
+    public partial bool RequiresReboot
+    {
+        get; private set;
+    }
     /// <summary>Review count and reboot notice.</summary>
     [ObservableProperty] public partial string PendingSummary { get; private set; } = string.Empty;
     /// <summary>Calibration state projected from the existing service.</summary>
-    [ObservableProperty] public partial CompassCalibrationWorkflowState CalibrationState { get; private set; }
+    [ObservableProperty]
+    public partial CompassCalibrationWorkflowState CalibrationState
+    {
+        get; private set;
+    }
     /// <summary>Calibration instructions.</summary>
     [ObservableProperty] public partial string Instruction { get; private set; } = string.Empty;
     /// <summary>Per-device calibration progress.</summary>
     [ObservableProperty] public partial string ProgressSummary { get; private set; } = string.Empty;
     /// <summary>Calibration quality evidence.</summary>
-    [ObservableProperty] public partial string? QualitySummary { get; private set; }
+    [ObservableProperty]
+    public partial string? QualitySummary
+    {
+        get; private set;
+    }
     /// <summary>Whether configuration controls can currently be edited.</summary>
     public bool CanEdit => activeVehicle.IsOnline && current?.IsSupported == true && !IsBusy && !CanCancel && !IsLoadingParameters;
     /// <summary>Whether calibration may start with confirmed enabled configuration.</summary>
@@ -470,7 +487,10 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void Reset() => calibration.Reset();
+    private void Reset()
+    {
+        calibration.Reset();
+    }
 
     private void ShowCalibration(CompassCalibrationSnapshot snapshot)
     {
@@ -503,41 +523,48 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
         RebootCommand.NotifyCanExecuteChanged();
     }
 
-    private void OnCalibrationChanged(CompassCalibrationStateChangedEventArgs args) => Dispatcher.Dispatch(() =>
+    private void OnCalibrationChanged(CompassCalibrationStateChangedEventArgs args)
+    {
+        Dispatcher.Dispatch(() =>
     {
         if (active)
         {
             ShowCalibration(args.Snapshot);
         }
     });
-    private void OnVehicleChanged(ActiveVehicleChangedEventArgs args) => Dispatcher.Dispatch(() =>
+    }
+
+    private void OnVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
-        if (!active)
+        Dispatcher.Dispatch(() =>
         {
-            return;
-        }
-        editVersion++;
-        loadVersion++;
-        if (rebootRequested && !args.Previous.IsOnline && args.Current.IsOnline)
-        {
-            RequiresReboot = false;
-            rebootRequested = false;
-        }
-        operationCancellation?.Cancel();
-        review = null;
-        if (args.Previous.VehicleId != args.Current.VehicleId || (args.Previous.State is not null && args.Current.State is not null && args.Previous.State.Identity.Firmware != args.Current.State.Identity.Firmware))
-        {
-            current = null;
-            desired = null;
-            HasPendingChanges = false;
-            HasConflict = false;
-            RequiresReboot = false;
-            Settings.Clear();
-            PendingChanges.Clear();
-        }
-        NotifyAvailability();
-        _ = ReloadAndReviewAsync();
-    });
+            if (!active)
+            {
+                return;
+            }
+            editVersion++;
+            loadVersion++;
+            if (rebootRequested && !args.Previous.IsOnline && args.Current.IsOnline)
+            {
+                RequiresReboot = false;
+                rebootRequested = false;
+            }
+            operationCancellation?.Cancel();
+            review = null;
+            if (args.Previous.VehicleId != args.Current.VehicleId || (args.Previous.State is not null && args.Current.State is not null && args.Previous.State.Identity.Firmware != args.Current.State.Identity.Firmware))
+            {
+                current = null;
+                desired = null;
+                HasPendingChanges = false;
+                HasConflict = false;
+                RequiresReboot = false;
+                Settings.Clear();
+                PendingChanges.Clear();
+            }
+            NotifyAvailability();
+            _ = ReloadAndReviewAsync();
+        });
+    }
 
     private async Task ReloadAndReviewAsync()
     {
@@ -603,7 +630,10 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     }
 
     /// <summary>Cancels local apply work.</summary>
-    public void Cancel() => operationCancellation?.Cancel();
+    public void Cancel()
+    {
+        operationCancellation?.Cancel();
+    }
 
     /// <inheritdoc />
     public override void Dispose()

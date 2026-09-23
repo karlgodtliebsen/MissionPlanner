@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Abstracts the native file picker for testable firmware presentation logic.</summary>
 public interface IFirmwareFilePicker
@@ -7,6 +7,6 @@ public interface IFirmwareFilePicker
     Task<FirmwareFileSelection?> PickAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Selects an artifact restricted to the current installation plan.</summary>
-    Task<FirmwareFileSelection?> PickAsync(MissionPlanner.Firmware.Workflow.FirmwareArtifactFormat format,
+    Task<FirmwareFileSelection?> PickAsync(Firmware.Workflow.FirmwareArtifactFormat format,
         CancellationToken cancellationToken = default);
 }

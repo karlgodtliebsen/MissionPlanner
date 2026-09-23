@@ -30,6 +30,7 @@ using MissionPlanner.App.Views.InitSetup.Advanced.Warnings;
 using MissionPlanner.App.Views.InitSetup.Arming;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
@@ -80,6 +81,7 @@ using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
 using ArmingViewModel = MissionPlanner.App.Views.InitSetup.Arming.ArmingViewModel;
+using FirmwareHelpViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models.FirmwareHelpViewModel;
 
 namespace MissionPlanner.App.Configuration;
 

@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.App.Utilities.Dispatching;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Keeps firmware progress and operator prompts mutually exclusive.</summary>
 public sealed class FirmwareDialogCoordinator(IUiDispatcher dispatcher)

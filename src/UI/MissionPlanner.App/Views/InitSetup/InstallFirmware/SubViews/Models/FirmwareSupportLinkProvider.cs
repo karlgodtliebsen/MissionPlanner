@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Provides official firmware resources and explicitly labeled driver fallbacks.</summary>
 public sealed class FirmwareSupportLinkProvider : IFirmwareSupportLinkProvider

@@ -4,7 +4,7 @@ using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Presents firmware-domain safety interactions through the shared resilient dialog service.</summary>
 public sealed class FirmwareInteractionService(IUserConfirmationService userConfirmation, FirmwareDialogCoordinator dialogs) :

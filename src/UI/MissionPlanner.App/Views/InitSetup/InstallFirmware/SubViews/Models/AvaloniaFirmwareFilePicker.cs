@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.App.Presentation;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Selects firmware through the shared persistent-path file picker.</summary>
 public sealed class AvaloniaFirmwareFilePicker(IFileOpenService fileOpenService) : IFirmwareFilePicker
@@ -12,7 +12,7 @@ public sealed class AvaloniaFirmwareFilePicker(IFileOpenService fileOpenService)
     }
 
     /// <inheritdoc />
-    public async Task<FirmwareFileSelection?> PickAsync(MissionPlanner.Firmware.Workflow.FirmwareArtifactFormat format,
+    public async Task<FirmwareFileSelection?> PickAsync(Firmware.Workflow.FirmwareArtifactFormat format,
         CancellationToken cancellationToken = default)
     {
         string[] patterns = format switch

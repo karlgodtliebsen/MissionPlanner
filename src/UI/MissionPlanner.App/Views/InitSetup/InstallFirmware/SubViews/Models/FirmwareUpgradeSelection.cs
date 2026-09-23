@@ -1,12 +1,15 @@
 ﻿using MissionPlanner.Firmware.Model;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Transfers an exact advisory release to the existing installation page without starting installation.</summary>
 public sealed class FirmwareUpgradeSelection
 {
     /// <summary>Gets or sets the release awaiting installation-page activation.</summary>
-    public FirmwareManifestEntry? Pending { get; set; }
+    public FirmwareManifestEntry? Pending
+    {
+        get; set;
+    }
 
     /// <summary>Notifies the currently active installation page of a new advisory selection.</summary>
     public event Action<FirmwareManifestEntry>? Requested;

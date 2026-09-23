@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Firmware.Model;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Preserves a typed firmware serial-device candidate for display and selection.</summary>
 public sealed class FirmwareDeviceItemViewModel

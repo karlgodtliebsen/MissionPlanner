@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+﻿namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Represents a user-selected firmware file whose stream is opened only by its consumer.</summary>
 public sealed record FirmwareFileSelection(

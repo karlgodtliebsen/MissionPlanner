@@ -13,25 +13,31 @@ public sealed class FirmwareUpgradeConnection(IActiveVehicleContext activeVehicl
 {
     /// <inheritdoc />
     public Task<VehicleFirmwareIdentity> ReleaseAsync(SerialDeviceDescriptor device, FirmwareManifestEntry release,
-        CancellationToken cancellationToken) => ReleaseCoreAsync(device, SelectedFirmwareIdentity.FromRelease(release), cancellationToken);
+        CancellationToken cancellationToken)
+    {
+        return ReleaseCoreAsync(device, SelectedFirmwareIdentity.FromRelease(release), cancellationToken);
+    }
 
     /// <inheritdoc />
     public Task<VehicleFirmwareIdentity> ReleaseAsync(SerialDeviceDescriptor device, SelectedFirmwareIdentity selected,
-        CancellationToken cancellationToken) => ReleaseCoreAsync(device, selected, cancellationToken);
+        CancellationToken cancellationToken)
+    {
+        return ReleaseCoreAsync(device, selected, cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task<VehicleFirmwareIdentity> ReleaseForRecoveryAsync(SerialDeviceDescriptor device, CancellationToken cancellationToken) =>
-        ReleaseCoreAsync(device, null, cancellationToken);
+    public Task<VehicleFirmwareIdentity> ReleaseForRecoveryAsync(SerialDeviceDescriptor device, CancellationToken cancellationToken)
+    {
+        return ReleaseCoreAsync(device, null, cancellationToken);
+    }
 
     /// <inheritdoc />
     public RunningFirmwareIdentity? ReadRunningIdentity(SerialDeviceDescriptor device)
     {
-        if (activeVehicle.VehicleId is not { } id || activeVehicle.State is not { } state ||
-            !activeVehicle.IsOnline || !string.Equals(session.ActiveSerialPort, device.PortName, StringComparison.OrdinalIgnoreCase))
-        {
-            return null;
-        }
-        return RunningFirmwareIdentity.FromTelemetry(state.Identity.Firmware,
+        return activeVehicle.VehicleId is not { } id || activeVehicle.State is not { } state ||
+            !activeVehicle.IsOnline || !string.Equals(session.ActiveSerialPort, device.PortName, StringComparison.OrdinalIgnoreCase)
+            ? null
+            : RunningFirmwareIdentity.FromTelemetry(state.Identity.Firmware,
             messages.GetMessages(id).Where(message => !message.IsTruncated && message.SourceComponentId == id.ComponentId)
                 .Select(message => message.Text));
     }
@@ -55,17 +61,17 @@ public sealed class FirmwareUpgradeConnection(IActiveVehicleContext activeVehicl
         }
         logger.LogInformation("FirmwareInstallStrategy={FirmwareInstallStrategy} VehicleId={VehicleId} OriginalPort={OriginalPort} RunningFirmwareIdentity={RunningFirmwareIdentity} SelectedFirmwareIdentity={SelectedFirmwareIdentity}",
             "ArduPilotBootloader", id, device.PortName, identity, release);
-        if (!await connection.ReleaseForFirmwareUpgradeAsync(id.Value, device.PortName, cancellationToken).ConfigureAwait(false))
-        {
-            throw new FirmwareConnectionConflictException("The selected connection changed before firmware handoff.");
-        }
-        return identity;
+        return !await connection.ReleaseForFirmwareUpgradeAsync(id.Value, device.PortName, cancellationToken).ConfigureAwait(false)
+            ? throw new FirmwareConnectionConflictException("The selected connection changed before firmware handoff.")
+            : identity;
     }
 
     /// <inheritdoc />
     public Task<VehicleFirmwareIdentity> ReconnectAsync(SerialDeviceDescriptor device, FirmwareManifestEntry release,
-        VehicleFirmwareIdentity? original, CancellationToken cancellationToken) =>
-        ReconnectAsync(device, SelectedFirmwareIdentity.FromRelease(release), original, cancellationToken);
+        VehicleFirmwareIdentity? original, CancellationToken cancellationToken)
+    {
+        return ReconnectAsync(device, SelectedFirmwareIdentity.FromRelease(release), original, cancellationToken);
+    }
 
     /// <inheritdoc />
     public async Task<VehicleFirmwareIdentity> ReconnectAsync(SerialDeviceDescriptor device, SelectedFirmwareIdentity release,

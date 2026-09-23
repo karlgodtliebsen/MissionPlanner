@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Firmware.Model;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Identifies work coordinated by the firmware page.</summary>
 public enum FirmwarePanelAction

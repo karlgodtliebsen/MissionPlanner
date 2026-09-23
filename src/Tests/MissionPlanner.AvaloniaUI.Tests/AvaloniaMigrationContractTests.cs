@@ -9,7 +9,7 @@ using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.FlightData.Tabs;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
-using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Navigation;
 

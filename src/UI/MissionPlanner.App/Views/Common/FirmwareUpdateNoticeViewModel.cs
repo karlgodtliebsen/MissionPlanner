@@ -3,12 +3,11 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dispatching;
-using MissionPlanner.App.Views.InitSetup.InstallFirmware;
-using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 namespace MissionPlanner.App.Views.Common;
 

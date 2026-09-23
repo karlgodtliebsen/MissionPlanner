@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Firmware.Model;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Maps current firmware evidence to user guidance without exposing exception text.</summary>
 public static class FirmwareContextHelpResolver

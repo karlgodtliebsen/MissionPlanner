@@ -4,6 +4,7 @@ using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Connected;

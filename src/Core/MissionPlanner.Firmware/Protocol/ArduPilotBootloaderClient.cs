@@ -2,8 +2,8 @@
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Compatibility;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Images;
@@ -31,7 +31,10 @@ public sealed class ArduPilotBootloaderClient(
         var identifyTimeout = options.Value.BootloaderSynchronizationTimeout;
         var revision = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBootloaderRevision, identifyTimeout, cancellationToken).ConfigureAwait(false));
         if (revision is < ArduPilotBootloaderProtocol.MinimumBootloaderRevision or > ArduPilotBootloaderProtocol.MaximumBootloaderRevision)
+        {
             throw new FirmwareBootloaderException($"Unsupported bootloader revision {revision}.");
+        }
+
         var boardId = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBoardId, identifyTimeout, cancellationToken).ConfigureAwait(false));
         var boardRevision = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBoardRevision, identifyTimeout, cancellationToken).ConfigureAwait(false));
         var flashSize = await GetInfoAsync(ArduPilotBootloaderProtocol.InfoFlashSize, identifyTimeout, cancellationToken).ConfigureAwait(false);
@@ -55,8 +58,10 @@ public sealed class ArduPilotBootloaderClient(
     }
 
     /// <inheritdoc />
-    public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) =>
-        ProgramAsync(package, FirmwareCompatibilityPolicy.Strict, progress, cancellationToken);
+    public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
+    {
+        return ProgramAsync(package, FirmwareCompatibilityPolicy.Strict, progress, cancellationToken);
+    }
 
     /// <inheritdoc />
     public async Task ProgramAsync(ApjFirmwarePackage package, FirmwareCompatibilityPolicy compatibilityPolicy, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
@@ -76,8 +81,10 @@ public sealed class ArduPilotBootloaderClient(
     }
 
     /// <inheritdoc />
-    public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default) =>
-        VerifyAsync(package, FirmwareCompatibilityPolicy.Strict, cancellationToken);
+    public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default)
+    {
+        return VerifyAsync(package, FirmwareCompatibilityPolicy.Strict, cancellationToken);
+    }
 
     /// <inheritdoc />
     public async Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, FirmwareCompatibilityPolicy compatibilityPolicy, CancellationToken cancellationToken = default)
@@ -100,11 +107,16 @@ public sealed class ArduPilotBootloaderClient(
     }
 
     /// <inheritdoc />
-    public Task RebootAsync(CancellationToken cancellationToken = default) =>
-        WriteAsync([ArduPilotBootloaderProtocol.Reboot, ArduPilotBootloaderProtocol.EndOfCommand], options.Value.BootloaderCommandTimeout, cancellationToken);
+    public Task RebootAsync(CancellationToken cancellationToken = default)
+    {
+        return WriteAsync([ArduPilotBootloaderProtocol.Reboot, ArduPilotBootloaderProtocol.EndOfCommand], options.Value.BootloaderCommandTimeout, cancellationToken);
+    }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync() => port.DisposeAsync();
+    public ValueTask DisposeAsync()
+    {
+        return port.DisposeAsync();
+    }
 
     private async Task SynchronizeAsync(CancellationToken cancellationToken)
     {
@@ -123,7 +135,9 @@ public sealed class ArduPilotBootloaderClient(
             {
                 last = exception;
                 if (attempt < options.Value.BootloaderSyncAttempts)
+                {
                     await Task.Delay(options.Value.BootloaderRetryDelay, timeProvider, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
 
@@ -142,7 +156,11 @@ public sealed class ArduPilotBootloaderClient(
     {
         await WriteAsync([ArduPilotBootloaderProtocol.GetChipDescription, ArduPilotBootloaderProtocol.EndOfCommand], timeout, cancellationToken).ConfigureAwait(false);
         var length = await ReadUInt32Async(timeout, cancellationToken).ConfigureAwait(false);
-        if (length > 128) throw new FirmwareBootloaderException("Bootloader chip description is too long.");
+        if (length > 128)
+        {
+            throw new FirmwareBootloaderException("Bootloader chip description is too long.");
+        }
+
         var data = new byte[length];
         await ReadExactAsync(data, timeout, cancellationToken).ConfigureAwait(false);
         await ReadStatusAsync(timeout, cancellationToken).ConfigureAwait(false);
@@ -163,8 +181,10 @@ public sealed class ArduPilotBootloaderClient(
         }
     }
 
-    private static bool IsOptionalIdentityFailure(Exception exception) =>
-        exception is FirmwareBootloaderException or TimeoutException or IOException or EndOfStreamException or InvalidOperationException;
+    private static bool IsOptionalIdentityFailure(Exception exception)
+    {
+        return exception is FirmwareBootloaderException or TimeoutException or IOException or EndOfStreamException or InvalidOperationException;
+    }
 
     private async Task ProgramImageAsync(ReadOnlyMemory<byte> image, byte command, long completedBefore, long total, IProgress<FirmwareProgress>? progress, CancellationToken cancellationToken)
     {
@@ -211,9 +231,21 @@ public sealed class ArduPilotBootloaderClient(
     {
         var status = new byte[2];
         await ReadExactAsync(status, timeout, cancellationToken).ConfigureAwait(false);
-        if (status[0] != ArduPilotBootloaderProtocol.InSync) throw new FirmwareBootloaderException($"Invalid sync byte 0x{status[0]:X2}.");
+        if (status[0] != ArduPilotBootloaderProtocol.InSync)
+        {
+            throw new FirmwareBootloaderException($"Invalid sync byte 0x{status[0]:X2}.");
+        }
+
         if (status[1] != ArduPilotBootloaderProtocol.Ok)
-            throw new FirmwareBootloaderException(status[1] switch { ArduPilotBootloaderProtocol.Failed => "Bootloader operation failed.", ArduPilotBootloaderProtocol.Invalid => "Bootloader rejected an invalid command.", ArduPilotBootloaderProtocol.BadSiliconRevision => "Bootloader rejected the silicon revision.", _ => $"Invalid status byte 0x{status[1]:X2}." });
+        {
+            throw new FirmwareBootloaderException(status[1] switch
+            {
+                ArduPilotBootloaderProtocol.Failed => "Bootloader operation failed.",
+                ArduPilotBootloaderProtocol.Invalid => "Bootloader rejected an invalid command.",
+                ArduPilotBootloaderProtocol.BadSiliconRevision => "Bootloader rejected the silicon revision.",
+                _ => $"Invalid status byte 0x{status[1]:X2}."
+            });
+        }
     }
 
     private async Task<uint> ReadUInt32Async(TimeSpan timeout, CancellationToken cancellationToken)
@@ -239,7 +271,11 @@ public sealed class ArduPilotBootloaderClient(
                     .AsTask()
                     .WaitAsync(deadline.Token)
                     .ConfigureAwait(false);
-                if (read == 0) throw new EndOfStreamException("Bootloader disconnected during a reply.");
+                if (read == 0)
+                {
+                    throw new EndOfStreamException("Bootloader disconnected during a reply.");
+                }
+
                 offset += read;
             }
         }
@@ -264,14 +300,28 @@ public sealed class ArduPilotBootloaderClient(
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { throw new TimeoutException("Timed out writing a bootloader command."); }
     }
 
-    private BootloaderIdentity RequireIdentity() => identity ?? throw new FirmwareBootloaderException("Bootloader identity must be read before destructive operations.");
+    private BootloaderIdentity RequireIdentity()
+    {
+        return identity ?? throw new FirmwareBootloaderException("Bootloader identity must be read before destructive operations.");
+    }
 
     private static void ValidatePackage(BootloaderIdentity device, ApjFirmwarePackage package, FirmwareCompatibilityPolicy? policy)
     {
         policy ??= FirmwareCompatibilityPolicy.Strict;
-        if (!policy.AllowBoardIdMismatch && device.BoardId != package.BoardId && !(device.BoardId == 33 && package.BoardId == 9)) throw new FirmwareCompatibilityException($"Firmware board {package.BoardId} does not match bootloader board {device.BoardId}.");
-        if (package.Image.Length > device.FlashSize) throw new FirmwareCompatibilityException("Firmware image exceeds application flash capacity.");
-        if (package.ExternalImage.Length > device.ExternalFlashSize) throw new FirmwareCompatibilityException("External image exceeds external flash capacity.");
+        if (!policy.AllowBoardIdMismatch && device.BoardId != package.BoardId && !(device.BoardId == 33 && package.BoardId == 9))
+        {
+            throw new FirmwareCompatibilityException($"Firmware board {package.BoardId} does not match bootloader board {device.BoardId}.");
+        }
+
+        if (package.Image.Length > device.FlashSize)
+        {
+            throw new FirmwareCompatibilityException("Firmware image exceeds application flash capacity.");
+        }
+
+        if (package.ExternalImage.Length > device.ExternalFlashSize)
+        {
+            throw new FirmwareCompatibilityException("External image exceeds external flash capacity.");
+        }
     }
 
     private static byte[] Pad4(ReadOnlySpan<byte> image)

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.Library.EventHub.Abstractions;
 
-namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
+namespace MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 /// <summary>Owns help panel state and commands.</summary>
 public sealed partial class FirmwareHelpViewModel : ViewModelBase
