@@ -1,4 +1,4 @@
-using AsyncAwaitBestPractices;
+﻿using AsyncAwaitBestPractices;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Microsoft.Extensions.Logging;
@@ -11,7 +11,7 @@ namespace MissionPlanner.App.Utilities;
 /// A base class for views that are associated with a specific view model.
 /// </summary>
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
-public partial class NavigationViewBase<TViewModel> : NavigationPage/*, ITabItemLifecycle*/ where TViewModel : ViewModelBase
+public partial class NavigationViewBase<TViewModel> : NavigationPage where TViewModel : ViewModelBase
 {
 
     /// <summary>

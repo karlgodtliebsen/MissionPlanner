@@ -13,6 +13,7 @@ public static class MissionPlannerRoutes
     public const string SetupInstallFirmware = "SetupInstallFirmware";
     public const string SetupMandatoryHardware = "SetupMandatoryHardware";
     public const string SetupOptionalHardware = "SetupOptionalHardware";
+    public const string SetupArming = "SetupArming";
     public const string SetupAdvanced = "SetupAdvanced";
     public const string ConfigGeoFence = "ConfigGeoFence";
     public const string ConfigBasicTuning = "ConfigBasicTuning";

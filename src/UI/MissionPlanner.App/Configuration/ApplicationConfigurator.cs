@@ -27,6 +27,7 @@ using MissionPlanner.App.Views.InitSetup.Advanced.Output;
 using MissionPlanner.App.Views.InitSetup.Advanced.Proximity;
 using MissionPlanner.App.Views.InitSetup.Advanced.Signing;
 using MissionPlanner.App.Views.InitSetup.Advanced.Warnings;
+using MissionPlanner.App.Views.InitSetup.Arming;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
@@ -78,6 +79,7 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
+using ArmingViewModel = MissionPlanner.App.Views.InitSetup.Arming.ArmingViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -343,7 +345,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<NamingViewModel>();
 
         services.TryAddTransient<InstallFirmwareViewModel>();
-        services.TryAddTransient<OptionalHardwareViewModel>();
+        services.TryAddTransient<ArmingViewModel>();
         services.TryAddSingleton<OptionalHardwareTabCatalog>();
 
         services.TryAddTransient<FlightDataViewModel>();
@@ -364,7 +366,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ParameterComparisonViewModel>();
         services.TryAddTransient<MavFtpTabViewModel>();
 
-        services.TryAddTransient<MandatoryHardwareViewModel>();
         services.TryAddTransient<GeoFenceTabViewModel>();
         services.TryAddTransient<BasicTuningTabViewModel>();
         services.TryAddTransient<ExtendedTuningTabViewModel>();
@@ -380,7 +381,10 @@ public static class ApplicationConfigurator
         services.TryAddTransient<MandatoryHardwarePage>();
         services.TryAddTransient<MandatoryHardwareViewModel>();
         services.TryAddTransient<OptionalHardwarePage>();
+        services.TryAddTransient<OptionalHardwareViewModel>();
 
+        services.TryAddTransient<ArmingPage>();
+        services.TryAddTransient<ArmingViewModel>();
 
         // Workflow Tabs on Setup Mandatory Hardware View
         services.TryAddTransient<FrameSetupViewModel>();

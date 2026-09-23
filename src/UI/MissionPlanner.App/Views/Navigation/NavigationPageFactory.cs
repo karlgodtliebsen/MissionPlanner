@@ -5,6 +5,7 @@ using MissionPlanner.App.Views.FlightData;
 using MissionPlanner.App.Views.FlightPlanner;
 using MissionPlanner.App.Views.Help;
 using MissionPlanner.App.Views.InitSetup.Advanced;
+using MissionPlanner.App.Views.InitSetup.Arming;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware;
@@ -45,6 +46,9 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
 
             MissionPlannerRoutes.SetupOptionalHardware =>
                 services.GetRequiredService<OptionalHardwarePage>(),
+
+            MissionPlannerRoutes.SetupArming =>
+                services.GetRequiredService<ArmingPage>(),
 
             MissionPlannerRoutes.SetupAdvanced =>
                 services.GetRequiredService<AdvancedPage>(),

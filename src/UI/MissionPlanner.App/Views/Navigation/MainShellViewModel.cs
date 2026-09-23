@@ -139,6 +139,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
                 new("Install Firmware", MissionPlannerRoutes.SetupInstallFirmware),
                 new("Mandatory Hardware", MissionPlannerRoutes.SetupMandatoryHardware),
                 new("Optional Hardware", MissionPlannerRoutes.SetupOptionalHardware),
+                new("Arming", MissionPlannerRoutes.SetupArming),
                 new("Advanced", MissionPlannerRoutes.SetupAdvanced)
             ]),
             new("Config", icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_tuningconfig_icon.png"), children:
