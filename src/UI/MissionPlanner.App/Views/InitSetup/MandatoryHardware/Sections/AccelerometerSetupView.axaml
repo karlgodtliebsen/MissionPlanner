@@ -10,7 +10,7 @@
                                x:DataType="sections:AccelerometerSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Classes="SourceBorder" Padding="12" x:Name="SourceBorder"  >
+        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Accelerometer and level calibration" Classes="H2" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
@@ -43,7 +43,8 @@
 
         <Border Grid.Row="2"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Spacing="10">
-                <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" Classes="H4" />
+                <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" Classes="Warning H4" />
+                <TextBlock Text=" "  TextWrapping="Wrap" Classes="H4" />
                 <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}"  TextWrapping="Wrap" Classes="H4" />
                 <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding CompletedOrientations}" TextWrapping="Wrap" />

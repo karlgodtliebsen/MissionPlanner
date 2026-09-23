@@ -91,10 +91,10 @@
                 Command="{Binding ApplyModifiedCommand}"  >
                 <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
             </Button>
-            <Button Classes="IsToolbarButton" HorizontalAlignment="Right"
+<!--            <Button Classes="IsToolbarButton" HorizontalAlignment="Right"
                     ToolTip.Tip="Close" Width="100" Command="{Binding OKCommand}">
                 <avalonia:MaterialIcon Kind="Check" Classes="ActionIcon" />
-            </Button>
+            </Button>-->
         </WrapPanel>
 
         <controls:VirtualizedItemsGrid
