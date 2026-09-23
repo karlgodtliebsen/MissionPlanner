@@ -13,12 +13,12 @@
         <Border Grid.Row="0" HorizontalAlignment="Center" Classes="SourceBorder" Padding="12" x:Name="SourceBorder"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Accelerometer and level calibration" Classes="H2" />
-                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." Classes="Warning H4" />
+                <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." TextWrapping="Wrap" Classes="Warning H4" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
             </StackPanel>
         </Border>
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
@@ -43,11 +43,11 @@
 
         <Border Grid.Row="2"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Spacing="10">
-                <TextBlock Text="{Binding Instruction}" Classes="H4" />
-                <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}"  Classes="H4" />
-                <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" />
-                <TextBlock Text="{Binding CompletedOrientations}" />
-                <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" FontStyle="Italic" />
+                <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" Classes="H4" />
+                <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}"  TextWrapping="Wrap" Classes="H4" />
+                <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding CompletedOrientations}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" TextWrapping="Wrap" FontStyle="Italic" />
             </StackPanel>
         </Border>
 

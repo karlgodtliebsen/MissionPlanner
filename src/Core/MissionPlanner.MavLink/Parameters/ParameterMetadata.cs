@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.MavLink.Parameters;
+namespace MissionPlanner.MavLink.Parameters;
 
 /// <summary>
 /// Represents metadata for a vehicle parameter.
@@ -30,6 +30,9 @@ public sealed record ParameterMetadata(
     bool RebootRequired,
     bool ReadOnly)
 {
+    /// <summary>Firmware-supplied default, when explicitly present in metadata.</summary>
+    public double? DefaultValue { get; init; }
+
     private float? max;
     private float? min;
 

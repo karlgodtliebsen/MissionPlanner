@@ -424,3 +424,11 @@ to the UI. Expected connection changes and parameter loading are deferred until 
 reconnect overlay closes. Leaving the page cancels recovery. Failed or cancelled
 reconnects are reported without resending parameter writes. The reboot-required flag
 remains set: reconnecting a transport does not itself reboot the controller.
+
+## Explicit metadata defaults
+
+The existing XML metadata parser now retains finite defaults supplied by a parameter's
+`default` attribute or `field name="Default"`. `ParameterMetadata.DefaultValue` is null
+when absent or invalid. Compass Setup uses this for pending-only reset actions; it never
+infers a firmware default from a current value or enum ordering. Existing Full Parameters
+editing and write/readback ownership remain unchanged.

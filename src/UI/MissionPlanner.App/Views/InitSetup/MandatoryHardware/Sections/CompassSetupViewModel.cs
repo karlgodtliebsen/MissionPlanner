@@ -1,20 +1,26 @@
-﻿using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Utilities;
+using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
+using MissionPlanner.App.Views.Navigation;
+using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
-/// <summary>Projects compass discovery, editing, and the onboard calibration state machine into Setup controls.</summary>
+/// <summary>Semantic Compass setup with local reviewable edits and the existing calibration workflow.</summary>
 public sealed partial class CompassSetupViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
@@ -25,29 +31,30 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     private readonly ISetupWorkflowCatalog workflowCatalog;
     private readonly IUserConfirmationService confirmation;
     private readonly IDateTimeProvider clock;
-    private IReadOnlyList<CompassOrientationOption> orientationOptions = [];
+    private readonly IVehicleCommandService commands;
+    private readonly INavigationService navigation;
+    private readonly IVehicleParameterLoadStatusContext loadStatus;
+    private readonly IDomainEventHub domain;
+    private CompassSetupState? current;
+    private CompassConfiguration? desired;
+    private CompassChangeSet? review;
+    private MissionPlanner.Firmware.Model.VehicleFirmwareIdentity? firmware;
     private CancellationTokenSource? operationCancellation;
+    private IDisposable? loadSubscription;
+    private Timer? refreshTimer;
+    private bool active;
+    private bool loading;
+    private int editVersion;
+    private int loadVersion;
+    private bool rebootRequested;
 
-    /// <summary>Initializes the compass Setup workflow.</summary>
-    /// <param name="activeVehicle">The active vehicle boundary.</param>
-    /// <param name="compassService">The compass discovery and configuration service.</param>
-    /// <param name="calibration">The onboard compass calibration state machine.</param>
-    /// <param name="parameterRegistry">The live parameter registry.</param>
-    /// <param name="completionStore">The Setup evidence store.</param>
-    /// <param name="workflowCatalog">The Setup workflow catalog.</param>
-    /// <param name="confirmation">The shared confirmation service.</param>
-    /// <param name="clock">The application clock.</param>
-    /// <param name="logger">The logger.</param>
-    public CompassSetupViewModel(
-        IActiveVehicleContext activeVehicle,
-        ICompassConfigurationService compassService,
-        IArduPilotCompassCalibrationService calibration,
-        IVehicleParameterRegistry parameterRegistry,
-        ISetupCompletionStore completionStore,
-        ISetupWorkflowCatalog workflowCatalog,
-        IUserConfirmationService confirmation,
-        IDateTimeProvider clock, ILogger<CompassSetupViewModel> logger)
-        : base(logger)
+    /// <summary>Creates the semantic page projection and retains calibration and completion services.</summary>
+    public CompassSetupViewModel(IActiveVehicleContext activeVehicle, ICompassConfigurationService compassService,
+        IArduPilotCompassCalibrationService calibration, IVehicleParameterRegistry parameterRegistry,
+        ISetupCompletionStore completionStore, ISetupWorkflowCatalog workflowCatalog,
+        IUserConfirmationService confirmation, IDateTimeProvider clock, ILogger<CompassSetupViewModel> logger,
+        IUiDispatcher dispatcher, IDomainEventHub domain, IVehicleParameterLoadStatusContext loadStatus,
+        IVehicleCommandService commands, INavigationService navigation) : base(logger, dispatcher, domain)
     {
         this.activeVehicle = activeVehicle;
         this.compassService = compassService;
@@ -57,405 +64,559 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
         this.workflowCatalog = workflowCatalog;
         this.confirmation = confirmation;
         this.clock = clock;
-        SetMessages("Load the connected vehicle's compass configuration.");
+        this.commands = commands;
+        this.navigation = navigation;
+        this.loadStatus = loadStatus;
+        this.domain = domain;
     }
 
-    /// <summary>Gets the read-only configured, detected, required, and healthy summary.</summary>
-    [ObservableProperty]
-    public partial string DiagnosticSummary { get; private set; } = "Compass diagnostics unavailable";
-
-    /// <summary>Gets raw configuration and decoded identity evidence for all primary compass slots.</summary>
+    /// <summary>Semantic configuration editors.</summary>
+    public ObservableRangeCollection<CompassSettingViewModel> Settings { get; } = [];
+    /// <summary>Read-only detected device identities.</summary>
+    public ObservableRangeCollection<string> Devices { get; } = [];
+    /// <summary>Secondary source/value diagnostics.</summary>
     public ObservableRangeCollection<string> DiagnosticEvidence { get; } = [];
+    /// <summary>Explicit pending mutations including dependencies.</summary>
+    public ObservableRangeCollection<string> PendingChanges { get; } = [];
 
-    /// <summary>Gets the discovered compass instances.</summary>
-    public ObservableRangeCollection<CompassInstanceViewModel> Compasses
-    {
-        get;
-    } = [];
+    /// <summary>Current subsystem status.</summary>
+    [ObservableProperty] public partial string StatusText { get; private set; } = "Connect a vehicle.";
+    /// <summary>Configuration validity, distinct from arming evidence.</summary>
+    [ObservableProperty] public partial string ValidationText { get; private set; } = "Compass capability unknown.";
+    /// <summary>Current telemetry-based arming explanation.</summary>
+    [ObservableProperty] public partial string ArmingImpact { get; private set; } = "Arming impact unknown.";
+    /// <summary>Current EKF yaw source.</summary>
+    [ObservableProperty] public partial string YawSourceText { get; private set; } = "Unknown";
+    /// <summary>Whether staged values differ from current values.</summary>
+    [ObservableProperty] public partial bool HasPendingChanges { get; private set; }
+    /// <summary>Whether live values changed underneath local edits.</summary>
+    [ObservableProperty] public partial bool HasConflict { get; private set; }
+    /// <summary>Whether a confirmed mutation still requires a vehicle reboot.</summary>
+    [ObservableProperty] public partial bool RequiresReboot { get; private set; }
+    /// <summary>Review count and reboot notice.</summary>
+    [ObservableProperty] public partial string PendingSummary { get; private set; } = string.Empty;
+    /// <summary>Calibration state projected from the existing service.</summary>
+    [ObservableProperty] public partial CompassCalibrationWorkflowState CalibrationState { get; private set; }
+    /// <summary>Calibration instructions.</summary>
+    [ObservableProperty] public partial string Instruction { get; private set; } = string.Empty;
+    /// <summary>Per-device calibration progress.</summary>
+    [ObservableProperty] public partial string ProgressSummary { get; private set; } = string.Empty;
+    /// <summary>Calibration quality evidence.</summary>
+    [ObservableProperty] public partial string? QualitySummary { get; private set; }
+    /// <summary>Whether configuration controls can currently be edited.</summary>
+    public bool CanEdit => activeVehicle.IsOnline && current?.IsSupported == true && !IsBusy && !CanCancel && !IsLoadingParameters;
+    /// <summary>Whether calibration may start with confirmed enabled configuration.</summary>
+    public bool CanStart => CanEdit && current?.Current.Enabled == true && !HasPendingChanges && !HasConflict &&
+        activeVehicle.State?.IsArmed == false && !RequiresReboot && CalibrationState is
+        CompassCalibrationWorkflowState.NotStarted or CompassCalibrationWorkflowState.Success or CompassCalibrationWorkflowState.Failed or
+        CompassCalibrationWorkflowState.Cancelled or CompassCalibrationWorkflowState.Disconnected;
+    /// <summary>Whether calibration can accept current results.</summary>
+    public bool CanAccept => CalibrationState == CompassCalibrationWorkflowState.PendingAcceptance && activeVehicle.IsOnline;
+    /// <summary>Whether an active calibration can be cancelled.</summary>
+    public bool CanCancel => CalibrationState is CompassCalibrationWorkflowState.Preparing or CompassCalibrationWorkflowState.Running or CompassCalibrationWorkflowState.PendingAcceptance;
+    /// <summary>Why calibration is unavailable.</summary>
+    public string CalibrationAvailability => current?.Current.Enabled != true ? "Enable compass and apply before calibration." :
+        RequiresReboot ? "Reboot after applying configuration before calibration." : HasPendingChanges ? "Apply or discard configuration changes before calibration." :
+        !activeVehicle.IsOnline ? "Reconnect before calibration." : "Move away from metal and magnetic interference. Calibration results require explicit acceptance.";
+    /// <summary>Whether a fresh valid review can be applied.</summary>
+    public bool CanApply => CanEdit && !HasConflict && activeVehicle.State?.IsArmed == false && review?.CanApply == true;
+    /// <summary>Whether safe reboot is available.</summary>
+    public bool CanReboot => RequiresReboot && activeVehicle.IsOnline && activeVehicle.State?.IsArmed == false && !IsBusy && !CanCancel && !HasPendingChanges;
+    private bool IsLoadingParameters => activeVehicle.VehicleId is { } id && loadStatus.Get(id)?.IsInProgress == true;
 
-    /// <summary>Gets detected duplicate-identity or priority inconsistencies.</summary>
-    public ObservableRangeCollection<string> Issues
-    {
-        get;
-    } = [];
-
-    /// <summary>Gets the current calibration workflow stage.</summary>
-    [ObservableProperty]
-    public partial CompassCalibrationWorkflowState CalibrationState
-    {
-        get;
-        private set;
-    }
-
-    /// <summary>Gets the primary calibration instruction.</summary>
-    [ObservableProperty]
-    public partial string Instruction
-    {
-        get;
-        private set;
-    } = string.Empty;
-
-    /// <summary>Gets the per-compass progress summary.</summary>
-    [ObservableProperty]
-    public partial string ProgressSummary
-    {
-        get;
-        private set;
-    } = string.Empty;
-
-    /// <summary>Gets the post-calibration quality summary, when available.</summary>
-    [ObservableProperty]
-    public partial string? QualitySummary
-    {
-        get;
-        private set;
-    }
-
-    /// <summary>Gets whether at least one compass was discovered.</summary>
-    public bool HasCompasses => Compasses.Count > 0;
-
-    /// <summary>Gets whether the inventory reported any configuration issues.</summary>
-    public bool HasIssues => Issues.Count > 0;
-
-    /// <summary>Gets whether calibration results are awaiting explicit acceptance.</summary>
-    public bool CanAccept => CalibrationState == CompassCalibrationWorkflowState.PendingAcceptance;
-
-    /// <summary>Gets whether calibration can be started.</summary>
-    public bool CanStart => CalibrationState is CompassCalibrationWorkflowState.NotStarted or CompassCalibrationWorkflowState.Success or
-        CompassCalibrationWorkflowState.Failed or CompassCalibrationWorkflowState.Cancelled or CompassCalibrationWorkflowState.Disconnected;
-
-    /// <summary>Gets whether an active calibration can be cancelled.</summary>
-    public bool CanCancel => CalibrationState is CompassCalibrationWorkflowState.Preparing or CompassCalibrationWorkflowState.Running or
-        CompassCalibrationWorkflowState.PendingAcceptance;
-
-    /// <summary>Loads the compass inventory for the active vehicle.</summary>
-    /// <returns>A task that completes after the inventory is projected.</returns>
+    /// <summary>Reads current semantic state without replacing pending edits.</summary>
     public async Task LoadAsync()
     {
-        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
+        if (loading || IsBusy)
         {
-            SetMessages("Connect a vehicle before loading compass configuration.");
             return;
         }
-
-        var token = StartOperation();
+        if (activeVehicle.VehicleId is not { } id || !activeVehicle.IsOnline)
+        {
+            StatusText = "Vehicle disconnected. Pending edits are local; Apply is disabled.";
+            ArmingImpact = "Arming impact unknown while disconnected.";
+            NotifyAvailability();
+            return;
+        }
+        if (IsLoadingParameters)
+        {
+            StatusText = loadStatus.Get(id)!.Message;
+            NotifyAvailability();
+            return;
+        }
+        loading = true;
+        var generation = loadVersion;
+        var token = activeVehicle.ConnectionCancellationToken;
         try
         {
-            var inventory = await compassService.GetInventoryAsync(vehicleId, token);
-            await Dispatcher.DispatchAsync(() => ShowInventory(inventory));
+            var state = await compassService.ReadAsync(id, token);
+            token.ThrowIfCancellationRequested();
+            await Dispatcher.DispatchAsync(() =>
+            {
+                if (generation != loadVersion || activeVehicle.VehicleId != id || activeVehicle.ConnectionCancellationToken != token)
+                {
+                    return;
+                }
+                if (current?.VehicleId != id || firmware != activeVehicle.State?.Identity.Firmware)
+                {
+                    desired = null;
+                    review = null;
+                    HasPendingChanges = false;
+                    PendingChanges.Clear();
+                    HasConflict = false;
+                    RequiresReboot = false;
+                }
+                firmware = activeVehicle.State?.Identity.Firmware;
+                var changed = current?.Current != state.Current;
+                var capabilitiesChanged = current is null || state.Settings.Any(setting =>
+                {
+                    var old = current.Settings.FirstOrDefault(s => s.Setting == setting.Setting);
+                    return old is null || old.CanEdit != setting.CanEdit || old.Default != setting.Default || !old.Choices.SequenceEqual(setting.Choices);
+                });
+                if (HasPendingChanges && changed)
+                {
+                    HasConflict = true;
+                }
+                current = state;
+                if (!HasPendingChanges || desired is null)
+                {
+                    desired = state.Current;
+                }
+                ProjectState(state);
+                if (changed || capabilitiesChanged || Settings.Count == 0)
+                {
+                    ProjectSettings();
+                }
+                NotifyAvailability();
+                if (capabilitiesChanged && HasPendingChanges)
+                {
+                    review = null;
+                    _ = EvaluateAsync(++editVersion);
+                }
+            });
         }
         catch (OperationCanceledException)
         {
         }
         catch (Exception exception)
         {
-            Logger.LogError(exception, "Loading compass configuration failed for {VehicleId}.", vehicleId);
             SetMessages(exception);
+        }
+        finally
+        {
+            loading = false;
         }
     }
 
-
-
-    /// <summary>Applies the reviewed edits for one compass with readback confirmation.</summary>
-    /// <param name="item">The compass row to apply.</param>
-    /// <returns>A task that completes after the writes are confirmed or reported failed.</returns>
-    internal async Task ApplyCompassAsync(CompassInstanceViewModel item)
+    private void ProjectState(CompassSetupState state)
     {
-        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
+        StatusText = state.IsSupported ? $"Compass: {(state.Current.Enabled is null ? "Unknown" : state.Current.Enabled.Value ? "Enabled" : "Disabled")} · Health: {state.Health}" : state.UnsupportedReason!;
+        if (HasConflict || !HasPendingChanges)
         {
-            SetMessages("Connect a vehicle before editing compass parameters.");
+            ValidationText = HasConflict ? "Live values changed while editing. Discard and review the current configuration before applying." : state.Validation;
+        }
+        ArmingImpact = state.ArmingImpact;
+        var yaw = state.Settings.FirstOrDefault(s => s.Setting == CompassSetting.YawSource);
+        YawSourceText = yaw?.Choices.FirstOrDefault(c => c.Value == yaw.Current)?.Label ?? "Unknown or unrecognized";
+        Devices.ReplaceRange(state.DetectedDevices);
+        DiagnosticEvidence.ReplaceRange(state.Diagnostics.Append($"Last projection: {state.ObservedAt:O}"));
+    }
+
+    private void ProjectSettings()
+    {
+        Settings.ReplaceRange(current?.Settings.Select(definition => new CompassSettingViewModel(definition, desired?.Get(definition.Setting), OnEdited)) ?? []);
+    }
+
+    private void OnEdited()
+    {
+        if (current is null || desired is null)
+        {
             return;
         }
-
-        if (!item.IsUsed && WouldDisableLastEnabledCompass(item))
+        foreach (var setting in Settings.Where(setting => setting.Selected is not null))
         {
-            var accepted = await confirmation.ConfirmAsync(
-                "Disable compass",
-                $"Compass {item.Index} is the only enabled compass. Disabling it removes heading estimation from magnetometers. Continue?",
-                "Disable compass");
-            if (!accepted)
-            {
-                item.RevertUse();
-                return;
-            }
+            desired = desired.With(setting.Definition.Setting, setting.Selected!.Value);
         }
+        HasPendingChanges = desired != current.Current;
+        review = null;
+        NotifyAvailability();
+        _ = EvaluateAsync(++editVersion);
+    }
 
-        var token = StartOperation();
-        var messages = new List<string>();
+    private async Task EvaluateAsync(int version)
+    {
+        if (current is null || desired is null || !activeVehicle.IsOnline)
+        {
+            return;
+        }
+        var id = current.VehicleId;
+        var token = activeVehicle.ConnectionCancellationToken;
         try
         {
-            if (item.SelectedOrientation is { } orientation && orientation.Value != item.Instance.Orientation)
+            var changes = await compassService.EvaluateChangesAsync(id, desired, token);
+            await Dispatcher.DispatchAsync(() =>
             {
-                messages.Add((await compassService.SetOrientationAsync(vehicleId, item.Index, orientation.Value, token)).Message);
-            }
-
-            if (item.IsUsed != item.Instance.Use)
-            {
-                messages.Add((await compassService.SetUseAsync(vehicleId, item.Index, item.IsUsed, token)).Message);
-            }
-
-            if (item.SupportsExternal && item.Instance.External is { } external && item.IsExternal != external)
-            {
-                messages.Add((await compassService.SetExternalAsync(vehicleId, item.Index, item.IsExternal, token)).Message);
-            }
-
-            SetMessages(messages.Count == 0 ? "No compass changes were pending." : string.Join(Environment.NewLine, messages));
-            var inventory = await compassService.GetInventoryAsync(vehicleId, token);
-            await Dispatcher.DispatchAsync(() => ShowInventory(inventory, true));
+                if (version != editVersion || token != activeVehicle.ConnectionCancellationToken || token.IsCancellationRequested)
+                {
+                    return;
+                }
+                if (current.Current != changes.Original)
+                {
+                    HasConflict = true;
+                }
+                review = changes;
+                desired = changes.Desired;
+                HasPendingChanges = desired != current.Current;
+                PendingChanges.ReplaceRange(changes.Changes.Select(c => $"{c.Reason}: {c.Name} {c.OldValue} → {c.NewValue}"));
+                PendingSummary = $"{changes.Changes.Count} unsaved changes" + (changes.RequiresReboot ? " · Reboot required after applying." : string.Empty);
+                ValidationText = HasConflict ? "Live values changed while editing. Discard and review again." :
+                    changes.Errors.Count > 0 ? string.Join(Environment.NewLine, changes.Errors) :
+                    changes.Warnings.Count > 0 ? string.Join(Environment.NewLine, changes.Warnings) : current.Validation;
+                ProjectSettings();
+                NotifyAvailability();
+            });
         }
         catch (OperationCanceledException)
         {
-            SetMessages("Compass edit was cancelled. Refresh values before continuing.");
         }
         catch (Exception exception)
         {
-            Logger.LogError(exception, "Applying compass edits failed for {VehicleId}.", vehicleId);
             SetMessages(exception);
         }
     }
 
     [RelayCommand]
-    private Task LoadInventoryAsync()
+    private void Discard()
     {
-        return LoadAsync();
+        editVersion++;
+        desired = current?.Current;
+        review = null;
+        HasPendingChanges = false;
+        HasConflict = false;
+        PendingChanges.Clear();
+        ProjectSettings();
+        if (current is not null)
+        {
+            ProjectState(current);
+        }
+        NotifyAvailability();
+    }
+
+    [RelayCommand(CanExecute = nameof(CanApply))]
+    private async Task ApplyAsync()
+    {
+        if (!CanApply || review is not { } captured)
+        {
+            return;
+        }
+        var accepted = await confirmation.ConfirmAsync("Apply compass configuration",
+            string.Join(Environment.NewLine, PendingChanges) + (captured.RequiresReboot ? "\nReboot required after applying." : string.Empty), "Apply and verify");
+        if (!accepted || !CanApply || review != captured)
+        {
+            return;
+        }
+        IsBusy = true;
+        NotifyAvailability();
+        operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(captured.Connection);
+        try
+        {
+            var result = await compassService.ApplyAsync(captured.Scope.VehicleId, captured, operationCancellation.Token);
+            RequiresReboot |= result.RequiresReboot;
+            if (result.Actual is not null)
+            {
+                current = result.Actual;
+                ProjectState(current);
+            }
+            if (result.Success)
+            {
+                Discard();
+            }
+            else
+            {
+                await EvaluateAsync(++editVersion);
+            }
+            SetMessages(result.Message + (RequiresReboot ? " Reboot required." : string.Empty));
+        }
+        catch (OperationCanceledException)
+        {
+            SetMessages("Apply interrupted. Refresh actual values and review before retrying.");
+            HasConflict = true;
+        }
+        catch (Exception exception)
+        {
+            SetMessages(exception);
+            HasConflict = true;
+        }
+        finally
+        {
+            operationCancellation?.Dispose();
+            operationCancellation = null;
+            IsBusy = false;
+            NotifyAvailability();
+        }
     }
 
     [RelayCommand]
     private async Task RefreshInventoryAsync()
     {
-        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
+        if (!activeVehicle.IsOnline || activeVehicle.VehicleId is not { } id || IsBusy)
         {
-            SetMessages("Reconnect the vehicle before refreshing compass values.");
             return;
         }
-
-        var token = StartOperation();
         try
         {
-            await compassService.RefreshAsync(vehicleId, token);
-            var inventory = await compassService.GetInventoryAsync(vehicleId, token);
-            await Dispatcher.DispatchAsync(() => ShowInventory(inventory));
+            await compassService.RefreshAsync(id, activeVehicle.ConnectionCancellationToken);
+            await LoadAsync();
         }
         catch (OperationCanceledException)
         {
         }
         catch (Exception exception)
         {
-            Logger.LogError(exception, "Refreshing compass configuration failed for {VehicleId}.", vehicleId);
             SetMessages(exception);
         }
     }
 
-    private bool CanStartCommand()
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
     {
-        return CanStart && activeVehicle.IsOnline;
+        if (HasPendingChanges && !await confirmation.ConfirmAsync("Leave Compass setup", "Discard local compass edits and open Full Parameters?", "Discard and open"))
+        {
+            return;
+        }
+        Discard();
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
     }
 
-    [RelayCommand(CanExecute = nameof(CanStartCommand))]
+    [RelayCommand(CanExecute = nameof(CanReboot))]
+    private async Task RebootAsync()
+    {
+        var id = activeVehicle.VehicleId;
+        var token = activeVehicle.ConnectionCancellationToken;
+        if (id is null || !CanReboot || !await confirmation.ConfirmAsync("Reboot vehicle", "Keep the vehicle disarmed and stationary. Reboot now?", "Reboot"))
+        {
+            return;
+        }
+        try
+        {
+            token.ThrowIfCancellationRequested();
+            if (activeVehicle.VehicleId != id || !CanReboot)
+            {
+                return;
+            }
+            var response = await commands.RebootAutopilotAsync(id.Value, true, token);
+            rebootRequested = response.Result == VehicleCommandResult.Accepted;
+            SetMessages(response.Message ?? $"Reboot: {response.Result}");
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            SetMessages(exception);
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanStart))]
     private async Task StartCalibrationAsync()
     {
-        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
-        {
-            SetMessages("Connect a vehicle before starting compass calibration.");
-            return;
-        }
-
-        var accepted = await confirmation.ConfirmAsync(
-            "Start compass calibration",
-            "Move away from metal structures, vehicles, and magnetic interference. You will rotate the vehicle through all orientations. Continue?",
-            "Start calibration");
-        if (!accepted)
+        var id = activeVehicle.VehicleId;
+        var token = activeVehicle.ConnectionCancellationToken;
+        if (id is null || !CanStart || !await confirmation.ConfirmAsync("Start compass calibration", "Move away from metal and magnetic interference. Rotate the vehicle through all orientations. Continue?", "Start calibration"))
         {
             return;
         }
-
-        var token = StartOperation();
         try
         {
-            await calibration.StartAsync(vehicleId, false, token);
+            token.ThrowIfCancellationRequested();
+            if (activeVehicle.VehicleId == id && CanStart)
+            {
+                await calibration.StartAsync(id.Value, false, token);
+            }
         }
         catch (OperationCanceledException)
         {
         }
         catch (Exception exception)
         {
-            Logger.LogError(exception, "Starting compass calibration failed for {VehicleId}.", vehicleId);
             SetMessages(exception);
         }
     }
 
-    private bool CanAcceptCommand()
-    {
-        return CanAccept;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanAcceptCommand))]
+    [RelayCommand(CanExecute = nameof(CanAccept))]
     private async Task AcceptCalibrationAsync()
     {
         try
         {
             await calibration.AcceptAsync(activeVehicle.ConnectionCancellationToken);
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception)
         {
-            Logger.LogError(exception, "Accepting compass calibration failed.");
             SetMessages(exception);
         }
     }
 
-    private bool CanCancelCommand()
-    {
-        return CanCancel;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanCancelCommand))]
+    [RelayCommand(CanExecute = nameof(CanCancel))]
     private async Task CancelCalibrationAsync()
     {
         try
         {
             await calibration.CancelAsync();
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (Exception exception)
         {
-            Logger.LogError(exception, "Cancelling compass calibration failed.");
             SetMessages(exception);
         }
     }
 
     [RelayCommand]
-    private void Reset()
-    {
-        calibration.Reset();
-    }
+    private void Reset() => calibration.Reset();
 
-    /// <inheritdoc />
-    public void Cancel()
-    {
-        if (CanCancel)
-        {
-            calibration.CancelAsync().SafeFireAndForget();
-        }
-
-        operationCancellation?.Cancel();
-        operationCancellation?.Dispose();
-        operationCancellation = null;
-    }
-
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        calibration.Dispose();
-        base.Dispose();
-    }
-
-    /// <inheritdoc />
-    public override async Task ActivateAsync()
-    {
-        calibration.StateChanged += OnCalibrationStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Show(calibration.Current);
-
-        await base.ActivateAsync();
-        await LoadAsync();
-    }
-
-    /// <inheritdoc />
-    public override async Task DeactivateAsync()
-    {
-        CancelLocalOperation();
-        await calibration.CancelAsync();
-        calibration.StateChanged -= OnCalibrationStateChanged;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        await base.DeactivateAsync();
-    }
-
-    private void CancelLocalOperation()
-    {
-        operationCancellation?.Cancel();
-        operationCancellation?.Dispose();
-        operationCancellation = null;
-    }
-
-
-    private bool WouldDisableLastEnabledCompass(CompassInstanceViewModel item)
-    {
-        var inventory = new CompassInventory(
-            activeVehicle.VehicleId ?? default,
-            Compasses.Select(compass => compass.Instance).ToArray(),
-            orientationOptions,
-            []);
-        return compassService.WouldDisableOnlyEnabledCompass(inventory, item.Index);
-    }
-
-    private CancellationToken StartOperation()
-    {
-        operationCancellation?.Cancel();
-        operationCancellation?.Dispose();
-        operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        SetMessages(null);
-        return operationCancellation.Token;
-    }
-
-    private void ShowInventory(CompassInventory inventory, bool preserveStatus = false)
-    {
-        DiagnosticSummary = inventory.Diagnostics?.Summary ?? "Compass diagnostics unavailable";
-        DiagnosticEvidence.ReplaceRange(inventory.Diagnostics?.Evidence ?? []);
-        orientationOptions = inventory.OrientationOptions;
-        Compasses.ReplaceRange(inventory.Compasses.Select(x => new CompassInstanceViewModel(x, inventory.OrientationOptions, this)));
-        Issues.ReplaceRange(inventory.Issues.Select(issue => issue.Message));
-
-        if (!preserveStatus)
-        {
-            SetMessages(Compasses.Count == 0
-                ? "No compass devices were detected. Connect or re-detect compasses, then refresh."
-                : "Review compass identity and orientation, or start guided calibration.");
-        }
-
-        OnPropertyChanged(nameof(HasCompasses));
-        OnPropertyChanged(nameof(HasIssues));
-    }
-
-    private void OnCalibrationStateChanged(CompassCalibrationStateChangedEventArgs args)
-    {
-        Dispatcher.Dispatch(() => Show(args.Snapshot));
-    }
-
-    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
-    {
-        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
-        {
-            Dispatcher.Dispatch(() => _ = LoadAsync());
-        }
-    }
-
-    private void Show(CompassCalibrationSnapshot snapshot)
+    private void ShowCalibration(CompassCalibrationSnapshot snapshot)
     {
         CalibrationState = snapshot.State;
         Instruction = snapshot.Instruction;
         Progress = snapshot.OverallProgress;
         QualitySummary = snapshot.QualitySummary;
-        ProgressSummary = snapshot.Progress.Count == 0
-            ? string.Empty
-            : string.Join(Environment.NewLine, snapshot.Progress.Select(item =>
-                $"Compass {item.CompassId + 1}: {item.Status} ({item.CompletionPercent}%)"));
-        SetMessages(snapshot.FailureReason);
-        OnPropertyChanged(nameof(CanAccept));
-        OnPropertyChanged(nameof(CanStart));
-        OnPropertyChanged(nameof(CanCancel));
+        ProgressSummary = string.Join(Environment.NewLine, snapshot.Progress.Select(p => $"Compass {p.CompassId + 1}: {p.Status} ({p.CompletionPercent}%)"));
+        if (snapshot.FailureReason is not null)
+        {
+            SetMessages(snapshot.FailureReason);
+        }
+        if (snapshot.State == CompassCalibrationWorkflowState.Success && snapshot.VehicleId is { } id && activeVehicle.State is { } state && state.VehicleId == id)
+        {
+            completionStore.Save(workflowCatalog.CreateEvidence(SetupWorkflowKey.Compass, state, parameterRegistry.GetAllParameters(id), clock.UtcNow));
+        }
+        NotifyAvailability();
+    }
+
+    private void NotifyAvailability()
+    {
+        foreach (var name in new[] { nameof(CanEdit), nameof(CanStart), nameof(CanAccept), nameof(CanCancel), nameof(CanApply), nameof(CanReboot), nameof(CalibrationAvailability) })
+        {
+            OnPropertyChanged(name);
+        }
         StartCalibrationCommand.NotifyCanExecuteChanged();
         AcceptCalibrationCommand.NotifyCanExecuteChanged();
         CancelCalibrationCommand.NotifyCanExecuteChanged();
+        ApplyCommand.NotifyCanExecuteChanged();
+        RebootCommand.NotifyCanExecuteChanged();
+    }
 
-        if (snapshot.State == CompassCalibrationWorkflowState.Success && snapshot.VehicleId is { } vehicleId &&
-            activeVehicle.State is { } state && state.VehicleId == vehicleId)
+    private void OnCalibrationChanged(CompassCalibrationStateChangedEventArgs args) => Dispatcher.Dispatch(() =>
+    {
+        if (active)
         {
-            completionStore.Save(workflowCatalog.CreateEvidence(
-                SetupWorkflowKey.Compass,
-                state,
-                parameterRegistry.GetAllParameters(vehicleId),
-                clock.UtcNow));
-            Logger.LogInformation("Recorded confirmed compass setup evidence for {VehicleId}.", vehicleId);
+            ShowCalibration(args.Snapshot);
+        }
+    });
+    private void OnVehicleChanged(ActiveVehicleChangedEventArgs args) => Dispatcher.Dispatch(() =>
+    {
+        if (!active)
+        {
+            return;
+        }
+        editVersion++;
+        loadVersion++;
+        if (rebootRequested && !args.Previous.IsOnline && args.Current.IsOnline)
+        {
+            RequiresReboot = false;
+            rebootRequested = false;
+        }
+        operationCancellation?.Cancel();
+        review = null;
+        if (args.Previous.VehicleId != args.Current.VehicleId || (args.Previous.State is not null && args.Current.State is not null && args.Previous.State.Identity.Firmware != args.Current.State.Identity.Firmware))
+        {
+            current = null;
+            desired = null;
+            HasPendingChanges = false;
+            HasConflict = false;
+            RequiresReboot = false;
+            Settings.Clear();
+            PendingChanges.Clear();
+        }
+        NotifyAvailability();
+        _ = ReloadAndReviewAsync();
+    });
+
+    private async Task ReloadAndReviewAsync()
+    {
+        await LoadAsync();
+        if (HasPendingChanges && !HasConflict)
+        {
+            await EvaluateAsync(++editVersion);
         }
     }
-}
 
+    /// <inheritdoc />
+    public override async Task ActivateAsync()
+    {
+        if (active)
+        {
+            return;
+        }
+        active = true;
+        calibration.StateChanged += OnCalibrationChanged;
+        activeVehicle.Changed += OnVehicleChanged;
+        loadSubscription = domain.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>((change, cancellationToken) =>
+        {
+            if (active && change.Status.VehicleId == activeVehicle.VehicleId)
+            {
+                Dispatcher.Dispatch(() =>
+                {
+                    if (active)
+                    {
+                        _ = ReloadAndReviewAsync();
+                    }
+                });
+            }
+            return Task.CompletedTask;
+        });
+        ShowCalibration(calibration.Current);
+        await base.ActivateAsync();
+        await LoadAsync();
+        refreshTimer = new Timer(timerState => Dispatcher.Dispatch(() =>
+        {
+            if (active)
+            {
+                _ = LoadAsync();
+            }
+        }), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    /// <inheritdoc />
+    public override async Task DeactivateAsync()
+    {
+        active = false;
+        loadVersion++;
+        editVersion++;
+        refreshTimer?.Dispose();
+        refreshTimer = null;
+        loadSubscription?.Dispose();
+        loadSubscription = null;
+        activeVehicle.Changed -= OnVehicleChanged;
+        calibration.StateChanged -= OnCalibrationChanged;
+        operationCancellation?.Cancel();
+        await calibration.CancelAsync();
+        Discard();
+        await base.DeactivateAsync();
+    }
+
+    /// <summary>Cancels local apply work.</summary>
+    public void Cancel() => operationCancellation?.Cancel();
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        active = false;
+        loadVersion++;
+        editVersion++;
+        refreshTimer?.Dispose();
+        loadSubscription?.Dispose();
+        activeVehicle.Changed -= OnVehicleChanged;
+        calibration.StateChanged -= OnCalibrationChanged;
+        operationCancellation?.Cancel();
+        calibration.Dispose();
+        base.Dispose();
+    }
+}

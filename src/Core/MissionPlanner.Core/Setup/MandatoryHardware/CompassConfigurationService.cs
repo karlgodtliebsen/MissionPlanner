@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -11,7 +11,7 @@ using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 namespace MissionPlanner.Core.Setup.MandatoryHardware;
 
 /// <summary>Discovers compass instances and applies guarded, readback-confirmed compass parameter edits.</summary>
-public sealed class CompassConfigurationService : ICompassConfigurationService
+public sealed partial class CompassConfigurationService : ICompassConfigurationService
 {
     private const string OrientationParameter = "COMPASS_ORIENT";
     private const uint MagnetometerSensorBit = 0x04; // MAV_SYS_STATUS_SENSOR_3D_MAG.
@@ -22,6 +22,10 @@ public sealed class CompassConfigurationService : ICompassConfigurationService
     private readonly IVehicleParameterMetadataService metadataService;
     private readonly IVehicleParameterService parameterService;
     private readonly ILogger<CompassConfigurationService> logger;
+    private readonly MissionPlanner.Library.Factory.Domain.Abstractions.IDomainFactory factory;
+    private readonly MissionPlanner.Core.Diagnostics.IVehicleLiveDiagnostics diagnostics;
+    private readonly MissionPlanner.Core.Commands.IVehicleOperationGate operationGate;
+    private readonly TimeProvider clock;
 
     /// <summary>Initializes the compass-configuration service.</summary>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
@@ -29,18 +33,30 @@ public sealed class CompassConfigurationService : ICompassConfigurationService
     /// <param name="metadataService">The firmware parameter metadata service.</param>
     /// <param name="parameterService">The parameter protocol service.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="factory">Context-scoped parameter editor factory.</param>
+    /// <param name="diagnostics">Current arming evidence.</param>
+    /// <param name="operationGate">Exclusive calibration/configuration guard.</param>
+    /// <param name="clock">Freshness clock.</param>
     public CompassConfigurationService(
         IActiveVehicleContext activeVehicle,
         IVehicleParameterRegistry parameterRegistry,
         IVehicleParameterMetadataService metadataService,
         IVehicleParameterService parameterService,
-        ILogger<CompassConfigurationService> logger)
+        ILogger<CompassConfigurationService> logger,
+        MissionPlanner.Library.Factory.Domain.Abstractions.IDomainFactory factory,
+        MissionPlanner.Core.Diagnostics.IVehicleLiveDiagnostics diagnostics,
+        MissionPlanner.Core.Commands.IVehicleOperationGate operationGate,
+        TimeProvider clock)
     {
         this.activeVehicle = activeVehicle;
         this.parameterRegistry = parameterRegistry;
         this.metadataService = metadataService;
         this.parameterService = parameterService;
         this.logger = logger;
+        this.factory = factory;
+        this.diagnostics = diagnostics;
+        this.operationGate = operationGate;
+        this.clock = clock;
     }
 
     /// <inheritdoc />
