@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Setup.MandatoryHardware;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup.Abstractions;
@@ -6,6 +6,15 @@ namespace MissionPlanner.Core.Setup.Abstractions;
 /// <summary>Discovers compass instances and applies guarded, readback-confirmed compass parameter edits.</summary>
 public interface ICompassConfigurationService
 {
+    /// <summary>Reads semantic configuration, capabilities and fresh diagnostic evidence.</summary>
+    Task<CompassSetupState> ReadAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
+
+    /// <summary>Evaluates desired configuration without writing; all dependencies enter the review.</summary>
+    Task<CompassChangeSet> EvaluateChangesAsync(VehicleId vehicleId, CompassConfiguration desired, CancellationToken cancellationToken = default);
+
+    /// <summary>Revalidates a reviewed change set, writes in dependency order and verifies actual values.</summary>
+    Task<CompassApplyResult> ApplyAsync(VehicleId vehicleId, CompassChangeSet changes, CancellationToken cancellationToken = default);
+
     /// <summary>Builds the current compass inventory from live parameters, device IDs, and health.</summary>
     /// <param name="vehicleId">The active target vehicle.</param>
     /// <param name="cancellationToken">A token that cancels metadata resolution.</param>

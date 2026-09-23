@@ -1,4 +1,4 @@
-﻿using System.Xml.Linq;
+using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.MavLink.Parameters.Metadata.Abstractions;
 
@@ -161,6 +161,7 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
         string? bitmaskStr = null;
         var rebootRequired = false;
         var readOnly = false;
+        var defaultText = element.Attribute("default")?.Value;
 
         foreach (var field in element.Elements("field"))
         {
@@ -169,6 +170,9 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
 
             switch (fieldName)
             {
+                case "Default":
+                    defaultText = fieldValue;
+                    break;
                 case "Units":
                     units = fieldValue;
                     break;
@@ -226,6 +230,10 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
             increment,
             userLevel,
             rebootRequired,
-            readOnly);
+            readOnly)
+        {
+            DefaultValue = double.TryParse(defaultText, System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture, out var value) && double.IsFinite(value) ? value : null
+        };
     }
 }

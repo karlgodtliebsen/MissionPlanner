@@ -1096,3 +1096,12 @@ switch movement diagnostics. Inspector arming explanations distinguish explicit 
 rejection, inferred RC/stick requests and healthy checks with no observed request.
 Telemetry catalog and full exports derive size, duration, identity and firmware from
 the indexed recording. See [telemetry/arming follow-up](tasks/telemetry-arming/EXECUTION_RESULTS.md).
+
+## Semantic Compass setup
+
+Compass Setup now groups Status, Configuration, Calibration / Actions and collapsed
+Advanced diagnostics. Friendly settings stage local edits, show dependency changes and
+metadata defaults, and use confirmed readback on Apply. Connection/current-value conflicts
+block stale reviews; partial failures retain pending edits. Reboot is explicit and
+calibration continues through the existing service. See [Setup UX pattern](SetupUxPattern.md)
+and [execution results](tasks/Compass-UX/EXECUTION_RESULTS.md).
