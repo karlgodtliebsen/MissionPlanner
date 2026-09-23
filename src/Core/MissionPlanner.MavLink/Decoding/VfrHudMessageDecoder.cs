@@ -25,12 +25,14 @@ public sealed class VfrHudMessageDecoder : IMavLinkMessageDecoder
             return false;
         }
 
-        if (frame.Payload.Length < 20)
+        if (frame.Payload.Length is < 1 or > 20)
         {
             return false;
         }
 
-        var span = frame.Payload.Span;
+        Span<byte> span = stackalloc byte[20];
+        span.Clear();
+        frame.Payload.Span.CopyTo(span);
 
         message = new VfrHudMessage(
             frame.SystemId,

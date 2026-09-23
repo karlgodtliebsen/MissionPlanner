@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Models;
@@ -25,7 +25,8 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
         this.clock = clock;
         this.parameters = parameters;
         this.options = options.Value;
-        if (this.options.JournalCapacity < 1 || this.options.RawCapacity < 1 || this.options.ReasonLifetime <= TimeSpan.Zero)
+        if (this.options.JournalCapacity < 1 || this.options.RawCapacity < 1 || this.options.ReasonLifetime <= TimeSpan.Zero ||
+            this.options.OutputSampleLifetime <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(options));
         }
@@ -140,6 +141,18 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
             var now = clock.GetUtcNow();
             if (input.Connected is { } connected)
             {
+                if (entry.Disconnected)
+                {
+                    // Retain the journal, but never present the previous session's
+                    // telemetry as current while waiting for the new state stream.
+                    entry.State = null;
+                    entry.LastArmAttemptAt = null;
+                    entry.ArmCorrelation = null;
+                    entry.LastArmAck = null;
+                    entry.LastArmCommandSource = null;
+                    entry.LastArmResult = null;
+                    entry.Version++;
+                }
                 entry.Disconnected = false;
                 entry.Reasons.Clear();
                 entry.Transport = connected.ConnectionType;
@@ -154,6 +167,7 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
             if (input.State is { } state && !entry.Disconnected)
             {
                 var previous = entry.State;
+                ObserveArmingInput(entry, previous, state, now);
                 entry.State = state;
                 if (state.IsArmed || state.Arming.State == VehicleArmingState.DisarmedReady)
                 {
@@ -200,6 +214,8 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
                             entry.Reasons.Remove(entry.Reasons.MinBy(pair => pair.Value).Key);
                         }
                         entry.Reasons[text.Text[7..].Trim()] = text.ReceivedAt;
+                        entry.LastPreArmReason = text.Text[7..].Trim();
+                        entry.LastPreArmReasonAt = text.ReceivedAt;
                     }
                     if (text.Text.StartsWith("Arm:", StringComparison.OrdinalIgnoreCase))
                     {
@@ -258,6 +274,11 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
         internal string? LastArmFailure;
         internal DateTimeOffset? LastArmAttemptAt;
         internal string? LastArmResult;
+        internal string? LastArmCommandSource;
+        internal byte? LastArmAck;
+        internal bool DisarmRequested;
+        internal string? LastPreArmReason;
+        internal DateTimeOffset? LastPreArmReasonAt;
         internal Guid? ArmCorrelation;
         internal Guid? MotorCorrelation;
     }

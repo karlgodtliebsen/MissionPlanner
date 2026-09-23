@@ -151,3 +151,56 @@ Raw entries retain immutable complete frame bytes and payload bytes, wire payloa
 MAVLink 2 may legitimately carry only 3–4 bytes for messages with zero-valued trailing fields. This is wire zero trimming, not necessarily a capture defect. Short payloads are labelled with their dialect length; exports preserve exact wire bytes and do not synthesize missing zeros. Some custom decoders retain these through the lossless raw fallback. No recorder or .tlog format changes are involved. See [capture investigation and tests](tasks/receiver-bind-and-follow-up/EXECUTION_RESULTS.md).
 
 Receiver binding request, command ACK and bounded input recovery observations share a correlation ID. An accepted bind command does not prove physical pairing; continuous existing traffic is not interpreted as a successful rebind. See [receiver binding](RECEIVER_BIND.md).
+
+## Servo output propagation and freshness
+
+`SERVO_OUTPUT_RAW` uses the existing typed decoder, radio telemetry handler, and
+`VehicleSession` radio slice. The decoder zero-pads validated MAVLink 2 payloads to
+37 bytes before reading all 16 channels, including a channel with a trimmed high
+byte. Exact wire bytes remain unchanged in Raw diagnostics and telemetry recordings.
+
+Outputs reports received samples as fresh for up to two seconds by default
+(`VehicleLiveDiagnosticOptions.OutputSampleLifetime`), provided the connection is
+online. Previously received samples become stale on expiry or disconnect; only
+missing samples report "No SERVO_OUTPUT_RAW received." Sample age and reception
+time are shown separately from output protocol and unavailable ESC RPM. Observed
+controller outputs do not establish physical motor movement.
+
+State remains scoped to the exact vehicle system/component identity. Reconnect
+discards the previous session's diagnostic state while retaining its journal and
+raw history; the connection registry already creates a new vehicle session. New
+telemetry repopulates the snapshot and its exported `ServoOutputPort`,
+`ServoOutputsRaw`, and `ServoObservedAt` fields. Retained Raw samples from an older
+session, or from a different component within the connection's system, do not
+imply a current output sample for the selected vehicle.
+## Telemetry/arming follow-up (2026-09-23)
+
+Radio Setup displays the flight-mode channel, loaded auxiliary Arm/Disarm assignments,
+and stick-arming configuration. Select an RC channel to inspect its bounded low/high
+movement trace. Assignment writes only that channel's `RCx_OPTION=153` through the
+existing parameter edit/readback service, after explicit confirmation. Flight-mode,
+pilot-axis and occupied channels are rejected; metadata is checked when available.
+Moving a switch alone does not establish an arm request or motor movement.
+
+Status/Arming now includes Unknown, DisarmedReady, DisarmedNotReady, ArmRequested,
+ArmRejected, Armed and DisarmRequested stages. Only heartbeat establishes Armed;
+an accepted MAVLink ACK leaves the request awaiting that heartbeat. A matching
+explicit rejecting ACK establishes ArmRejected. Configured auxiliary-switch edges
+and mapped low-throttle/yaw gestures are labelled inferred requests, with hold time
+unconfirmed for stick gestures. RC/stick arming does not require a COMMAND_ACK.
+
+When pre-arm health is fresh and healthy, RC input is fresh, and no recent request
+was observed, the Inspector recommends checking RC auxiliary assignment, transmitter
+mapping and stick arming. These suggestions are separate from actual blockers.
+Current PreArm reasons expire after 30 seconds by default or clear on confirmed
+recovery/arming; historical text and timestamps remain separate. Reconnect clears
+current request context while preserving the diagnostic journal.
+
+AHRS2, VFR_HUD, GPS_RAW_INT and POWER_STATUS use the shared typed decoder catalog
+with MAVLink 2 trailing-zero reconstruction. Live and isolated replay use the same
+mapping path. ATTITUDE and GLOBAL_POSITION_INT retain precedence for one second;
+AHRS2, HUD and raw GPS may supply their existing fallback fields after that window.
+AHRS2 still updates the estimator slice and HUD still supplies airspeed while primary
+sources are fresh. Raw capture remains byte-for-byte unchanged.
+
+See [task results](tasks/telemetry-arming/EXECUTION_RESULTS.md) for verification.

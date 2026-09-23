@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -219,6 +219,10 @@ public sealed partial class TelemetryLogsTabViewModel : ViewModelBase
 
         RecordingPath = status.FilePath;
         RecordingError = status.Error;
+        if (active && status.State == "Completed")
+        {
+            _ = RefreshLogsAsync();
+        }
     }
 
     /// <summary>Gets replay-only vehicle states; these vehicles never enter the live registry.</summary>

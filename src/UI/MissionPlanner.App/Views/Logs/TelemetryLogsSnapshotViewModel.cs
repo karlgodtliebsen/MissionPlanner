@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.App.Utilities.Dialogs;
@@ -32,6 +32,7 @@ public sealed partial class TelemetryLogsTabViewModel
                 // A separate stream keeps the packet browser and replay cursors untouched.
                 await using var stream = await logStorage.OpenReadAsync(LogStorageArea.Telemetry, item.Id, token);
                 var index = await logReader.IndexAsync(stream, item.Name, token);
+                var refreshed = await logCatalog.RefreshAsync(item, stream, index, token);
                 using var content = new MemoryStream();
                 using (var writer = new Utf8JsonWriter(content, new JsonWriterOptions { Indented = true }))
                 {
@@ -40,7 +41,7 @@ public sealed partial class TelemetryLogsTabViewModel
                     writer.WriteString("CapturedAt", capturedAt);
                     writer.WriteString("Scope", "All indexed packets in the selected recording, independent of display filters and page.");
                     writer.WritePropertyName("Recording");
-                    JsonSerializer.Serialize(writer, item);
+                    JsonSerializer.Serialize(writer, refreshed);
                     writer.WritePropertyName("Index");
                     JsonSerializer.Serialize(writer, new
                     {

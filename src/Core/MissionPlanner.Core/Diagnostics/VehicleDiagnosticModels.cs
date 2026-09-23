@@ -34,6 +34,9 @@ public sealed class VehicleLiveDiagnosticOptions
 
     /// <summary>Time for unconfirmed pre-arm text to remain a current reason.</summary>
     public TimeSpan ReasonLifetime { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Maximum age of a fresh servo output sample, matching the servo setup default.</summary>
+    public TimeSpan OutputSampleLifetime { get; set; } = TimeSpan.FromSeconds(2);
 }
 
 /// <summary>Always-on, platform-neutral diagnostic state and significant-event history.</summary>

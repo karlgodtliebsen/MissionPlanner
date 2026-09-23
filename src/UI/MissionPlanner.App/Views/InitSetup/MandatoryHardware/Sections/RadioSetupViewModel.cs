@@ -30,6 +30,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     private readonly IDateTimeProvider clock;
     private readonly IVehicleCommandService commands;
     private readonly IVehicleTelemetryEventHub telemetry;
+    private readonly RadioArmingConfiguration armingConfiguration;
     private CancellationTokenSource? bindCancellation;
     private CancellationTokenSource? operationCancellation;
     private IDisposable? vehicleStateSubscription;
@@ -51,6 +52,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     /// <param name="commands">Safety-gated receiver commands.</param>
     /// <param name="telemetry">Shared diagnostic event hub.</param>
     /// <param name="dispatcher">UI-thread dispatcher.</param>
+    /// <param name="armingConfiguration">Guarded RC arming configuration.</param>
     public RadioSetupViewModel(
         IActiveVehicleContext activeVehicle,
         IRadioCalibrationService radioService,
@@ -61,7 +63,8 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         IUserConfirmationService confirmation,
         IDateTimeProvider clock, ILogger<RadioSetupViewModel> logger,
         IVehicleCommandService commands, IVehicleTelemetryEventHub telemetry,
-        MissionPlanner.App.Utilities.Dispatching.IUiDispatcher dispatcher)
+        MissionPlanner.App.Utilities.Dispatching.IUiDispatcher dispatcher,
+        RadioArmingConfiguration armingConfiguration)
         : base(logger, dispatcher, domainEventHub)
     {
         this.activeVehicle = activeVehicle;
@@ -74,6 +77,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         this.clock = clock;
         this.commands = commands;
         this.telemetry = telemetry;
+        this.armingConfiguration = armingConfiguration;
     }
 
     /// <summary>Gets the live RC channels.</summary>
@@ -227,6 +231,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     /// <inheritdoc />
     public override async Task DeactivateAsync()
     {
+        switchMovement.Clear();
         CancelLocalOperation();
         await radioService.CancelAsync();
         radioService.StateChanged -= OnCalibrationStateChanged;
@@ -363,6 +368,10 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
 
     private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            Dispatcher.Dispatch(switchMovement.Clear);
+        }
         bindCancellation?.Cancel();
         observedRadioAt = args.Current.State?.Radio.ObservedAt;
         Dispatcher.Dispatch(RefreshLiveChannels);
@@ -402,6 +411,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
 
     private void RefreshLiveChannels()
     {
+        RefreshArmingSwitch();
         OnPropertyChanged(nameof(BindAvailability));
         BindReceiverCommand.NotifyCanExecuteChanged();
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)

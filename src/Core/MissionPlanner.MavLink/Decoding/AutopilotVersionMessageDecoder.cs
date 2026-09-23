@@ -19,7 +19,7 @@ public sealed class AutopilotVersionMessageDecoder : IMavLinkMessageDecoder
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
-        if (frame.MessageId != MessageId || frame.Payload.Length < 60)
+        if (frame.MessageId != MessageId || frame.Payload.Length is < 1 or > 78)
         {
             return false;
         }

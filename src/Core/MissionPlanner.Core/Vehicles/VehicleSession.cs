@@ -36,6 +36,8 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     private const byte MavModeFlagSafetyArmed = 0b1000_0000;
     private VehicleState state = initialState;
     private bool? preArmHealthy;
+    private DateTimeOffset? primaryAttitudeAt;
+    private DateTimeOffset? globalPositionAt;
 
     /// <summary>
     /// Provides the public API for Id.
@@ -167,6 +169,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyAttitude(VehicleAttitudeObservation observation)
     {
+        primaryAttitudeAt = observation.ObservedAt;
         state = state with
         {
             Motion = state.Motion with
@@ -195,6 +198,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyGlobalPosition(VehicleGlobalPositionObservation observation)
     {
+        globalPositionAt = observation.ObservedAt;
         var groundSpeed = CalculateHorizontalSpeed(observation.VelocityNorthMetersPerSecond, observation.VelocityEastMetersPerSecond);
 
         state = state with
@@ -310,11 +314,13 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
             },
             Motion = state.Motion with
             {
-                GroundSpeedMetersPerSecond = observation.GroundSpeedMetersPerSecond
+                GroundSpeedMetersPerSecond = IsPrimaryFresh(globalPositionAt, observation.ObservedAt)
+                    ? state.Motion.GroundSpeedMetersPerSecond : observation.GroundSpeedMetersPerSecond
                                              ?? state.Motion.GroundSpeedMetersPerSecond,
                 ObservedAt = observation.ObservedAt
             },
-            Position = state.Position with { HeadingDegrees = observation.CourseDegrees ?? state.Position.HeadingDegrees, ObservedAt = observation.ObservedAt }
+            Position = IsPrimaryFresh(globalPositionAt, observation.ObservedAt) ? state.Position
+                : state.Position with { HeadingDegrees = observation.CourseDegrees ?? state.Position.HeadingDegrees, ObservedAt = observation.ObservedAt }
         };
     }
 
@@ -331,9 +337,9 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyAhrsFallback(VehicleAhrsObservation observation)
     {
-        var attitudeIsStale = state.Motion.ObservedAt is null || observation.ObservedAt - state.Motion.ObservedAt.Value > TimeSpan.FromSeconds(1);
+        var attitudeIsStale = !IsPrimaryFresh(primaryAttitudeAt, observation.ObservedAt);
 
-        var positionIsStale = state.Position.ObservedAt is null || observation.ObservedAt - state.Position.ObservedAt.Value > TimeSpan.FromSeconds(1);
+        var positionIsStale = !IsPrimaryFresh(globalPositionAt, observation.ObservedAt);
 
         state = state with
         {
@@ -363,8 +369,27 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyHud(VehicleHudObservation observation)
     {
-        state = state with { Motion = state.Motion with { AirSpeedMetersPerSecond = observation.AirSpeedMetersPerSecond, GroundSpeedMetersPerSecond = observation.GroundSpeedMetersPerSecond, VerticalSpeedMetersPerSecond = observation.VerticalSpeedMetersPerSecond, ObservedAt = observation.ObservedAt }, Position = state.Position with { AltitudeMslMeters = observation.AltitudeMslMeters, HeadingDegrees = observation.HeadingDegrees, ObservedAt = observation.ObservedAt } };
+        var primaryFresh = IsPrimaryFresh(globalPositionAt, observation.ObservedAt);
+        state = state with
+        {
+            Motion = state.Motion with
+            {
+                AirSpeedMetersPerSecond = observation.AirSpeedMetersPerSecond,
+                GroundSpeedMetersPerSecond = primaryFresh ? state.Motion.GroundSpeedMetersPerSecond : observation.GroundSpeedMetersPerSecond,
+                VerticalSpeedMetersPerSecond = primaryFresh ? state.Motion.VerticalSpeedMetersPerSecond : observation.VerticalSpeedMetersPerSecond,
+                ObservedAt = observation.ObservedAt
+            },
+            Position = primaryFresh ? state.Position : state.Position with
+            {
+                AltitudeMslMeters = observation.AltitudeMslMeters,
+                HeadingDegrees = observation.HeadingDegrees,
+                ObservedAt = observation.ObservedAt
+            }
+        };
     }
+
+    private static bool IsPrimaryFresh(DateTimeOffset? primary, DateTimeOffset sample) =>
+        primary is { } at && sample - at <= TimeSpan.FromSeconds(1);
 
     /// <summary>
     /// Compatibility methods for gradual migration.

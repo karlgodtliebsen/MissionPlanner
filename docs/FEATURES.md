@@ -1084,4 +1084,15 @@ panels with a separate telemetry EventHub singleton, bounded per-vehicle history
 presentation, freeze/resume, markers, context suggestions and desktop detachment.
 See [LiveTelemetryInspector.md](LiveTelemetryInspector.md) for ownership, evidence and limits.
 
+Outputs accepts zero-trimmed MAVLink 2 `SERVO_OUTPUT_RAW` samples, preserves all
+16 channels, and distinguishes fresh, stale, and never-seen output evidence.
+Reconnect resets prior-session diagnostic state; Raw capture and `.tlog` bytes
+remain unchanged.
+
 Radio Setup supports safety-gated [receiver binding](RECEIVER_BIND.md) for explicitly configured CRSF/ExpressLRS, with truthful command acknowledgements and bounded RC input recovery monitoring.
+
+Radio Setup also provides guarded Arm/Disarm auxiliary-switch assignment and observed
+switch movement diagnostics. Inspector arming explanations distinguish explicit ACK
+rejection, inferred RC/stick requests and healthy checks with no observed request.
+Telemetry catalog and full exports derive size, duration, identity and firmware from
+the indexed recording. See [telemetry/arming follow-up](tasks/telemetry-arming/EXECUTION_RESULTS.md).

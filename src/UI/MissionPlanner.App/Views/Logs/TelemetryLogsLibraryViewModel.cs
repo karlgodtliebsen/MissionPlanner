@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using MissionPlanner.App.Presentation;
@@ -98,14 +98,7 @@ public sealed partial class TelemetryLogsTabViewModel
             packetStream?.Dispose();
             packetStream = stream;
             packetIndex = index;
-            var updated = item with
-            {
-                Metadata = item.Metadata with
-                {
-                    Started = index.StartedAt,
-                    Ended = index.EndedAt
-                }
-            };
+            var updated = await logCatalog.RefreshAsync(item, stream, index, token);
             await Dispatcher.DispatchAsync(() =>
             {
                 var position = Logs.IndexOf(item);

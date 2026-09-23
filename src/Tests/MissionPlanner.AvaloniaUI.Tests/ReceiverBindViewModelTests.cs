@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
@@ -71,6 +71,8 @@ public sealed class ReceiverBindViewModelTests
             Substitute.For<IVehicleParameterRegistry>(), Substitute.For<ISetupCompletionStore>(),
             Substitute.For<ISetupWorkflowCatalog>(), Substitute.For<IUserConfirmationService>(), clock,
             NullLogger<RadioSetupViewModel>.Instance, commands, telemetry ?? Substitute.For<IVehicleTelemetryEventHub>(),
-            Substitute.For<IUiDispatcher>());
+            Substitute.For<IUiDispatcher>(), new MissionPlanner.Core.Setup.MandatoryHardware.RadioArmingConfiguration(
+                active, Substitute.For<IVehicleParameterRegistry>(),
+                Substitute.For<MissionPlanner.Library.Factory.Domain.Abstractions.IDomainFactory>()));
     }
 }

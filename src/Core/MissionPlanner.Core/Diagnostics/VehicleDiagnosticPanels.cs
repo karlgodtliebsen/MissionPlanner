@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
@@ -97,6 +97,9 @@ public static class VehicleDiagnosticPanels
             "Status" => new[]
             {
                 arming.Summary,
+                arming.Guidance ?? "",
+                $"Request source: {Value(arming.LastArmCommandSource)} · ACK: {Value(arming.LastArmAck)}",
+                $"Historical PreArm: {Value(arming.LastPreArmReason)} · {Value(arming.LastPreArmReasonAt)}",
                 $"Connection: {(snapshot.Disconnected ? "Disconnected" : state.Connection.State)}",
                 $"Transport: {Value(snapshot.Transport)} · Endpoint: {Value(snapshot.Endpoint)}",
                 $"Last valid packet: {Age(state.Connection.LastPacketAt)} · Heartbeat: {Age(state.Connection.LastHeartbeatAt)}",

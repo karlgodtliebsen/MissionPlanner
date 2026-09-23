@@ -41,7 +41,7 @@
                 <ItemsControl ItemsSource="{Binding DiagnosticEvidence}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="x:String">
-                            <TextBlock Text="{Binding .}" TextWrapping="Wrap" />
+                            <SelectableTextBlock Text="{Binding .}" TextWrapping="Wrap" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

@@ -31,6 +31,10 @@ public sealed partial class RadioSetupViewModel
 
     private void OnBindParametersChanged(MissionPlanner.Core.Vehicles.VehicleParameterChangedEventArgs args)
     {
+        if (args.VehicleId == activeVehicle.VehicleId)
+        {
+            Dispatcher.Dispatch(RefreshArmingSwitch);
+        }
         if (args.VehicleId == activeVehicle.VehicleId && (args.Parameter is null || args.Parameter.Name == "RC_PROTOCOLS"))
         {
             Dispatcher.Dispatch(() =>

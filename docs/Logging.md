@@ -126,3 +126,24 @@ Automated browser pointer/keyboard interaction with the Avalonia canvas could no
 Final full-suite run (2026-09-19): 1,229 .NET tests and seven JavaScript tests passed, with 30 existing skipped .NET tests. Results: TestResults/all-tests/20260919-010141-495.
 
 Final solution build passed with zero errors and 17 existing nullable-analysis warnings; no XML documentation warnings were reported.
+
+## Indexed telemetry metadata
+
+Catalog listing, opening a stored recording and copying a full snapshot derive
+metadata from the indexed file. File size is the indexed stream length; duration
+is indexed last timestamp minus indexed first timestamp (after the reader's existing
+backward-timestamp normalization). Packet count is the number of complete indexed
+records. An incomplete trailing record is excluded from that count.
+
+HEARTBEAT identifies the autopilot system/component and vehicle type. AUTOPILOT_VERSION
+supplies firmware version/build and numeric board identity; startup STATUSTEXT supplies
+firmware fallback and recognized board/target strings. Identity evidence is grouped
+by system/component so unrelated component messages are not mixed. The first autopilot
+identity, preferring component 1, is used for the catalog row of a multi-vehicle log.
+
+Metadata is rebuilt on listing/open/export, including historical logs after restart;
+no new sidecar format is required. This costs an index/identity scan per recording on
+refresh, while decoded metadata retention is bounded. Damaged recordings remain
+listed with unavailable metadata for export/deletion. The active Logs page refreshes
+on recording completion. Export re-derives its Recording metadata from exactly the
+same index used for its Index and Packets sections, even if the selected row is stale.

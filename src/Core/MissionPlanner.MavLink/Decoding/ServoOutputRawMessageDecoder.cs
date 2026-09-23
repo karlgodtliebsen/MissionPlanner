@@ -25,12 +25,16 @@ public sealed class ServoOutputRawMessageDecoder : IMavLinkMessageDecoder
             return false;
         }
 
-        if (frame.Payload.Length < 21)
+        if (frame.Payload.Length is < 1 or > 37)
         {
             return false;
         }
 
-        var span = frame.Payload.Span;
+        // The parser validates wire lengths. MAVLink 2 can trim zeros even within
+        // base fields or halfway through a ushort, so pad before reading values.
+        Span<byte> span = stackalloc byte[37];
+        span.Clear();
+        frame.Payload.Span.CopyTo(span);
         var servos = new ushort[16];
 
         for (var i = 0; i < 8; i++)

@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using System.Reflection;
 using System.Text.Json;
 using Avalonia;
@@ -54,7 +54,7 @@ public sealed class TelemetryLogClipboardTests
         }
         input.Position = 0;
         await files.ImportAsync(LogStorageArea.Telemetry, "snapshot.tlog", input, TestContext.Current.CancellationToken);
-        var catalog = new TelemetryLogCatalog(storage);
+        var catalog = new TelemetryLogCatalog(storage, new TelemetryLogReader(), Substitute.For<IMavLinkMessageDecodeHandler>());
         var log = Assert.Single(await catalog.ListAsync(TestContext.Current.CancellationToken));
         var reader = new TelemetryLogReader();
         var browser = new TelemetryPacketBrowser(reader, Substitute.For<IMavLinkMessageDecodeHandler>(),
@@ -82,6 +82,7 @@ public sealed class TelemetryLogClipboardTests
             NullLogger<TelemetryLogsTabViewModel>.Instance, storage, files, browser, reader, catalog,
             Substitute.For<IFileSaveService>(), Substitute.For<ILogFolderService>(), dialogs, clipboard);
         Assert.False(model.CopySnapshotCommand.CanExecute(null));
+        log = log with { File = log.File with { Size = 0 }, Metadata = new TelemetryLogMetadata() };
         model.SelectedLog = log;
         model.PacketSearch = "no match";
         Assert.True(model.CopySnapshotCommand.CanExecute(null));
@@ -98,6 +99,11 @@ public sealed class TelemetryLogClipboardTests
         }
         Assert.Null(model.ErrorMessage);
         using var json = JsonDocument.Parse(copied!);
+        var recording = json.RootElement.GetProperty("Recording");
+        var index = json.RootElement.GetProperty("Index");
+        Assert.Equal(index.GetProperty("Length").GetInt64(), recording.GetProperty("Size").GetInt64());
+        Assert.Equal(index.GetProperty("Duration").GetString(), recording.GetProperty("Duration").GetString());
+        Assert.Equal(600, recording.GetProperty("Metadata").GetProperty("PacketCount").GetInt32());
         var packets = json.RootElement.GetProperty("Packets");
         Assert.Equal(600, packets.GetArrayLength());
         Assert.Equal(599, packets[0].GetProperty("Index").GetInt32());

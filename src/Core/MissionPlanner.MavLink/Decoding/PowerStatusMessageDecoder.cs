@@ -25,12 +25,14 @@ public sealed class PowerStatusMessageDecoder : IMavLinkMessageDecoder
             return false;
         }
 
-        if (frame.Payload.Length < 6)
+        if (frame.Payload.Length is < 1 or > 6)
         {
             return false;
         }
 
-        var span = frame.Payload.Span;
+        Span<byte> span = stackalloc byte[6];
+        span.Clear();
+        frame.Payload.Span.CopyTo(span);
 
         message = new PowerStatusMessage(
             frame.SystemId,

@@ -20,13 +20,25 @@ public sealed partial class VehicleLiveDiagnostics
     {
         var snapshot = GetSnapshot(vehicleId);
         var outputs = snapshot.State?.Radio.ServoOutputsRaw;
-        var values = new List<string> { "Flight controller output is observed. Physical motor movement remains unknown." };
+        var values = new List<string>();
         if (outputs is null)
         {
             values.Add("No SERVO_OUTPUT_RAW received.");
+            values.Add("Physical motor movement remains unknown.");
         }
         else
         {
+            var observedAt = snapshot.State!.Radio.ServoObservedAt;
+            var age = observedAt is { } at ? clock.GetUtcNow() - at : (TimeSpan?)null;
+            var stale = snapshot.Disconnected || snapshot.State.ConnectionState != VehicleConnectionState.Online ||
+                age is null || age < TimeSpan.Zero || age > options.OutputSampleLifetime;
+            values.Add(stale
+                ? "SERVO_OUTPUT_RAW was received previously, but the latest sample is stale."
+                : "SERVO_OUTPUT_RAW received. Flight controller output is observed.");
+            values.Add("Physical motor movement remains unknown.");
+            values.Add(age is { } sampleAge
+                ? $"Output sample age: {Math.Max(0, sampleAge.TotalSeconds):F1} s"
+                : "Output sample age: unavailable");
             var bank = snapshot.State!.Radio.ServoOutputPort ?? 0;
             for (var index = 0; index < Math.Min(outputs.Count, 32); index++)
             {

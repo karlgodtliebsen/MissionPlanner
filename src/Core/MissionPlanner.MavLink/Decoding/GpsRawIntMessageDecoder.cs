@@ -25,22 +25,24 @@ public sealed class GpsRawIntMessageDecoder : IMavLinkMessageDecoder
             return false;
         }
 
-        if (frame.Payload.Length < 30)
+        if (frame.Payload.Length is < 1 or > 52)
         {
             return false;
         }
 
-        var span = frame.Payload.Span;
+        Span<byte> span = stackalloc byte[52];
+        span.Clear();
+        frame.Payload.Span.CopyTo(span);
 
         var latRaw = MavLinkDecoderHelpers.ReadInt32OrDefault(span, 8);
         var lonRaw = MavLinkDecoderHelpers.ReadInt32OrDefault(span, 12);
         var altRaw = MavLinkDecoderHelpers.ReadInt32OrDefault(span, 16);
 
         double? yaw = null;
-        if (frame.Payload.Length >= 52)
+        if (frame.Payload.Length > 50)
         {
             var yawRaw = MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 50, ushort.MaxValue);
-            yaw = yawRaw == ushort.MaxValue ? null : yawRaw / 100.0;
+            yaw = yawRaw is 0 or ushort.MaxValue ? null : yawRaw / 100.0;
         }
 
         message = new GpsRawIntMessage(
@@ -57,11 +59,11 @@ public sealed class GpsRawIntMessageDecoder : IMavLinkMessageDecoder
             MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 24, ushort.MaxValue),
             MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 26, ushort.MaxValue),
             MavLinkDecoderHelpers.ReadByteOrDefault(span, 29, byte.MaxValue),
-            frame.Payload.Length >= 34 ? MavLinkDecoderHelpers.ReadInt32OrDefault(span, 30) / 1000.0 : null,
-            frame.Payload.Length >= 38 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 34) : null,
-            frame.Payload.Length >= 42 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 38) : null,
-            frame.Payload.Length >= 46 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 42) : null,
-            frame.Payload.Length >= 50 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 46) : null,
+            frame.Payload.Length > 30 ? MavLinkDecoderHelpers.ReadInt32OrDefault(span, 30) / 1000.0 : null,
+            frame.Payload.Length > 34 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 34) : null,
+            frame.Payload.Length > 38 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 38) : null,
+            frame.Payload.Length > 42 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 42) : null,
+            frame.Payload.Length > 46 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 46) : null,
             yaw,
             frame.ReceivedAt);
 

@@ -25,12 +25,14 @@ public sealed class Ahrs2MessageDecoder : IMavLinkMessageDecoder
             return false;
         }
 
-        if (frame.Payload.Length < 24)
+        if (frame.Payload.Length is < 1 or > 24)
         {
             return false;
         }
 
-        var span = frame.Payload.Span;
+        Span<byte> span = stackalloc byte[24];
+        span.Clear();
+        frame.Payload.Span.CopyTo(span);
 
         message = new Ahrs2Message(
             frame.SystemId,

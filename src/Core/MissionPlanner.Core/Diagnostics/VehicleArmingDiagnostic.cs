@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Diagnostics;
@@ -12,7 +12,40 @@ namespace MissionPlanner.Core.Diagnostics;
 /// <param name="LastArmAttemptAt">Latest requested arm transaction time.</param>
 /// <param name="LastArmResult">Latest acknowledgement or transaction outcome.</param>
 public sealed record VehicleArmingDiagnostic(string Summary, bool IsArmed, bool? IsReadyToArm,
-    IReadOnlyList<string> Reasons, string? LastArmFailure, DateTimeOffset? LastArmAttemptAt, string? LastArmResult);
+    IReadOnlyList<string> Reasons, string? LastArmFailure, DateTimeOffset? LastArmAttemptAt, string? LastArmResult)
+{
+    /// <summary>Current evidence-based request/readiness stage.</summary>
+    public ArmingDiagnosticStage Stage { get; init; }
+    /// <summary>Latest request source; RC and stick sources are explicitly inferred.</summary>
+    public string? LastArmCommandSource { get; init; }
+    /// <summary>Latest matching MAVLink acknowledgement result.</summary>
+    public byte? LastArmAck { get; init; }
+    /// <summary>Historical pre-arm text, separate from current blockers.</summary>
+    public string? LastPreArmReason { get; init; }
+    /// <summary>Timestamp of historical pre-arm text.</summary>
+    public DateTimeOffset? LastPreArmReasonAt { get; init; }
+    /// <summary>Configuration advice when no request was observed.</summary>
+    public string? Guidance { get; init; }
+}
+
+/// <summary>Arming evidence stage; only heartbeat telemetry establishes Armed.</summary>
+public enum ArmingDiagnosticStage
+{
+    /// <summary>Insufficient fresh evidence.</summary>
+    Unknown,
+    /// <summary>Disarmed with healthy pre-arm checks.</summary>
+    DisarmedReady,
+    /// <summary>Disarmed with current pre-arm blockers.</summary>
+    DisarmedNotReady,
+    /// <summary>Arm request observed; waiting for armed heartbeat.</summary>
+    ArmRequested,
+    /// <summary>Arm request explicitly rejected.</summary>
+    ArmRejected,
+    /// <summary>Heartbeat reports armed.</summary>
+    Armed,
+    /// <summary>Disarm request observed; waiting for disarmed heartbeat.</summary>
+    DisarmRequested
+}
 
 /// <summary>Normalized command transaction evidence from domain command owners.</summary>
 /// <param name="VehicleId">Target vehicle.</param>
