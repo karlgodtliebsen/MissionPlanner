@@ -1,7 +1,7 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Input.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Styling;
 using LiveMarkdown.Avalonia;
 using Markdig;
@@ -60,10 +60,6 @@ public partial class InformationDocumentView : UserControl
             source = markdown;
             CopyFeedback.Text = string.Empty;
             Renderer.DocumentUpdate = new MarkdownDocumentUpdate.Full(Markdown.Parse(markdown, pipeline));
-        }
-        else if (change.Property == ShowToolbarProperty && Toolbar is not null)
-        {
-            Toolbar.IsVisible = ShowToolbar;
         }
     }
 

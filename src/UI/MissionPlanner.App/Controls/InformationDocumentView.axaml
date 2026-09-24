@@ -7,17 +7,11 @@
         <StyleInclude Source="/Resources/Styles/InformationDocumentStyles.axaml" />
     </UserControl.Styles>
     <StackPanel Spacing="8" Background="Transparent">
-
-        <WrapPanel x:Name="Toolbar" Background="Transparent" HorizontalAlignment="Center" ItemSpacing="5">
-            <Button Classes="ToolbarButton" ToolTip.Tip="Copy All" AutomationProperties.Name="Copy All" Click="CopyAllClicked">
-                <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
-            </Button>
-            <Button Classes="ToolbarButton" ToolTip.Tip="Copy Markdown" AutomationProperties.Name="Copy Markdown" Click="CopyMarkdownClicked">
-                <mdi:MaterialIcon Kind="LanguageMarkdownOutline" Classes="ActionIcon" />
-            </Button>
-            <TextBlock x:Name="CopyFeedback" VerticalAlignment="Center" Margin="8,0" />
-        </WrapPanel>
-
+        <TextBlock x:Name="CopyFeedback"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Stretch"
+                   Margin="8,0"
+                   IsVisible="{Binding Text, RelativeSource={RelativeSource Self}, Converter={StaticResource StringNotNullEmptyConverter}}" />
         <Border Classes="SectionCard" Padding="12" >
             <md:MarkdownRenderer x:Name="Renderer" md:MarkdownTextBlock.IsSelectionScope="True" />
         </Border>

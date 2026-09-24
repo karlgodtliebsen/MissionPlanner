@@ -20,7 +20,7 @@ Enable compass and apply before calibration\.
 
 ### Relevant parameters — current FC state
 
-| Parameter | Value |
-| --- | --- |
-| ` COMPASS_ENABLE ` | ` 0 ` |
-| ` EK3_SRC1_YAW ` | ` 1 ` |
+```
+COMPASS_ENABLE = 0
+EK3_SRC1_YAW = 1
+```

@@ -5,7 +5,7 @@ Core produces facts. Application produces explanations. UI renders documents.
 `UserDocument` is an immutable Markdown/title record in the App presentation layer.
 `UserDocumentBuilder` escapes dynamic text, normalizes newlines inside values, and
 provides headings, paragraphs, bullets, notes, inline code, and two-column tables.
-Use code values for parameter evidence. Do not concatenate vehicle text into raw
+Use fenced `NAME = value` assignment lines for parameter evidence (see below). Do not concatenate vehicle text into raw
 Markdown. Core, firmware, MAVLink, and transport must not reference these types or
 the renderer.
 
@@ -61,7 +61,7 @@ belong in dedicated viewers, not in this control.
 Compass service state and calibration/pending presentation context. It distinguishes
 confirmed values from pending edits. Only current service arming evidence is shown;
 historical diagnostic text is not promoted into a blocker. Missing parameters are
-omitted from the evidence table. Device IDs are retained without invented sensor models.
+omitted from the current-value assignment block. Device IDs are retained without invented sensor models.
 
 The existing one-second registry refresh still catches health expiry and changed
 configuration. `CompassDocumentContext.HasSameContent` excludes observation timestamps
@@ -103,3 +103,30 @@ nodes. Fifteen golden reports cover the major Compass variants. These checks do 
 replace visual inspection or platform-specific clipboard testing in a real browser.
 
 The checklist remains unverified on hardware. No other Setup page is migrated.
+
+
+## Permanent parameter-copy convention
+
+Parameter name/value listings must be literal lines in a fenced code block:
+
+```text
+COMPASS_ENABLE = 1
+COMPASS_ORIENT = 2 // Yaw 90
+// COMPASS_USE2 is unavailable
+```
+
+Use `UserDocumentBuilder.ParameterAssignment` and `CodeBlock`; put annotations
+behind `//`. Do not use tables or bullet markers for these listings. This preserves
+text copied into the Full Parameters List editor, which accepts `=` assignments
+and `//` comments. Missing values and non-parameter diagnostics are comment-only
+lines, so copying an entire advanced block cannot turn them into assignments.
+Comments are normalized to one line and code fences are sized safely for embedded
+backticks. Values in generated assignments use invariant numeric formatting.
+
+Compass exposes separate `StatusDocument` and `DiagnosticDocument` properties.
+Both are composed by the application document factory and rendered by
+`InformationDocumentView`, including its selection and copy controls. Advanced
+source/metadata annotations follow `//`; health/source notes remain comments.
+Diagnostic changes can update the advanced document without replacing an unchanged
+status report. No artificial per-refresh projection timestamp is appended.
+The same convention is recorded in the UI `AGENTS.md` for future changes.

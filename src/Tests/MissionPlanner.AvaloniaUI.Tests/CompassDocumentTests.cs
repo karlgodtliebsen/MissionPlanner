@@ -110,7 +110,7 @@ public sealed class CompassDocumentTests
         Assert.Contains("The compass is disabled", text);
         Assert.Contains("These values are not active", text);
         Assert.Contains("Off → On", text);
-        Assert.Contains("| ` COMPASS_ENABLE ` | ` 0 ` |", text);
+        Assert.Contains("COMPASS_ENABLE = 0", text);
         Assert.Contains("Reboot required", text);
         var blocker = context.State with { ArmingImpact = "Current compass pre-arm issue: Compass inconsistent" };
         Assert.Contains("Compass inconsistent", factory.Create(context with { State = blocker }).Markdown);
@@ -146,6 +146,44 @@ public sealed class CompassDocumentTests
                 [], false, false, null)
         ], [], "Disabled", "Valid", "No current compass arming issue", true, null, DateTimeOffset.UnixEpoch, []);
         return new(state, configuration, true, false, "Valid", CompassCalibrationWorkflowState.NotStarted, "", "", null, false);
+    }
+
+    /// <summary>Parameter blocks preserve assignment syntax and cannot be broken out of by a comment.</summary>
+    [Fact]
+    public void ParameterBlockPreservesCopyableLines()
+    {
+        var source = new UserDocumentBuilder().CodeBlock([
+            UserDocumentBuilder.ParameterAssignment("COMPASS_ENABLE", 1),
+            UserDocumentBuilder.ParameterAssignment("COMPASS_ORIENT", 2, "Yaw 90\n```\n![image](https://example.test)")
+        ]).Build().Markdown;
+        var parsed = Markdown.Parse(source);
+        var block = Assert.Single(parsed.OfType<FencedCodeBlock>());
+        Assert.Equal("COMPASS_ENABLE = 1\nCOMPASS_ORIENT = 2 // Yaw 90 ``` ![image](https://example.test)", block.Lines.ToString());
+        Assert.Empty(parsed.Descendants<LinkInline>());
+    }
+
+    /// <summary>Advanced evidence contains executable assignments only for known numeric values.</summary>
+    [Fact]
+    public void AdvancedDiagnosticsUseAssignmentsAndComments()
+    {
+        var context = Context();
+        context = context with { State = context.State! with { Diagnostics = [
+            "COMPASS_ENABLE = 0 · live parameter registry · metadata available",
+            "COMPASS_DEV_ID = 123456",
+            "COMPASS_USE2 = Unavailable · metadata unavailable",
+            "Health source: SYS_STATUS magnetometer bit",
+            "Metadata unavailable: ```\n![image](https://example.test)"
+        ] } };
+        var factory = new CompassSetupDocumentFactory();
+        var markdown = factory.CreateDiagnostics(context).Markdown;
+        var block = Assert.Single(Markdown.Parse(markdown).OfType<FencedCodeBlock>());
+        Assert.Equal("COMPASS_ENABLE = 0 // live parameter registry · metadata available\n" +
+            "COMPASS_DEV_ID = 123456\n" +
+            "// COMPASS_USE2 = Unavailable · metadata unavailable\n" +
+            "// Health source: SYS_STATUS magnetometer bit\n" +
+            "// Metadata unavailable: ``` ![image](https://example.test)", block.Lines.ToString());
+        Assert.DoesNotContain("COMPASS_ENABLE", factory.CreateDiagnostics(context with { Online = false }).Markdown);
+        Assert.DoesNotContain("COMPASS_ENABLE", factory.CreateDiagnostics(context with { Loading = true }).Markdown);
     }
 
     /// <summary>Full Markdown golden files make user-facing variants explicitly reviewable.</summary>

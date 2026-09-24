@@ -12,9 +12,20 @@
                               x:DataType="arming:ArmingViewModel"
                               >
     <ContentPage Header="Arming" >
+ 
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <avalonia:MarkdownRenderer x:Name="MarkdownRenderer"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Grid Grid.Column="1">
+                <avalonia:MarkdownRenderer x:Name="MarkdownRenderer"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+            </Grid>
+        </Grid>
 
     </ContentPage>
 </utilities:NavigationViewBase>

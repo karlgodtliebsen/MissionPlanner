@@ -32,7 +32,7 @@ Valid
 
 ### Relevant parameters — current FC state
 
-| Parameter | Value |
-| --- | --- |
-| ` COMPASS_ENABLE ` | ` 0 ` |
-| ` EK3_SRC1_YAW ` | ` 0 ` |
+```
+COMPASS_ENABLE = 0
+EK3_SRC1_YAW = 0
+```

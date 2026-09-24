@@ -1,4 +1,5 @@
 using System.Text;
+using System.Globalization;
 
 namespace MissionPlanner.App.Presentation.Documents;
 
@@ -88,6 +89,41 @@ public sealed class UserDocumentBuilder
                 .Append(codeValues ? Code(value) : Escape(value)).Append(" |\n");
         }
         source.Append('\n');
+        return this;
+    }
+
+    /// <summary>Formats a copyable assignment; optional annotations remain editor-compatible comments.</summary>
+    public static string ParameterAssignment(string name, double value, string? comment = null)
+    {
+        if (string.IsNullOrEmpty(name) || !name.All(character => char.IsAsciiLetterOrDigit(character) || character == '_') || !double.IsFinite(value))
+        {
+            throw new ArgumentException("Parameter assignments require a valid name and finite numeric value.");
+        }
+        return name + " = " + value.ToString("G", CultureInfo.InvariantCulture) +
+            (string.IsNullOrWhiteSpace(comment) ? string.Empty : " // " + Normalize(comment));
+    }
+
+    /// <summary>Formats diagnostic text as one non-executable editor comment.</summary>
+    public static string ParameterComment(string text) => "// " + Normalize(text);
+
+    /// <summary>Adds literal lines in a code block, protecting against embedded closing fences.</summary>
+    public UserDocumentBuilder CodeBlock(IEnumerable<string> lines)
+    {
+        var content = string.Join("\n", lines.Select(Normalize));
+        if (content.Length == 0)
+        {
+            return this;
+        }
+        var longest = 0;
+        var run = 0;
+        foreach (var character in content)
+        {
+            run = character == '`' ? run + 1 : 0;
+            longest = Math.Max(longest, run);
+        }
+        var fence = new string('`', Math.Max(3, longest + 1));
+        SeparateBlock();
+        source.Append(fence).Append('\n').Append(content).Append('\n').Append(fence).Append("\n\n");
         return this;
     }
 

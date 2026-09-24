@@ -24,3 +24,15 @@ Let `OverlayCloseButton` manage the icon colors and interaction states. Do not
 bind the icon foreground to a nearby title, hard-code its color, or substitute
 the generic `BorderlessButton` theme. Do not add `ToolbarButton` to these X
 close buttons.
+
+## Copyable parameter listings in Markdown
+
+When a document lists parameter names and values, use a fenced code block with
+one assignment per line: `NAME = value` or `NAME = value // comment`.
+This is a permanent user preference so selected/copied text can be pasted into
+the Full Parameters List text editor. Do not use Markdown tables, bullets, or
+separate inline-code cells for parameter assignments. Keep names and numeric
+values literal; put annotations after `//`. Missing/unknown values and diagnostic
+notes must be comment-only lines (`// ...`), never fabricated assignments.
+Preserve safe code fences and normalize dynamic comments to one line. Compose
+these documents in the presentation factory, not in the ViewModel or Core.

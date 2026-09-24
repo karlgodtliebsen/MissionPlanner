@@ -77,29 +77,39 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     [ObservableProperty]
     public partial UserDocument? StatusDocument { get; private set; }
 
+    /// <summary>Selectable advanced evidence with editor-compatible parameter assignments.</summary>
+    [ObservableProperty]
+    public partial UserDocument? DiagnosticDocument { get; private set; }
+
     private void UpdateDocument()
     {
         var next = new CompassDocumentContext(current, desired, activeVehicle.IsOnline,
             IsLoadingParameters || current is null, ValidationText, CalibrationState,
             Instruction, ProgressSummary, QualitySummary, RequiresReboot);
-        if (documentContext?.HasSameContent(next) == true)
+        var statusChanged = documentContext?.HasSameContent(next) != true;
+        if (statusChanged)
         {
-            return;
+            var document = documentFactory.Create(next);
+            if (StatusDocument?.Markdown != document.Markdown)
+            {
+                StatusDocument = document;
+            }
+        }
+        if (statusChanged || !(documentContext?.State?.Diagnostics ?? []).SequenceEqual(next.State?.Diagnostics ?? []))
+        {
+            var document = documentFactory.CreateDiagnostics(next);
+            if (DiagnosticDocument?.Markdown != document.Markdown)
+            {
+                DiagnosticDocument = document;
+            }
         }
         documentContext = next;
-        var document = documentFactory.Create(next);
-        if (StatusDocument?.Markdown != document.Markdown)
-        {
-            StatusDocument = document;
-        }
     }
 
     /// <summary>Semantic configuration editors.</summary>
     public ObservableRangeCollection<CompassSettingViewModel> Settings { get; } = [];
     /// <summary>Read-only detected device identities.</summary>
     public ObservableRangeCollection<string> Devices { get; } = [];
-    /// <summary>Secondary source/value diagnostics.</summary>
-    public ObservableRangeCollection<string> DiagnosticEvidence { get; } = [];
     /// <summary>Explicit pending mutations including dependencies.</summary>
     public ObservableRangeCollection<string> PendingChanges { get; } = [];
 
@@ -263,7 +273,6 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
         var yaw = state.Settings.FirstOrDefault(s => s.Setting == CompassSetting.YawSource);
         YawSourceText = yaw?.Choices.FirstOrDefault(c => c.Value == yaw.Current)?.Label ?? "Unknown or unrecognized";
         Devices.ReplaceRange(state.DetectedDevices);
-        DiagnosticEvidence.ReplaceRange(state.Diagnostics.Append($"Last projection: {state.ObservedAt:O}"));
     }
 
     private void ProjectSettings()

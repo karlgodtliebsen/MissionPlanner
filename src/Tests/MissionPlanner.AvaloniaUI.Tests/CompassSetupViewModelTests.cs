@@ -105,9 +105,15 @@ public sealed class CompassSetupViewModelTests
         using var f = new Fixture();
         await f.Model.LoadAsync();
         var original = f.Model.StatusDocument;
+        var originalDiagnostics = f.Model.DiagnosticDocument;
         f.State = f.State with { ObservedAt = DateTimeOffset.UtcNow.AddSeconds(1), Diagnostics = ["unrelated timestamp"] };
         await f.Model.LoadAsync();
         Assert.Same(original, f.Model.StatusDocument);
+        Assert.NotSame(originalDiagnostics, f.Model.DiagnosticDocument);
+        var diagnostics = f.Model.DiagnosticDocument;
+        f.State = f.State with { ObservedAt = DateTimeOffset.UtcNow.AddSeconds(2) };
+        await f.Model.LoadAsync();
+        Assert.Same(diagnostics, f.Model.DiagnosticDocument);
         f.State = f.State with { Health = "Unhealthy" };
         await f.Model.LoadAsync();
         Assert.NotSame(original, f.Model.StatusDocument);
@@ -118,6 +124,7 @@ public sealed class CompassSetupViewModelTests
         f.Active.IsOnline.Returns(false);
         await f.Model.LoadAsync();
         Assert.Contains("Disconnected", f.Model.StatusDocument!.Markdown);
+        Assert.Contains("Disconnected", f.Model.DiagnosticDocument!.Markdown);
         f.Active.IsOnline.Returns(true);
         await f.Model.LoadAsync();
         Assert.DoesNotContain("Disconnected", f.Model.StatusDocument!.Markdown);

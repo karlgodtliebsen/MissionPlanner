@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 
 namespace MissionPlanner.App.Presentation.Documents;
@@ -35,6 +36,9 @@ public interface ICompassSetupDocumentFactory
 {
     /// <summary>Creates a concise report of confirmed and distinctly pending configuration.</summary>
     UserDocument Create(CompassDocumentContext context);
+
+    /// <summary>Creates copyable parameter assignments and commented advanced diagnostics.</summary>
+    UserDocument CreateDiagnostics(CompassDocumentContext context);
 }
 
 /// <summary>Application-owned Compass prose; no rendering or protocol dependencies.</summary>
@@ -107,9 +111,42 @@ public sealed class CompassSetupDocumentFactory : ICompassSetupDocumentFactory
             document.Note("Changes applied. Reboot required.");
         }
         document.Heading("Relevant parameters — current FC state", 3)
-            .Table("Parameter", "Value", state.Settings.Where(setting => setting.Current.HasValue)
-                .Select(setting => (setting.ParameterName, setting.Current!.Value.ToString("G", CultureInfo.InvariantCulture))), true);
+            .CodeBlock(state.Settings.Where(setting => setting.Current.HasValue)
+                .Select(setting => UserDocumentBuilder.ParameterAssignment(setting.ParameterName, setting.Current!.Value)));
         return document.Build("Compass");
+    }
+
+    /// <inheritdoc />
+    public UserDocument CreateDiagnostics(CompassDocumentContext context)
+    {
+        var document = new UserDocumentBuilder().Heading("Advanced parameters and diagnostics");
+        if (!context.Online)
+        {
+            return document.Paragraph("Disconnected. Reconnect to read current diagnostics.").Build("Compass diagnostics");
+        }
+        if (context.Loading || context.State is null)
+        {
+            return document.Paragraph("Loading compass parameters… Diagnostics are not yet available.").Build("Compass diagnostics");
+        }
+        if (context.State.Diagnostics.Count == 0)
+        {
+            return document.Paragraph("No advanced diagnostics are currently available.").Build("Compass diagnostics");
+        }
+        return document.Paragraph("Current flight-controller values. Unavailable values and diagnostic notes are comments.")
+            .CodeBlock(context.State.Diagnostics.Select(FormatDiagnostic)).Build("Compass diagnostics");
+    }
+
+    private static string FormatDiagnostic(string evidence)
+    {
+        var match = Regex.Match(evidence, @"^([A-Z][A-Z0-9_]*)\s*=\s*([^·\r\n]*)(?:·([^\r\n]*))?$", RegexOptions.CultureInvariant);
+        if (match.Success &&
+            (double.TryParse(match.Groups[2].Value.Trim(), NumberStyles.Float, CultureInfo.CurrentCulture, out var value) ||
+             double.TryParse(match.Groups[2].Value.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture, out value)) &&
+            double.IsFinite(value))
+        {
+            return UserDocumentBuilder.ParameterAssignment(match.Groups[1].Value, value, match.Groups[3].Value.Trim());
+        }
+        return UserDocumentBuilder.ParameterComment(evidence);
     }
 
     private static string Choice(CompassSettingDefinition setting, double? value) =>
