@@ -98,6 +98,31 @@ public sealed class CompassSetupViewModelTests
         Assert.Equal(0, f.Writes);
     }
 
+    /// <summary>Repeated registry projections preserve the report while relevant changes replace it.</summary>
+    [Fact]
+    public async Task DocumentRefreshesOnlyForRelevantChanges()
+    {
+        using var f = new Fixture();
+        await f.Model.LoadAsync();
+        var original = f.Model.StatusDocument;
+        f.State = f.State with { ObservedAt = DateTimeOffset.UtcNow.AddSeconds(1), Diagnostics = ["unrelated timestamp"] };
+        await f.Model.LoadAsync();
+        Assert.Same(original, f.Model.StatusDocument);
+        f.State = f.State with { Health = "Unhealthy" };
+        await f.Model.LoadAsync();
+        Assert.NotSame(original, f.Model.StatusDocument);
+        f.Edit(CompassSetting.Enabled, 1);
+        Assert.Contains("Pending changes", f.Model.StatusDocument!.Markdown);
+        f.Model.DiscardCommand.Execute(null);
+        Assert.DoesNotContain("Pending changes", f.Model.StatusDocument!.Markdown);
+        f.Active.IsOnline.Returns(false);
+        await f.Model.LoadAsync();
+        Assert.Contains("Disconnected", f.Model.StatusDocument!.Markdown);
+        f.Active.IsOnline.Returns(true);
+        await f.Model.LoadAsync();
+        Assert.DoesNotContain("Disconnected", f.Model.StatusDocument!.Markdown);
+    }
+
     private sealed class Fixture : IDisposable
     {
         internal readonly VehicleId Id = new(1, 1);
@@ -150,7 +175,8 @@ public sealed class CompassSetupViewModelTests
             Calibration.Current.Returns(CompassCalibrationSnapshot.Initial);
             Model = new(Active, service, Calibration, Substitute.For<IVehicleParameterRegistry>(), Substitute.For<ISetupCompletionStore>(),
                 Substitute.For<ISetupWorkflowCatalog>(), confirmation, Substitute.For<IDateTimeProvider>(), NullLogger<CompassSetupViewModel>.Instance,
-                dispatcher, Substitute.For<IDomainEventHub>(), Load, Substitute.For<IVehicleCommandService>(), Substitute.For<INavigationService>());
+                dispatcher, Substitute.For<IDomainEventHub>(), Load, Substitute.For<IVehicleCommandService>(), Substitute.For<INavigationService>(),
+                new MissionPlanner.App.Presentation.Documents.CompassSetupDocumentFactory());
         }
         internal CompassSettingViewModel Row(CompassSetting key) => Model.Settings.Single(s => s.Definition.Setting == key);
         internal void Edit(CompassSetting key, int value) => Row(key).Selected = Row(key).Choices.Single(c => c.Value == value);

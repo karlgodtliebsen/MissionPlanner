@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:md="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia"
+             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="MissionPlanner.App.Controls.InformationDocumentView">
+    <UserControl.Styles>
+        <StyleInclude Source="/Resources/Styles/InformationDocumentStyles.axaml" />
+    </UserControl.Styles>
+    <StackPanel Spacing="8" Background="Transparent">
+
+        <WrapPanel x:Name="Toolbar" Background="Transparent" HorizontalAlignment="Center" ItemSpacing="5">
+            <Button Classes="IsToolbarButton" ToolTip.Tip="Copy All" AutomationProperties.Name="Copy All" Click="CopyAllClicked">
+                <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
+            </Button>
+            <Button Classes="IsToolbarButton" ToolTip.Tip="Copy Markdown" AutomationProperties.Name="Copy Markdown" Click="CopyMarkdownClicked">
+                <mdi:MaterialIcon Kind="LanguageMarkdownOutline" Classes="ActionIcon" />
+            </Button>
+            <TextBlock x:Name="CopyFeedback" VerticalAlignment="Center" Margin="8,0" />
+        </WrapPanel>
+
+        <Border Classes="SectionCard" Padding="12" >
+            <md:MarkdownRenderer x:Name="Renderer" md:MarkdownTextBlock.IsSelectionScope="True" />
+        </Border>
+    </StackPanel>
+</UserControl>

@@ -107,9 +107,23 @@ An Arming page can follow the same structure:
 
 No full Arming page is introduced by this change.
 
-## Validation gate
+## Information documents
 
-Task 07 explicitly says: “After Compass is complete and validated on real hardware,
-extract only the proven reusable pieces needed by future Setup pages.” Hardware validation
-has not been performed in this task. The pattern and reuse candidates are documented,
-but further component extraction remains gated on that prerequisite.
+Status is an `InformationDocumentView` bound to the ViewModel's immutable
+`UserDocument`. `CompassSetupDocumentFactory` composes explanations in the App
+presentation layer, using existing structured service facts. Native controls still
+own configuration, calibration, Discard, and Apply. The dependency directions are:
+
+```text
+View -> ViewModel -> Feature Configuration Service -> Parameter subsystem
+                   -> Application document factory -> UserDocument -> UI wrapper
+```
+
+See [MarkdownDocuments.md](MarkdownDocuments.md) for the LiveMarkdown 2.4.3 API,
+escaping, restricted parsing, selection, copy actions, theme mapping, update
+comparison, and the real-hardware acceptance checklist. The page scrolls as a
+whole and has no fixed desktop minimum width or document height.
+
+The `compass-live-markdown` package supersedes the earlier Compass UX package and
+explicitly introduces this wrapper. Further migrations (Arming, Firmware, Battery,
+GPS, or other Setup pages) remain gated on real-hardware validation of Compass.

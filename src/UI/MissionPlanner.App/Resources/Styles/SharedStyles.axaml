@@ -19,9 +19,8 @@
 
     <Style Selector="Border.SourceBorder">
         <Setter Property="MinWidth" Value="400"></Setter>
-<!--       
-<Setter Property="Background" Value="IndianRed"></Setter>
--->    
+        <Setter Property="MaxWidth" Value="1024"></Setter>
+
     </Style>
 
     <!--        

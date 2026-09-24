@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Presentation.Documents;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Commands;
@@ -44,6 +45,8 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     private int editVersion;
     private int loadVersion;
     private bool rebootRequested;
+    private readonly ICompassSetupDocumentFactory documentFactory;
+    private CompassDocumentContext? documentContext;
 
     /// <summary>Creates the semantic page projection and retains calibration and completion services.</summary>
     public CompassSetupViewModel(IActiveVehicleContext activeVehicle, ICompassConfigurationService compassService,
@@ -51,7 +54,8 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
         ISetupCompletionStore completionStore, ISetupWorkflowCatalog workflowCatalog,
         IUserConfirmationService confirmation, IDateTimeProvider clock, ILogger<CompassSetupViewModel> logger,
         IUiDispatcher dispatcher, IDomainEventHub domain, IVehicleParameterLoadStatusContext loadStatus,
-        IVehicleCommandService commands, INavigationService navigation) : base(logger, dispatcher, domain)
+        IVehicleCommandService commands, INavigationService navigation,
+        ICompassSetupDocumentFactory documentFactory) : base(logger, dispatcher, domain)
     {
         this.activeVehicle = activeVehicle;
         this.compassService = compassService;
@@ -65,6 +69,29 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
         this.navigation = navigation;
         this.loadStatus = loadStatus;
         this.domain = domain;
+        this.documentFactory = documentFactory;
+        UpdateDocument();
+    }
+
+    /// <summary>Selectable application explanation of current and pending Compass state.</summary>
+    [ObservableProperty]
+    public partial UserDocument? StatusDocument { get; private set; }
+
+    private void UpdateDocument()
+    {
+        var next = new CompassDocumentContext(current, desired, activeVehicle.IsOnline,
+            IsLoadingParameters || current is null, ValidationText, CalibrationState,
+            Instruction, ProgressSummary, QualitySummary, RequiresReboot);
+        if (documentContext?.HasSameContent(next) == true)
+        {
+            return;
+        }
+        documentContext = next;
+        var document = documentFactory.Create(next);
+        if (StatusDocument?.Markdown != document.Markdown)
+        {
+            StatusDocument = document;
+        }
     }
 
     /// <summary>Semantic configuration editors.</summary>
@@ -512,6 +539,7 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
 
     private void NotifyAvailability()
     {
+        UpdateDocument();
         foreach (var name in new[] { nameof(CanEdit), nameof(CanStart), nameof(CanAccept), nameof(CanCancel), nameof(CanApply), nameof(CanReboot), nameof(CalibrationAvailability) })
         {
             OnPropertyChanged(name);

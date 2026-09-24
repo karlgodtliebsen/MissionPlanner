@@ -1105,3 +1105,14 @@ metadata defaults, and use confirmed readback on Apply. Connection/current-value
 block stale reviews; partial failures retain pending edits. Reboot is explicit and
 calibration continues through the existing service. See [Setup UX pattern](SetupUxPattern.md)
 and [execution results](tasks/Compass-UX/EXECUTION_RESULTS.md).
+
+
+## Selectable Compass information documents
+
+Compass Setup uses LiveMarkdown 2.4.3 through the application-owned
+`InformationDocumentView`. The current status, detected devices, calibration,
+arming evidence, parameter table, and distinctly pending values form a selectable
+report with Copy All and Copy Markdown. Dynamic values are escaped; links, images,
+and HTML are disabled. Unchanged semantic refreshes preserve the rendered document.
+Native settings and existing verified Apply/calibration workflows remain available.
+See [MarkdownDocuments.md](MarkdownDocuments.md) and [SetupUxPattern.md](SetupUxPattern.md).

@@ -5,164 +5,177 @@
                                xmlns:models="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                x:DataType="sections:CompassSetupViewModel">
-    <Grid RowDefinitions="Auto,Auto,*" Margin="16">
-        <Border HorizontalAlignment="Center" Padding="12"
-                Width="{Binding #SourceBorder.Bounds.Width}"
-                >
-            <StackPanel Spacing="16" MaxWidth="1000" HorizontalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*">
+        <Border Padding="12"  Classes="SourceBorder" x:Name="SourceBorder">
+            <StackPanel Spacing="8">
                 <TextBlock Text="Compass" Classes="H2" />
                 <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" TextWrapping="Wrap" />
-                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Theme="{DynamicResource ProgressRing}"/>
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1"  Padding="12" Classes="SectionCard"  Width="{Binding #SourceBorder.Bounds.Width}">
-            <StackPanel Spacing="8">
-                <TextBlock Text="Status" Classes="H3" />
-                <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" />
-                <TextBlock Text="{Binding YawSourceText, StringFormat='EKF yaw source: {0}'}" TextWrapping="Wrap" />
-                <ItemsControl ItemsSource="{Binding Devices}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                            <TextBlock Text="{Binding .}" TextWrapping="Wrap" />
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-                <TextBlock Text="{Binding ValidationText}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                <TextBlock Text="Arming impact" FontWeight="SemiBold" />
-                <TextBlock Text="{Binding ArmingImpact}" TextWrapping="Wrap" />
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
-                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                </Button>
-            </StackPanel>
-        </Border>
+        <TabControl Grid.Row="1" HorizontalAlignment="Center" >
+            <TabItem Header="Information">
+                <Grid RowDefinitions="Auto,*">
+                    <Border  Padding="12" HorizontalAlignment="Center" 
+                             Width="{Binding #SourceBorder.Bounds.Width}">
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="5"  HorizontalAlignment="Center" >
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="8"  Width="{Binding #SourceBorder.Bounds.Width}">
+                            <controls:InformationDocumentView Document="{Binding StatusDocument}"  Width="{Binding #SourceBorder.Bounds.Width}"/>
+                            <Border Padding="12"  Classes="SectionCard" HorizontalAlignment="Stretch" 
+                                    Width="{Binding #SourceBorder.Bounds.Width}"
+                                    VerticalAlignment="Stretch" > 
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Advanced parameters and diagnostics" Classes="H3" />
+                                    <ItemsControl ItemsSource="{Binding DiagnosticEvidence}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="x:String">
+                                            <SelectableTextBlock Text="{Binding .}" TextWrapping="Wrap" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
 
-        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible"  Margin="16" >
-            <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                <Border  Classes="SectionCard" Padding="12" IsVisible="{Binding HasPendingChanges}" 
-                         Width="{Binding #SourceBorder.Bounds.Width}">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="{Binding PendingSummary}" Classes="H3" TextWrapping="Wrap" />
-                        <ScrollViewer MaxHeight="140">
-                            <ItemsControl ItemsSource="{Binding PendingChanges}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
-                                        <TextBlock Text="{Binding .}" TextWrapping="Wrap" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Discard" AutomationProperties.Name="Discard" Command="{Binding DiscardCommand}" HorizontalAlignment="Left"
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="Auto,*">
+                    <Border Padding="12" HorizontalAlignment="Center" Classes="SectionCard"  
+                            Width="{Binding #SourceBorder.Bounds.Width}">
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="5"  HorizontalAlignment="Center" >
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Start calibration" AutomationProperties.Name="Start calibration" Command="{Binding StartCalibrationCommand}" >
+                                <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Cancel calibration" AutomationProperties.Name="Cancel calibration" Command="{Binding CancelCalibrationCommand}" >
+                                <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                            </Button>
+
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reset / retry" AutomationProperties.Name="Reset / retry" Command="{Binding ResetCommand}"
+                                    IsEnabled="{Binding CanStart}">
+                                <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters"
+                                    Command="{Binding OpenFullParametersCommand}">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Discard" AutomationProperties.Name="Discard" Command="{Binding DiscardCommand}"
+                                    HorizontalAlignment="Left"
                                     IsEnabled="{Binding !IsBusy}">
                                 <mdi:MaterialIcon Kind="FileUndoOutline" Classes="ActionIcon" />
                             </Button>
-                            <Button Grid.Column="1" Classes="IsToolbarButton" ToolTip.Tip="Apply" AutomationProperties.Name="Apply" Command="{Binding ApplyCommand}">
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Accept results" AutomationProperties.Name="Accept results"
+                                    Command="{Binding AcceptCalibrationCommand}" >
                                 <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                             </Button>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-
-                <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="Calibration / Actions" Classes="H3" />
-                        <TextBlock Text="{Binding CalibrationState, StringFormat='Calibration: {0}'}" />
-                        <TextBlock Text="{Binding CalibrationAvailability}" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" />
-                        <ProgressBar Value="{Binding Progress}" Maximum="100" IsVisible="{Binding CanCancel}" />
-                        <TextBlock Text="{Binding ProgressSummary}" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding QualitySummary}" TextWrapping="Wrap" />
-                        <WrapPanel>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Start calibration" AutomationProperties.Name="Start calibration" Command="{Binding StartCalibrationCommand}" Margin="0,0,8,8">
-                                <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
-                            </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Accept results" AutomationProperties.Name="Accept results" Command="{Binding AcceptCalibrationCommand}" Margin="0,0,8,8">
+                            <Button  Classes="IsToolbarButton" ToolTip.Tip=" Apply" AutomationProperties.Name="Apply"
+                                     Command="{Binding ApplyCommand}">
                                 <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Cancel calibration" AutomationProperties.Name="Cancel calibration" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8">
-                                <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
-                            </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reset / retry" AutomationProperties.Name="Reset / retry" Command="{Binding ResetCommand}" IsEnabled="{Binding CanStart}" Margin="0,0,8,8">
-                                <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
-                            </Button>
-                        </WrapPanel>
-                        <StackPanel IsVisible="{Binding RequiresReboot}" Spacing="8">
-                            <TextBlock Text="Changes applied. Reboot required." Classes="Warning" TextWrapping="Wrap" />
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reboot vehicle" AutomationProperties.Name="Reboot vehicle" Command="{Binding RebootCommand}">
+                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reboot vehicle" AutomationProperties.Name="Reboot vehicle"
+                                    IsVisible="{Binding RequiresReboot}"
+                                    Command="{Binding RebootCommand}">
                                 <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" />
                             </Button>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
-                <Expander Header="Advanced parameters and diagnostics" IsExpanded="False" HorizontalAlignment="Stretch" Padding="12"
-                          Width="{Binding #SourceBorder.Bounds.Width}">
-                    <Border Classes="SectionCard" Padding="12" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                        <StackPanel Spacing="8">
-                            <ItemsControl ItemsSource="{Binding DiagnosticEvidence}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
-                                        <SelectableTextBlock Text="{Binding .}" TextWrapping="Wrap" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters" Command="{Binding OpenFullParametersCommand}">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
-                        </StackPanel>
+                        </WrapPanel>
                     </Border>
-                </Expander>
-                <Border Padding="12" Classes="SectionCard SourceBorder" x:Name="SourceBorder" MinWidth="1024">
-                    <StackPanel Spacing="12">
-                        <TextBlock Text="Configuration" Classes="H3" />
-                        <TextBlock Text="Edits remain pending until you review and apply them." TextWrapping="Wrap" />
-                        <ItemsControl ItemsSource="{Binding Settings}" IsEnabled="{Binding CanEdit}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="sections:CompassSettingViewModel">
-                                    <Border Padding="0,10" IsVisible="{Binding IsVisible}">
-                                        <StackPanel Spacing="5">
-                                           <u:Divider HorizontalAlignment="Stretch" Orientation="Horizontal" Margin="0,5"></u:Divider>
-                                            
-                                            <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
-                                            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
-                                            <CheckBox IsVisible="{Binding IsToggle}" IsChecked="{Binding IsChecked}" 
-                                                      IsEnabled="{Binding CanEdit}" AutomationProperties.Name="{Binding Label}" />
-                                            
-                                            <ComboBox IsVisible="{Binding !IsToggle}" ItemsSource="{Binding Choices}" SelectedItem="{Binding Selected}"
-                                                      IsEnabled="{Binding CanEdit}" 
-                                                      HorizontalContentAlignment="Right"
-                                                      MinWidth="220" HorizontalAlignment="Left" AutomationProperties.Name="{Binding Label}">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate x:DataType="models:CompassChoice">
-                                                        <TextBlock Text="{Binding Label}" />
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="8">
+                            <Border Classes="SectionCard" Padding="12" HorizontalAlignment="Stretch" 
+                                    Width="{Binding #SourceBorder.Bounds.Width}">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Calibration / Actions" Classes="H3" />
+                                    <TextBlock Text="{Binding CalibrationState, StringFormat='Calibration: {0}'}" />
+                                    <TextBlock Text="{Binding CalibrationAvailability}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" />
+                                    <ProgressBar Value="{Binding Progress}" Maximum="100" IsVisible="{Binding CanCancel}" />
+                                    <TextBlock Text="{Binding ProgressSummary}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding QualitySummary}" TextWrapping="Wrap" />
+                                    <TextBlock Text="Changes applied. Reboot required." Classes="Warning" TextWrapping="Wrap"  IsVisible="{Binding RequiresReboot}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Classes="SectionCard"  IsVisible="{Binding HasPendingChanges}" HorizontalAlignment="Stretch" 
+                                    Width="{Binding #SourceBorder.Bounds.Width}">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="{Binding PendingSummary}" Classes="H3" TextWrapping="Wrap" />
+                                    <ItemsControl ItemsSource="{Binding PendingChanges}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="x:String">
+                                                <TextBlock Text="{Binding .}" TextWrapping="Wrap" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                            <Border Padding="12" HorizontalAlignment="Stretch" Classes="SectionCard SourceBorder" 
+                                    Width="{Binding #SourceBorder.Bounds.Width}">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Configuration" Classes="H3" />
+                                    <TextBlock Text="Edits remain pending until you review and apply them." TextWrapping="Wrap" />
+                                    <ItemsControl ItemsSource="{Binding Settings}" IsEnabled="{Binding CanEdit}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="sections:CompassSettingViewModel">
+                                                <Border Classes="SectionCard SourceBorder"  IsVisible="{Binding IsVisible}" 
+                                                        Margin="10" Padding="12" 
+                                                        HorizontalAlignment="Stretch" 
+                                                       >
+                                                    <StackPanel Spacing="5">
+                                                        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                                                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                                                        <CheckBox IsVisible="{Binding IsToggle}" IsChecked="{Binding IsChecked}"
+                                                                  HorizontalContentAlignment="Right"
+                                                                  IsEnabled="{Binding CanEdit}" AutomationProperties.Name="{Binding Label}" />
 
-                                            <TextBlock Text="{Binding UnavailableReason}" Opacity="0.75" TextWrapping="Wrap" />
-                                            <TextBlock Text="{Binding ChangeText}" TextWrapping="Wrap" />
-                                            <TextBlock Text="{Binding ParameterText}" Opacity="0.65" FontSize="12" TextWrapping="Wrap" />
-                                            <WrapPanel>
-                                                <TextBlock Text="{Binding DefaultText}" Margin="0,0,12,0" VerticalAlignment="Center" />
-                                                <Button Classes="IsToolbarButton" ToolTip.Tip="Reset to default" AutomationProperties.Name="Reset to default" Command="{Binding ResetDefaultCommand}"
-                                                        IsEnabled="{Binding CanReset}">
-                                                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
-                                                </Button>
-                                            </WrapPanel>
+                                                        <ComboBox IsVisible="{Binding !IsToggle}" ItemsSource="{Binding Choices}" SelectedItem="{Binding Selected}"
+                                                                  IsEnabled="{Binding CanEdit}"
+                                                                  HorizontalContentAlignment="Right"
+                                                                  MinWidth="220" HorizontalAlignment="Left" AutomationProperties.Name="{Binding Label}">
+                                                            <ComboBox.ItemTemplate>
+                                                                <DataTemplate x:DataType="models:CompassChoice">
+                                                                    <TextBlock Text="{Binding Label}" />
+                                                                </DataTemplate>
+                                                            </ComboBox.ItemTemplate>
+                                                        </ComboBox>
 
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-            </StackPanel>
+                                                        <TextBlock Text="{Binding UnavailableReason}" Opacity="0.75" TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding ChangeText}" TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding ParameterText}" Opacity="0.65" FontSize="12" TextWrapping="Wrap" />
+                                                        <WrapPanel>
+                                                            <TextBlock Text="{Binding DefaultText}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                                                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reset to default" AutomationProperties.Name="Reset to default" Command="{Binding ResetDefaultCommand}"
+                                                                    IsEnabled="{Binding CanReset}">
+                                                                <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                                                            </Button>
+                                                        </WrapPanel>
 
-        </ScrollViewer>
-
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
+
+
 </utilities:UserControlViewBase>
