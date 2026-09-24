@@ -247,6 +247,7 @@
 
 		<PackageReference Include="Avalonia.Themes.Fluent" />
 		<PackageReference Include="Avalonia.Fonts.Inter" />
+		<PackageReference Include="LiveMarkdown.Avalonia" />
 
 		<PackageReference Include="Material.Icons.Avalonia" />
 		<PackageReference Include="CommunityToolkit.Mvvm" />

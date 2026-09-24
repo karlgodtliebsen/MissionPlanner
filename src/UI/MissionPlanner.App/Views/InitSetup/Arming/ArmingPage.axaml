@@ -4,13 +4,17 @@
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                               xmlns:arming="clr-namespace:MissionPlanner.App.Views.InitSetup.Arming"
+                              xmlns:avalonia="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia"
                               mc:Ignorable="d" 
                               d:DesignWidth="800" 
                               d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.InitSetup.Arming.ArmingPage"
                               x:DataType="arming:ArmingViewModel"
                               >
-    <ContentPage Header="Arming">
+    <ContentPage Header="Arming" >
+
+        <avalonia:MarkdownRenderer x:Name="MarkdownRenderer"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
     </ContentPage>
 </utilities:NavigationViewBase>

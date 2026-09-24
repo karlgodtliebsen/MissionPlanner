@@ -10,8 +10,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="/Resources/Geometries/Geometry.axaml" />
-                <ResourceInclude Source="/Resources/Styles/VirtualizedItemsGrid.axaml" />
+              <ResourceInclude Source="/Resources/Styles/VirtualizedItemsGrid.axaml" />
+                <ResourceInclude Source="avares://LiveMarkdown.Avalonia/Defaults.axaml"/>
             </ResourceDictionary.MergedDictionaries>
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <converters:BoolToObjectConverter x:Key="BoolToYesNoConverter" TrueObject="Yes" FalseObject="No" />
@@ -31,5 +31,6 @@
         <materialIcons:MaterialIconStyles />
         <StyleInclude Source="/Resources/Styles/SharedStyles.axaml" />
         <StyleInclude Source="/Resources/Styles/VirtualizedItemsGridStyles.axaml" />
+        <StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml"/>
     </Application.Styles>
 </Application>

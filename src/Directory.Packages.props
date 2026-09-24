@@ -6,8 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Microsoft.Extensions family -->
-    <PackageVersion Include="AsyncAwaitBestPractices.MVVM" Version="10.0.0" />
-    <PackageVersion Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.10" />
@@ -61,10 +59,13 @@
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageVersion>
-        <PackageVersion Include="Avalonia.iOS" Version="12.1.1" />
-        <PackageVersion Include="Avalonia.Browser" Version="12.1.1" />
-        <PackageVersion Include="Avalonia.Android" Version="12.1.1" />
-        <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.15" />
+    <PackageVersion Include="Avalonia.iOS" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Browser" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Android" Version="12.1.1" />
+    <PackageVersion Include="AsyncAwaitBestPractices.MVVM" Version="10.0.0" />
+    <PackageVersion Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
+    <PackageVersion Include="LiveMarkdown.Avalonia" Version="2.4.3" />
+    <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.15" />
     <PackageVersion Include="Irihi.Ursa" Version="2.2.0" />
     <PackageVersion Include="Irihi.Ursa.Themes.Semi" Version="2.2.0" />
     <PackageVersion Include="Semi.Avalonia" Version="12.1.0.1" />
