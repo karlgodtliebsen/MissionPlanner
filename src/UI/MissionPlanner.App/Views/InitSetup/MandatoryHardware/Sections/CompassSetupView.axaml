@@ -8,13 +8,12 @@
                                xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                x:DataType="sections:CompassSetupViewModel">
-    <Grid RowDefinitions="Auto,*">
+    <Grid RowDefinitions="Auto,*"  HorizontalAlignment="Center" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-
-
-        <Border Padding="12"  Classes="SourceBorder" x:Name="SourceBorder">
+        
+        <Border Padding="12"  >
             <StackPanel Spacing="8">
                 <TextBlock Text="Compass" Classes="H2" />
                 <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" TextWrapping="Wrap" />
@@ -23,11 +22,10 @@
             </StackPanel>
         </Border>
 
-        <TabControl Grid.Row="1" HorizontalAlignment="Center" >
+        <TabControl Grid.Row="1"  >
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">
-                    <Border  Padding="12" HorizontalAlignment="Center" 
-                             Width="{Binding #SourceBorder.Bounds.Width}">
+                    <Border  Padding="12" >
                         <WrapPanel Orientation="Horizontal" ItemSpacing="5"  HorizontalAlignment="Center" >
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
@@ -35,9 +33,9 @@
                         </WrapPanel>
                     </Border>
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="8"  Width="{Binding #SourceBorder.Bounds.Width}">
-                            <controls:InformationDocumentView Document="{Binding StatusDocument}"  Width="{Binding #SourceBorder.Bounds.Width}"/>
-                            <controls:InformationDocumentView Document="{Binding DiagnosticDocument}"  Width="{Binding #SourceBorder.Bounds.Width}"/>
+                        <StackPanel Spacing="8"  >
+                            <controls:InformationDocumentView Document="{Binding StatusDocument}" />
+                            <controls:InformationDocumentView Document="{Binding DiagnosticDocument}"  />
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
@@ -45,10 +43,10 @@
 
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,*">
-                    <Border Padding="12" HorizontalAlignment="Center" Classes="SectionCard"  
-                            Width="{Binding #SourceBorder.Bounds.Width}">
+                    <Border Padding="12"  >
                         <WrapPanel Orientation="Horizontal" ItemSpacing="5"  HorizontalAlignment="Center" >
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" 
+                                    Command="{Binding RefreshInventoryCommand}">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
 
@@ -60,8 +58,7 @@
                     </Border>
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                         <StackPanel Spacing="8">
-                            <Border Classes="SectionCard" Padding="12" HorizontalAlignment="Stretch" 
-                                    Width="{Binding #SourceBorder.Bounds.Width}">
+                            <Border Classes="SectionCard" Padding="12" HorizontalAlignment="Stretch" >
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="Calibration / Actions" Classes="H3" />
                                     <TextBlock Text="{Binding CalibrationState, StringFormat='Calibration: {0}'}" />
@@ -106,8 +103,7 @@
                                     </Button>
                                 </StackPanel>
                             </Border>
-                            <Border Classes="SectionCard"  IsVisible="{Binding HasPendingChanges}" HorizontalAlignment="Stretch" 
-                                    Width="{Binding #SourceBorder.Bounds.Width}">
+                            <Border Classes="SectionCard"  IsVisible="{Binding HasPendingChanges}" HorizontalAlignment="Stretch" >
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="{Binding PendingSummary}" Classes="H3" TextWrapping="Wrap" />
                                     <ItemsControl ItemsSource="{Binding PendingChanges}">
@@ -133,8 +129,7 @@
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>
-                            <Border Padding="12" HorizontalAlignment="Stretch" Classes="SectionCard SourceBorder" 
-                                    Width="{Binding #SourceBorder.Bounds.Width}">
+                            <Border Padding="12" HorizontalAlignment="Stretch" Classes="SectionCard SourceBorder" >
                                 <StackPanel Spacing="12">
                                     <TextBlock Text="Configuration" Classes="H3" />
                                     <TextBlock Text="Edits remain pending until you review and apply them." TextWrapping="Wrap" />
@@ -187,6 +182,4 @@
             </TabItem>
         </TabControl>
     </Grid>
-
-
 </utilities:UserControlViewBase>
