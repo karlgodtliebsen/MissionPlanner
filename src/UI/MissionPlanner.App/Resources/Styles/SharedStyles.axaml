@@ -36,17 +36,36 @@
         <Setter Property="Theme" Value="{DynamicResource SolidIconButton}"></Setter>
     </Style>
 
+    <Style Selector="Button.ToolbarIconButton">
+        <Setter Property="Width" Value="100" />
+        <Setter Property="Theme" Value="{DynamicResource SolidIconButton}" />
+    </Style>
+
     <Style Selector="Button.EmbeddedIconButton">
-        <Setter Property="MinWidth" Value="50"></Setter>
+        <Setter Property="Width" Value="50" />
     </Style>
 
     <Style Selector="Button.EmbeddedTextButton">
         <Setter Property="MinWidth" Value="100"></Setter>
     </Style>
 
-    <Style Selector="u|IconDropDownButton">
+    <!-- Preserve unclassified dropdowns on existing pages without styling embedded actions. -->
+    <Style Selector="u|IconDropDownButton:not(.ToolbarIconDropDownButton):not(.EmbeddedIconDropDownButton):not(.EmbeddedTextDropDownButton)">
         <Setter Property="Width" Value="100"></Setter>
         <Setter Property="Theme" Value="{DynamicResource SolidIconButton}"></Setter>
+    </Style>
+
+    <Style Selector="u|IconDropDownButton.ToolbarIconDropDownButton">
+        <Setter Property="Width" Value="100" />
+        <Setter Property="Theme" Value="{DynamicResource SolidIconButton}" />
+    </Style>
+
+    <Style Selector="u|IconDropDownButton.EmbeddedIconDropDownButton">
+        <Setter Property="Width" Value="50" />
+    </Style>
+
+    <Style Selector="u|IconDropDownButton.EmbeddedTextDropDownButton">
+        <Setter Property="MinWidth" Value="100" />
     </Style>
 
   
