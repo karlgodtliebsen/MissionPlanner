@@ -1,15 +1,15 @@
 ﻿<utilities:UserControlViewBase
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
-    xmlns:models="clr-namespace:MissionPlanner.App.Models"
-    xmlns:u="https://irihi.tech/ursa"
-    xmlns:sections1="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
-    x:TypeArguments="sections1:SerialPortsViewModel"
-    x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SerialPortsView"
-    x:DataType="sections1:SerialPortsViewModel">
+                xmlns="https://github.com/avaloniaui"
+                xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                xmlns:models="clr-namespace:MissionPlanner.App.Models"
+                xmlns:u="https://irihi.tech/ursa"
+                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+                x:TypeArguments="sections:SerialPortsViewModel"
+                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SerialPortsView"
+                x:DataType="sections:SerialPortsViewModel">
 
     <utilities:UserControlViewBase.Resources>
         <DataTemplate x:Key="SerialEditor" x:DataType="models:ParameterItemViewModel">
@@ -38,11 +38,10 @@
             </StackPanel>
         </DataTemplate>
     </utilities:UserControlViewBase.Resources>
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-
         <Border HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Serial Ports" Classes="H2" />
@@ -55,62 +54,68 @@
                 <TextBlock Text="Confirmed changes require a flight-controller reboot." IsVisible="{Binding RebootRequired}"
                            Classes="Warning" TextWrapping="Wrap" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Theme="{DynamicResource ProgressRing}" />
-                <TextBlock Text="{Binding StatusMessage}"
-                           IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"  TextWrapping="Wrap" />
-                <TextBlock Text="{Binding ErrorMessage}"
-                           IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"  Classes="Danger" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding Diagnostic}" IsVisible="{Binding Diagnostic, Converter={StaticResource StringNotNullEmptyConverter}}"  Classes="Warning" TextWrapping="Wrap" />
                 <TextBlock Text="Receiver diagnostics include pending edits. No settings are written until Apply changes."
                            Classes="H5" TextWrapping="Wrap" />
 
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12">
-            <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarIconButton" Command="{Binding RefreshCommand}"
-                        ToolTip.Tip="Reload reported parameters"
-                        IsEnabled="{Binding !IsBusy}"
-                        AutomationProperties.Name="Reload reported parameters">
-                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" Width="20" Height="20" />
-                </Button>
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
-                    <mdi:MaterialIcon Kind="Check" Classes="ActionIcon" Width="20" Height="20" />
-                </Button>
-            </WrapPanel>
-        </Border>
-
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16"  HorizontalScrollBarVisibility="Disabled">
-            <Border Classes="SectionCard" Padding="12">
-                <ItemsControl ItemsSource="{Binding Ports}" IsEnabled="{Binding CanEdit}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="sections1:SerialPortRowViewModel">
-                            <StackPanel Spacing="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                                <u:Divider Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="5,10"></u:Divider>
-                                <StackPanel Spacing="8"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding DisplayName}" Classes="H3" />
-                                    <WrapPanel ItemSpacing="15"  >
-                                        <StackPanel Width="180"  Spacing="4">
-                                            <TextBlock Text="Speed:" Classes="H4" />
-                                            <ContentControl Content="{Binding Speed}" ContentTemplate="{StaticResource SerialEditor}"
-                                                            IsEnabled="{Binding CanEditSpeed}" />
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="SerialPorts" 
+                                               WorkflowStatus="{Binding StatusMessage}" 
+                                               WorkflowError="{Binding ErrorMessage}" />
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
+                            <Button Classes="ToolbarIconButton" Command="{Binding RefreshCommand}"
+                                    ToolTip.Tip="Reload reported parameters"
+                                    IsEnabled="{Binding !IsBusy}"
+                                    AutomationProperties.Name="Reload reported parameters">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" Width="20" Height="20" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
+                                <mdi:MaterialIcon Kind="Check" Classes="ActionIcon" Width="20" Height="20" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1" Margin="16"  HorizontalScrollBarVisibility="Disabled">
+                        <Border Classes="SectionCard" Padding="12">
+                            <ItemsControl ItemsSource="{Binding Ports}" IsEnabled="{Binding CanEdit}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="sections:SerialPortRowViewModel">
+                                        <StackPanel Spacing="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                                            <u:Divider Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="5,10"></u:Divider>
+                                            <StackPanel Spacing="8"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding DisplayName}" Classes="H3" />
+                                                <WrapPanel ItemSpacing="15"  >
+                                                    <StackPanel Width="180"  Spacing="4">
+                                                        <TextBlock Text="Speed:" Classes="H4" />
+                                                        <ContentControl Content="{Binding Speed}" ContentTemplate="{StaticResource SerialEditor}"
+                                                                        IsEnabled="{Binding CanEditSpeed}" />
+                                                    </StackPanel>
+                                                    <StackPanel Width="210"  Spacing="4">
+                                                        <TextBlock Text="Protocol:"  Classes="H4" />
+                                                        <ContentControl Content="{Binding Protocol}" ContentTemplate="{StaticResource SerialEditor}"
+                                                                        IsEnabled="{Binding CanEditProtocol}" />
+                                                    </StackPanel>
+                                                    <StackPanel Width="240"  Spacing="4">
+                                                        <TextBlock Text="Options:"  Classes="H4" />
+                                                        <ContentControl Content="{Binding Options}" ContentTemplate="{StaticResource SerialEditor}"
+                                                                        IsEnabled="{Binding CanEditOptions}" />
+                                                    </StackPanel>
+                                                </WrapPanel>
+                                            </StackPanel>
                                         </StackPanel>
-                                        <StackPanel Width="210"  Spacing="4">
-                                            <TextBlock Text="Protocol:"  Classes="H4" />
-                                            <ContentControl Content="{Binding Protocol}" ContentTemplate="{StaticResource SerialEditor}"
-                                                            IsEnabled="{Binding CanEditProtocol}" />
-                                        </StackPanel>
-                                        <StackPanel Width="240"  Spacing="4">
-                                            <TextBlock Text="Options:"  Classes="H4" />
-                                            <ContentControl Content="{Binding Options}" ContentTemplate="{StaticResource SerialEditor}"
-                                                            IsEnabled="{Binding CanEditOptions}" />
-                                        </StackPanel>
-                                    </WrapPanel>
-                                </StackPanel>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Border>
-        </ScrollViewer>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

@@ -81,6 +81,5 @@
                 </StackPanel>
             </Border>
         </ScrollViewer>
-
     </Grid>
 </utilities:UserControlViewBase>

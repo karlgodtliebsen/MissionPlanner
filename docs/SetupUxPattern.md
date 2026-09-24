@@ -33,7 +33,44 @@ wrapping action groups and vertical cards where needed at the minimum width;
 wide parameter tables should retain their own horizontal scrolling. Dialog and
 drawer X buttons continue to use Ursa's `OverlayCloseButton` theme.
 
-## Ownership
+## Information and Configuration tabs
+
+Setup content now separates reports from configuration controls. Safety and Setup
+Summary retain their existing layouts. Compass retains its dedicated semantic
+reporting. Hardware ID and Antenna Tracker currently have no setup operations and
+therefore expose Information only. Firmware selection and confirmation dialogs
+retain their focused layouts; firmware installation exposes Information and
+Configuration, with help/support actions under Configuration.
+
+`ISetupReportService.Capture` produces a plain `SetupReport` for each subsystem
+from the selected vehicle and existing parameter/load-status caches. It performs
+no protocol operations, metadata downloads, parameter writes, or device discovery.
+Topic definitions specify relevant configuration evidence and workflow guidance.
+Missing/failed/partial loads never export parameter assignments; disconnects and
+vehicle changes remove the prior vehicle's evidence. Reported settings are not
+presented as proof of physical hardware presence or health. Local serial and
+analysis tools report their own operation observations separately from vehicle
+configuration and never include editable credentials.
+
+`SetupReportDocumentFactory` owns Markdown formatting and escaping. Confirmed
+parameters use copyable `NAME = value` assignments, with unavailable values as
+comments. Hardware identifiers retain hexadecimal diagnostic comments. The
+overview separates workflow messages from confirmed vehicle observations.
+`SetupInformationView` renders the overview and optional parameter document using
+`InformationDocumentView` inside a ScrollViewer. Its own injected ViewModel is
+scoped to the visible Information tab, listens for connection/load completion,
+and refreshes cached evidence once per second while visible. Identical Markdown
+preserves the document instance and selection; hiding or disposing the view
+releases subscriptions and cancels polling. The parent setup ViewModel continues
+to own all configuration actions and their existing guards.
+
+Firmware discovery reporting uses `FirmwareDiscoveryReporting` with observations
+from the existing serial/DFU discovery models. It distinguishes telemetry, serial
+candidates, USB endpoints, runtime identity, installation progress and platform
+availability without triggering another scan. Discovery notifications update the
+Markdown only when its content changes.
+
+## Compass ownership
 
 The view binds friendly concepts. The ViewModel owns only local desired values and
 presentation/lifecycle state. The existing `ICompassConfigurationService` translates

@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:BluetoothSetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,7 +10,7 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BluetoothSetupView"
                                x:DataType="sections:BluetoothSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
@@ -17,38 +18,49 @@
             <StackPanel Spacing="10">
                 <TextBlock Text="Classic Serial Bluetooth Setup" Classes="H2" />
                 <TextBlock Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Classes="H4" Opacity="0.75" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
         </Border>
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="Bluetooth" WorkflowError="{Binding ErrorMessage}" >
+                    <controls:SetupInformationView.WorkflowStatus>
+                        <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
+                            <Binding Path="StatusMessage" />
+                            <Binding Path="Status" />
+                            <Binding Path="ModuleIdentity" />
+                        </MultiBinding>
+                    </controls:SetupInformationView.WorkflowStatus>
+                </controls:SetupInformationView>
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
+                            <ComboBox ToolTip.Tip="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh ports">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" AutomationProperties.Name="Probe module">
+                                <mdi:MaterialIcon Kind="BluetoothConnect" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply supported settings">
+                                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <Border Classes="SectionCard"  Grid.Row="1" Padding="12">
+                        <StackPanel Spacing="10">
 
-        <Border Grid.Row="1" Padding="12">
-            <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <ComboBox ToolTip.Tip="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh ports">
-                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                </Button>
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" AutomationProperties.Name="Probe module">
-                    <mdi:MaterialIcon Kind="BluetoothConnect" Classes="ActionIcon" />
-                </Button>
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply supported settings">
-                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                </Button>
-            </WrapPanel>
-        </Border>
+                            <TextBlock Text="{Binding ModuleIdentity}" FontWeight="Bold" />
+                            <TextBox PlaceholderText="Module name" HorizontalContentAlignment="Right" Text="{Binding Name}" />
+                            <TextBox PlaceholderText="PIN" HorizontalContentAlignment="Right" Text="{Binding Pin}" PasswordChar="●" />
+                            <NumericUpDown PlaceholderText="Baud" HorizontalContentAlignment="Right" Value="{Binding BaudRate}" Minimum="0" FormatString="F0" />
 
-        <Border Classes="SectionCard"  Grid.Row="2" Padding="12">
-            <StackPanel Spacing="10">
-
-                <TextBlock Text="{Binding ModuleIdentity}" FontWeight="Bold" />
-                <TextBox PlaceholderText="Module name" HorizontalContentAlignment="Right" Text="{Binding Name}" />
-                <TextBox PlaceholderText="PIN" HorizontalContentAlignment="Right" Text="{Binding Pin}" PasswordChar="●" />
-                <NumericUpDown PlaceholderText="Baud" HorizontalContentAlignment="Right" Value="{Binding BaudRate}" Minimum="0" FormatString="F0" />
-
-            </StackPanel>
-        </Border>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

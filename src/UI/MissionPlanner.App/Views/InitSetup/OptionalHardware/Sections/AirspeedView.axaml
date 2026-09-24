@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:AirspeedViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,7 +10,7 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.AirspeedView"
                                x:DataType="sections:AirspeedViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
@@ -17,34 +18,41 @@
             <StackPanel Spacing="10">
                 <TextBlock Text="Airspeed" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="Vehicle Reboot required" Classes="Warning" IsVisible="{Binding RebootRequired}" />
             </StackPanel>
         </Border>
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible"
-                      Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
-            <Border Padding="12">
-                <StackPanel Spacing="10">
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="Airspeed" 
+                                               WorkflowStatus="{Binding StatusMessage}" 
+                                               WorkflowError="{Binding ErrorMessage}" />
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="Auto,*">
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible"
+                                  Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
+                        <Border Padding="12">
+                            <StackPanel Spacing="10">
 
-                    <ItemsControl ItemsSource="{Binding Settings}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="sections:ParameterSettingViewModel">
-                                <Grid ColumnDefinitions="220,*,90">
-                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1" Value="{Binding PendingValue, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                    <Button Classes="ToolbarIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
-                                        <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                                    </Button>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-        </ScrollViewer>
+                                <ItemsControl ItemsSource="{Binding Settings}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="sections:ParameterSettingViewModel">
+                                            <Grid ColumnDefinitions="220,*,90">
+                                                <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                                <NumericUpDown Grid.Column="1" Value="{Binding PendingValue, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
+                                                <Button Classes="ToolbarIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 
 </utilities:UserControlViewBase>

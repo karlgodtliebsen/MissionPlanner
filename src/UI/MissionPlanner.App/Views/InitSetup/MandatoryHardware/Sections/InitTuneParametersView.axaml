@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:InitTuneParametersViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,20 +10,15 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.InitTuneParametersView"
                                x:DataType="sections:InitTuneParametersViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-
         <Border HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Initial Tune Parameters" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <ItemsControl ItemsSource="{Binding Guidance}">
+                 <ItemsControl ItemsSource="{Binding Guidance}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="x:String">
                             <TextBlock Text="{Binding .}" Classes="Warning" />
@@ -31,48 +27,59 @@
                 </ItemsControl>
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12">
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
-                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                </Button>
-            </StackPanel>
-        </Border>
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16,0" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
-            <Border  Padding="12">
-                <StackPanel Spacing="10">
-                    <ItemsControl ItemsSource="{Binding Settings}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
-                                <Border Classes="SectionCard" Padding="12">
-                                    <Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="10">
-                                        <StackPanel Orientation="Vertical">
-                                            <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
-                                            <TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
-                                        </StackPanel>
-                                        <ComboBox Grid.Column="1"
-                                                  HorizontalContentAlignment="Right"
-                                                  HorizontalAlignment="Stretch"
-                                                  ToolTip.Tip="Value" IsVisible="{Binding HasOptions}"
-                                                  ItemsSource="{Binding Options}"
-                                                  SelectedItem="{Binding SelectedOption}"
-                                                  DisplayMemberBinding="{Binding Name}" />
-                                        <NumericUpDown Grid.Column="1"
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="InitialTune" 
+                                               WorkflowStatus="{Binding StatusMessage}" 
+                                               WorkflowError="{Binding ErrorMessage}" />
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                    <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1" Margin="16,0" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
+                        <Border  Padding="12">
+                            <StackPanel Spacing="10">
+                                <ItemsControl ItemsSource="{Binding Settings}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
+                                            <Border Classes="SectionCard" Padding="12">
+                                                <Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="10">
+                                                    <StackPanel Orientation="Vertical">
+                                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
+                                                        <TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
+                                                    </StackPanel>
+                                                    <ComboBox Grid.Column="1"
+                                                              HorizontalContentAlignment="Right"
+                                                              HorizontalAlignment="Stretch"
+                                                              ToolTip.Tip="Value" IsVisible="{Binding HasOptions}"
+                                                              ItemsSource="{Binding Options}"
+                                                              SelectedItem="{Binding SelectedOption}"
+                                                              DisplayMemberBinding="{Binding Name}" />
+                                                    <NumericUpDown Grid.Column="1"
 
-                                                       HorizontalContentAlignment="Right"
-                                                       PlaceholderText="Value" IsVisible="{Binding IsNumeric}"
-                                                       Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1"
-                                                       HorizontalAlignment="Stretch" />
-                                        <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
-                                            <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                                        </Button>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-        </ScrollViewer>
+                                                                   HorizontalContentAlignment="Right"
+                                                                   PlaceholderText="Value" IsVisible="{Binding IsNumeric}"
+                                                                   Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1"
+                                                                   HorizontalAlignment="Stretch" />
+                                                    <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                                        <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

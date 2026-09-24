@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:CameraGimbalViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,51 +10,55 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CameraGimbalView"
                                x:Name="Root" x:DataType="sections:CameraGimbalViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
         <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Camera / Gimbal Configuration" Classes="H2" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="Changes are explicit and confirmed by parameter readback. Live movement and capture commands remain in Payload Control." Opacity="0.75" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12">
-            <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Open Payload Control">
-                    <mdi:MaterialIcon Kind="OpenInNew" Classes="ActionIcon" />
-                </Button>
-            </WrapPanel>
-        </Border>
-
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
-            <Border Classes="SectionCard" Padding="12">
-                <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                    <TextBlock Text="Vehicle Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" Classes="Warning" FontWeight="Bold" />
-                    <ItemsControl ItemsSource="{Binding Settings}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="sections:ParameterSettingViewModel">
-                                <Grid ColumnDefinitions="250,150,120" ColumnSpacing="25" Margin="0,10">
-                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                    <NumericUpDown Grid.Column="1"
-                                                   HorizontalContentAlignment="Right"
-                                                   Value="{Binding PendingValue}"
-                                                   Minimum="0" />
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
-                                        <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                                    </Button>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-        </ScrollViewer>
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="CameraGimbal" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Open Payload Control">
+                                <mdi:MaterialIcon Kind="OpenInNew" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
+                        <Border Classes="SectionCard" Padding="12">
+                            <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                                <TextBlock Text="Vehicle Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" Classes="Warning" FontWeight="Bold" />
+                                <ItemsControl ItemsSource="{Binding Settings}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="sections:ParameterSettingViewModel">
+                                            <Grid ColumnDefinitions="250,150,120" ColumnSpacing="25" Margin="0,10">
+                                                <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                                <NumericUpDown Grid.Column="1"
+                                                               HorizontalContentAlignment="Right"
+                                                               Value="{Binding PendingValue}"
+                                                               Minimum="0" />
+                                                <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

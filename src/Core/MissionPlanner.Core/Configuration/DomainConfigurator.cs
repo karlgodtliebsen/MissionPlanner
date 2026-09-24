@@ -143,6 +143,8 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleMessageStore, VehicleMessageStore>();
         services.TryAddSingleton<IApplicationNotificationStore, ApplicationNotificationStore>();
         services.TryAddSingleton<ISetupWorkflowCatalog, SetupWorkflowCatalog>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Reporting.ISetupReportService,
+            MissionPlanner.Core.Setup.Reporting.SetupReportService>();
         services.TryAddTransient<IFrameConfigurationService, FrameConfigurationService>();
         services.TryAddTransient<IArduPilotCalibrationService, ArduPilotCalibrationService>();
         services.TryAddTransient<ICompassConfigurationService, CompassConfigurationService>();

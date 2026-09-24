@@ -410,6 +410,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<CubeIdUpdateViewModel>();
         services.TryAddTransient<CanGpsOrderViewModel>();
         services.TryAddTransient<BatterySetupViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Presentation.Documents.SetupReportDocumentFactory>();
+        services.TryAddTransient<MissionPlanner.App.Presentation.Documents.SetupInformationViewModel>();
         services.TryAddTransient<DroneCanUavCanViewModel>();
         services.TryAddTransient<JoystickViewModel>();
         services.TryAddTransient<CompassMotorCalibrationViewModel>();

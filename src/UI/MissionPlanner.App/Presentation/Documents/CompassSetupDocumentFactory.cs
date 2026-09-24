@@ -8,13 +8,15 @@ namespace MissionPlanner.App.Presentation.Documents;
 public sealed record CompassDocumentContext(
     CompassSetupState? State, CompassConfiguration? Desired, bool Online, bool Loading,
     string Validation, CompassCalibrationWorkflowState Calibration, string Instruction,
-    string Progress, string? Quality, bool RequiresReboot)
+    string Progress, string? Quality, bool RequiresReboot,
+    string? WorkflowStatus = null, string? WorkflowError = null)
 {
     /// <summary>Compares only facts rendered by the document, preserving selection on redundant refreshes.</summary>
     public bool HasSameContent(CompassDocumentContext other)
     {
         return Desired == other.Desired && Online == other.Online && Loading == other.Loading &&
             Validation == other.Validation && Calibration == other.Calibration && Instruction == other.Instruction &&
+            WorkflowStatus == other.WorkflowStatus && WorkflowError == other.WorkflowError &&
             Progress == other.Progress && Quality == other.Quality && RequiresReboot == other.RequiresReboot &&
             (State is null ? other.State is null : other.State is { } state &&
                 State.VehicleId == state.VehicleId && State.Current == state.Current &&
@@ -48,6 +50,7 @@ public sealed class CompassSetupDocumentFactory : ICompassSetupDocumentFactory
     public UserDocument Create(CompassDocumentContext context)
     {
         var document = new UserDocumentBuilder().Heading("Compass status");
+        document.Paragraph(context.WorkflowStatus).Paragraph(context.WorkflowError);
         if (!context.Online)
         {
             return document.Paragraph("Disconnected. Reconnect to read the current flight-controller state.")

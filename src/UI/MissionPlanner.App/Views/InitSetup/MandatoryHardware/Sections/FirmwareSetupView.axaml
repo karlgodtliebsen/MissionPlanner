@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:FirmwareSetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -17,70 +18,74 @@
             <StackPanel Spacing="10">
                 <TextBlock Text="Connected identity" Classes="H2"/>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
         </Border>
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="Firmware" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="*">
+                    <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="0" Margin="16"  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <Border  Classes="SectionCard" Padding="12">
+                                <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                                      RowSpacing="10">
+                                    <TextBlock Text="Vehicle" FontWeight="Bold" />
+                                    <TextBlock Grid.Column="1" Text="{Binding VehicleLabel}" />
+                                    <TextBlock Grid.Row="1" Text="Firmware" FontWeight="Bold" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FirmwareVersion}" />
+                                    <TextBlock Grid.Row="2" Text="Release type / Git" FontWeight="Bold" />
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1" Margin="16"  HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <Border  Classes="SectionCard" Padding="12">
-                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                          RowSpacing="10">
-                        <TextBlock Text="Vehicle" FontWeight="Bold" />
-                        <TextBlock Grid.Column="1" Text="{Binding VehicleLabel}" />
-                        <TextBlock Grid.Row="1" Text="Firmware" FontWeight="Bold" />
-                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FirmwareVersion}" />
-                        <TextBlock Grid.Row="2" Text="Release type / Git" FontWeight="Bold" />
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ReleaseType, StringFormat='{}{0}'}" />
+                                    <TextBlock Grid.Row="3" Text="Git hash" FontWeight="Bold" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ReleaseType, StringFormat='{}{0}'}" />
-                        <TextBlock Grid.Row="3" Text="Git hash" FontWeight="Bold" />
-
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding GitHash}" />
-                        <TextBlock Grid.Row="4" Text="Board version" FontWeight="Bold" />
-                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding BoardVersion}" />
-                        <TextBlock Grid.Row="5" Text="Vendor / product" FontWeight="Bold" />
-                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding VendorProduct}" />
-                        <TextBlock Grid.Row="6" Text="UID / UID2" FontWeight="Bold" />
-                        <StackPanel Orientation="Vertical" Grid.Row="6" Grid.Column="1">
-                            <TextBlock Text="{Binding HardwareUid}" />
-                            <TextBlock Text="{Binding HardwareUid2}" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding GitHash}" />
+                                    <TextBlock Grid.Row="4" Text="Board version" FontWeight="Bold" />
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding BoardVersion}" />
+                                    <TextBlock Grid.Row="5" Text="Vendor / product" FontWeight="Bold" />
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding VendorProduct}" />
+                                    <TextBlock Grid.Row="6" Text="UID / UID2" FontWeight="Bold" />
+                                    <StackPanel Orientation="Vertical" Grid.Row="6" Grid.Column="1">
+                                        <TextBlock Text="{Binding HardwareUid}" />
+                                        <TextBlock Text="{Binding HardwareUid2}" />
+                                    </StackPanel>
+                                    <TextBlock Grid.Row="7" Text="MAVLink version" FontWeight="Bold" />
+                                    <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding MavLinkVersion}" />
+                                    <TextBlock Grid.Row="8" Text="Capabilities" FontWeight="Bold" />
+                                    <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Capabilities}" />
+                                </Grid>
+                            </Border>
+                            <Border Classes="SectionCard" Padding="12">
+                                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                                    <TextBlock Text="Firmware discovery" FontSize="18" FontWeight="Bold" />
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <ComboBox ToolTip.Tip="Channel" ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" />
+                                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Discover compatible releases" Command="{Binding DiscoverCommand}" AutomationProperties.Name="Discover compatible releases">
+                                            <mdi:MaterialIcon Kind="CloudSearchOutline" Classes="ActionIcon" />
+                                        </Button>
+                                    </StackPanel>
+                                    <ComboBox ToolTip.Tip="Compatible release (exact board IDs)" ItemsSource="{Binding Releases}" SelectedItem="{Binding SelectedRelease}" DisplayMemberBinding="{Binding Version}" />
+                                    <TextBlock Text="{Binding SelectedBoardTarget, StringFormat='Technical board target: {0}'}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding SelectedReleaseNotes}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Download and verify" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download and verify">
+                                            <mdi:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
+                                        </Button>
+                                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Flash verified package" Command="{Binding FlashCommand}" AutomationProperties.Name="Flash verified package">
+                                            <mdi:MaterialIcon Kind="DownloadBoxOutline" Classes="ActionIcon" />
+                                        </Button>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding StatusMessage}" FontStyle="Italic" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding FlashingAvailability}" />
+                                    <TextBlock Text="After flashing: reconnect, confirm the reported firmware identity, then restore only reviewed parameters from your backup." FontWeight="Bold" />
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
-                        <TextBlock Grid.Row="7" Text="MAVLink version" FontWeight="Bold" />
-                        <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding MavLinkVersion}" />
-                        <TextBlock Grid.Row="8" Text="Capabilities" FontWeight="Bold" />
-                        <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Capabilities}" />
-                    </Grid>
-                </Border>
-                <Border Classes="SectionCard" Padding="12">
-                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                        <TextBlock Text="Firmware discovery" FontSize="18" FontWeight="Bold" />
-                        <StackPanel Orientation="Horizontal" Spacing="10">
-                            <ComboBox ToolTip.Tip="Channel" ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" />
-                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Discover compatible releases" Command="{Binding DiscoverCommand}" AutomationProperties.Name="Discover compatible releases">
-                                <mdi:MaterialIcon Kind="CloudSearchOutline" Classes="ActionIcon" />
-                            </Button>
-                        </StackPanel>
-                        <ComboBox ToolTip.Tip="Compatible release (exact board IDs)" ItemsSource="{Binding Releases}" SelectedItem="{Binding SelectedRelease}" DisplayMemberBinding="{Binding Version}" />
-                        <TextBlock Text="{Binding SelectedBoardTarget, StringFormat='Technical board target: {0}'}" FontWeight="Bold" />
-                        <TextBlock Text="{Binding SelectedReleaseNotes}" />
-                        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Download and verify" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download and verify">
-                                <mdi:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
-                            </Button>
-                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Flash verified package" Command="{Binding FlashCommand}" AutomationProperties.Name="Flash verified package">
-                                <mdi:MaterialIcon Kind="DownloadBoxOutline" Classes="ActionIcon" />
-                            </Button>
-                        </StackPanel>
-                        <TextBlock Text="{Binding StatusMessage}" FontStyle="Italic" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding FlashingAvailability}" />
-                        <TextBlock Text="After flashing: reconnect, confirm the reported firmware identity, then restore only reviewed parameters from your backup." FontWeight="Bold" />
-                    </StackPanel>
-                </Border>
-            </StackPanel>
-        </ScrollViewer>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 
 </utilities:UserControlViewBase>

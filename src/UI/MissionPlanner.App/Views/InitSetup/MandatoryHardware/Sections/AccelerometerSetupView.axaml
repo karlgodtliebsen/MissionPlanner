@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:AccelerometerSetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -16,57 +17,68 @@
         <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Accelerometer and level calibration" Classes="H2" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." TextWrapping="Wrap" Classes="Warning H4" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
             </StackPanel>
         </Border>
-
-        <Border Grid.Row="1"  Classes="SectionCard" Padding="12">
-            <StackPanel Spacing="10">
-                <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" Classes="Warning H4" />
-                <TextBlock Text=" "  TextWrapping="Wrap" Classes="H4" />
-                <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}"  TextWrapping="Wrap" Classes="H4" />
-                <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" TextWrapping="Wrap" />
-                <TextBlock Text="{Binding CompletedOrientations}" TextWrapping="Wrap" />
-                <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" TextWrapping="Wrap" FontStyle="Italic" />
-                <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Left">
-                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Start six-position calibration" Command="{Binding StartSixPositionCommand}" AutomationProperties.Name="Start six-position calibration">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
-                            <TextBlock Text="Start six-position calibration" VerticalAlignment="Center" />
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="Accelerometer" WorkflowError="{Binding ErrorMessage}" >
+                    <controls:SetupInformationView.WorkflowStatus>
+                        <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
+                            <Binding Path="StatusMessage" />
+                            <Binding Path="Instruction" />
+                            <Binding Path="CalibrationState" />
+                        </MultiBinding>
+                    </controls:SetupInformationView.WorkflowStatus>
+                </controls:SetupInformationView>
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="*">
+                    <Border Grid.Row="0"  Classes="SectionCard" Padding="12">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" Classes="Warning H4" />
+                            <TextBlock Text=" "  TextWrapping="Wrap" Classes="H4" />
+                            <TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}"  TextWrapping="Wrap" Classes="H4" />
+                            <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding CompletedOrientations}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" TextWrapping="Wrap" FontStyle="Italic" />
+                            <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Left">
+                                <Button Classes="EmbeddedTextButton" ToolTip.Tip="Start six-position calibration" Command="{Binding StartSixPositionCommand}" AutomationProperties.Name="Start six-position calibration">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
+                                        <TextBlock Text="Start six-position calibration" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="EmbeddedTextButton" ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" AutomationProperties.Name="Calibrate level">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <mdi:MaterialIcon Kind="ScaleBalance" Classes="ActionIcon" />
+                                        <TextBlock Text="Calibrate level" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="EmbeddedTextButton" ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Confirm orientation">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                        <TextBlock Text="Confirm orientation" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="EmbeddedTextButton" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                                        <TextBlock Text="Cancel calibration" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="EmbeddedTextButton" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                                        <TextBlock Text="Reset / retry" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </WrapPanel>
                         </StackPanel>
-                    </Button>
-                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" AutomationProperties.Name="Calibrate level">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <mdi:MaterialIcon Kind="ScaleBalance" Classes="ActionIcon" />
-                            <TextBlock Text="Calibrate level" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Confirm orientation">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                            <TextBlock Text="Confirm orientation" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
-                            <TextBlock Text="Cancel calibration" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
-                            <TextBlock Text="Reset / retry" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                </WrapPanel>
-            </StackPanel>
-        </Border>
-
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

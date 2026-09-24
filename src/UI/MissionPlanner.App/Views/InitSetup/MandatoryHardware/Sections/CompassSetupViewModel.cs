@@ -81,11 +81,21 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     [ObservableProperty]
     public partial UserDocument? DiagnosticDocument { get; private set; }
 
+    /// <inheritdoc />
+    protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        base.OnPropertyChanged(e);
+        if (documentFactory is not null && e.PropertyName is nameof(StatusMessage) or nameof(ErrorMessage))
+        {
+            UpdateDocument();
+        }
+    }
+
     private void UpdateDocument()
     {
         var next = new CompassDocumentContext(current, desired, activeVehicle.IsOnline,
             IsLoadingParameters || current is null, ValidationText, CalibrationState,
-            Instruction, ProgressSummary, QualitySummary, RequiresReboot);
+            Instruction, ProgressSummary, QualitySummary, RequiresReboot, StatusMessage, ErrorMessage);
         var statusChanged = documentContext?.HasSameContent(next) != true;
         if (statusChanged)
         {

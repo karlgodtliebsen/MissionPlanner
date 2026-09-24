@@ -1111,8 +1111,19 @@ and [execution results](tasks/Compass-UX/EXECUTION_RESULTS.md).
 
 Compass Setup uses LiveMarkdown 2.4.3 through the application-owned
 `InformationDocumentView`. The current status, detected devices, calibration,
-arming evidence, parameter table, and distinctly pending values form a selectable
-report with Copy All and Copy Markdown. Dynamic values are escaped; links, images,
+arming evidence, copyable parameter assignments, and distinctly pending values form a selectable
+report using the renderer's native selection and copy controls. Dynamic values are escaped; links, images,
 and HTML are disabled. Unchanged semantic refreshes preserve the rendered document.
 Native settings and existing verified Apply/calibration workflows remain available.
 See [MarkdownDocuments.md](MarkdownDocuments.md) and [SetupUxPattern.md](SetupUxPattern.md).
+
+## Setup information and configuration
+
+Hardware setup pages separate read-only Information reports from Configuration
+actions. A domain reporting operation captures confirmed subsystem parameters and
+availability from existing caches; an application factory renders safe Markdown
+overviews and editor-compatible parameter assignments. Loading/disconnect states
+withhold incomplete or stale assignments. Reports refresh while visible and keep
+selection on unchanged content. Firmware information reports existing controller
+discovery and tool readiness without initiating scans. Safety and Setup Summary
+retain their current layouts. See [SetupUxPattern.md](SetupUxPattern.md).

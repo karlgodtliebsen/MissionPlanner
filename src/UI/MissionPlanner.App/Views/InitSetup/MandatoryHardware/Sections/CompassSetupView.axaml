@@ -16,8 +16,6 @@
         <Border Padding="12"  >
             <StackPanel Spacing="8">
                 <TextBlock Text="Compass" Classes="H2" />
-                <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" TextWrapping="Wrap" />
-                <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" TextWrapping="Wrap" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Theme="{DynamicResource ProgressRing}"/>
             </StackPanel>
         </Border>

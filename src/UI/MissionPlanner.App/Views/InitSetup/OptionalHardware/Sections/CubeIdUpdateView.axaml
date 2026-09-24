@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:CubeIdUpdateViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,7 +11,7 @@
                                x:DataType="sections:CubeIdUpdateViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
@@ -18,26 +19,37 @@
             <StackPanel Spacing="10">
                 <TextBlock Text="CubeID Firmware Update" Classes="H2" />
                 <TextBlock Text="The target component identity is retained; an autopilot component cannot consume CubeID acknowledgements." />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12">
-            <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
-                    <mdi:MaterialIcon Kind="FileSearchOutline" Classes="ActionIcon" />
-                </Button>
-            </WrapPanel>
-        </Border>
-        <Border Grid.Row="2" HorizontalAlignment="Stretch" Padding="12">
-            <StackPanel Spacing="10">
-                <TextBlock Text="{Binding FirmwareSummary}" />
-                <TextBox PlaceholderText="Local firmware .bin path" Text="{Binding FirmwarePath}" />
-            </StackPanel>
-        </Border>
-
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="CubeId" WorkflowError="{Binding ErrorMessage}" >
+                    <controls:SetupInformationView.WorkflowStatus>
+                        <MultiBinding StringFormat="{}{0}&#10;{1}">
+                            <Binding Path="StatusMessage" />
+                            <Binding Path="FirmwareSummary" />
+                        </MultiBinding>
+                    </controls:SetupInformationView.WorkflowStatus>
+                </controls:SetupInformationView>
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="Auto,Auto">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
+                                <mdi:MaterialIcon Kind="FileSearchOutline" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <Border Grid.Row="1" HorizontalAlignment="Stretch" Padding="12">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="{Binding FirmwareSummary}" />
+                            <TextBox PlaceholderText="Local firmware .bin path" Text="{Binding FirmwarePath}" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

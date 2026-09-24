@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:SikRadioViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,7 +10,7 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SikRadioView"
                                x:DataType="sections:SikRadioViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
@@ -17,61 +18,71 @@
             <StackPanel Spacing="10">
                 <TextBlock Text="SiK / RFD Radio" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="Direct serial configuration. Disconnect any vehicle using the selected port." Classes="Warning" />
             </StackPanel>
         </Border>
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="SikRadio" WorkflowError="{Binding ErrorMessage}" >
+                    <controls:SetupInformationView.WorkflowStatus>
+                        <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
+                            <Binding Path="StatusMessage" />
+                            <Binding Path="Status" />
+                            <Binding Path="Identity" />
+                        </MultiBinding>
+                    </controls:SetupInformationView.WorkflowStatus>
+                </controls:SetupInformationView>
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="Auto,Auto">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh ports">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Connect / Read" Command="{Binding ConnectCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Connect / Read">
+                                <mdi:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply, save and reboot" Command="{Binding ApplyCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Apply, save and reboot">
+                                <mdi:MaterialIcon Kind="ContentSaveCheckOutline" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <Border Grid.Row="1" Classes="SectionCard" HorizontalAlignment="Stretch" Padding="12">
+                        <StackPanel Spacing="10">
 
-        <Border Grid.Row="1" Padding="12">
-            <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh ports">
-                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                </Button>
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Connect / Read" Command="{Binding ConnectCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Connect / Read">
-                    <mdi:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
-                </Button>
-                <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply, save and reboot" Command="{Binding ApplyCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Apply, save and reboot">
-                    <mdi:MaterialIcon Kind="ContentSaveCheckOutline" Classes="ActionIcon" />
-                </Button>
-            </WrapPanel>
-        </Border>
+                            <StackPanel Orientation="Horizontal" Spacing="50" HorizontalAlignment="Stretch" Height="75" VerticalAlignment="Stretch">
+                                <StackPanel Orientation="Vertical" Spacing="10">
+                                    <TextBlock Text="Serial device" />
 
-        <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Stretch" Padding="12">
-            <StackPanel Spacing="10">
+                                    <ComboBox ToolTip.Tip="Serial device"
+                                              VerticalAlignment="Bottom"
+                                              HorizontalContentAlignment="Right"
+                                              ItemsSource="{Binding Ports}"
+                                              SelectedItem="{Binding SelectedPort}"
+                                              Width="180" />
+                                </StackPanel>
+                                <StackPanel Orientation="Vertical" Spacing="10">
+                                    <TextBlock Text="BaudRate" />
+                                    <NumericUpDown PlaceholderText="BaudRate"
+                                                   FormatString="F0"
+                                                   VerticalAlignment="Bottom"
+                                                   HorizontalAlignment="Right"
+                                                   HorizontalContentAlignment="Right"
+                                                   Minimum="0"
+                                                   Value="{Binding BaudRate, Mode=TwoWay}"
+                                                   Width="110" />
+                                </StackPanel>
+                            </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Spacing="50" HorizontalAlignment="Stretch" Height="75" VerticalAlignment="Stretch">
-                    <StackPanel Orientation="Vertical" Spacing="10">
-                        <TextBlock Text="Serial device" />
+                            <TextBlock Text="{Binding Identity}" FontWeight="Bold" />
 
-                        <ComboBox ToolTip.Tip="Serial device"
-                                  VerticalAlignment="Bottom"
-                                  HorizontalContentAlignment="Right"
-                                  ItemsSource="{Binding Ports}"
-                                  SelectedItem="{Binding SelectedPort}"
-                                  Width="180" />
-                    </StackPanel>
-                    <StackPanel Orientation="Vertical" Spacing="10">
-                        <TextBlock Text="BaudRate" />
-                        <NumericUpDown PlaceholderText="BaudRate"
-                                       FormatString="F0"
-                                       VerticalAlignment="Bottom"
-                                       HorizontalAlignment="Right"
-                                       HorizontalContentAlignment="Right"
-                                       Minimum="0"
-                                       Value="{Binding BaudRate, Mode=TwoWay}"
-                                       Width="110" />
-                    </StackPanel>
-                </StackPanel>
-
-                <TextBlock Text="{Binding Identity}" FontWeight="Bold" />
-
-                <TextBlock Text="Editor" />
-                <TextBox AcceptsReturn="True" Text="{Binding SettingsText}" Height="260" PlaceholderText="S0=value, one setting per line" />
-            </StackPanel>
-        </Border>
-
+                            <TextBlock Text="Editor" />
+                            <TextBox AcceptsReturn="True" Text="{Binding SettingsText}" Height="260" PlaceholderText="S0=value, one setting per line" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

@@ -1,5 +1,6 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:OpticalFlowViewModel" xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -15,35 +16,40 @@
         <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Optical Flow" Classes="H2" />
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="{Binding FocusCapabilityStatus}" Classes="Warning" />
                 <TextBlock Text="Vehicle Reboot required" Classes="Warning" IsVisible="{Binding RebootRequired}" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
         </Border>
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible"
-                      Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
-            <Border Classes="SectionCard" Padding="12">
-                <StackPanel Spacing="10">
-                    <ItemsControl ItemsSource="{Binding Settings}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate x:DataType="sections:ParameterSettingViewModel">
-                                <Grid ColumnDefinitions="220,150,120" HorizontalAlignment="Center">
-                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                    <TextBox Grid.Column="1" Text="{Binding PendingValue}"
-                                             HorizontalContentAlignment="Right" />
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
-                                        <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                                    </Button>
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-        </ScrollViewer>
+        <TabControl Grid.Row="1">
+            <TabItem Header="Information">
+                <controls:SetupInformationView Topic="OpticalFlow" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+            </TabItem>
+            <TabItem Header="Configuration">
+                <Grid RowDefinitions="*">
+                    <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Visible"
+                                  Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
+                        <Border Classes="SectionCard" Padding="12">
+                            <StackPanel Spacing="10">
+                                <ItemsControl ItemsSource="{Binding Settings}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="sections:ParameterSettingViewModel">
+                                            <Grid ColumnDefinitions="220,150,120" HorizontalAlignment="Center">
+                                                <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                                <TextBox Grid.Column="1" Text="{Binding PendingValue}"
+                                                         HorizontalContentAlignment="Right" />
+                                                <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                                </Button>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </utilities:UserControlViewBase>
