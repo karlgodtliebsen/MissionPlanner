@@ -11,8 +11,11 @@
     x:DataType="sections:OnboardOsdBridgeViewModel"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Onboard OSD" Classes="H2"/>
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
@@ -24,9 +27,9 @@
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Open Onboard OSD configuration">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Open Onboard OSD configuration">
                     <mdi:MaterialIcon Kind="OpenInNew" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

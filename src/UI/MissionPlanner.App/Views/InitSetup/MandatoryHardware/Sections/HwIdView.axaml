@@ -11,8 +11,11 @@
                                x:DataType="sections:HwIdViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border HorizontalAlignment="Stretch" Padding="12">
             <StackPanel Spacing="10">
                 <TextBlock Text="Hardware ID" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -23,7 +26,7 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Classes="SectionCard" Padding="12">
             <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="140,*" RowSpacing="6">
                 <TextBlock Text="Autopilot board:" FontWeight="Bold" />
                 <TextBlock Grid.Column="1" Text="{Binding Board}" />
@@ -32,16 +35,16 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="2"  Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="2"  Padding="12">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh hardware IDs" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh hardware IDs">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh hardware IDs" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh hardware IDs">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
         </Border>
 
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Center" >
-            <Border Classes="SectionCard SourceBorder" Padding="12" x:Name="SourceBorder" >
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard" Padding="12" >
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Items}">
                         <ItemsControl.ItemTemplate>

@@ -10,8 +10,11 @@
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CanGpsOrderView"
     x:DataType="sections:CanGpsOrderViewModel"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}"
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"
                 >
             <StackPanel Spacing="10">
                 <TextBlock Text="CAN GPS Order" Classes="H2" />
@@ -25,8 +28,8 @@
         </Border>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible"
-                      Margin="16,0" HorizontalAlignment="Center">
-            <Border Classes="SectionCard SourceBorder" Padding="12"   x:Name="SourceBorder" >
+                      Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard" Padding="12" >
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Settings}">
                         <ItemsControl.ItemTemplate>
@@ -34,7 +37,7 @@
                                 <Grid ColumnDefinitions="220,100,120" ColumnSpacing="10">
                                     <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
                                     <TextBox Grid.Column="1" Text="{Binding PendingValue}"  HorizontalContentAlignment="Right"/>
-                                    <Button Classes="ToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                     </Button>
                                 </Grid>

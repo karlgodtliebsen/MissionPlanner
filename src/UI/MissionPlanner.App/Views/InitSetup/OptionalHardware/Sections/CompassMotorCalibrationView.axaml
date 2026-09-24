@@ -10,8 +10,11 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CompassMotorCalibrationView"
                                x:DataType="sections:CompassMotorCalibrationViewModel">
-    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Compass / Motor Calibration" Classes="H2" />
                 <TextBlock Text="Remove ALL propellers. CompassMot may spin motors." Classes="Warning H4"  />
@@ -24,19 +27,19 @@
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Start CompassMot" Command="{Binding StartCommand}" AutomationProperties.Name="Start CompassMot">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Start CompassMot" Command="{Binding StartCommand}" AutomationProperties.Name="Start CompassMot">
                     <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Stop" Foreground="{DynamicResource Warning}" Command="{Binding StopCommand}" AutomationProperties.Name="Stop">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Stop" Foreground="{DynamicResource Warning}" Command="{Binding StopCommand}" AutomationProperties.Name="Stop">
                     <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </WrapPanel>
         </Border>
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible"
-                      Margin="16,0" HorizontalAlignment="Center">
-            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+                      Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard" Padding="12">
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Samples}">
                         <ItemsControl.ItemTemplate>

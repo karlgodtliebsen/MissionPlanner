@@ -10,10 +10,11 @@
                                x:DataType="sections:ServoOutputSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-
-
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock  Text="Servo output functions" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}"
@@ -25,21 +26,22 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh servo outputs" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh servo outputs">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh servo outputs" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh servo outputs">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Write" Command="{Binding WriteCommand}" AutomationProperties.Name="Write">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Write" Command="{Binding WriteCommand}" AutomationProperties.Name="Write">
                     <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
 
-        <Border Grid.Row="2" Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+        <Border Grid.Row="2" Classes="SectionCard" Padding="12">
+            <Grid>
                 <DataGrid AutoGenerateColumns="False"  ItemsSource="{Binding Outputs}"
-                          RowHeight="60" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+                          RowHeight="60" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="75" Binding="{Binding Header}" Header="" />
                         <DataGridTemplateColumn Header="Output PWM" Width="160">
@@ -86,7 +88,7 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
-            </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 

@@ -33,15 +33,15 @@
             </StackPanel>
         </Border>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button Classes="ToolbarButton" ToolTip.Tip="Confirm"
+            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Confirm"
                     Width="100"
                     Padding="8,2"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
 
                     Command="{Binding OKCommand}"
-                    >
-                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                     AutomationProperties.Name="Confirm">
+                <avalonia:MaterialIcon Kind="Check" Width="30" Height="30"  Classes="ActionIcon" />
             </Button>
         </StackPanel>
     </Grid>

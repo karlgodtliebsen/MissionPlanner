@@ -10,8 +10,11 @@
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.JoystickView"
     x:DataType="sections:JoystickViewModel"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
 
                 <TextBlock Text="Joystick Setup" Classes="H2"/>
@@ -24,25 +27,25 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
+                <Button Classes="ToolbarIconButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
                     <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </WrapPanel>
         </Border>
 
-        <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Stretch" Padding="12">
             <StackPanel Spacing="20">
-                <ComboBox ToolTip.Tip="Local device" 
-                          ItemsSource="{Binding Devices}" 
-                          VerticalAlignment="Bottom" 
+                <ComboBox ToolTip.Tip="Local device"
+                          ItemsSource="{Binding Devices}"
+                          VerticalAlignment="Bottom"
                           HorizontalAlignment="Stretch"
                           HorizontalContentAlignment="Right"
-                          DisplayMemberBinding="{Binding Name}" 
+                          DisplayMemberBinding="{Binding Name}"
                           SelectedItem="{Binding SelectedDevice}" />
                 <TextBlock Text="Local calibration is separate from vehicle RC calibration." />
                 <StackPanel Orientation="Horizontal">

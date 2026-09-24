@@ -16,7 +16,10 @@
                           Margin="50,50,50,25"
                           >
 
-    <Grid RowDefinitions="Auto,450,Auto"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="10">
+    <Grid RowDefinitions="Auto,450,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
 
         <StackPanel  Orientation="Vertical" Spacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Border HorizontalAlignment="Center" VerticalAlignment="Stretch">
@@ -31,23 +34,23 @@
                     <ProgressBar  IsIndeterminate="True" IsVisible="{Binding IsRefreshing}"
                                   HorizontalAlignment="Stretch" VerticalAlignment="Center" />
                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Button Classes="ToolbarButton" ToolTip.Tip="Refresh catalogue data"
+                        <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh catalogue data"
                                 Padding="8,2"
                                 Command="{Binding RefreshCatalogCommand}"
-                                IsEnabled="{Binding !IsRefreshing}" >
-                            <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                                IsEnabled="{Binding !IsRefreshing}"  AutomationProperties.Name="Refresh catalogue data">
+                            <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30"  Classes="ActionIcon" />
                         </Button>
-                        <Button Classes="ToolbarButton" ToolTip.Tip="All Version Options"
+                        <Button Classes="ToolbarIconButton" ToolTip.Tip="All Version Options"
                                 Padding="8,2"
-                                Command="{Binding ShowAllOptionsCommand}"  >
-                            <avalonia:MaterialIcon Kind="AllInclusiveBoxOutline" Width="30" Height="30" />
+                                Command="{Binding ShowAllOptionsCommand}"   AutomationProperties.Name="All Version Options">
+                            <avalonia:MaterialIcon Kind="AllInclusiveBoxOutline" Width="30" Height="30"  Classes="ActionIcon" />
                         </Button>
-                        <Button Classes="ToolbarButton"
+                        <Button Classes="ToolbarIconButton"
                             ToolTip.Tip="Clear all Settings"
                             Padding="8,2"
                             VerticalAlignment="Center"
-                            Command="{Binding ClearCatalogueFirmwareCommand}"  >
-                            <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                            Command="{Binding ClearCatalogueFirmwareCommand}"   AutomationProperties.Name="Clear all Settings">
+                            <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30"  Classes="ActionIcon" />
                         </Button>
 <!--                        <Button Classes="ToolbarButton"
                             ToolTip.Tip="Close"
@@ -56,12 +59,12 @@
                             <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
                         </Button>-->
 
-                        <Button Classes="ToolbarButton"
+                        <Button Classes="ToolbarIconButton"
                             ToolTip.Tip="Use Selected firmware"
                             Padding="8,2"
                             Command="{Binding OKCommand}"
-                            >
-                            <avalonia:MaterialIcon Kind="Check" Width="30" Height="30" />
+                             AutomationProperties.Name="Use Selected firmware">
+                            <avalonia:MaterialIcon Kind="Check" Width="30" Height="30"  Classes="ActionIcon" />
                         </Button>
                     </StackPanel>
                 </StackPanel>
@@ -73,11 +76,11 @@
                     <ComboBox ItemsSource="{Binding VehicleTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame/VehicleType" SelectedItem="{Binding SelectedVehicleType}" Width="200" />
                     <ComboBox ItemsSource="{Binding BuildVariants}" PlaceholderText="Variant" ToolTip.Tip="Build Variant" SelectedItem="{Binding SelectedBuildVariant}" Width="200" />
                     <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="200" />
-                    <Button Classes="ToolbarButton"  ToolTip.Tip="Clear Filters"
+                    <Button Classes="ToolbarIconButton"  ToolTip.Tip="Clear Filters"
                              Command="{Binding ClearCommand}"
                              Padding="8,2"
-                             VerticalAlignment="Center" >
-                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                             VerticalAlignment="Center"  AutomationProperties.Name="Clear Filters">
+                        <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30"  Classes="ActionIcon" />
                     </Button>
                 </StackPanel>
             </Border>
@@ -144,9 +147,8 @@
         <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  IsVisible="{Binding SelectedFirmwareModel.HasSelectedFirmware }">
             <Grid
                 HorizontalAlignment="Center"
-                
-                ColumnDefinitions="200,*"
-                RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+
+                ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                 RowSpacing="5">
 
                 <TextBlock Grid.Row="0" Text="Platform:" Classes="H5" />

@@ -12,8 +12,11 @@
                                x:DataType="sections:SetupSummaryViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border HorizontalAlignment="Stretch" Padding="12">
             <StackPanel Spacing="10">
                 <TextBlock Text="Setup summary" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -26,22 +29,22 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" AutomationProperties.Name="Rebuild summary">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" AutomationProperties.Name="Rebuild summary">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON">
                     <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Export Markdown" Command="{Binding ExportMarkdownCommand}" AutomationProperties.Name="Export Markdown">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Export Markdown" Command="{Binding ExportMarkdownCommand}" AutomationProperties.Name="Export Markdown">
                     <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
         </Border>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16,0" HorizontalAlignment="Center" >
-            <Border Classes="SourceBorder" Padding="12" x:Name="SourceBorder" >
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16,0" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
+            <Border Padding="12" >
                 <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
                     <ItemsControl ItemsSource="{Binding Sections}">
                         <ItemsControl.ItemTemplate>

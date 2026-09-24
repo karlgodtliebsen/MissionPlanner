@@ -9,8 +9,11 @@
                                x:DataType="sections:DroneCanUavCanViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="DroneCAN / UAVCAN v0" Classes="H2" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
@@ -21,31 +24,31 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Connect">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Connect">
                     <mdi:MaterialIcon Kind="LanConnect" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Refresh nodes">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Refresh nodes">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
 
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible"
-                      Margin="16,0" HorizontalAlignment="Center">
-            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+                      Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard" Padding="12">
                 <StackPanel Spacing="10">
-                  
-                    <ComboBox ToolTip.Tip="Transport" 
+
+                    <ComboBox ToolTip.Tip="Transport"
                               HorizontalAlignment="Stretch"
                               HorizontalContentAlignment="Right"
-                              ItemsSource="{Binding TransportKinds}" 
+                              ItemsSource="{Binding TransportKinds}"
                               SelectedItem="{Binding TransportKind}" />
-                    
+
                     <ListBox HorizontalAlignment="Stretch"
-                             ItemsSource="{Binding Nodes}" 
-                             SelectionMode="Single" 
+                             ItemsSource="{Binding Nodes}"
+                             SelectionMode="Single"
                              SelectedItem="{Binding SelectedNode}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>

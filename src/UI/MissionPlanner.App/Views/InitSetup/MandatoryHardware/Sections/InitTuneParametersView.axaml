@@ -9,9 +9,12 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.InitTuneParametersView"
                                x:DataType="sections:InitTuneParametersViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        
-        <Border HorizontalAlignment="Center" Padding="12" Classes="SourceBorder"  x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+
+        <Border HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Initial Tune Parameters" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -28,15 +31,15 @@
                 </ItemsControl>
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Refresh">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
         </Border>
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16,0" HorizontalAlignment="Center" >
-            <Border  Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16,0" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
+            <Border  Padding="12">
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Settings}">
                         <ItemsControl.ItemTemplate>
@@ -60,7 +63,7 @@
                                                        PlaceholderText="Value" IsVisible="{Binding IsNumeric}"
                                                        Value="{Binding NumericValue, Mode=TwoWay}" FormatString="F1"
                                                        HorizontalAlignment="Stretch" />
-                                        <Button Classes="ToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                        <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                             <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                         </Button>
                                     </Grid>

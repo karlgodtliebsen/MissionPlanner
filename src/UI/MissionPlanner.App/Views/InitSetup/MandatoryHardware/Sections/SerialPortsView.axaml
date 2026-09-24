@@ -38,9 +38,12 @@
             </StackPanel>
         </DataTemplate>
     </utilities:UserControlViewBase.Resources>
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
 
-        <Border HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+        <Border HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Serial Ports" Classes="H2" />
                 <TextBlock Text="Configure the flight controller's serial parameters. SERIAL indexes do not establish physical UART wiring. Unreported settings remain blank."
@@ -60,25 +63,24 @@
                 <TextBlock Text="Receiver diagnostics include pending edits. No settings are written until Apply changes."
                            Classes="H5" TextWrapping="Wrap" />
 
-
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" Command="{Binding RefreshCommand}"
+                <Button Classes="ToolbarIconButton" Command="{Binding RefreshCommand}"
                         ToolTip.Tip="Reload reported parameters"
                         IsEnabled="{Binding !IsBusy}"
                         AutomationProperties.Name="Reload reported parameters">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
                     <mdi:MaterialIcon Kind="Check" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </WrapPanel>
         </Border>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16" >
-            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16"  HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard" Padding="12">
                 <ItemsControl ItemsSource="{Binding Ports}" IsEnabled="{Binding CanEdit}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="sections1:SerialPortRowViewModel">

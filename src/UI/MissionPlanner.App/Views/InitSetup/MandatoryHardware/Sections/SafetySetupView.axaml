@@ -10,9 +10,12 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SafetySetupView"
                                x:DataType="sections:SafetySetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
 
-        <Border HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}"  >
+        <Border HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Safety and arming" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -29,15 +32,15 @@
                 </ItemsControl>
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Re-assess safety" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Re-assess safety">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Re-assess safety" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Re-assess safety">
                     <mdi:MaterialIcon Kind="ShieldCheckOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" Margin="16" HorizontalAlignment="Center">
-            <Border Classes="SectionCard SourceBorder" Padding="12" x:Name="SourceBorder" >
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" Margin="16" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard" Padding="12" >
                 <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
                     <ItemsControl ItemsSource="{Binding Items}">
                         <ItemsControl.ItemTemplate>

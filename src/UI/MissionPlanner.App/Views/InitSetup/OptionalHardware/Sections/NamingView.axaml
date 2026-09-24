@@ -10,8 +10,11 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.NamingView"
                                x:DataType="sections:NamingViewModel"
                                >
-    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center">
                     <TextBlock Text="Vehicle Naming" Classes="H2" />
@@ -25,21 +28,20 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" Width="100" ToolTip.Tip="Apply changed identifiers" AutomationProperties.Name="Apply changed identifiers"
+                <Button Classes="ToolbarIconButton" Width="100" ToolTip.Tip="Apply changed identifiers" AutomationProperties.Name="Apply changed identifiers"
                         Command="{Binding ApplyCommand}" >
-                    <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30"  Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Reconnect to the previous vehicle connection"
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Reconnect to the previous vehicle connection"
                         Command="{Binding ReconnectCommand}" AutomationProperties.Name="Reconnect vehicle">
-                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30"  Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
 
         <Border Grid.Row="2" HorizontalAlignment="Stretch" Padding="25" Classes="SectionCard" MaxWidth="450"
-                Width="{Binding #SourceBorder.Bounds.Width}"
                 IsEnabled="{Binding CanEdit}">
             <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,130" RowSpacing="10" ColumnSpacing="10" HorizontalAlignment="Center">
                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Mav System ID" Classes="H4" />

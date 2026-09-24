@@ -9,8 +9,11 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BluetoothSetupView"
                                x:DataType="sections:BluetoothSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Classic Serial Bluetooth Setup" Classes="H2" />
                 <TextBlock Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Classes="H4" Opacity="0.75" />
@@ -22,23 +25,22 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
                 <ComboBox ToolTip.Tip="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
-                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh ports">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh ports">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" AutomationProperties.Name="Probe module">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" AutomationProperties.Name="Probe module">
                     <mdi:MaterialIcon Kind="BluetoothConnect" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply supported settings">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply supported settings">
                     <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
 
-        <Border Classes="SectionCard"  Grid.Row="2" Padding="12" 
-                Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Classes="SectionCard"  Grid.Row="2" Padding="12">
             <StackPanel Spacing="10">
 
                 <TextBlock Text="{Binding ModuleIdentity}" FontWeight="Bold" />

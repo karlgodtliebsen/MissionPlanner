@@ -8,11 +8,11 @@
                                xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                x:DataType="sections:CompassSetupViewModel">
-    <Grid RowDefinitions="Auto,*"  HorizontalAlignment="Center" >
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        
+
         <Border Padding="12"  >
             <StackPanel Spacing="8">
                 <TextBlock Text="Compass" Classes="H2" />
@@ -45,7 +45,7 @@
                 <Grid RowDefinitions="Auto,*">
                     <Border Padding="12"  >
                         <WrapPanel Orientation="Horizontal" ItemSpacing="5"  HorizontalAlignment="Center" >
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" 
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values"
                                     Command="{Binding RefreshInventoryCommand}">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
@@ -129,16 +129,16 @@
                                     </WrapPanel>
                                 </StackPanel>
                             </Border>
-                            <Border Padding="12" HorizontalAlignment="Stretch" Classes="SectionCard SourceBorder" >
+                            <Border Padding="12" HorizontalAlignment="Stretch" Classes="SectionCard" >
                                 <StackPanel Spacing="12">
                                     <TextBlock Text="Configuration" Classes="H3" />
                                     <TextBlock Text="Edits remain pending until you review and apply them." TextWrapping="Wrap" />
                                     <ItemsControl ItemsSource="{Binding Settings}" IsEnabled="{Binding CanEdit}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="sections:CompassSettingViewModel">
-                                                <Border Classes="SectionCard SourceBorder"  IsVisible="{Binding IsVisible}" 
-                                                        Margin="10" Padding="12" 
-                                                        HorizontalAlignment="Stretch" 
+                                                <Border Classes="SectionCard"  IsVisible="{Binding IsVisible}"
+                                                        Margin="10" Padding="12"
+                                                        HorizontalAlignment="Stretch"
                                                        >
                                                     <StackPanel Spacing="5">
                                                         <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />

@@ -16,32 +16,37 @@
     Margin="50"
     >
 
-    <Border Padding="16" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Stretch" >
-        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-              IsVisible="{Binding HasCustomFirmware}"
-              RowSpacing="10">
-            <TextBlock Text="Selected local firmware" Classes="H3" Margin="0,0,0,10" HorizontalAlignment="Left" />
+    <Grid RowDefinitions="*" HorizontalAlignment="Center">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Padding="16" Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                  IsVisible="{Binding HasCustomFirmware}"
+                  RowSpacing="10">
+                <TextBlock Text="Selected local firmware" Classes="H3" Margin="0,0,0,10" HorizontalAlignment="Left" />
 
-            <TextBlock Grid.Row="1" Text="Firmware Name:" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CustomFirmwareName,FallbackValue='', TargetNullValue=''}" />
+                <TextBlock Grid.Row="1" Text="Firmware Name:" />
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CustomFirmwareName,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="2" Text="Firmware Decription:" />
-            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CustomFirmwareDescription,FallbackValue='', TargetNullValue=''}" />
+                <TextBlock Grid.Row="2" Text="Firmware Decription:" />
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CustomFirmwareDescription,FallbackValue='', TargetNullValue=''}" />
 
-            <TextBlock Grid.Row="3" Text="Platform:" />
-            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CustomFirmwarePlatform}" />
+                <TextBlock Grid.Row="3" Text="Platform:" />
+                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding CustomFirmwarePlatform}" />
 
-            <TextBlock Grid.Row="4" Text="Board Id:" />
-            <TextBlock Grid.Row="4" Grid.Column="1"  Text="{Binding CustomFirmwareBoardId}" />
+                <TextBlock Grid.Row="4" Text="Board Id:" />
+                <TextBlock Grid.Row="4" Grid.Column="1"  Text="{Binding CustomFirmwareBoardId}" />
 
-            <TextBlock Grid.Row="5" Text="Image Size:" />
-            <TextBlock Grid.Row="5" Grid.Column="1"  Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
+                <TextBlock Grid.Row="5" Text="Image Size:" />
+                <TextBlock Grid.Row="5" Grid.Column="1"  Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
 
-            <TextBlock Grid.Row="6" Text="Build:" />
-            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CustomFirmwareBuild}"  Classes="Warning" />
+                <TextBlock Grid.Row="6" Text="Build:" />
+                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding CustomFirmwareBuild}"  Classes="Warning" />
 
-            <TextBlock  Margin="0,8,0,0" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
-                        Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
-        </Grid>
-    </Border>
+                <TextBlock  Margin="0,8,0,0" Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2"
+                            Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing." TextWrapping="Wrap" />
+            </Grid>
+        </Border>
+    </Grid>
 </UserControl>

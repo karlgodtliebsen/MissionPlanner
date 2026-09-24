@@ -4,6 +4,35 @@ Compass is the first semantic Setup page. Its structure is **Status → Configur
 Calibration / Actions → Advanced**, followed by a pending-change footer only while
 values differ from the confirmed configuration.
 
+## Setup page layout and actions
+
+Use `CompassSetupView` as the visual reference for setup content in InstallFirmware,
+MandatoryHardware, and OptionalHardware. The content root is a centered Grid with
+the rows required by the page and one constrained column:
+
+```xml
+<Grid RowDefinitions="Auto,*" HorizontalAlignment="Center">
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+    </Grid.ColumnDefinitions>
+</Grid>
+```
+
+Let cards and scrollable content stretch within that column. Do not use the
+`SourceBorder` class, a named sizing border, or sibling `Bounds.Width` bindings
+to size these pages. Keep `SectionCard` on cards. Navigation hosts retain room
+for their left-hand tabs; constrain the content of each tab instead. Dialogs and
+reusable firmware fragments retain their containing layout.
+
+Use `ToolbarIconButton` for page actions and `ToolbarIconDropDownButton` for
+toolbar menus, with `ActionIcon`, a tooltip, and an accessible name. Actions
+inside cards or editor rows use `EmbeddedIconButton` or `EmbeddedTextButton`.
+Calibration actions belong with their instructions, and receiver actions belong
+with receiver settings. Keep existing command and availability bindings. Use
+wrapping action groups and vertical cards where needed at the minimum width;
+wide parameter tables should retain their own horizontal scrolling. Dialog and
+drawer X buttons continue to use Ursa's `OverlayCloseButton` theme.
+
 ## Ownership
 
 The view binds friendly concepts. The ViewModel owns only local desired values and

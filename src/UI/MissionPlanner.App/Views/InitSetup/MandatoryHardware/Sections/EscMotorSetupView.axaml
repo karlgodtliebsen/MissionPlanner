@@ -10,9 +10,11 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.EscMotorSetupView"
                                x:DataType="sections:EscMotorSetupViewModel">
 
-
-    <Grid RowDefinitions="Auto,Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="ESC calibration and motor test" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
@@ -32,23 +34,22 @@
             </StackPanel>
         </Border>
 
-
-        <Border Grid.Row="1" Padding="12" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12" >
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Test motor" Command="{Binding TestMotorCommand}" AutomationProperties.Name="Test motor">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Test motor" Command="{Binding TestMotorCommand}" AutomationProperties.Name="Test motor">
                     <mdi:MaterialIcon Kind="Fan" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Test sequence" Command="{Binding TestSequenceCommand}" AutomationProperties.Name="Test sequence">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Test sequence" Command="{Binding TestSequenceCommand}" AutomationProperties.Name="Test sequence">
                     <mdi:MaterialIcon Kind="PlaylistPlay" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="ToolbarButton" Foreground="{DynamicResource Warning}" FontWeight="Bold" ToolTip.Tip="STOP" Command="{Binding StopCommand}" AutomationProperties.Name="STOP">
+                <Button Classes="ToolbarIconButton" Foreground="{DynamicResource Warning}" FontWeight="Bold" ToolTip.Tip="STOP" Command="{Binding StopCommand}" AutomationProperties.Name="STOP">
                     <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
 
                 </Button>
             </WrapPanel>
         </Border>
 
-        <Border Grid.Row="2" Classes="SectionCard" Padding="12" HorizontalAlignment="Center" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="2" Classes="SectionCard" Padding="12" >
             <StackPanel Spacing="15">
                 <TextBlock Text="Motor test" Classes="H3" />
 
@@ -65,8 +66,8 @@
             </StackPanel>
         </Border>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="3" Margin="16" HorizontalAlignment="Center">
-            <Border  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="3" Margin="16" HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard" Padding="12">
                 <StackPanel Spacing="15">
                     <TextBlock Margin="0,10" Text="Operation log:" Classes="H3" />
                     <Border MinHeight="100">

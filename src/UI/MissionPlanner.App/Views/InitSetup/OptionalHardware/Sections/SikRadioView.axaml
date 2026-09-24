@@ -9,8 +9,11 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SikRadioView"
                                x:DataType="sections:SikRadioViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="SiK / RFD Radio" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -22,21 +25,21 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh ports">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh ports">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Connect / Read" Command="{Binding ConnectCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Connect / Read">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Connect / Read" Command="{Binding ConnectCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Connect / Read">
                     <mdi:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Apply, save and reboot" Command="{Binding ApplyCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Apply, save and reboot">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply, save and reboot" Command="{Binding ApplyCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Apply, save and reboot">
                     <mdi:MaterialIcon Kind="ContentSaveCheckOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
 
-        <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Center" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Stretch" Padding="12">
             <StackPanel Spacing="10">
 
                 <StackPanel Orientation="Horizontal" Spacing="50" HorizontalAlignment="Stretch" Height="75" VerticalAlignment="Stretch">

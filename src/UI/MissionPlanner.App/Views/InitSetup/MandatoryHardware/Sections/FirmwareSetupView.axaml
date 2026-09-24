@@ -9,8 +9,11 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FirmwareSetupView"
                                x:DataType="sections:FirmwareSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border HorizontalAlignment="Center" Padding="12"  x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Connected identity" Classes="H2"/>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -21,11 +24,10 @@
             </StackPanel>
         </Border>
 
-        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1" Margin="16" >
-            <StackPanel Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Stretch">
-                <Border  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-                    <Grid ColumnDefinitions="180,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+        <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1" Margin="16"  HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <Border  Classes="SectionCard" Padding="12">
+                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                           RowSpacing="10">
                         <TextBlock Text="Vehicle" FontWeight="Bold" />
                         <TextBlock Grid.Column="1" Text="{Binding VehicleLabel}" />
@@ -52,12 +54,12 @@
                         <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Capabilities}" />
                     </Grid>
                 </Border>
-                <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+                <Border Classes="SectionCard" Padding="12">
                     <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                         <TextBlock Text="Firmware discovery" FontSize="18" FontWeight="Bold" />
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <ComboBox ToolTip.Tip="Channel" ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" />
-                            <Button Classes="ToolbarButton" ToolTip.Tip="Discover compatible releases" Command="{Binding DiscoverCommand}" AutomationProperties.Name="Discover compatible releases">
+                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Discover compatible releases" Command="{Binding DiscoverCommand}" AutomationProperties.Name="Discover compatible releases">
                                 <mdi:MaterialIcon Kind="CloudSearchOutline" Classes="ActionIcon" />
                             </Button>
                         </StackPanel>
@@ -65,10 +67,10 @@
                         <TextBlock Text="{Binding SelectedBoardTarget, StringFormat='Technical board target: {0}'}" FontWeight="Bold" />
                         <TextBlock Text="{Binding SelectedReleaseNotes}" />
                         <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                            <Button Classes="ToolbarButton" ToolTip.Tip="Download and verify" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download and verify">
+                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Download and verify" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download and verify">
                                 <mdi:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarButton" ToolTip.Tip="Flash verified package" Command="{Binding FlashCommand}" AutomationProperties.Name="Flash verified package">
+                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Flash verified package" Command="{Binding FlashCommand}" AutomationProperties.Name="Flash verified package">
                                 <mdi:MaterialIcon Kind="DownloadBoxOutline" Classes="ActionIcon" />
                             </Button>
                         </StackPanel>

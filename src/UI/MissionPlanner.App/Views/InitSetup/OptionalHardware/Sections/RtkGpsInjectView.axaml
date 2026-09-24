@@ -7,8 +7,11 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RtkGpsInjectView"
                                x:DataType="sections:RtkGpsInjectViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="RTK / GPS Correction Injection" Classes="H2" HorizontalAlignment="Center"/>
                 <TextBlock Text="RTCM3 source → active vehicle via MAVLink GPS_RTCM_DATA" Opacity="0.75" />
@@ -17,20 +20,20 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh serial devices" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh serial devices">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh serial devices" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh serial devices">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Connect source" Command="{Binding ConnectCommand}" AutomationProperties.Name="Connect source">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Connect source" Command="{Binding ConnectCommand}" AutomationProperties.Name="Connect source">
                     <mdi:MaterialIcon Kind="LanConnect" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Disconnect" Command="{Binding DisconnectCommand}" AutomationProperties.Name="Disconnect">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Disconnect" Command="{Binding DisconnectCommand}" AutomationProperties.Name="Disconnect">
                     <mdi:MaterialIcon Kind="LanDisconnect" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
-        <Border Grid.Row="2" HorizontalAlignment="Center" Classes="SectionCard" Padding="12"  Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="2" HorizontalAlignment="Stretch" Classes="SectionCard" Padding="12">
             <StackPanel Spacing="10">
 
                 <TextBlock Text="{Binding SourceStatus}" FontWeight="Bold" />

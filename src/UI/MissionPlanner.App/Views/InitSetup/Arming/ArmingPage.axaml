@@ -15,12 +15,10 @@
  
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
-                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="1">
+            <Grid Grid.Column="0">
                 <avalonia:MarkdownRenderer x:Name="MarkdownRenderer"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
 

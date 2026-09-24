@@ -9,8 +9,11 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AccelerometerSetupView"
                                x:DataType="sections:AccelerometerSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Accelerometer and level calibration" Classes="H2" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
@@ -21,27 +24,8 @@
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Start six-position calibration" Command="{Binding StartSixPositionCommand}" AutomationProperties.Name="Start six-position calibration">
-                    <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
-                </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" AutomationProperties.Name="Calibrate level">
-                    <mdi:MaterialIcon Kind="ScaleBalance" Classes="ActionIcon" />
-                </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Confirm orientation">
-                    <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
-                    <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
-                </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
-                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
-                </Button>
-            </StackPanel>
-        </Border>
 
-        <Border Grid.Row="2"  Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1"  Classes="SectionCard" Padding="12">
             <StackPanel Spacing="10">
                 <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" Classes="Warning H4" />
                 <TextBlock Text=" "  TextWrapping="Wrap" Classes="H4" />
@@ -49,6 +33,38 @@
                 <TextBlock Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding CompletedOrientations}" TextWrapping="Wrap" />
                 <TextBlock Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}" TextWrapping="Wrap" FontStyle="Italic" />
+                <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Left">
+                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Start six-position calibration" Command="{Binding StartSixPositionCommand}" AutomationProperties.Name="Start six-position calibration">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
+                            <TextBlock Text="Start six-position calibration" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" AutomationProperties.Name="Calibrate level">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <mdi:MaterialIcon Kind="ScaleBalance" Classes="ActionIcon" />
+                            <TextBlock Text="Calibrate level" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Confirm orientation">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                            <TextBlock Text="Confirm orientation" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
+                            <TextBlock Text="Cancel calibration" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="EmbeddedTextButton" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                            <TextBlock Text="Reset / retry" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
             </StackPanel>
         </Border>
 

@@ -10,8 +10,11 @@
                                x:DataType="sections:FrameSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Supported frame configuration" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -30,19 +33,19 @@
                            Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration." Classes="Warning" FontWeight="Bold" />
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Refresh vehicle values"  Classes="ToolbarButton" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh vehicle values">
+                <Button ToolTip.Tip="Refresh vehicle values" Classes="ToolbarIconButton" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh vehicle values">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button ToolTip.Tip="Write and verify" Classes="ToolbarButton" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
+                <Button ToolTip.Tip="Write and verify" Classes="ToolbarIconButton" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
                     <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" 
-                      Margin="16,0" HorizontalAlignment="Center">
-            <Border Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible"
+                      Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
+            <Border Padding="12">
                 <StackPanel Spacing="10">
                     <ItemsControl ItemsSource="{Binding Settings}">
                         <ItemsControl.ItemTemplate>

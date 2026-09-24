@@ -10,8 +10,11 @@
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.Esp8266SetupView"
     x:DataType="sections:Esp8266SetupViewModel"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="ESP8266 MAVLink Bridge" Classes="H2" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
@@ -22,15 +25,15 @@
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Validate settings">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Validate settings">
                     <mdi:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
-        <Border Grid.Row="2" HorizontalAlignment="Center" Padding="12" 
-                Classes="SectionCard" Width="{Binding #SourceBorder.Bounds.Width}"  >
+        <Border Grid.Row="2" HorizontalAlignment="Stretch" Padding="12"
+                Classes="SectionCard"  >
             <StackPanel Spacing="10">
                 <TextBox PlaceholderText="Access-point SSID" Text="{Binding Ssid}" />
                 <TextBox PlaceholderText="Access-point password" Text="{Binding Password}" PasswordChar="●" />

@@ -9,8 +9,11 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FlightModesSetupView"
                                x:DataType="sections:FlightModesSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="Flight-mode assignment" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
@@ -22,17 +25,17 @@
 
             </StackPanel>
         </Border>
-        <Border Grid.Row="1" HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" HorizontalAlignment="Stretch" Padding="12">
             <StackPanel Spacing="10">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh flight modes"
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh flight modes"
                         Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh flight modes">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
         </Border>
 
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Center">
-            <Border Classes="SectionCard" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
+            <Border Classes="SectionCard" Padding="12">
                 <StackPanel Spacing="10">
                     <ItemsControl IsVisible="{Binding IsSupported}" ItemsSource="{Binding Slots}">
                         <ItemsControl.ItemTemplate>

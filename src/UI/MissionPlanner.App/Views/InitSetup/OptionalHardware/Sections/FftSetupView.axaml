@@ -10,8 +10,11 @@
                                x:DataType="sections:FftSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <Border Grid.Row="0" HorizontalAlignment="Center" Padding="12" Classes="SourceBorder" x:Name="SourceBorder"  >
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
             <StackPanel Spacing="10">
                 <TextBlock Text="FFT Setup and Analysis" Classes="H2" />
                 <TextBlock Text="FFT/log settings are available only when INS_LOG_BAT or FFT parameters are reported. Log acquisition remains owned by DataFlash Logs." />
@@ -23,14 +26,14 @@
             </StackPanel>
         </Border>
 
-        <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
+        <Border Grid.Row="1" Padding="12">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Analyze samples">
+                <Button Classes="ToolbarIconButton" ToolTip.Tip="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Analyze samples">
                     <mdi:MaterialIcon Kind="ChartBellCurve" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
         </Border>
-        <Border Grid.Row="2" HorizontalAlignment="Center" Padding="12" Classes="SectionCard"  Width="{Binding #SourceBorder.Bounds.Width}"  >
+        <Border Grid.Row="2" HorizontalAlignment="Stretch" Padding="12" Classes="SectionCard"  >
             <StackPanel Spacing="10">
                 <NumericUpDown  PlaceholderText="Sample rate Hz" HorizontalContentAlignment="Right" Value="{Binding SampleRateHz}" Minimum="0" FormatString="F0" />
                 <TextBox AcceptsReturn="True" PlaceholderText="Paste comma/newline-separated samples from an existing log artifact" Text="{Binding SamplesText}" Height="180" />
