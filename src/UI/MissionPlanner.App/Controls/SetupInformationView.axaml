@@ -16,6 +16,7 @@
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="8">
                 <controls:InformationDocumentView Document="{Binding Overview}" />
+                <controls:InformationDocumentView Document="{Binding AdditionalDocument}" IsVisible="{Binding HasAdditionalDocument}" />
                 <controls:InformationDocumentView Document="{Binding Parameters}" IsVisible="{Binding HasParameters}" />
             </StackPanel>
         </ScrollViewer>

@@ -36,7 +36,7 @@
             </TabItem>
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,Auto,*">
-                    <Border Grid.Row="0" Padding="12" >
+                    <Border Grid.Row="0" Padding="12"  HorizontalAlignment="Stretch">
                         <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Test motor" Command="{Binding TestMotorCommand}" AutomationProperties.Name="Test motor">
                                 <mdi:MaterialIcon Kind="Fan" Classes="ActionIcon" Width="20" Height="20" />
@@ -50,7 +50,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <Border Grid.Row="1" Classes="SectionCard" Padding="12" >
+                    <Border Grid.Row="1" Classes="SectionCard" Padding="12" HorizontalAlignment="Stretch" >
                         <StackPanel Spacing="15">
                             <TextBlock Text="Motor test" Classes="H3" />
 
@@ -66,8 +66,8 @@
                             <TextBlock Margin="0,10" Text="{Binding Instruction}" Classes="H4" />
                         </StackPanel>
                     </Border>
-                    <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16" HorizontalScrollBarVisibility="Disabled">
-                        <Border Classes="SectionCard" Padding="12">
+                    <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="2" Margin="16" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
+                        <Border Classes="SectionCard" Padding="12" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="15">
                                 <TextBlock Margin="0,10" Text="Operation log:" Classes="H3" />
                                 <Border MinHeight="100">

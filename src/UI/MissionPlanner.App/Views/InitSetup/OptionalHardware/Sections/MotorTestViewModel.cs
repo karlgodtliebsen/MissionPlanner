@@ -4,6 +4,7 @@ using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Presentation.Documents;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -525,12 +526,27 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     [ObservableProperty]
     public partial string OutputGuidance { get; private set; } = string.Empty;
 
+    /// <summary>Gets the complete motor-output evidence for the Information tab.</summary>
+    [ObservableProperty]
+    public partial UserDocument OutputDiagnosticsDocument { get; private set; } =
+        MotorOutputDocumentFactory.Create("No active vehicle.", string.Empty);
+
+    private void UpdateOutputDocument()
+    {
+        var document = MotorOutputDocumentFactory.Create(OutputConfiguration, OutputGuidance);
+        if (OutputDiagnosticsDocument.Markdown != document.Markdown)
+        {
+            OutputDiagnosticsDocument = document;
+        }
+    }
+
     private void RefreshOutputDiagnostics()
     {
         if (activeVehicle.VehicleId is not { } id || outputResolver is null)
         {
             OutputConfiguration = "No active vehicle or output resolver.";
             OutputGuidance = string.Empty;
+            UpdateOutputDocument();
             return;
         }
         OutputConfiguration = MotorOutputDiagnostics.Describe(parameters.GetAllParameters(id), layout,
@@ -539,6 +555,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             ? thresholdAssistant.Measurements.Count(item => item.ThresholdPercent.HasValue) : 0;
         OutputGuidance = MotorOutputDiagnostics.Guidance(observed, layout?.Motors.Count ?? 0,
             service.Current.VehicleId == id ? service.Current.FailureReason : null);
+        UpdateOutputDocument();
     }
 
     private void RefreshSpinParameters(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId)

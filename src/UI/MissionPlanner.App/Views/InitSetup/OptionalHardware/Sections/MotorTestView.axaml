@@ -28,7 +28,8 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-                <controls:SetupInformationView Topic="MotorTest" WorkflowError="{Binding ErrorMessage}" >
+                <controls:SetupInformationView Topic="MotorTest" WorkflowError="{Binding ErrorMessage}"
+                                               AdditionalDocument="{Binding OutputDiagnosticsDocument}">
                     <controls:SetupInformationView.WorkflowStatus>
                         <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
                             <Binding Path="StatusMessage" />
@@ -43,20 +44,13 @@
                     <ScrollViewer VerticalScrollBarVisibility="Visible"  HorizontalAlignment="Stretch" Margin="25,0" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch" MaxWidth="1000">
 
-                            <Expander Header="Expand to see Motor output diagnostics" IsExpanded="False" HorizontalAlignment="Stretch">
-                                <StackPanel Spacing="8">
-                                    <SelectableTextBlock Text="{Binding OutputConfiguration}" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding OutputGuidance}" TextWrapping="Wrap" />
-                                </StackPanel>
-                            </Expander>
-
                             <Border Classes="SectionCard" HorizontalAlignment="Stretch">
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="Guided motor start-threshold assistant" Classes="H3" HorizontalAlignment="Center" />
                                     <TextBlock Text="{Binding ThresholdInstruction}" TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding ThresholdCurrentMotor}" TextWrapping="Wrap" />
                                     <ProgressBar IsVisible="{Binding ThresholdBusy}" IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" />
-                                    <WrapPanel>
+                                    <WrapPanel Orientation="Vertical" HorizontalAlignment="Center">
                                         <Button Classes="EmbeddedTextButton" Command="{Binding StartThresholdCommand}" Margin="3" AutomationProperties.Name="Start — props removed" ToolTip.Tip="Start — props removed">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
                                                 <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />

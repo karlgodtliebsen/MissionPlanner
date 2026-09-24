@@ -64,7 +64,7 @@ public sealed class SetupInformationViewTests
                 window.UpdateLayout();
                 Assert.Same(workflow, view.DataContext);
                 Assert.Contains("Initial operation message", vm.Overview!.Markdown);
-                Assert.Equal(2, view.GetVisualDescendants().OfType<InformationDocumentView>().Count());
+                Assert.Equal(2, view.GetVisualDescendants().OfType<InformationDocumentView>().Count(document => document.IsVisible));
                 Assert.InRange(view.Bounds.Width, 1, 600);
                 workflow.Status = "Updated operation message";
                 Dispatcher.UIThread.RunJobs();

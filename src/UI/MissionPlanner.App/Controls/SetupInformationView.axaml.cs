@@ -9,6 +9,17 @@ namespace MissionPlanner.App.Controls;
 /// <summary>Displays a subsystem's reporting documents with an independent visible-tab lifecycle.</summary>
 public partial class SetupInformationView : UserControlViewBase<SetupInformationViewModel>
 {
+    /// <summary>Provides additional reporting from the owning setup workflow.</summary>
+    public static readonly StyledProperty<UserDocument?> AdditionalDocumentProperty =
+        AvaloniaProperty.Register<SetupInformationView, UserDocument?>(nameof(AdditionalDocument));
+
+    /// <summary>Gets or sets supplemental workflow evidence displayed in the shared scroll area.</summary>
+    public UserDocument? AdditionalDocument
+    {
+        get => GetValue(AdditionalDocumentProperty);
+        set => SetValue(AdditionalDocumentProperty, value);
+    }
+
     /// <summary>Identifies the subsystem to report.</summary>
     public static readonly StyledProperty<SetupReportTopic> TopicProperty =
         AvaloniaProperty.Register<SetupInformationView, SetupReportTopic>(nameof(Topic));
@@ -59,11 +70,13 @@ public partial class SetupInformationView : UserControlViewBase<SetupInformation
     {
         base.OnPropertyChanged(change);
         if (!Design.IsDesignMode && ViewModel is not null &&
-            (change.Property == TopicProperty || change.Property == WorkflowStatusProperty || change.Property == WorkflowErrorProperty))
+            (change.Property == TopicProperty || change.Property == WorkflowStatusProperty || change.Property == WorkflowErrorProperty ||
+             change.Property == AdditionalDocumentProperty))
         {
             ViewModel.Topic = Topic;
             ViewModel.WorkflowStatus = WorkflowStatus;
             ViewModel.WorkflowError = WorkflowError;
+            ViewModel.AdditionalDocument = AdditionalDocument;
             ViewModel.Refresh();
         }
     }

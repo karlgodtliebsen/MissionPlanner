@@ -23,6 +23,23 @@ public sealed partial class SetupInformationViewModel : ViewModelBase
     private int generation;
     private UserDocument? overview;
     private UserDocument? parameters;
+    private UserDocument? additionalDocument;
+
+    /// <summary>Gets or sets supplemental reporting from the owning setup workflow.</summary>
+    public UserDocument? AdditionalDocument
+    {
+        get => additionalDocument;
+        set
+        {
+            if (SetProperty(ref additionalDocument, value))
+            {
+                OnPropertyChanged(nameof(HasAdditionalDocument));
+            }
+        }
+    }
+
+    /// <summary>Gets whether supplemental workflow evidence is available.</summary>
+    public bool HasAdditionalDocument => AdditionalDocument is not null;
 
     /// <summary>Initializes reporting independently of the setup command ViewModel.</summary>
     public SetupInformationViewModel(ISetupReportService reports, SetupReportDocumentFactory documents,
