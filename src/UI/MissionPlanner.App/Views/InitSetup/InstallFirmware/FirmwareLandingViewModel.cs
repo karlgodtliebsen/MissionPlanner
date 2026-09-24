@@ -38,7 +38,7 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
         : "Hold BOOT/DFU while reconnecting USB; some boards require BOOT + RESET. STM32 ROM DFU is a USB endpoint, normally not a COM port. Refresh after changing mode.";
 
     /// <summary>Explains manual boot entry without owning operational commands.</summary>
-    public string DfuRebootGuidance => "Use Enter STM32 DFU on the Firmware page for a proven Betaflight controller, or follow the board's BOOT/RESET procedure.";
+    public string DfuRebootGuidance => "Use Enter STM32 DFU on the Configuration tab for a proven Betaflight controller, or follow the board's BOOT/RESET procedure.";
     /// <summary>Initializes the information panel using the shared device discovery models.</summary>
     public FirmwareLandingViewModel(IActiveVehicleContext vehicle, DetectedDeviceViewModel devices,
         STM32BootloaderViewModel dfu,
@@ -90,10 +90,10 @@ public sealed partial class FirmwareLandingViewModel : ViewModelBase
         : devices.IsRefreshing || dfu.IsRefreshing
             ? "Discovery is running. Available firmware workflows will update when the scan finishes."
         : dfu.DfuDevices.Count > 0
-            ? "Review the selected DFU endpoint and tool readiness on the Firmware page."
+            ? "Review the selected DFU endpoint and tool readiness on the Configuration tab."
         : devices.Descriptors.Count > 0
-            ? "Open Firmware to probe the selected controller, prepare firmware and choose the required boot transition."
-        : "Attach a controller by USB, then select Refresh devices above. To use STM32 Bootloader, put the board into DFU mode first. Firmware can be browsed and prepared without a controller.";
+            ? "Open Configuration to probe the selected controller, prepare firmware and choose the required boot transition."
+        : "Attach a controller by USB, then select Refresh devices in Configuration. To use STM32 Bootloader, put the board into DFU mode first. Firmware can be browsed and prepared without a controller.";
 
     /// <inheritdoc />
     public override Task ActivateAsync()

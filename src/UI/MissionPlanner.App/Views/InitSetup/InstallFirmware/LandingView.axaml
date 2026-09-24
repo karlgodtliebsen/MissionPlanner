@@ -1,54 +1,97 @@
-<utilities:UserControlViewBase x:TypeArguments="local:FirmwareLandingViewModel" xmlns="https://github.com/avaloniaui"
-                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                                xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
-                                x:DataType="local:FirmwareLandingViewModel"
-                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                                x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.LandingView"
-                                Margin="25,0,25,0"
-                                >
-
+<utilities:UserControlViewBase
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:documents="clr-namespace:MissionPlanner.App.Presentation.Documents"
+    x:TypeArguments="local:FirmwareLandingViewModel"
+    x:DataType="local:FirmwareLandingViewModel"
+    mc:Ignorable="d"
+    d:DesignWidth="800"
+    d:DesignHeight="450"
+    x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.LandingView"
+    Margin="25,0,25,0">
     <UserControl.Styles>
         <Style Selector="Border.SectionCard.available">
-            <Setter Property="BorderBrush" Value="Green" />
+            <Setter Property="BorderBrush" Value="Green"/>
+        </Style>
+        <Style Selector="controls|InformationDocumentView Border.SectionCard">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
         </Style>
     </UserControl.Styles>
-
     <Grid RowDefinitions="*" HorizontalAlignment="Center">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900"/>
         </Grid.ColumnDefinitions>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="16" Margin="0,16" HorizontalAlignment="Stretch">
-                <TextBlock Text="Controller status" Classes="H3" />
-                <TextBlock Text="Review the connection and detected devices before choosing a firmware workflow." Classes="Warning" TextWrapping="Wrap" />
+                <controls:InformationDocumentView>
+                    <controls:InformationDocumentView.Document>
+                        <MultiBinding
+                            Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                            ConverterParameter="Controller status">
+                            <Binding Source="Review the connection and detected devices before choosing a firmware workflow."/>
+                        </MultiBinding>
+                    </controls:InformationDocumentView.Document>
+                </controls:InformationDocumentView>
                 <Border Padding="20" Classes="SectionCard" Classes.available="{Binding HasVehicleConnection}">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Vehicle connection" Classes="H4" FontWeight="Bold" />
-                        <TextBlock Text="{Binding ConnectionSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding ConnectionDetail}" TextWrapping="Wrap" />
+                        <controls:InformationDocumentView>
+                            <controls:InformationDocumentView.Document>
+                                <MultiBinding
+                                    Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                    ConverterParameter="Vehicle connection">
+                                    <Binding Path="ConnectionSummary" StringFormat="{}{0}"/>
+                                    <Binding Path="ConnectionDetail" StringFormat="{}{0}"/>
+                                </MultiBinding>
+                            </controls:InformationDocumentView.Document>
+                        </controls:InformationDocumentView>
                     </StackPanel>
                 </Border>
                 <Border Padding="20" Classes="SectionCard" Classes.available="{Binding HasSerialDevices}">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="Serial devices" Classes="H4" FontWeight="Bold" />
-                        <TextBlock Text="{Binding SerialSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding SerialDetail}" TextWrapping="Wrap" />
+                        <controls:InformationDocumentView>
+                            <controls:InformationDocumentView.Document>
+                                <MultiBinding
+                                    Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                    ConverterParameter="Serial devices">
+                                    <Binding Path="SerialSummary" StringFormat="{}{0}"/>
+                                    <Binding Path="SerialDetail" StringFormat="{}{0}"/>
+                                </MultiBinding>
+                            </controls:InformationDocumentView.Document>
+                        </controls:InformationDocumentView>
                     </StackPanel>
                 </Border>
                 <Border Padding="20" Classes="SectionCard" Classes.available="{Binding HasDfuDevices}">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="STM32 DFU devices" Classes="H4" FontWeight="Bold" />
-                        <TextBlock Text="{Binding DfuSummary}" FontWeight="SemiBold" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding DfuDetail}" TextWrapping="Wrap" />
+                        <controls:InformationDocumentView>
+                            <controls:InformationDocumentView.Document>
+                                <MultiBinding
+                                    Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                    ConverterParameter="STM32 DFU devices">
+                                    <Binding Path="DfuSummary" StringFormat="{}{0}"/>
+                                    <Binding Path="DfuDetail" StringFormat="{}{0}"/>
+                                </MultiBinding>
+                            </controls:InformationDocumentView.Document>
+                        </controls:InformationDocumentView>
                     </StackPanel>
                 </Border>
                 <Border Padding="20" Classes="SectionCard">
                     <StackPanel Spacing="8">
-                        <TextBlock Text="What to do next" Classes="H4" FontWeight="Bold" />
-                        <TextBlock Text="{Binding NextStep}" TextWrapping="Wrap" />
+                        <controls:InformationDocumentView>
+                            <controls:InformationDocumentView.Document>
+                                <MultiBinding
+                                    Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                    ConverterParameter="What to do next">
+                                    <Binding Path="NextStep" StringFormat="{}{0}"/>
+                                </MultiBinding>
+                            </controls:InformationDocumentView.Document>
+                        </controls:InformationDocumentView>
                     </StackPanel>
                 </Border>
             </StackPanel>

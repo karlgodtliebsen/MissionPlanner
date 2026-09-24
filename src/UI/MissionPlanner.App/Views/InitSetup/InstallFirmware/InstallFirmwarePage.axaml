@@ -1,399 +1,515 @@
-﻿<utilities:NavigationViewBase
+<utilities:NavigationViewBase
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:u="https://irihi.tech/ursa"
+    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:documents="clr-namespace:MissionPlanner.App.Presentation.Documents"
     x:TypeArguments="local:InstallFirmwareViewModel"
     x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwarePage"
     x:DataType="local:InstallFirmwareViewModel">
+    <NavigationPage.Styles>
+        <Style Selector="controls|InformationDocumentView Border.SectionCard">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"/>
+        </Style>
+    </NavigationPage.Styles>
     <ContentPage Header="Install Firmware">
-
-        <Grid Margin="20" RowDefinitions="Auto,*"  RowSpacing="14">
+        <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <controls:InformationDocumentView IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}">
+                    <controls:InformationDocumentView.Document>
+                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                            <Binding Path="StatusMessage" StringFormat="{}{0}"/>
+                        </MultiBinding>
+                    </controls:InformationDocumentView.Document>
+                </controls:InformationDocumentView>
+                <controls:InformationDocumentView IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}">
+                    <controls:InformationDocumentView.Document>
+                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}" ConverterParameter="Error">
+                            <Binding Path="ErrorMessage" StringFormat="{}{0}"/>
+                        </MultiBinding>
+                    </controls:InformationDocumentView.Document>
+                </controls:InformationDocumentView>
             </StackPanel>
-            <TabControl Grid.Row="1" TabStripPlacement="Left" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+            <TabControl Grid.Row="1" TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                 <TabItem Header="Information">
-                    <local:LandingView />
+                    <local:LandingView/>
                 </TabItem>
-                <TabItem Header="Firmware">
-                    <Grid RowDefinitions="Auto,Auto,*" Margin="20" RowSpacing="12" HorizontalAlignment="Center">
+                <TabItem Header="Configuration">
+                    <Grid RowDefinitions="Auto,*" Margin="20" RowSpacing="12" HorizontalAlignment="Center">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+                            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900"/>
                         </Grid.ColumnDefinitions>
-                        <WrapPanel Grid.Row="0" ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
-
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh physical serial and DFU devices"
-                                    Command="{Binding RefreshDevicesCommand}"
-                                    IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}"  AutomationProperties.Name="Refresh physical serial and DFU devices">
-                                <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Probe Runtime. Identify the selected controller using live protocols"
-                                    Command="{Binding ProbeRuntimeCommand}"  AutomationProperties.Name="Probe Runtime. Identify the selected controller using live protocols">
-                                <avalonia:MaterialIcon Kind="Chip" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-                            <u:IconDropDownButton  ToolTip.Tip="Bootloaders" Classes="ToolbarIconDropDownButton" AutomationProperties.Name="Bootloaders">
-                                <DropDownButton.Flyout>
-                                    <MenuFlyout Placement="Bottom">
-                                        <MenuItem
-                                            ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
-                                            Command="{Binding EnterArduPilotBootloaderCommand}"
-                                            Header="ArduPilot Bootloader" />
-                                        <MenuItem ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
-                                                  Command="{Binding RebootToDfuCommand}"
-                                                  Header="STM32 DFU" />
-                                        <MenuItem ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
-                                                  Header="Manual BOOT / RESET"
-
-                                                  Command="{Binding EnterManualDfuCommand}"
-                                                  IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}"
-                                                  />
-                                    </MenuFlyout>
-                                </DropDownButton.Flyout>
-                                <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30"  Classes="ActionIcon" />
-                            </u:IconDropDownButton>
-                            <u:IconDropDownButton   ToolTip.Tip="Select Firmware"  Classes="ToolbarIconDropDownButton" AutomationProperties.Name="Select Firmware">
-                                <DropDownButton.Flyout>
-                                    <MenuFlyout Placement="Bottom">
-                                        <MenuItem
-                                            ToolTip.Tip="Online Firmware"
-                                            Command="{Binding ShowOnlineFirmwareSelectorCommand}"
-                                            IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}"
-                                            Header="Online Firmware" />
-
-                                        <MenuItem
-                                            ToolTip.Tip="Local Firmware"
-                                            Command="{Binding ShowLocalFirmwareSelectorCommand}"
-                                            IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}"
-                                            Header="Local Firmware" />
-                                    </MenuFlyout>
-                                </DropDownButton.Flyout>
-                                <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30"  Classes="ActionIcon" />
-                            </u:IconDropDownButton>
-
-                            <Button Classes="ToolbarIconButton"  ToolTip.Tip="Validate combined HEX"
-                                    Command="{Binding PrepareSelectedHexCommand}"  AutomationProperties.Name="Validate combined HEX">
-                                <avalonia:MaterialIcon Kind="FileCheckOutline" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Recovery / Change Firmware Target"
-                                    Command="{Binding BeginRecoveryCommand}"
-                                    IsVisible="{Binding CanOfferRecovery}" AutomationProperties.Name="Recovery / Change Firmware Target">
-                                    <avalonia:MaterialIcon Kind="Wrench" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Return to normal upgrade"
-                                    Command="{Binding EndRecoveryCommand}" IsVisible="{Binding IsRecovery}" AutomationProperties.Name="Return to normal upgrade">
-                                <avalonia:MaterialIcon Kind="Undo" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Install firmware"
-                                    Command="{Binding ExecuteCurrentPlanCommand}"
-                                    IsEnabled="{Binding CurrentPlan.CanExecute}"  AutomationProperties.Name="Install firmware">
-                                <avalonia:MaterialIcon Kind="DownloadBoxOutline" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Clear Selected Firmware" Command="{Binding ClearFirmwareSelectionCommand}"
-                                    IsEnabled="{Binding !IsOperationInProgress}"  AutomationProperties.Name="Clear Selected Firmware">
-                                <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Load platform choices"
-                                    IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
-                                    Command="{Binding LoadLocalPlatformChoicesCommand}"
-                                    IsEnabled="{Binding !IsOperationInProgress}" HorizontalAlignment="Center"   AutomationProperties.Name="Load platform choices">
-                                <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Copy URL" Command="{Binding CopySelectedUrlCommand}"   AutomationProperties.Name="Copy URL">
-                                <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-                            <Button Classes="ToolbarIconButton"  ToolTip.Tip="{Binding BootloaderUpdateExplanation}"
-                                    Command="{Binding UpdateBootloaderCommand}"  AutomationProperties.Name="{Binding BootloaderUpdateExplanation}">
-                                <avalonia:MaterialIcon Kind="Memory" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-
-                            <Button Classes="ToolbarIconButton"  ToolTip.Tip="Review DFU target"
-                                    Command="{Binding ReviewDfuTargetCommand}"
-                                    IsVisible="{Binding HasDetectedDfuDevice}"
-                                    IsEnabled="{Binding !IsOperationInProgress}"
-                                     AutomationProperties.Name="Review DFU target">
-                                <avalonia:MaterialIcon Kind="UsbPort" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-
-                            <Button Classes="ToolbarIconButton"  ToolTip.Tip="Cancel operation"
-                                    Command="{Binding CancelCommand}"
-                                    IsVisible="{Binding IsOperationInProgress}" AutomationProperties.Name="Cancel operation">
-                                <avalonia:MaterialIcon Kind="CloseCircleOutline" Width="30" Height="30"  Classes="ActionIcon" />
-                            </Button>
-                        </WrapPanel>
-
-                        <Border Grid.Row="1" Classes="SectionCard" Padding="16" HorizontalAlignment="Stretch">
+                        <Border Grid.Row="0" Classes="SectionCard" Padding="16" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="6">
-                                <TextBlock Text="{Binding CurrentPlan.Description}" Classes="H3" TextWrapping="Wrap" />
-
+                                <controls:InformationDocumentView>
+                                    <controls:InformationDocumentView.Document>
+                                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.SectionInstance}">
+                                            <Binding Path="CurrentPlan.Description" StringFormat="{}{0}"/>
+                                        </MultiBinding>
+                                    </controls:InformationDocumentView.Document>
+                                </controls:InformationDocumentView>
                                 <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch">
-
-                                    <SelectableTextBlock Grid.Row="0"
-                                                         Text="Progress:" Classes="H4 Warning"  TextWrapping="Wrap"
-                                                         IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                                    <SelectableTextBlock Grid.Row="1" Text="{Binding WorkflowProgress}" Classes="H4 Warning"  TextWrapping="Wrap"
-                                                         IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                    <controls:InformationDocumentView
+                                        IsVisible="{Binding WorkflowProgress, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                        Grid.Row="0">
+                                        <controls:InformationDocumentView.Document>
+                                            <MultiBinding
+                                                Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                ConverterParameter="Progress:">
+                                                <Binding Path="WorkflowProgress" StringFormat="{}{0}"/>
+                                            </MultiBinding>
+                                        </controls:InformationDocumentView.Document>
+                                    </controls:InformationDocumentView>
                                 </Grid>
-
                                 <Grid RowDefinitions="Auto,Auto" HorizontalAlignment="Stretch">
-                                    <SelectableTextBlock Grid.Row="0" Text="Next:" Classes="H4 Warning" TextWrapping="Wrap"
-                                                         IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-
-                                    <SelectableTextBlock Grid.Row="1" Text="{Binding WorkflowNextStep}" Classes="H4 Warning"  TextWrapping="Wrap"
-                                                         IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-
+                                    <controls:InformationDocumentView
+                                        IsVisible="{Binding WorkflowNextStep, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                        Grid.Row="0">
+                                        <controls:InformationDocumentView.Document>
+                                            <MultiBinding
+                                                Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                ConverterParameter="Next:">
+                                                <Binding Path="WorkflowNextStep" StringFormat="{}{0}"/>
+                                            </MultiBinding>
+                                        </controls:InformationDocumentView.Document>
+                                    </controls:InformationDocumentView>
                                 </Grid>
-                                <SelectableTextBlock Text="{Binding ErrorMessage}" Classes="H4 Danger" TextWrapping="Wrap"
-                                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                                <controls:InformationDocumentView IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}">
+                                    <controls:InformationDocumentView.Document>
+                                        <MultiBinding
+                                            Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                            ConverterParameter="Error">
+                                            <Binding Path="ErrorMessage" StringFormat="{}{0}"/>
+                                        </MultiBinding>
+                                    </controls:InformationDocumentView.Document>
+                                </controls:InformationDocumentView>
                             </StackPanel>
                         </Border>
-                        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
+                        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="12" HorizontalAlignment="Stretch">
                                 <Border Classes="SectionCard" Padding="16">
                                     <StackPanel Spacing="8">
-                                        <SelectableTextBlock Text="{Binding InstallMode}" Classes="H3" />
-                                        <SelectableTextBlock Text="{Binding IdentityEvidenceText}" TextWrapping="Wrap"  Classes="H4"/>
-                                        <SelectableTextBlock Text="{Binding BootloaderUpdateExplanation}" TextWrapping="Wrap" Classes="H4" />
-                                        <SelectableTextBlock Text="Recovery will replace the current firmware target. Bootloader evidence and explicit confirmation are required before erase."
-                                                             IsVisible="{Binding IsRecovery}" TextWrapping="Wrap" Classes="Warning H4" />
+                                        <controls:InformationDocumentView>
+                                            <controls:InformationDocumentView.Document>
+                                                <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.SectionInstance}">
+                                                    <Binding Path="InstallMode" StringFormat="{}{0}"/>
+                                                    <Binding Path="IdentityEvidenceText" StringFormat="{}{0}"/>
+                                                    <Binding Path="BootloaderUpdateExplanation" StringFormat="{}{0}"/>
+                                                </MultiBinding>
+                                            </controls:InformationDocumentView.Document>
+                                        </controls:InformationDocumentView>
+                                        <controls:InformationDocumentView IsVisible="{Binding IsRecovery}">
+                                            <controls:InformationDocumentView.Document>
+                                                <MultiBinding
+                                                    Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                    ConverterParameter="Recovery">
+                                                    <Binding Source="Recovery will replace the current firmware target. Bootloader evidence and explicit confirmation are required before erase."/>
+                                                </MultiBinding>
+                                            </controls:InformationDocumentView.Document>
+                                        </controls:InformationDocumentView>
+                                        <WrapPanel ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="Recovery / Change Firmware Target"
+                                                Command="{Binding BeginRecoveryCommand}"
+                                                IsVisible="{Binding CanOfferRecovery}"
+                                                AutomationProperties.Name="Recovery / Change Firmware Target">
+                                                <avalonia:MaterialIcon Kind="Wrench" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="Return to normal upgrade"
+                                                Command="{Binding EndRecoveryCommand}"
+                                                IsVisible="{Binding IsRecovery}"
+                                                AutomationProperties.Name="Return to normal upgrade">
+                                                <avalonia:MaterialIcon Kind="Undo" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="{Binding BootloaderUpdateExplanation}"
+                                                Command="{Binding UpdateBootloaderCommand}"
+                                                AutomationProperties.Name="{Binding BootloaderUpdateExplanation}">
+                                                <avalonia:MaterialIcon Kind="Memory" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                        </WrapPanel>
                                     </StackPanel>
                                 </Border>
                                 <Border Classes="SectionCard" Padding="16">
-                                    <StackPanel Orientation="Vertical" >
-                                        <StackPanel Spacing="10"  IsVisible="{Binding ShowPhysicalController}" >
-                                            <SelectableTextBlock Text="Physical controller" Classes="H3" />
-                                            <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                                                  ColumnSpacing="16" RowSpacing="10">
-
-                                                <ComboBox Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"
-                                                          HorizontalContentAlignment="Right"
-                                                          ItemsSource="{Binding DevicesModel.DetectedDevices}"
-                                                          SelectedItem="{Binding DevicesModel.SelectedDevice}"
-                                                          PlaceholderText="Select serial controller" HorizontalAlignment="Stretch"
-                                                          IsEnabled="{Binding !IsOperationInProgress}" />
-
-                                                <ComboBox  Grid.Column="0" Grid.Row="1"  Grid.ColumnSpan="2"
-                                                           HorizontalContentAlignment="Right"
-                                                           ItemsSource="{Binding DfuModel.DfuDevices}"
-                                                           SelectedItem="{Binding DfuModel.SelectedDfuDevice}"
-                                                           PlaceholderText="Select STM32 DFU endpoint" HorizontalAlignment="Stretch"
-                                                           IsEnabled="{Binding !IsOperationInProgress}" />
-
-                                                <SelectableTextBlock Grid.Column="0" Grid.Row="2"  Text="STM32 ROM DFU:" TextWrapping="Wrap" />
-                                                <SelectableTextBlock Grid.Column="1" Grid.Row="2"  Text="{Binding DfuProviderId}" TextWrapping="Wrap" />
-                                                <SelectableTextBlock Grid.Column="0" Grid.Row="3"  Text="USB:" TextWrapping="Wrap" />
-                                                <SelectableTextBlock Grid.Column="1" Grid.Row="3"  Text="{Binding DfuVendorId}" TextWrapping="Wrap" />
-
-                                                <SelectableTextBlock Grid.Column="0" Grid.Row="4"  Text="Product Id:" TextWrapping="Wrap" />
-                                                <SelectableTextBlock Grid.Column="1" Grid.Row="4"  Text="{Binding DfuProductId}" TextWrapping="Wrap" />
-
-                                                <SelectableTextBlock Grid.Column="0" Grid.Row="5"  Text="Correlated Source:" TextWrapping="Wrap" />
-                                                <SelectableTextBlock Grid.Column="1" Grid.Row="5"  Text="{Binding DfuCorrelatedSource}" TextWrapping="Wrap" />
-
-                                                <SelectableTextBlock Grid.Column="0" Grid.Row="6"  Text="Message:" TextWrapping="Wrap" />
-                                                <SelectableTextBlock Grid.Column="1" Grid.Row="6"  Text="{Binding DfuMessage}" TextWrapping="Wrap" />
-
-                                                <SelectableTextBlock Grid.Column="0" Grid.Row="7" Text="Device Status:" TextWrapping="Wrap" />
-                                                <SelectableTextBlock Grid.Column="1" Grid.Row="7"  Text="{Binding DevicesModel.DeviceStatus}" TextWrapping="Wrap" />
-
-                                                <SelectableTextBlock Grid.Column="0" Grid.Row="8"  Text="Tool Readiness:" TextWrapping="Wrap" />
-                                                <SelectableTextBlock Grid.Column="1" Grid.Row="8"  Text="{Binding DfuModel.ToolReadiness}" TextWrapping="Wrap" />
-
-                                            </Grid>
+                                    <StackPanel Orientation="Vertical">
+                                        <StackPanel Spacing="10" IsVisible="{Binding ShowPhysicalController}">
+                                            <controls:InformationDocumentView>
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding
+                                                        Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                        ConverterParameter="Physical controller">
+                                                        <Binding Source=""/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <StackPanel Spacing="8">
+                                                <ComboBox
+                                                    HorizontalContentAlignment="Right"
+                                                    ItemsSource="{Binding DevicesModel.DetectedDevices}"
+                                                    SelectedItem="{Binding DevicesModel.SelectedDevice}"
+                                                    PlaceholderText="Select serial controller"
+                                                    HorizontalAlignment="Stretch"
+                                                    IsEnabled="{Binding !IsOperationInProgress}"/>
+                                                <ComboBox
+                                                    HorizontalContentAlignment="Right"
+                                                    ItemsSource="{Binding DfuModel.DfuDevices}"
+                                                    SelectedItem="{Binding DfuModel.SelectedDfuDevice}"
+                                                    PlaceholderText="Select STM32 DFU endpoint"
+                                                    HorizontalAlignment="Stretch"
+                                                    IsEnabled="{Binding !IsOperationInProgress}"/>
+                                                <controls:InformationDocumentView>
+                                                    <controls:InformationDocumentView.Document>
+                                                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                            <Binding Path="DfuProviderId" StringFormat="{}STM32 ROM DFU: {0}"/>
+                                                            <Binding Path="DfuVendorId" StringFormat="{}USB: {0}"/>
+                                                            <Binding Path="DfuProductId" StringFormat="{}Product Id: {0}"/>
+                                                            <Binding Path="DfuCorrelatedSource" StringFormat="{}Correlated Source: {0}"/>
+                                                            <Binding Path="DfuMessage" StringFormat="{}Message: {0}"/>
+                                                            <Binding Path="DevicesModel.DeviceStatus" StringFormat="{}Device Status: {0}"/>
+                                                            <Binding Path="DfuModel.ToolReadiness" StringFormat="{}Tool Readiness: {0}"/>
+                                                        </MultiBinding>
+                                                    </controls:InformationDocumentView.Document>
+                                                </controls:InformationDocumentView>
+                                            </StackPanel>
                                         </StackPanel>
-                                        <StackPanel  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                     IsVisible="{Binding ShowPhysicalController, Converter={StaticResource InvertedBoolConverter}}" >
-                                            <SelectableTextBlock Text="No Physical controller Detected" Classes="H3" />
+                                        <StackPanel
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch"
+                                            IsVisible="{Binding ShowPhysicalController, Converter={StaticResource InvertedBoolConverter}}">
+                                            <controls:InformationDocumentView>
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding
+                                                        Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                        ConverterParameter="No Physical controller Detected">
+                                                        <Binding Source=""/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
                                         </StackPanel>
+                                        <WrapPanel ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="Refresh physical serial and DFU devices"
+                                                Command="{Binding RefreshDevicesCommand}"
+                                                IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}"
+                                                AutomationProperties.Name="Refresh physical serial and DFU devices">
+                                                <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="Probe Runtime. Identify the selected controller using live protocols"
+                                                Command="{Binding ProbeRuntimeCommand}"
+                                                AutomationProperties.Name="Probe Runtime. Identify the selected controller using live protocols">
+                                                <avalonia:MaterialIcon Kind="Chip" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                            <u:IconDropDownButton
+                                                ToolTip.Tip="Bootloaders"
+                                                Classes="ToolbarIconDropDownButton"
+                                                AutomationProperties.Name="Bootloaders">
+                                                <DropDownButton.Flyout>
+                                                    <MenuFlyout Placement="Bottom">
+                                                        <MenuItem
+                                                            ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
+                                                            Command="{Binding EnterArduPilotBootloaderCommand}"
+                                                            Header="ArduPilot Bootloader"/>
+                                                        <MenuItem
+                                                            ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
+                                                            Command="{Binding RebootToDfuCommand}"
+                                                            Header="STM32 DFU"/>
+                                                        <MenuItem
+                                                            ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
+                                                            Header="Manual BOOT / RESET"
+                                                            Command="{Binding EnterManualDfuCommand}"
+                                                            IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}"/>
+                                                    </MenuFlyout>
+                                                </DropDownButton.Flyout>
+                                                <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </u:IconDropDownButton>
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="Review DFU target"
+                                                Command="{Binding ReviewDfuTargetCommand}"
+                                                IsVisible="{Binding HasDetectedDfuDevice}"
+                                                IsEnabled="{Binding !IsOperationInProgress}"
+                                                AutomationProperties.Name="Review DFU target">
+                                                <avalonia:MaterialIcon Kind="UsbPort" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                        </WrapPanel>
                                     </StackPanel>
                                 </Border>
                                 <Border Classes="SectionCard" Padding="16" IsVisible="{Binding RequiresDfuEntry}">
                                     <StackPanel Spacing="8">
-                                        <SelectableTextBlock Text="Enter STM32 DFU using the BOOT button" Classes="H3" />
-                                        <SelectableTextBlock Text="Firmware validation checks the file. Target confirmation and flashing require a detected STM32 DFU device. For a controller requiring manual entry, disconnect USB, hold BOOT while reconnecting USB, then release BOOT. Follow the board's BOOT/RESET instructions if different. Your firmware selection will be kept."
-                                                             TextWrapping="Wrap" />
-                                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Enter DFU using BOOT button"
-                                                Command="{Binding EnterManualDfuCommand}"
-                                                HorizontalAlignment="Center" AutomationProperties.Name="Enter DFU using BOOT button">
-                                            <avalonia:MaterialIcon Kind="Usb" Classes="ActionIcon" Width="20" Height="20" />
+                                        <controls:InformationDocumentView>
+                                            <controls:InformationDocumentView.Document>
+                                                <MultiBinding
+                                                    Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                    ConverterParameter="Enter STM32 DFU using the BOOT button">
+                                                    <Binding Source="Firmware validation checks the file. Target confirmation and flashing require a detected STM32 DFU device. For a controller requiring manual entry, disconnect USB, hold BOOT while reconnecting USB, then release BOOT. Follow the board's BOOT/RESET instructions if different. Your firmware selection will be kept."/>
+                                                </MultiBinding>
+                                            </controls:InformationDocumentView.Document>
+                                        </controls:InformationDocumentView>
+                                        <Button
+                                            Classes="EmbeddedIconButton"
+                                            ToolTip.Tip="Enter DFU using BOOT button"
+                                            Command="{Binding EnterManualDfuCommand}"
+                                            HorizontalAlignment="Center"
+                                            AutomationProperties.Name="Enter DFU using BOOT button">
+                                            <avalonia:MaterialIcon Kind="Usb" Classes="ActionIcon" Width="20" Height="20"/>
                                         </Button>
                                     </StackPanel>
                                 </Border>
-                                <Border Classes="SectionCard" Padding="16"
-                                        IsVisible="{Binding IsFirmwareSelected}">
+                                <Border Classes="SectionCard" Padding="16">
                                     <StackPanel Spacing="8">
-                                        <SelectableTextBlock Text="Selected Firmware" Classes="H3" />
-                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
-
-                                            <SelectableTextBlock Text="Source:" />
-                                            <SelectableTextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.Source}" />
-
-                                            <SelectableTextBlock Grid.Column="0" Grid.Row="1" Text="Format:" />
-                                            <SelectableTextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedArtifact.Format}" />
-
-                                            <SelectableTextBlock Grid.Row="2" Grid.Column="0"  Text="Platform / board ID:" />
-                                            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="12">
-                                                <SelectableTextBlock Text="{Binding SelectedArtifact.Platform}" />
-                                                <SelectableTextBlock Text="{Binding SelectedArtifact.BoardId}" />
+                                        <StackPanel Spacing="8" IsVisible="{Binding IsFirmwareSelected}">
+                                            <controls:InformationDocumentView>
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding
+                                                        Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                        ConverterParameter="Selected Firmware">
+                                                        <Binding Source=""/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <StackPanel Spacing="8">
+                                                <controls:InformationDocumentView>
+                                                    <controls:InformationDocumentView.Document>
+                                                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                            <Binding Path="SelectedArtifact.Source" StringFormat="{}Source: {0}"/>
+                                                            <Binding Path="SelectedArtifact.Format" StringFormat="{}Format: {0}"/>
+                                                            <Binding
+                                                                Path="SelectedArtifact.Platform"
+                                                                StringFormat="{}Platform / board ID: {0}"/>
+                                                            <Binding Path="SelectedArtifact.BoardId" StringFormat="{}{0}"/>
+                                                            <Binding
+                                                                Path="SelectedArtifact.VehicleFamily"
+                                                                StringFormat="{}Vehicle / build: {0}"/>
+                                                            <Binding Path="SelectedArtifact.Version" StringFormat="{}{0}"/>
+                                                            <Binding Path="SelectedArtifact.ImageSize" StringFormat="{}Image bytes: {0}"/>
+                                                            <Binding Path="SelectedArtifact.Sha256" StringFormat="{}SHA-256: {0}"/>
+                                                            <Binding
+                                                                Path="SelectedArtifact.CacheIdentity"
+                                                                StringFormat="{}Cache identity: {0}"/>
+                                                        </MultiBinding>
+                                                    </controls:InformationDocumentView.Document>
+                                                </controls:InformationDocumentView>
+                                                <controls:InformationDocumentView IsVisible="{Binding HasOnlineArtifact}">
+                                                    <controls:InformationDocumentView.Document>
+                                                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                            <Binding Path="SelectedArtifact.OnlineUrl" StringFormat="{}Online source: {0}"/>
+                                                            <Binding Path="SelectedArtifact.Channel" StringFormat="{}Channel / Git SHA: {0}"/>
+                                                            <Binding Path="SelectedArtifact.GitSha" StringFormat="{}{0}"/>
+                                                        </MultiBinding>
+                                                    </controls:InformationDocumentView.Document>
+                                                </controls:InformationDocumentView>
+                                                <controls:InformationDocumentView IsVisible="{Binding HasLocalArtifact}">
+                                                    <controls:InformationDocumentView.Document>
+                                                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                            <Binding Path="SelectedArtifact.LocalFile" StringFormat="{}Local source: {0}"/>
+                                                            <Binding Path="SelectedArtifact.ImportedAt" StringFormat="{}Imported: {0}"/>
+                                                        </MultiBinding>
+                                                    </controls:InformationDocumentView.Document>
+                                                </controls:InformationDocumentView>
+                                                <controls:InformationDocumentView>
+                                                    <controls:InformationDocumentView.Document>
+                                                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                            <Binding Path="SelectedArtifact.CacheHit" StringFormat="{}Reused cache: {0}"/>
+                                                            <Binding
+                                                                Path="SelectedArtifact.AddressRanges"
+                                                                StringFormat="{}Address Ranges: {0}"/>
+                                                        </MultiBinding>
+                                                    </controls:InformationDocumentView.Document>
+                                                </controls:InformationDocumentView>
+                                                <controls:InformationDocumentView IsVisible="{Binding DfuModel.HasLocalDfuFirmware}">
+                                                    <controls:InformationDocumentView.Document>
+                                                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                            <Binding Source="To validate: Choose the intended controller platform. HEX validation does not establish board identity. Use the file supplier's target information; if unknown, select an online release for your exact controller."/>
+                                                        </MultiBinding>
+                                                    </controls:InformationDocumentView.Document>
+                                                </controls:InformationDocumentView>
+                                                <ComboBox
+                                                    IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
+                                                    ItemsSource="{Binding OnlineFirmwareModel.KnownPlatforms}"
+                                                    SelectedItem="{Binding LocalDfuPlatform}"
+                                                    PlaceholderText="Select intended controller platform from catalogue"
+                                                    HorizontalContentAlignment="Right"
+                                                    HorizontalAlignment="Stretch"/>
                                             </StackPanel>
-
-                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="3" Text="Vehicle / build:" />
-                                            <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Spacing="12">
-                                                <SelectableTextBlock Text="{Binding SelectedArtifact.VehicleFamily}" />
-                                                <SelectableTextBlock Text="{Binding SelectedArtifact.Version}" />
-                                            </StackPanel>
-
-                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="4" Text="Image bytes:" />
-                                            <SelectableTextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedArtifact.ImageSize}" />
-
-                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="5" Text="SHA-256:" />
-                                            <SelectableTextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedArtifact.Sha256}" TextWrapping="Wrap" />
-
-                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="6" Text="Cache identity:" />
-                                            <SelectableTextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedArtifact.CacheIdentity}" TextWrapping="Wrap" />
-
-                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="7" Text="Online source:"
-                                                                 IsVisible="{Binding HasOnlineArtifact}" />
-                                            <SelectableTextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedArtifact.OnlineUrl}"
-                                                                 TextWrapping="Wrap" IsVisible="{Binding HasOnlineArtifact}" />
-
-                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="8" Text="Channel / Git SHA:" IsVisible="{Binding HasOnlineArtifact}" />
-                                            <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Spacing="12" IsVisible="{Binding HasOnlineArtifact}">
-                                                <SelectableTextBlock Text="{Binding SelectedArtifact.Channel}" />
-                                                <SelectableTextBlock Text="{Binding SelectedArtifact.GitSha}"  TextWrapping="Wrap" />
-                                            </StackPanel>
-
-                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="9" Text="Local source:" IsVisible="{Binding HasLocalArtifact}" />
-                                            <SelectableTextBlock Grid.Row="9" Grid.Column="1" Text="{Binding SelectedArtifact.LocalFile}" TextWrapping="Wrap" IsVisible="{Binding HasLocalArtifact}" />
-
-                                            <SelectableTextBlock Grid.Column="0"  Grid.Row="10" Text="Imported:" IsVisible="{Binding HasLocalArtifact}" />
-                                            <SelectableTextBlock Grid.Row="10" Grid.Column="1" Text="{Binding SelectedArtifact.ImportedAt}" TextWrapping="Wrap"  IsVisible="{Binding HasLocalArtifact}" />
-
-                                            <SelectableTextBlock Grid.Row="11" Grid.Column="0" Text="Reused cache:" />
-                                            <SelectableTextBlock Grid.Row="11" Grid.Column="1" Text="{Binding SelectedArtifact.CacheHit}" />
-
-                                            <SelectableTextBlock Grid.Row="12" Grid.Column="0" Text="Address Ranges:" />
-                                            <SelectableTextBlock Grid.Row="12" Grid.Column="1" Text="{Binding SelectedArtifact.AddressRanges}" TextWrapping="Wrap" />
-
-                                            <SelectableTextBlock Grid.Row="13" Grid.Column="0"  Text="To validate:"
-                                                                 IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
-                                                                 TextWrapping="Wrap" />
-                                            <SelectableTextBlock Grid.Row="13" Grid.Column="1" Text="Choose the intended controller platform. HEX validation does not establish board identity. Use the file supplier's target information; if unknown, select an online release for your exact controller."
-                                                                 IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
-                                                                 TextWrapping="Wrap" />
-
-                                            <ComboBox
-                                                Grid.Row="14" Grid.Column="0" Grid.ColumnSpan="2"
-                                                IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
-                                                ItemsSource="{Binding OnlineFirmwareModel.KnownPlatforms}"
-                                                SelectedItem="{Binding LocalDfuPlatform}"
-                                                PlaceholderText="Select intended controller platform from catalogue"
-                                                HorizontalContentAlignment="Right"
-                                                HorizontalAlignment="Stretch" />
-
-                                        </Grid>
-
-                                        <StackPanel HorizontalAlignment="Stretch" IsVisible="{Binding ShowHexPreparation}" >
-                                            <Button Classes="EmbeddedIconButton"
-                                                    HorizontalAlignment="Center" ToolTip.Tip="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}" AutomationProperties.Name="Validate combined HEX">
-                                                <avalonia:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
-                                            </Button>
                                         </StackPanel>
+                                        <WrapPanel ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
+                                            <u:IconDropDownButton
+                                                ToolTip.Tip="Select Firmware"
+                                                Classes="ToolbarIconDropDownButton"
+                                                AutomationProperties.Name="Select Firmware">
+                                                <DropDownButton.Flyout>
+                                                    <MenuFlyout Placement="Bottom">
+                                                        <MenuItem
+                                                            ToolTip.Tip="Online Firmware"
+                                                            Command="{Binding ShowOnlineFirmwareSelectorCommand}"
+                                                            IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}"
+                                                            Header="Online Firmware"/>
+                                                        <MenuItem
+                                                            ToolTip.Tip="Local Firmware"
+                                                            Command="{Binding ShowLocalFirmwareSelectorCommand}"
+                                                            IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}"
+                                                            Header="Local Firmware"/>
+                                                    </MenuFlyout>
+                                                </DropDownButton.Flyout>
+                                                <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </u:IconDropDownButton>
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="Validate combined HEX"
+                                                Command="{Binding PrepareSelectedHexCommand}"
+                                                AutomationProperties.Name="Validate combined HEX">
+                                                <avalonia:MaterialIcon Kind="FileCheckOutline" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="Clear Selected Firmware"
+                                                Command="{Binding ClearFirmwareSelectionCommand}"
+                                                IsEnabled="{Binding !IsOperationInProgress}"
+                                                AutomationProperties.Name="Clear Selected Firmware">
+                                                <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="Load platform choices"
+                                                IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
+                                                Command="{Binding LoadLocalPlatformChoicesCommand}"
+                                                IsEnabled="{Binding !IsOperationInProgress}"
+                                                HorizontalAlignment="Center"
+                                                AutomationProperties.Name="Load platform choices">
+                                                <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                            <Button
+                                                Classes="EmbeddedIconButton"
+                                                ToolTip.Tip="Copy URL"
+                                                Command="{Binding CopySelectedUrlCommand}"
+                                                AutomationProperties.Name="Copy URL">
+                                                <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" Classes="ActionIcon"/>
+                                            </Button>
+                                        </WrapPanel>
                                     </StackPanel>
                                 </Border>
                                 <Border Classes="SectionCard" Padding="16" IsVisible="{Binding ShowValidationAndCompatibility}">
                                     <StackPanel Spacing="8">
-                                        <SelectableTextBlock  Text="Validation and compatibility" Classes="H3" />
-                                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
-                                                IsVisible="{Binding ShowOnlineValidation}" IsEnabled="{Binding !IsOperationInProgress}"
-                                                HorizontalAlignment="Center" AutomationProperties.Name="Validate selected firmware">
-                                            <avalonia:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
+                                        <controls:InformationDocumentView>
+                                            <controls:InformationDocumentView.Document>
+                                                <MultiBinding
+                                                    Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                    ConverterParameter="Validation and compatibility">
+                                                    <Binding Source=""/>
+                                                </MultiBinding>
+                                            </controls:InformationDocumentView.Document>
+                                        </controls:InformationDocumentView>
+                                        <Button
+                                            Classes="EmbeddedIconButton"
+                                            ToolTip.Tip="Validate selected firmware"
+                                            Command="{Binding ValidateSelectedFirmwareCommand}"
+                                            IsVisible="{Binding ShowOnlineValidation}"
+                                            IsEnabled="{Binding !IsOperationInProgress}"
+                                            HorizontalAlignment="Center"
+                                            AutomationProperties.Name="Validate selected firmware">
+                                            <avalonia:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon"/>
                                         </Button>
-                                        <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16" RowSpacing="15">
-
-                                            <SelectableTextBlock Grid.Row="0" Grid.Column="0" Text="Artifact valid:" />
-                                            <SelectableTextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedArtifact.ArtifactValid}" />
-
-                                            <SelectableTextBlock Grid.Row="1" Grid.Column="0" Text="Target compatible:"
-                                                                 IsVisible="{Binding !HasCompatibilityFailure}"/>
-                                            <SelectableTextBlock Grid.Row="1" Grid.Column="1" Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
-                                                                 IsVisible="{Binding !HasCompatibilityFailure}"/>
-
-                                            <SelectableTextBlock Grid.Row="1" Grid.Column="0"
-                                                                 IsVisible="{Binding HasCompatibilityFailure}"
-                                                                 Text="Target compatible:" Foreground="Red"/>
-                                            <SelectableTextBlock Grid.Row="1" Grid.Column="1"
-                                                                 Text="{Binding TargetCompatibilityText}" TextWrapping="Wrap"
-                                                                 IsVisible="{Binding HasCompatibilityFailure}" Foreground="Red"/>
-
-                                            <SelectableTextBlock Grid.Row="2" Grid.Column="0" Text="Compatibility Status:" TextWrapping="Wrap" />
-                                            <SelectableTextBlock Grid.Row="2" Grid.Column="1" Text="{Binding CompatibilityStatus}" TextWrapping="Wrap" />
-
-                                            <SelectableTextBlock Grid.Row="3" Grid.Column="0" Text="Status:" TextWrapping="Wrap"
-                                                                 IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                                            <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding InstallStatus}"
-                                                                 IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}"
-                                                                 TextWrapping="Wrap" />
-
-                                            <SelectableTextBlock Grid.Row="3" Grid.Column="0" Text="Warnings:" Classes="Warning" TextWrapping="Wrap"
-                                                                 IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                                            <SelectableTextBlock Grid.Row="3" Grid.Column="1"
-                                                                 Text="{Binding SelectedArtifact.Warnings}" Classes="Warning" TextWrapping="Wrap"
-                                                                 IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-
-                                            <SelectableTextBlock Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2"
-                                                                 Text="Cancellation is deferred through verification and reboot. Keep power connected."
-                                                                 Classes="Warning" TextWrapping="Wrap"
-                                                                 IsVisible="{Binding IsCancellationDeferred}"
-                                            />
-
+                                        <StackPanel Spacing="8">
+                                            <controls:InformationDocumentView>
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                        <Binding Path="SelectedArtifact.ArtifactValid" StringFormat="{}Artifact valid: {0}"/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <controls:InformationDocumentView IsVisible="{Binding !HasCompatibilityFailure}">
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                        <Binding Path="TargetCompatibilityText" StringFormat="{}Target compatible: {0}"/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <controls:InformationDocumentView IsVisible="{Binding HasCompatibilityFailure}">
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding
+                                                        Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                        ConverterParameter="Compatibility failure">
+                                                        <Binding Path="TargetCompatibilityText" StringFormat="{}Target compatible: {0}"/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <controls:InformationDocumentView>
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                        <Binding Path="CompatibilityStatus" StringFormat="{}Compatibility Status: {0}"/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <controls:InformationDocumentView IsVisible="{Binding InstallStatus, Converter={StaticResource StringNotNullEmptyConverter}}">
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                        <Binding Path="InstallStatus" StringFormat="{}Status: {0}"/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <controls:InformationDocumentView IsVisible="{Binding SelectedArtifact.Warnings, Converter={StaticResource StringNotNullEmptyConverter}}">
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                                        <Binding Path="SelectedArtifact.Warnings" StringFormat="{}Warnings: {0}"/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <controls:InformationDocumentView IsVisible="{Binding IsCancellationDeferred}">
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding
+                                                        Converter="{x:Static documents:FirmwareDocumentConverter.Instance}"
+                                                        ConverterParameter="Keep power connected">
+                                                        <Binding Source="Cancellation is deferred through verification and reboot. Keep power connected."/>
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
                                             <TextBox
                                                 HorizontalContentAlignment="Right"
-                                                Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2"
                                                 IsVisible="{Binding ShowDfuConfirmation}"
                                                 IsEnabled="{Binding !IsOperationInProgress}"
                                                 Text="{Binding DfuConfirmationText}"
-                                                PlaceholderText="{Binding DfuConfirmationPlaceholder}" TextWrapping="Wrap" />
-
-                                        </Grid>
-                                        <StackPanel   HorizontalAlignment="Stretch">
-                                            <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
-                                                <Button Classes="EmbeddedIconButton"
-                                                        HorizontalAlignment="Center" ToolTip.Tip="Confirm DFU target" Command="{Binding ReviewDfuTargetCommand}"
-                                                        IsVisible="{Binding HasDetectedDfuDevice}"
-                                                        IsEnabled="{Binding !IsOperationInProgress}" AutomationProperties.Name="Confirm DFU target">
-                                                    <avalonia:MaterialIcon Kind="ShieldCheckOutline" Classes="ActionIcon" />
-                                                </Button>
-
-                                                <Button Classes="EmbeddedIconButton"
-                                                        HorizontalAlignment="Center" ToolTip.Tip="Cancel operation" Command="{Binding CancelCommand}"
-                                                        IsVisible="{Binding IsOperationInProgress}" AutomationProperties.Name="Cancel operation">
-                                                    <avalonia:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
-                                                </Button>
-
-                                            </StackPanel>
+                                                PlaceholderText="{Binding DfuConfirmationPlaceholder}"
+                                                TextWrapping="Wrap"/>
                                         </StackPanel>
-
                                     </StackPanel>
                                 </Border>
+                                <WrapPanel ItemSpacing="8" HorizontalAlignment="Center">
+                                    <Button
+                                        Classes="EmbeddedIconButton"
+                                        ToolTip.Tip="Install firmware"
+                                        Command="{Binding ExecuteCurrentPlanCommand}"
+                                        IsEnabled="{Binding CurrentPlan.CanExecute}"
+                                        AutomationProperties.Name="Install firmware">
+                                        <avalonia:MaterialIcon Kind="DownloadBoxOutline" Width="30" Height="30" Classes="ActionIcon"/>
+                                    </Button>
+                                    <Button
+                                        Classes="EmbeddedIconButton"
+                                        ToolTip.Tip="Cancel operation"
+                                        Command="{Binding CancelCommand}"
+                                        IsVisible="{Binding IsOperationInProgress}"
+                                        AutomationProperties.Name="Cancel operation">
+                                        <avalonia:MaterialIcon Kind="CloseCircleOutline" Width="30" Height="30" Classes="ActionIcon"/>
+                                    </Button>
+                                </WrapPanel>
                             </StackPanel>
                         </ScrollViewer>
-
                     </Grid>
                 </TabItem>
                 <TabItem Header="Help &amp; Support">
                     <ScrollViewer HorizontalScrollBarVisibility="Disabled">
-                        <local:HelpView />
+                        <local:HelpView/>
                     </ScrollViewer>
                 </TabItem>
             </TabControl>
