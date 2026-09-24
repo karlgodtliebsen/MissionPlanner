@@ -22,19 +22,19 @@
                        FontSize="11" TextWrapping="Wrap" />
 
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-                <Button Classes="ToolbarButton"  Grid.Row="0" Grid.Column="0" ToolTip.Tip="Arm" Command="{Binding ArmCommand}" IsEnabled="{Binding CanArm}" AutomationProperties.Name="Arm">
+                <Button Classes="EmbeddedIconButton"  Grid.Row="0" Grid.Column="0" ToolTip.Tip="Arm" Command="{Binding ArmCommand}" IsEnabled="{Binding CanArm}" AutomationProperties.Name="Arm">
                     <mdi:MaterialIcon Kind="ShieldCheck" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="ToolbarButton"  Grid.Row="0" Grid.Column="1" ToolTip.Tip="Disarm" Command="{Binding DisarmCommand}" IsEnabled="{Binding CanDisarm}" AutomationProperties.Name="Disarm">
+                <Button Classes="EmbeddedIconButton"  Grid.Row="0" Grid.Column="1" ToolTip.Tip="Disarm" Command="{Binding DisarmCommand}" IsEnabled="{Binding CanDisarm}" AutomationProperties.Name="Disarm">
                     <mdi:MaterialIcon Kind="ShieldOff" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="ToolbarButton"  Grid.Row="1" Grid.Column="0" ToolTip.Tip="RTL" Command="{Binding ReturnToLaunchCommand}" IsEnabled="{Binding CanReturnToLaunch}" AutomationProperties.Name="RTL">
+                <Button Classes="EmbeddedIconButton"  Grid.Row="1" Grid.Column="0" ToolTip.Tip="RTL" Command="{Binding ReturnToLaunchCommand}" IsEnabled="{Binding CanReturnToLaunch}" AutomationProperties.Name="RTL">
                     <mdi:MaterialIcon Kind="HomeMapMarker" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="ToolbarButton"  Grid.Row="1" Grid.Column="1" ToolTip.Tip="Loiter / Hold" Command="{Binding HoldCommand}" IsEnabled="{Binding CanHoldPosition}" AutomationProperties.Name="Loiter / Hold">
+                <Button Classes="EmbeddedIconButton"  Grid.Row="1" Grid.Column="1" ToolTip.Tip="Loiter / Hold" Command="{Binding HoldCommand}" IsEnabled="{Binding CanHoldPosition}" AutomationProperties.Name="Loiter / Hold">
                     <mdi:MaterialIcon Kind="Pause" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="ToolbarButton"  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" ToolTip.Tip="Land" Command="{Binding LandCommand}" IsEnabled="{Binding CanLand}" AutomationProperties.Name="Land">
+                <Button Classes="EmbeddedIconButton"  Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" ToolTip.Tip="Land" Command="{Binding LandCommand}" IsEnabled="{Binding CanLand}" AutomationProperties.Name="Land">
                     <mdi:MaterialIcon Kind="AirplaneLanding" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </Grid>
@@ -42,10 +42,11 @@
             <Label Content="Flight mode" FontWeight="Bold" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                 <ComboBox Grid.Column="0"
+                          HorizontalContentAlignment="Right"
                           ItemsSource="{Binding Modes}"
                           SelectedItem="{Binding SelectedMode}"
                           DisplayMemberBinding="{Binding Name}" />
-                <Button Classes="ToolbarButton"  Grid.Column="1" ToolTip.Tip="Set Mode" Command="{Binding SetModeCommand}" IsEnabled="{Binding CanTransmit}" AutomationProperties.Name="Set Mode">
+                <Button Classes="EmbeddedIconButton"  Grid.Column="1" ToolTip.Tip="Set Mode" Command="{Binding SetModeCommand}" IsEnabled="{Binding CanTransmit}" AutomationProperties.Name="Set Mode">
                     <mdi:MaterialIcon Kind="Tune" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </Grid>
@@ -55,23 +56,24 @@
 
                 <NumericUpDown
                     Grid.Column="0"
+                    HorizontalContentAlignment="Right"
                     Value="{Binding TakeoffAltitudeMeters, Mode=TwoWay}"
                     FormatString="F1"
                     HorizontalAlignment="Stretch" />
 
-                <Button Classes="ToolbarButton"  Grid.Column="1" ToolTip.Tip="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" AutomationProperties.Name="Takeoff">
+                <Button Classes="EmbeddedIconButton"  Grid.Column="1" ToolTip.Tip="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" AutomationProperties.Name="Takeoff">
                     <mdi:MaterialIcon Kind="AirplaneTakeoff" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </Grid>
 
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-                <Button Classes="ToolbarButton"  Grid.Column="0" ToolTip.Tip="Set Home Here" Command="{Binding SetHomeHereCommand}" IsEnabled="{Binding CanSetHome}" AutomationProperties.Name="Set Home Here">
+                <Button Classes="EmbeddedIconButton"  Grid.Column="0" ToolTip.Tip="Set Home Here" Command="{Binding SetHomeHereCommand}" IsEnabled="{Binding CanSetHome}" AutomationProperties.Name="Set Home Here">
                     <mdi:MaterialIcon Kind="HomeMapMarker" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton"  Grid.Column="1" ToolTip.Tip="Reboot Autopilot" Command="{Binding RebootCommand}" IsEnabled="{Binding CanReboot}" AutomationProperties.Name="Reboot Autopilot">
+                <Button Classes="EmbeddedIconButton"  Grid.Column="1" ToolTip.Tip="Reboot Autopilot" Command="{Binding RebootCommand}" IsEnabled="{Binding CanReboot}" AutomationProperties.Name="Reboot Autopilot">
                     <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" Grid.Row="1" Grid.ColumnSpan="2"
+                <Button Classes="EmbeddedIconButton" Grid.Row="1" Grid.ColumnSpan="2"
                         Command="{Binding ToggleAltitudeZeroCommand}"
                         IsEnabled="{Binding CanToggleAltitudeZero}"
                         ToolTip.Tip="Sets the current displayed relative altitude to 0. Vehicle HOME is not changed." AutomationProperties.Name="{Binding AltitudeZeroActionText}">
@@ -81,35 +83,36 @@
 
             <Border Padding="10" Classes="SectionCard" >
                 <StackPanel Orientation="Vertical" Spacing="7">
-                    <Label Content="Mission intervention" FontWeight="Bold" />
-                    <Label Content="{Binding CurrentMissionSequenceText}" FontSize="11" />
+                    <TextBlock Text="Mission intervention" FontWeight="Bold" />
+                    <TextBlock Text="{Binding CurrentMissionSequenceText}" FontSize="11" />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <NumericUpDown Grid.Column="0"
+                                       HorizontalContentAlignment="Right"
                                        Value="{Binding SelectedMissionSequence, Mode=TwoWay}"
                                        FormatString="F0" />
 
 
-                        <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Set Current WP"
+                        <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Set Current WP"
                                 Command="{Binding SetCurrentMissionItemCommand}"
                                 IsEnabled="{Binding CanSetCurrentMissionItem}" AutomationProperties.Name="Set Current WP">
                             <mdi:MaterialIcon Kind="MapMarker" Classes="ActionIcon" Width="20" Height="20" />
                         </Button>
                     </Grid>
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                        <Button Classes="ToolbarButton" Grid.Column="0"
+                        <Button Classes="EmbeddedIconButton" Grid.Column="0"
                                 Command="{Binding RestartMissionCommand}"
                                 IsEnabled="{Binding CanRestartMission}"
                                 ToolTip.Tip="Resets to the first item and resets mission state/jump counters. Does not arm or change flight mode." AutomationProperties.Name="Restart Mission">
                             <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" Width="20" Height="20" />
                         </Button>
-                        <Button Classes="ToolbarButton" Grid.Column="1"
+                        <Button Classes="EmbeddedIconButton" Grid.Column="1"
                                 Command="{Binding ResumeMissionCommand}"
                                 IsEnabled="{Binding CanResumeMission}"
                                 ToolTip.Tip="Continues a paused onboard mission at its current position. Does not rewrite, arm, take off, or change mode." AutomationProperties.Name="Resume Mission">
                             <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
                         </Button>
                     </Grid>
-                    <Button Classes="ToolbarButton"
+                    <Button Classes="EmbeddedIconButton"
                             IsVisible="{Binding IsAbortLandingVisible}"
                             IsEnabled="{Binding CanAbortLanding}"
                             Command="{Binding AbortLandingCommand}"
@@ -124,56 +127,65 @@
                     <Label Content="In-flight adjustments" FontWeight="Bold" />
                     <Label Content="Ground speed" FontSize="11" IsVisible="{Binding IsSpeedTypeSelectorVisible, Converter={StaticResource InvertedBoolConverter}}" />
                     <ComboBox ItemsSource="{Binding SpeedTargetTypes}"
+                              HorizontalContentAlignment="Right"
                               SelectedItem="{Binding SelectedSpeedTargetType}"
                               IsVisible="{Binding IsSpeedTypeSelectorVisible}" />
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <NumericUpDown Grid.Column="0" Value="{Binding TargetSpeedMetersPerSecond, Mode=TwoWay}" FormatString="F1" />
-                        <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Change Speed" Command="{Binding ChangeSpeedCommand}" IsEnabled="{Binding CanChangeSpeed}" AutomationProperties.Name="Change Speed">
+                        <NumericUpDown Grid.Column="0"                           
+                                       HorizontalContentAlignment="Right"
+                                       Value="{Binding TargetSpeedMetersPerSecond, Mode=TwoWay}" FormatString="F1" />
+                        <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Change Speed" Command="{Binding ChangeSpeedCommand}" IsEnabled="{Binding CanChangeSpeed}" AutomationProperties.Name="Change Speed">
                             <mdi:MaterialIcon Kind="Speedometer" Classes="ActionIcon" />
                         </Button>
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <NumericUpDown Grid.Column="0" Value="{Binding TargetAltitudeAboveHomeMeters, Mode=TwoWay}" FormatString="F1" />
-                        <Button Classes="ToolbarButton" Grid.Column="1" Command="{Binding ChangeAltitudeCommand}" IsEnabled="{Binding CanChangeAltitude}"
+                        <NumericUpDown Grid.Column="0" 
+                                       HorizontalContentAlignment="Right"
+                                       Value="{Binding TargetAltitudeAboveHomeMeters, Mode=TwoWay}" FormatString="F1" />
+                        <Button Classes="EmbeddedIconButton" Grid.Column="1" Command="{Binding ChangeAltitudeCommand}" IsEnabled="{Binding CanChangeAltitude}"
                                 ToolTip.Tip="{Binding ChangeAltitudeReason}" AutomationProperties.Name="Change Altitude">
                             <mdi:MaterialIcon Kind="ArrowUpDown" Classes="ActionIcon" />
                         </Button>
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <NumericUpDown Grid.Column="0" Value="{Binding LoiterRadiusMagnitudeMeters, Mode=TwoWay}" FormatString="F1" />
-                        <Button Classes="ToolbarButton" Grid.Column="1" Command="{Binding SetLoiterRadiusCommand}" IsEnabled="{Binding CanSetLoiterRadius}"
+                        <NumericUpDown Grid.Column="0" 
+                                       HorizontalContentAlignment="Right"
+                                       Value="{Binding LoiterRadiusMagnitudeMeters, Mode=TwoWay}" FormatString="F1" />
+                        <Button Classes="EmbeddedIconButton" Grid.Column="1" Command="{Binding SetLoiterRadiusCommand}" IsEnabled="{Binding CanSetLoiterRadius}"
                                 ToolTip.Tip="{Binding LoiterRadiusReason}" AutomationProperties.Name="Set Loiter Radius">
                                 <mdi:MaterialIcon Kind="CircleExpand" Classes="ActionIcon" Width="20" Height="20" />
                         </Button>
                     </Grid>
-                    <Label Content="Persistent vehicle parameter. Existing loiter direction is preserved." FontSize="10" />
+                    <TextBlock Text="Persistent vehicle parameter. Existing loiter direction is preserved." FontSize="10" />
                 </StackPanel>
             </Border>
 
             <Border Padding="10" Classes="SectionCard" >
                 <StackPanel Orientation="Vertical" Spacing="5">
-                    <Label Content="Command status" FontWeight="Bold" />
-                    <Label Content="{Binding PendingCommand, StringFormat='{}Pending: {0}'}" />
-                    <Label Content="{Binding AckResult, StringFormat='{}ACK: {0}'}" />
+                    <TextBlock Text="Command status" FontWeight="Bold" />
+                    <TextBlock Text="{Binding PendingCommand, StringFormat='{}Pending: {0}'}" />
+                    <TextBlock Text="{Binding AckResult, StringFormat='{}ACK: {0}'}" />
                     <TextBlock Text="{Binding OperationState.Message}" TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
 
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Label Content="Expert MAV_CMD" VerticalAlignment="Center" FontWeight="Bold" />
+                <TextBlock Text="Expert MAV_CMD" VerticalAlignment="Center" FontWeight="Bold" />
                 <ToggleSwitch IsChecked="{Binding IsExpertSectionVisible}" />
             </StackPanel>
             <StackPanel Orientation="Vertical" IsVisible="{Binding IsExpertSectionVisible}" Spacing="6">
-                <Label Content="Advanced commands can be hazardous. Verify the command ID and all seven parameters." Foreground="{DynamicResource Warning}" />
-
+                <TextBlock Text="Advanced commands can be hazardous. Verify the command ID and all seven parameters." Foreground="{DynamicResource Warning}" />
                 <NumericUpDown
+                    HorizontalContentAlignment="Right"
                     Value="{Binding ExpertCommandId, Mode=TwoWay}"
                     FormatString="F1"
                     HorizontalAlignment="Stretch" />
 
-                <TextBox PlaceholderText="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />
+                <TextBox 
+                    HorizontalContentAlignment="Right"
+                    PlaceholderText="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />
 
-                <Button Classes="ToolbarButton" ToolTip.Tip="Validate, Confirm, and Send" Command="{Binding ExecuteExpertCommand}" IsEnabled="{Binding CanTransmit}" AutomationProperties.Name="Validate, Confirm, and Send">
+                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Validate, Confirm, and Send" Command="{Binding ExecuteExpertCommand}" IsEnabled="{Binding CanTransmit}" AutomationProperties.Name="Validate, Confirm, and Send">
                     <mdi:MaterialIcon Kind="SendCheckOutline" Classes="ActionIcon" />
                 </Button>
             </StackPanel>

@@ -49,6 +49,10 @@
         <Setter Property="MinWidth" Value="100"></Setter>
     </Style>
 
+    <Style Selector="Button.SmallButton">
+        <Setter Property="MinWidth" Value="20"></Setter>
+    </Style>
+
     <!-- Preserve unclassified dropdowns on existing pages without styling embedded actions. -->
     <Style Selector="u|IconDropDownButton:not(.ToolbarIconDropDownButton):not(.EmbeddedIconDropDownButton):not(.EmbeddedTextDropDownButton)">
         <Setter Property="Width" Value="100"></Setter>

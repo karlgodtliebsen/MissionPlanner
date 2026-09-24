@@ -23,7 +23,7 @@
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
 
-                <WrapPanel HorizontalAlignment="Right" Margin="0,10" ItemSpacing="10">
+                <WrapPanel HorizontalAlignment="Center" Margin="0,10" ItemSpacing="10">
                     <Button Classes="ToolbarButton"  ToolTip.Tip="Import" Command="{Binding ImportCommand}" >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                     </Button>
@@ -43,7 +43,7 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Application appearance" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Grid.Column="1">
-                                <Button Classes="ToolbarButton"  ToolTip.Tip="Reset appearance" Command="{Binding ResetApplicationCommand}" CommandParameter="Appearance" >
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset appearance" Command="{Binding ResetApplicationCommand}" CommandParameter="Appearance" >
                                     <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
                             </StackPanel>
@@ -59,13 +59,12 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Units and appearance" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5">
-                                <Button Classes="ToolbarButton"  ToolTip.Tip="Reset units" Command="{Binding ResetSectionCommand}" CommandParameter="Units" >
+                                <Button Classes="EmbeddedIconButton"  ToolTip.Tip="Reset units" Command="{Binding ResetSectionCommand}" CommandParameter="Units" >
                                     <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
-                                <Button Classes="ToolbarButton"  ToolTip.Tip="Reset appearance" Command="{Binding ResetSectionCommand}" CommandParameter="Appearance" >
+                                <Button Classes="EmbeddedIconButton"  ToolTip.Tip="Reset appearance" Command="{Binding ResetSectionCommand}" CommandParameter="Appearance" >
                                     <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
-
                             </StackPanel>
                         </Grid>
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
@@ -86,7 +85,7 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Map" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button Classes="ToolbarButton"  Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Map" >
+                            <Button Classes="EmbeddedIconButton"  Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Map" >
                                 <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
@@ -98,7 +97,7 @@
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="{Binding DisplayName}"
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
                                             CommandParameter="{Binding .}"  >
                                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -115,7 +114,7 @@
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="{Binding DisplayName}"
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
                                             CommandParameter="{Binding .}" >
                                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -132,7 +131,7 @@
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="{Binding DisplayName}"
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
                                             Margin="0,10,0,10"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
                                             CommandParameter="{Binding .}"  >
@@ -150,7 +149,7 @@
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="{Binding DisplayName}"
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
                                             VerticalAlignment="Center"
                                             Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
                                             CommandParameter="{Binding .}" >
@@ -204,13 +203,13 @@
                         <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="5">
                             <TextBox Text="{Binding MapCredentialInput}" PasswordChar="●" PlaceholderText="Credential for selected source" />
                             
-                            <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Set and save map credential" Command="{Binding SaveMapCredentialCommand}"  >
+                            <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Set and save map credential" Command="{Binding SaveMapCredentialCommand}"  >
                                 <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                             </Button>
-                            <Button Classes="ToolbarButton" Grid.Column="2" ToolTip.Tip="Remove map credential" Command="{Binding RemoveMapCredentialCommand}"  >
+                            <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Remove map credential" Command="{Binding RemoveMapCredentialCommand}"  >
                                 <avalonia:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
                             </Button>                    
-                            <Button Classes="ToolbarButton" Grid.Column="3" ToolTip.Tip="Test map credential" Command="{Binding TestMapCredentialCommand}"  >
+                            <Button Classes="EmbeddedIconButton" Grid.Column="3" ToolTip.Tip="Test map credential" Command="{Binding TestMapCredentialCommand}"  >
                                 <avalonia:MaterialIcon Kind="FlaskOutline" Width="30" Height="30" />
                             </Button>
 
@@ -221,16 +220,16 @@
                                 <TextBlock Text="Installed packs are validated archives, not HTTP cache entries." FontSize="12" />
                                 <ComboBox ItemsSource="{Binding InstalledMapPacks}" SelectedItem="{Binding SelectedMapPack}" />
                                 <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="5">
-                                    <Button Classes="ToolbarButton" Grid.Column="0" ToolTip.Tip="Import / install" Command="{Binding ImportMapPackCommand}" >
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="0" ToolTip.Tip="Import / install" Command="{Binding ImportMapPackCommand}" >
                                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Select map pack" Command="{Binding SelectMapPackCommand}" >
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Select map pack" Command="{Binding SelectMapPackCommand}" >
                                         <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" Grid.Column="2" ToolTip.Tip="Verify map pack" Command="{Binding VerifyMapPackCommand}" >
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Verify map pack" Command="{Binding VerifyMapPackCommand}" >
                                         <avalonia:MaterialIcon Kind="ShieldCheckOutline" Width="30" Height="30" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" Grid.Column="3" ToolTip.Tip="Remove map pack" Command="{Binding RemoveMapPackCommand}" >
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="3" ToolTip.Tip="Remove map pack" Command="{Binding RemoveMapPackCommand}" >
                                         <avalonia:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
                                     </Button>
 
@@ -256,10 +255,10 @@
                                 <TextBlock Text="HTTP cache manager" FontWeight="Bold" />
                                 <TextBlock Text="{Binding MapHttpCacheSizeMiB, StringFormat='Current size: {0:F1} MiB'}" />
                                 <StackPanel Orientation="Horizontal" Spacing="5">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Clear selected source" Command="{Binding ClearSelectedMapCacheCommand}">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Clear selected source" Command="{Binding ClearSelectedMapCacheCommand}">
                                         <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
                                     </Button>
-                                    <Button Classes="ToolbarButton"   ToolTip.Tip="Clear all HTTP cache" Command="{Binding ClearAllMapCacheCommand}" >
+                                    <Button Classes="EmbeddedIconButton"   ToolTip.Tip="Clear all HTTP cache" Command="{Binding ClearAllMapCacheCommand}" >
                                         <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
                                     </Button>
                                 </StackPanel>
@@ -272,7 +271,7 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Telemetry display" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Telemetry" >
+                            <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Telemetry" >
                                 <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
@@ -301,7 +300,7 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Connection defaults" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
+                            <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
                                 <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
@@ -336,7 +335,7 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Parameter cache" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="ParameterCache" >
+                            <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="ParameterCache" >
                                 <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
@@ -359,7 +358,7 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Confirmations" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Confirmations" >
+                            <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Confirmations" >
                                 <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
                         </Grid>
@@ -379,10 +378,10 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Logging and updates" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
                             <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5">
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Reset logging" Command="{Binding ResetSectionCommand}" CommandParameter="Logging" >
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset logging" Command="{Binding ResetSectionCommand}" CommandParameter="Logging" >
                                     <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Reset updates" Command="{Binding ResetSectionCommand}" CommandParameter="Updates" >
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset updates" Command="{Binding ResetSectionCommand}" CommandParameter="Updates" >
                                     <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                                 </Button>
                             </StackPanel>
@@ -422,7 +421,7 @@
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Accessibility" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
 
-                            <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Accessibility" >
+                            <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Accessibility" >
                                 <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
 
@@ -451,7 +450,7 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Text="Legacy units and speech" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" />
-                            <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Legacy" >
+                            <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Legacy" >
                                 <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                             </Button>
 
@@ -605,7 +604,7 @@
                            Classes="Warning" FontWeight="Bold" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
 
-                <WrapPanel HorizontalAlignment="Right" Margin="0,10" ItemSpacing="5">
+                <WrapPanel HorizontalAlignment="Center" Margin="0,10" ItemSpacing="5">
                     <Button Classes="ToolbarButton"  ToolTip.Tip="Import" Command="{Binding ImportCommand}"  >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                     </Button>

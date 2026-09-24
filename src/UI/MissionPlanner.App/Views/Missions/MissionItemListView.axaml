@@ -14,31 +14,38 @@
     <Grid RowDefinitions="Auto,*" Margin="10"
           RowSpacing="25"  HorizontalAlignment="Stretch"  VerticalAlignment="Stretch">
 
-        <Border  HorizontalAlignment="Center" VerticalAlignment="Stretch"  Classes="SectionCard" Padding="20" Width="{Binding  #BorderItemsRepeater.Bounds.Width}">
+        <Border Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Stretch"  
+                 Padding="20" 
+                 Width="{Binding  #BorderItemsRepeater.Bounds.Width}">
 
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="20,0,20,0"
-                  RowSpacing="6"  HorizontalAlignment="Stretch"   VerticalAlignment="Stretch">
+                  RowSpacing="6"  HorizontalAlignment="Stretch"  VerticalAlignment="Stretch">
                 <!-- Title and mode switch. -->
                 <Label Grid.Row="1"  Content="Mission" Classes="H2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
 
-                <Label Grid.Row="2" Content="{Binding HomePosition, StringFormat='Home: {0}'}"  Classes="H5" Opacity="0.8" />
+                <Label Grid.Row="2" Content="{Binding HomePosition, StringFormat='Home: {0}'}"  
+                       HorizontalAlignment="Center"
+                       Classes="H5" Opacity="0.8" />
 
                 <Grid Grid.Row="4"
-                      HorizontalAlignment="Stretch" ColumnDefinitions="Auto,100,Auto,100,Auto,100,Auto,100" VerticalAlignment="Center" ColumnSpacing="6"
+                      HorizontalAlignment="Center" ColumnDefinitions="Auto,100,Auto,100,Auto,100,Auto,100" 
+                      VerticalAlignment="Center" ColumnSpacing="6"
                       IsVisible="{Binding #Root.ShowAllRows}">
-                    <Label Grid.Column="0" Content="WP Radius (m):"  Classes="H5"  VerticalAlignment="Center"  />
-                    <NumericUpDown Grid.Column="1"  Classes="H5"  HorizontalAlignment="Stretch"   HorizontalContentAlignment="Right" Value="{Binding WaypointRadiusMeters, Mode=TwoWay}" />
+                    <Label Grid.Column="0" Content="WP Radius (m):" Classes="H5" VerticalAlignment="Center"  />
+                    <NumericUpDown Grid.Column="1"  Classes="H5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" Value="{Binding WaypointRadiusMeters, Mode=TwoWay}" />
                     <Label Grid.Column="2" Content="Loiter Radius (m):" Classes="H5" VerticalAlignment="Center"  />
-                    <NumericUpDown Grid.Column="3"  Classes="H5"  HorizontalAlignment="Stretch"    HorizontalContentAlignment="Right" Value="{Binding LoiterRadiusMeters, Mode=TwoWay}" />
-                    <Label Grid.Column="4" Content="Default Alt (m):"  Classes="H5"  VerticalAlignment="Center"  />
-                    <NumericUpDown Grid.Column="5"  Classes="H5" HorizontalAlignment="Stretch"   HorizontalContentAlignment="Right" Value="{Binding DefaultAltitudeMeters, Mode=TwoWay}" />
-                    <Label Grid.Column="6" Content="Alt Warn (m):"  Classes="H5"  VerticalAlignment="Center"  />
-                    <NumericUpDown Grid.Column="7"  Classes="H5" HorizontalAlignment="Stretch"  HorizontalContentAlignment="Right" Value="{Binding AltWarnMeters, Mode=TwoWay}" />
+                    <NumericUpDown Grid.Column="3"  Classes="H5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" Value="{Binding LoiterRadiusMeters, Mode=TwoWay}" />
+                    <Label Grid.Column="4" Content="Default Alt (m):" Classes="H5"  VerticalAlignment="Center"  />
+                    <NumericUpDown Grid.Column="5"  Classes="H5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" Value="{Binding DefaultAltitudeMeters, Mode=TwoWay}" />
+                    <Label Grid.Column="6" Content="Alt Warn (m):" Classes="H5"  VerticalAlignment="Center"  />
+                    <NumericUpDown Grid.Column="7"  Classes="H5" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right" Value="{Binding AltWarnMeters, Mode=TwoWay}" />
                 </Grid>
             </Grid>
         </Border>
-        <Border x:Name="BorderItemsRepeater" Grid.Row="1"  HorizontalAlignment="Center" VerticalAlignment="Stretch"  Classes="SectionCard" Padding="20">
-            <Grid Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" >
+        <Border x:Name="BorderItemsRepeater" Grid.Row="1"  HorizontalAlignment="Center" 
+                VerticalAlignment="Stretch"  
+                Classes="SectionCard" Padding="20">
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Stretch" >
                 <ScrollViewer
                     HorizontalScrollBarVisibility="Auto"
                     VerticalScrollBarVisibility="Disabled"
@@ -387,7 +394,7 @@
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Center">
 
-                                                        <Button Classes="ToolbarButton"
+                                                        <Button Classes="SmallButton"
                                                             ToolTip.Tip="Move Up"
                                                             Padding="4,2"
                                                             HorizontalAlignment="Center"
@@ -396,7 +403,7 @@
                                                             <avalonia:MaterialIcon Kind="ArrowUp" Width="20" Height="20" />
                                                         </Button>
 
-                                                        <Button Classes="ToolbarButton"
+                                                        <Button Classes="SmallButton"
                                                             ToolTip.Tip="Move Down"
                                                             Padding="4,2"
                                                             HorizontalAlignment="Center"
@@ -405,7 +412,7 @@
                                                             <avalonia:MaterialIcon Kind="ArrowDown" Width="20" Height="20" />
                                                         </Button>
 
-                                                        <Button Classes="ToolbarButton"
+                                                        <Button Classes="SmallButton"
                                                             ToolTip.Tip="Delete"
                                                             Padding="4,2"
                                                             HorizontalAlignment="Center"

@@ -20,13 +20,13 @@
             <ComboBox ItemsSource="{Binding Payloads}" SelectedItem="{Binding SelectedPayload}"  
                       HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
             <WrapPanel Orientation="Horizontal" HorizontalAlignment="Stretch" ItemSpacing="10">
-                <Button Classes="ToolbarButton" ToolTip.Tip="Capture image" Command="{Binding CaptureCommand}" AutomationProperties.Name="Capture image">
+                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Capture image" Command="{Binding CaptureCommand}" AutomationProperties.Name="Capture image">
                     <mdi:MaterialIcon Kind="CameraOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Start video" Command="{Binding StartVideoCommand}" AutomationProperties.Name="Start video">
+                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Start video" Command="{Binding StartVideoCommand}" AutomationProperties.Name="Start video">
                     <mdi:MaterialIcon Kind="VideoOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Stop video" Command="{Binding StopVideoCommand}" AutomationProperties.Name="Stop video">
+                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Stop video" Command="{Binding StopVideoCommand}" AutomationProperties.Name="Stop video">
                     <mdi:MaterialIcon Kind="VideoOffOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
@@ -34,7 +34,7 @@
             <NumericUpDown Value="{Binding Yaw}"  HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
             <CheckBox Content="Earth-frame yaw lock" IsChecked="{Binding YawLock}"/>
             
-            <Button Classes="ToolbarButton" ToolTip.Tip="Move gimbal"
+            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Move gimbal"
                     HorizontalAlignment="Left" 
                     Command="{Binding MoveGimbalCommand}" AutomationProperties.Name="Move gimbal">
                 <mdi:MaterialIcon Kind="CameraControl" Classes="ActionIcon" />
