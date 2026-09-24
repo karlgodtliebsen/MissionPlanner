@@ -39,7 +39,7 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
             <Button
-                Classes="Primary IsToolbarButton"
+                Classes="Primary ToolbarButton"
                 Padding="5"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -48,7 +48,7 @@
                 <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
             </Button>
             <Button
-                Classes="Primary IsToolbarButton"
+                Classes="Primary ToolbarButton"
                 Padding="5"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"

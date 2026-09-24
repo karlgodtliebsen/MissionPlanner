@@ -25,13 +25,13 @@
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
                 <ComboBox ToolTip.Tip="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh ports">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh ports">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" AutomationProperties.Name="Probe module">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Probe module" Command="{Binding ProbeCommand}" AutomationProperties.Name="Probe module">
                     <mdi:MaterialIcon Kind="BluetoothConnect" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply supported settings">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Apply supported settings">
                     <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

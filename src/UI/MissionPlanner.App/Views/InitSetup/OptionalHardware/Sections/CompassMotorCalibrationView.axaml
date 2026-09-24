@@ -26,10 +26,10 @@
         </Border>
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Start CompassMot" Command="{Binding StartCommand}" AutomationProperties.Name="Start CompassMot">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Start CompassMot" Command="{Binding StartCommand}" AutomationProperties.Name="Start CompassMot">
                     <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Stop" Foreground="{DynamicResource Warning}" Command="{Binding StopCommand}" AutomationProperties.Name="Stop">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Stop" Foreground="{DynamicResource Warning}" Command="{Binding StopCommand}" AutomationProperties.Name="Stop">
                     <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </WrapPanel>

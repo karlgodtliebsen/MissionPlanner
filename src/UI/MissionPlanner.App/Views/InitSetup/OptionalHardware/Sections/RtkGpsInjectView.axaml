@@ -19,13 +19,13 @@
 
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh serial devices" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh serial devices">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh serial devices" Command="{Binding RefreshPortsCommand}" AutomationProperties.Name="Refresh serial devices">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Connect source" Command="{Binding ConnectCommand}" AutomationProperties.Name="Connect source">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Connect source" Command="{Binding ConnectCommand}" AutomationProperties.Name="Connect source">
                     <mdi:MaterialIcon Kind="LanConnect" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Disconnect" Command="{Binding DisconnectCommand}" AutomationProperties.Name="Disconnect">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Disconnect" Command="{Binding DisconnectCommand}" AutomationProperties.Name="Disconnect">
                     <mdi:MaterialIcon Kind="LanDisconnect" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

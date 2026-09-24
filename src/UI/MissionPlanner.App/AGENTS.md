@@ -22,5 +22,5 @@ The user has verified this pattern in `LiveTelemetryInspectorView.axaml`.
 
 Let `OverlayCloseButton` manage the icon colors and interaction states. Do not
 bind the icon foreground to a nearby title, hard-code its color, or substitute
-the generic `BorderlessButton` theme. Do not add `IsToolbarButton` to these X
+the generic `BorderlessButton` theme. Do not add `ToolbarButton` to these X
 close buttons.

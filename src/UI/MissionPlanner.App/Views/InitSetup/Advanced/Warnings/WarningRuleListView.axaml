@@ -25,19 +25,19 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
             <WrapPanel>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="New" Command="{Binding NewCommand}" Margin="0,0,8,8" AutomationProperties.Name="New">
+                <Button Classes="ToolbarButton" ToolTip.Tip="New" Command="{Binding NewCommand}" Margin="0,0,8,8" AutomationProperties.Name="New">
                     <mdi:MaterialIcon Kind="PlusBoxOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Duplicate" Command="{Binding DuplicateCommand}" Margin="0,0,8,8" AutomationProperties.Name="Duplicate">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Duplicate" Command="{Binding DuplicateCommand}" Margin="0,0,8,8" AutomationProperties.Name="Duplicate">
                     <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Enable / disable" Command="{Binding ToggleCommand}" Margin="0,0,8,8" AutomationProperties.Name="Enable / disable">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Enable / disable" Command="{Binding ToggleCommand}" Margin="0,0,8,8" AutomationProperties.Name="Enable / disable">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <mdi:MaterialIcon Kind="ToggleSwitchOutline" Classes="ActionIcon" Width="20" Height="20" />
                         <TextBlock Text="Enable / disable" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Delete" Command="{Binding DeleteCommand}" Margin="0,0,8,8" AutomationProperties.Name="Delete">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Delete" Command="{Binding DeleteCommand}" Margin="0,0,8,8" AutomationProperties.Name="Delete">
                     <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

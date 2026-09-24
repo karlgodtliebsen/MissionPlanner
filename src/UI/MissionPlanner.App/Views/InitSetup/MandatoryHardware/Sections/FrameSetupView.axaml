@@ -32,10 +32,10 @@
         </Border>
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button ToolTip.Tip="Refresh vehicle values"  Classes="IsToolbarButton" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh vehicle values">
+                <Button ToolTip.Tip="Refresh vehicle values"  Classes="ToolbarButton" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh vehicle values">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button ToolTip.Tip="Write and verify" Classes="IsToolbarButton" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
+                <Button ToolTip.Tip="Write and verify" Classes="ToolbarButton" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
                     <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

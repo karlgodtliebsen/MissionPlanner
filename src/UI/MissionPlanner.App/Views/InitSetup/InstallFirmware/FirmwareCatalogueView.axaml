@@ -31,32 +31,32 @@
                     <ProgressBar  IsIndeterminate="True" IsVisible="{Binding IsRefreshing}"
                                   HorizontalAlignment="Stretch" VerticalAlignment="Center" />
                     <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh catalogue data"
+                        <Button Classes="ToolbarButton" ToolTip.Tip="Refresh catalogue data"
                                 Padding="8,2"
                                 Command="{Binding RefreshCatalogCommand}"
                                 IsEnabled="{Binding !IsRefreshing}" >
                             <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                         </Button>
-                        <Button Classes="IsToolbarButton" ToolTip.Tip="All Version Options"
+                        <Button Classes="ToolbarButton" ToolTip.Tip="All Version Options"
                                 Padding="8,2"
                                 Command="{Binding ShowAllOptionsCommand}"  >
                             <avalonia:MaterialIcon Kind="AllInclusiveBoxOutline" Width="30" Height="30" />
                         </Button>
-                        <Button Classes="IsToolbarButton"
+                        <Button Classes="ToolbarButton"
                             ToolTip.Tip="Clear all Settings"
                             Padding="8,2"
                             VerticalAlignment="Center"
                             Command="{Binding ClearCatalogueFirmwareCommand}"  >
                             <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
                         </Button>
-<!--                        <Button Classes="IsToolbarButton"
+<!--                        <Button Classes="ToolbarButton"
                             ToolTip.Tip="Close"
                             Padding="8,2"
                             Command="{Binding CancelCommand}" >
                             <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
                         </Button>-->
 
-                        <Button Classes="IsToolbarButton"
+                        <Button Classes="ToolbarButton"
                             ToolTip.Tip="Use Selected firmware"
                             Padding="8,2"
                             Command="{Binding OKCommand}"
@@ -73,7 +73,7 @@
                     <ComboBox ItemsSource="{Binding VehicleTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame/VehicleType" SelectedItem="{Binding SelectedVehicleType}" Width="200" />
                     <ComboBox ItemsSource="{Binding BuildVariants}" PlaceholderText="Variant" ToolTip.Tip="Build Variant" SelectedItem="{Binding SelectedBuildVariant}" Width="200" />
                     <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="200" />
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Clear Filters"
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Clear Filters"
                              Command="{Binding ClearCommand}"
                              Padding="8,2"
                              VerticalAlignment="Center" >

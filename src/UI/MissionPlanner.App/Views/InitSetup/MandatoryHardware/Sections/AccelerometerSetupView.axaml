@@ -23,19 +23,19 @@
         </Border>
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Start six-position calibration" Command="{Binding StartSixPositionCommand}" AutomationProperties.Name="Start six-position calibration">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Start six-position calibration" Command="{Binding StartSixPositionCommand}" AutomationProperties.Name="Start six-position calibration">
                     <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" AutomationProperties.Name="Calibrate level">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Calibrate level" Command="{Binding StartLevelCommand}" AutomationProperties.Name="Calibrate level">
                     <mdi:MaterialIcon Kind="ScaleBalance" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Confirm orientation">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Confirm orientation" IsEnabled="{Binding CanConfirmOrientation}" Command="{Binding ConfirmOrientationCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Confirm orientation">
                     <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" AutomationProperties.Name="Cancel calibration">
                     <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" AutomationProperties.Name="Reset / retry">
                     <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
             </StackPanel>

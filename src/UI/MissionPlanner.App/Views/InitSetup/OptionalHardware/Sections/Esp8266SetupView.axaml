@@ -24,7 +24,7 @@
         </Border>
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Validate settings">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Validate settings">
                     <mdi:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

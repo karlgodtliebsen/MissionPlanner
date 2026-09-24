@@ -11,10 +11,10 @@
                        TextWrapping="Wrap" Classes="Warning" />
             <StackPanel Grid.Row="1" Spacing="10"   Margin="0,20">
                 <WrapPanel IsEnabled="{Binding !IsBusy}">
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Import rules (merge by ID)" Command="{Binding ImportCommand}" Margin="0,0,8,8" AutomationProperties.Name="Import rules (merge by ID)">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Import rules (merge by ID)" Command="{Binding ImportCommand}" Margin="0,0,8,8" AutomationProperties.Name="Import rules (merge by ID)">
                         <mdi:MaterialIcon Kind="FileImportOutline" Classes="ActionIcon" />
                     </Button>
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Export rules" Command="{Binding ExportCommand}" Margin="0,0,8,8" AutomationProperties.Name="Export rules">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Export rules" Command="{Binding ExportCommand}" Margin="0,0,8,8" AutomationProperties.Name="Export rules">
                         <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                     </Button>
                 </WrapPanel>

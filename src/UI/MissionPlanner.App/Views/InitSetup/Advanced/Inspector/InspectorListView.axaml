@@ -13,7 +13,7 @@
         <WrapPanel Grid.Row="1">
             <CheckBox Content="Freeze display (continue collecting)" IsChecked="{Binding Frozen}" Margin="0,0,12,8" />
             <CheckBox Content="Sort by count descending" IsChecked="{Binding SortByCount}" Margin="0,0,12,8" />
-            <Button Classes="IsToolbarButton" ToolTip.Tip="Clear statistics" Command="{Binding ClearCommand}" Margin="0,0,12,8" AutomationProperties.Name="Clear statistics">
+            <Button Classes="ToolbarButton" ToolTip.Tip="Clear statistics" Command="{Binding ClearCommand}" Margin="0,0,12,8" AutomationProperties.Name="Clear statistics">
                 <mdi:MaterialIcon Kind="Eraser" Classes="ActionIcon" />
             </Button>
         </WrapPanel>

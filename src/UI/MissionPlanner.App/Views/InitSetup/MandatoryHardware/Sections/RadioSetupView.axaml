@@ -40,35 +40,35 @@
         </Border>
         <Border Grid.Row="2" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Start calibration"
+                <Button Classes="ToolbarButton" ToolTip.Tip="Start calibration"
                         Command="{Binding StartCommand}" AutomationProperties.Name="Start calibration">
                     <mdi:MaterialIcon Kind="Play" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Finish endpoint capture"
+                <Button Classes="ToolbarButton" ToolTip.Tip="Finish endpoint capture"
                         Command="{Binding FinishCaptureCommand}"  AutomationProperties.Name="Finish endpoint capture">
                     <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Confirm and write"
+                <Button Classes="ToolbarButton" ToolTip.Tip="Confirm and write"
                         Command="{Binding ConfirmAndWriteCommand}" AutomationProperties.Name="Confirm and write">
                     <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                 </Button>
 
 
-                <Button Classes="IsToolbarButton" Command="{Binding BindReceiverCommand}"
+                <Button Classes="ToolbarButton" Command="{Binding BindReceiverCommand}"
                         ToolTip.Tip="Request receiver binding through the flight controller"
                         AutomationProperties.Name="Bind receiver" HorizontalAlignment="Left">
                     <mdi:MaterialIcon Kind="LinkVariant" Classes="ActionIcon" />
                 </Button>
 
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Select RC channel for Arming"
+                <Button Classes="ToolbarButton" ToolTip.Tip="Select RC channel for Arming"
                         Command="{Binding AssignArmSwitchCommand}" AutomationProperties.Name="Assign Arm/Disarm" >
                     <mdi:MaterialIcon Kind="ShieldCheck" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Reset / retry"
+                <Button Classes="ToolbarButton" ToolTip.Tip="Reset / retry"
                         Command="{Binding ResetCommand}"  AutomationProperties.Name="Reset / retry">
                     <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Cancel"
+                <Button Classes="ToolbarButton" ToolTip.Tip="Cancel"
                         Command="{Binding CancelCalibrationCommand}"  AutomationProperties.Name="Cancel">
                     <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                 </Button>

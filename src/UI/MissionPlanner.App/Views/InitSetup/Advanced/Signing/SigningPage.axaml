@@ -16,7 +16,7 @@
                         <StackPanel Spacing="12">
                             <TextBlock Text="Vehicle setup" Classes="H4" />
                             <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Configure signing…" Command="{Binding ConfigureCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" AutomationProperties.Name="Configure signing…">
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Configure signing…" Command="{Binding ConfigureCommand}" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" AutomationProperties.Name="Configure signing…">
                                 <mdi:MaterialIcon Kind="KeyOutline" Classes="ActionIcon" />
                             </Button>
                             <TextBlock Text="Closing this page cancels pending setup. Verified connection signing continues until disconnection. It does not enforce a signed-only policy." TextWrapping="Wrap" />

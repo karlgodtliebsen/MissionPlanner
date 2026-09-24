@@ -20,7 +20,7 @@
             <Button
                 Grid.Row="1"
                 Width="100"
-                Classes="Primary IsToolbarButton"
+                Classes="Primary ToolbarButton"
                 Padding="5"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"

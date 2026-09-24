@@ -31,11 +31,18 @@
         <Setter Property="FontSize" Value="14" />
     </Style>
 
-    <Style Selector="Button.IsToolbarButton">
+    <Style Selector="Button.ToolbarButton">
         <Setter Property="Width" Value="100"></Setter>
         <Setter Property="Theme" Value="{DynamicResource SolidIconButton}"></Setter>
     </Style>
 
+    <Style Selector="Button.EmbeddedIconButton">
+        <Setter Property="MinWidth" Value="50"></Setter>
+    </Style>
+
+    <Style Selector="Button.EmbeddedTextButton">
+        <Setter Property="MinWidth" Value="100"></Setter>
+    </Style>
 
     <Style Selector="u|IconDropDownButton">
         <Setter Property="Width" Value="100"></Setter>

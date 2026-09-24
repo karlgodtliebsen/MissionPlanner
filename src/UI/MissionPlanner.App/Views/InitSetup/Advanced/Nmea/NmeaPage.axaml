@@ -13,10 +13,10 @@
                 <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
             </StackPanel>
             <WrapPanel Grid.Row="1">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Start NMEA" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" AutomationProperties.Name="Start NMEA">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Start NMEA" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" AutomationProperties.Name="Start NMEA">
                     <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Stop NMEA" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" AutomationProperties.Name="Stop NMEA">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Stop NMEA" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" AutomationProperties.Name="Stop NMEA">
                     <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

@@ -20,22 +20,22 @@
         <Grid RowDefinitions="Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <StackPanel Orientation="Vertical" Margin="0,0">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Download" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Download" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download">
                         <mdi:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
                     </Button>
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Validate &amp; upload" Command="{Binding UploadCommand}" AutomationProperties.Name="Validate &amp; upload">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Validate &amp; upload" Command="{Binding UploadCommand}" AutomationProperties.Name="Validate &amp; upload">
                         <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />
                     </Button>
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Clear vehicle" Command="{Binding ClearVehicleCommand}" AutomationProperties.Name="Clear vehicle">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Clear vehicle" Command="{Binding ClearVehicleCommand}" AutomationProperties.Name="Clear vehicle">
                         <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
                     </Button>
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Restore backup" Command="{Binding RestoreBackupCommand}" AutomationProperties.Name="Restore backup">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Restore backup" Command="{Binding RestoreBackupCommand}" AutomationProperties.Name="Restore backup">
                         <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                     </Button>
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh parameters" Command="{Binding RefreshParametersCommand}" AutomationProperties.Name="Refresh parameters">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Refresh parameters" Command="{Binding RefreshParametersCommand}" AutomationProperties.Name="Refresh parameters">
                         <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                     </Button>
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Revert parameters" Command="{Binding RevertParametersCommand}" AutomationProperties.Name="Revert parameters">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Revert parameters" Command="{Binding RevertParametersCommand}" AutomationProperties.Name="Revert parameters">
                         <mdi:MaterialIcon Kind="FileUndoOutline" Classes="ActionIcon" />
                     </Button>
                 </StackPanel>
@@ -94,21 +94,21 @@
                                 <TextBlock Text="Fence map edit mode" FontWeight="Bold" FontSize="18" />
                                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="6" RowSpacing="6">
 
-                                    <Button Classes="IsToolbarButton" ToolTip.Tip="Inclusion polygon" Command="{Binding BeginPolygonInclusionCommand}" AutomationProperties.Name="Inclusion polygon">
+                                    <Button Classes="ToolbarButton" ToolTip.Tip="Inclusion polygon" Command="{Binding BeginPolygonInclusionCommand}" AutomationProperties.Name="Inclusion polygon">
                                         <mdi:MaterialIcon Kind="VectorPolygon" Classes="ActionIcon" Width="20" Height="20" />
                                     </Button>
-                                    <Button Classes="IsToolbarButton" Grid.Row="0" Grid.Column="1" ToolTip.Tip="Exclusion polygon" Command="{Binding BeginPolygonExclusionCommand}" AutomationProperties.Name="Exclusion polygon">
+                                    <Button Classes="ToolbarButton" Grid.Row="0" Grid.Column="1" ToolTip.Tip="Exclusion polygon" Command="{Binding BeginPolygonExclusionCommand}" AutomationProperties.Name="Exclusion polygon">
                                         <mdi:MaterialIcon Kind="VectorPolygon" Classes="ActionIcon" Width="20" Height="20" />
                                     </Button>
 
-                                    <Button Classes="IsToolbarButton" Grid.Column="0" Grid.Row="1" ToolTip.Tip="Inclusion circle" Command="{Binding BeginCircleInclusionCommand}" AutomationProperties.Name="Inclusion circle">
+                                    <Button Classes="ToolbarButton" Grid.Column="0" Grid.Row="1" ToolTip.Tip="Inclusion circle" Command="{Binding BeginCircleInclusionCommand}" AutomationProperties.Name="Inclusion circle">
                                         <mdi:MaterialIcon Kind="CircleOutline" Classes="ActionIcon" Width="20" Height="20" />
                                     </Button>
-                                    <Button Classes="IsToolbarButton" Grid.Row="1" Grid.Column="1" ToolTip.Tip="Exclusion circle" Command="{Binding BeginCircleExclusionCommand}" AutomationProperties.Name="Exclusion circle">
+                                    <Button Classes="ToolbarButton" Grid.Row="1" Grid.Column="1" ToolTip.Tip="Exclusion circle" Command="{Binding BeginCircleExclusionCommand}" AutomationProperties.Name="Exclusion circle">
                                         <mdi:MaterialIcon Kind="CircleOutline" Classes="ActionIcon" Width="20" Height="20" />
                                     </Button>
 
-                                    <Button Classes="IsToolbarButton" Grid.Column="0" Grid.Row="2" ToolTip.Tip="Set return point" Command="{Binding BeginReturnPointCommand}" AutomationProperties.Name="Set return point">
+                                    <Button Classes="ToolbarButton" Grid.Column="0" Grid.Row="2" ToolTip.Tip="Set return point" Command="{Binding BeginReturnPointCommand}" AutomationProperties.Name="Set return point">
                                         <mdi:MaterialIcon Kind="MapMarkerPlusOutline" Classes="ActionIcon" />
                                     </Button>
 
@@ -121,10 +121,10 @@
 
                                 </Grid>
                                 <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsFenceEditMode}">
-                                    <Button Classes="IsToolbarButton" ToolTip.Tip="Finish polygon" Command="{Binding FinishPolygonCommand}" AutomationProperties.Name="Finish polygon">
+                                    <Button Classes="ToolbarButton" ToolTip.Tip="Finish polygon" Command="{Binding FinishPolygonCommand}" AutomationProperties.Name="Finish polygon">
                                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="IsToolbarButton" ToolTip.Tip="Cancel edit" Command="{Binding CancelEditCommand}" AutomationProperties.Name="Cancel edit">
+                                    <Button Classes="ToolbarButton" ToolTip.Tip="Cancel edit" Command="{Binding CancelEditCommand}" AutomationProperties.Name="Cancel edit">
                                         <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                                     </Button>
                                 </StackPanel>
@@ -173,10 +173,10 @@
                                     </controls:VirtualizedItemsGrid.RowTemplate>
                                 </controls:VirtualizedItemsGrid>
                                 <StackPanel Orientation="Horizontal" Spacing="6">
-                                    <Button Classes="IsToolbarButton" ToolTip.Tip="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" AutomationProperties.Name="Remove selected">
+                                    <Button Classes="ToolbarButton" ToolTip.Tip="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" AutomationProperties.Name="Remove selected">
                                         <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="IsToolbarButton" ToolTip.Tip="Remove return" Command="{Binding RemoveReturnPointCommand}" AutomationProperties.Name="Remove return">
+                                    <Button Classes="ToolbarButton" ToolTip.Tip="Remove return" Command="{Binding RemoveReturnPointCommand}" AutomationProperties.Name="Remove return">
                                         <mdi:MaterialIcon Kind="MapMarkerRemoveOutline" Classes="ActionIcon" />
                                     </Button>
                                 </StackPanel>

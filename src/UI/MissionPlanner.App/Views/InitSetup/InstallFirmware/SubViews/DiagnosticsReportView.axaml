@@ -36,7 +36,7 @@
         </Border>
         
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button Classes="IsToolbarButton" ToolTip.Tip="Copy diagnostic report"
+            <Button Classes="ToolbarButton" ToolTip.Tip="Copy diagnostic report"
                     Width="100"
                     Padding="8,2"
                     HorizontalAlignment="Center"
@@ -46,7 +46,7 @@
                     >
                 <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
             </Button>
-            <Button Classes="IsToolbarButton"
+            <Button Classes="ToolbarButton"
                 Width="100"
                 Padding="8,2"
                 HorizontalAlignment="Center"

@@ -36,7 +36,7 @@
                                                    HorizontalContentAlignment="Right"
                                                    Value="{Binding PendingValue}" 
                                                    Minimum="0" />
-                                    <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                    <Button Classes="ToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                     </Button>
                                 </Grid>

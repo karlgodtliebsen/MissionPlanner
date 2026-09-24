@@ -12,13 +12,13 @@
             <TextBlock Text="Firmware update available" FontWeight="Bold" />
             <TextBlock Text="{Binding Details}" TextWrapping="Wrap" />
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Classes="IsToolbarButton" Command="{Binding ViewUpgradeCommand}" ToolTip.Tip="View Upgrade" AutomationProperties.Name="View Upgrade">
+                <Button Classes="ToolbarButton" Command="{Binding ViewUpgradeCommand}" ToolTip.Tip="View Upgrade" AutomationProperties.Name="View Upgrade">
                     <mdi:MaterialIcon Kind="Upload" />
                 </Button>
-                <Button Classes="IsToolbarButton" Command="{Binding ReleaseNotesCommand}" ToolTip.Tip="Release Notes" AutomationProperties.Name="Release Notes">
+                <Button Classes="ToolbarButton" Command="{Binding ReleaseNotesCommand}" ToolTip.Tip="Release Notes" AutomationProperties.Name="Release Notes">
                     <mdi:MaterialIcon Kind="FileDocumentOutline" />
                 </Button>
-                <Button Classes="IsToolbarButton" Command="{Binding LaterCommand}" ToolTip.Tip="Later" AutomationProperties.Name="Later">
+                <Button Classes="ToolbarButton" Command="{Binding LaterCommand}" ToolTip.Tip="Later" AutomationProperties.Name="Later">
                     <mdi:MaterialIcon Kind="Close" />
                 </Button>
             </StackPanel>

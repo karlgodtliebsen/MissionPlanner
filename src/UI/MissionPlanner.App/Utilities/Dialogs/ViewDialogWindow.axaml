@@ -43,7 +43,7 @@
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
             <Button
-                Classes="Primary IsToolbarButton"
+                Classes="Primary ToolbarButton"
                 ToolTip.Tip="{Binding CloseText}"
                 Command="{Binding CancelCommand}"
                 IsVisible="{Binding ShowCloseButton}"
@@ -51,7 +51,7 @@
                 <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
             </Button>
             <Button 
-                Classes="Primary IsToolbarButton"
+                Classes="Primary ToolbarButton"
                 ToolTip.Tip="{Binding OkText}"
                 Command="{Binding OkCommand}"
                 IsVisible="{Binding ShowOkButton}"

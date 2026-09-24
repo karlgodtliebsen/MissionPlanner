@@ -13,10 +13,10 @@
             </StackPanel>
             <WrapPanel Grid.Row="1">
                 <ComboBox ItemsSource="{Binding Directions}" SelectedItem="{Binding Direction}" IsEnabled="{Binding !Running}" MinWidth="150" Margin="0,0,12,8" AutomationProperties.Name="Mirror direction" />
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Start mirror" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" AutomationProperties.Name="Start mirror">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Start mirror" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" AutomationProperties.Name="Start mirror">
                     <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Stop mirror" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" AutomationProperties.Name="Stop mirror">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Stop mirror" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" AutomationProperties.Name="Stop mirror">
                     <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

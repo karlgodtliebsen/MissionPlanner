@@ -24,13 +24,13 @@
 
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh ports">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh ports" Command="{Binding RefreshPortsCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Refresh ports">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Connect / Read" Command="{Binding ConnectCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Connect / Read">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Connect / Read" Command="{Binding ConnectCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Connect / Read">
                     <mdi:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Apply, save and reboot" Command="{Binding ApplyCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Apply, save and reboot">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Apply, save and reboot" Command="{Binding ApplyCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Apply, save and reboot">
                     <mdi:MaterialIcon Kind="ContentSaveCheckOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

@@ -77,7 +77,7 @@
             </u:IconDropDownButton>
             
             
-            <Button Classes="IsToolbarButton"  ToolTip.Tip="Copy all" Width="100"  Command="{Binding CopyAllCommand}" AutomationProperties.Name="Copy all">
+            <Button Classes="ToolbarButton"  ToolTip.Tip="Copy all" Width="100"  Command="{Binding CopyAllCommand}" AutomationProperties.Name="Copy all">
                 <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
             </Button>
             <ComboBox
@@ -85,13 +85,13 @@
                 ItemsSource="{Binding Filters}"
                 SelectedItem="{Binding Filter}" />
 
-            <Button Classes="IsToolbarButton"
+            <Button Classes="ToolbarButton"
                 ToolTip.Tip="Apply modified"
                 VerticalAlignment="Center"  Width="100" 
                 Command="{Binding ApplyModifiedCommand}"  >
                 <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
             </Button>
-<!--            <Button Classes="IsToolbarButton" HorizontalAlignment="Right"
+<!--            <Button Classes="ToolbarButton" HorizontalAlignment="Right"
                     ToolTip.Tip="Close" Width="100" Command="{Binding OKCommand}">
                 <avalonia:MaterialIcon Kind="Check" Classes="ActionIcon" />
             </Button>-->

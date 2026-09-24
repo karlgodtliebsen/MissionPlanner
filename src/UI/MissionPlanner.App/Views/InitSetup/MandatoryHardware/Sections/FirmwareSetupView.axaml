@@ -57,7 +57,7 @@
                         <TextBlock Text="Firmware discovery" FontSize="18" FontWeight="Bold" />
                         <StackPanel Orientation="Horizontal" Spacing="10">
                             <ComboBox ToolTip.Tip="Channel" ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" />
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Discover compatible releases" Command="{Binding DiscoverCommand}" AutomationProperties.Name="Discover compatible releases">
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Discover compatible releases" Command="{Binding DiscoverCommand}" AutomationProperties.Name="Discover compatible releases">
                                 <mdi:MaterialIcon Kind="CloudSearchOutline" Classes="ActionIcon" />
                             </Button>
                         </StackPanel>
@@ -65,10 +65,10 @@
                         <TextBlock Text="{Binding SelectedBoardTarget, StringFormat='Technical board target: {0}'}" FontWeight="Bold" />
                         <TextBlock Text="{Binding SelectedReleaseNotes}" />
                         <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Download and verify" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download and verify">
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Download and verify" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download and verify">
                                 <mdi:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Flash verified package" Command="{Binding FlashCommand}" AutomationProperties.Name="Flash verified package">
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Flash verified package" Command="{Binding FlashCommand}" AutomationProperties.Name="Flash verified package">
                                 <mdi:MaterialIcon Kind="DownloadBoxOutline" Classes="ActionIcon" />
                             </Button>
                         </StackPanel>

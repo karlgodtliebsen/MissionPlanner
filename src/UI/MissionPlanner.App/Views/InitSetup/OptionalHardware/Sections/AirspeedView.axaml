@@ -32,7 +32,7 @@
                                 <Grid ColumnDefinitions="220,*,90">
                                     <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
                                     <NumericUpDown Grid.Column="1" Value="{Binding PendingValue, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />
-                                    <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                    <Button Classes="ToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                     </Button>
                                 </Grid>

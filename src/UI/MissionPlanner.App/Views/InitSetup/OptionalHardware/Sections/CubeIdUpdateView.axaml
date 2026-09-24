@@ -24,7 +24,7 @@
         </Border>
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
                     <mdi:MaterialIcon Kind="FileSearchOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

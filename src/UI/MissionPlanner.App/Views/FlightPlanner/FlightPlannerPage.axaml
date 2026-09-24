@@ -17,45 +17,45 @@
             <Grid Grid.Column="0" RowDefinitions="Auto,*" ColumnDefinitions="*,Auto"  RowSpacing="4" Margin="5">
                
                 <WrapPanel Grid.Row="0" Grid.Column="0" Margin="10,5,0,5" HorizontalAlignment="Center" ItemSpacing="5">
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Load File" Padding="8,2" Command="{Binding Map.LoadWpFileCommand}" >
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Load File" Padding="8,2" Command="{Binding Map.LoadWpFileCommand}" >
                         <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
                     </Button>
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Save File" Padding="8,2" Command="{Binding Map.SaveWpFileCommand}" >
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Save File" Padding="8,2" Command="{Binding Map.SaveWpFileCommand}" >
                         <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                     </Button>
 
-                    <Button Classes="IsToolbarButton"
+                    <Button Classes="ToolbarButton"
                         ToolTip.Tip="Clear the local mission"
                         Padding="8,2"
                         Command="{Binding Map.ClearMissionCommand}" >
                         <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
                     </Button>
 
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Apply" Command="{Binding Map.ApplyRowEditsCommand}" >
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Apply" Command="{Binding Map.ApplyRowEditsCommand}" >
                         <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                     </Button>
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Revert" Command="{Binding Map.CancelRowEditsCommand}" >
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Revert" Command="{Binding Map.CancelRowEditsCommand}" >
                         <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />
                     </Button>
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Read mission from vehicle" Command="{Binding ReadFromVehicleCommand}"
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Read mission from vehicle" Command="{Binding ReadFromVehicleCommand}"
                              IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                              >
                         <avalonia:MaterialIcon Kind="DownloadOutline" Width="30" Height="30" />
                     </Button>
 
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Write mission to vehicle" Command="{Binding WriteToVehicleCommand}"
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Write mission to vehicle" Command="{Binding WriteToVehicleCommand}"
                              IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                              >
                         <avalonia:MaterialIcon Kind="UploadOutline" Width="30" Height="30" />
                     </Button>
 
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Write mission to vehicle (fast)" Command="{Binding WriteToVehicleFastCommand}"
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Write mission to vehicle (fast)" Command="{Binding WriteToVehicleFastCommand}"
                              IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" 
                     >
                         <avalonia:MaterialIcon Kind="UploadOutline" Width="30" Height="30" />
                     </Button>
                 
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Edit mission" Command="{Binding EditCommand}"
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Edit mission" Command="{Binding EditCommand}"
                              IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" 
                     >
                         <avalonia:MaterialIcon Kind="PencilOutline" Width="30" Height="30" />
@@ -73,7 +73,7 @@
 
                 </WrapPanel>
                 <WrapPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right">
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Use the quick mission editor" Command="{Binding QuickEditCommand}" HorizontalAlignment="Right">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Use the quick mission editor" Command="{Binding QuickEditCommand}" HorizontalAlignment="Right">
                         <avalonia:MaterialIcon Kind="FileEditOutline" Width="30" Height="30" />
                     </Button>
                 </WrapPanel>

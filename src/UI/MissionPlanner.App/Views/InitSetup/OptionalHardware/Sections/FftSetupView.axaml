@@ -25,7 +25,7 @@
 
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Analyze samples">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Analyze samples">
                     <mdi:MaterialIcon Kind="ChartBellCurve" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

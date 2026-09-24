@@ -14,16 +14,16 @@
             <TextBlock Text="Scripts" Classes="H3"/>
 
             <WrapPanel Grid.Row="1" Orientation="Horizontal" ItemSpacing="8">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Validate" Command="{Binding ValidateCommand}" AutomationProperties.Name="Validate">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Validate" Command="{Binding ValidateCommand}" AutomationProperties.Name="Validate">
                     <mdi:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Dry run" Command="{Binding DryRunCommand}" AutomationProperties.Name="Dry run">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Dry run" Command="{Binding DryRunCommand}" AutomationProperties.Name="Dry run">
                     <mdi:MaterialIcon Kind="FlaskOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Run" Command="{Binding RunCommand}" AutomationProperties.Name="Run">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Run" Command="{Binding RunCommand}" AutomationProperties.Name="Run">
                     <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Cancel" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Cancel" Command="{Binding CancelCommand}" AutomationProperties.Name="Cancel">
                     <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

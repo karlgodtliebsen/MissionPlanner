@@ -17,10 +17,10 @@
 
             <StackPanel Orientation="Vertical">
                 <StackPanel Orientation="Horizontal"   Spacing="8">
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Import presented fields" Command="{Binding ImportCommand}" Margin="4" >
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Import presented fields" Command="{Binding ImportCommand}" Margin="4" >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                     </Button>
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Export presented fields" Command="{Binding ExportCommand}" Margin="4" >
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Export presented fields" Command="{Binding ExportCommand}" Margin="4" >
                         <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
                     </Button>
                 </StackPanel>
@@ -57,15 +57,15 @@
                                             <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="6">
-                                            <Button Classes="IsToolbarButton"  ToolTip.Tip="Refresh"
+                                            <Button Classes="ToolbarButton"  ToolTip.Tip="Refresh"
                                                     Command="{Binding RefreshCommand}" >
                                                 <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                                             </Button>
-                                            <Button Classes="IsToolbarButton"  ToolTip.Tip="Revert group"
+                                            <Button Classes="ToolbarButton"  ToolTip.Tip="Revert group"
                                                     Command="{Binding RevertCommand}" >
                                                 <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />
                                             </Button>
-                                            <Button Classes="IsToolbarButton"  ToolTip.Tip="Apply group" Command="{Binding ApplyCommand}" >
+                                            <Button Classes="ToolbarButton"  ToolTip.Tip="Apply group" Command="{Binding ApplyCommand}" >
                                                 <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                                             </Button>
                                         </StackPanel>

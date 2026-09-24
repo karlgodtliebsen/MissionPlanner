@@ -15,7 +15,7 @@
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="{Binding Dropped, StringFormat='Dropped / omitted observations: {0}'}" Classes="Warning" />
             </StackPanel>
-            <Button Classes="IsToolbarButton" Grid.Row="1" ToolTip.Tip="Export bounded snapshot" Command="{Binding ExportCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Export bounded snapshot">
+            <Button Classes="ToolbarButton" Grid.Row="1" ToolTip.Tip="Export bounded snapshot" Command="{Binding ExportCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Export bounded snapshot">
                 <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
             </Button>
             <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">

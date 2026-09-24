@@ -28,13 +28,13 @@
 
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" AutomationProperties.Name="Rebuild summary">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" AutomationProperties.Name="Rebuild summary">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Export JSON" Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON">
                     <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Export Markdown" Command="{Binding ExportMarkdownCommand}" AutomationProperties.Name="Export Markdown">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Export Markdown" Command="{Binding ExportMarkdownCommand}" AutomationProperties.Name="Export Markdown">
                     <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                 </Button>
             </StackPanel>

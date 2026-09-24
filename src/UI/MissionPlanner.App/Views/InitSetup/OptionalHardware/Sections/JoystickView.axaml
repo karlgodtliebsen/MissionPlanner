@@ -26,10 +26,10 @@
 
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
+                <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
                     <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </WrapPanel>

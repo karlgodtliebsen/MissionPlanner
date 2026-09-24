@@ -29,17 +29,17 @@
             <TextBlock Text="{Binding LiveLabel}" TextWrapping="Wrap" />
         </StackPanel>
         <WrapPanel Grid.Row="2" ItemSpacing="5">
-            <Button Classes="IsToolbarButton" Command="{Binding FreezeCommand}"
+            <Button Classes="ToolbarButton" Command="{Binding FreezeCommand}"
                     ToolTip.Tip="Freeze / resume presentation">
                 <mdi:MaterialIcon Kind="Pause"  Width="30" Height="30"/>
             </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding ClearEventsCommand}" ToolTip.Tip="Clear diagnostic events">
+            <Button Classes="ToolbarButton" Command="{Binding ClearEventsCommand}" ToolTip.Tip="Clear diagnostic events">
                 <mdi:MaterialIcon Kind="Delete"  Width="30" Height="30"/>
             </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding CopyEventsCommand}" ToolTip.Tip="Copy diagnostic events">
+            <Button Classes="ToolbarButton" Command="{Binding CopyEventsCommand}" ToolTip.Tip="Copy diagnostic events">
                 <mdi:MaterialIcon Kind="ContentCopy"  Width="30" Height="30"/>
             </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding DetachCommand}" IsVisible="{Binding CanDetach}" ToolTip.Tip="Detach Inspector">
+            <Button Classes="ToolbarButton" Command="{Binding DetachCommand}" IsVisible="{Binding CanDetach}" ToolTip.Tip="Detach Inspector">
                 <mdi:MaterialIcon Kind="OpenInNew" Width="30" Height="30" />
             </Button>
         </WrapPanel>
@@ -102,7 +102,7 @@
 
         <Grid Grid.Row="5" ColumnDefinitions="*,Auto" Margin="0,8" ColumnSpacing="5">
             <TextBox Text="{Binding MarkerText}" PlaceholderText="Optional marker text" MaxLength="256" />
-            <Button Classes="IsToolbarButton" Grid.Column="1" Command="{Binding AddMarkerCommand}" ToolTip.Tip="Add marker">
+            <Button Classes="ToolbarButton" Grid.Column="1" Command="{Binding AddMarkerCommand}" ToolTip.Tip="Add marker">
                 <mdi:MaterialIcon Kind="Flag"  Width="30" Height="30"/>
             </Button>
         </Grid>

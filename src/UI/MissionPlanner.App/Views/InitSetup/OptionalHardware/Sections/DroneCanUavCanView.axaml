@@ -23,10 +23,10 @@
 
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Connect">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Connect">
                     <mdi:MaterialIcon Kind="LanConnect" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Refresh nodes">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Refresh nodes">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

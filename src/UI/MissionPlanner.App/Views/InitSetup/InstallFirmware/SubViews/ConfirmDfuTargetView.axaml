@@ -33,7 +33,7 @@
             </StackPanel>
         </Border>
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button Classes="IsToolbarButton" ToolTip.Tip="Confirm"
+            <Button Classes="ToolbarButton" ToolTip.Tip="Confirm"
                     Width="100"
                     Padding="8,2"
                     HorizontalAlignment="Center"

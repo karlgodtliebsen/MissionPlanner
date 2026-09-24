@@ -52,19 +52,19 @@
                     VerticalAlignment="Center"
                     Margin="0,0,12,0"
                     Spacing="6">
-            <Button Classes="IsToolbarButton" Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+            <Button Classes="ToolbarButton" Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
                     ToolTip.Tip="Zoom in" Click="OnZoomInClicked" AutomationProperties.Name="+">
                 <mdi:MaterialIcon Kind="MagnifyPlusOutline" Classes="ActionIcon" />
             </Button>
-            <Button Classes="IsToolbarButton" Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+            <Button Classes="ToolbarButton" Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
                     ToolTip.Tip="Zoom out" Click="OnZoomOutClicked" AutomationProperties.Name="−">
                 <mdi:MaterialIcon Kind="MagnifyMinusOutline" Classes="ActionIcon" />
             </Button>
-            <Button Classes="IsToolbarButton" Width="38" Height="38" Padding="0" FontSize="25" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+            <Button Classes="ToolbarButton" Width="38" Height="38" Padding="0" FontSize="25" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
                     ToolTip.Tip="Center on my location" Click="OnCenterOnMyLocationClicked" AutomationProperties.Name="◎">
                 <mdi:MaterialIcon Kind="CrosshairsGps" Classes="ActionIcon" />
             </Button>
-            <Button Classes="IsToolbarButton" Width="38" Height="38" Padding="0" FontWeight="SemiBold"  CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+            <Button Classes="ToolbarButton" Width="38" Height="38" Padding="0" FontWeight="SemiBold"  CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
                     ToolTip.Tip="Reset map rotation to north" Click="OnResetNorthClicked" AutomationProperties.Name="Reset map rotation to north">
                 <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
             </Button>
@@ -76,7 +76,7 @@
             <Grid RowDefinitions="Auto,*">
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <Label Content="Elevation profile — terrain / planned MSL"  />
-                    <Button Classes="IsToolbarButton" ToolTip.Tip="Close" Command="{Binding CloseElevationGraphCommand}" Padding="8,2" AutomationProperties.Name="Close">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Close" Command="{Binding CloseElevationGraphCommand}" Padding="8,2" AutomationProperties.Name="Close">
                         <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                     </Button>
                 </StackPanel>

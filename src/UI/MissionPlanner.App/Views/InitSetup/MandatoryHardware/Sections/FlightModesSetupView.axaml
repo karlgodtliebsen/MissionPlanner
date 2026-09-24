@@ -24,7 +24,7 @@
         </Border>
         <Border Grid.Row="1" HorizontalAlignment="Center" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Spacing="10">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh flight modes"
+                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh flight modes"
                         Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh flight modes">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>

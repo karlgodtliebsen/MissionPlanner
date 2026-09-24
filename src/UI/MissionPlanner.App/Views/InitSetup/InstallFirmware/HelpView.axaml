@@ -36,7 +36,7 @@
                             <TextBlock Text="{Binding Title}" FontWeight="Bold" Classes="H4" />
                             <TextBlock Grid.Row="1" Text="{Binding Description}" TextWrapping="Wrap" />
 
-                            <Button Classes="IsToolbarButton"
+                            <Button Classes="ToolbarButton"
                                 Grid.Column="1" Grid.RowSpan="2"
                                 ToolTip.Tip="Open firmware help resource"
                                 Command="{Binding $parent[ItemsControl].((models:FirmwareHelpViewModel)DataContext).OpenSupportLinkCommand}"
@@ -50,7 +50,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button Classes="IsToolbarButton"
+            <Button Classes="ToolbarButton"
                 ToolTip.Tip="Open Windows Device Manager"
                 Command="{Binding OpenDeviceManagerCommand}"
                 IsVisible="{Binding CanOpenDeviceManager}" 

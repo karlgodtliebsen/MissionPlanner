@@ -7,7 +7,7 @@
     x:TypeArguments="local:WarningStatusViewModel" x:DataType="local:WarningStatusViewModel"
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,*" RowSpacing="12">
-        <Button Classes="IsToolbarButton" ToolTip.Tip="Acknowledge selected warning" Command="{Binding AcknowledgeCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Acknowledge selected warning">
+        <Button Classes="ToolbarButton" ToolTip.Tip="Acknowledge selected warning" Command="{Binding AcknowledgeCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Acknowledge selected warning">
             <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
         </Button>
         <ListBox Grid.Row="1" ItemsSource="{Binding Warnings}" SelectedItem="{Binding Selected}"

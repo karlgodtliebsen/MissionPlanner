@@ -34,7 +34,7 @@
 
         <Border Grid.Row="2"  Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh hardware IDs" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh hardware IDs">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh hardware IDs" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh hardware IDs">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </StackPanel>

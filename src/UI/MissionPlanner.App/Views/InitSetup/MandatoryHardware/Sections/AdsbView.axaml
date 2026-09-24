@@ -24,7 +24,7 @@
 
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
@@ -51,7 +51,7 @@
                                         </StackPanel>
                                         <ComboBox Grid.Column="1" ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" DisplayMemberBinding="{Binding Name}" />
                                         <TextBox Grid.Column="1" PlaceholderText="Value" IsVisible="{Binding IsNumeric}" Text="{Binding NumericValue}" />
-                                        <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                        <Button Classes="ToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                             <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                         </Button>
                                     </Grid>

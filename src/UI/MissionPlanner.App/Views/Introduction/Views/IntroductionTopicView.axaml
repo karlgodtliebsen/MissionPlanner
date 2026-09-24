@@ -30,7 +30,7 @@
                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="models:IntroductionAction">
-                        <Button Classes="IsToolbarButton" Content="{Binding Label}" ToolTip.Tip="{Binding Label}" Margin="0,0,8,8" Padding="14,8" Click="OnActionClicked" />
+                        <Button Classes="ToolbarButton" Content="{Binding Label}" ToolTip.Tip="{Binding Label}" Margin="0,0,8,8" Padding="14,8" Click="OnActionClicked" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

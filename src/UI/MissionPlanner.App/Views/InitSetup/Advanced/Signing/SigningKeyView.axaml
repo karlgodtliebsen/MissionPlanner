@@ -11,16 +11,16 @@
             <SelectableTextBlock Text="{Binding Fingerprint, StringFormat='Fingerprint: {0}'}" />
             <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
             <WrapPanel IsEnabled="{Binding !IsBusy}">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Generate key…" Command="{Binding GenerateCommand}" Margin="0,0,10,8" AutomationProperties.Name="Generate key…">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Generate key…" Command="{Binding GenerateCommand}" Margin="0,0,10,8" AutomationProperties.Name="Generate key…">
                     <mdi:MaterialIcon Kind="KeyPlus" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Import key…" Command="{Binding ImportCommand}" Margin="0,0,10,8" AutomationProperties.Name="Import key…">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Import key…" Command="{Binding ImportCommand}" Margin="0,0,10,8" AutomationProperties.Name="Import key…">
                     <mdi:MaterialIcon Kind="FileImportOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Export secret key…" Command="{Binding ExportCommand}" Margin="0,0,10,8" AutomationProperties.Name="Export secret key…">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Export secret key…" Command="{Binding ExportCommand}" Margin="0,0,10,8" AutomationProperties.Name="Export secret key…">
                     <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Load saved key" Command="{Binding LoadCommand}" Margin="0,0,10,8" AutomationProperties.Name="Load saved key">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Load saved key" Command="{Binding LoadCommand}" Margin="0,0,10,8" AutomationProperties.Name="Load saved key">
                     <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

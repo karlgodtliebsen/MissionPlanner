@@ -20,22 +20,22 @@
             <ComboBox ItemsSource="{Binding Levels}" SelectedItem="{Binding RuntimeLevel}" MinWidth="130" />
             <CheckBox Content="Pause display" IsChecked="{Binding Paused}" />
             <CheckBox Content="Follow tail" IsChecked="{Binding FollowTail}" />
-            <Button Classes="IsToolbarButton" Command="{Binding CurrentSessionCommand}" ToolTip.Tip="Current session" AutomationProperties.Name="Current session" >
+            <Button Classes="ToolbarButton" Command="{Binding CurrentSessionCommand}" ToolTip.Tip="Current session" AutomationProperties.Name="Current session" >
                     <mdi:MaterialIcon Kind="Broadcast" Classes="ActionIcon" />
                 </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding ClearViewCommand}" ToolTip.Tip="Clear view only" AutomationProperties.Name="Clear view only" >
+            <Button Classes="ToolbarButton" Command="{Binding ClearViewCommand}" ToolTip.Tip="Clear view only" AutomationProperties.Name="Clear view only" >
                     <mdi:MaterialIcon Kind="Eraser" Classes="ActionIcon" />
                 </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding CopyCommand}" ToolTip.Tip="Copy selected event or current view" AutomationProperties.Name="Copy selected event or current view" >
+            <Button Classes="ToolbarButton" Command="{Binding CopyCommand}" ToolTip.Tip="Copy selected event or current view" AutomationProperties.Name="Copy selected event or current view" >
                     <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
                 </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding CopySnapshotCommand}" ToolTip.Tip="Copy complete log snapshot to clipboard" AutomationProperties.Name="Copy complete log snapshot to clipboard">
+            <Button Classes="ToolbarButton" Command="{Binding CopySnapshotCommand}" ToolTip.Tip="Copy complete log snapshot to clipboard" AutomationProperties.Name="Copy complete log snapshot to clipboard">
                 <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
             </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding ExportViewCommand}" ToolTip.Tip="Export current view" AutomationProperties.Name="Export current view" >
+            <Button Classes="ToolbarButton" Command="{Binding ExportViewCommand}" ToolTip.Tip="Export current view" AutomationProperties.Name="Export current view" >
                     <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                 </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding ExportSelectedCommand}" ToolTip.Tip="Export selected event" AutomationProperties.Name="Export selected event" >
+            <Button Classes="ToolbarButton" Command="{Binding ExportSelectedCommand}" ToolTip.Tip="Export selected event" AutomationProperties.Name="Export selected event" >
                     <mdi:MaterialIcon Kind="Export" Classes="ActionIcon" />
                 </Button>
         </WrapPanel>
@@ -47,42 +47,42 @@
             <TextBox Width="160" Text="{Binding FromTime}" PlaceholderText="From UTC" />
             <TextBox Width="160" Text="{Binding UntilTime}" PlaceholderText="Until UTC" />
             <CheckBox Content="Exceptions only" IsChecked="{Binding ExceptionOnly}" />
-            <Button Classes="IsToolbarButton" Command="{Binding ApplyFiltersCommand}" ToolTip.Tip="Apply filters" AutomationProperties.Name="Apply filters" >
+            <Button Classes="ToolbarButton" Command="{Binding ApplyFiltersCommand}" ToolTip.Tip="Apply filters" AutomationProperties.Name="Apply filters" >
                     <mdi:MaterialIcon Kind="FilterOutline" Classes="ActionIcon" />
                 </Button>
         </WrapPanel>
         <WrapPanel Grid.Row="3" ItemSpacing="8">
-            <Button Classes="IsToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Warnings">
+            <Button Classes="ToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Warnings">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
                     <TextBlock Text="Warnings+" />
                 </StackPanel>
             </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Errors">
+            <Button Classes="ToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Errors">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
                     <TextBlock Text="Errors+" />
                 </StackPanel>
             </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="MAVLink">
+            <Button Classes="ToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="MAVLink">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
                     <TextBlock Text="MAVLink" />
                 </StackPanel>
             </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Transport">
+            <Button Classes="ToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Transport">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
                     <TextBlock Text="Transport" />
                 </StackPanel>
             </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Parameters">
+            <Button Classes="ToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Parameters">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
                     <TextBlock Text="Parameters" />
                 </StackPanel>
             </Button>
-            <Button Classes="IsToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Firmware">
+            <Button Classes="ToolbarButton" Command="{Binding QuickFilterCommand}" CommandParameter="Firmware">
                 <StackPanel Orientation="Horizontal" Spacing="4">
                     <mdi:MaterialIcon Kind="FilterOutline" Width="16" Height="16" />
                     <TextBlock Text="Firmware" />
@@ -98,19 +98,19 @@
                         </DataTemplate>
                     </ComboBox.ItemTemplate>
                 </ComboBox>
-                <Button Classes="IsToolbarButton" Command="{Binding RefreshFilesCommand}" ToolTip.Tip="Refresh files" AutomationProperties.Name="Refresh files" >
+                <Button Classes="ToolbarButton" Command="{Binding RefreshFilesCommand}" ToolTip.Tip="Refresh files" AutomationProperties.Name="Refresh files" >
                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" Command="{Binding OpenFileCommand}" ToolTip.Tip="Open historical file" AutomationProperties.Name="Open historical file" >
+                <Button Classes="ToolbarButton" Command="{Binding OpenFileCommand}" ToolTip.Tip="Open historical file" AutomationProperties.Name="Open historical file" >
                     <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" Command="{Binding ExportFileCommand}" ToolTip.Tip="Export file" AutomationProperties.Name="Export file" >
+                <Button Classes="ToolbarButton" Command="{Binding ExportFileCommand}" ToolTip.Tip="Export file" AutomationProperties.Name="Export file" >
                     <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" Command="{Binding DeleteFileCommand}" ToolTip.Tip="Delete old file" AutomationProperties.Name="Delete old file" >
+                <Button Classes="ToolbarButton" Command="{Binding DeleteFileCommand}" ToolTip.Tip="Delete old file" AutomationProperties.Name="Delete old file" >
                     <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
                 </Button>
-                <Button Classes="IsToolbarButton" Command="{Binding OpenFolderCommand}" ToolTip.Tip="Open application log folder" AutomationProperties.Name="Open application log folder" IsVisible="{Binding CanOpenFolder}">
+                <Button Classes="ToolbarButton" Command="{Binding OpenFolderCommand}" ToolTip.Tip="Open application log folder" AutomationProperties.Name="Open application log folder" IsVisible="{Binding CanOpenFolder}">
                     <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>

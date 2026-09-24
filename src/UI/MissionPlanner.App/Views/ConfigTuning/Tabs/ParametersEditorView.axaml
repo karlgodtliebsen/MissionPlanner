@@ -27,7 +27,7 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
 
             <!--FileDocumentAddOutline-->
-            <Button Classes="IsToolbarButton" HorizontalAlignment="Right"
+            <Button Classes="ToolbarButton" HorizontalAlignment="Right"
                     ToolTip.Tip="Clear" Width="100" Command="{Binding ClearCommand}">
                 <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon" />
             </Button>

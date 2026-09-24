@@ -23,7 +23,7 @@
         </Border>
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Open Payload Control">
+                <Button Classes="ToolbarButton" ToolTip.Tip="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Open Payload Control">
                     <mdi:MaterialIcon Kind="OpenInNew" Classes="ActionIcon" />
                 </Button>
             </WrapPanel>
@@ -42,7 +42,7 @@
                                                    HorizontalContentAlignment="Right"
                                                    Value="{Binding PendingValue}" 
                                                    Minimum="0" />
-                                    <Button Classes="IsToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
+                                    <Button Classes="ToolbarButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
                                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                     </Button>
                                 </Grid>

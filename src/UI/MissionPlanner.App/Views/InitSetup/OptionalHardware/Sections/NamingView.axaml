@@ -27,11 +27,11 @@
 
         <Border Grid.Row="1" Padding="12" Width="{Binding #SourceBorder.Bounds.Width}">
             <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                <Button Classes="IsToolbarButton" Width="100" ToolTip.Tip="Apply changed identifiers" AutomationProperties.Name="Apply changed identifiers"
+                <Button Classes="ToolbarButton" Width="100" ToolTip.Tip="Apply changed identifiers" AutomationProperties.Name="Apply changed identifiers"
                         Command="{Binding ApplyCommand}" >
                     <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                 </Button>
-                <Button Classes="IsToolbarButton" ToolTip.Tip="Reconnect to the previous vehicle connection"
+                <Button Classes="ToolbarButton" ToolTip.Tip="Reconnect to the previous vehicle connection"
                         Command="{Binding ReconnectCommand}" AutomationProperties.Name="Reconnect vehicle">
                     <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                 </Button>

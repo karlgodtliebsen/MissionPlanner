@@ -29,16 +29,16 @@
                 <ComboBox Grid.Column="1" ItemsSource="{Binding Screens}"
                           SelectedItem="{Binding SelectedScreen}" />
                 <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="10">
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Apply selected screen" Command="{Binding ApplyScreenCommand}"  >
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Apply selected screen" Command="{Binding ApplyScreenCommand}"  >
                         <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                     </Button>
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Reset to live" Command="{Binding ApplyScreenCommand}"  >
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Reset to live" Command="{Binding ApplyScreenCommand}"  >
                         <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                     </Button>
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Import layout" Command="{Binding ImportCommand}"  >
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Import layout" Command="{Binding ImportCommand}"  >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                     </Button>
-                    <Button Classes="IsToolbarButton"  ToolTip.Tip="Export layout" Command="{Binding ExportCommand}"  >
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Export layout" Command="{Binding ExportCommand}"  >
                         <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
                     </Button>
                 </StackPanel>
@@ -219,7 +219,7 @@
                                 </WrapPanel>
 
                                 <WrapPanel ItemSpacing="10" HorizontalAlignment="Center" >
-                                    <Button Classes="IsToolbarButton"
+                                    <Button Classes="ToolbarButton"
                                         ToolTip.Tip="Move Left"
                                         Padding="4,2"
                                         HorizontalAlignment="Center"
@@ -227,7 +227,7 @@
                                         >
                                         <avalonia:MaterialIcon Kind="ArrowLeft" Width="30" Height="30" />
                                     </Button>
-                                    <Button Classes="IsToolbarButton"
+                                    <Button Classes="ToolbarButton"
                                         ToolTip.Tip="Move Up"
                                         Padding="4,2"
                                         HorizontalAlignment="Center"
@@ -236,7 +236,7 @@
                                         <avalonia:MaterialIcon Kind="ArrowUp" Width="30" Height="30" />
                                     </Button>
 
-                                    <Button Classes="IsToolbarButton"
+                                    <Button Classes="ToolbarButton"
                                         ToolTip.Tip="Move Down"
                                         Padding="4,2"
                                         HorizontalAlignment="Center"
@@ -245,7 +245,7 @@
                                         <avalonia:MaterialIcon Kind="ArrowDown" Width="30" Height="30" />
                                     </Button>
 
-                                    <Button Classes="IsToolbarButton"
+                                    <Button Classes="ToolbarButton"
                                         ToolTip.Tip="Move Right"
                                         Padding="4,2"
                                         HorizontalAlignment="Center"

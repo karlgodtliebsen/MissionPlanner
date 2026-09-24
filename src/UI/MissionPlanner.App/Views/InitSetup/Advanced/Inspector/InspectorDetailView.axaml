@@ -6,7 +6,7 @@
     x:TypeArguments="local:InspectorDetailViewModel" x:DataType="local:InspectorDetailViewModel"
                             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,*" RowSpacing="12">
-        <Button Classes="IsToolbarButton" ToolTip.Tip="Copy selected row and details" Command="{Binding CopyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Copy selected row and details">
+        <Button Classes="ToolbarButton" ToolTip.Tip="Copy selected row and details" Command="{Binding CopyCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Copy selected row and details">
             <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
         </Button>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">

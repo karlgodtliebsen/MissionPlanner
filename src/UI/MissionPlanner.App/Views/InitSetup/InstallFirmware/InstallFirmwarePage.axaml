@@ -25,13 +25,13 @@
                     <Grid RowDefinitions="Auto,Auto,*" Margin="20" RowSpacing="12" HorizontalAlignment="Stretch">
                         <WrapPanel Grid.Row="0" ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
 
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh physical serial and DFU devices"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Refresh physical serial and DFU devices"
                                     Command="{Binding RefreshDevicesCommand}"
                                     IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}" >
                                 <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                             </Button>
 
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Probe Runtime. Identify the selected controller using live protocols"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Probe Runtime. Identify the selected controller using live protocols"
                                     Command="{Binding ProbeRuntimeCommand}" >
                                 <avalonia:MaterialIcon Kind="Chip" Width="30" Height="30" />
                             </Button>
@@ -74,47 +74,47 @@
                                 <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
                             </u:IconDropDownButton>
 
-                            <Button Classes="IsToolbarButton"  ToolTip.Tip="Validate combined HEX"
+                            <Button Classes="ToolbarButton"  ToolTip.Tip="Validate combined HEX"
                                     Command="{Binding PrepareSelectedHexCommand}" >
                                 <avalonia:MaterialIcon Kind="FileCheckOutline" Width="30" Height="30" />
                             </Button>
 
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Recovery / Change Firmware Target"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Recovery / Change Firmware Target"
                                     Command="{Binding BeginRecoveryCommand}"
                                     IsVisible="{Binding CanOfferRecovery}">
                                     <avalonia:MaterialIcon Kind="Wrench" Width="30" Height="30" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Return to normal upgrade"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Return to normal upgrade"
                                     Command="{Binding EndRecoveryCommand}" IsVisible="{Binding IsRecovery}">
                                 <avalonia:MaterialIcon Kind="Undo" Width="30" Height="30" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Install firmware"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Install firmware"
                                     Command="{Binding ExecuteCurrentPlanCommand}"
                                     IsEnabled="{Binding CurrentPlan.CanExecute}" >
                                 <avalonia:MaterialIcon Kind="DownloadBoxOutline" Width="30" Height="30" />
                             </Button>
 
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Clear Selected Firmware" Command="{Binding ClearFirmwareSelectionCommand}"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Clear Selected Firmware" Command="{Binding ClearFirmwareSelectionCommand}"
                                     IsEnabled="{Binding !IsOperationInProgress}" >
                                 <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
                             </Button>
 
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Load platform choices"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Load platform choices"
                                     IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
                                     Command="{Binding LoadLocalPlatformChoicesCommand}"
                                     IsEnabled="{Binding !IsOperationInProgress}" HorizontalAlignment="Center"  >
                                 <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                             </Button>
 
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Copy URL" Command="{Binding CopySelectedUrlCommand}"  >
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Copy URL" Command="{Binding CopySelectedUrlCommand}"  >
                                 <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
                             </Button>
-                            <Button Classes="IsToolbarButton"  ToolTip.Tip="{Binding BootloaderUpdateExplanation}"
+                            <Button Classes="ToolbarButton"  ToolTip.Tip="{Binding BootloaderUpdateExplanation}"
                                     Command="{Binding UpdateBootloaderCommand}" >
                                 <avalonia:MaterialIcon Kind="Memory" Width="30" Height="30" />
                             </Button>
 
-                            <Button Classes="IsToolbarButton"  ToolTip.Tip="Review DFU target"
+                            <Button Classes="ToolbarButton"  ToolTip.Tip="Review DFU target"
                                     Command="{Binding ReviewDfuTargetCommand}"
                                     IsVisible="{Binding HasDetectedDfuDevice}"
                                     IsEnabled="{Binding !IsOperationInProgress}"
@@ -122,7 +122,7 @@
                                 <avalonia:MaterialIcon Kind="UsbPort" Width="30" Height="30" />
                             </Button>
 
-                            <Button Classes="IsToolbarButton"  ToolTip.Tip="Cancel operation"
+                            <Button Classes="ToolbarButton"  ToolTip.Tip="Cancel operation"
                                     Command="{Binding CancelCommand}"
                                     IsVisible="{Binding IsOperationInProgress}">
                                 <avalonia:MaterialIcon Kind="CloseCircleOutline" Width="30" Height="30" />
@@ -221,7 +221,7 @@
                                         <SelectableTextBlock Text="Enter STM32 DFU using the BOOT button" Classes="H3" />
                                         <SelectableTextBlock Text="Firmware validation checks the file. Target confirmation and flashing require a detected STM32 DFU device. For a controller requiring manual entry, disconnect USB, hold BOOT while reconnecting USB, then release BOOT. Follow the board's BOOT/RESET instructions if different. Your firmware selection will be kept."
                                                              TextWrapping="Wrap" />
-                                        <Button Classes="IsToolbarButton" ToolTip.Tip="Enter DFU using BOOT button"
+                                        <Button Classes="ToolbarButton" ToolTip.Tip="Enter DFU using BOOT button"
                                                 Command="{Binding EnterManualDfuCommand}"
                                                 HorizontalAlignment="Center" AutomationProperties.Name="Enter DFU using BOOT button">
                                             <avalonia:MaterialIcon Kind="Usb" Classes="ActionIcon" Width="20" Height="20" />
@@ -304,7 +304,7 @@
                                         </Grid>
 
                                         <StackPanel HorizontalAlignment="Stretch" IsVisible="{Binding ShowHexPreparation}" >
-                                            <Button Classes="IsToolbarButton"
+                                            <Button Classes="ToolbarButton"
                                                     HorizontalAlignment="Center" ToolTip.Tip="Validate combined HEX" Command="{Binding PrepareSelectedHexCommand}" AutomationProperties.Name="Validate combined HEX">
                                                 <avalonia:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
                                             </Button>
@@ -314,7 +314,7 @@
                                 <Border Classes="SectionCard" Padding="16" IsVisible="{Binding ShowValidationAndCompatibility}" Width="{Binding #PhysicalCtrl.Bounds.Width}">
                                     <StackPanel Spacing="8">
                                         <SelectableTextBlock  Text="Validation and compatibility" Classes="H3" />
-                                        <Button Classes="IsToolbarButton" ToolTip.Tip="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
+                                        <Button Classes="ToolbarButton" ToolTip.Tip="Validate selected firmware" Command="{Binding ValidateSelectedFirmwareCommand}"
                                                 IsVisible="{Binding ShowOnlineValidation}" IsEnabled="{Binding !IsOperationInProgress}"
                                                 HorizontalAlignment="Center" AutomationProperties.Name="Validate selected firmware">
                                             <avalonia:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
@@ -370,14 +370,14 @@
                                         </Grid>
                                         <StackPanel   HorizontalAlignment="Stretch">
                                             <StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
-                                                <Button Classes="IsToolbarButton"
+                                                <Button Classes="ToolbarButton"
                                                         HorizontalAlignment="Center" ToolTip.Tip="Confirm DFU target" Command="{Binding ReviewDfuTargetCommand}"
                                                         IsVisible="{Binding HasDetectedDfuDevice}"
                                                         IsEnabled="{Binding !IsOperationInProgress}" AutomationProperties.Name="Confirm DFU target">
                                                     <avalonia:MaterialIcon Kind="ShieldCheckOutline" Classes="ActionIcon" />
                                                 </Button>
 
-                                                <Button Classes="IsToolbarButton"
+                                                <Button Classes="ToolbarButton"
                                                         HorizontalAlignment="Center" ToolTip.Tip="Cancel operation" Command="{Binding CancelCommand}"
                                                         IsVisible="{Binding IsOperationInProgress}" AutomationProperties.Name="Cancel operation">
                                                     <avalonia:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />

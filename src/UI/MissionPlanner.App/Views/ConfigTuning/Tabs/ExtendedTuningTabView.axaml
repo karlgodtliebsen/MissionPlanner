@@ -127,20 +127,20 @@
                                 <StackPanel Orientation="Vertical" Spacing="8">
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <Button Classes="IsToolbarButton"  ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" >
+                                            <Button Classes="ToolbarButton"  ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" >
                                                 <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                                             </Button>
-                                            <Button Classes="IsToolbarButton" ToolTip.Tip="Revert group" Command="{Binding RevertCommand}" >
+                                            <Button Classes="ToolbarButton" ToolTip.Tip="Revert group" Command="{Binding RevertCommand}" >
                                                 <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />
                                             </Button>
-                                            <Button Classes="IsToolbarButton"  ToolTip.Tip="Review &amp; apply group" Command="{Binding ApplyCommand}" >
+                                            <Button Classes="ToolbarButton"  ToolTip.Tip="Review &amp; apply group" Command="{Binding ApplyCommand}" >
                                                 <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                                             </Button>
                                         </StackPanel>
                                         <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="6" IsVisible="{Binding SupportsAxisCopy}">
                                             <ComboBox ToolTip.Tip="Source axis" Width="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedSourceAxis}" />
                                             <ComboBox ToolTip.Tip="Target axis" Width="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedTargetAxis}" />
-                                            <Button Classes="IsToolbarButton"  ToolTip.Tip="Preview axis copy" Command="{Binding PreviewCopyCommand}" >
+                                            <Button Classes="ToolbarButton"  ToolTip.Tip="Preview axis copy" Command="{Binding PreviewCopyCommand}" >
                                                 <avalonia:MaterialIcon Kind="EyeOutline" Width="30" Height="30" />
                                             </Button>          
                                         </StackPanel>
@@ -167,7 +167,7 @@
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
-                                            <Button Classes="IsToolbarButton"   ToolTip.Tip="Confirm preview into pending values"
+                                            <Button Classes="ToolbarButton"   ToolTip.Tip="Confirm preview into pending values"
                                                       Command="{Binding ApplyCopyCommand}" HorizontalAlignment="Right" >
                                                 <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                                             </Button>

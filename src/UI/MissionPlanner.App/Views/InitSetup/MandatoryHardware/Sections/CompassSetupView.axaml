@@ -24,7 +24,7 @@
                     <Border  Padding="12" HorizontalAlignment="Center" 
                              Width="{Binding #SourceBorder.Bounds.Width}">
                         <WrapPanel Orientation="Horizontal" ItemSpacing="5"  HorizontalAlignment="Center" >
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
                         </WrapPanel>
@@ -56,38 +56,38 @@
                     <Border Padding="12" HorizontalAlignment="Center" Classes="SectionCard"  
                             Width="{Binding #SourceBorder.Bounds.Width}">
                         <WrapPanel Orientation="Horizontal" ItemSpacing="5"  HorizontalAlignment="Center" >
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Start calibration" AutomationProperties.Name="Start calibration" Command="{Binding StartCalibrationCommand}" >
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Start calibration" AutomationProperties.Name="Start calibration" Command="{Binding StartCalibrationCommand}" >
                                 <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Cancel calibration" AutomationProperties.Name="Cancel calibration" Command="{Binding CancelCalibrationCommand}" >
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Cancel calibration" AutomationProperties.Name="Cancel calibration" Command="{Binding CancelCalibrationCommand}" >
                                 <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                             </Button>
 
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reset / retry" AutomationProperties.Name="Reset / retry" Command="{Binding ResetCommand}"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Reset / retry" AutomationProperties.Name="Reset / retry" Command="{Binding ResetCommand}"
                                     IsEnabled="{Binding CanStart}">
                                 <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters"
                                     Command="{Binding OpenFullParametersCommand}">
                                 <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Discard" AutomationProperties.Name="Discard" Command="{Binding DiscardCommand}"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Discard" AutomationProperties.Name="Discard" Command="{Binding DiscardCommand}"
                                     HorizontalAlignment="Left"
                                     IsEnabled="{Binding !IsBusy}">
                                 <mdi:MaterialIcon Kind="FileUndoOutline" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Accept results" AutomationProperties.Name="Accept results"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Accept results" AutomationProperties.Name="Accept results"
                                     Command="{Binding AcceptCalibrationCommand}" >
                                 <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                             </Button>
-                            <Button  Classes="IsToolbarButton" ToolTip.Tip=" Apply" AutomationProperties.Name="Apply"
+                            <Button  Classes="ToolbarButton" ToolTip.Tip=" Apply" AutomationProperties.Name="Apply"
                                      Command="{Binding ApplyCommand}">
                                 <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reboot vehicle" AutomationProperties.Name="Reboot vehicle"
+                            <Button Classes="ToolbarButton" ToolTip.Tip="Reboot vehicle" AutomationProperties.Name="Reboot vehicle"
                                     IsVisible="{Binding RequiresReboot}"
                                     Command="{Binding RebootCommand}">
                                 <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" />
@@ -157,7 +157,7 @@
                                                         <TextBlock Text="{Binding ParameterText}" Opacity="0.65" FontSize="12" TextWrapping="Wrap" />
                                                         <WrapPanel>
                                                             <TextBlock Text="{Binding DefaultText}" Margin="0,0,12,0" VerticalAlignment="Center" />
-                                                            <Button Classes="IsToolbarButton" ToolTip.Tip="Reset to default" AutomationProperties.Name="Reset to default" Command="{Binding ResetDefaultCommand}"
+                                                            <Button Classes="ToolbarButton" ToolTip.Tip="Reset to default" AutomationProperties.Name="Reset to default" Command="{Binding ResetDefaultCommand}"
                                                                     IsEnabled="{Binding CanReset}">
                                                                 <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                                                             </Button>
