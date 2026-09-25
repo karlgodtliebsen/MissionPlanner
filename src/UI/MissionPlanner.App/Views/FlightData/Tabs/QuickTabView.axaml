@@ -6,11 +6,17 @@
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                            xmlns:u="https://irihi.tech/ursa"
-                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                           mc:Ignorable="d" 
+                           d:DesignWidth="800" 
+                           d:DesignHeight="450"
                            x:Class="MissionPlanner.App.Views.FlightData.Tabs.QuickTabItemView"
                            x:DataType="tabs:QuickTabViewModel">
-    <ScrollViewer>
-        <u:VirtualizingUniformGrid Margin="5,10,5,10" Columns="2" AreHorizontalSnapPointsRegular="True"
+    <Grid RowDefinitions="*" ColumnDefinitions="*" 
+          HorizontalAlignment="Stretch" 
+          VerticalAlignment="Stretch">
+        <u:VirtualizingUniformGrid Margin="5,10" 
+                                   Columns="2" 
+                                   AreHorizontalSnapPointsRegular="True"
                                    AreVerticalSnapPointsRegular="True"
                                    >
             <Border  Classes="SectionCard" HorizontalAlignment="Stretch" >
@@ -98,7 +104,6 @@
                 </Grid>
             </Border>
         </u:VirtualizingUniformGrid>
-    </ScrollViewer>
-
+    </Grid>
 
 </utilities:TabItemViewBase>
