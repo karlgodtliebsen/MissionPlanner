@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.OnboardOsdPreviewView"
+             x:DataType="sections:OnboardOsdTabViewModel"
+             x:CompileBindings="True">
+        <sections:OsdPreviewCanvas
+            x:Name="PreviewCanvas"
+            ViewModel="{Binding}"
+            MinHeight="480" />
+</UserControl>

@@ -40,7 +40,7 @@ public partial class NamingViewModel(
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     private const string systemIdName = "MAV_SYSID";

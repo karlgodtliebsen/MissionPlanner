@@ -45,7 +45,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Topic="EscMotor" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                    <controls:SetupInformationView Grid.Row="1" Topic="EscMotor" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
                 </Grid>
             </TabItem>
 

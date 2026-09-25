@@ -40,7 +40,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Topic="MotorTest" WorkflowError="{Binding ErrorMessage}"
+                    <controls:SetupInformationView Grid.Row="1" Topic="MotorTest" WorkflowError="{Binding ErrorMessage}"
                                                    AdditionalDocument="{Binding OutputDiagnosticsDocument}">
                         <controls:SetupInformationView.WorkflowStatus>
                             <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">

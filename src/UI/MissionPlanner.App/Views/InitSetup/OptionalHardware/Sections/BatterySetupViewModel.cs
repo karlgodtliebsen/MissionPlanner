@@ -183,7 +183,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     [RelayCommand]

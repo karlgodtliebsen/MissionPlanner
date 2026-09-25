@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
+using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Setup.Abstractions;
-using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 

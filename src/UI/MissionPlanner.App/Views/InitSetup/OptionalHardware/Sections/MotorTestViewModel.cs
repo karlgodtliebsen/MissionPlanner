@@ -31,7 +31,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     private readonly INavigationService navigation;

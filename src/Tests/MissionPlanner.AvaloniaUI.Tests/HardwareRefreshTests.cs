@@ -1,4 +1,4 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Headless;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -45,8 +45,11 @@ public sealed class HardwareRefreshTests
                 active.IsOnline.Returns(true);
                 var hardware = Substitute.For<IOptionalHardwareService>();
                 var navigation = Substitute.For<INavigationService>();
-                IReadOnlyList<OptionalHardwareModuleView> Modules(string message) =>
-                    [new("airspeed", "Airspeed", message, [], [], null)];
+                IReadOnlyList<OptionalHardwareModuleView> Modules(string message)
+                {
+                    return [new("airspeed", "Airspeed", message, [], [], null)];
+                }
+
                 hardware.GetModulesAsync(id, Arg.Any<CancellationToken>()).Returns(Modules("Initial"));
                 using var model = new AirspeedViewModel(active, hardware, NullLogger<AirspeedViewModel>.Instance, navigation);
                 await model.ActivateAsync();
@@ -57,7 +60,7 @@ public sealed class HardwareRefreshTests
                 await hardware.Received(1).RefreshAsync(id, Arg.Any<CancellationToken>());
                 Assert.Equal("Refreshed", model.StatusMessage);
                 await model.OpenFullParametersCommand.ExecuteAsync(null);
-                await navigation.Received(1).NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+                await navigation.Received(1).NavigateAsync(MissionPlannerRoutes.Configuration);
 
                 var late = new TaskCompletionSource<IReadOnlyList<OptionalHardwareModuleView>>();
                 CancellationToken requestToken = default;

@@ -40,9 +40,13 @@ public sealed partial class RadioSetupViewModel
         }
         var movement = switchMovement.Describe(SelectedArmingChannel) ?? $"Move the switch for RC{SelectedArmingChannel} low → high → low to observe its input.";
         var conflict = armingConfiguration.Conflict(id, SelectedArmingChannel);
-        var assigned = parameterRegistry.GetParameter(id, $"RC{SelectedArmingChannel}_OPTION")?.Value == RadioArmingConfiguration.ArmDisarmOption;
+        var assigned = armingConfiguration.IsAssigned(id, SelectedArmingChannel);
         ArmingSwitchDiagnostic = $"{movement}\nArm function: {(assigned ? "Assigned" : "Not assigned or unavailable")}.\n" +
-            (conflict ?? "This channel is free. Assign as Arm/Disarm after reviewing the transmitter mapping.");
+            (conflict ?? (assigned
+                ? $"RC{SelectedArmingChannel} is already configured for Arm/Disarm. No parameter write required."
+                : "This channel is free. Assign as Arm/Disarm after reviewing the transmitter mapping.")) +
+            "\nSwitch movement confirms RC input only. The flight controller heartbeat confirms armed state; assignment alone does not mean the vehicle is armed." +
+            "\nEndpoint calibration checks movement during its active capture window separately from this assignment.";
     }
 
     [RelayCommand]
@@ -58,6 +62,12 @@ public sealed partial class RadioSetupViewModel
         if (armingConfiguration.Conflict(id, channel) is { } conflict)
         {
             SetMessages(errorMessage: conflict);
+            return;
+        }
+        if (armingConfiguration.IsAssigned(id, channel))
+        {
+            SetMessages($"RC{channel} is already configured for Arm/Disarm. No parameter write required.");
+            RefreshArmingSwitch();
             return;
         }
         if (!await confirmation.ConfirmAsync("Assign Arm/Disarm switch",

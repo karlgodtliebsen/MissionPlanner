@@ -38,7 +38,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Topic="Naming" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                    <controls:SetupInformationView Grid.Row="1" Topic="Naming" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
 
                 </Grid>
             </TabItem>

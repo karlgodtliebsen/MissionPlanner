@@ -12,6 +12,51 @@ namespace MissionPlanner.Core.Tests;
 /// <summary>Verifies switch observation is separate from guarded arming configuration.</summary>
 public sealed class RadioArmingConfigurationTests
 {
+    /// <summary>RC5's desired existing function is idempotent; a different function remains protected.</summary>
+    [Theory]
+    [InlineData(153)]
+    [InlineData(7)]
+    public async Task ExistingRc5FunctionIsNotOverwritten(float option)
+    {
+        var fixture = new Fixture();
+        fixture.Store("FLTMODE_CH", 8);
+        fixture.Store("RC5_OPTION", option);
+        if (option == 153)
+        {
+            Assert.Null(fixture.Service.Conflict(Fixture.Id, 5));
+            Assert.True(fixture.Service.IsAssigned(Fixture.Id, 5));
+            Assert.Contains("already configured", await fixture.Service.AssignAsync(Fixture.Id, 5, TestContext.Current.CancellationToken));
+        }
+        else
+        {
+            Assert.Contains("auxiliary function 7", fixture.Service.Conflict(Fixture.Id, 5));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.AssignAsync(Fixture.Id, 5, TestContext.Current.CancellationToken));
+        }
+        Assert.Empty(fixture.Session.ReceivedCalls());
+    }
+
+    /// <summary>A newer session value is rechecked before staging, even if the registry still reports zero.</summary>
+    [Theory]
+    [InlineData(153)]
+    [InlineData(7)]
+    public async Task LoadedAssignmentIsRecheckedBeforeWriting(int liveValue)
+    {
+        var fixture = new Fixture();
+        fixture.Store("FLTMODE_CH", 8);
+        fixture.Session.GetField("RC5_OPTION").Returns(new ParameterEditField("RC5_OPTION",
+            MavParamType.Int32, liveValue, liveValue, liveValue, ParameterFieldMetadata.Empty, null));
+        if (liveValue == 153)
+        {
+            Assert.Contains("already configured", await fixture.Service.AssignAsync(Fixture.Id, 5, TestContext.Current.CancellationToken));
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.AssignAsync(Fixture.Id, 5, TestContext.Current.CancellationToken));
+        }
+        Assert.DoesNotContain(fixture.Session.ReceivedCalls(), call =>
+            call.GetMethodInfo().Name is nameof(IParameterEditSession.TrySetPending) or nameof(IParameterEditSession.ApplyAsync));
+    }
+
     /// <summary>Working RC5 movement does not imply it is configured as an arm switch.</summary>
     [Fact]
     public void MovementAndConfigurationAreIndependent()
@@ -49,24 +94,26 @@ public sealed class RadioArmingConfigurationTests
         Assert.Empty(fixture.Session.ReceivedCalls());
     }
 
-    /// <summary>A free RC8 is assigned through the existing metadata and readback session only.</summary>
+    /// <summary>A free RC5 is assigned through the existing metadata and readback session only.</summary>
     [Fact]
     public async Task AssignsOnlyFreeChannelAndHonorsMetadata()
     {
         var fixture = new Fixture();
+        fixture.Store("FLTMODE_CH", 8);
+        Assert.Null(fixture.Service.Conflict(Fixture.Id, 5));
         var metadata = ParameterFieldMetadata.Empty with { Options = [new(0, "None"), new(153, "Arm/Disarm")] };
-        fixture.Session.GetField("RC8_OPTION").Returns(new ParameterEditField("RC8_OPTION", MavParamType.Int32, 0, 0, 0, metadata, null));
-        fixture.Session.TrySetPending("RC8_OPTION", 153, out Arg.Any<string?>()).Returns(true);
+        fixture.Session.GetField("RC5_OPTION").Returns(new ParameterEditField("RC5_OPTION", MavParamType.Int32, 0, 0, 0, metadata, null));
+        fixture.Session.TrySetPending("RC5_OPTION", 153, out Arg.Any<string?>()).Returns(true);
         var plan = new ParameterWritePlan(new(Fixture.Id, fixture.Active.State!.Identity.Firmware), DateTimeOffset.UtcNow,
-            [new("RC8_OPTION", "Arm/Disarm", 0, 153, null, 153, false, false, null)]);
+            [new("RC5_OPTION", "Arm/Disarm", 0, 153, null, 153, false, false, null)]);
         fixture.Session.CreateWritePlan(Arg.Any<IReadOnlyList<string>>()).Returns(plan);
         fixture.Session.ApplyAsync(plan, null, Arg.Any<CancellationToken>()).Returns(new ParameterApplyReport(true, [], false));
-        Assert.Contains("verified", await fixture.Service.AssignAsync(Fixture.Id, 8, TestContext.Current.CancellationToken));
+        Assert.Contains("verified", await fixture.Service.AssignAsync(Fixture.Id, 5, TestContext.Current.CancellationToken));
         await fixture.Session.Received(1).ApplyAsync(plan, null, Arg.Any<CancellationToken>());
-        Assert.Equal("RC8_OPTION", Assert.Single(plan.Names));
-        fixture.Session.GetField("RC8_OPTION").Returns(new ParameterEditField("RC8_OPTION", MavParamType.Int32, 0, 0, 0,
+        Assert.Equal("RC5_OPTION", Assert.Single(plan.Names));
+        fixture.Session.GetField("RC5_OPTION").Returns(new ParameterEditField("RC5_OPTION", MavParamType.Int32, 0, 0, 0,
             metadata with { Options = [new(0, "None")] }, null));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.AssignAsync(Fixture.Id, 8, TestContext.Current.CancellationToken));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Service.AssignAsync(Fixture.Id, 5, TestContext.Current.CancellationToken));
         await fixture.Session.Received(1).ApplyAsync(plan, null, Arg.Any<CancellationToken>());
     }
 

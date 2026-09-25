@@ -35,7 +35,7 @@ public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoyst
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     [RelayCommand]

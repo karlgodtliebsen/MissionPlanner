@@ -53,8 +53,13 @@ public sealed class RadioArmingConfiguration(
                 return $"RC{channel} is a primary {axis.ToLowerInvariant()} control. Choose another channel.";
             }
         }
-        return option != 0 ? $"RC{channel} already has auxiliary function {option}. Choose a free channel." : null;
+        return option != 0 && option != ArmDisarmOption
+            ? $"RC{channel} already has auxiliary function {option}. Choose a free channel." : null;
     }
+
+    /// <summary>Reports the confirmed assignment independently of switch movement or armed state.</summary>
+    public bool IsAssigned(VehicleId id, int channel) =>
+        parameters.GetParameter(id, $"RC{channel}_OPTION")?.Value == ArmDisarmOption;
 
     /// <summary>Writes only the selected RC option using firmware metadata, connection guards and confirmed readback.</summary>
     public async Task<string> AssignAsync(VehicleId id, int channel, CancellationToken cancellationToken)
@@ -74,6 +79,10 @@ public sealed class RadioArmingConfiguration(
             }
         }
         Guard();
+        if (IsAssigned(id, channel))
+        {
+            return $"RC{channel} is already configured for Arm/Disarm. No parameter write required.";
+        }
         IDisposable? operation = null;
         if (operationGate is not null && !operationGate.TryAcquire(id, "RC arm-switch assignment", out operation))
         {
@@ -85,6 +94,15 @@ public sealed class RadioArmingConfiguration(
         var name = $"RC{channel}_OPTION";
         await session.LoadAsync([name], linked.Token);
         var field = session.GetField(name) ?? throw new InvalidOperationException($"{name} is unavailable.");
+        Guard();
+        if (field.LiveValue == ArmDisarmOption || IsAssigned(id, channel))
+        {
+            return $"RC{channel} is already configured for Arm/Disarm. No parameter write required.";
+        }
+        if (field.LiveValue != 0)
+        {
+            throw new InvalidOperationException($"RC{channel} already has auxiliary function {field.LiveValue}. Choose a free channel.");
+        }
         if (field.Metadata.Options.Count > 0 && !field.Metadata.Options.Any(option => option.Value == ArmDisarmOption))
         {
             throw new InvalidOperationException("This firmware's metadata does not advertise Arm/Disarm for this channel.");

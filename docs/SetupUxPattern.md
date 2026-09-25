@@ -232,3 +232,13 @@ also re-projects injection statistics without connecting a source. FFT re-analyz
 entered samples, CubeID re-inspects a selected local image, and ESP8266 revalidates
 entered settings; these actions never apply or flash. Informational bridge pages
 refresh their guidance. Full Parameters commands use the existing navigation service.
+
+### Existing RC Arm/Disarm assignments
+
+Radio treats a selected `RCx_OPTION = 153` as already configured: it neither asks
+for assignment confirmation nor writes that value again. Zero remains assignable;
+a different nonzero function remains a conflict. Flight-mode and primary-control
+channel conflicts still apply. The assignment service rechecks the loaded field
+before staging a write. Switch movement proves RC input only; armed state comes
+from the FC heartbeat. Radio endpoint validation uses its own active capture window,
+independently of the auxiliary assignment and the live switch movement trace.

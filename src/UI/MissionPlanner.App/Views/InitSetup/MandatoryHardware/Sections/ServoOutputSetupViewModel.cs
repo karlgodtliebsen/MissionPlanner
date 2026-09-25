@@ -192,7 +192,7 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     [RelayCommand]

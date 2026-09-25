@@ -75,11 +75,17 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
 
     /// <summary>Selectable application explanation of current and pending Compass state.</summary>
     [ObservableProperty]
-    public partial UserDocument? StatusDocument { get; private set; }
+    public partial UserDocument? StatusDocument
+    {
+        get; private set;
+    }
 
     /// <summary>Selectable advanced evidence with editor-compatible parameter assignments.</summary>
     [ObservableProperty]
-    public partial UserDocument? DiagnosticDocument { get; private set; }
+    public partial UserDocument? DiagnosticDocument
+    {
+        get; private set;
+    }
 
     /// <inheritdoc />
     protected override void OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs e)
@@ -448,7 +454,7 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
             return;
         }
         Discard();
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     [RelayCommand(CanExecute = nameof(CanReboot))]

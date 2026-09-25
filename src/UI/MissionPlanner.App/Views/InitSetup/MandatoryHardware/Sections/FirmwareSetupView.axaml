@@ -34,7 +34,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Topic="Firmware" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                    <controls:SetupInformationView Grid.Row="1" Topic="Firmware" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
                 </Grid>
             </TabItem>
             <TabItem Header="Configuration">

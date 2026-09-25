@@ -126,7 +126,7 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     [RelayCommand]

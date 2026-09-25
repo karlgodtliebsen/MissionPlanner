@@ -35,7 +35,7 @@ public sealed partial class Esp8266SetupViewModel(ILogger<Esp8266SetupViewModel>
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     /// <summary>

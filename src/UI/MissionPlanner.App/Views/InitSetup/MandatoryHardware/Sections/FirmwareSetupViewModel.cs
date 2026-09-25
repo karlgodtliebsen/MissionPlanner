@@ -39,7 +39,7 @@ public sealed partial class FirmwareSetupViewModel : ViewModelBase
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     private readonly INavigationService navigation;

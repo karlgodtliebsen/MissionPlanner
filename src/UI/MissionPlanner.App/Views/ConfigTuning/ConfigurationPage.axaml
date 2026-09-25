@@ -1,0 +1,35 @@
+<utilities:NavigationViewBase x:TypeArguments="configTuning:ConfigurationViewModel" 
+                              xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                              xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                              xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
+                              xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              x:Class="MissionPlanner.App.Views.ConfigTuning.ConfigurationPage"
+                              x:DataType="configTuning:ConfigurationViewModel">
+    <ContentPage Header="Configuration">
+       
+        <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+            </StackPanel>
+            <TabControl TabStripPlacement="Left" Grid.Row="1" >
+          
+                <TabItem Header="GeoFence"><sections:GeoFenceTabView /></TabItem>
+                <TabItem Header="Basic Tuning"><sections:BasicTuningTabView /></TabItem>
+                <TabItem Header="Extended Tuning"><sections:ExtendedTuningTabView /></TabItem>
+                <TabItem Header="Onboard OSD"><sections:OnboardOSDTabView /></TabItem>
+                <TabItem Header="Mavlink Ftp"><sections:MAVFtpTabView /></TabItem>
+                <TabItem Header="Parameters Editor"><sections:FullParametersListTabView /></TabItem>
+                <TabItem Header="CubeLan 8 Port Switch "><sections:CubeLan8PortSwitchTabView /></TabItem>
+
+            </TabControl>
+        </Grid>
+
+    </ContentPage>
+</utilities:NavigationViewBase>

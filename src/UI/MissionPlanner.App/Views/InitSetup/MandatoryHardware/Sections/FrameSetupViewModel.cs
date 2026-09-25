@@ -200,7 +200,7 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     [RelayCommand]

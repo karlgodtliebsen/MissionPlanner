@@ -25,7 +25,7 @@ public abstract partial class ExternalSerialToolViewModel(IFirmwareSerialDeviceC
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     private CancellationTokenSource lifetime = new();

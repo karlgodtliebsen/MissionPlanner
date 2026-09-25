@@ -35,7 +35,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Topic="Bluetooth" WorkflowError="{Binding ErrorMessage}" >
+                    <controls:SetupInformationView Grid.Row="1" Topic="Bluetooth" WorkflowError="{Binding ErrorMessage}" >
                         <controls:SetupInformationView.WorkflowStatus>
                             <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
                                 <Binding Path="StatusMessage" />

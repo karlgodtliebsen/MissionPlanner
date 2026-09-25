@@ -30,7 +30,7 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     private readonly INavigationService navigation;

@@ -327,7 +327,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     [RelayCommand(CanExecute = nameof(CanWrite))]

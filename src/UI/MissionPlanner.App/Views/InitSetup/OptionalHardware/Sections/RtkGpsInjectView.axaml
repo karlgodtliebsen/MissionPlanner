@@ -33,7 +33,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Topic="RtkGps" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                    <controls:SetupInformationView Grid.Row="1" Topic="RtkGps" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
                 </Grid>
 
             </TabItem>

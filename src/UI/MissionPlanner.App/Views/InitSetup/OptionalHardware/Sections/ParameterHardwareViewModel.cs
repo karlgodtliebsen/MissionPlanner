@@ -29,7 +29,7 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         {
             return;
         }
-        await Navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await Navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     /// <summary>Gets the navigation service shared by optional parameter workflows.</summary>

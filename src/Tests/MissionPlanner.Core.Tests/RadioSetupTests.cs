@@ -566,6 +566,37 @@ public sealed class RadioSetupTests
         Assert.Null(new RadioNeutralDiagnostic(1500, null, null, null, null, null, false).NeutralAllowed);
     }
 
+    /// <summary>Earlier switch movement and assignment never satisfy a new endpoint capture.</summary>
+    [Fact]
+    public async Task ArmSwitchMovementMustOccurWithinCurrentCapture()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "FLTMODE_CH", 8);
+        Store(registry, "RC5_OPTION", 153);
+        var context = new TestActiveVehicleContext(StateWithChannels(Enumerable.Repeat((ushort)1500, 8).ToArray(), now));
+        using var service = CreateService(context, registry, now);
+        void Sample(ushort rc5, ushort others) => context.SetState(StateWithChannels(
+            Enumerable.Range(1, 8).Select(channel => channel == 5 ? rc5 : others).ToArray(), now));
+        Sample(999, 1000);
+        Sample(2000, 2000);
+        Sample(999, 1500);
+        await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
+        Sample(999, 1000);
+        Sample(999, 2000);
+        var failed = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(RadioCalibrationState.Capturing, failed.State);
+        Assert.NotEmpty(failed.Captures.Single(channel => channel.Number == 5).Issues);
+        Sample(2000, 1500);
+        Sample(999, 1500);
+        var review = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(RadioCalibrationState.Review, review.State);
+        Assert.Empty(review.Captures.Single(channel => channel.Number == 5).Issues);
+        Sample(2100, 1500);
+        Assert.Equal(2000, service.Current.Captures.Single(channel => channel.Number == 5).Maximum);
+        Assert.Equal(153, registry.GetParameter(vehicleId, "RC5_OPTION")!.Value);
+    }
+
     private static RadioCalibrationService CreateService(
         TestActiveVehicleContext context,
         VehicleParameterRegistry registry,

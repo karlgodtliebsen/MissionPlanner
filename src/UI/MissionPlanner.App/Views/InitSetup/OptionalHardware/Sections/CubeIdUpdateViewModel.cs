@@ -29,7 +29,7 @@ public sealed partial class CubeIdUpdateViewModel(ILogger<CubeIdUpdateViewModel>
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     [ObservableProperty] public partial string FirmwarePath { get; set; } = string.Empty;

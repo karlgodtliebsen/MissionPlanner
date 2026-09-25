@@ -29,7 +29,7 @@ public sealed partial class FftSetupViewModel : OptionalHardwareBaseViewModel
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     private readonly INavigationService navigation;

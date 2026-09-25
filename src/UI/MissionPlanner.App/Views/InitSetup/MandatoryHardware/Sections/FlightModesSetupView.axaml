@@ -36,7 +36,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Grid.Row="1"  Topic="FlightModes"
+                    <controls:SetupInformationView Grid.Row="1" Topic="FlightModes"
                                                    WorkflowStatus="{Binding StatusMessage}"
                                                    WorkflowError="{Binding ErrorMessage}" />
                 </Grid>

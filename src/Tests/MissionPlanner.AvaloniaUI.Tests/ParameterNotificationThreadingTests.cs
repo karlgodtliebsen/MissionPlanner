@@ -7,7 +7,7 @@ using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
-using MissionPlanner.App.Views.ConfigTuning.Tabs;
+using MissionPlanner.App.Views.ConfigTuning.Sections;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Vehicles.Abstractions;

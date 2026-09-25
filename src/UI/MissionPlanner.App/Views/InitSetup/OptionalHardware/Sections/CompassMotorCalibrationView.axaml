@@ -26,7 +26,6 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-
                 <Grid RowDefinitions="Auto,*">
                     <Border Grid.Row="0" Padding="12">
                         <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
@@ -39,7 +38,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                <controls:SetupInformationView Topic="CompassMotor" WorkflowError="{Binding ErrorMessage}" >
+                <controls:SetupInformationView Grid.Row="1" Topic="CompassMotor" WorkflowError="{Binding ErrorMessage}" >
                     <controls:SetupInformationView.WorkflowStatus>
                         <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
                             <Binding Path="StatusMessage" />
@@ -49,8 +48,6 @@
                     </controls:SetupInformationView.WorkflowStatus>
                 </controls:SetupInformationView>
                 </Grid>
-
-
             </TabItem>
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,*">

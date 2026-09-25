@@ -37,7 +37,7 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Topic="CanGpsOrder" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                    <controls:SetupInformationView Grid.Row="1" Topic="CanGpsOrder" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
 
                 </Grid>
             </TabItem>

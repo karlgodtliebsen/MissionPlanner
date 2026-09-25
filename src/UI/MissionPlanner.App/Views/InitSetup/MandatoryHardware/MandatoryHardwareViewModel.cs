@@ -144,8 +144,8 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
 
             var route = parts[1] switch
             {
-                "Full Parameters List" => MissionPlannerRoutes.ConfigFullParameters,
-                "Onboard OSD" => MissionPlannerRoutes.ConfigOnboardOSD,
+                "Full Parameters List" => MissionPlannerRoutes.Configuration,
+                "Onboard OSD" => MissionPlannerRoutes.Configuration,
                 _ => throw new InvalidOperationException($"Unknown Config destination '{parts[1]}'.")
             };
             await navigation.NavigateAsync(route);

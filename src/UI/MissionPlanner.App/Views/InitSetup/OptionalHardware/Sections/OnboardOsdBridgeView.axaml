@@ -2,7 +2,7 @@
     x:TypeArguments="sections:OnboardOsdBridgeViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
-                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -38,10 +38,8 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                <controls:SetupInformationView Topic="OnboardOsd" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
-
+                    <controls:SetupInformationView Grid.Row="1" Topic="OnboardOsd" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
                 </Grid>
-
             </TabItem>
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="*">

@@ -214,7 +214,7 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
     [RelayCommand(CanExecute = nameof(CanTest))]
     private async Task TestSequenceAsync()

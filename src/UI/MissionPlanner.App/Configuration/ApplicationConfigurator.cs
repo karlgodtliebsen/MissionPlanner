@@ -12,7 +12,8 @@ using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.Common;
-using MissionPlanner.App.Views.ConfigTuning.Tabs;
+using MissionPlanner.App.Views.ConfigTuning;
+using MissionPlanner.App.Views.ConfigTuning.Sections;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.Diagnostics;
 using MissionPlanner.App.Views.FlightData;
@@ -80,8 +81,6 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
-using ArmingViewModel = MissionPlanner.App.Views.InitSetup.Arming.ArmingViewModel;
-using FirmwareHelpViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models.FirmwareHelpViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -355,6 +354,9 @@ public static class ApplicationConfigurator
         services.TryAddTransient<DialogDemoViewModel>();
 
         // Tabs on Config View
+        services.TryAddTransient<ConfigurationPage>();
+        services.TryAddTransient<ConfigurationViewModel>();
+
         services.TryAddTransient<GeoFenceTabView>();
         services.TryAddTransient<BasicTuningTabView>();
         services.TryAddTransient<ExtendedTuningTabView>();
@@ -364,6 +366,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<CubeLan8PortSwitchTabView>();
         services.TryAddTransient<ParametersEditorView>();
         services.TryAddTransient<ParameterComparisonView>();
+
         services.TryAddTransient<FullParametersListTabViewModel>();
         services.TryAddTransient<ParameterComparisonViewModel>();
         services.TryAddTransient<MavFtpTabViewModel>();

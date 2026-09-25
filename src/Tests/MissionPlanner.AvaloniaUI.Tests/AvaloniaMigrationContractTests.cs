@@ -6,7 +6,7 @@ using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dialogs;
-using MissionPlanner.App.Views.ConfigTuning.Tabs;
+using MissionPlanner.App.Views.ConfigTuning.Sections;
 using MissionPlanner.App.Views.FlightData.Tabs;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;

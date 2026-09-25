@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
-using MissionPlanner.App.Views.ConfigTuning.Tabs;
+using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.FlightData;
 using MissionPlanner.App.Views.FlightPlanner;
 using MissionPlanner.App.Views.Help;
@@ -53,14 +53,7 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
             MissionPlannerRoutes.SetupAdvanced =>
                 services.GetRequiredService<AdvancedPage>(),
 
-            MissionPlannerRoutes.ConfigGeoFence => services.GetRequiredService<GeoFenceTabView>(),
-            MissionPlannerRoutes.ConfigBasicTuning => services.GetRequiredService<BasicTuningTabView>(),
-            MissionPlannerRoutes.ConfigExtendedTuning => services.GetRequiredService<ExtendedTuningTabView>(),
-            MissionPlannerRoutes.ConfigOnboardOSD => services.GetRequiredService<OnboardOSDTabView>(),
-            MissionPlannerRoutes.ConfigMavFtp => services.GetRequiredService<MAVFtpTabView>(),
-            MissionPlannerRoutes.ConfigFullParameters => services.GetRequiredService<FullParametersListTabView>(),
-            MissionPlannerRoutes.ConfigCubeLan8PortSwitch => services.GetRequiredService<CubeLan8PortSwitchTabView>(),
-
+            MissionPlannerRoutes.Configuration => services.GetRequiredService<ConfigurationPage>(),
             MissionPlannerRoutes.Preferences =>
                 services.GetRequiredService<PreferencesPage>(),
 

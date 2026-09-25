@@ -28,7 +28,7 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
     }
 
     private readonly INavigationService navigation;

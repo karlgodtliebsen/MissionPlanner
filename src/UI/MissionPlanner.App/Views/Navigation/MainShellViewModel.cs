@@ -142,16 +142,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
                 new("Arming", MissionPlannerRoutes.SetupArming),
                 new("Advanced", MissionPlannerRoutes.SetupAdvanced)
             ]),
-            new("Config", icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_tuningconfig_icon.png"), children:
-            [
-                new("Geo Fence", MissionPlannerRoutes.ConfigGeoFence),
-                new("Basic Tuning", MissionPlannerRoutes.ConfigBasicTuning),
-                new("Extended Tuning", MissionPlannerRoutes.ConfigExtendedTuning),
-                new("Onboard OSD", MissionPlannerRoutes.ConfigOnboardOSD),
-                new("MAV FTP", MissionPlannerRoutes.ConfigMavFtp),
-                new("Full Parameters List", MissionPlannerRoutes.ConfigFullParameters),
-                new("CubeLAN 8 Port Switch", MissionPlannerRoutes.ConfigCubeLan8PortSwitch)
-            ]),
+            new("Configuration", MissionPlannerRoutes.Configuration, icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_tuningconfig_icon.png")),
             new("Logs", MissionPlannerRoutes.Logs),
             new("Preferences", MissionPlannerRoutes.Preferences),
             new("Simulation", MissionPlannerRoutes.Simulation, LoadImage("avares://MissionPlanner.App/Resources/Images/light_simulation_icon.png")),

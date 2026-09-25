@@ -1,0 +1,291 @@
+﻿<utilities:UserControlViewBase x:TypeArguments="sections:OnboardOsdTabViewModel"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+                               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                               xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               xmlns:models="clr-namespace:MissionPlanner.App.Models"
+                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.OnboardOSDTabView"
+                               x:DataType="sections:OnboardOsdTabViewModel">
+
+    <ContentPage Header="Onboard OSD"   >
+
+        <Grid RowDefinitions="Auto,Auto,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Margin="10,0"
+              RowSpacing="10" >
+
+            <Grid ColumnDefinitions="Auto,220,*,Auto" ColumnSpacing="8"
+                  Margin="0,20" IsVisible="{Binding IsUnsupported, Converter={StaticResource InvertedBoolConverter}}"
+                  HorizontalAlignment="Center"
+                  >
+                <TextBlock Text="Screen" VerticalAlignment="Center" />
+                <ComboBox Grid.Column="1" ItemsSource="{Binding Screens}"
+                          SelectedItem="{Binding SelectedScreen}" />
+                <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="10">
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Apply selected screen" Command="{Binding ApplyScreenCommand}"  >
+                        <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Reset to live" Command="{Binding ApplyScreenCommand}"  >
+                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+                    </Button>
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Import layout" Command="{Binding ImportCommand}"  >
+                        <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button Classes="ToolbarButton"  ToolTip.Tip="Export layout" Command="{Binding ExportCommand}"  >
+                        <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
+                    </Button>
+                </StackPanel>
+
+                <ProgressBar IsIndeterminate="True" Grid.Column="3"
+                             IsVisible="{Binding IsBusy}"
+                             Theme="{DynamicResource ProgressRing}" />
+            </Grid>
+
+            <Border Grid.Row="1" Padding="10" HorizontalAlignment="Center">
+                <StackPanel Orientation="Vertical" Spacing="3">
+                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                    <TextBlock Text="{Binding ValidationMessage}"
+                               Classes="Warning"
+                               IsVisible="{Binding HasValidationIssues}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding WarningMessage}"
+                               Classes="Warning"
+                               IsVisible="{Binding HasWarning}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="Font upload is not offered because no font-transfer service is registered."
+                               FontSize="12"
+                               Opacity="0.75"
+                               IsVisible="{Binding HasOsdConfiguration}" />
+                    <TextBlock Text="The connected firmware exposes no discoverable OSD screens/items."
+                               Classes="Warning"
+                               IsVisible="{Binding IsUnsupported}" />
+                </StackPanel>
+            </Border>
+
+            <Grid Grid.Row="2" ColumnDefinitions="3*,*" ColumnSpacing="12" 
+                  IsVisible="{Binding HasOsdConfiguration}"
+                  HorizontalAlignment="Center"
+                  >
+                <ScrollViewer  HorizontalAlignment="Stretch" Margin="10"
+                               
+                               Width="600" >
+                    <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Stretch">
+
+                        <Border Padding="8" Classes="SectionCard" x:Name="SourceBorder0">
+                            <StackPanel Orientation="Vertical" Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <TextBlock Text="Visual character-grid preview" Classes="H4" />
+                                    <TextBlock Text="{Binding SelectedScreen.GridSizeText,FallbackValue='', TargetNullValue=''}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <sections:OnboardOsdPreviewView />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Padding="8" Classes="SectionCard" Width="{Binding #SourceBorder0.Bounds.Width}">
+                            <StackPanel Orientation="Vertical" Spacing="6">
+                                <TextBlock Text="Screen enable and options"  Classes="H4"  />
+                                <ItemsControl ItemsSource="{Binding SelectedScreen.Parameters,FallbackValue='', TargetNullValue=''}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:ParameterItemViewModel">
+                                            <Grid ColumnDefinitions="2*,Auto,130" ColumnSpacing="8" Margin="0,5">
+                                                <StackPanel Orientation="Vertical">
+                                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding Name}" FontSize="11" />
+                                                </StackPanel>
+                                                <TextBlock Grid.Column="1" Text="{Binding LiveValue, StringFormat='Live {0:G}'}"
+                                                           VerticalAlignment="Center"  HorizontalAlignment="Left"/>
+                                                <NumericUpDown
+                                                    IsReadOnly="{Binding IsReadOnly}"
+                                                    Grid.Column="2"
+                                                    Value="{Binding Value, Mode=TwoWay}"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Right"
+                                                    />
+
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                        <Border Padding="8"  Classes="SectionCard" 
+                                IsVisible="{Binding HasGlobalParameters}" Width="{Binding #SourceBorder0.Bounds.Width}">
+                            <StackPanel Orientation="Vertical" Spacing="6">
+                                <TextBlock Text="Global OSD options" Classes="H4" />
+                                <ItemsControl ItemsSource="{Binding GlobalParameters}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:ParameterItemViewModel">
+                                            <Grid ColumnDefinitions="*,130" ColumnSpacing="8" Margin="0,5">
+                                                <TextBlock Text="{Binding DisplayName}" />
+                                                <NumericUpDown
+                                                    IsReadOnly="{Binding IsReadOnly}"
+                                                    Grid.Column="1"
+                                                    Value="{Binding Value, Mode=TwoWay}"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Right"
+                                                    />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <ScrollViewer Grid.Column="1" HorizontalAlignment="Stretch" 
+                              Margin="10"
+                              Width="500"
+                              >
+                    <Grid RowDefinitions="2*,*" RowSpacing="10" HorizontalAlignment="Stretch" 
+                          >
+                        <Border Grid.Row="0" Padding="10"  Classes="SectionCard" x:Name="SourceBorder1" >
+                            <ListBox ItemsSource="{Binding SelectedScreen.Items,FallbackValue='', TargetNullValue=''}"
+                                     SelectedItem="{Binding SelectedItem}"
+                                     SelectionMode="Single"
+                                     HorizontalAlignment="Stretch"
+                                     MaxHeight="400"
+                                     Margin="10,0,10,0"
+                                     >
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="sections:OsdItemViewModel">
+                                        <Border Padding="8" Margin="0,0,0,5">
+                                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                                                <StackPanel Orientation="Vertical">
+                                                    <TextBlock Text="{Binding Title}" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding Key}" FontSize="11" />
+                                                </StackPanel>
+                                                <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsEnabled, Mode=TwoWay}" />
+                                                <TextBlock Grid.Row="1" Text="{Binding Column, StringFormat='Column {0}'}" FontSize="12" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Row, StringFormat='Row {0}'}" FontSize="12" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Border>
+                        <Border Grid.Row="1" Padding="10" Classes="SectionCard"
+                                Width="{Binding #SourceBorder1.Bounds.Width}"
+                                VerticalAlignment="Center" HorizontalAlignment="Left"
+                                >
+                            <StackPanel Orientation="Vertical" Spacing="20" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                <TextBlock Text="Selected item placement" Classes="H4" Margin="0,0,0,0"/>
+                                
+                                <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center" >
+                                    <TextBlock Text="{Binding SelectedItem.Title,FallbackValue='', TargetNullValue=''}" FontWeight="Bold" />
+                                    <TextBlock Text="{Binding SelectedItem.Description,FallbackValue='', TargetNullValue=''}" FontSize="12" TextWrapping="Wrap" />
+                                </WrapPanel>
+
+                                <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center" >
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center"  Spacing="10">
+                                        <TextBlock Text="Column:" VerticalAlignment="Center" />
+                                        <NumericUpDown
+                                            Width="90"
+                                            Value="{Binding SelectedItem.Column,FallbackValue='', TargetNullValue='', Mode=TwoWay}"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Right"
+                                            />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center"  Spacing="10">
+                                        <TextBlock Text="Row:" VerticalAlignment="Center" />
+                                        <NumericUpDown
+                                            Width="90"
+                                            Value="{Binding SelectedItem.Row,FallbackValue='', TargetNullValue='', Mode=TwoWay}"
+                                            HorizontalAlignment="Stretch"
+                                            HorizontalContentAlignment="Right"
+                                            />
+                                    </StackPanel>
+
+                                </WrapPanel>
+
+                                <WrapPanel ItemSpacing="10" HorizontalAlignment="Center" >
+                                    <Button Classes="EmbeddedIconButton"
+                                        ToolTip.Tip="Move Left"
+                                        Padding="4,2"
+                                        HorizontalAlignment="Center"
+                                        Command="{Binding MoveLeftCommand}"
+                                        >
+                                        <avalonia:MaterialIcon Kind="ArrowLeft" Width="30" Height="30" />
+                                    </Button>
+                                    <Button Classes="EmbeddedIconButton"
+                                        ToolTip.Tip="Move Up"
+                                        Padding="4,2"
+                                        HorizontalAlignment="Center"
+                                        Command="{Binding MoveUpCommand}"
+                                        >
+                                        <avalonia:MaterialIcon Kind="ArrowUp" Width="30" Height="30" />
+                                    </Button>
+
+                                    <Button Classes="EmbeddedIconButton"
+                                        ToolTip.Tip="Move Down"
+                                        Padding="4,2"
+                                        HorizontalAlignment="Center"
+                                        Command="{Binding MoveDownCommand}"
+                                        >
+                                        <avalonia:MaterialIcon Kind="ArrowDown" Width="30" Height="30" />
+                                    </Button>
+
+                                    <Button Classes="EmbeddedIconButton"
+                                        ToolTip.Tip="Move Right"
+                                        Padding="4,2"
+                                        HorizontalAlignment="Center"
+                                        Command="{Binding MoveRightCommand}"
+                                        >
+                                        <avalonia:MaterialIcon Kind="ArrowRight" Width="30" Height="30" />
+                                    </Button>
+                                </WrapPanel>
+
+                                <TextBlock Text="{Binding SelectedItem.ValidationError,FallbackValue='', TargetNullValue=''}"
+                                           Classes="Warning" FontSize="12" />
+                                <ItemsControl ItemsSource="{Binding SelectedItem.AdditionalParameters,FallbackValue='', TargetNullValue=''}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:ParameterItemViewModel">
+                                            <Grid ColumnDefinitions="*,110" ColumnSpacing="6">
+                                                <TextBlock Text="{Binding DisplayName}" />
+                                                <NumericUpDown
+                                                    IsReadOnly="{Binding IsReadOnly}"
+                                                    Grid.Column="1"
+                                                    Value="{Binding Value, Mode=TwoWay}"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Right"
+                                                    />
+
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </ContentPage>
+</utilities:UserControlViewBase>

@@ -38,6 +38,7 @@
             </StackPanel>
         </DataTemplate>
     </utilities:UserControlViewBase.Resources>
+
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
