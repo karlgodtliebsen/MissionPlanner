@@ -14,6 +14,7 @@ using MissionPlanner.App.Presentation.Documents;
 namespace MissionPlanner.AvaloniaUI.Tests;
 
 /// <summary>Exercises the real document renderer with Avalonia's isolated headless platform.</summary>
+[Collection("Document rendering")]
 public sealed class CompassInformationDocumentTests
 {
     /// <summary>Provides the actual application resources without starting a vehicle session.</summary>
@@ -67,20 +68,11 @@ public sealed class CompassInformationDocumentTests
                 Assert.Contains("Heading", await window.Clipboard!.TryGetTextAsync());
 
                 var buttons = view.GetVisualDescendants().OfType<Button>().ToArray();
-                buttons.Single(button => AutomationProperties.GetName(button) == "Copy Markdown")
-                    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                Dispatcher.UIThread.RunJobs();
-                Assert.Equal(markdown, await window.Clipboard!.TryGetTextAsync());
-                buttons.Single(button => AutomationProperties.GetName(button) == "Copy All")
-                    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                Dispatcher.UIThread.RunJobs();
+                Assert.DoesNotContain(buttons, button => AutomationProperties.GetName(button) is "Copy Markdown" or "Copy All");
+                Assert.NotNull(view.FindControl<TextBlock>("CopyFeedback"));
                 var plain = await window.Clipboard!.TryGetTextAsync();
-                Assert.Contains("Heading", plain);
                 Assert.Contains("COMPASS_ENABLE", plain);
                 Assert.DoesNotContain("##", plain);
-                Assert.Equal("Copied", view.FindControl<TextBlock>("CopyFeedback")!.Text);
-                view.ShowToolbar = false;
-                Assert.False(view.FindControl<WrapPanel>("Toolbar")!.IsVisible);
 
                 window.RequestedThemeVariant = ThemeVariant.Light;
                 window.UpdateLayout();

@@ -1,22 +1,13 @@
-﻿using Avalonia.Controls;
-using LiveMarkdown.Avalonia;
+using Avalonia.Controls;
 
 namespace MissionPlanner.App.Views.InitSetup.Arming;
 
+/// <summary>Arming workspace using the standard navigation lifecycle.</summary>
 public partial class ArmingPage : NavigationPage
 {
+    /// <summary>Initializes the view; behavior belongs to its injected ViewModel.</summary>
     public ArmingPage()
     {
         InitializeComponent();
-
-        var markdownBuilder = new ObservableStringBuilder();
-        MarkdownRenderer.MarkdownBuilder = markdownBuilder;
-
-        // Append each chunk received from the streaming source.
-        markdownBuilder.Append("# Hello, Markdown!");
-        markdownBuilder.Append("\n\nThis is a **live** Markdown viewer for Avalonia applications.");
-
-        // Clearing or replacing text also triggers a render update.
-        //        markdownBuilder.Clear();
     }
 }

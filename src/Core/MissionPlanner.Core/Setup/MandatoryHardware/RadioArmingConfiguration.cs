@@ -8,7 +8,8 @@ namespace MissionPlanner.Core.Setup.MandatoryHardware;
 
 /// <summary>Projects RC arming assignments and writes one explicitly reviewed free auxiliary channel.</summary>
 public sealed class RadioArmingConfiguration(
-    IActiveVehicleContext active, IVehicleParameterRegistry parameters, IDomainFactory factory)
+    IActiveVehicleContext active, IVehicleParameterRegistry parameters, IDomainFactory factory,
+    MissionPlanner.Core.Commands.IVehicleOperationGate? operationGate = null)
 {
     /// <summary>ArduPilot's Arm/Disarm auxiliary function, validated against firmware metadata when available.</summary>
     public const int ArmDisarmOption = 153;
@@ -73,6 +74,12 @@ public sealed class RadioArmingConfiguration(
             }
         }
         Guard();
+        IDisposable? operation = null;
+        if (operationGate is not null && !operationGate.TryAcquire(id, "RC arm-switch assignment", out operation))
+        {
+            throw new InvalidOperationException("Another vehicle operation is active.");
+        }
+        using var lease = operation;
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(connection, cancellationToken);
         using var session = factory.Create<IParameterEditSession, ParameterEditScope>(new(id, active.State!.Identity.Firmware));
         var name = $"RC{channel}_OPTION";

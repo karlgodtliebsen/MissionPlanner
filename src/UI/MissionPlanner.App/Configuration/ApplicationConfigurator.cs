@@ -392,6 +392,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FrameSetupViewModel>();
         services.TryAddTransient<AccelerometerSetupViewModel>();
         services.TryAddTransient<CompassSetupViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Presentation.Documents.IArmingSetupDocumentFactory, MissionPlanner.App.Presentation.Documents.ArmingSetupDocumentFactory>();
         services.TryAddSingleton<MissionPlanner.App.Presentation.Documents.ICompassSetupDocumentFactory,
             MissionPlanner.App.Presentation.Documents.CompassSetupDocumentFactory>();
         services.TryAddTransient<RadioSetupViewModel>();

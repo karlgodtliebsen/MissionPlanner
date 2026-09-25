@@ -171,7 +171,23 @@ An Arming page can follow the same structure:
 - **Actions:** existing guarded Arm / Disarm commands.
 - **Advanced:** relevant ARMING_* / RC option evidence and Full Parameters navigation.
 
-No full Arming page is introduced by this change.
+Arming is now the second full semantic consumer. `IArmingConfigurationService` owns
+arming parameter semantics; `IArmingSetupDocumentFactory` formats its evidence together
+with the existing singleton live diagnostic. The page uses Information / Configuration,
+reviewed Apply/Discard, metadata defaults/custom checks, and policy-controlled typed
+Arm/Disarm actions. See [ARMING.md](ARMING.md).
+
+Radio retains receiver-centric assignment and movement controls. Both pages reuse the
+same RC conflict rules and function-153 meaning, and writes are protected by the shared
+vehicle operation gate. Safety retains its broad safety assessment; Failsafe and Compass
+retain their own configuration. Arming consumes only their diagnostic consequences.
+No generic setup ViewModel, arbitrary-parameter engine, or new shared editor control was
+introduced: feature-specific semantics remain in their respective services.
+
+Arming subscribes only while active, refreshes semantic state once per second, preserves
+unchanged documents, cancels owned operations at connection boundaries, and never
+starts an independent parameter download. Opening Full Parameters uses ordinary app
+navigation and confirms discarding pending edits.
 
 ## Information documents
 
@@ -191,5 +207,5 @@ comparison, and the real-hardware acceptance checklist. The page scrolls as a
 whole and has no fixed desktop minimum width or document height.
 
 The `compass-live-markdown` package supersedes the earlier Compass UX package and
-explicitly introduces this wrapper. Further migrations (Arming, Firmware, Battery,
-GPS, or other Setup pages) remain gated on real-hardware validation of Compass.
+explicitly introduces this wrapper. Arming reuses this wrapper. Its automated validation and outstanding SITL/physical
+acceptance are recorded in its implementation report; no hardware validation is implied.

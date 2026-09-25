@@ -148,6 +148,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IFrameConfigurationService, FrameConfigurationService>();
         services.TryAddTransient<IArduPilotCalibrationService, ArduPilotCalibrationService>();
         services.TryAddTransient<ICompassConfigurationService, CompassConfigurationService>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Arming.IArmingConfigurationService, MissionPlanner.Core.Setup.Arming.ArmingConfigurationService>();
         services.TryAddTransient<IArduPilotCompassCalibrationService, ArduPilotCompassCalibrationService>();
         services.TryAddTransient<IRadioCalibrationService, RadioCalibrationService>();
         services.TryAddTransient<RadioArmingConfiguration>();
