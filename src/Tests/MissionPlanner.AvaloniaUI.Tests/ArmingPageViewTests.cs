@@ -34,8 +34,11 @@ public sealed class ArmingPageViewTests
                 var services = ((MissionPlanner.App.App)Application.Current!).ServiceProvider;
                 var fixture = services.GetRequiredService<ArmingViewModelTests.Fixture>();
                 var page = new ArmingPage();
+                Assert.Same(fixture.Model, page.DataContext);
                 var window = new Window { Content = page, Width = 700, Height = 700 };
                 window.Show(); Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
+                Assert.NotEmpty(fixture.Model.Settings);
+                Assert.Contains("DISARMED / READY", fixture.Model.Summary);
                 var tabs = Assert.Single(page.GetVisualDescendants().OfType<TabControl>());
                 foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
                 {
@@ -46,16 +49,20 @@ public sealed class ArmingPageViewTests
                         window.Width = width;
                         tabs.SelectedIndex = 0;
                         Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
-                        Assert.NotEmpty(page.GetVisualDescendants().OfType<InformationDocumentView>());
+                        Assert.Contains(page.GetVisualDescendants().OfType<InformationDocumentView>(),
+                            view => ReferenceEquals(view.Document, fixture.Model.StatusDocument) &&
+                                view.Document?.Markdown.Contains("Arming status") == true);
                         Assert.InRange(tabs.Bounds.Width, 1, width);
                         tabs.SelectedIndex = 1;
                         Dispatcher.UIThread.RunJobs(); window.UpdateLayout();
                         Assert.NotEmpty(page.GetVisualDescendants().OfType<ComboBox>());
+                        Assert.Contains(page.GetVisualDescendants().OfType<Button>(),
+                            button => ReferenceEquals(button.Command, fixture.Model.RefreshCommand));
                     }
                 }
                 window.Close(); Dispatcher.UIThread.RunJobs();
-                await fixture.Model.DeactivateAsync();
                 Assert.False(fixture.Model.CanArm);
+                Assert.Empty(fixture.Model.Settings);
                 fixture.Dispose();
             }, TestContext.Current.CancellationToken);
         }

@@ -1,4 +1,5 @@
 <utilities:NavigationViewBase
+    x:TypeArguments="arming:ArmingViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
@@ -6,9 +7,9 @@
     xmlns:core="clr-namespace:MissionPlanner.Core.Setup.Arming;assembly=MissionPlanner.Core"
     xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    x:TypeArguments="arming:ArmingViewModel"
     x:Class="MissionPlanner.App.Views.InitSetup.Arming.ArmingPage"
     x:DataType="arming:ArmingViewModel">
+
     <ContentPage Header="Arming">
         <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" Margin="16" RowSpacing="12">
             <Grid.ColumnDefinitions>
@@ -18,20 +19,11 @@
                 <TextBlock Text="Arming" Classes="H2" />
                 <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
             </StackPanel>
+
             <TabControl Grid.Row="1">
                 <TabItem Header="Information">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="12">
-                            <controls:InformationDocumentView Document="{Binding StatusDocument}" />
-                            <Expander Header="Advanced diagnostics" IsExpanded="False" HorizontalAlignment="Stretch">
-                                <controls:InformationDocumentView Document="{Binding DiagnosticDocument}" />
-                            </Expander>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-                <TabItem Header="Configuration">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="12">
+                    <Grid RowDefinitions="Auto,*">
+                        <Border Grid.Row="0" Padding="12">
                             <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
                                 <Button Classes="ToolbarIconButton" Command="{Binding RefreshCommand}"
                                         ToolTip.Tip="Refresh cached arming evidence" AutomationProperties.Name="Refresh cached arming evidence">
@@ -39,99 +31,127 @@
                                 </Button>
                                 <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
                                         ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
-                                    <mdi:MaterialIcon Kind="TableCog" Classes="ActionIcon" />
+                                    <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                                 </Button>
                             </WrapPanel>
-                            <TextBlock Text="{Binding ConfigurationStatus}" TextWrapping="Wrap" />
-                            <ItemsControl ItemsSource="{Binding Settings}" IsEnabled="{Binding CanEdit}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="arming:ArmingSettingViewModel">
-                                        <Border Classes="SectionCard" Padding="12" Margin="0,0,0,10" IsVisible="{Binding IsVisible}">
-                                            <StackPanel Spacing="8">
-                                                <TextBlock Text="{Binding Definition.Label}" Classes="H3" />
-                                                <TextBlock Text="{Binding Evidence}" TextWrapping="Wrap" />
-                                                <TextBlock Text="{Binding PendingText}" IsVisible="{Binding IsChanged}" TextWrapping="Wrap" Classes="Warning" />
-                                                <ComboBox ItemsSource="{Binding Choices}" SelectedItem="{Binding Selected}"
-                                                          IsEnabled="{Binding Definition.CanEdit}" HorizontalAlignment="Stretch">
-                                                    <ComboBox.ItemTemplate>
-                                                        <DataTemplate x:DataType="core:ArmingChoice">
-                                                            <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
-                                                        </DataTemplate>
-                                                    </ComboBox.ItemTemplate>
-                                                </ComboBox>
-                                                <TextBlock Text="{Binding Definition.UnavailableReason}" TextWrapping="Wrap" />
-                                                <ItemsControl ItemsSource="{Binding Bits}" IsVisible="{Binding IsCustom}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate x:DataType="arming:ArmingBitViewModel">
-                                                            <CheckBox IsChecked="{Binding IsChecked}">
-                                                                <TextBlock Text="{Binding Choice.Label}" TextWrapping="Wrap" />
-                                                            </CheckBox>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                                <Button Classes="EmbeddedIconButton" Command="{Binding ResetDefaultCommand}"
-                                                        ToolTip.Tip="Stage firmware default" AutomationProperties.Name="Stage firmware default">
-                                                    <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
-                                                </Button>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                            <Border Classes="SectionCard" Padding="12">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="RC Arm/Disarm switch" Classes="H3" />
-                                    <ComboBox ItemsSource="{Binding SwitchChoices}" SelectedItem="{Binding SelectedSwitch}"
-                                              IsEnabled="{Binding CanAssignSwitch}" HorizontalAlignment="Stretch"
-                                              PlaceholderText="Unknown or multiple assignments — see Information">
-                                        <ComboBox.ItemTemplate>
-                                            <DataTemplate x:DataType="core:ArmingChoice">
-                                                <TextBlock Text="{Binding Label}" />
-                                            </DataTemplate>
-                                        </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                    <TextBlock Text="{Binding Movement}" TextWrapping="Wrap" />
-                                    <TextBlock Text="Movement proves input only, not transmitter intent or successful arming." TextWrapping="Wrap" />
-                                    <TextBlock Text="Assignment requires loaded parameters, a disarmed live vehicle and at most one existing switch. Review multiple assignments in Full Parameters." IsVisible="{Binding !CanAssignSwitch}" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding Validation}" TextWrapping="Wrap" Classes="Warning" />
-                                </StackPanel>
-                            </Border>
-                            <Border Classes="SectionCard" Padding="12">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="Arming actions" Classes="H3" />
-                                    <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding ArmAvailability}" TextWrapping="Wrap" />
-                                    <WrapPanel ItemSpacing="8">
-                                        <Button Classes="EmbeddedTextButton" Command="{Binding ArmCommand}" Content="Arm Vehicle" />
-                                        <Button Classes="EmbeddedTextButton" Command="{Binding DisarmCommand}" Content="Disarm Vehicle" />
-                                    </WrapPanel>
-                                    <TextBlock Text="{Binding OperationMessage}" TextWrapping="Wrap" />
-                                    <TextBlock Text="Reboot required after verified configuration changes." IsVisible="{Binding RequiresReboot}" TextWrapping="Wrap" Classes="Warning" />
-                                </StackPanel>
-                            </Border>
-                            <Border Classes="SectionCard" Padding="12" IsVisible="{Binding HasPendingChanges}">
-                                <StackPanel Spacing="8">
-                                    <TextBlock Text="Unsaved changes — not active on the vehicle" Classes="H3" />
-                                    <ItemsControl ItemsSource="{Binding PendingChanges}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="x:String">
-                                                <SelectableTextBlock Text="{Binding .}" TextWrapping="Wrap" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                    <TextBlock Text="{Binding Validation}" TextWrapping="Wrap" Classes="Warning" />
-                                    <WrapPanel ItemSpacing="8" IsEnabled="{Binding !IsBusy}">
-                                        <Button Classes="EmbeddedIconButton" Command="{Binding DiscardCommand}" ToolTip.Tip="Discard pending changes" AutomationProperties.Name="Discard pending changes">
-                                            <mdi:MaterialIcon Kind="Undo" Classes="ActionIcon" />
-                                        </Button>
-                                        <Button Classes="EmbeddedIconButton" Command="{Binding ApplyCommand}" ToolTip.Tip="Apply and verify" AutomationProperties.Name="Apply and verify">
-                                            <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                                        </Button>
-                                    </WrapPanel>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </ScrollViewer>
+                        </Border>
+
+                        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="12">
+                                <controls:InformationDocumentView Document="{Binding StatusDocument}" />
+                                <controls:InformationDocumentView Document="{Binding DiagnosticDocument}" />
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Configuration">
+                    <Grid RowDefinitions="Auto,*">
+                        <Border Grid.Row="0" Padding="12">
+                            <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                                <Button Classes="ToolbarIconButton" Command="{Binding RefreshCommand}"
+                                        ToolTip.Tip="Refresh cached arming evidence" AutomationProperties.Name="Refresh cached arming evidence">
+                                    <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                                </Button>
+                                <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                        ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                    <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                                </Button>
+                            </WrapPanel>
+                        </Border>
+
+                        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="12">
+                                <TextBlock Text="{Binding ConfigurationStatus}" TextWrapping="Wrap" />
+                                <ItemsControl ItemsSource="{Binding Settings}" IsEnabled="{Binding CanEdit}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="arming:ArmingSettingViewModel">
+                                            <Border Classes="SectionCard" Padding="12" Margin="0,0,0,10" IsVisible="{Binding IsVisible}">
+                                                <StackPanel Spacing="8">
+                                                    <TextBlock Text="{Binding Definition.Label}" Classes="H3" />
+                                                    <TextBlock Text="{Binding Evidence}" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding PendingText}" IsVisible="{Binding IsChanged}" TextWrapping="Wrap" Classes="Warning" />
+                                                    <ComboBox ItemsSource="{Binding Choices}" SelectedItem="{Binding Selected}"
+                                                              IsEnabled="{Binding Definition.CanEdit}" HorizontalAlignment="Stretch">
+                                                        <ComboBox.ItemTemplate>
+                                                            <DataTemplate x:DataType="core:ArmingChoice">
+                                                                <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
+                                                            </DataTemplate>
+                                                        </ComboBox.ItemTemplate>
+                                                    </ComboBox>
+                                                    <TextBlock Text="{Binding Definition.UnavailableReason}" TextWrapping="Wrap" />
+                                                    <ItemsControl ItemsSource="{Binding Bits}" IsVisible="{Binding IsCustom}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="arming:ArmingBitViewModel">
+                                                                <CheckBox IsChecked="{Binding IsChecked}">
+                                                                    <TextBlock Text="{Binding Choice.Label}" TextWrapping="Wrap" />
+                                                                </CheckBox>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                    <Button Classes="EmbeddedIconButton" Command="{Binding ResetDefaultCommand}"
+                                                            ToolTip.Tip="Stage firmware default" AutomationProperties.Name="Stage firmware default">
+                                                        <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                                                    </Button>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Border Classes="SectionCard" Padding="12">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="RC Arm/Disarm switch" Classes="H3" />
+                                        <ComboBox ItemsSource="{Binding SwitchChoices}" SelectedItem="{Binding SelectedSwitch}"
+                                                  IsEnabled="{Binding CanAssignSwitch}" HorizontalAlignment="Stretch"
+                                                  PlaceholderText="Unknown or multiple assignments — see Information">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate x:DataType="core:ArmingChoice">
+                                                    <TextBlock Text="{Binding Label}" />
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <TextBlock Text="{Binding Movement}" TextWrapping="Wrap" />
+                                        <TextBlock Text="Movement proves input only, not transmitter intent or successful arming." TextWrapping="Wrap" />
+                                        <TextBlock Text="Assignment requires loaded parameters, a disarmed live vehicle and at most one existing switch. Review multiple assignments in Full Parameters." IsVisible="{Binding !CanAssignSwitch}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Validation}" TextWrapping="Wrap" Classes="Warning" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Classes="SectionCard" Padding="12">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Arming actions" Classes="H3" />
+                                        <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding ArmAvailability}" TextWrapping="Wrap" />
+                                        <WrapPanel ItemSpacing="8">
+                                            <Button Classes="EmbeddedTextButton" Command="{Binding ArmCommand}" Content="Arm Vehicle" />
+                                            <Button Classes="EmbeddedTextButton" Command="{Binding DisarmCommand}" Content="Disarm Vehicle" />
+                                        </WrapPanel>
+                                        <TextBlock Text="{Binding OperationMessage}" TextWrapping="Wrap" />
+                                        <TextBlock Text="Reboot required after verified configuration changes." IsVisible="{Binding RequiresReboot}" TextWrapping="Wrap" Classes="Warning" />
+                                    </StackPanel>
+                                </Border>
+                                <Border Classes="SectionCard" Padding="12" IsVisible="{Binding HasPendingChanges}">
+                                    <StackPanel Spacing="8">
+                                        <TextBlock Text="Unsaved changes — not active on the vehicle" Classes="H3" />
+                                        <ItemsControl ItemsSource="{Binding PendingChanges}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="x:String">
+                                                    <SelectableTextBlock Text="{Binding .}" TextWrapping="Wrap" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <TextBlock Text="{Binding Validation}" TextWrapping="Wrap" Classes="Warning" />
+                                        <WrapPanel ItemSpacing="8" IsEnabled="{Binding !IsBusy}">
+                                            <Button Classes="EmbeddedIconButton" Command="{Binding DiscardCommand}" ToolTip.Tip="Discard pending changes" AutomationProperties.Name="Discard pending changes">
+                                                <mdi:MaterialIcon Kind="Undo" Classes="ActionIcon" />
+                                            </Button>
+                                            <Button Classes="EmbeddedIconButton" Command="{Binding ApplyCommand}" ToolTip.Tip="Apply and verify" AutomationProperties.Name="Apply and verify">
+                                                <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                                            </Button>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
                 </TabItem>
             </TabControl>
         </Grid>

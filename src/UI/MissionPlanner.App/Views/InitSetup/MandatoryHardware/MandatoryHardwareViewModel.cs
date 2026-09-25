@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.App.Views.Navigation;

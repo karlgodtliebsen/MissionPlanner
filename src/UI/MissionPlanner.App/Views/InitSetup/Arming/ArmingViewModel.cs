@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -81,7 +81,10 @@ public sealed partial class ArmingViewModel : ViewModelBase
         {
             if (SetProperty(ref selectedSwitch, value) && !projecting && value is not null && desired is not null)
             {
-                Stage(desired with { ArmSwitch = (int)value.Value });
+                Stage(desired with
+                {
+                    ArmSwitch = (int)value.Value
+                });
             }
         }
     }
@@ -96,15 +99,35 @@ public sealed partial class ArmingViewModel : ViewModelBase
     /// <summary>Local operation history, separate from current blockers.</summary>
     [ObservableProperty] public partial string OperationMessage { get; private set; } = string.Empty;
     /// <summary>Status document.</summary>
-    [ObservableProperty] public partial UserDocument? StatusDocument { get; private set; }
+    [ObservableProperty]
+    public partial UserDocument? StatusDocument
+    {
+        get; private set;
+    }
     /// <summary>Advanced evidence document.</summary>
-    [ObservableProperty] public partial UserDocument? DiagnosticDocument { get; private set; }
+    [ObservableProperty]
+    public partial UserDocument? DiagnosticDocument
+    {
+        get; private set;
+    }
     /// <summary>Local unsaved configuration.</summary>
-    [ObservableProperty] public partial bool HasPendingChanges { get; private set; }
+    [ObservableProperty]
+    public partial bool HasPendingChanges
+    {
+        get; private set;
+    }
     /// <summary>Current state differs from the reviewed baseline.</summary>
-    [ObservableProperty] public partial bool HasConflict { get; private set; }
+    [ObservableProperty]
+    public partial bool HasConflict
+    {
+        get; private set;
+    }
     /// <summary>Confirmed writes require reboot.</summary>
-    [ObservableProperty] public partial bool RequiresReboot { get; private set; }
+    [ObservableProperty]
+    public partial bool RequiresReboot
+    {
+        get; private set;
+    }
     /// <summary>Editing requires complete parameters and an online disarmed live vehicle.</summary>
     public bool CanEdit => lifetime is not null && !IsBusy && active.IsOnline && active.State?.IsArmed == false &&
         !replay.Snapshot.IsTransmissionProhibited && current is { ParametersReady: true, IsSupported: true };
@@ -119,8 +142,11 @@ public sealed partial class ArmingViewModel : ViewModelBase
     /// <summary>Why GCS arming is unavailable, without inventing readiness.</summary>
     public string ArmAvailability => !active.IsOnline ? "GCS Arm: vehicle offline." : replay.Snapshot.IsTransmissionProhibited ? "Replay is read-only." :
         active.State is { } state ? policy.Evaluate(state, VehicleAction.Arm).Reason ?? "GCS Arm is available through the normal command policy." : "Vehicle state unavailable.";
-    private bool CanAct(VehicleAction action) => lifetime is not null && !IsBusy && active.IsOnline && !replay.Snapshot.IsTransmissionProhibited &&
+    private bool CanAct(VehicleAction action)
+    {
+        return lifetime is not null && !IsBusy && active.IsOnline && !replay.Snapshot.IsTransmissionProhibited &&
         active.State is { } state && policy.Evaluate(state, action).IsAllowed;
+    }
 
     /// <inheritdoc />
     public override async Task ActivateAsync()
@@ -164,7 +190,9 @@ public sealed partial class ArmingViewModel : ViewModelBase
         }
         catch (OperationCanceledException) { }
     }
-    private void BoundaryChanged(ActiveVehicleChangedEventArgs args) => Dispatcher.Dispatch(() =>
+    private void BoundaryChanged(ActiveVehicleChangedEventArgs args)
+    {
+        Dispatcher.Dispatch(() =>
     {
         if (lifetime is not null)
         {
@@ -172,16 +200,22 @@ public sealed partial class ArmingViewModel : ViewModelBase
             _ = RefreshAsync();
         }
     });
-    private void ReplayChanged(ReplaySessionChangedEventArgs args) => Dispatcher.Dispatch(() =>
+    }
+
+    private void ReplayChanged(ReplaySessionChangedEventArgs args)
     {
-        if (lifetime is not null && (replayBlocked != args.Snapshot.IsTransmissionProhibited || replaySession != args.Snapshot.SessionId))
+        Dispatcher.Dispatch(() =>
         {
-            replayBlocked = args.Snapshot.IsTransmissionProhibited;
-            replaySession = args.Snapshot.SessionId;
-            ResetBoundary();
-            _ = RefreshAsync();
-        }
-    });
+            if (lifetime is not null && (replayBlocked != args.Snapshot.IsTransmissionProhibited || replaySession != args.Snapshot.SessionId))
+            {
+                replayBlocked = args.Snapshot.IsTransmissionProhibited;
+                replaySession = args.Snapshot.SessionId;
+                ResetBoundary();
+                _ = RefreshAsync();
+            }
+        });
+    }
+
     private void ResetBoundary()
     {
         generation++;
@@ -284,7 +318,9 @@ public sealed partial class ArmingViewModel : ViewModelBase
         foreach (var definition in current.Settings)
         {
             Settings.Add(new(definition, desired, next => Stage(desired.WithEditorValue(definition.Setting, next.EditorValue(definition.Setting) ?? 0) with
-            { CustomChecks = definition.Setting == ArmingSetting.Checks ? next.CustomChecks : desired.CustomChecks })));
+            {
+                CustomChecks = definition.Setting == ArmingSetting.Checks ? next.CustomChecks : desired.CustomChecks
+            })));
         }
         projecting = true;
         SelectedSwitch = SwitchChoices.FirstOrDefault(c => c.Value == desired.ArmSwitch);
@@ -387,8 +423,14 @@ public sealed partial class ArmingViewModel : ViewModelBase
         documentKey = key;
         var status = documents.CreateStatus(context);
         var detail = documents.CreateDiagnostics(context);
-        if (StatusDocument?.Markdown != status.Markdown) { StatusDocument = status; }
-        if (DiagnosticDocument?.Markdown != detail.Markdown) { DiagnosticDocument = detail; }
+        if (StatusDocument?.Markdown != status.Markdown)
+        {
+            StatusDocument = status;
+        }
+        if (DiagnosticDocument?.Markdown != detail.Markdown)
+        {
+            DiagnosticDocument = detail;
+        }
     }
     /// <inheritdoc />
     public override void Dispose()
