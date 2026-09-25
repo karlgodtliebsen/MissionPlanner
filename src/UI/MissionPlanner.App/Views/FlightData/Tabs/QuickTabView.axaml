@@ -5,105 +5,84 @@
                            xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                           xmlns:u="https://irihi.tech/ursa"
                            mc:Ignorable="d" 
                            d:DesignWidth="800" 
                            d:DesignHeight="450"
                            x:Class="MissionPlanner.App.Views.FlightData.Tabs.QuickTabItemView"
                            x:DataType="tabs:QuickTabViewModel">
-    <Grid RowDefinitions="*" ColumnDefinitions="*" 
-          HorizontalAlignment="Stretch" 
-          VerticalAlignment="Stretch">
-        <u:VirtualizingUniformGrid Margin="5,10" 
-                                   Columns="2" 
-                                   AreHorizontalSnapPointsRegular="True"
-                                   AreVerticalSnapPointsRegular="True"
-                                   >
-            <Border  Classes="SectionCard" HorizontalAlignment="Stretch" >
-                <Grid RowDefinitions="*,5*" HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      >
-                    <TextBlock FontSize="12" Grid.Row="0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Top"
-                               Text="Altitude (m)" />
-
-                    <TextBlock FontSize="35" Grid.Row="1"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" Text="{Binding Altitude, StringFormat='{}{0:F1}'}" />
-
-                </Grid>
-            </Border>
-            <Border  Classes="SectionCard" HorizontalAlignment="Stretch" >
-                <Grid RowDefinitions="*,5*" HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      >
-                    <TextBlock FontSize="12" Grid.Row="0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Top"
-                               Text="GroundSpeed (m/s)" />
-                    <TextBlock FontSize="35" Grid.Row="1"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" Text="{Binding GroundSpeed, StringFormat='{}{0:F2}'}" />
-                </Grid>
-            </Border>
-            <Border  Classes="SectionCard" HorizontalAlignment="Stretch" >
-
-                <Grid RowDefinitions="*,5*" HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      >
-                    <TextBlock FontSize="12" Grid.Row="0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Top"
-                               Text="Dist to WP (m)" />
-                    <TextBlock FontSize="35" Grid.Row="1"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" Text="{Binding DistanceToWp, StringFormat='{}{0:F2}'}" />
-                </Grid>
-            </Border>
-            <Border Classes="SectionCard" HorizontalAlignment="Stretch"  >
-
-                <Grid RowDefinitions="*,5*"  HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      >
-                    <TextBlock FontSize="12" Grid.Row="0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Top"
-                               Text="Yaw (°)" />
-                    <TextBlock FontSize="35" Grid.Row="1"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" Text="{Binding Yaw, StringFormat='{}{0:F2}'}" />
-                </Grid>
-            </Border>
-            <Border  Classes="SectionCard" HorizontalAlignment="Stretch"  >
-
-                <Grid RowDefinitions="*,5*" HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      >
-                    <TextBlock FontSize="12" Grid.Row="0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Top"
-                               Text="Vertical Speed (m/s)" />
-                    <TextBlock FontSize="35" Grid.Row="1"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" Text="{Binding VerticalSpeed, StringFormat='{}{0:F2}'}" />
-                </Grid>
-            </Border>
-            <Border  Classes="SectionCard" HorizontalAlignment="Stretch"  >
-
-                <Grid RowDefinitions="*,5*"  HorizontalAlignment="Stretch"
-                      VerticalAlignment="Stretch"
-                      >
-                    <TextBlock FontSize="12" Grid.Row="0"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Top"
-                               Text="Dist to MAV (m)" />
-                    <TextBlock FontSize="35" Grid.Row="1"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" Text="{Binding DistanceToMav, StringFormat='{}{0:F2}'}" />
-                </Grid>
-            </Border>
-        </u:VirtualizingUniformGrid>
+    <Grid RowDefinitions="*,*,*" ColumnDefinitions="*,*" Margin="5,10"
+          HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Border Grid.Row="0" Grid.Column="0" Classes="SectionCard">
+            <Grid RowDefinitions="*,5*">
+                <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="12" Text="Altitude (m)" />
+                </Viewbox>
+                <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="35" Text="{Binding Altitude, StringFormat='{}{0:F1}'}" />
+                </Viewbox>
+            </Grid>
+        </Border>
+        <Border Grid.Row="0" Grid.Column="1" Classes="SectionCard">
+            <Grid RowDefinitions="*,5*">
+                <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="12" Text="GroundSpeed (m/s)" />
+                </Viewbox>
+                <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="35" Text="{Binding GroundSpeed, StringFormat='{}{0:F2}'}" />
+                </Viewbox>
+            </Grid>
+        </Border>
+        <Border Grid.Row="1" Grid.Column="0" Classes="SectionCard">
+            <Grid RowDefinitions="*,5*">
+                <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="12" Text="Dist to WP (m)" />
+                </Viewbox>
+                <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="35" Text="{Binding DistanceToWp, StringFormat='{}{0:F2}'}" />
+                </Viewbox>
+            </Grid>
+        </Border>
+        <Border Grid.Row="1" Grid.Column="1" Classes="SectionCard">
+            <Grid RowDefinitions="*,5*">
+                <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="12" Text="Yaw (°)" />
+                </Viewbox>
+                <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="35" Text="{Binding Yaw, StringFormat='{}{0:F2}'}" />
+                </Viewbox>
+            </Grid>
+        </Border>
+        <Border Grid.Row="2" Grid.Column="0" Classes="SectionCard">
+            <Grid RowDefinitions="*,5*">
+                <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="12" Text="Vertical Speed (m/s)" />
+                </Viewbox>
+                <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="35" Text="{Binding VerticalSpeed, StringFormat='{}{0:F2}'}" />
+                </Viewbox>
+            </Grid>
+        </Border>
+        <Border Grid.Row="2" Grid.Column="1" Classes="SectionCard">
+            <Grid RowDefinitions="*,5*">
+                <Viewbox Grid.Row="0" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="12" Text="Dist to MAV (m)" />
+                </Viewbox>
+                <Viewbox Grid.Row="1" Stretch="Uniform" StretchDirection="DownOnly"
+                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <TextBlock FontSize="35" Text="{Binding DistanceToMav, StringFormat='{}{0:F2}'}" />
+                </Viewbox>
+            </Grid>
+        </Border>
     </Grid>
-
 </utilities:TabItemViewBase>
