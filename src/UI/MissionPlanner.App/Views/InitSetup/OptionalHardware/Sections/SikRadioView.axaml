@@ -23,6 +23,18 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
                 <controls:SetupInformationView Topic="SikRadio" WorkflowError="{Binding ErrorMessage}" >
                     <controls:SetupInformationView.WorkflowStatus>
                         <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
@@ -32,6 +44,8 @@
                         </MultiBinding>
                     </controls:SetupInformationView.WorkflowStatus>
                 </controls:SetupInformationView>
+                </Grid>
+
             </TabItem>
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,Auto">
@@ -45,6 +59,10 @@
                             </Button>
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply, save and reboot" Command="{Binding ApplyCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Apply, save and reboot">
                                 <mdi:MaterialIcon Kind="ContentSaveCheckOutline" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
                         </WrapPanel>
                     </Border>

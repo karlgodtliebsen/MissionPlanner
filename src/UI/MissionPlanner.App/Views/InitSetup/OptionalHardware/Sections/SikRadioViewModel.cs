@@ -4,10 +4,12 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Firmware.Devices;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-public sealed partial class SikRadioViewModel(IFirmwareSerialDeviceCatalog devices, ISikRadioConfigurator configurator, ILogger<SikRadioViewModel> logger)
-    : ExternalSerialToolViewModel(devices, logger)
+public sealed partial class SikRadioViewModel(IFirmwareSerialDeviceCatalog devices, ISikRadioConfigurator configurator, ILogger<SikRadioViewModel> logger, INavigationService navigation)
+    : ExternalSerialToolViewModel(devices, logger, navigation)
 {
     [ObservableProperty] public partial string Identity { get; private set; } = string.Empty;
     [ObservableProperty] public partial string SettingsText { get; set; } = string.Empty;

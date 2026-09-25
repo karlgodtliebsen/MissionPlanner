@@ -8,11 +8,6 @@
                               x:Class="MissionPlanner.App.Controls.SetupInformationView"
                               x:DataType="documents:SetupInformationViewModel">
     <Grid x:Name="ReportContent" RowDefinitions="Auto,*">
-        <Button Classes="ToolbarIconButton" HorizontalAlignment="Center" Margin="0,12"
-                Command="{Binding RefreshCommand}" ToolTip.Tip="Refresh information"
-                AutomationProperties.Name="Refresh information">
-            <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-        </Button>
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="8">
                 <controls:InformationDocumentView Document="{Binding Overview}" />

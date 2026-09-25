@@ -5,19 +5,43 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Firmware.Devices;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>Configures an RTCM source and displays active-vehicle injection health.</summary>
 public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewModel
 {
+    /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
+    [RelayCommand]
+    private Task RefreshAsync()
+    {
+        Show(injection.Current);
+        return RefreshPortsAsync();
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
+
+    private readonly INavigationService navigation;
+
     private readonly IRtkInjectionService injection;
     private readonly IFirmwareSerialDeviceCatalog devices;
     private CancellationTokenSource lifetime = new();
     private bool active;
 
-    public RtkGpsInjectViewModel(IRtkInjectionService injection, IFirmwareSerialDeviceCatalog devices, ILogger<RtkGpsInjectViewModel> logger)
+    public RtkGpsInjectViewModel(IRtkInjectionService injection, IFirmwareSerialDeviceCatalog devices, ILogger<RtkGpsInjectViewModel> logger, INavigationService navigation)
         : base(logger)
     {
+        this.navigation = navigation;
         this.injection = injection;
         this.devices = devices;
     }
@@ -52,11 +76,23 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
     [RelayCommand]
     private async Task RefreshPortsAsync()
     {
-        var snapshot = await devices.GetDevicesAsync(lifetime.Token);
-        Ports.ReplaceRange(snapshot.Select(s => s.PortName));
-        if (SourceKind == RtkSourceKind.Serial && string.IsNullOrEmpty(Endpoint))
+        var token = lifetime.Token;
+        try
         {
-            Endpoint = Ports.FirstOrDefault() ?? string.Empty;
+            var snapshot = await devices.GetDevicesAsync(token);
+            token.ThrowIfCancellationRequested();
+            Ports.ReplaceRange(snapshot.Select(s => s.PortName));
+            if (SourceKind == RtkSourceKind.Serial && string.IsNullOrEmpty(Endpoint))
+            {
+                Endpoint = Ports.FirstOrDefault() ?? string.Empty;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            SetMessages(exception);
         }
     }
 

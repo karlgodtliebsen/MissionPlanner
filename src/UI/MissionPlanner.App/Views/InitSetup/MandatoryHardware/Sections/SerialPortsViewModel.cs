@@ -8,12 +8,15 @@ using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Edits discovered serial parameters through the shared vehicle-scoped parameter session.</summary>
 public sealed partial class SerialPortsViewModel : ViewModelBase
 {
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry registry;
     private readonly IParameterEditSessionFactory sessions;
@@ -25,8 +28,9 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
 
     /// <summary>Initializes the serial page with existing parameter, lifecycle and UI services.</summary>
     public SerialPortsViewModel(IActiveVehicleContext activeVehicle, IVehicleParameterRegistry registry, IParameterEditSessionFactory sessions,
-        IUiDispatcher dispatcher, IDomainEventHub events, ILogger<SerialPortsViewModel> logger) : base(logger, dispatcher, events)
+        IUiDispatcher dispatcher, IDomainEventHub events, ILogger<SerialPortsViewModel> logger, INavigationService navigation) : base(logger, dispatcher, events)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.registry = registry;
         this.sessions = sessions;
@@ -87,6 +91,13 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
     {
         _ = DeactivateAsync();
         base.Dispose();
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
     }
 
     [RelayCommand]

@@ -25,42 +25,61 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-                <controls:SetupInformationView Topic="Joystick" WorkflowError="{Binding ErrorMessage}" >
-                    <controls:SetupInformationView.WorkflowStatus>
-                        <MultiBinding StringFormat="{}{0}&#10;{1}">
-                            <Binding Path="StatusMessage" />
-                            <Binding Path="PlatformStatus" />
-                        </MultiBinding>
-                    </controls:SetupInformationView.WorkflowStatus>
-                </controls:SetupInformationView>
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <controls:SetupInformationView Grid.Row="1"  Topic="Joystick" WorkflowError="{Binding ErrorMessage}" >
+                        <controls:SetupInformationView.WorkflowStatus>
+                            <MultiBinding StringFormat="{}{0}&#10;{1}">
+                                <Binding Path="StatusMessage" />
+                                <Binding Path="PlatformStatus" />
+                            </MultiBinding>
+                        </controls:SetupInformationView.WorkflowStatus>
+                    </controls:SetupInformationView>
+                </Grid>
             </TabItem>
             <TabItem Header="Configuration">
-                <Grid RowDefinitions="Auto,Auto">
+                <Grid RowDefinitions="Auto,*">
                     <Border Grid.Row="0" Padding="12">
                         <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
                             <Button Classes="ToolbarIconButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
                                 <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <Border Grid.Row="1" Classes="SectionCard" HorizontalAlignment="Stretch" Padding="12">
-                        <StackPanel Spacing="20">
-                            <ComboBox ToolTip.Tip="Local device"
-                                      ItemsSource="{Binding Devices}"
-                                      VerticalAlignment="Bottom"
-                                      HorizontalAlignment="Stretch"
-                                      HorizontalContentAlignment="Right"
-                                      DisplayMemberBinding="{Binding Name}"
-                                      SelectedItem="{Binding SelectedDevice}" />
-                            <TextBlock Text="Local calibration is separate from vehicle RC calibration." />
-                            <StackPanel Orientation="Horizontal">
-                                <CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Content="Vehicle MANUAL_CONTROL output (disabled by default)" />
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                        <Border Classes="SectionCard" HorizontalAlignment="Stretch" Padding="12">
+                            <StackPanel Spacing="20">
+                                <ComboBox ToolTip.Tip="Local device"
+                                          ItemsSource="{Binding Devices}"
+                                          VerticalAlignment="Bottom"
+                                          HorizontalAlignment="Stretch"
+                                          HorizontalContentAlignment="Right"
+                                          DisplayMemberBinding="{Binding Name}"
+                                          SelectedItem="{Binding SelectedDevice}" />
+                                <TextBlock Text="Local calibration is separate from vehicle RC calibration." />
+                                <StackPanel Orientation="Horizontal">
+                                    <CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Content="Vehicle MANUAL_CONTROL output (disabled by default)" />
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
-                    </Border>
+                        </Border>
+                    </ScrollViewer>
                 </Grid>
             </TabItem>
         </TabControl>

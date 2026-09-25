@@ -4,10 +4,12 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Firmware.Devices;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-public sealed partial class BluetoothSetupViewModel(IFirmwareSerialDeviceCatalog devices, IBluetoothSerialConfigurator configurator, ILogger<BluetoothSetupViewModel> logger)
-    : ExternalSerialToolViewModel(devices, logger)
+public sealed partial class BluetoothSetupViewModel(IFirmwareSerialDeviceCatalog devices, IBluetoothSerialConfigurator configurator, ILogger<BluetoothSetupViewModel> logger, INavigationService navigation)
+    : ExternalSerialToolViewModel(devices, logger, navigation)
 {
     private BluetoothModuleSnapshot? module;
     [ObservableProperty] public partial string ModuleIdentity { get; private set; } = string.Empty;

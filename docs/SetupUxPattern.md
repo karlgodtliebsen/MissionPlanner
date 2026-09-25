@@ -18,6 +18,16 @@ the rows required by the page and one constrained column:
 </Grid>
 ```
 
+Hardware section pages with refresh actions provide a separate toolbar in each
+Information and Configuration tab. Each tab uses a root Grid with `Auto,*` rows:
+the toolbar in row 0 and scrollable content in row 1. Keep each tab's button set
+explicit so Information and Configuration actions can evolve independently. Add
+`Open Full Parameters` beside Refresh using `ToolbarIconButton`,
+`FormatListBulleted`, and the existing Full Parameters navigation route.
+When the tab supplies Refresh, set `SetupInformationView.ShowRefreshButton="False"`
+to avoid displaying a second refresh action. Safety and Setup Summary retain their
+single-page layouts with the shortcut in their existing toolbars.
+
 Let cards and scrollable content stretch within that column. Do not use the
 `SourceBorder` class, a named sizing border, or sibling `Bounds.Width` bindings
 to size these pages. Keep `SectionCard` on cards. Navigation hosts retain room
@@ -209,3 +219,16 @@ whole and has no fixed desktop minimum width or document height.
 The `compass-live-markdown` package supersedes the earlier Compass UX package and
 explicitly introduces this wrapper. Arming reuses this wrapper. Its automated validation and outstanding SITL/physical
 acceptance are recorded in its implementation report; no hardware validation is implied.
+
+### Hardware toolbar command behavior
+
+Refresh uses the subsystem's existing read/projection path. Optional parameter pages
+request reported values through `IOptionalHardwareService` and reload their module;
+late results are discarded after cancellation or an active-vehicle change. Calibration
+and motor pages re-project current workflow state and guidance without starting a
+calibration or actuator test. Radio refreshes live channel and arming-switch evidence.
+Firmware refreshes vehicle identity, serial tools enumerate available ports, and RTK
+also re-projects injection statistics without connecting a source. FFT re-analyzes
+entered samples, CubeID re-inspects a selected local image, and ESP8266 revalidates
+entered settings; these actions never apply or flash. Informational bridge pages
+refresh their guidance. Full Parameters commands use the existing navigation service.

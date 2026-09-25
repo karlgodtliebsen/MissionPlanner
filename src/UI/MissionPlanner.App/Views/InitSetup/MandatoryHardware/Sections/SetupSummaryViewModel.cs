@@ -9,12 +9,15 @@ using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects the consolidated, exportable setup summary into Setup controls.</summary>
 public sealed partial class SetupSummaryViewModel : ViewModelBase
 {
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ISetupSummaryService summaryService;
     private SetupSummary? current;
@@ -23,11 +26,13 @@ public sealed partial class SetupSummaryViewModel : ViewModelBase
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="summaryService">The setup summary service.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="navigation">The application navigation service.</param>
     public SetupSummaryViewModel(
         IActiveVehicleContext activeVehicle,
-        ISetupSummaryService summaryService, ILogger<SetupSummaryViewModel> logger)
+        ISetupSummaryService summaryService, ILogger<SetupSummaryViewModel> logger, INavigationService navigation)
         : base(logger)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.summaryService = summaryService;
     }
@@ -81,6 +86,13 @@ public sealed partial class SetupSummaryViewModel : ViewModelBase
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
         return base.DeactivateAsync();
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
     }
 
     [RelayCommand]

@@ -24,19 +24,41 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-                <controls:SetupInformationView Topic="CubeId" WorkflowError="{Binding ErrorMessage}" >
-                    <controls:SetupInformationView.WorkflowStatus>
-                        <MultiBinding StringFormat="{}{0}&#10;{1}">
-                            <Binding Path="StatusMessage" />
-                            <Binding Path="FirmwareSummary" />
-                        </MultiBinding>
-                    </controls:SetupInformationView.WorkflowStatus>
-                </controls:SetupInformationView>
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <controls:SetupInformationView Topic="CubeId" WorkflowError="{Binding ErrorMessage}" >
+                        <controls:SetupInformationView.WorkflowStatus>
+                            <MultiBinding StringFormat="{}{0}&#10;{1}">
+                                <Binding Path="StatusMessage" />
+                                <Binding Path="FirmwareSummary" />
+                            </MultiBinding>
+                        </controls:SetupInformationView.WorkflowStatus>
+                    </controls:SetupInformationView>
+                </Grid>
             </TabItem>
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,Auto">
                     <Border Grid.Row="0" Padding="12">
                         <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
+
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
                                 <mdi:MaterialIcon Kind="FileSearchOutline" Classes="ActionIcon" />
                             </Button>

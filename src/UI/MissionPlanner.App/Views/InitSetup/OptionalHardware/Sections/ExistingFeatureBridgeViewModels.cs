@@ -8,12 +8,12 @@ namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>Provides metadata-backed camera/gimbal setup and links to existing live payload control.</summary>
 public sealed partial class CameraGimbalViewModel(IActiveVehicleContext activeVehicle, IOptionalHardwareService service, INavigationService navigation, ILogger<CameraGimbalViewModel> logger)
-    : ParameterHardwareViewModel("camera-gimbal", activeVehicle, service, logger)
+    : ParameterHardwareViewModel("camera-gimbal", activeVehicle, service, logger, navigation)
 {
     /// <summary>Opens the existing Flight Data workspace that owns live payload control.</summary>
     [RelayCommand]
     private Task OpenPayloadControlAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.FlightData);
+        return Navigation.NavigateAsync(MissionPlannerRoutes.FlightData);
     }
 }

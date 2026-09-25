@@ -5,6 +5,7 @@ using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -14,8 +15,8 @@ public sealed class AdsbViewModel : MandatoryParameterViewModel
     private readonly IAdsbService service;
 
     /// <summary>Initializes the ADS-B workflow ViewModel.</summary>
-    public AdsbViewModel(IActiveVehicleContext activeVehicle, IAdsbService service, ILogger<AdsbViewModel> logger)
-        : base(activeVehicle, logger)
+    public AdsbViewModel(IActiveVehicleContext activeVehicle, IAdsbService service, ILogger<AdsbViewModel> logger, INavigationService navigation)
+        : base(activeVehicle, logger, navigation)
     {
         this.service = service;
     }

@@ -10,12 +10,15 @@ using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects firmware flight-mode slot configuration and confirmed slot writes into Setup controls.</summary>
 public sealed partial class FlightModesSetupViewModel : ViewModelBase
 {
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IFlightModeConfigurationService modeService;
     private CancellationTokenSource? operationCancellation;
@@ -24,11 +27,13 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="modeService">The flight-mode configuration service.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="navigation">The application navigation service.</param>
     public FlightModesSetupViewModel(
         IActiveVehicleContext activeVehicle,
-        IFlightModeConfigurationService modeService, ILogger<FlightModesSetupViewModel> logger)
+        IFlightModeConfigurationService modeService, ILogger<FlightModesSetupViewModel> logger, INavigationService navigation)
         : base(logger)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.modeService = modeService;
     }
@@ -115,6 +120,13 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
             Logger.LogError(exception, "Applying flight-mode slot failed for {VehicleId}.", vehicleId);
             SetMessages(exception);
         }
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
     }
 
     [RelayCommand]

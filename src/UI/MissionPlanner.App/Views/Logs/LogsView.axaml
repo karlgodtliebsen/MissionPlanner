@@ -8,12 +8,15 @@
     x:DataType="local:LogsViewModel"
     x:CompileBindings="True">
     <ContentPage Header="Logs">
-        <Grid Margin="16" RowDefinitions="Auto,*" RowSpacing="12">
-            <ComboBox 
-                ItemsSource="{Binding Sections}" 
-                SelectedItem="{Binding SelectedSection}"
-                      HorizontalAlignment="Left" MinWidth="220" />
-            <ContentControl Grid.Row="1" Content="{Binding Content}" />
+        <Grid Margin="16" HorizontalAlignment="Stretch">
+            <TabControl Grid.Row="0" TabStripPlacement="Left">
+                <TabItem Header="Telemetry Logs">
+                    <local:TelemetryLogsTabItemView></local:TelemetryLogsTabItemView>
+                </TabItem>
+                <TabItem Header="Application Logs">
+                    <local:ApplicationLogsView></local:ApplicationLogsView>
+                </TabItem>
+            </TabControl>
         </Grid>
     </ContentPage>
 </utilities:NavigationViewBase>

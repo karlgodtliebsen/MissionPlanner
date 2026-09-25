@@ -31,19 +31,44 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-                <controls:SetupInformationView Topic="Radio" WorkflowError="{Binding ErrorMessage}" >
-                    <controls:SetupInformationView.WorkflowStatus>
-                        <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
-                            <Binding Path="StatusMessage" />
-                            <Binding Path="Instruction" />
-                            <Binding Path="SignalStatus" />
-                        </MultiBinding>
-                    </controls:SetupInformationView.WorkflowStatus>
-                </controls:SetupInformationView>
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <controls:SetupInformationView Topic="Radio" WorkflowError="{Binding ErrorMessage}" >
+                        <controls:SetupInformationView.WorkflowStatus>
+                            <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
+                                <Binding Path="StatusMessage" />
+                                <Binding Path="Instruction" />
+                                <Binding Path="SignalStatus" />
+                            </MultiBinding>
+                        </controls:SetupInformationView.WorkflowStatus>
+                    </controls:SetupInformationView>  
+                </Grid>
             </TabItem>
             <TabItem Header="Configuration">
-                <Grid RowDefinitions="Auto,*">
-                    <Border Grid.Row="0"  Classes="SectionCard" Padding="12">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+
+                    <Border Grid.Row="1"  Classes="SectionCard" Padding="12">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                             <TextBlock Text="!" FontSize="22" Classes="H4"  VerticalAlignment="Top" />
                             <StackPanel Orientation="Vertical" Grid.Column="1" Spacing="2">
@@ -52,7 +77,8 @@
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
+
+                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
                         <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" RowSpacing="10">
 
                             <Border Grid.Row="0" Padding="12" Classes="SectionCard">

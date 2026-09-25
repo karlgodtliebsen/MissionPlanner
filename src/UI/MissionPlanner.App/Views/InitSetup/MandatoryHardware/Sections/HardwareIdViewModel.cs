@@ -3,26 +3,41 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
+using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Setup.Abstractions;
-using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
-/// <summary>Presents reported autopilot and peripheral hardware identifiers.</summary>
-public sealed partial class HwIdViewModel : ViewModelBase
+/// <summary>
+/// Presents reported autopilot and peripheral hardware identifiers.
+/// </summary>
+public sealed partial class HardwareIdViewModel : ViewModelBase
 {
+    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
+
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IHwIdService service;
     private CancellationTokenSource? cancellation;
 
     /// <summary>Initializes the HW ID ViewModel.</summary>
-    public HwIdViewModel(IActiveVehicleContext activeVehicle, IHwIdService service, ILogger<HwIdViewModel> logger)
+    public HardwareIdViewModel(IActiveVehicleContext activeVehicle, IHwIdService service, INavigationService navigation, ILogger<HardwareIdViewModel> logger)
         : base(logger)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.service = service;
     }
@@ -84,15 +99,18 @@ public sealed partial class HwIdViewModel : ViewModelBase
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
             Board = Firmware = "Unavailable";
+            Items.Clear();
             SetMessages("Connect a vehicle to inspect hardware identifiers.");
             return;
         }
 
         cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
+        var token = cancellation.Token;
         SetBusy();
         try
         {
-            var snapshot = await service.GetAsync(vehicleId, cancellation.Token);
+            var snapshot = await service.GetAsync(vehicleId, token);
+            token.ThrowIfCancellationRequested();
             Show(snapshot);
         }
         catch (OperationCanceledException)

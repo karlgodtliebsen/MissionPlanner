@@ -11,12 +11,15 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>Projects battery monitor discovery, live readings, calibration, and failsafe editing into Setup controls.</summary>
 public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewModel
 {
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IBatteryConfigurationService batteryService;
     private readonly IDomainEventHub domainEventHub;
@@ -29,12 +32,14 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
     /// <param name="batteryService">The battery configuration service.</param>
     /// <param name="domainEventHub">The domain event hub used for live battery state.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="navigation">The application navigation service.</param>
     public BatterySetupViewModel(
         IActiveVehicleContext activeVehicle,
         IBatteryConfigurationService batteryService,
-        IDomainEventHub domainEventHub, ILogger<BatterySetupViewModel> logger) : base(logger)
+        IDomainEventHub domainEventHub, ILogger<BatterySetupViewModel> logger, INavigationService navigation) : base(logger)
 
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.batteryService = batteryService;
         this.domainEventHub = domainEventHub;
@@ -172,6 +177,13 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
             Logger.LogError(exception, "Battery calibration failed for {VehicleId}.", vehicleId);
             SetMessages(exception);
         }
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
     }
 
     [RelayCommand]

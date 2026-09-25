@@ -3,10 +3,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-public sealed partial class DroneCanUavCanViewModel(IDroneCanService service, ILogger<DroneCanUavCanViewModel> logger) : OptionalHardwareBaseViewModel(logger)
+public sealed partial class DroneCanUavCanViewModel(IDroneCanService service, ILogger<DroneCanUavCanViewModel> logger, INavigationService navigation) : OptionalHardwareBaseViewModel(logger)
 {
     public IReadOnlyList<DroneCanTransportKind> TransportKinds { get; } = Enum.GetValues<DroneCanTransportKind>();
     public ObservableCollection<DroneCanNode> Nodes { get; } = [];
@@ -19,6 +20,13 @@ public sealed partial class DroneCanUavCanViewModel(IDroneCanService service, IL
     public partial DroneCanNode? SelectedNode
     {
         get; set;
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
     }
 
     [RelayCommand]

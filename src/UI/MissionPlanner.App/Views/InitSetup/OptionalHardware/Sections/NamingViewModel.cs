@@ -10,6 +10,8 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>Loads and explicitly applies the active vehicle's user-assigned identifiers.</summary>
@@ -21,8 +23,26 @@ public partial class NamingViewModel(
     IDomainEventHub eventHub,
     ILogger<NamingViewModel> logger,
     IVehicleConnectionService connections,
-    IDialogService dialogs) : OptionalHardwareBaseViewModel(logger, dispatcher, eventHub)
+    IDialogService dialogs, INavigationService navigation) : OptionalHardwareBaseViewModel(logger, dispatcher, eventHub)
 {
+    /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
+    [RelayCommand]
+    private Task RefreshAsync()
+    {
+        return applying || recovering || IsBusy ? Task.CompletedTask : LoadAsync();
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
+
     private const string systemIdName = "MAV_SYSID";
     private const string serialNumberName = "BRD_SERIAL_NUM";
     private CancellationTokenSource? operation;

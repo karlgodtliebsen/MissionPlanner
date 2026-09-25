@@ -3,10 +3,35 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-public sealed partial class CubeIdUpdateViewModel(ILogger<CubeIdUpdateViewModel> logger) : OptionalHardwareBaseViewModel(logger)
+public sealed partial class CubeIdUpdateViewModel(ILogger<CubeIdUpdateViewModel> logger, INavigationService navigation) : OptionalHardwareBaseViewModel(logger)
 {
+    /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
+    [RelayCommand]
+    private Task RefreshAsync()
+    {
+        if (string.IsNullOrWhiteSpace(FirmwarePath))
+        {
+            FirmwareSummary = "Select a local .bin image. Updating remains disabled until a CubeID component is detected.";
+            return Task.CompletedTask;
+        }
+        return InspectAsync();
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
+
     [ObservableProperty] public partial string FirmwarePath { get; set; } = string.Empty;
     [ObservableProperty] public partial string FirmwareSummary { get; set; } = "Select a local .bin image. Updating remains disabled until a CubeID component is detected.";
     [ObservableProperty]

@@ -4,10 +4,30 @@ using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Firmware.Devices;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-public abstract partial class ExternalSerialToolViewModel(IFirmwareSerialDeviceCatalog devices, ILogger<ExternalSerialToolViewModel> logger) : OptionalHardwareBaseViewModel(logger)
+public abstract partial class ExternalSerialToolViewModel(IFirmwareSerialDeviceCatalog devices, ILogger<ExternalSerialToolViewModel> logger, INavigationService navigation) : OptionalHardwareBaseViewModel(logger)
 {
+    /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
+    [RelayCommand]
+    private Task RefreshAsync()
+    {
+        return RefreshPortsAsync();
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
+
     private CancellationTokenSource lifetime = new();
     public ObservableRangeCollection<string> Ports { get; } = [];
     [ObservableProperty]
@@ -21,15 +41,27 @@ public abstract partial class ExternalSerialToolViewModel(IFirmwareSerialDeviceC
     [RelayCommand]
     private async Task RefreshPortsAsync()
     {
-        var snapshot = await devices.GetDevicesAsync(lifetime.Token);
-        Ports.ReplaceRange(snapshot.Select(d => d.PortName));
-        SelectedPort ??= Ports.FirstOrDefault();
+        var token = lifetime.Token;
+        try
+        {
+            var snapshot = await devices.GetDevicesAsync(token);
+            token.ThrowIfCancellationRequested();
+            Ports.ReplaceRange(snapshot.Select(d => d.PortName));
+            SelectedPort ??= Ports.FirstOrDefault();
 
-        SelectedPort = Ports.Contains(SelectedPort!) ? SelectedPort : Ports.FirstOrDefault();
+            SelectedPort = Ports.Contains(SelectedPort!) ? SelectedPort : Ports.FirstOrDefault();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            SetMessages(exception);
+        }
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     protected CancellationToken Token => lifetime.Token;
 

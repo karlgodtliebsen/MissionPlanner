@@ -5,6 +5,7 @@ using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -15,8 +16,8 @@ public sealed class InitTuneParametersViewModel : MandatoryParameterViewModel
 
     /// <summary>Initializes the Initial Tune Parameters workflow ViewModel.</summary>
     public InitTuneParametersViewModel(IActiveVehicleContext activeVehicle,
-        IInitTuneParametersService service, ILogger<InitTuneParametersViewModel> logger)
-        : base(activeVehicle, logger)
+        IInitTuneParametersService service, ILogger<InitTuneParametersViewModel> logger, INavigationService navigation)
+        : base(activeVehicle, logger, navigation)
     {
         this.service = service;
     }

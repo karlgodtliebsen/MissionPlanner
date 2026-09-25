@@ -1,7 +1,6 @@
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
 using MissionPlanner.App.Presentation.Documents;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.Core.Setup.Reporting;
 
 namespace MissionPlanner.App.Controls;
@@ -69,7 +68,7 @@ public partial class SetupInformationView : UserControlViewBase<SetupInformation
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (!Design.IsDesignMode && ViewModel is not null &&
+        if (!Design.IsDesignMode &&
             (change.Property == TopicProperty || change.Property == WorkflowStatusProperty || change.Property == WorkflowErrorProperty ||
              change.Property == AdditionalDocumentProperty))
         {

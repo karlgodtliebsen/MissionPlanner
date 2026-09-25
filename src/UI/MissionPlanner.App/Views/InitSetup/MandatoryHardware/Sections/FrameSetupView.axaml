@@ -27,9 +27,22 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-                <controls:SetupInformationView Topic="Frame"
-                                               WorkflowStatus="{Binding StatusMessage}" 
-                                               WorkflowError="{Binding ErrorMessage}" />
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button ToolTip.Tip="Refresh vehicle values" Classes="ToolbarIconButton" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh vehicle values">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <controls:SetupInformationView Grid.Row="1"  Topic="Frame"
+                                                   WorkflowStatus="{Binding StatusMessage}"
+                                                   WorkflowError="{Binding ErrorMessage}" />
+                </Grid>
             </TabItem>
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,*">
@@ -37,6 +50,10 @@
                         <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
                             <Button ToolTip.Tip="Refresh vehicle values" Classes="ToolbarIconButton" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh vehicle values">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
                             <Button ToolTip.Tip="Write and verify" Classes="ToolbarIconButton" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">
                                 <mdi:MaterialIcon Kind="UploadOutline" Classes="ActionIcon" />

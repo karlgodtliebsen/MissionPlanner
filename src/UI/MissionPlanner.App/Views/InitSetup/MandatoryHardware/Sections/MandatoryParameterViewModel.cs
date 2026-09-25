@@ -7,19 +7,23 @@ using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Provides lifecycle-safe presentation for metadata-backed mandatory parameter pages.</summary>
 public abstract partial class MandatoryParameterViewModel : ViewModelBase
 {
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes a metadata-backed mandatory workflow.</summary>
-    protected MandatoryParameterViewModel(IActiveVehicleContext activeVehicle, ILogger logger)
+    protected MandatoryParameterViewModel(IActiveVehicleContext activeVehicle, ILogger logger, INavigationService navigation)
         : base(logger)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
     }
 
@@ -103,6 +107,13 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
     /// <summary>Applies one setting for the concrete workflow.</summary>
     protected abstract Task<MandatoryParameterApplyResult> ApplySettingAsync(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId,
         string name, double value, CancellationToken cancellationToken);
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
 
     [RelayCommand]
     private Task RefreshAsync()

@@ -7,12 +7,15 @@ using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects the evidence-based safety assessment into Setup controls.</summary>
 public sealed partial class SafetySetupViewModel : ViewModelBase
 {
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ISafetyAssessmentService safetyService;
     private readonly IVehicleParameterRegistry parameterRegistry;
@@ -22,12 +25,14 @@ public sealed partial class SafetySetupViewModel : ViewModelBase
     /// <param name="safetyService">The safety assessment service.</param>
     /// <param name="parameterRegistry">The live parameter registry.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="navigation">The application navigation service.</param>
     public SafetySetupViewModel(
         IActiveVehicleContext activeVehicle,
         ISafetyAssessmentService safetyService,
-        IVehicleParameterRegistry parameterRegistry, ILogger<SafetySetupViewModel> logger)
+        IVehicleParameterRegistry parameterRegistry, ILogger<SafetySetupViewModel> logger, INavigationService navigation)
         : base(logger)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.safetyService = safetyService;
         this.parameterRegistry = parameterRegistry;
@@ -59,6 +64,13 @@ public sealed partial class SafetySetupViewModel : ViewModelBase
         activeVehicle.Changed -= OnActiveVehicleChanged;
         parameterRegistry.Changed -= OnParameterChanged;
         return base.DeactivateAsync();
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
     }
 
     [RelayCommand]

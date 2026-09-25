@@ -5,8 +5,9 @@ using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
-using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -38,6 +39,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     private (bool Armed, bool Online)? observedBindSafety;
     private IReadOnlyList<RadioValidationIssue> liveIssues = [];
     private IReadOnlyList<RadioValidationIssue> calibrationIssues = [];
+    private readonly INavigationService navigation;
 
     /// <summary>Initializes the radio Setup workflow.</summary>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
@@ -47,6 +49,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     /// <param name="completionStore">The Setup evidence store.</param>
     /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
+    /// <param name="navigation"> </param>
     /// <param name="clock">The application clock.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="commands">Safety-gated receiver commands.</param>
@@ -61,10 +64,11 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         ISetupCompletionStore completionStore,
         ISetupWorkflowCatalog workflowCatalog,
         IUserConfirmationService confirmation,
-        IDateTimeProvider clock, ILogger<RadioSetupViewModel> logger,
+        INavigationService navigation,
+        IDateTimeProvider clock,
         IVehicleCommandService commands, IVehicleTelemetryEventHub telemetry,
-        MissionPlanner.App.Utilities.Dispatching.IUiDispatcher dispatcher,
-        RadioArmingConfiguration armingConfiguration)
+        Utilities.Dispatching.IUiDispatcher dispatcher,
+        RadioArmingConfiguration armingConfiguration, ILogger<RadioSetupViewModel> logger)
         : base(logger, dispatcher, domainEventHub)
     {
         this.activeVehicle = activeVehicle;
@@ -74,6 +78,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         this.completionStore = completionStore;
         this.workflowCatalog = workflowCatalog;
         this.confirmation = confirmation;
+        this.navigation = navigation;
         this.clock = clock;
         this.commands = commands;
         this.telemetry = telemetry;
@@ -308,6 +313,22 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    private Task RefreshAsync()
+    {
+        RefreshLiveChannels();
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
 
     [RelayCommand(CanExecute = nameof(CanWrite))]
     private async Task ConfirmAndWriteAsync()

@@ -14,6 +14,8 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>
@@ -21,6 +23,19 @@ namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 /// </summary>
 public sealed partial class MotorTestViewModel : ParametersViewModel
 {
+    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
+
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameters;
     private readonly IActuatorTestService service;
@@ -149,6 +164,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
     /// <param name="thresholdAssistant">Guided frame-aware motor start-threshold workflow.</param>
     /// <param name="outputResolver">Existing logical-to-physical output resolver.</param>
+    /// <param name="navigation">The application navigation service.</param>
     public MotorTestViewModel(
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
@@ -161,10 +177,11 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         IActuatorTestService service,
         IMotorSpinParameterService spinParameters,
         MotorLayoutResolver resolver,
-        IUserConfirmationService confirmation, MotorStartThresholdService? thresholdAssistant = null,
+        IUserConfirmationService confirmation, INavigationService navigation, MotorStartThresholdService? thresholdAssistant = null,
         IMotorOutputResolver? outputResolver = null)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.parameters = parameters;
         this.service = service;
@@ -476,6 +493,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         return await confirmation.ConfirmAsync("Confirm motor-test safety", "Confirm ALL propellers are removed and the area is clear.", "Propellers removed – test", cancellationToken);
     }
 
+    [RelayCommand]
     private void Refresh()
     {
         if (disposed)

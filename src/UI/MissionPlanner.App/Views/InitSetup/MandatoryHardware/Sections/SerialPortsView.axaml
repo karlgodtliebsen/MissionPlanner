@@ -62,9 +62,25 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-                <controls:SetupInformationView Topic="SerialPorts" 
-                                               WorkflowStatus="{Binding StatusMessage}" 
-                                               WorkflowError="{Binding ErrorMessage}" />
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" Command="{Binding RefreshCommand}"
+                                ToolTip.Tip="Reload reported parameters"
+                                IsEnabled="{Binding !IsBusy}"
+                                AutomationProperties.Name="Reload reported parameters">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <controls:SetupInformationView Grid.Row="1"  Topic="SerialPorts"
+                                                   WorkflowStatus="{Binding StatusMessage}"
+                                                   WorkflowError="{Binding ErrorMessage}" />
+                </Grid>
             </TabItem>
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,*">
@@ -74,10 +90,14 @@
                                     ToolTip.Tip="Reload reported parameters"
                                     IsEnabled="{Binding !IsBusy}"
                                     AutomationProperties.Name="Reload reported parameters">
-                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" Width="20" Height="20" />
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
-                                <mdi:MaterialIcon Kind="Check" Classes="ActionIcon" Width="20" Height="20" />
+                                <mdi:MaterialIcon Kind="Check" Classes="ActionIcon"/>
                             </Button>
                         </WrapPanel>
                     </Border>

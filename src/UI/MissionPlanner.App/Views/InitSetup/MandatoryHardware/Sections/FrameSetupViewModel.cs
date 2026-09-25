@@ -15,12 +15,15 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Presents metadata-backed frame choices and confirmed, recoverable writes.</summary>
 public sealed partial class FrameSetupViewModel : ViewModelBase
 {
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IFrameConfigurationService frameService;
     private readonly IVehicleParameterRegistry parameterRegistry;
@@ -51,6 +54,7 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     /// <param name="domainEventHub">The parameter load event source.</param>
     /// <param name="parameterLoadStatus">The latest parameter download status.</param>
     /// <param name="dialogService">The shared progress dialog service.</param>
+    /// <param name="navigation">The application navigation service.</param>
     public FrameSetupViewModel(
         IActiveVehicleContext activeVehicle,
         IFrameConfigurationService frameService,
@@ -60,9 +64,10 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
         IUserConfirmationService confirmation,
         IDateTimeProvider clock, ILogger<FrameSetupViewModel> logger,
         IUiDispatcher dispatcher, IDomainEventHub domainEventHub,
-        IVehicleParameterLoadStatusContext parameterLoadStatus, IDialogService dialogService)
+        IVehicleParameterLoadStatusContext parameterLoadStatus, IDialogService dialogService, INavigationService navigation)
         : base(logger, dispatcher, domainEventHub)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.frameService = frameService;
         this.parameterRegistry = parameterRegistry;
@@ -190,6 +195,13 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
         base.Dispose();
     }
 
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
 
     [RelayCommand]
     private Task LoadCommandAsync()

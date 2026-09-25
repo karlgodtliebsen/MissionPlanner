@@ -1,3 +1,4 @@
+using MissionPlanner.App.Views.Navigation;
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
@@ -352,7 +353,7 @@ public sealed class NamingViewModelTests
                     }
                     return true;
                 });
-            Model = new(Active, Parameters, Registry, new InlineDispatcher(), Substitute.For<IDomainEventHub>(), NullLogger<NamingViewModel>.Instance, Connections, Dialogs);
+            Model = new(Active, Parameters, Registry, new InlineDispatcher(), Substitute.For<IDomainEventHub>(), NullLogger<NamingViewModel>.Instance, Connections, Dialogs, Substitute.For<INavigationService>());
         }
 
         internal void Store(string name, float value)

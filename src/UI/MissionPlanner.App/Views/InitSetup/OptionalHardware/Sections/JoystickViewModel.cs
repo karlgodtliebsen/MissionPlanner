@@ -3,13 +3,14 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoystickVehicleOutput output, ILogger<JoystickViewModel> logger) : OptionalHardwareBaseViewModel(logger)
+public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoystickVehicleOutput output, ILogger<JoystickViewModel> logger, INavigationService navigation) : OptionalHardwareBaseViewModel(logger)
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public ObservableRangeCollection<JoystickDeviceDescriptor> Devices { get; } = [];
 
@@ -26,9 +27,16 @@ public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoyst
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public string PlatformStatus => provider.IsSupported ? "Joystick adapter available." : "No joystick platform adapter is installed on this platform.";
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
 
     [RelayCommand]
     private async Task RefreshAsync()
@@ -65,7 +73,7 @@ public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoyst
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public override void Dispose()
     {

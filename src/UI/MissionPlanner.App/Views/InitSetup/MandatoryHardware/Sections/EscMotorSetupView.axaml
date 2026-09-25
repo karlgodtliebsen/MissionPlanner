@@ -32,21 +32,42 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-                <controls:SetupInformationView Topic="EscMotor" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <controls:SetupInformationView Topic="EscMotor" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                </Grid>
             </TabItem>
+
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,Auto,*">
                     <Border Grid.Row="0" Padding="12"  HorizontalAlignment="Stretch">
                         <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Test motor" Command="{Binding TestMotorCommand}" AutomationProperties.Name="Test motor">
-                                <mdi:MaterialIcon Kind="Fan" Classes="ActionIcon" Width="20" Height="20" />
+                                <mdi:MaterialIcon Kind="Fan" Classes="ActionIcon" />
                             </Button>
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Test sequence" Command="{Binding TestSequenceCommand}" AutomationProperties.Name="Test sequence">
-                                <mdi:MaterialIcon Kind="PlaylistPlay" Classes="ActionIcon" Width="20" Height="20" />
+                                <mdi:MaterialIcon Kind="PlaylistPlay" Classes="ActionIcon" />
                             </Button>
                             <Button Classes="ToolbarIconButton" Foreground="{DynamicResource Warning}" FontWeight="Bold" ToolTip.Tip="STOP" Command="{Binding StopCommand}" AutomationProperties.Name="STOP">
-                                <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
-
+                                <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon"  />
                             </Button>
                         </WrapPanel>
                     </Border>

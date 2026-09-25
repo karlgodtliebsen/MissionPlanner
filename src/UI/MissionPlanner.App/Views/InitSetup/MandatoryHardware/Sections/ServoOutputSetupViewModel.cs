@@ -12,12 +12,15 @@ using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects servo output functions with live PWM and confirmed function writes into Setup controls.</summary>
 public sealed partial class ServoOutputSetupViewModel : ViewModelBase
 {
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IServoOutputConfigurationService servoService;
     private readonly IDomainEventHub domainEventHub;
@@ -44,12 +47,14 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
     /// <param name="servoService">The servo output configuration service.</param>
     /// <param name="domainEventHub">The domain event hub used for live servo output state.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="navigation">The application navigation service.</param>
     public ServoOutputSetupViewModel(
         IActiveVehicleContext activeVehicle,
         IServoOutputConfigurationService servoService,
-        IDomainEventHub domainEventHub, ILogger<ServoOutputSetupViewModel> logger)
+        IDomainEventHub domainEventHub, ILogger<ServoOutputSetupViewModel> logger, INavigationService navigation)
         : base(logger)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.servoService = servoService;
         this.domainEventHub = domainEventHub;
@@ -181,6 +186,13 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
             SetMessages(exception);
             return false;
         }
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    [RelayCommand]
+    private Task OpenFullParametersAsync()
+    {
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
     }
 
     [RelayCommand]

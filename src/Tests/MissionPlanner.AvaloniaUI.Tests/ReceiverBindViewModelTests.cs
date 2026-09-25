@@ -1,3 +1,4 @@
+using MissionPlanner.App.Views.Navigation;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dispatching;
@@ -69,10 +70,10 @@ public sealed class ReceiverBindViewModelTests
         clock.UtcNow.Returns(DateTimeOffset.UtcNow);
         return new(active, Substitute.For<IRadioCalibrationService>(), Substitute.For<IDomainEventHub>(),
             Substitute.For<IVehicleParameterRegistry>(), Substitute.For<ISetupCompletionStore>(),
-            Substitute.For<ISetupWorkflowCatalog>(), Substitute.For<IUserConfirmationService>(), clock,
-            NullLogger<RadioSetupViewModel>.Instance, commands, telemetry ?? Substitute.For<IVehicleTelemetryEventHub>(),
+            Substitute.For<ISetupWorkflowCatalog>(), Substitute.For<IUserConfirmationService>(), Substitute.For<INavigationService>(), clock,
+            commands, telemetry ?? Substitute.For<IVehicleTelemetryEventHub>(),
             Substitute.For<IUiDispatcher>(), new MissionPlanner.Core.Setup.MandatoryHardware.RadioArmingConfiguration(
                 active, Substitute.For<IVehicleParameterRegistry>(),
-                Substitute.For<MissionPlanner.Library.Factory.Domain.Abstractions.IDomainFactory>()));
+                Substitute.For<MissionPlanner.Library.Factory.Domain.Abstractions.IDomainFactory>()), NullLogger<RadioSetupViewModel>.Instance);
     }
 }

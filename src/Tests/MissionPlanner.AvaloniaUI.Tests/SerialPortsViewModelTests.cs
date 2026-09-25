@@ -1,3 +1,4 @@
+using MissionPlanner.App.Views.Navigation;
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Utilities.Dispatching;
@@ -248,7 +249,7 @@ public sealed class SerialPortsViewModelTests
                 }
                 return session;
             });
-            Model = new SerialPortsViewModel(Active, Registry, factory, new InlineDispatcher(), Substitute.For<IDomainEventHub>(), NullLogger<SerialPortsViewModel>.Instance);
+            Model = new SerialPortsViewModel(Active, Registry, factory, new InlineDispatcher(), Substitute.For<IDomainEventHub>(), NullLogger<SerialPortsViewModel>.Instance, Substitute.For<INavigationService>());
         }
 
         public void Store(VehicleId id, string name, float value)

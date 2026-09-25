@@ -28,20 +28,47 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-                <controls:SetupInformationView Topic="MotorTest" WorkflowError="{Binding ErrorMessage}"
-                                               AdditionalDocument="{Binding OutputDiagnosticsDocument}">
-                    <controls:SetupInformationView.WorkflowStatus>
-                        <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
-                            <Binding Path="StatusMessage" />
-                            <Binding Path="FrameDisplay" />
-                            <Binding Path="ThresholdInstruction" />
-                        </MultiBinding>
-                    </controls:SetupInformationView.WorkflowStatus>
-                </controls:SetupInformationView>
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <controls:SetupInformationView Topic="MotorTest" WorkflowError="{Binding ErrorMessage}"
+                                                   AdditionalDocument="{Binding OutputDiagnosticsDocument}">
+                        <controls:SetupInformationView.WorkflowStatus>
+                            <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
+                                <Binding Path="StatusMessage" />
+                                <Binding Path="FrameDisplay" />
+                                <Binding Path="ThresholdInstruction" />
+                            </MultiBinding>
+                        </controls:SetupInformationView.WorkflowStatus>
+                    </controls:SetupInformationView>
+                </Grid>
+
+
             </TabItem>
             <TabItem Header="Configuration">
-                <Grid RowDefinitions="*">
-                    <ScrollViewer VerticalScrollBarVisibility="Visible"  HorizontalAlignment="Stretch" Margin="25,0" HorizontalScrollBarVisibility="Disabled">
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible"  HorizontalAlignment="Stretch" Margin="25,0" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Stretch" MaxWidth="1000">
 
                             <Border Classes="SectionCard" HorizontalAlignment="Stretch">

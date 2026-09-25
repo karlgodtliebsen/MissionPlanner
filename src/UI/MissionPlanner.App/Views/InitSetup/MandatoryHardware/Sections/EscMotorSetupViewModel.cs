@@ -3,11 +3,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
+using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Setup.Abstractions;
-using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -20,21 +19,26 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IActuatorTestService actuatorService;
     private readonly IUserConfirmationService confirmation;
+    private readonly INavigationService navigation;
 
     /// <summary>Initializes the ESC and motor-test Setup workflow.</summary>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="actuatorService">The actuator-test service.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
+    /// <param name="navigation">The navigation service.</param>
     /// <param name="logger">The logger.</param>
     public EscMotorSetupViewModel(
         IActiveVehicleContext activeVehicle,
         IActuatorTestService actuatorService,
-        IUserConfirmationService confirmation, ILogger<EscMotorSetupViewModel> logger)
+        IUserConfirmationService confirmation,
+        INavigationService navigation,
+        ILogger<EscMotorSetupViewModel> logger)
         : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.actuatorService = actuatorService;
         this.confirmation = confirmation;
+        this.navigation = navigation;
         MaximumDuration = actuatorService.MaximumDurationSeconds;
         MaximumThrottle = actuatorService.MaximumThrottlePercent;
     }
@@ -195,6 +199,23 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
         }
     }
 
+    [RelayCommand]
+    private Task RefreshAsync()
+    {
+        Load();
+        Show(actuatorService.Current);
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
     [RelayCommand(CanExecute = nameof(CanTest))]
     private async Task TestSequenceAsync()
     {
@@ -245,9 +266,15 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
     private void Load()
     {
         SetBusy();
+        EscSteps.Clear();
+        EscCalibrationApplicable = false;
+        EscExplanation = "Connect a vehicle to inspect ESC calibration guidance.";
         if (activeVehicle.State is not { } state)
         {
             SupportsMotorTest = false;
+            TestMotorCommand.NotifyCanExecuteChanged();
+            TestSequenceCommand.NotifyCanExecuteChanged();
+            ResetBusy();
             return;
         }
 
@@ -286,6 +313,7 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
         TestState = snapshot.State;
         Instruction = snapshot.Instruction;
         SetMessages(null, snapshot.FailureReason);
+        Log.Clear();
         Log.AddRange(snapshot.Log.AsEnumerable().Reverse().Select(entry => $"{entry.Timestamp:HH:mm:ss} — {entry.Description}: {entry.Outcome}"));
 
         OnPropertyChanged(nameof(IsRunning));

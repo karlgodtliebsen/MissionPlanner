@@ -323,6 +323,9 @@
 	  <Compile Update="Views\InitSetup\InstallFirmware\SubViews\ConfirmDfuTargetView.axaml.cs">
 	    <DependentUpon>ConfirmDfuTargetView.axaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\InitSetup\MandatoryHardware\Sections\HardwareIdView.axaml.cs">
+	    <DependentUpon>HardwareIdView.axaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 </Project>

@@ -37,6 +37,10 @@
                 <Button Classes="ToolbarIconButton" ToolTip.Tip="Re-assess safety" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Re-assess safety">
                     <mdi:MaterialIcon Kind="ShieldCheckOutline" Classes="ActionIcon" />
                 </Button>
+                <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                        ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                    <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                </Button>
             </WrapPanel>
         </Border>
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" Margin="16" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">

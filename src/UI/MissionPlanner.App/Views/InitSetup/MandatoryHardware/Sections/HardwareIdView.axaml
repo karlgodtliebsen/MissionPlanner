@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:HwIdViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="sections:HardwareIdViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
@@ -8,8 +8,8 @@
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                               x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.HwIdView"
-                               x:DataType="sections:HwIdViewModel"
+                               x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.HardwareIdView"
+                               x:DataType="sections:HardwareIdViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
@@ -24,9 +24,20 @@
         </Border>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
-                <controls:SetupInformationView Topic="HardwareId" 
-                                               WorkflowStatus="{Binding StatusMessage}" 
-                                               WorkflowError="{Binding ErrorMessage}" />
+                <Grid RowDefinitions="Auto,*">
+                    <Border Grid.Row="0" Padding="12">
+                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
+                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                    </Border>
+                    <controls:SetupInformationView Topic="HardwareId" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                </Grid>
             </TabItem>
         </TabControl>
     </Grid>

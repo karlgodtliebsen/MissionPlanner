@@ -3,13 +3,41 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 /// <summary>
 /// ViewModel for configuring the ESP8266 optional hardware.
 /// </summary>
 /// <param name="logger"></param>
-public sealed partial class Esp8266SetupViewModel(ILogger<Esp8266SetupViewModel> logger) : OptionalHardwareBaseViewModel(logger)
+/// <param name="navigation">The application navigation service.</param>
+public sealed partial class Esp8266SetupViewModel(ILogger<Esp8266SetupViewModel> logger, INavigationService navigation) : OptionalHardwareBaseViewModel(logger)
 {
+    /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
+    [RelayCommand]
+    private void Refresh()
+    {
+        try
+        {
+            Validate();
+        }
+        catch (Exception exception)
+        {
+            SetMessages(exception);
+        }
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
+
     /// <summary>
     /// The component ID for the UDP bridge.
     /// </summary>

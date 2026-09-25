@@ -5,6 +5,7 @@ using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -19,8 +20,8 @@ public sealed class FailSafeViewModel : MandatoryParameterViewModel
     /// <summary>Initializes the Failsafe workflow ViewModel.</summary>
     public FailSafeViewModel(
         IActiveVehicleContext activeVehicle,
-        IFailSafeService service, ILogger<FailSafeViewModel> logger)
-        : base(activeVehicle, logger)
+        IFailSafeService service, ILogger<FailSafeViewModel> logger, INavigationService navigation)
+        : base(activeVehicle, logger, navigation)
     {
         this.service = service;
     }

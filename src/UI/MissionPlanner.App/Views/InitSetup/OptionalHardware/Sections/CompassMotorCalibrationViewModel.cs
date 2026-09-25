@@ -6,6 +6,8 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>
@@ -13,6 +15,26 @@ namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 /// </summary>
 public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareBaseViewModel
 {
+    /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
+    [RelayCommand]
+    private void Refresh()
+    {
+        Show(service.Current);
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
+
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext active;
     private readonly ICompassMotorCalibrationService service;
     private readonly IUserConfirmationService confirmation;
@@ -25,9 +47,11 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
     /// <param name="service"></param>
     /// <param name="confirmation"></param>
     /// <param name="logger"></param>
+    /// <param name="navigation">The application navigation service.</param>
     public CompassMotorCalibrationViewModel(IActiveVehicleContext active, ICompassMotorCalibrationService service,
-        IUserConfirmationService confirmation, ILogger<CompassMotorCalibrationViewModel> logger) : base(logger)
+        IUserConfirmationService confirmation, ILogger<CompassMotorCalibrationViewModel> logger, INavigationService navigation) : base(logger)
     {
+        this.navigation = navigation;
         this.active = active;
         this.service = service;
         this.confirmation = confirmation;
@@ -74,6 +98,7 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
             Samples.Add(sample);
         }
 
+        Compensation = string.Empty;
         if (snapshot.Samples.LastOrDefault() is { } last)
         {
             Compensation = $"Compensation: {last.CompensationX:0.00}, {last.CompensationY:0.00}, {last.CompensationZ:0.00} · Current {last.CurrentAmps:0.0} A · Interference {last.InterferencePercent:0}%";

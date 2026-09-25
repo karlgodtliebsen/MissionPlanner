@@ -1,3 +1,4 @@
+using MissionPlanner.App.Views.Navigation;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dispatching;
@@ -59,7 +60,7 @@ public sealed class FrameSetupViewModelTests
         using var model = new FrameSetupViewModel(active, service, Substitute.For<IVehicleParameterRegistry>(),
             Substitute.For<ISetupCompletionStore>(), Substitute.For<ISetupWorkflowCatalog>(),
             Substitute.For<IUserConfirmationService>(), Substitute.For<IDateTimeProvider>(),
-            NullLogger<FrameSetupViewModel>.Instance, dispatcher, events, statuses, dialogs);
+            NullLogger<FrameSetupViewModel>.Instance, dispatcher, events, statuses, dialogs, Substitute.For<INavigationService>());
 
         await model.ActivateAsync();
         Assert.False(model.HasSettings);

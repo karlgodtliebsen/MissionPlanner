@@ -2,6 +2,8 @@
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>
@@ -10,6 +12,7 @@ namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 /// <param name="v"></param>
 /// <param name="s"></param>
 /// <param name="logger"></param>
-public sealed class AirspeedViewModel(IActiveVehicleContext v, IOptionalHardwareService s, ILogger<AirspeedViewModel> logger)
-    : ParameterHardwareViewModel("airspeed", v, s, logger);
+/// <param name="navigation">The application navigation service.</param>
+public sealed class AirspeedViewModel(IActiveVehicleContext v, IOptionalHardwareService s, ILogger<AirspeedViewModel> logger, INavigationService navigation)
+    : ParameterHardwareViewModel("airspeed", v, s, logger, navigation);
 

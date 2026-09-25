@@ -17,11 +17,33 @@ using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Generated;
 
+using MissionPlanner.App.Views.Navigation;
+
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Presents firmware identity and guarded discovery, verification, and flashing actions.</summary>
 public sealed partial class FirmwareSetupViewModel : ViewModelBase
 {
+    /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
+    [RelayCommand]
+    private void Refresh()
+    {
+        UpdateVehicle(activeVehicle.State);
+    }
+
+    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    [RelayCommand]
+    private async Task OpenFullParametersAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigFullParameters);
+    }
+
+    private readonly INavigationService navigation;
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IDomainEventHub domainEventHub;
     private readonly IFirmwareUpdateCoordinator coordinator;
@@ -38,14 +60,16 @@ public sealed partial class FirmwareSetupViewModel : ViewModelBase
     /// <param name="flashingService">The platform flashing adapter.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="navigation">The application navigation service.</param>
     public FirmwareSetupViewModel(
         IActiveVehicleContext activeVehicle,
         IDomainEventHub domainEventHub,
         IFirmwareUpdateCoordinator coordinator,
         IFirmwareFlashingService flashingService,
-        IUserConfirmationService confirmation, ILogger<FirmwareSetupViewModel> logger)
+        IUserConfirmationService confirmation, ILogger<FirmwareSetupViewModel> logger, INavigationService navigation)
         : base(logger)
     {
+        this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.domainEventHub = domainEventHub;
         this.coordinator = coordinator;
@@ -216,6 +240,7 @@ public sealed partial class FirmwareSetupViewModel : ViewModelBase
         {
             VehicleLabel = "No vehicle";
             FirmwareVersion = "Unknown";
+            ReleaseType = GitHash = BoardVersion = VendorProduct = HardwareUid = HardwareUid2 = MavLinkVersion = Capabilities = "Not reported";
             FlashingAvailability = "Connect a vehicle to evaluate platform support.";
             return;
         }
