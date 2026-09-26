@@ -1,8 +1,9 @@
-﻿<utilities:UserControlViewBase
+<utilities:UserControlViewBase
     x:TypeArguments="sections:MotorTestViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:documents="clr-namespace:MissionPlanner.App.Presentation.Documents"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
@@ -23,6 +24,15 @@
             <StackPanel Orientation="Vertical" Spacing="10"  HorizontalAlignment="Center" >
                 <TextBlock Text="Motor Test" Classes="H2"   HorizontalAlignment="Center" />
                 <TextBlock Text="{Binding FrameDisplay}" Classes="H4"   HorizontalAlignment="Center" />
+                <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
+                    <TextBlock Text="ArduPilot motor order diagrams" VerticalAlignment="Center" />
+                    <Button Classes="EmbeddedIconButton" Padding="8,2" VerticalAlignment="Center"
+                            Command="{Binding OpenMotorOrderDiagramsCommand}"
+                            ToolTip.Tip="Open frame and motor diagrams in your default browser"
+                            AutomationProperties.Name="Open ArduPilot motor order diagrams in default browser">
+                        <mdi:MaterialIcon Kind="OpenInNew" Width="30" Height="30" Classes="ActionIcon" />
+                    </Button>
+                </StackPanel>
                 <TextBlock Text="Remove ALL propellers. Motors will spin." Classes="Warning H4"    HorizontalAlignment="Center" />
             </StackPanel>
         </Border>
@@ -182,17 +192,22 @@
                                 <Border Classes="SectionCard" HorizontalAlignment="Stretch" Grid.Row="1">
                                     <StackPanel Orientation="Vertical" Spacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                                         <StackPanel Orientation="Vertical" Margin="30,0" Spacing="20">
-                                            <TextBlock VerticalAlignment="Stretch" HorizontalAlignment="Center"
-                                                       Text="Set the minimum output at which motors reliably spin while armed:" Margin="0,10"
-                                                       Classes="H4" />
-                                            <TextBlock Text="{Binding SpinArmDisplay}"  Classes="H5 Warning" HorizontalAlignment="Center" />
-                                            <TextBlock Text="[Motor test throttle]% + [x]% = [MOT_SPIN_ARM]%" VerticalAlignment="Center" HorizontalAlignment="Center" Classes="H5" />
-                                            <Grid ColumnDefinitions="Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                <TextBlock Grid.Column="0" Text="{Binding ThrottlePercent,StringFormat=[{0:F0}]% + }"  VerticalAlignment="Center"  Classes="H5" />
-                                                <NumericUpDown Grid.Column="1" PlaceholderText="" Value="{Binding SpinArm, Mode=TwoWay}" FormatString="F0"
-                                                               Minimum="1" Maximum="{Binding SpinArmMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
-                                                <TextBlock Grid.Column="2" Text="{Binding SpinArmSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center" Classes="H5"  />
-                                            </Grid>
+                                            <controls:InformationDocumentView>
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding Converter="{x:Static documents:MotorSpinDocumentConverter.Instance}" ConverterParameter="MOT_SPIN_ARM">
+                                                        <Binding Path="SpinArmDisplay" />
+                                                        <Binding Path="ThrottlePercent" />
+                                                        <Binding Path="SpinArm" />
+                                                        <Binding Path="SpinArmSum" />
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                                <TextBlock Text="Offset (%)" VerticalAlignment="Center" />
+                                                <NumericUpDown Value="{Binding SpinArm, Mode=TwoWay}" FormatString="F0"
+                                                               Minimum="1" Maximum="{Binding SpinArmMaximum}" MinWidth="70"
+                                                               AutomationProperties.Name="MOT_SPIN_ARM offset percent" />
+                                            </StackPanel>
                                             <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" AutomationProperties.Name="Set Motor Spin Arm">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" Width="20" Height="20" />
@@ -202,17 +217,22 @@
                                         </StackPanel>
                                         <u:Divider Height="1" Orientation="Horizontal" HorizontalAlignment="Stretch" />
                                         <StackPanel Orientation="Vertical" Margin="30,0" Spacing="20">
-                                            <TextBlock Text="Set the minimum motor output while flying:" Margin="0,10"
-                                                       VerticalAlignment="Stretch" HorizontalAlignment="Center"
-                                                       Classes="H4" />
-                                            <TextBlock Text="{Binding SpinMinDisplay}" Classes="H5 Warning"  HorizontalAlignment="Center"/>
-                                            <TextBlock Text="[MOT_SPIN_ARM]% + [x]% = [MOT_SPIN_MIN]%" VerticalAlignment="Center" HorizontalAlignment="Center" Classes="H5" />
-                                            <Grid ColumnDefinitions="Auto,Auto,Auto" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                                <TextBlock Grid.Column="0" Text="{Binding SpinArmSum,StringFormat= [{0:F0}]% +  }" VerticalAlignment="Center"  Classes="H5" />
-                                                <NumericUpDown Grid.Column="1" PlaceholderText="" Value="{Binding SpinMin, Mode=TwoWay}" FormatString="F0"
-                                                               Minimum="1" Maximum="{Binding SpinMinMaximum}" VerticalAlignment="Center" MinWidth="20" HorizontalAlignment="Stretch" />
-                                                <TextBlock Grid.Column="2" Text="{Binding SpinMinSum, StringFormat='% = {0:F0}%'}" VerticalAlignment="Center"  Classes="H5" />
-                                            </Grid>
+                                            <controls:InformationDocumentView>
+                                                <controls:InformationDocumentView.Document>
+                                                    <MultiBinding Converter="{x:Static documents:MotorSpinDocumentConverter.Instance}" ConverterParameter="MOT_SPIN_MIN">
+                                                        <Binding Path="SpinMinDisplay" />
+                                                        <Binding Path="SpinArmSum" />
+                                                        <Binding Path="SpinMin" />
+                                                        <Binding Path="SpinMinSum" />
+                                                    </MultiBinding>
+                                                </controls:InformationDocumentView.Document>
+                                            </controls:InformationDocumentView>
+                                            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                                                <TextBlock Text="Offset (%)" VerticalAlignment="Center" />
+                                                <NumericUpDown Value="{Binding SpinMin, Mode=TwoWay}" FormatString="F0"
+                                                               Minimum="1" Maximum="{Binding SpinMinMaximum}" MinWidth="70"
+                                                               AutomationProperties.Name="MOT_SPIN_MIN offset percent" />
+                                            </StackPanel>
                                             <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" AutomationProperties.Name="Set Motor Spin Min">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" Width="20" Height="20" />

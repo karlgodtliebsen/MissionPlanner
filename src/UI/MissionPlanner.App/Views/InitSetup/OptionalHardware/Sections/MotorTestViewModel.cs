@@ -15,6 +15,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 
 using MissionPlanner.App.Views.Navigation;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
@@ -35,6 +36,21 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     }
 
     private readonly INavigationService navigation;
+    private readonly IExternalLinkLauncher externalLinkLauncher;
+
+    [RelayCommand]
+    private async Task OpenMotorOrderDiagramsAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await externalLinkLauncher.OpenAsync(new Uri("https://ardupilot.org/copter/docs/connect-escs-and-motors.html#motor-order-diagrams"), cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            SetMessages(errorMessage: $"Could not open motor order diagrams: {exception.Message}");
+            NotificationManager?.Show(ErrorMessage ?? "Could not open the browser.");
+        }
+    }
 
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameters;
@@ -165,6 +181,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// <param name="thresholdAssistant">Guided frame-aware motor start-threshold workflow.</param>
     /// <param name="outputResolver">Existing logical-to-physical output resolver.</param>
     /// <param name="navigation">The application navigation service.</param>
+    /// <param name="externalLinkLauncher">Opens documentation in the default external browser.</param>
     public MotorTestViewModel(
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
@@ -178,10 +195,12 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         IMotorSpinParameterService spinParameters,
         MotorLayoutResolver resolver,
         IUserConfirmationService confirmation, INavigationService navigation, MotorStartThresholdService? thresholdAssistant = null,
-        IMotorOutputResolver? outputResolver = null)
+        IMotorOutputResolver? outputResolver = null,
+        IExternalLinkLauncher? externalLinkLauncher = null)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.navigation = navigation;
+        this.externalLinkLauncher = externalLinkLauncher ?? new ExternalLinkLauncher();
         this.activeVehicle = activeVehicle;
         this.parameters = parameters;
         this.service = service;
