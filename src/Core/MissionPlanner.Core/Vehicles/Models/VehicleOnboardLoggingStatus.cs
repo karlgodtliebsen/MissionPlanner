@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Vehicles.Models;
+namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>Vehicle logger evidence, independent of PC telemetry recording.</summary>
 public sealed record VehicleOnboardLoggingStatus
@@ -15,8 +15,14 @@ public sealed record VehicleOnboardLoggingStatus
     /// <summary>Gets the latest logger-related status text.</summary>
     public string? LatestMessage { get; init; }
 
+    /// <summary>Gets when the latest logger message was received, not when the state was republished.</summary>
+    public DateTimeOffset? LatestMessageAt { get; init; }
+
     /// <summary>Gets retained storage failure evidence such as ENOSPC.</summary>
     public string? StorageDetail { get; init; }
+
+    /// <summary>Gets when the retained storage failure was received.</summary>
+    public DateTimeOffset? StorageDetailAt { get; init; }
 
     /// <summary>Gets whether a logger rejection currently affects arming.</summary>
     public bool AffectsArming { get; init; }

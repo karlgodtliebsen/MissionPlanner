@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Diagnostics;
 using MissionPlanner.Core.DomainEvents;
@@ -14,6 +14,50 @@ namespace MissionPlanner.Core.Tests;
 /// <summary>Verifies concrete multi-reason arming evidence and command/heartbeat separation.</summary>
 public sealed class VehicleArmingDiagnosticTests
 {
+    /// <summary>Retained logger state must not resurrect expired blockers or turn requests into armed state.</summary>
+    [Fact]
+    public async Task RetainedLoggingFailureExpiresWithoutClaimingRepair()
+    {
+        var clock = new ManualTimeProvider(DateTimeOffset.UtcNow);
+        using var hub = new EventHub(NullLogger<EventHub>.Instance);
+        using var domain = new DomainEventHub(NullLogger<EventHub>.Instance);
+        using var diagnostics = new VehicleLiveDiagnostics(hub, domain, clock, Options.Create(new VehicleLiveDiagnosticOptions()));
+        var id = new VehicleId(12, 1);
+        var at = clock.GetUtcNow();
+        var state = VehicleLiveDiagnosticsTests.State(id) with
+        {
+            OnboardLogging = new()
+            {
+                Healthy = false, AffectsArming = true, BackendType = 1,
+                LatestMessage = "PreArm: Logging failed", LatestMessageAt = at,
+                StorageDetail = "Failed to create log directory /APM/LOGS : ENOSPC", StorageDetailAt = at
+            }
+        };
+        await domain.PublishDomainEventAsync(new VehicleStateUpdated(state), TestContext.Current.CancellationToken);
+        await domain.PublishDomainEventAsync(new VehicleStatusTextReceived(new VehicleStatusText(
+            id, id.SystemId, id.ComponentId, MavSeverity.Warning, "PreArm: Logging failed", at)), TestContext.Current.CancellationToken);
+        await VehicleLiveDiagnosticsTests.UntilAsync(() => diagnostics.GetArming(id).Reasons.Contains("Logging failed"));
+        var current = diagnostics.GetArming(id);
+        Assert.Null(current.IsReadyToArm);
+        Assert.False(current.IsArmed);
+        Assert.Contains(current.Evidence, e => e.Source == "FC log storage" && e.IsCurrent && e.ObservedAt == at);
+        clock.Advance(TimeSpan.FromSeconds(31));
+        var version = diagnostics.GetSnapshot(id).Version;
+        await domain.PublishDomainEventAsync(new VehicleStateUpdated(state), TestContext.Current.CancellationToken);
+        await VehicleLiveDiagnosticsTests.UntilAsync(() => diagnostics.GetSnapshot(id).Version > version);
+        var stale = diagnostics.GetArming(id);
+        Assert.Empty(stale.Reasons);
+        Assert.False(stale.IsArmed);
+        Assert.Null(stale.IsReadyToArm);
+        Assert.Contains(stale.Evidence, e => e.Message.Contains("ENOSPC") && !e.IsCurrent && e.ObservedAt == at);
+        Assert.All(stale.Evidence, e => Assert.False(e.IsFresh));
+        Assert.Equal("Logging failed", stale.LastPreArmReason);
+        await domain.PublishDomainEventAsync(new VehicleStatusTextReceived(new VehicleStatusText(
+            id, id.SystemId, id.ComponentId, MavSeverity.Warning, "PreArm: Logging failed", clock.GetUtcNow())), TestContext.Current.CancellationToken);
+        await VehicleLiveDiagnosticsTests.UntilAsync(() => diagnostics.GetArming(id).Reasons.Count > 0);
+        Assert.Contains(diagnostics.GetArming(id).Evidence, e => e.IsCurrent && e.ObservedAt == clock.GetUtcNow());
+    }
+
     /// <summary>Transient reasons expire, last failure persists, and an accepted ACK never means armed.</summary>
     [Fact]
     public async Task ReasonsExpireAndAcceptedAckDoesNotArm()

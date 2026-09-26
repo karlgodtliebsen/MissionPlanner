@@ -8,6 +8,52 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 /// <summary>Deterministic arming reports keep current, historical, pending and heartbeat evidence separate.</summary>
 public sealed class ArmingDocumentTests
 {
+    /// <summary>Firmware 4.7 skip masks have the opposite polarity to legacy CHECK selection.</summary>
+    [Theory]
+    [InlineData(0, "No optional arming checks are skipped")]
+    [InlineData(4, "Some arming checks are skipped")]
+    [InlineData(-1, "All non-mandatory arming checks are skipped")]
+    public void SkipCheckConfigurationIsReported(int mask, string description)
+    {
+        var setup = new ArmingSetupState(new VehicleId(1, 1), new(), [], [], true, true, true,
+            new Dictionary<string, double> { ["ARMING_SKIPCHK"] = mask }, "Current values");
+        var text = new ArmingSetupDocumentFactory().CreateStatus(new(true, setup, null, false, "", "", "")).Markdown;
+        Assert.Contains($"ARMING_SKIPCHK = {mask}", text);
+        Assert.Contains(UserDocumentBuilder.Escape(description), text);
+        Assert.DoesNotContain(UserDocumentBuilder.Escape("ARMING_CHECK configuration: Unknown"), text);
+        Assert.Equal(mask, setup.SkippedChecks);
+        Assert.Null((setup with { ParametersReady = false }).SkippedChecks);
+    }
+
+    /// <summary>Storage evidence has source, time and freshness independent of unknown readiness and RC requests.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LoggingEvidenceIsAttributedAndDated(bool current)
+    {
+        var diagnostic = new VehicleArmingDiagnostic("ARM REQUESTED / AWAITING HEARTBEAT", false, null,
+            current ? ["Logging failed"] : [], null, DateTimeOffset.UnixEpoch, "RC request candidate")
+        {
+            Stage = ArmingDiagnosticStage.ArmRequested,
+            LastHeartbeatAt = DateTimeOffset.UnixEpoch,
+            Evidence = [new("FC log storage", "Logging failed", DateTimeOffset.UnixEpoch, current),
+                new("FC log storage", "/APM/LOGS : ENOSPC", DateTimeOffset.UnixEpoch, current)]
+        };
+        var context = new ArmingDocumentContext(true, null, diagnostic, false, "", "", "");
+        var factory = new ArmingSetupDocumentFactory();
+        foreach (var text in new[] { factory.CreateStatus(context).Markdown, factory.CreateDiagnostics(context).Markdown })
+        {
+            Assert.Contains("FC log storage", text);
+            Assert.Contains(UserDocumentBuilder.Escape("1970-01-01"), text);
+            Assert.Contains(current ? "recent blocker evidence" : "not a current blocker", text);
+            Assert.Contains("not PC telemetry recording", text);
+        }
+        var status = factory.CreateStatus(context).Markdown;
+        Assert.Contains("Latest heartbeat reports disarmed", status);
+        Assert.Contains(UserDocumentBuilder.Escape("Live pre-arm readiness is unknown"), status);
+        Assert.DoesNotContain("Armed heartbeat observed", status);
+    }
+
     /// <summary>Every diagnostic stage is rendered without promoting ACK to heartbeat truth.</summary>
     [Theory]
     [InlineData(ArmingDiagnosticStage.Unknown)]

@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using MissionPlanner.App.Models;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dialogs;
 using ParameterItemViewModel = MissionPlanner.App.Models.ParameterItemViewModel;
 
@@ -16,7 +15,7 @@ public partial class DataGridViewModel : ViewModelBase
     private readonly IDialogService dialogService;
     private readonly List<ParameterItemViewModel> allParameterItems = [];
 
-    /// <summary>Initializes the Full Parameters List tab.</summary>
+    /// <summary>Initializes the Parameters Editor tab.</summary>
     /// <param name="parametersFileHandler"></param>
     /// <param name="dialogService">The dialog service.</param>
     public DataGridViewModel(ParametersFileHandler parametersFileHandler, IDialogService dialogService)

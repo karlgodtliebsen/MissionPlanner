@@ -144,7 +144,7 @@ public partial class ConfigurationViewModel : ViewModelBase
 
             var route = parts[1] switch
             {
-                "Full Parameters List" => MissionPlannerRoutes.Configuration,
+                "Parameters Editor" => MissionPlannerRoutes.Configuration,
                 "Onboard OSD" => MissionPlannerRoutes.Configuration,
                 _ => throw new InvalidOperationException($"Unknown Config destination '{parts[1]}'.")
             };

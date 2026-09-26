@@ -30,7 +30,7 @@ close buttons.
 When a document lists parameter names and values, use a fenced code block with
 one assignment per line: `NAME = value` or `NAME = value // comment`.
 This is a permanent user preference so selected/copied text can be pasted into
-the Full Parameters List text editor. Do not use Markdown tables, bullets, or
+the Parameters Editor (previously Full Parameters List) text editor. Do not use Markdown tables, bullets, or
 separate inline-code cells for parameter assignments. Keep names and numeric
 values literal; put annotations after `//`. Missing/unknown values and diagnostic
 notes must be comment-only lines (`// ...`), never fabricated assignments.

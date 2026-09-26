@@ -449,7 +449,7 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     [RelayCommand]
     private async Task OpenFullParametersAsync()
     {
-        if (HasPendingChanges && !await confirmation.ConfirmAsync("Leave Compass setup", "Discard local compass edits and open Full Parameters?", "Discard and open"))
+        if (HasPendingChanges && !await confirmation.ConfirmAsync("Leave Compass setup", "Discard local compass edits and open Parameters Editor?", "Discard and open"))
         {
             return;
         }

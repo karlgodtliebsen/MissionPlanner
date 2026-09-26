@@ -196,7 +196,7 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     }
 
 
-    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    /// <summary>Opens the shared Parameters Editor workspace.</summary>
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {

@@ -34,7 +34,7 @@
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
                             <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
                                 <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
                         </WrapPanel>
@@ -52,7 +52,7 @@
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
                             <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Full Parameters" AutomationProperties.Name="Open Full Parameters">
+                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
                                 <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
                             <Button ToolTip.Tip="Write and verify" Classes="ToolbarIconButton" Command="{Binding ApplyCommand}" AutomationProperties.Name="Write and verify">

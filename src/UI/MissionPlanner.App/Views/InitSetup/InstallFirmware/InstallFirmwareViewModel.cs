@@ -645,6 +645,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     {
         return CurrentPlan.CanExecute && CurrentPlan.Transport == BootloaderEntryTarget.Stm32RomDfu;
     }
+
     [RelayCommand(CanExecute = nameof(CanStartDfuInstall), AllowConcurrentExecutions = false)]
     private async Task InstallDfuFirmwareAsync(CancellationToken cancellationToken)
     {
@@ -1272,6 +1273,8 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         DfuModel.CanInstallDfu = CanStartDfuInstall();
         InstallCommand.NotifyCanExecuteChanged();
         InstallDfuFirmwareCommand.NotifyCanExecuteChanged();
+        ExecuteCurrentPlanCommand.NotifyCanExecuteChanged();
+        CancelCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>Gets whether a physical DFU endpoint is selected.</summary>

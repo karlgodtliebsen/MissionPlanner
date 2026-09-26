@@ -3,21 +3,16 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
+using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Firmware;
-using MissionPlanner.Core.Setup.Abstractions;
-using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Generated;
-
-using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -31,7 +26,7 @@ public sealed partial class FirmwareSetupViewModel : ViewModelBase
         UpdateVehicle(activeVehicle.State);
     }
 
-    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
     [RelayCommand]
     private async Task OpenFullParametersAsync()
     {

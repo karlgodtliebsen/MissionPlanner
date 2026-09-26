@@ -22,7 +22,7 @@ public sealed partial class DroneCanUavCanViewModel(IDroneCanService service, IL
         get; set;
     }
 
-    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    /// <summary>Opens the shared Parameters Editor workspace.</summary>
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {

@@ -32,7 +32,7 @@
             <Border Grid.Row="1" Padding="10" Classes="SectionCard">
                 <StackPanel Orientation="Vertical" Spacing="10">
                     <TextBlock Classes="SectionTitle" Text="{Binding FirmwareFamilyText, StringFormat='Firmware profile: {0}'}" />
-                    <TextBlock Text="Basic Tuning intentionally hides expert control-loop fields. Use Extended Tuning or Full Parameters only when you understand the stability risks."
+                    <TextBlock Text="Basic Tuning intentionally hides expert control-loop fields. Use Extended Tuning or Parameters Editor only when you understand the stability risks."
                                Classes="H3 Warning"
                                IsVisible="{Binding HasSupportedProfile}" />
                     <TextBlock Text="This connected firmware has no supported Basic Tuning profile."

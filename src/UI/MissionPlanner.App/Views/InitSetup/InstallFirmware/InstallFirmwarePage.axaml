@@ -212,9 +212,9 @@
                                                 <avalonia:MaterialIcon Kind="Chip" Width="30" Height="30" Classes="ActionIcon"/>
                                             </Button>
                                             <u:IconDropDownButton
-                                                ToolTip.Tip="Bootloaders"
-                                                Classes="ToolbarIconDropDownButton"
-                                                AutomationProperties.Name="Bootloaders">
+                                                ToolTip.Tip="Select Bootloader"
+                                                Classes="EmbeddedIconDropDownButton"
+                                                AutomationProperties.Name="Select Bootloader">
                                                 <DropDownButton.Flyout>
                                                     <MenuFlyout Placement="Bottom">
                                                         <MenuItem
@@ -344,60 +344,63 @@
                                                     HorizontalAlignment="Stretch"/>
                                             </StackPanel>
                                         </StackPanel>
-                                        <WrapPanel ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
-                                            <u:IconDropDownButton
-                                                ToolTip.Tip="Select Firmware"
-                                                Classes="ToolbarIconDropDownButton"
-                                                AutomationProperties.Name="Select Firmware">
-                                                <DropDownButton.Flyout>
-                                                    <MenuFlyout Placement="Bottom">
-                                                        <MenuItem
-                                                            ToolTip.Tip="Online Firmware"
-                                                            Command="{Binding ShowOnlineFirmwareSelectorCommand}"
-                                                            IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}"
-                                                            Header="Online Firmware"/>
-                                                        <MenuItem
-                                                            ToolTip.Tip="Local Firmware"
-                                                            Command="{Binding ShowLocalFirmwareSelectorCommand}"
-                                                            IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}"
-                                                            Header="Local Firmware"/>
-                                                    </MenuFlyout>
-                                                </DropDownButton.Flyout>
-                                                <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" Classes="ActionIcon"/>
-                                            </u:IconDropDownButton>
-                                            <Button
-                                                Classes="EmbeddedIconButton"
-                                                ToolTip.Tip="Validate combined HEX"
-                                                Command="{Binding PrepareSelectedHexCommand}"
-                                                AutomationProperties.Name="Validate combined HEX">
-                                                <avalonia:MaterialIcon Kind="FileCheckOutline" Width="30" Height="30" Classes="ActionIcon"/>
-                                            </Button>
-                                            <Button
-                                                Classes="EmbeddedIconButton"
-                                                ToolTip.Tip="Clear Selected Firmware"
-                                                Command="{Binding ClearFirmwareSelectionCommand}"
-                                                IsEnabled="{Binding !IsOperationInProgress}"
-                                                AutomationProperties.Name="Clear Selected Firmware">
-                                                <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" Classes="ActionIcon"/>
-                                            </Button>
-                                            <Button
-                                                Classes="EmbeddedIconButton"
-                                                ToolTip.Tip="Load platform choices"
-                                                IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
-                                                Command="{Binding LoadLocalPlatformChoicesCommand}"
-                                                IsEnabled="{Binding !IsOperationInProgress}"
-                                                HorizontalAlignment="Center"
-                                                AutomationProperties.Name="Load platform choices">
-                                                <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" Classes="ActionIcon"/>
-                                            </Button>
-                                            <Button
-                                                Classes="EmbeddedIconButton"
-                                                ToolTip.Tip="Copy URL"
-                                                Command="{Binding CopySelectedUrlCommand}"
-                                                AutomationProperties.Name="Copy URL">
-                                                <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" Classes="ActionIcon"/>
-                                            </Button>
-                                        </WrapPanel>
+                                        <StackPanel Spacing="8" Orientation="Vertical">
+                                            <TextBlock Text="Select Firmware:" Classes="H4"></TextBlock>
+                                            <WrapPanel ItemSpacing="8" LineSpacing="8" HorizontalAlignment="Center">
+                                                <u:IconDropDownButton
+                                                    ToolTip.Tip="Select Firmware"
+                                                    Classes="EmbeddedIconDropDownButton"
+                                                    AutomationProperties.Name="Select Firmware">
+                                                    <DropDownButton.Flyout>
+                                                        <MenuFlyout Placement="Bottom">
+                                                            <MenuItem
+                                                                ToolTip.Tip="Online Firmware"
+                                                                Command="{Binding ShowOnlineFirmwareSelectorCommand}"
+                                                                IsEnabled="{Binding CurrentPlan.Capabilities.CanBrowseOnlineFirmware}"
+                                                                Header="Online Firmware"/>
+                                                            <MenuItem
+                                                                ToolTip.Tip="Local Firmware"
+                                                                Command="{Binding ShowLocalFirmwareSelectorCommand}"
+                                                                IsEnabled="{Binding CurrentPlan.Capabilities.CanSelectLocalFirmware}"
+                                                                Header="Local Firmware"/>
+                                                        </MenuFlyout>
+                                                    </DropDownButton.Flyout>
+                                                    <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" Classes="ActionIcon"/>
+                                                </u:IconDropDownButton>
+                                                <Button
+                                                    Classes="EmbeddedIconButton"
+                                                    ToolTip.Tip="Validate combined HEX"
+                                                    Command="{Binding PrepareSelectedHexCommand}"
+                                                    AutomationProperties.Name="Validate combined HEX">
+                                                    <avalonia:MaterialIcon Kind="FileCheckOutline" Width="30" Height="30" Classes="ActionIcon"/>
+                                                </Button>
+                                                <Button
+                                                    Classes="EmbeddedIconButton"
+                                                    ToolTip.Tip="Clear Selected Firmware"
+                                                    Command="{Binding ClearFirmwareSelectionCommand}"
+                                                    IsEnabled="{Binding !IsOperationInProgress}"
+                                                    AutomationProperties.Name="Clear Selected Firmware">
+                                                    <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" Classes="ActionIcon"/>
+                                                </Button>
+                                                <Button
+                                                    Classes="EmbeddedIconButton"
+                                                    ToolTip.Tip="Load platform choices"
+                                                    IsVisible="{Binding DfuModel.HasLocalDfuFirmware}"
+                                                    Command="{Binding LoadLocalPlatformChoicesCommand}"
+                                                    IsEnabled="{Binding !IsOperationInProgress}"
+                                                    HorizontalAlignment="Center"
+                                                    AutomationProperties.Name="Load platform choices">
+                                                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" Classes="ActionIcon"/>
+                                                </Button>
+                                                <Button
+                                                    Classes="EmbeddedIconButton"
+                                                    ToolTip.Tip="Copy URL"
+                                                    Command="{Binding CopySelectedUrlCommand}"
+                                                    AutomationProperties.Name="Copy URL">
+                                                    <avalonia:MaterialIcon Kind="ContentCopy" Width="30" Height="30" Classes="ActionIcon"/>
+                                                </Button>
+                                            </WrapPanel>
+                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
                                 <Border Classes="SectionCard" Padding="16" IsVisible="{Binding ShowValidationAndCompatibility}">
@@ -476,7 +479,9 @@
                                                 </controls:InformationDocumentView.Document>
                                             </controls:InformationDocumentView>
                                             <TextBox
-                                                HorizontalContentAlignment="Right"
+                                                HorizontalAlignment="Center"
+                                                MaxWidth="350"
+                                                HorizontalContentAlignment="Center"
                                                 IsVisible="{Binding ShowDfuConfirmation}"
                                                 IsEnabled="{Binding !IsOperationInProgress}"
                                                 Text="{Binding DfuConfirmationText}"

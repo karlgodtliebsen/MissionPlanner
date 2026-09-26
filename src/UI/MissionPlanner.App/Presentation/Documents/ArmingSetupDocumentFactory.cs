@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Diagnostics;
+﻿using MissionPlanner.Core.Diagnostics;
 using MissionPlanner.Core.Setup.Arming;
 
 namespace MissionPlanner.App.Presentation.Documents;
@@ -31,7 +31,14 @@ public sealed class ArmingSetupDocumentFactory : IArmingSetupDocumentFactory
         b.Paragraph(d?.Summary ?? "Arming readiness unknown.");
         if (d is not null)
         {
-            b.Paragraph(d.Stage == ArmingDiagnosticStage.Unknown ? "Armed state needs fresh heartbeat confirmation." : d.IsArmed ? "Armed heartbeat observed." : "Heartbeat reports disarmed.");
+            b.Paragraph(d.LastHeartbeatAt is { } heartbeat
+                ? $"Latest heartbeat reports {(d.IsArmed ? "armed" : "disarmed")}; received {heartbeat:O}."
+                : d.Stage == ArmingDiagnosticStage.Unknown ? "Armed state needs fresh heartbeat confirmation." : d.IsArmed ? "Armed heartbeat observed." : "Heartbeat reports disarmed.");
+            b.Paragraph("RC switch movement confirms input only. An arming request does not establish that the FC armed.");
+            if (d.IsReadyToArm is null)
+            {
+                b.Paragraph("Live pre-arm readiness is unknown: no fresh enabled SYS_STATUS pre-arm result is available. Recent FC rejection messages remain independent evidence.");
+            }
             if (d.IsReadyToArm == true && !d.IsArmed)
             {
                 b.Paragraph("All currently enabled pre-arm checks are passing. This does not establish that all checks are enabled.");
@@ -41,10 +48,11 @@ public sealed class ArmingSetupDocumentFactory : IArmingSetupDocumentFactory
                 b.Heading("Current blockers", 3);
                 foreach (var reason in d.Reasons)
                 {
-                    b.Bullet(reason);
+                    WriteReason(b, d, reason);
                 }
-                b.Paragraph("Review the responsible subsystem: Radio, Safety, Failsafe, Compass or Battery setup. Arming does not replace those editors.");
+                b.Paragraph("Review the responsible subsystem: FC log storage, Radio, Safety, Failsafe, Compass or Battery setup. Arming does not replace those editors.");
             }
+            WriteLoggingEvidence(b, d);
             b.Heading("Last arming activity", 3);
             if (d.LastArmAttemptAt is null)
             {
@@ -70,7 +78,22 @@ public sealed class ArmingSetupDocumentFactory : IArmingSetupDocumentFactory
         if (context.Setup is { } s)
         {
             b.Paragraph(s.Status);
-            b.Bullet($"Pre-arm checks: {s.Current.Checks}");
+            if (s.SkippedChecks is { } skipped)
+            {
+                b.Paragraph("This firmware reports ARMING_SKIPCHK (checks to skip), rather than the legacy ARMING_CHECK selection.")
+                    .CodeBlock([UserDocumentBuilder.ParameterAssignment("ARMING_SKIPCHK", skipped)])
+                    .Paragraph(skipped == 0 ? "No optional arming checks are skipped." :
+                        skipped == -1 ? "All non-mandatory arming checks are skipped." : "Some arming checks are skipped. Review the mask in Parameters Editor.")
+                    .Paragraph("This is configuration, not live readiness. Use Parameters Editor for this firmware's skip mask; the legacy check editor does not edit it.");
+            }
+            else
+            {
+                b.Bullet($"ARMING_CHECK configuration: {s.Current.Checks}");
+                if (s.Current.Checks == PreArmCheckMode.Unknown)
+                {
+                    b.Paragraph("The arming-check parameter configuration is unknown. This does not invalidate the FC's reported logging failure or describe its live readiness.");
+                }
+            }
             foreach (var setting in s.Settings.Where(s => s.Setting != ArmingSetting.Checks))
             {
                 var label = setting.Choices.FirstOrDefault(c => c.Value == setting.Current)?.Label ??
@@ -80,7 +103,7 @@ public sealed class ArmingSetupDocumentFactory : IArmingSetupDocumentFactory
             b.Bullet("RC Arm/Disarm switch: " + (!s.AssignmentsKnown ? "Unknown" : s.ArmSwitches.Count == 0 ? "None" : string.Join(", ", s.ArmSwitches.Select(c => $"RC{c}"))));
             if (s.ArmSwitches.Count > 1)
             {
-                b.Note("Multiple Arm/Disarm assignments exist. Review their individual options in Full Parameters before reassignment.");
+                b.Note("Multiple Arm/Disarm assignments exist. Review their individual options in Parameters Editor before reassignment.");
             }
         }
         b.Paragraph(context.ArmAvailability);
@@ -109,8 +132,9 @@ public sealed class ArmingSetupDocumentFactory : IArmingSetupDocumentFactory
             b.Heading("Current blockers", 3);
             foreach (var reason in d.Reasons)
             {
-                b.Bullet(reason);
+                WriteReason(b, d, reason);
             }
+            WriteLoggingEvidence(b, d);
             b.Heading("Historical evidence — not current blockers", 3)
                 .Paragraph("Last arm failure: " + (d.LastArmFailure ?? "None recorded"))
                 .Paragraph("Last PreArm message: " + (d.LastPreArmReason ?? "None recorded"))
@@ -133,5 +157,28 @@ public sealed class ArmingSetupDocumentFactory : IArmingSetupDocumentFactory
             b.CodeBlock(["// Parameters are not fully loaded; no confirmed assignment export is available."]);
         }
         return b.Build("Arming diagnostics");
+    }
+
+    private static void WriteReason(UserDocumentBuilder builder, VehicleArmingDiagnostic diagnostic, string reason)
+    {
+        var evidence = diagnostic.Evidence.FirstOrDefault(e => e.Message == reason && e.IsCurrent);
+        builder.Bullet(evidence is null ? reason : $"{evidence.Source}: {reason}; received {evidence.ObservedAt:O}; recent report.");
+    }
+
+    private static void WriteLoggingEvidence(UserDocumentBuilder builder, VehicleArmingDiagnostic diagnostic)
+    {
+        var logging = diagnostic.Evidence.Where(e => e.Source == "FC log storage").ToArray();
+        if (logging.Length == 0)
+        {
+            return;
+        }
+        builder.Heading("FC log storage evidence", 3)
+            .Paragraph("These messages concern the flight controller's onboard log filesystem, not PC telemetry recording. ENOSPC alone does not prove the storage is full.");
+        foreach (var item in logging)
+        {
+            builder.Bullet($"{item.Message}; received {item.ObservedAt?.ToString("O") ?? "time unknown"}; " +
+                (item.IsCurrent ? "recent blocker evidence." : item.IsFresh ? "recent report — not a current blocker." :
+                    "stale or timestamp unknown — not a current blocker. Resolution is not confirmed by expiry."));
+        }
     }
 }

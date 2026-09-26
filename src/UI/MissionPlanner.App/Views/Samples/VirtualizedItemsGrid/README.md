@@ -58,7 +58,7 @@ and position cells with normal `Grid.Column` values.
 
 ## Search
 
-For a client-side Full Parameters test:
+For a client-side Parameters Editor test:
 
 ```xml
 ShowSearchBar="True"
@@ -90,7 +90,7 @@ SelectAllScope="CurrentPage"
 Selection state is stored in the control, not in recycled CheckBox controls.
 `SelectedItems` is exposed as a read-only observable collection.
 
-## Full Parameters performance test
+## Parameters Editor performance test
 
 Run these cases separately:
 

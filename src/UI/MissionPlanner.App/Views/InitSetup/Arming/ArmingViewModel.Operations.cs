@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.App.Views.Navigation;
+using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.InitSetup.Arming;
 
@@ -65,7 +65,10 @@ public sealed partial class ArmingViewModel
         }
         finally
         {
-            if (operation == scope) { operation = null; }
+            if (operation == scope)
+            {
+                operation = null;
+            }
             if (version == generation)
             {
                 IsBusy = false;
@@ -76,10 +79,16 @@ public sealed partial class ArmingViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanArm))]
-    private Task ArmAsync() => ExecuteActionAsync(true);
+    private Task ArmAsync()
+    {
+        return ExecuteActionAsync(true);
+    }
 
     [RelayCommand(CanExecute = nameof(CanDisarm))]
-    private Task DisarmAsync() => ExecuteActionAsync(false);
+    private Task DisarmAsync()
+    {
+        return ExecuteActionAsync(false);
+    }
 
     private async Task ExecuteActionAsync(bool arm)
     {
@@ -104,7 +113,10 @@ public sealed partial class ArmingViewModel
                 confirmed = await confirmation.ConfirmAsync(arm ? "Arm vehicle?" : "Disarm vehicle?",
                     arm ? "Confirm the vehicle is safe to arm and the motor/propeller area is clear." : decision.Reason ?? "Confirm disarming.",
                     arm ? "Arm vehicle" : "Disarm vehicle", scope.Token);
-                if (!confirmed) { return; }
+                if (!confirmed)
+                {
+                    return;
+                }
             }
             if (scope.IsCancellationRequested || version != generation || !active.IsOnline || active.VehicleId != id ||
                 active.ConnectionCancellationToken != connection || active.State?.Identity.Firmware != identity || replay.Snapshot.IsTransmissionProhibited)
@@ -112,7 +124,7 @@ public sealed partial class ArmingViewModel
                 return;
             }
             var freshDecision = policy.Evaluate(active.State, action);
-            if (!freshDecision.IsAllowed || freshDecision.RequiresConfirmation && !confirmed)
+            if (!freshDecision.IsAllowed || (freshDecision.RequiresConfirmation && !confirmed))
             {
                 OperationMessage = freshDecision.Reason ?? "Command policy changed; review again.";
                 return;
@@ -130,11 +142,17 @@ public sealed partial class ArmingViewModel
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            if (version == generation) { OperationMessage = ex.Message; }
+            if (version == generation)
+            {
+                OperationMessage = ex.Message;
+            }
         }
         finally
         {
-            if (operation == scope) { operation = null; }
+            if (operation == scope)
+            {
+                operation = null;
+            }
             if (version == generation)
             {
                 IsBusy = false;
@@ -147,8 +165,11 @@ public sealed partial class ArmingViewModel
     [RelayCommand]
     private async Task OpenFullParametersAsync()
     {
-        if (IsBusy) { return; }
-        if (HasPendingChanges && !await confirmation.ConfirmAsync("Open Full Parameters", "Discard local arming edits and open Full Parameters?", "Discard and open"))
+        if (IsBusy)
+        {
+            return;
+        }
+        if (HasPendingChanges && !await confirmation.ConfirmAsync("Open Parameters Editor", "Discard local arming edits and open Parameters Editor?", "Discard and open"))
         {
             return;
         }

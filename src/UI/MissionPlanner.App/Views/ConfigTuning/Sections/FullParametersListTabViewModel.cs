@@ -181,7 +181,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         {
             var viewModel = domainFactory.Create<ParametersEditorViewModel>();
             var options = dialogService.CreateOptions("", null, null);
-            options.FullScreen = false;
+            options.FullScreen = true;
             options.CanDragMove = true;
             options.CanResize = true;
             options.Buttons = DialogButton.OKCancel;

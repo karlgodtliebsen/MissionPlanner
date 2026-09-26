@@ -3,10 +3,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles.Abstractions;
-
-using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
@@ -22,7 +21,7 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
         Show(service.Current);
     }
 
-    /// <summary>Opens the shared Full Parameters workspace when no operation is running.</summary>
+    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
     [RelayCommand]
     private async Task OpenFullParametersAsync()
     {

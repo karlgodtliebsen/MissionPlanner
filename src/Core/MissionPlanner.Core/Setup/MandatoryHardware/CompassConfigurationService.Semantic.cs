@@ -1,4 +1,4 @@
-using MissionPlanner.Core.ConfigTuning;
+﻿using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
@@ -122,7 +122,10 @@ public sealed partial class CompassConfigurationService
             }
             if (RequiresCompass(normalized.YawSource))
             {
-                normalized = normalized with { YawSource = CompassYawSource.None };
+                normalized = normalized with
+                {
+                    YawSource = CompassYawSource.None
+                };
             }
         }
         if (!state.IsSupported)
@@ -224,7 +227,10 @@ public sealed partial class CompassConfigurationService
         }
     }
 
-    private static bool RequiresCompass(CompassYawSource? source) => source is CompassYawSource.Compass or CompassYawSource.GpsWithCompassFallback;
+    private static bool RequiresCompass(CompassYawSource? source)
+    {
+        return source is CompassYawSource.Compass or CompassYawSource.GpsWithCompassFallback;
+    }
 
     private static List<string> Validate(CompassConfiguration desired, IReadOnlyDictionary<string, VehicleParameter> values)
     {
@@ -245,7 +251,7 @@ public sealed partial class CompassConfigurationService
                     }
                     else if (RequiresCompass((CompassYawSource)(int)source.Value))
                     {
-                        errors.Add($"{name} still requires a compass. Review that alternate EKF source set in Full Parameters before disabling compass.");
+                        errors.Add($"{name} still requires a compass. Review that alternate EKF source set in Parameters Editor before disabling compass.");
                     }
                 }
             }

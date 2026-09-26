@@ -1,0 +1,37 @@
+Missing functionality:
+
+
+
+Servo Output
+
+Hardware ID: Configuration
+
+ADSB: Configuration
+
+
+
+What are the roles of:
+Safety and Arming
+Summary
+
+
+
+Connecting to a vehicle:
+If the Device detected is not an ardupilot, then warn and do not connect
+Like a STMicroelectronics Virtual Com port (COM4)
+
+
+
+Navigation:
+When navigating to Parameters Editor (formerly Full Parameters List), then
+
+The navigation currently only reaches Configuration (due to changes in Configuration use of NavigationPage vs TabItems)
+So create a way to select the Navigation page and then the specified TabItem
+
+the navigation must also show the selection as active in the navigation menu.
+
+
+
+When using the Install firmware | Configuration tab, it is not easy to get an overview of progress/next step etc.
+UX is not good here.
+So we need a better visualization of where we are and what to no next.

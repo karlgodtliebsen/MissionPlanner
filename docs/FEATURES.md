@@ -601,7 +601,7 @@ partial failures retryable; aggregates reboot requirements; and blocks stale wri
 disconnect, vehicle switch, or firmware change. Navigation within Config preserves edits,
 while leaving Config warns before discarding them.
 
-## Full Parameters List
+## Parameters Editor
 
 ### Status
 

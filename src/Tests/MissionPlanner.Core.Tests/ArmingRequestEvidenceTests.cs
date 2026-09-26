@@ -38,12 +38,14 @@ public sealed class ArmingRequestEvidenceTests
         }};
         await f.Publish(state);
         var arming = f.Diagnostics.GetArming(f.Id);
+        Assert.False(arming.IsArmed);
         Assert.Empty(arming.Reasons);
         Assert.Null(arming.LastArmAck);
         if (configured || stick)
         {
             Assert.Equal(ArmingDiagnosticStage.ArmRequested, arming.Stage);
             Assert.Contains("inferred", arming.LastArmCommandSource);
+            Assert.Contains("heartbeat confirmation required", arming.LastArmResult);
         }
         else
         {

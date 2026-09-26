@@ -26,6 +26,23 @@ public sealed record VehicleArmingDiagnostic(string Summary, bool IsArmed, bool?
     public DateTimeOffset? LastPreArmReasonAt { get; init; }
     /// <summary>Configuration advice when no request was observed.</summary>
     public string? Guidance { get; init; }
+
+    /// <summary>Timestamped FC evidence, including retained storage messages that are no longer current.</summary>
+    public IReadOnlyList<ArmingEvidence> Evidence { get; init; } = [];
+
+    /// <summary>Timestamp of the heartbeat underlying IsArmed, independent of pre-arm readiness.</summary>
+    public DateTimeOffset? LastHeartbeatAt { get; init; }
+}
+
+/// <summary>FC evidence with observation time and freshness evaluated by the diagnostic clock.</summary>
+/// <param name="Source">Subsystem reporting the evidence.</param>
+/// <param name="Message">Original diagnostic text.</param>
+/// <param name="ObservedAt">Reception time, or unknown for legacy retained state.</param>
+/// <param name="IsCurrent">Whether this evidence currently contributes to the blocker list.</param>
+public sealed record ArmingEvidence(string Source, string Message, DateTimeOffset? ObservedAt, bool IsCurrent)
+{
+    /// <summary>Whether the original observation is recent, independently of whether it still blocks arming.</summary>
+    public bool IsFresh { get; init; } = IsCurrent;
 }
 
 /// <summary>Arming evidence stage; only heartbeat telemetry establishes Armed.</summary>

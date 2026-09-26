@@ -81,7 +81,13 @@ public sealed record ArmingSettingDefinition(ArmingSetting Setting, string Label
 /// <summary>Immutable configuration projection; live armed/readiness truth belongs to live diagnostics.</summary>
 public sealed record ArmingSetupState(VehicleId VehicleId, ArmingConfiguration Current,
     IReadOnlyList<ArmingSettingDefinition> Settings, IReadOnlyList<int> ArmSwitches, bool AssignmentsKnown,
-    bool IsSupported, bool ParametersReady, IReadOnlyDictionary<string, double> Evidence, string Status);
+    bool IsSupported, bool ParametersReady, IReadOnlyDictionary<string, double> Evidence, string Status)
+{
+    /// <summary>Confirmed 4.7 skip-check mask; its polarity differs from the legacy check-selection editor.</summary>
+    public int? SkippedChecks => ParametersReady && Evidence.TryGetValue("ARMING_SKIPCHK", out var value) &&
+        double.IsFinite(value) && value == Math.Truncate(value) && value >= -1 && value <= int.MaxValue
+            ? (int)value : null;
+}
 /// <summary>One explicitly reviewed write.</summary>
 public sealed record ArmingParameterChange(string Name, double OldValue, double NewValue, bool RequiresReboot);
 /// <summary>A review tied to one connection and firmware identity.</summary>

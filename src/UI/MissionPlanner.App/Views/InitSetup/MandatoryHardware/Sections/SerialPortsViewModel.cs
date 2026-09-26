@@ -93,7 +93,7 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
         base.Dispose();
     }
 
-    /// <summary>Opens the shared Full Parameters workspace.</summary>
+    /// <summary>Opens the shared Parameters Editor workspace.</summary>
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {

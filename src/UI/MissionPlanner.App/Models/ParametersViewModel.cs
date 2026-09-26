@@ -56,7 +56,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         get; private set;
     }
 
-    /// <summary>Initializes the Full Parameters List tab.</summary>
+    /// <summary>Initializes the Parameters Editor tab.</summary>
     /// <param name="connectionSession">The current connection-scoped services.</param>
     /// <param name="activeVehicle">The application active-vehicle context.</param>
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
@@ -572,7 +572,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             ShowLoadingCompletedWithError = true;
             SetMessages(errorMessage: result.ErrorMessage ?? "Parameter loading failed.");
         });
-        Logger.LogError("Full Parameters List load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
+        Logger.LogError("Parameters Editor load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
         HasParameters = Parameters.Count > 0;
     }
 
@@ -614,10 +614,10 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             ModifiedParameterCount = 0;
             CompleteBusyState();
             SetMessages("Parameters cleared. Refresh to load again.");
-            NotificationManager?.Show($"Cleared Full Parameters List for Vehicle: {vehicleId}. Refresh to load again.");
+            NotificationManager?.Show($"Cleared Parameters Editor for Vehicle: {vehicleId}. Refresh to load again.");
         });
 
-        Logger.LogInformation("Cleared Full Parameters List for {VehicleId}.", vehicleId);
+        Logger.LogInformation("Cleared Parameters Editor for {VehicleId}.", vehicleId);
     }
 
     /// <summary>
@@ -644,7 +644,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             await ShowProgressDialogAsync(cancellationToken);
             var progress = CreateProgress();
             cancellationToken.ThrowIfCancellationRequested();
-            Logger.LogInformation("Loading the Full Parameters List for {VehicleId}.", vehicleId);
+            Logger.LogInformation("Loading the Parameters Editor for {VehicleId}.", vehicleId);
 
             var result = await connectionSession.ParameterStreamService.StreamAllParametersWithRetryAsync(vehicleId, progress, 3, cancellationToken: cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();

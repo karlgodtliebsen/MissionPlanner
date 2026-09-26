@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Firmware;
@@ -739,7 +739,9 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
                 OnboardLogging = state.OnboardLogging with
                 {
                     LatestMessage = text,
+                    LatestMessageAt = message.ReceivedAt,
                     StorageDetail = storageFailure ? text : state.OnboardLogging.StorageDetail,
+                    StorageDetailAt = storageFailure ? message.ReceivedAt : state.OnboardLogging.StorageDetailAt,
                     Healthy = failure ? false : state.OnboardLogging.Healthy,
                     AffectsArming = armingFailure || state.OnboardLogging.AffectsArming
                 }

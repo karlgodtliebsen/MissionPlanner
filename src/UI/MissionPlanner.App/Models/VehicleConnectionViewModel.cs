@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
@@ -35,7 +34,7 @@ public partial class VehicleConnectionViewModel : ViewModelBase
         get; set;
     }
 
-    /// <summary>Initializes the Full Parameters List tab.</summary>
+    /// <summary>Initializes the Parameters Editor tab.</summary>
     /// <param name="connectionSession">The current connection-scoped services.</param>
     /// <param name="activeVehicle">The application active-vehicle context.</param>
     /// <param name="logger">The logger.</param>

@@ -13,7 +13,7 @@ public sealed partial class VehicleLiveDiagnostics
             var entry = Get(vehicleId);
             var state = entry.State;
             var now = clock.GetUtcNow();
-            foreach (var expired in entry.Reasons.Where(pair => now - pair.Value > options.ReasonLifetime).Select(pair => pair.Key).ToArray())
+            foreach (var expired in entry.Reasons.Where(pair => pair.Value > now || now - pair.Value > options.ReasonLifetime).Select(pair => pair.Key).ToArray())
             {
                 entry.Reasons.Remove(expired);
             }
@@ -45,10 +45,6 @@ public sealed partial class VehicleLiveDiagnostics
                     {
                         reasons.Add("Battery unhealthy");
                     }
-                    if (state.OnboardLogging.AffectsArming && state.OnboardLogging.Healthy == false)
-                    {
-                        reasons.Add(state.OnboardLogging.LatestMessage ?? "Onboard logging failed");
-                    }
                     if (ready == false && reasons.Count == 0)
                     {
                         reasons.Add("Flight controller reports pre-arm checks not ready");
@@ -56,6 +52,30 @@ public sealed partial class VehicleLiveDiagnostics
                 }
             }
             var lost = entry.Disconnected || state?.Connection.State is VehicleConnectionState.Offline;
+            if (lost)
+            {
+                reasons.Clear();
+            }
+            var evidence = entry.Reasons.Select(pair => new ArmingEvidence(
+                IsLogging(pair.Key) ? "FC log storage" : "FC pre-arm check", pair.Key, pair.Value,
+                !lost && reasons.Contains(pair.Key)) { IsFresh = !lost }).ToList();
+            if (state is not null)
+            {
+                AddLoggingEvidence(state.OnboardLogging.LatestMessage, state.OnboardLogging.LatestMessageAt);
+                AddLoggingEvidence(state.OnboardLogging.StorageDetail, state.OnboardLogging.StorageDetailAt);
+            }
+            void AddLoggingEvidence(string? message, DateTimeOffset? at)
+            {
+                if (string.IsNullOrWhiteSpace(message) || evidence.Any(e => e.Message == message))
+                {
+                    return;
+                }
+                var fresh = !lost && at is { } observed && now >= observed && now - observed <= options.ReasonLifetime;
+                var current = fresh && !armed && ready != true &&
+                    state!.OnboardLogging.Healthy == false && state.OnboardLogging.AffectsArming &&
+                    reasons.Any(IsLogging);
+                evidence.Add(new("FC log storage", message, at, current) { IsFresh = fresh });
+            }
             var summary = lost ? "CONNECTION LOST" : armed ? "ARMED" :
                 reasons.Count > 0 || ready == false ? "DISARMED / NOT READY" :
                 ready == true ? "DISARMED / READY" : "ARMING UNKNOWN";
@@ -89,10 +109,15 @@ public sealed partial class VehicleLiveDiagnostics
             {
                 Stage = stage, LastArmCommandSource = entry.LastArmCommandSource, LastArmAck = entry.LastArmAck,
                 LastPreArmReason = entry.LastPreArmReason, LastPreArmReasonAt = entry.LastPreArmReasonAt,
-                Guidance = guidance
+                Guidance = guidance, Evidence = evidence, LastHeartbeatAt = state?.LastHeartbeatAt
             };
         }
     }
+
+    private static bool IsLogging(string message) =>
+        message.Contains("logging", StringComparison.OrdinalIgnoreCase) ||
+        message.Contains("log directory", StringComparison.OrdinalIgnoreCase) ||
+        message.Contains("ENOSPC", StringComparison.OrdinalIgnoreCase);
 
     private void ObserveArmingInput(Entry entry, VehicleState? previous, VehicleState state, DateTimeOffset now)
     {

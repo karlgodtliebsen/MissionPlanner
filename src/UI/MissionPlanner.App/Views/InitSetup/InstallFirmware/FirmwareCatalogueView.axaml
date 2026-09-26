@@ -7,6 +7,7 @@
                           xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                           xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
                           xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                          xmlns:u="https://irihi.tech/ursa"
                           mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                           x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.FirmwareCatalogueView"
                           x:DataType="local:FirmwareCatalogueViewModel"
@@ -46,24 +47,24 @@
                             <avalonia:MaterialIcon Kind="AllInclusiveBoxOutline" Width="30" Height="30"  Classes="ActionIcon" />
                         </Button>
                         <Button Classes="ToolbarIconButton"
-                            ToolTip.Tip="Clear all Settings"
-                            Padding="8,2"
-                            VerticalAlignment="Center"
-                            Command="{Binding ClearCatalogueFirmwareCommand}"   AutomationProperties.Name="Clear all Settings">
+                                ToolTip.Tip="Clear all Settings"
+                                Padding="8,2"
+                                VerticalAlignment="Center"
+                                Command="{Binding ClearCatalogueFirmwareCommand}"   AutomationProperties.Name="Clear all Settings">
                             <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30"  Classes="ActionIcon" />
                         </Button>
-<!--                        <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Close"
-                            Padding="8,2"
-                            Command="{Binding CancelCommand}" >
-                            <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
+                        <!--                        <Button Classes="ToolbarButton"
+                        ToolTip.Tip="Close"
+                        Padding="8,2"
+                        Command="{Binding CancelCommand}" >
+                        <avalonia:MaterialIcon Kind="Close" Width="30" Height="30" />
                         </Button>-->
 
                         <Button Classes="ToolbarIconButton"
-                            ToolTip.Tip="Use Selected firmware"
-                            Padding="8,2"
-                            Command="{Binding OKCommand}"
-                             AutomationProperties.Name="Use Selected firmware">
+                                ToolTip.Tip="Use Selected firmware"
+                                Padding="8,2"
+                                Command="{Binding OKCommand}"
+                                AutomationProperties.Name="Use Selected firmware">
                             <avalonia:MaterialIcon Kind="Check" Width="30" Height="30"  Classes="ActionIcon" />
                         </Button>
                     </StackPanel>
@@ -76,10 +77,10 @@
                     <ComboBox ItemsSource="{Binding VehicleTypes}" PlaceholderText="Frame" ToolTip.Tip="Frame/VehicleType" SelectedItem="{Binding SelectedVehicleType}" Width="200" />
                     <ComboBox ItemsSource="{Binding BuildVariants}" PlaceholderText="Variant" ToolTip.Tip="Build Variant" SelectedItem="{Binding SelectedBuildVariant}" Width="200" />
                     <ComboBox ItemsSource="{Binding Manufacturers}" PlaceholderText="Manufacturer" ToolTip.Tip="Manufacturer" SelectedItem="{Binding SelectedManufacturer}" Width="200" />
-                    <Button Classes="ToolbarIconButton"  ToolTip.Tip="Clear Filters"
-                             Command="{Binding ClearCommand}"
-                             Padding="8,2"
-                             VerticalAlignment="Center"  AutomationProperties.Name="Clear Filters">
+                    <Button Classes="EmbeddedIconButton"  ToolTip.Tip="Clear Filters"
+                            Command="{Binding ClearCommand}"
+                            Padding="8,2"
+                            VerticalAlignment="Center"  AutomationProperties.Name="Clear Filters">
                         <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30"  Classes="ActionIcon" />
                     </Button>
                 </StackPanel>
@@ -145,33 +146,23 @@
         </Border>
 
         <Border Grid.Row="2" Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  IsVisible="{Binding SelectedFirmwareModel.HasSelectedFirmware }">
-            <Grid
-                HorizontalAlignment="Center"
-
-                ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                RowSpacing="5">
-
-                <TextBlock Grid.Row="0" Text="Platform:" Classes="H5" />
-                <SelectableTextBlock Grid.Row="0" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Platform,FallbackValue='', TargetNullValue=''}" />
-
-                <TextBlock Grid.Row="1"  Classes="H5" Text="Firmware board ID:" />
-                <SelectableTextBlock Grid.Row="1" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.BoardId,FallbackValue='', TargetNullValue=''}" />
-
-                <TextBlock Grid.Row="2" Text="Version:" />
-                <SelectableTextBlock Grid.Row="2" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Version,FallbackValue='', TargetNullValue=''}" />
-
-                <TextBlock Grid.Row="3"  Classes="H5" Text="Channel:" />
-                <SelectableTextBlock Grid.Row="3" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Channel,FallbackValue='', TargetNullValue=''}" />
-
-                <TextBlock Grid.Row="4"  Classes="H5" Text="Vehicle:" />
-                <SelectableTextBlock Grid.Row="4" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.VehicleType,FallbackValue='', TargetNullValue=''}" />
-
-                <TextBlock Grid.Row="5"  Classes="H5" Text="Build variant:" />
-                <SelectableTextBlock Grid.Row="5" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.BuildVariant,FallbackValue='', TargetNullValue=''}" />
-
-                <TextBlock Grid.Row="6"  Classes="H5" Text="Manufacturer:" />
-                <SelectableTextBlock Grid.Row="6" Grid.Column="1"  Classes="H5" Text="{Binding SelectedFirmwareModel.Selected.Manufacturer,FallbackValue='', TargetNullValue=''}" />
-            </Grid>
+            <WrapPanel HorizontalAlignment="Center" Orientation="Vertical" ItemSpacing="5">
+                <TextBlock Text="Selected firmware:" Classes="H3" HorizontalAlignment="Center"/>
+                <u:Descriptions
+                    MaxWidth="400"
+                    HorizontalAlignment="Center"
+                    Orientation="Vertical"
+                    LabelPosition="Left"
+                    ItemAlignment="Left">
+                    <u:DescriptionsItem Label="Platform:" Content="{Binding SelectedFirmwareModel.Selected.Platform,FallbackValue='', TargetNullValue=''}" />
+                    <u:DescriptionsItem Label="Firmware board ID:" Content="{Binding SelectedFirmwareModel.Selected.BoardId,FallbackValue='', TargetNullValue=''}" />
+                    <u:DescriptionsItem Label="Version:" Content="{Binding SelectedFirmwareModel.Selected.Version,FallbackValue='', TargetNullValue=''}" />
+                    <u:DescriptionsItem Label="Channel:" Content="{Binding SelectedFirmwareModel.Selected.Channel,FallbackValue='', TargetNullValue=''}" />
+                    <u:DescriptionsItem Label="Vehicle Type:" Content="{Binding SelectedFirmwareModel.Selected.VehicleType,FallbackValue='', TargetNullValue=''}" />
+                    <u:DescriptionsItem Label="Build Variant:" Content="{Binding SelectedFirmwareModel.Selected.BuildVariant,FallbackValue='', TargetNullValue=''}" />
+                    <u:DescriptionsItem Label="Manufacturer:" Content="{Binding SelectedFirmwareModel.Selected.Manufacturer,FallbackValue='', TargetNullValue=''}" />
+                </u:Descriptions>
+            </WrapPanel>
         </Border>
     </Grid>
 </view:UserControlViewBase>

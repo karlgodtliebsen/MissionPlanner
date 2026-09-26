@@ -103,7 +103,7 @@ timeout is 30 s.
 
 ## Parameter-loading progress in the UI
 
-Pages derived from ParametersViewModel (Full Parameters List and Motor Test) use the
+Pages derived from ParametersViewModel (Parameters Editor and Motor Test) use the
 same "Loading parameters" dialog for background connection downloads, cached parameter
 metadata projection, and an explicit Refresh. The dialog reads the live ProgressMessage;
 repeated progress events update one dialog rather than opening additional windows.
@@ -348,7 +348,7 @@ Flight Data Aux Function treats `RCx_OPTION` and related parameter values as fir
 numeric identifiers. IDs absent from the reviewed application catalog remain visible but
 disabled; parameter presence never makes an unknown or hazardous action safe to execute.
 
-- Parameter loading into the Full Parameters List UI is slow (see FEATURES.md) — the
+- Parameter loading into the Parameters Editor UI is slow (see FEATURES.md) — the
   merge of ~1000 values with metadata needs profiling.
 - Delete the unused `VehicleParameterStreamService` V1–V3 classes.
 - The comparison engine and exports are implemented; the Avalonia workflow currently exposes
@@ -416,7 +416,7 @@ cancellation, fresh readback, manual retry, and overlay cancellation/disposal. C
 cover endpoint preservation, disconnect stabilization, retries, cancellation, and refusal
 to replace another connection. No hardware identifier values are changed by these tests.
 
-Full Parameters List also reconnects when an Apply or Retry Failed report contains
+Parameters Editor also reconnects when an Apply or Retry Failed report contains
 confirmed reboot-required changes. It captures the transport settings before writing
 and uses the same owned disconnect, two-second stabilization delay, and bounded
 retries as Naming. The cancellable progress overlay opens before teardown and yields
@@ -430,5 +430,5 @@ remains set: reconnecting a transport does not itself reboot the controller.
 The existing XML metadata parser now retains finite defaults supplied by a parameter's
 `default` attribute or `field name="Default"`. `ParameterMetadata.DefaultValue` is null
 when absent or invalid. Compass Setup uses this for pending-only reset actions; it never
-infers a firmware default from a current value or enum ordering. Existing Full Parameters
+infers a firmware default from a current value or enum ordering. Existing Parameters Editor
 editing and write/readback ownership remain unchanged.
