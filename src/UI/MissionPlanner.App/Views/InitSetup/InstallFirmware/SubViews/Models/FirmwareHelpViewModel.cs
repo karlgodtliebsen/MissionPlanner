@@ -15,14 +15,21 @@ public sealed partial class FirmwareHelpViewModel : ViewModelBase
         IFirmwareSupportLinkProvider supportLinkProvider,
         IExternalLinkLauncher externalLinkLauncher,
         IDeviceManagerLauncher deviceManagerLauncher,
-        ILogger<FirmwareHelpViewModel> logger,
         IUiDispatcher dispatcher,
-        IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
+        IDomainEventHub eventHub,
+        ILogger<FirmwareHelpViewModel> logger) : base(logger, dispatcher, eventHub)
     {
         SupportLinks = supportLinkProvider.GetLinks();
+        Article = new MissionPlanner.App.Views.Help.HelpArticleViewModel("Install Firmware",
+            MissionPlanner.App.Presentation.Documents.FirmwareHelpDocumentFactory.Create(),
+            SupportLinks.Select(link => new MissionPlanner.App.Views.Help.HelpResource(link.Title, link.Description, link.Uri)).ToArray(),
+            externalLinkLauncher, deviceManagerLauncher, logger, dispatcher, eventHub);
         this.externalLinkLauncher = externalLinkLauncher;
         this.deviceManagerLauncher = deviceManagerLauncher;
     }
+    /// <summary>Gets concise help that remains available offline.</summary>
+    public MissionPlanner.App.Views.Help.HelpArticleViewModel Article { get; }
+
     /// <summary>Gets concise help that remains available offline.</summary>
     public IReadOnlyList<FirmwareSupportSection> SupportSections { get; } = FirmwareSupportContent.Sections;
 

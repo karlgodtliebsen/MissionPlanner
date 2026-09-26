@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:help="clr-namespace:MissionPlanner.App.Views.Help"
+             xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+             xmlns:documents="clr-namespace:MissionPlanner.App.Presentation.Documents"
+             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="MissionPlanner.App.Views.Help.HelpArticleView"
+             x:DataType="help:HelpArticleViewModel">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="16" Margin="16" MaxWidth="1000" HorizontalAlignment="Stretch">
+            <controls:InformationDocumentView Document="{Binding Document}" />
+            <TextBlock Text="External resources" Classes="H3" />
+            <ItemsControl ItemsSource="{Binding Resources}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="help:HelpResource">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12" Margin="0,0,0,12">
+                            <controls:InformationDocumentView>
+                                <controls:InformationDocumentView.Document>
+                                    <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.SectionInstance}">
+                                        <Binding Path="Title" />
+                                        <Binding Path="Description" />
+                                    </MultiBinding>
+                                </controls:InformationDocumentView.Document>
+                            </controls:InformationDocumentView>
+                            <Button Grid.Column="1" Classes="EmbeddedIconButton" Padding="8,2" VerticalAlignment="Center"
+                                    Command="{Binding $parent[ItemsControl].((help:HelpArticleViewModel)DataContext).OpenResourceCommand}"
+                                    CommandParameter="{Binding .}" ToolTip.Tip="Open in your default browser"
+                                    AutomationProperties.Name="{Binding Title}">
+                                <mdi:MaterialIcon Kind="OpenInNew" Width="30" Height="30" Classes="ActionIcon" />
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Classes="EmbeddedTextButton" Content="Open Windows Device Manager" HorizontalAlignment="Left"
+                    IsVisible="{Binding CanOpenDeviceManager}" Command="{Binding OpenDeviceManagerCommand}" />
+            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

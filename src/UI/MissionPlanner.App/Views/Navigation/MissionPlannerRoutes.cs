@@ -20,4 +20,5 @@ public static class MissionPlannerRoutes
     public const string Simulation = "Simulation";
     public const string Introduction = "IntroductionPage";
     public const string Help = "Help";
+    public const string HelpInstallFirmware = "Help/InstallFirmware";
 }

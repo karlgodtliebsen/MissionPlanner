@@ -1,12 +1,23 @@
-<NavigationPage xmlns="https://github.com/avaloniaui"
+<utilities:NavigationViewBase xmlns="https://github.com/avaloniaui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                xmlns:help="clr-namespace:MissionPlanner.App.Views.Help"
+                x:TypeArguments="help:HelpViewModel"
+                x:DataType="help:HelpViewModel"
                 x:Class="MissionPlanner.App.Views.Help.HelpPage">
-    <ContentPage Header="Welcome">
-        <TextBlock Text="Welcome to Avalonia!"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
+    <ContentPage Header="Help">
+        <Grid ColumnDefinitions="220,*" ColumnSpacing="16" Margin="16">
+            <StackPanel Spacing="12">
+                <TextBlock Text="Help topics" Classes="H3" />
+                <ListBox ItemsSource="{Binding Topics}" SelectedItem="{Binding SelectedTopic, Mode=TwoWay}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="help:HelpArticleViewModel">
+                            <TextBlock Text="{Binding Title}" TextWrapping="Wrap" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </StackPanel>
+            <help:HelpArticleView Grid.Column="1" DataContext="{Binding SelectedTopic}" />
+        </Grid>
     </ContentPage>
-</NavigationPage>
+</utilities:NavigationViewBase>

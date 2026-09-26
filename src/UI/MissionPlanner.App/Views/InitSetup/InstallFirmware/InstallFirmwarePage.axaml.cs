@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
@@ -10,6 +11,12 @@ public partial class InstallFirmwarePage : NavigationViewBase<InstallFirmwareVie
     public InstallFirmwarePage()
     {
         InitializeComponent();
+    }
+
+    private async void OpenFirmwareHelp(object? sender, RoutedEventArgs e)
+    {
+        await ServiceHelper.GetRequiredService<INavigationService>()
+            .NavigateAsync(MissionPlannerRoutes.HelpInstallFirmware);
     }
 
 

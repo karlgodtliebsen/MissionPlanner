@@ -66,6 +66,8 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
             MissionPlannerRoutes.Help =>
                 services.GetRequiredService<HelpPage>(),
 
+            MissionPlannerRoutes.HelpInstallFirmware => CreateFirmwareHelpPage(),
+
             _ when route.StartsWith("SetupAdvanced/", StringComparison.Ordinal) =>
                 services.GetRequiredService<AdvancedToolRegistry>().Create(route),
 
@@ -75,6 +77,13 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
                 "Unknown navigation route.")
         };
 
+        return page;
+    }
+
+    private HelpPage CreateFirmwareHelpPage()
+    {
+        var page = services.GetRequiredService<HelpPage>();
+        page.SelectInstallFirmware();
         return page;
     }
 }
