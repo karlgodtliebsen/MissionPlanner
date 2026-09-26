@@ -30,7 +30,6 @@ Improve the RadioChannel view, they are to big and clumsy, and they need a nice 
 
 FFT Signal analysis
 
-
 Implement all AI related features (see conversation in ChatGpt):
 
 Create a vehicle and Mission DSL with mapping to/from parameters
@@ -39,10 +38,13 @@ Create a vehicle and Mission DSL with mapping to/from parameters
 Connecting to a vehicle:
 If the Device detected is not an ardupilot, then warn and do not connect
 Like a STMicroelectronics Virtual Com port (COM4)
+After connection changes, in the ConnectPopupView, it no longer shows if a COM port is available as default selection in the dropdown box
+
 <--Done--
 
-
-After connection changes, in the ConnectPopupView, it no longer shows if a COM port is available as default selection in the dropdown box
+--Done-->
+https://ardupilot.org/copter/docs/connect-escs-and-motors.html#motor-order-diagrams
+<--Done--
 
 
 Navigation:
