@@ -180,14 +180,63 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         try
         {
             var viewModel = domainFactory.Create<ParametersEditorViewModel>();
+            var editorSession = EditSession;
+            using var editorLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            viewModel.ConfigureApply(async token =>
+            {
+                using var applyLifetime = CancellationTokenSource.CreateLinkedTokenSource(token, editorLifetime.Token);
+                applyLifetime.Token.ThrowIfCancellationRequested();
+                if (!ReferenceEquals(EditSession, editorSession) || !editorSession.IsValid || !HasConnection || IsBusy)
+                    throw new InvalidOperationException("The original vehicle connection is no longer available or is busy. Reopen the editor after refreshing parameters.");
+                var parameters = viewModel.UpdateParameters(editorSession.Fields.Select(ToVehicleParameter).ToList());
+                if (parameters.Count == 0) return "No valid parameter assignments were found. No values were written. See the feedback report.";
+                var errors = new List<string>();
+                var acceptedNames = new List<string>();
+                var previousValues = editorSession.Fields.ToDictionary(field => field.Name, field => field.PendingValue);
+                using (editorSession.DeferChangeNotifications())
+                {
+                    foreach (var parameter in parameters)
+                    {
+                        if (!editorSession.TrySetPending(parameter.Name, parameter.Value, out var error))
+                        {
+                            errors.Add($"Skipped {parameter.Name}: {error}");
+                            editorSession.TrySetPending(parameter.Name, previousValues[parameter.Name], out _);
+                        }
+                        else
+                        {
+                            acceptedNames.Add(parameter.Name);
+                        }
+                    }
+                }
+                viewModel.ReportSkippedParameters(errors);
+                if (acceptedNames.Count == 0) return "No valid parameter values could be staged. No values were written. See the feedback report.";
+                await ApplyParameterChangesAsync(applyLifetime.Token, acceptedNames);
+                return ErrorMessage ?? StatusMessage ?? "Parameter write finished.";
+            });
             var options = dialogService.CreateOptions("", null, null);
             options.FullScreen = true;
             options.CanDragMove = true;
             options.CanResize = true;
             options.Buttons = DialogButton.OKCancel;
 
-            var returnModel = await dialogService.ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(viewModel, options, cancellationToken: cancellationToken);
-            if (returnModel is not null)
+            ParametersEditorViewModel? returnModel;
+            PropertyChangedEventHandler reportProgress = (_, args) =>
+            {
+                if (!viewModel.ApplyModifiedCommand.IsRunning) return;
+                if (args.PropertyName == nameof(ProgressMessage)) viewModel.WriteProgress = ProgressMessage;
+                if (args.PropertyName == nameof(StatusMessage)) viewModel.StatusMessage = StatusMessage;
+            };
+            PropertyChanged += reportProgress;
+            try
+            {
+                returnModel = await dialogService.ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(viewModel, options, cancellationToken: cancellationToken);
+            }
+            finally
+            {
+                PropertyChanged -= reportProgress;
+                editorLifetime.Cancel();
+            }
+            if (returnModel is not null && !viewModel.ApplyModifiedCommand.IsRunning && ReferenceEquals(EditSession, editorSession) && editorSession.IsValid)
             {
                 UpdateEditSession(returnModel);
             }
@@ -328,9 +377,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanWriteParameters))]
-    private async Task WriteParametersAsync(CancellationToken cancellationToken)
+    private Task WriteParametersAsync(CancellationToken cancellationToken) => ApplyParameterChangesAsync(cancellationToken);
+
+    private async Task ApplyParameterChangesAsync(CancellationToken cancellationToken, IReadOnlyList<string>? names = null)
     {
-        if (EditSession is null)
+        var session = EditSession;
+        if (session is null || !session.IsValid || !HasConnection || IsBusy)
         {
             return;
         }
@@ -339,7 +391,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         {
             using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
             var reconnectTarget = connections.CaptureReconnectTarget();
-            var plan = EditSession.CreateWritePlan();
+            var plan = session.CreateWritePlan(names);
             var preview = string.Join(Environment.NewLine, plan.Entries.Select(entry => $"{entry.DisplayName} ({entry.Name}): {entry.LiveValue:R} → {entry.PendingValue:R} {entry.Units}".TrimEnd()));
             var skippedPreview = plan.Skipped.Count == 0
                 ? string.Empty
@@ -360,7 +412,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 connectionCancellation.Token);
             if (!accepted)
             {
-                Logger.LogInformation("Parameter write plan was cancelled for {VehicleId}.", EditSession.VehicleId);
+                Logger.LogInformation("Parameter write plan was cancelled for {VehicleId}.", session.VehicleId);
                 SetMessages("Parameter write cancelled. No values were sent.");
                 NotificationManager?.Show(StatusMessage ?? "");
                 return;
@@ -373,7 +425,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
             await Dispatcher.DispatchAsync(async () =>
             {
-                var report = await EditSession.ApplyAsync(plan, progress, connectionCancellation.Token);
+                if (!ReferenceEquals(EditSession, session) || !session.IsValid)
+                    throw new InvalidOperationException("The vehicle changed while reviewing parameter writes. No values were written.");
+                var report = await session.ApplyAsync(plan, progress, connectionCancellation.Token);
                 lastApplyReport = report;
                 RebootRequired |= report.RebootRequired;
                 var statusMessage = report.Success ? $"Confirmed {report.Confirmed.Count} parameter changes by vehicle readback." : null;

@@ -23,60 +23,74 @@
         Margin="12">
 
         <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-           
+
             <ComboBox
                 Width="140"
                 ToolTip.Tip="Apply Filters"
                 ItemsSource="{Binding Filters}"
                 SelectedItem="{Binding Filter}" />
-          
+
             <u:IconDropDownButton  >
                 <DropDownButton.Flyout>
                     <MenuFlyout Placement="Bottom">
-                        <MenuItem
-                            ToolTip.Tip="Select all safe differences"
-                            Command="{Binding SelectAllSafeDifferencesCommand}" AutomationProperties.Name="Select all safe differences"
-                            Header="Select all safe differences" />
-                        <MenuItem ToolTip.Tip="Stage selected"
-                                  Command="{Binding StageSelectedDifferencesCommand}" AutomationProperties.Name="Stage selected"
-                                  Header="Stage selected" />
+                        <StackPanel Orientation="Horizontal">
+                            <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
+                            <MenuItem
+                                ToolTip.Tip="Select all safe differences"
+                                Command="{Binding SelectAllSafeDifferencesCommand}" AutomationProperties.Name="Select all safe differences"
+                                Header="Select all safe differences" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
+                            <MenuItem ToolTip.Tip="Stage selected"
+                                      Command="{Binding StageSelectedDifferencesCommand}" AutomationProperties.Name="Stage selected"
+                                      Header="Stage selected" />
+                        </StackPanel>
                     </MenuFlyout>
                 </DropDownButton.Flyout>
                 <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
             </u:IconDropDownButton>
+
             <u:IconDropDownButton  >
                 <DropDownButton.Flyout>
                     <MenuFlyout Placement="Bottom">
-                        <MenuItem
-                            ToolTip.Tip="Save to CSV file"
-                            Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON"
-                            Header="Save to CSV file" />
-                        <MenuItem ToolTip.Tip="Save to json file"
-                                  Command="{Binding ExportCsvCommand}" AutomationProperties.Name="Export CSV"
-                                  Header="Save to json file" />
+                        <StackPanel Orientation="Horizontal">
+                            <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                            <MenuItem
+                                ToolTip.Tip="Save to CSV file"
+                                Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON"
+                                Header="Save to CSV file" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                            <MenuItem ToolTip.Tip="Save to json file"
+                                      Command="{Binding ExportCsvCommand}" AutomationProperties.Name="Export CSV"
+                                      Header="Save to json file" />
+                        </StackPanel>
                     </MenuFlyout>
                 </DropDownButton.Flyout>
                 <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
             </u:IconDropDownButton>
             
-            
             <Button Classes="ToolbarButton"  ToolTip.Tip="Copy all" Width="100"  Command="{Binding CopyAllCommand}" AutomationProperties.Name="Copy all">
                 <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
             </Button>
             <Button Classes="ToolbarButton"
-                ToolTip.Tip="Apply modified"
-                VerticalAlignment="Center"  Width="100" 
-                Command="{Binding ApplyModifiedCommand}"  >
+                    ToolTip.Tip="Apply modified"
+                    VerticalAlignment="Center"  Width="100"
+                    Command="{Binding ApplyModifiedCommand}"  >
                 <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
             </Button>
-<!--            <Button Classes="ToolbarButton" HorizontalAlignment="Right"
-                    ToolTip.Tip="Close" Width="100" Command="{Binding OKCommand}">
-                <avalonia:MaterialIcon Kind="Check" Classes="ActionIcon" />
+
+            <!--            
+            <Button Classes="ToolbarButton" HorizontalAlignment="Right"
+            ToolTip.Tip="Close" Width="100" Command="{Binding OKCommand}">
+            <avalonia:MaterialIcon Kind="Check" Classes="ActionIcon" />
             </Button>-->
         </WrapPanel>
 
         <controls:VirtualizedItemsGrid
-            
+
             Grid.Row="1"
             ItemsSource="{Binding Items}"
             ColumnWidths="70,175,150,150,175,100,*"

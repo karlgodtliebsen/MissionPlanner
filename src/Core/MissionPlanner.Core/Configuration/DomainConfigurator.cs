@@ -207,6 +207,7 @@ public static class DomainConfigurator
         services.TryAddTransient<ISerialPortDiscoveryService, SerialPortDiscoveryService>();
 
         services.TryAddSingleton<IVehicleConnectionService, VehicleConnectionService>();
+        services.TryAddTransient<IUdpVehicleDiscovery, UdpVehicleDiscovery>();
         services.TryAddSingleton<IVehicleHudDataService, VehicleHudDataService>();
         services.TryAddSingleton<ILocalAltitudeReferenceService, LocalAltitudeReferenceService>();
         services.TryAddSingleton<IVehicleFileSystemService, VehicleFileSystemService>();

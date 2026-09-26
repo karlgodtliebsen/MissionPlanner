@@ -16,14 +16,37 @@ Summary
 
 
 
+Complete Simulator
+Complete Introduction/Tutorial
+Complete Preferences
+
+Look into creating a web app
+
+
+
+Improve the RadioChannel view, they are to big and clumsy, and they need a nice theme independent black background
+
+
+
+FFT Signal analysis
+
+
+Implement all AI related features (see conversation in ChatGpt):
+
+Create a vehicle and Mission DSL with mapping to/from parameters
+
+--Done-->
 Connecting to a vehicle:
 If the Device detected is not an ardupilot, then warn and do not connect
 Like a STMicroelectronics Virtual Com port (COM4)
+<--Done--
 
+
+After connection changes, in the ConnectPopupView, it no longer shows if a COM port is available as default selection in the dropdown box
 
 
 Navigation:
-When navigating to Parameters Editor (formerly Full Parameters List), then
+When navigating from a given page/view to Parameters Editor (formerly Full Parameters List, still in view named: FullParametersListTabView), then
 
 The navigation currently only reaches Configuration (due to changes in Configuration use of NavigationPage vs TabItems)
 So create a way to select the Navigation page and then the specified TabItem
@@ -35,3 +58,32 @@ the navigation must also show the selection as active in the navigation menu.
 When using the Install firmware | Configuration tab, it is not easy to get an overview of progress/next step etc.
 UX is not good here.
 So we need a better visualization of where we are and what to no next.
+
+--WIP-->
+In FullParametersListTabView there is a Button for "Parameter profiles".
+What is it for?
+Is it needed when there is a file save/load functionality
+how do I create a profile if it is needed
+
+
+**Parameter profiles is an unfinished feature in the current UI.**
+
+Its purpose is to keep named, reusable parameter sets inside MissionPlanner—for example, “Camera setup” or “Test configuration.” Compared with ordinary parameter files, the underlying profile code supports:
+
+- All parameters, modified parameters, or a selected subset.
+- A name, description, and tags.
+- Firmware and vehicle information, with mismatch warnings when reused.
+- Comparing values and staging compatible differences before applying them.
+
+**You don’t need profiles for normal save/load.** File save/load already supports saving parameter values and importing them as pending edits for review and application.
+
+**Currently, you cannot create a profile through the UI.** Creation and storage exist in the backend, but no creation command is connected to the interface. The current [button handler](/C:/Projects/MissionPlanner/src/UI/MissionPlanner.App/Views/ConfigTuning/Sections/FullParametersListTabViewModel.cs:431) only:
+
+- Shows “No previously saved parameter profiles” when none exist.
+- Offers to stage values when exactly one profile exists.
+- Lists names when multiple profiles exist—with no selection workflow.
+
+I recommend hiding this menu item until profile creation and selection are implemented. For your current workflow, file save/load is sufficient.
+
+<--WIP--
+

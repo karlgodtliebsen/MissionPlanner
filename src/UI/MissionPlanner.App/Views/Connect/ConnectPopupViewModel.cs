@@ -11,6 +11,7 @@ using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Services.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
@@ -20,6 +21,8 @@ namespace MissionPlanner.App.Views.Connect;
 public partial class ConnectPopupViewModel : DialogViewModelBase
 {
     private readonly ISerialPortDiscoveryService portDiscovery;
+    private readonly IFirmwareSerialDeviceCatalog? serialDevices;
+    private readonly IUdpVehicleDiscovery? udpDiscovery;
     private readonly IVehicleConnectionService connectionService;
     private readonly IList<IDisposable> disposables = [];
     private readonly ApplicationStateService stateService;
@@ -187,15 +190,21 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     /// <param name="connectionService"></param>
     /// <param name="domainEventHub"></param>
     /// <param name="logger"></param>
+    /// <param name="serialDevices">Current serial devices with USB identity for excluding non-telemetry endpoints.</param>
+    /// <param name="udpDiscovery">Passive UDP discovery used only when the user connects with AUTO.</param>
     public ConnectPopupViewModel(
         ISerialPortDiscoveryService portDiscovery,
         IVehicleConnectionService connectionService,
         IDomainEventHub domainEventHub,
         ApplicationStateService stateService,
         IOptionsMonitor<ApplicationOptions> options,
-        ILogger<ConnectPopupViewModel> logger)
+        ILogger<ConnectPopupViewModel> logger,
+        IFirmwareSerialDeviceCatalog? serialDevices = null,
+        IUdpVehicleDiscovery? udpDiscovery = null)
     {
         this.portDiscovery = portDiscovery;
+        this.serialDevices = serialDevices;
+        this.udpDiscovery = udpDiscovery;
         this.connectionService = connectionService;
         this.stateService = stateService;
         configuredChannels = options.CurrentValue.Channels.ToList();
@@ -220,7 +229,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
 
         // Initialize port list
-        RefreshPortList();
+        _ = RefreshPortListAsync(preferSerial: true);
         if (IsConnected)
         {
             VehicleId = stateService.VehicleId;
@@ -318,22 +327,38 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     /// <summary>
     /// Refreshes the list of available serial ports
     /// </summary>
-    private void RefreshPortList()
+    private async Task<string[]> GetAvailableSerialPortsAsync()
+    {
+        var ports = serialDevices is null ? portDiscovery.GetAvailablePorts()
+            : (await serialDevices.GetDevicesAsync())
+                .Where(device => VehicleSerialConnectionPolicy.GetBlockReason(device) is null)
+                .Select(device => device.PortName).ToArray();
+        return ports.Distinct(StringComparer.OrdinalIgnoreCase).Order(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private async Task RefreshPortListAsync(bool preferSerial = false)
     {
         try
         {
-            var availablePorts = portDiscovery.GetAvailablePorts();
-            if (availablePorts.Length > 0)
+            var availablePorts = await GetAvailableSerialPortsAsync();
+            // Configured/stale COM entries must not bypass current device discovery.
+            var channels = availablePorts.Concat(configuredChannels.Where(channel => !IsSerialChannel(channel)))
+                .Distinct(StringComparer.OrdinalIgnoreCase).Order().ToArray();
+            Dispatcher.Dispatch(() =>
             {
-                var channels = availablePorts.Concat(configuredChannels).Distinct().Order().ToArray();
                 Channels.ReplaceRange(channels);
-                SelectedChannel = availablePorts[0];
-            }
-
-            if (SelectedChannel is null || !Channels.Contains(SelectedChannel))
-            {
-                SelectedChannel = defaultChannel;
-            }
+                if (!IsConnected && availablePorts.Length > 0
+                    && (preferSerial || string.Equals(SelectedChannel, "AUTO", StringComparison.OrdinalIgnoreCase)))
+                {
+                    if (!availablePorts.Contains(SelectedChannel, StringComparer.OrdinalIgnoreCase))
+                        SelectedChannel = availablePorts[0];
+                }
+                else if (SelectedChannel is null || !channels.Contains(SelectedChannel, StringComparer.OrdinalIgnoreCase))
+                {
+                    SelectedChannel = availablePorts.FirstOrDefault()
+                        ?? (channels.Contains(defaultChannel) ? defaultChannel : channels.FirstOrDefault());
+                }
+            });
 
             Logger.LogInformation("Refreshed port list: {PortCount} ports found", availablePorts.Length);
         }
@@ -394,10 +419,10 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
 
 
     [RelayCommand]
-    private void Refresh()
-    {
-        RefreshPortList();
-    }
+    private Task RefreshAsync() => RefreshPortListAsync();
+
+    private static bool IsSerialChannel(string channel) => channel.StartsWith("COM", StringComparison.OrdinalIgnoreCase)
+        || channel.StartsWith("/dev/", StringComparison.OrdinalIgnoreCase);
 
     [RelayCommand]
     private async Task ConnectAsync()
@@ -429,10 +454,39 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
 
         {
             var selection = SelectedChannel.ToLowerInvariant();
+            IPEndPoint? discoveredUdp = null;
+
+            if (selection == "auto")
+            {
+                var ports = await GetAvailableSerialPortsAsync();
+                if (ports.Length > 1)
+                {
+                    StatusMessage = "AUTO found multiple serial devices. Select the controller's COM port.";
+                    NotificationManager?.Show(StatusMessage);
+                    return;
+                }
+                if (ports.Length == 1)
+                {
+                    SelectedChannel = ports[0];
+                    selection = "serial";
+                }
+                else
+                {
+                    var localPort = int.TryParse(SelectedPort, out var parsedPort) ? parsedPort : 14550;
+                    StatusMessage = $"AUTO: listening for an ArduPilot UDP heartbeat on port {localPort}...";
+                    discoveredUdp = udpDiscovery is null ? null : await udpDiscovery.FindAsync(localPort);
+                    if (discoveredUdp is null)
+                    {
+                        StatusMessage = $"AUTO found no available serial device or ArduPilot UDP heartbeat on port {localPort}.";
+                        NotificationManager?.Show(StatusMessage);
+                        return;
+                    }
+                    selection = "udp";
+                }
+            }
 
             // Auto-detect connection type based on port name
-            if (selection.StartsWith("COM", StringComparison.OrdinalIgnoreCase) ||
-                selection.StartsWith("/dev/tty", StringComparison.OrdinalIgnoreCase))
+            if (selection == "serial" || IsSerialChannel(selection))
             {
                 selection = "serial";
             }
@@ -441,10 +495,16 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                 selection = "tcp";
                 SelectedChannel = "TCP";
             }
+            else if (selection is "udp" or "udpci")
+            {
+                selection = "udp";
+                SelectedChannel = "UDP";
+            }
             else
             {
-                selection = "udp"; // Default to UDP if unknown
-                SelectedChannel = "UDP";
+                StatusMessage = $"Unsupported connection channel: {SelectedChannel}. Select a COM port, TCP, or UDP.";
+                NotificationManager?.Show(StatusMessage);
+                return;
             }
 
             Logger.LogInformation("Connecting to vehicle using transport: {transport}", selection);
@@ -453,7 +513,9 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
             {
                 "serial" => await ConnectSerialAsync(),
                 "tcp" => await ConnectTcpAsync(),
-                "udp" => await ConnectUdpAsync(),
+                "udp" => discoveredUdp is null ? await ConnectUdpAsync()
+                    : await connectionService.ConnectUdpAsync(int.TryParse(SelectedPort, out var udpPort) ? udpPort : 14550,
+                        discoveredUdp.Address.ToString(), discoveredUdp.Port),
                 var _ => new VehicleConnectionResult(false, null, null, "Unsupported connection type")
             };
             await Task.Yield();

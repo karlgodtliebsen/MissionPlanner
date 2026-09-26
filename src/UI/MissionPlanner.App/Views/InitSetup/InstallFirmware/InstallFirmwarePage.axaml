@@ -217,19 +217,30 @@
                                                 AutomationProperties.Name="Select Bootloader">
                                                 <DropDownButton.Flyout>
                                                     <MenuFlyout Placement="Bottom">
-                                                        <MenuItem
-                                                            ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
-                                                            Command="{Binding EnterArduPilotBootloaderCommand}"
-                                                            Header="ArduPilot Bootloader"/>
-                                                        <MenuItem
-                                                            ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
-                                                            Command="{Binding RebootToDfuCommand}"
-                                                            Header="STM32 DFU"/>
-                                                        <MenuItem
-                                                            ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
-                                                            Header="Manual BOOT / RESET"
-                                                            Command="{Binding EnterManualDfuCommand}"
-                                                            IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}"/>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <avalonia:MaterialIcon Kind="Chip" Width="30" Height="30" Classes="ActionIcon"/>
+                                                            <MenuItem
+                                                                ToolTip.Tip="Enter ArduPilot Bootloader. Enter and identify the ArduPilot serial bootloader"
+                                                                Command="{Binding EnterArduPilotBootloaderCommand}"
+                                                                Header="ArduPilot Bootloader"/>
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" Classes="ActionIcon"/>
+                                                            <MenuItem
+                                                                ToolTip.Tip="Enter STM32 DFU. Verify Betaflight identity and armed state, then reboot into ROM DFU"
+                                                                Command="{Binding RebootToDfuCommand}"
+                                                                Header="STM32 DFU"/>
+                                                        </StackPanel>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" Classes="ActionIcon"/>
+
+                                                            <MenuItem
+                                                                ToolTip.Tip="Manual BOOT / RESET. Follow board instructions and wait for STM32 ROM DFU"
+                                                                Header="Manual BOOT / RESET"
+                                                                Command="{Binding EnterManualDfuCommand}"
+                                                                IsEnabled="{Binding CurrentPlan.Capabilities.CanRefreshPhysicalDevices}"/>
+                                                        </StackPanel>
+
                                                     </MenuFlyout>
                                                 </DropDownButton.Flyout>
                                                 <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" Classes="ActionIcon"/>

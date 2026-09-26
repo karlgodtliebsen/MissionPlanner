@@ -29,14 +29,23 @@
                     <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file" >
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
-                                <MenuItem
-                                    ToolTip.Tip="Load from CSV file"
-                                    Command="{Binding LoadFromFileCommand}"
-                                    Header="Load from CSV file" />
-                                <MenuItem ToolTip.Tip="Load from json file"
-                                          Command="{Binding LoadFromJsonFileCommand}"
-                                          Header="Load from json file"
-                                          />
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
+
+                                    <MenuItem
+                                        ToolTip.Tip="Load from CSV file"
+                                        Command="{Binding LoadFromFileCommand}"
+                                        Header="Load from CSV file" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
+                                    <MenuItem ToolTip.Tip="Load from json file"
+                                              Command="{Binding LoadFromJsonFileCommand}"
+                                              Header="Load from json file"
+                                              />
+                                </StackPanel>
+
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                         <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
@@ -45,45 +54,67 @@
                     <u:IconDropDownButton ToolTip.Tip="Save to CSV or Json file">
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
-                                <MenuItem
-                                    ToolTip.Tip="Save to CSV file"
-                                    Command="{Binding SaveToFileCommand}"
-                                    Header="Save to CSV file" />
-                                <MenuItem ToolTip.Tip="Save to json file"
-                                          Command="{Binding SaveToJsonFileCommand}"
-                                          Header="Save to json file" />
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                                    <MenuItem
+                                        ToolTip.Tip="Save to CSV file"
+                                        Command="{Binding SaveToFileCommand}"
+                                        Header="Save to CSV file" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+
+                                    <MenuItem ToolTip.Tip="Save to json file"
+                                              Command="{Binding SaveToJsonFileCommand}"
+                                              Header="Save to json file" />
+                                </StackPanel>
+
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                         <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                     </u:IconDropDownButton>
-                    
-                    <u:IconDropDownButton ToolTip.Tip="Save to CSV or Json file">
+
+                    <u:IconDropDownButton ToolTip.Tip="Handle parameters">
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
-                                <MenuItem
-                                    ToolTip.Tip="Apply modified Parameters"
-                                    Command="{Binding WriteParametersCommand}"
-                                    Header="Apply modified Parameters" />
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
+                                    <MenuItem
+                                        ToolTip.Tip="Apply modified Parameters"
+                                        Command="{Binding WriteParametersCommand}"
+                                        Header="Apply modified Parameters"  >
+                                    </MenuItem>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="CompareHorizontal" Width="30" Height="30" />
+                                    <MenuItem ToolTip.Tip="Compare parameters"
+                                              Command="{Binding CompareParametersCommand}"
+                                              Header="Compare parameters"  >
+                                    </MenuItem>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                                    <MenuItem ToolTip.Tip="Reload parameters"
+                                              Command="{Binding RefreshParametersCommand}"
+                                              Header="Reload parameters"  >
+                                    </MenuItem>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
+                                    <MenuItem ToolTip.Tip="Clear parameters"
+                                              Command="{Binding ClearParametersCommand}"
+                                              Header="Clear parameters" >
+                                    </MenuItem>
+                                </StackPanel>
 
-                                  <MenuItem ToolTip.Tip="Compare parameters"
-                                          Command="{Binding CompareParametersCommand}"
-                                          Header="Compare parameters" />
-                              
-                                <MenuItem ToolTip.Tip="Reload parameters"
-                                          Command="{Binding RefreshParametersCommand}"
-                                          Header="Reload parameters" />
-
-                                <MenuItem ToolTip.Tip="Clear parameters"
-                                          Command="{Binding ClearParametersCommand}"
-                                          Header="Clear parameters" />
-
-<!--  TODO: Add back in when parameter profiles are implemented
+                                <!--
+                                TODO: Add back in when parameter profiles are implemented
                                 <MenuItem ToolTip.Tip="Parameter profiles"
-                                          Command="{Binding LoadPreSavedCommand}"
-                                          Header="Parameter profiles" />-->
+                                Command="{Binding LoadPreSavedCommand}"
+                                Header="Parameter profiles" />-->
                             </MenuFlyout>
                         </DropDownButton.Flyout>
-                        <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                        <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
                     </u:IconDropDownButton>
 
                     <Button Classes="ToolbarButton"

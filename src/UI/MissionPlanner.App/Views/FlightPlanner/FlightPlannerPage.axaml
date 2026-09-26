@@ -15,25 +15,32 @@
     x:DataType="flightPlanner:FlightPlannerViewModel">
     <ContentPage Header="Flight Planner">
         <Grid ColumnDefinitions="*,Auto,Auto"  >
-            <Grid Grid.Column="0" RowDefinitions="Auto,*" ColumnDefinitions="*,Auto"  
+            <Grid Grid.Column="0" RowDefinitions="Auto,*" ColumnDefinitions="*,Auto"
                   RowSpacing="4" Margin="5">
 
                 <WrapPanel Grid.Row="0" Grid.Column="0" Margin="10,5,0,5" HorizontalAlignment="Center" ItemSpacing="5">
                     <u:IconDropDownButton ToolTip.Tip="Load/Write File">
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
-                                <MenuItem
-                                    ToolTip.Tip="Load File"
-                                    Command="{Binding Map.LoadWpFileCommand}"
-                                    Header="Load File" />
-                                <MenuItem ToolTip.Tip="Save File"
-                                          Command="{Binding Map.SaveWpFileCommand}"
-                                          Header="Save File"
-                                />
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
+                                    <MenuItem
+                                        ToolTip.Tip="Load File"
+                                        Command="{Binding Map.LoadWpFileCommand}"
+                                        Header="Load File" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                                    <MenuItem ToolTip.Tip="Save File"
+                                              Command="{Binding Map.SaveWpFileCommand}"
+                                              Header="Save File"
+                                    />
+                                </StackPanel>
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                         <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
                     </u:IconDropDownButton>
+
                     <Button Classes="ToolbarButton"
                             ToolTip.Tip="Clear the local mission"
                             Padding="8,2"

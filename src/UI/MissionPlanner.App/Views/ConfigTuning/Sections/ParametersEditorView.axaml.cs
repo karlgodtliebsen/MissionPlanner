@@ -9,5 +9,12 @@ public partial class ParametersEditorView : UserControl
     public ParametersEditorView()
     {
         InitializeComponent();
+        Loaded += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (IsLoaded)
+            {
+                ParameterTextEditor.Focus();
+            }
+        }, Avalonia.Threading.DispatcherPriority.Input);
     }
 }

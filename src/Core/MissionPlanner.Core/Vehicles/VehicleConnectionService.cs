@@ -11,6 +11,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport.Abstractions;
+using MissionPlanner.Firmware.Devices;
 
 namespace MissionPlanner.Core.Vehicles;
 
@@ -28,7 +29,8 @@ public partial class VehicleConnectionService(
     IVehicleParameterLoadStatusContext parameterLoadStatus,
     ILogger<VehicleConnectionService> logger,
     MissionPlanner.Core.Firmware.VehicleFirmwareUpdateService? firmwareUpdates = null,
-    IVehicleConnectionMonitor? connectionMonitor = null)
+    IVehicleConnectionMonitor? connectionMonitor = null,
+    IFirmwareSerialDeviceCatalog? serialDevices = null)
     : IVehicleConnectionService
 {
     // Single active connection (only one vehicle connection supported at a time)
@@ -64,6 +66,18 @@ public partial class VehicleConnectionService(
         await connectionLock.WaitAsync(cancellationToken);
         try
         {
+            if (serialDevices is not null)
+            {
+                var devices = await serialDevices.GetDevicesAsync(cancellationToken);
+                var device = devices.FirstOrDefault(candidate => string.Equals(candidate.PortName, portName, StringComparison.OrdinalIgnoreCase));
+                var blockReason = device is null ? "The selected serial device is no longer available. Refresh the connection list."
+                    : VehicleSerialConnectionPolicy.GetBlockReason(device);
+                if (blockReason is not null)
+                {
+                    return new VehicleConnectionResult(false, null, null, blockReason);
+                }
+            }
+
             // Disconnect existing connection if any
             if (activeConnection != null)
             {
@@ -88,7 +102,17 @@ public partial class VehicleConnectionService(
             {
                 await connectionSession.DisconnectAsync(vehicleId, CancellationToken.None);
                 await PublishConnectionFailed("SERIAL", $"{portName} {baudRate}", "No heartbeat received from vehicle");
-                return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
+                return new VehicleConnectionResult(false, null, null,
+                    "No ArduPilot heartbeat received. Check the baud rate and that the controller is running ArduPilot, not bootloader or other firmware.");
+            }
+
+            var vehicle = vehicleRegistry.Vehicles.FirstOrDefault(candidate => candidate.Id == vehicleId.Value);
+            if (vehicle?.State.Autopilot != (byte)MissionPlanner.MavLink.Generated.MavAutopilot.ArduPilotMega)
+            {
+                const string reason = "The detected autopilot is not ArduPilot. Connection refused.";
+                await connectionSession.DisconnectAsync(vehicleId, CancellationToken.None);
+                await PublishConnectionFailed("Serial", portName, reason);
+                return new VehicleConnectionResult(false, null, null, reason);
             }
 
             await RequestFirmwareIdentityAsync(vehicleId.Value, linkedCts.Token);

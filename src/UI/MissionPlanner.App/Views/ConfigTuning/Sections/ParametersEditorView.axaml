@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -9,6 +9,8 @@
              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+             xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+             xmlns:documents="clr-namespace:MissionPlanner.App.Presentation.Documents"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditorView"
              x:DataType="sections:ParametersEditorViewModel"
              >
@@ -23,48 +25,63 @@
                    Classes="H2" Text="Edit Parameters and Values"
                    HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" 
-                    HorizontalAlignment="Center" >
-            <Button Classes="ToolbarButton" 
-                    ToolTip.Tip="Clear" 
+        <WrapPanel Grid.Row="1" Orientation="Horizontal" ItemSpacing="10"
+                   HorizontalAlignment="Center" >
+            <Button Classes="ToolbarButton"
+                    ToolTip.Tip="Clear"
+                    IsEnabled="{Binding !ApplyModifiedCommand.IsRunning}"
                     Command="{Binding ClearCommand}">
                 <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon" />
             </Button>
-        </StackPanel>
+            <Button Classes="ToolbarButton"
+                    ToolTip.Tip="Apply modified"
+                    VerticalAlignment="Center"  Width="100"
+                    Command="{Binding ApplyModifiedCommand}"  >
+                <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
+            </Button>
 
-        <Border Grid.Row="2" HorizontalAlignment="Stretch"
+        </WrapPanel>
+
+        <Border Grid.Row="2" HorizontalAlignment="Center"
                 VerticalAlignment="Stretch"
                 Classes="SectionCard">
-            
-            <Grid RowDefinitions="Auto,*" >
-                <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch" Spacing="5">
 
-                    <TextBlock  Classes="H6"
-                                Text="Accepted Formats: name[separator]value"
-                                ToolTip.Tip="Accepted Formats: name,value or name,value //comment or name=value or name=value //comment or name:value or name:value //comment"
-                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    <TextBlock  Classes="H6" Text="Separator: = , : ;"
-                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
-                    <TextBlock  Classes="H6" Text="Line Separator: &lt;CR&gt;&lt;LF&gt; or &lt;LF&gt;"
-                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </StackPanel>
-                
-                <Viewbox Grid.Row="1" Stretch="Uniform"  
-                         StretchDirection="Both" 
-                         HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    <TextBox AcceptsReturn="True"
-                             FontSize="11"
-                             Height="400"
-                             Width="600"
-                             VerticalContentAlignment="Top"
-                             Text="{Binding Text}"
-                             HorizontalAlignment="Stretch"
-                             VerticalAlignment="Stretch"
-                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto" /> 
-                </Viewbox>
+            <Grid RowDefinitions="200,400" RowSpacing="25" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+                </Grid.ColumnDefinitions>
+                <ScrollViewer MaxHeight="260" HorizontalScrollBarVisibility="Disabled"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                    <controls:InformationDocumentView
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        >
+                        <controls:InformationDocumentView.Document>
+                            <MultiBinding Converter="{x:Static documents:ParameterEditorDocumentConverter.Instance}">
+                                <Binding Path="StatusMessage" />
+                                <Binding Path="WriteProgress" />
+                                <Binding Path="ErrorMessage" />
+                                <Binding Path="FeedbackReport" />
+                            </MultiBinding>
+                        </controls:InformationDocumentView.Document>
+                    </controls:InformationDocumentView>
+                </ScrollViewer>
+                <Border Grid.Row="1" CornerRadius="10">
+                    <TextBox 
+                              x:Name="ParameterTextEditor"
+                              AcceptsReturn="True"
+                              Focusable="True"
+                              Padding="10"
+                              IsReadOnly="{Binding ApplyModifiedCommand.IsRunning}"
+                              FontSize="11"
+                              MaxHeight="400"
+                              VerticalContentAlignment="Top"
+                              Text="{Binding Text}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
+                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                </Border>
             </Grid>
         </Border>
     </Grid>

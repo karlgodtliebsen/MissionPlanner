@@ -24,6 +24,57 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 [Collection("Design preview")]
 public sealed class ParameterProgressDialogTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task QuickEditorAppliesOnlyEnteredParametersAfterConfirmation(bool accepted)
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        fixture.ConfigureWrite(false);
+        fixture.Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(accepted);
+        fixture.Session.TrySetPending("TEST_PARAM", 2, out Arg.Any<string?>()).Returns(true);
+        var editor = new ParametersEditorViewModel(fixture.Dialogs) { Text = "//Pavo 20 Pro\nTEST_PARAM = 2 // test\nUNKNOWN = 3\nTEST_PARAM = invalid" };
+        fixture.DomainFactory.Create<ParametersEditorViewModel>().Returns(editor);
+        fixture.Dialogs.ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(editor,
+            Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<CancellationToken>())
+            .Returns(async _ =>
+            {
+                Assert.True(editor.ApplyModifiedCommand.CanExecute(null));
+                await editor.ApplyModifiedCommand.ExecuteAsync(null);
+                return (ParametersEditorViewModel?)null;
+            });
+
+        await fixture.Model.UseQuickEditorCommand.ExecuteAsync(null);
+
+        fixture.Session.Received(1).TrySetPending("TEST_PARAM", 2, out Arg.Any<string?>());
+        fixture.Session.Received(1).CreateWritePlan(Arg.Is<IReadOnlyList<string>>(names => names != null && names.Count == 1 && names[0] == "TEST_PARAM"));
+        Assert.Equal(accepted ? 1 : 0, fixture.Session.ReceivedCalls().Count(call => call.GetMethodInfo().Name == "ApplyAsync"));
+        Assert.Contains(accepted ? "Confirmed" : "cancelled", editor.StatusMessage);
+        Assert.Contains("unknown parameter: UNKNOWN", editor.FeedbackReport);
+        Assert.Contains("invalid numeric value", editor.FeedbackReport);
+        Assert.Contains("skipped 2 input line(s)", editor.FeedbackReport);
+    }
+
+    [Theory]
+    [InlineData("TEST_PARAM = invalid")]
+    [InlineData("TEST_PARAM = NaN")]
+    [InlineData("TEST_PARAM = 2\nUNKNOWN = 3")]
+    [InlineData("TEST_PARAM = 2 = 3")]
+    public void QuickEditorReportsInvalidInputWithoutChangingSource(string text)
+    {
+        using var fixture = new Fixture();
+        var editor = new ParametersEditorViewModel(fixture.Dialogs) { Text = text };
+        var original = new VehicleParameter("TEST_PARAM", 1, MavParamType.Real32, 0, 1);
+        var source = new List<VehicleParameter> { original };
+        var parsed = editor.UpdateParameters(source);
+        Assert.Equal(text.Contains("UNKNOWN") ? 1 : 0, parsed.Count);
+        Assert.Contains("skipped 1 input line(s)", editor.FeedbackReport);
+        Assert.Same(original, Assert.Single(source));
+        Assert.Empty(fixture.Session.ReceivedCalls());
+    }
+
     /// <summary>Background progress updates one dialog and terminal states close it.</summary>
     [Theory]
     [InlineData(ParameterLoadState.Completed)]
@@ -227,6 +278,8 @@ public sealed class ParameterProgressDialogTests
 
         internal readonly VehicleId VehicleId = new(1, 1);
         internal readonly IVehicleConnectionService Connections = Substitute.For<IVehicleConnectionService>();
+        internal readonly IDialogService Dialogs = Substitute.For<IDialogService>();
+        internal readonly IDomainFactory DomainFactory = Substitute.For<IDomainFactory>();
         internal readonly IUserConfirmationService Confirmation = Substitute.For<IUserConfirmationService>();
         internal readonly IParameterEditSession Session = Substitute.For<IParameterEditSession>();
         internal readonly IVehicleParameterStreamService Stream = Substitute.For<IVehicleParameterStreamService>();
@@ -249,7 +302,7 @@ public sealed class ParameterProgressDialogTests
                     statusHandler = call.Arg<Func<VehicleParameterLoadStatusChanged, CancellationToken, Task>>()!;
                     return Substitute.For<IDisposable>();
                 });
-            services = new ServiceCollection().AddSingleton<IUiDispatcher>(dispatcher)
+            services = new ServiceCollection().AddLogging().AddSingleton<IUiDispatcher>(dispatcher)
                 .AddSingleton(events).BuildServiceProvider();
             // Use the same isolated locator scope as the parameter-threading tests.
             locatorScope = (IDisposable)typeof(AvaloniaLocator)
@@ -274,7 +327,9 @@ public sealed class ParameterProgressDialogTests
             {
                 new ParameterEditField("TEST_PARAM", MavParamType.Real32, 1, 1, 1, ParameterFieldMetadata.Empty, null)
             });
-            var dialogs = Substitute.For<IDialogService>();
+            var dialogs = Dialogs;
+            dialogs.CreateOptions(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>())
+                .Returns(_ => new Ursa.Controls.OverlayDialogOptions());
             dialogs.DisplayProgressCancellableAsync(Arg.Any<Func<string>>(), Arg.Any<DialogOptions>(), Arg.Any<CancellationToken>())
                 .Returns(call =>
                 {
@@ -287,7 +342,7 @@ public sealed class ParameterProgressDialogTests
             Model = new
                 FullParametersListTabViewModel(
                     dialogs,
-                    Substitute.For<IDomainFactory>(),
+                    DomainFactory,
                     events,
                     connection,
                     active,
@@ -307,7 +362,7 @@ public sealed class ParameterProgressDialogTests
         internal void ConfigureWrite(bool rebootRequired)
         {
             Session.IsDirty.Returns(true);
-            Session.CreateWritePlan().Returns(new ParameterWritePlan(
+            Session.CreateWritePlan(Arg.Any<IReadOnlyList<string>?>()).Returns(new ParameterWritePlan(
                 new ParameterEditScope(VehicleId, null!), DateTimeOffset.UtcNow,
                 [new ParameterWritePlanEntry("TEST_PARAM", "Test", 1, 2, null, 1, rebootRequired, false, null)]));
             Session.ApplyAsync(Arg.Any<ParameterWritePlan>(), Arg.Any<IProgress<ParameterApplyProgress>>(), Arg.Any<CancellationToken>())
