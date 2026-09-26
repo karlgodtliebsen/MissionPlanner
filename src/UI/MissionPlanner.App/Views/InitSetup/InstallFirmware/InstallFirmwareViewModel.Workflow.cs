@@ -408,6 +408,7 @@ public sealed partial class InstallFirmwareViewModel
         OnPropertyChanged(nameof(HasLocalArtifact));
         CopySelectedUrlCommand.NotifyCanExecuteChanged();
         CurrentPlan = FirmwareInstallationPlanResolver.Resolve(context);
+        OnPropertyChanged(nameof(ShowSerialUpgradeSection));
         HasPhysicalController = serial is not null || dfu is not null;
         ShowPhysicalController = HasPhysicalController || DevicesModel.DetectedDevices.Count > 0 || DfuModel.DfuDevices.Count > 0;
         IsFirmwareSelected = OnlineFirmwareModel.SelectedFirmware is not null

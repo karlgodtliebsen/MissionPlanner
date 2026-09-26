@@ -16,6 +16,10 @@ public sealed partial class InstallFirmwareViewModel
 
     private bool UsesCombinedDfuRecovery => DfuModel.HasLocalDfuFirmware || DfuModel.SelectedDfuDevice is not null;
 
+    /// <summary>Gets whether serial upgrade identity and embedded bootloader controls apply.</summary>
+    public bool ShowSerialUpgradeSection => !UsesCombinedDfuRecovery
+        && CurrentPlan.RequiredArtifactFormat != MissionPlanner.Firmware.Workflow.FirmwareArtifactFormat.WithBootloaderHex;
+
     private void RefreshEmbeddedBootloaderAvailability()
     {
         var decision = FirmwareIdentityCompatibility.EvaluateEmbeddedBootloaderUpdate(bootloaderUpdateIdentity, UsesCombinedDfuRecovery);

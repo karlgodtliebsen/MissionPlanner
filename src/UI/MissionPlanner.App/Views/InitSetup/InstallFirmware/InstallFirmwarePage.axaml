@@ -92,7 +92,7 @@
                         </Border>
                         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" HorizontalAlignment="Stretch">
                             <StackPanel Spacing="12" HorizontalAlignment="Stretch">
-                                <Border Classes="SectionCard" Padding="16">
+                                <Border Classes="SectionCard" Padding="16" IsVisible="{Binding ShowSerialUpgradeSection}">
                                     <StackPanel Spacing="8">
                                         <controls:InformationDocumentView>
                                             <controls:InformationDocumentView.Document>
@@ -234,15 +234,6 @@
                                                 </DropDownButton.Flyout>
                                                 <avalonia:MaterialIcon Kind="Bootstrap" Width="30" Height="30" Classes="ActionIcon"/>
                                             </u:IconDropDownButton>
-                                            <Button
-                                                Classes="EmbeddedIconButton"
-                                                ToolTip.Tip="Review DFU target"
-                                                Command="{Binding ReviewDfuTargetCommand}"
-                                                IsVisible="{Binding HasDetectedDfuDevice}"
-                                                IsEnabled="{Binding !IsOperationInProgress}"
-                                                AutomationProperties.Name="Review DFU target">
-                                                <avalonia:MaterialIcon Kind="UsbPort" Width="30" Height="30" Classes="ActionIcon"/>
-                                            </Button>
                                         </WrapPanel>
                                     </StackPanel>
                                 </Border>
@@ -487,6 +478,12 @@
                                                 Text="{Binding DfuConfirmationText}"
                                                 PlaceholderText="{Binding DfuConfirmationPlaceholder}"
                                                 TextWrapping="Wrap"/>
+                                            <Button
+                                                HorizontalAlignment="Center"
+                                                IsVisible="{Binding ShowDfuConfirmation}"
+                                                Command="{Binding ReviewDfuTargetCommand}"
+                                                Content="Confirm DFU target"
+                                                AutomationProperties.Name="Confirm DFU target"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </Border>

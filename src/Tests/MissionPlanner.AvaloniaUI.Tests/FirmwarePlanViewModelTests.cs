@@ -41,6 +41,7 @@ public sealed class FirmwarePlanViewModelTests
             page.LocalDfuPlatform = "Board";
         }
         Assert.True(page.RequiresDfuEntry);
+        Assert.False(page.ShowSerialUpgradeSection);
         Assert.Contains("BOOT", page.WorkflowNextStep);
         Assert.False(page.ShowOnlineValidation);
         Assert.False(page.HasCompatibilityFailure);
@@ -90,6 +91,7 @@ public sealed class FirmwarePlanViewModelTests
             BootloaderIdentity = new(50, 5, 1024)
         }, true, "Protocol identity");
         Assert.True(page.InstallCommand.CanExecute(null));
+        Assert.True(page.ShowSerialUpgradeSection);
         services.GetRequiredService<IFirmwareInstallationService>()
             .InstallAsync(Arg.Any<FirmwareInstallationRequest>(), Arg.Any<IProgress<FirmwareProgress>>(), Arg.Any<CancellationToken>())
             .Returns(new FirmwareOperationResult(Guid.NewGuid(), FirmwareOperationKind.InstallApplicationFirmware,
@@ -394,6 +396,7 @@ public sealed class FirmwarePlanViewModelTests
         await page.DfuModel.RefreshAsync(TestContext.Current.CancellationToken);
         page.DfuModel.SelectedDfuDevice = new(new("usb", 0x0483, 0xdf11, DfuDriverState.PresentReady));
         Assert.Contains("Select online firmware or a local firmware file", page.WorkflowNextStep);
+        Assert.False(page.ShowSerialUpgradeSection);
         PrepareOnline(page);
         page.DfuModel.LocalDfuFirmwarePath = "Board_with_bl.hex";
         page.DfuModel.LocalDfuPlatform = "an arbitrary sentence";

@@ -25,7 +25,7 @@
                         Margin="0,10,0,0"
                         HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
                 <WrapPanel Orientation="Horizontal"
-                            HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" >
+                           HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" >
                     <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file" >
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
@@ -42,7 +42,7 @@
                         <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
                     </u:IconDropDownButton>
 
-                    <u:IconDropDownButton  ToolTip.Tip="Save to CSV or Json file">
+                    <u:IconDropDownButton ToolTip.Tip="Save to CSV or Json file">
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
                                 <MenuItem
@@ -56,39 +56,77 @@
                         </DropDownButton.Flyout>
                         <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                     </u:IconDropDownButton>
+                    
+                    <u:IconDropDownButton ToolTip.Tip="Save to CSV or Json file">
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <MenuItem
+                                    ToolTip.Tip="Apply modified Parameters"
+                                    Command="{Binding WriteParametersCommand}"
+                                    Header="Apply modified Parameters" />
+
+                                  <MenuItem ToolTip.Tip="Compare parameters"
+                                          Command="{Binding CompareParametersCommand}"
+                                          Header="Compare parameters" />
+                              
+                                <MenuItem ToolTip.Tip="Reload parameters"
+                                          Command="{Binding RefreshParametersCommand}"
+                                          Header="Reload parameters" />
+
+                                <MenuItem ToolTip.Tip="Clear parameters"
+                                          Command="{Binding ClearParametersCommand}"
+                                          Header="Clear parameters" />
+
+<!--  TODO: Add back in when parameter profiles are implemented
+                                <MenuItem ToolTip.Tip="Parameter profiles"
+                                          Command="{Binding LoadPreSavedCommand}"
+                                          Header="Parameter profiles" />-->
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                        <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                    </u:IconDropDownButton>
 
                     <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Apply modified Parameters"
+                            ToolTip.Tip="Quick Editor"
                             VerticalAlignment="Center"
-                            Width="80" Command="{Binding WriteParametersCommand}"  >
-                        <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
+                            Width="80" Command="{Binding UseQuickEditorCommand}"  >
+                        <avalonia:MaterialIcon Kind="ApplicationEditOutline" Width="30" Height="30" />
+                    </Button>
+
+                    <!--
+                    <Button Classes="ToolbarButton"
+                    ToolTip.Tip="Apply modified Parameters"
+                    VerticalAlignment="Center"
+                    Width="80" Command="{Binding WriteParametersCommand}"  >
+                    <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
                     </Button>
 
                     <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Refresh parameters"
-                            VerticalAlignment="Center"
-                            Width="80" Command="{Binding RefreshParametersCommand}" >
-                        <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                    ToolTip.Tip="Refresh parameters"
+                    VerticalAlignment="Center"
+                    Width="80" Command="{Binding RefreshParametersCommand}" >
+                    <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
                     </Button>
                     <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Clear parameters"
-                            VerticalAlignment="Center"
-                            Width="80" Command="{Binding ClearParametersCommand}" >
-                        <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
+                    ToolTip.Tip="Clear parameters"
+                    VerticalAlignment="Center"
+                    Width="80" Command="{Binding ClearParametersCommand}" >
+                    <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
                     </Button>
                     <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Compare parameters"
-                            VerticalAlignment="Center"
-                            Width="80" Command="{Binding CompareParametersCommand}" >
-                        <avalonia:MaterialIcon Kind="CompareHorizontal" Width="30" Height="30" />
+                    ToolTip.Tip="Compare parameters"
+                    VerticalAlignment="Center"
+                    Width="80" Command="{Binding CompareParametersCommand}" >
+                    <avalonia:MaterialIcon Kind="CompareHorizontal" Width="30" Height="30" />
                     </Button>
 
                     <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Parameter profiles"
-                            VerticalAlignment="Center"
-                            Width="80" Command="{Binding LoadPreSavedCommand}" >
-                        <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
+                    ToolTip.Tip="Parameter profiles"
+                    VerticalAlignment="Center"
+                    Width="80" Command="{Binding LoadPreSavedCommand}" >
+                    <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
                     </Button>
+                    -->
 
                     <Button Classes="ToolbarButton"  ToolTip.Tip="Revert Changes"
                             VerticalAlignment="Center"
@@ -99,13 +137,6 @@
                         <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" Width="30" Height="30" />
                     </Button>
 
-                    <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Quick Editor"
-                            VerticalAlignment="Center"
-                            Width="80" Command="{Binding UseQuickEditorCommand}"  >
-                        <avalonia:MaterialIcon Kind="ApplicationEditOutline" Width="30" Height="30" />
-                    </Button>
-
 
                     <Button Classes="ToolbarButton"
                             ToolTip.Tip="Retry"
@@ -113,7 +144,6 @@
                             Width="80" Command="{Binding RetryFailedCommand}"   >
                         <avalonia:MaterialIcon Kind="ReloadAlert" Width="30" Height="30" />
                     </Button>
-
                     <Button Classes="ToolbarButton"
                             ToolTip.Tip="Cancel Parameters Load"
                             VerticalAlignment="Center"
