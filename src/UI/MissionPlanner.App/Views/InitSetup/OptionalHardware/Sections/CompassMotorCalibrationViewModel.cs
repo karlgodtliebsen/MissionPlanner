@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -29,7 +29,7 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     private readonly INavigationService navigation;

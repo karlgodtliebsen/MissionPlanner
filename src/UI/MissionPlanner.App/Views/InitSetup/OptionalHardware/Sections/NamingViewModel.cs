@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -40,7 +40,7 @@ public partial class NamingViewModel(
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     private const string systemIdName = "MAV_SYSID";

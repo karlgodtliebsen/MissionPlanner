@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -192,7 +192,7 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     [RelayCommand]

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -28,7 +28,7 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     private readonly INavigationService navigation;

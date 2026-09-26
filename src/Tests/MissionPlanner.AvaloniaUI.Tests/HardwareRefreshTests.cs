@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Headless;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -60,7 +60,7 @@ public sealed class HardwareRefreshTests
                 await hardware.Received(1).RefreshAsync(id, Arg.Any<CancellationToken>());
                 Assert.Equal("Refreshed", model.StatusMessage);
                 await model.OpenFullParametersCommand.ExecuteAsync(null);
-                await navigation.Received(1).NavigateAsync(MissionPlannerRoutes.Configuration);
+                await navigation.Received(1).NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
 
                 var late = new TaskCompletionSource<IReadOnlyList<OptionalHardwareModuleView>>();
                 CancellationToken requestToken = default;

@@ -1,4 +1,4 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -24,7 +24,7 @@ public sealed partial class HardwareIdViewModel : ViewModelBase
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     private readonly INavigationService navigation;

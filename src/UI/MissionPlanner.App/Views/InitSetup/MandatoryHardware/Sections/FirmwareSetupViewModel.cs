@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -34,7 +34,7 @@ public sealed partial class FirmwareSetupViewModel : ViewModelBase
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     private readonly INavigationService navigation;

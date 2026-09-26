@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -26,7 +26,7 @@ public sealed partial class DroneCanUavCanViewModel(IDroneCanService service, IL
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     [RelayCommand]

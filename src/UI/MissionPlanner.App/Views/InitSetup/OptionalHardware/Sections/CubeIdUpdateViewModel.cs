@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
@@ -29,7 +29,7 @@ public sealed partial class CubeIdUpdateViewModel(ILogger<CubeIdUpdateViewModel>
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     [ObservableProperty] public partial string FirmwarePath { get; set; } = string.Empty;

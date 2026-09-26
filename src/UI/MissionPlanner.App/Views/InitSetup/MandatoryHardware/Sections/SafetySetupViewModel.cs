@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities;
@@ -70,7 +70,7 @@ public sealed partial class SafetySetupViewModel : ViewModelBase
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     [RelayCommand]

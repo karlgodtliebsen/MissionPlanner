@@ -18,15 +18,15 @@
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
-            <TabControl TabStripPlacement="Left" Grid.Row="1" >
+            <TabControl x:Name="ConfigurationTabs" TabStripPlacement="Left" Grid.Row="1" >
           
-                <TabItem Header="GeoFence"><sections:GeoFenceTabView /></TabItem>
-                <TabItem Header="Basic Tuning"><sections:BasicTuningTabView /></TabItem>
-                <TabItem Header="Extended Tuning"><sections:ExtendedTuningTabView /></TabItem>
-                <TabItem Header="Onboard OSD"><sections:OnboardOSDTabView /></TabItem>
-                <TabItem Header="Mavlink Ftp"><sections:MAVFtpTabView /></TabItem>
-                <TabItem Header="Parameters Editor"><sections:FullParametersListTabView /></TabItem>
-                <TabItem Header="CubeLan 8 Port Switch "><sections:CubeLan8PortSwitchTabView /></TabItem>
+                <TabItem x:Name="GeoFence" Header="GeoFence"><sections:GeoFenceTabView /></TabItem>
+                <TabItem x:Name="BasicTuning" Header="Basic Tuning"><sections:BasicTuningTabView /></TabItem>
+                <TabItem x:Name="ExtendedTuning" Header="Extended Tuning"><sections:ExtendedTuningTabView /></TabItem>
+                <TabItem x:Name="OnboardOsd" Header="Onboard OSD"><sections:OnboardOSDTabView /></TabItem>
+                <TabItem x:Name="MavlinkFtp" Header="Mavlink Ftp"><sections:MAVFtpTabView /></TabItem>
+                <TabItem x:Name="ParametersEditor" Header="Parameters Editor"><sections:FullParametersListTabView /></TabItem>
+                <TabItem x:Name="CubeLanSwitch" Header="CubeLan 8 Port Switch "><sections:CubeLan8PortSwitchTabView /></TabItem>
 
             </TabControl>
         </Grid>

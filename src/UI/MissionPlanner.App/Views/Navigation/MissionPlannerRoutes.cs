@@ -16,6 +16,8 @@ public static class MissionPlannerRoutes
     public const string SetupArming = "SetupArming";
     public const string SetupAdvanced = "SetupAdvanced";
     public const string Configuration = "ConfigurationPage";
+    public const string ConfigurationParametersEditor = Configuration + "#ParametersEditor";
+    public const string ConfigurationOnboardOsd = Configuration + "#OnboardOsd";
     public const string Preferences = "Preferences";
     public const string Simulation = "Simulation";
     public const string Introduction = "IntroductionPage";

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
 using MissionPlanner.App.Views.Navigation;
@@ -32,7 +32,7 @@ public sealed partial class AntennaTrackerViewModel(IActiveVehicleContext vehicl
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     public string TargetStatus => vehicle.IsOnline ? "Tracker vehicle connected. Settings are shown only when reported by its parameter metadata." : "Connect an AntennaTracker vehicle.";

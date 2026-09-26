@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.Navigation;
 
@@ -22,13 +22,13 @@ public sealed partial class OnboardOsdBridgeViewModel(INavigationService navigat
         {
             return;
         }
-        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     /// <summary>Opens the existing OSD editor.</summary>
     [RelayCommand]
     private Task OpenOnboardOsdAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationOnboardOsd);
     }
 }

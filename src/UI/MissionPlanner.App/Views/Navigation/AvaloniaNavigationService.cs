@@ -26,20 +26,34 @@ public sealed class AvaloniaNavigationService : INavigationService
     }
 
     public event Action<Page>? CurrentPageChanged;
+    public string? CurrentRoute => currentRoute;
 
     public async Task NavigateAsync(string route)
     {
         await navigationGate.WaitAsync();
         try
         {
-            if (route == currentRoute && navigationStack.Count == 1)
+            var parts = route.Split('#', 2);
+            var pageRoute = parts[0];
+            var section = parts.Length == 2 ? parts[1] : null;
+            if (section is null && route == currentRoute && navigationStack.Count == 1)
             {
                 return;
             }
 
             await dispatcher.DispatchAsync(() =>
             {
-                var page = pageFactory.Create(route);
+                // Preserve local edits when switching sections on the current page.
+                var page = section is not null && navigationStack.Count == 1 &&
+                    currentRoute?.Split('#', 2)[0] == pageRoute
+                    ? navigationStack[0].Page
+                    : pageFactory.Create(pageRoute);
+                if (section is not null)
+                {
+                    if (page is not ISectionNavigationPage sectionPage)
+                        throw new InvalidOperationException($"Page '{pageRoute}' does not support section navigation.");
+                    sectionPage.SelectSection(section);
+                }
                 navigationStack.Clear();
                 navigationStack.Add(new NavigationEntry(route, page));
                 currentRoute = route;

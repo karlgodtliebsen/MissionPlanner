@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -29,7 +29,7 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         {
             return;
         }
-        await Navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await Navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     /// <summary>Gets the navigation service shared by optional parameter workflows.</summary>

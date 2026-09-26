@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -144,8 +144,8 @@ public partial class ConfigurationViewModel : ViewModelBase
 
             var route = parts[1] switch
             {
-                "Parameters Editor" => MissionPlannerRoutes.Configuration,
-                "Onboard OSD" => MissionPlannerRoutes.Configuration,
+                "Parameters Editor" => MissionPlannerRoutes.ConfigurationParametersEditor,
+                "Onboard OSD" => MissionPlannerRoutes.ConfigurationOnboardOsd,
                 _ => throw new InvalidOperationException($"Unknown Config destination '{parts[1]}'.")
             };
             await navigation.NavigateAsync(route);

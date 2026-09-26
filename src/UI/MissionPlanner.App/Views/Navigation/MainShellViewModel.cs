@@ -18,6 +18,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
     private readonly INavigationService navigationService;
     private readonly IWindowProvider windowProvider;
     private IDisposable? eventHubDisposable;
+    private bool synchronizingSelection;
 
 
     /// <summary>
@@ -32,11 +33,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
         Inspector = inspector;
         this.navigationService = navigationService;
         this.windowProvider = windowProvider;
-        navigationService.CurrentPageChanged += page =>
-        {
-            Content = page;
-            Inspector.SuggestContext(page.GetType().Name);
-        };
+        navigationService.CurrentPageChanged += OnCurrentPageChanged;
         MenuItems = CreateMenuItems();
         SelectedMenuItem = MenuItems[0];
 
@@ -47,6 +44,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        navigationService.CurrentPageChanged -= OnCurrentPageChanged;
         eventHubDisposable?.Dispose();
         eventHubDisposable = null;
     }
@@ -94,7 +92,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedMenuItemChanged(NavigationMenuItemViewModel? value)
     {
-        if (value?.Route is not null)
+        if (!synchronizingSelection && value?.Route is not null)
         {
             NavigateToSelectionAsync(value.Route);
         }
@@ -103,6 +101,35 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
     public Task InitializeAsync()
     {
         return navigationService.NavigateAsync(MissionPlannerRoutes.FlightData);
+    }
+
+    private void OnCurrentPageChanged(Page page)
+    {
+        synchronizingSelection = true;
+        try
+        {
+            var route = navigationService.CurrentRoute;
+            if (route == MissionPlannerRoutes.Introduction) route = MissionPlannerRoutes.Help;
+            SelectedMenuItem = FindMenuItem(MenuItems, route);
+            Content = page;
+            Inspector.SuggestContext(page.GetType().Name);
+        }
+        finally { synchronizingSelection = false; }
+    }
+
+    private static NavigationMenuItemViewModel? FindMenuItem(
+        IEnumerable<NavigationMenuItemViewModel> items, string? route)
+    {
+        if (route is null) return null;
+        foreach (var item in items)
+        {
+            var child = FindMenuItem(item.Children, route);
+            if (child is not null) return child;
+            if (item.Route is { } target && (route == target ||
+                route.StartsWith(target + "#", StringComparison.Ordinal) ||
+                route.StartsWith(target + "/", StringComparison.Ordinal))) return item;
+        }
+        return null;
     }
 
     private void ToggleTelemetry()

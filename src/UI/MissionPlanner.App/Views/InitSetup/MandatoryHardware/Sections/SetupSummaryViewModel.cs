@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -92,7 +92,7 @@ public sealed partial class SetupSummaryViewModel : ViewModelBase
     [RelayCommand]
     private Task OpenFullParametersAsync()
     {
-        return navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 
     [RelayCommand]

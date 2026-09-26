@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Vehicles.Models;
 
@@ -174,6 +174,6 @@ public sealed partial class ArmingViewModel
             return;
         }
         Discard();
-        await navigation.NavigateAsync(MissionPlannerRoutes.Configuration);
+        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
     }
 }
