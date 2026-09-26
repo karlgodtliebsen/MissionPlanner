@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 using MissionPlanner.App.Views.Introduction.Models;
@@ -7,14 +7,14 @@ using MissionPlanner.App.Views.Navigation;
 namespace MissionPlanner.App.Views.Introduction;
 
 /// <summary>Displays the bundled MissionPlanner quick guide.</summary>
-public partial class IntroductionPage : NavigationViewBase<IntroductionViewModel>
+public partial class TutorialView : UserControlViewBase<IntroductionViewModel>
 {
     private const double CompactWidth = 820;
     private readonly INavigationService navigationService = null!;
     private readonly IExternalLinkLauncher externalLinkLauncher = null!;
 
     /// <summary>Initializes the Introduction page.</summary>
-    public IntroductionPage()
+    public TutorialView()
     {
         InitializeComponent();
         if (Design.IsDesignMode)
@@ -66,3 +66,4 @@ public partial class IntroductionPage : NavigationViewBase<IntroductionViewModel
         }
     }
 }
+

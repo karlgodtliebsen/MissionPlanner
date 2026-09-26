@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -146,9 +146,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
             new("Logs", MissionPlannerRoutes.Logs),
             new("Preferences", MissionPlannerRoutes.Preferences),
             new("Simulation", MissionPlannerRoutes.Simulation, LoadImage("avares://MissionPlanner.App/Resources/Images/light_simulation_icon.png")),
-            new("Tutorial", MissionPlannerRoutes.Introduction),
             new("Help", MissionPlannerRoutes.Help, LoadImage("avares://MissionPlanner.App/Resources/Images/light_help_icon.png"))
         ];
     }
 }
-

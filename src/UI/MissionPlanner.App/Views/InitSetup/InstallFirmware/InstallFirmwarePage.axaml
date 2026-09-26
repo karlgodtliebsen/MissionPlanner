@@ -38,10 +38,10 @@
             <TabControl Grid.Row="1" TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                 <TabItem Header="Information">
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,0">
-                        <Button Content="Install Firmware help &amp; support"
+                        <Button Content="Help &amp; support"
                                 Classes="EmbeddedTextButton" HorizontalAlignment="Right"
                                 Margin="20,12" Click="OpenFirmwareHelp"
-                                ToolTip.Tip="Open the Install Firmware guide in Help"/>
+                                ToolTip.Tip="Open the 'Install Firmware' guide in Help"/>
 
                         <Grid RowDefinitions="*" Margin="20" RowSpacing="12" HorizontalAlignment="Center">
                             <Grid.ColumnDefinitions>
@@ -53,10 +53,10 @@
                 </TabItem>
                 <TabItem Header="Configuration">
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,0">
-                        <Button Content="Install Firmware help &amp; support"
+                        <Button Content="Help &amp; support"
                                 Classes="EmbeddedTextButton" HorizontalAlignment="Right"
                                 Margin="20,12" Click="OpenFirmwareHelp"
-                                ToolTip.Tip="Open the Install Firmware guide in Help"/>
+                                ToolTip.Tip="Open the 'Install Firmware' guide in Help"/>
 
                         <Grid RowDefinitions="Auto,*" Margin="20" RowSpacing="12" HorizontalAlignment="Center">
                             <Grid.ColumnDefinitions>

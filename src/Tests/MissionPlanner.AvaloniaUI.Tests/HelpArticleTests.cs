@@ -28,12 +28,15 @@ public sealed class HelpArticleTests
         var launcher = Substitute.For<IExternalLinkLauncher>();
         var devices = Substitute.For<IDeviceManagerLauncher>();
         devices.IsAvailable.Returns(true);
-        using var model = new FirmwareHelpViewModel(links, launcher, devices,
-            Substitute.For<IUiDispatcher>(), Substitute.For<IDomainEventHub>(), NullLogger<FirmwareHelpViewModel>.Instance);
-        var article = model.Article;
+        using var model = new MissionPlanner.App.Views.Help.HelpViewModel(links, launcher, devices,
+            Substitute.For<IUiDispatcher>(), Substitute.For<IDomainEventHub>(), NullLogger<MissionPlanner.App.Views.Help.HelpViewModel>.Instance);
+        Assert.Equal("Tutorial", model.SelectedTopic!.Title);
+        Assert.Equal("Tutorial", model.Topics[0].Title);
+        model.SelectInstallFirmware();
+        var article = model.SelectedTopic!.Article!;
         Assert.Equal("Install Firmware", article.Title);
         Assert.Equal(links.GetLinks().Count, article.Resources.Count);
-        var motors = Assert.Single(article.Resources.Where(resource => resource.Uri.Fragment == "#motor-order-diagrams"));
+        var motors = Assert.Single(article.Resources, resource => resource.Uri.Fragment == "#motor-order-diagrams");
         await article.OpenResourceCommand.ExecuteAsync(motors);
         await launcher.Received(1).OpenAsync(motors.Uri, Arg.Any<CancellationToken>());
         Assert.True(article.CanOpenDeviceManager);

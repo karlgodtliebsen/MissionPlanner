@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.FlightData;
@@ -61,7 +61,7 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
                 services.GetRequiredService<SimulationPage>(),
 
             MissionPlannerRoutes.Introduction =>
-                services.GetRequiredService<IntroductionPage>(),
+                services.GetRequiredService<HelpPage>(),
 
             MissionPlannerRoutes.Help =>
                 services.GetRequiredService<HelpPage>(),

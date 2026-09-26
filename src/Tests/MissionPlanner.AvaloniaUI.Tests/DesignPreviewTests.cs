@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
@@ -37,7 +37,7 @@ public sealed class DesignPreviewTests
             Assert.Null(page.DataContext);
             Assert.Null(new UserControlViewBase().DataContext);
             Assert.Null(new NavigationViewBase().DataContext);
-            Assert.Null(new ContentViewBase<FirmwareHelpViewModel>().DataContext);
+            Assert.Null(new ContentViewBase<InstallFirmwareViewModel>().DataContext);
             Assert.Null(new ContentViewBase().DataContext);
             Assert.Null(new TabbedPageViewBase().DataContext);
         }
@@ -47,7 +47,7 @@ public sealed class DesignPreviewTests
         }
     }
 
-    private sealed class PreviewControl : UserControlViewBase<FirmwareHelpViewModel>
+    private sealed class PreviewControl : UserControlViewBase<InstallFirmwareViewModel>
     {
         public void Cycle()
         {
@@ -65,7 +65,7 @@ public sealed class DesignPreviewTests
         }
     }
 
-    private sealed class PreviewTab : TabItemViewBase<FirmwareHelpViewModel>
+    private sealed class PreviewTab : TabItemViewBase<InstallFirmwareViewModel>
     {
         public void Cycle()
         {
@@ -74,7 +74,7 @@ public sealed class DesignPreviewTests
         }
     }
 
-    private sealed class PreviewTabbedPage : TabbedPageViewBase<FirmwareHelpViewModel>
+    private sealed class PreviewTabbedPage : TabbedPageViewBase<InstallFirmwareViewModel>
     {
         public void Cycle()
         {

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -19,7 +19,6 @@ using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Preparation;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
-using FirmwareHelpViewModel = MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models.FirmwareHelpViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
@@ -79,12 +78,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         get;
     }
 
-    /// <summary>Gets the help panel.</summary>
-    public FirmwareHelpViewModel HelpModel
-    {
-        get;
-    }
-
     /// <summary>
     /// Gets the shared validated panel.
     /// </summary>
@@ -133,7 +126,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     /// <param name="dfuHandoff">Reboots and correlates the selected physical controller.</param>
     /// <param name="localFirmwareModel">Owns custom application packages.</param>
     /// <param name="dfu">Owns DFU devices and local HEX selection.</param>
-    /// <param name="help">Owns firmware help and support links.</param>
     /// <param name="dispatcher">Marshals observable state to the UI thread.</param>
     /// <param name="eventHub">Provides base ViewModel event services.</param>
     /// <param name="connectionGateway">Reports selected serial resource ownership.</param>
@@ -165,7 +157,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         FirmwareLandingViewModel landing,
         CustomFirmwareViewModel localFirmwareModel,
         STM32BootloaderViewModel dfu,
-        FirmwareHelpViewModel help,
 
         Firmware.Betaflight.IBetaflightArduPilotCompatibilityProvider betaflightCompatibility,
         Firmware.Betaflight.IFirmwareDeviceIdentityService deviceIdentity,
@@ -215,7 +206,6 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         OnlineFirmwareModel = onlineFirmwareModel;
         LocalFirmwareModel = localFirmwareModel;
         DfuModel = dfu;
-        HelpModel = help;
     }
 
 

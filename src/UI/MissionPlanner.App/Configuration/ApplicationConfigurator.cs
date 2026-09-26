@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -227,7 +227,6 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<SelectedFirmwareViewModel>();
         services.TryAddSingleton<ValidatedPackageViewModel>();
         services.TryAddSingleton<DiagnosticsReportViewModel>();
-        services.TryAddSingleton<FirmwareHelpViewModel>();
         services.TryAddSingleton<FirmwareLandingViewModel>();
 
         services.TryAddTransient<FlightDataMissionMapViewModel>();
@@ -242,7 +241,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<SimulationPage>();
         services.TryAddTransient<SimulationViewModel>();
 
-        services.TryAddTransient<IntroductionPage>();
         services.TryAddTransient<HelpPage>();
 
         services.TryAddTransient<ErrorViewModel>();
