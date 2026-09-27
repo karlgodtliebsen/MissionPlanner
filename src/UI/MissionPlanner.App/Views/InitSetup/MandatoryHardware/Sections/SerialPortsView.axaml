@@ -109,6 +109,7 @@
                                     <DataTemplate x:DataType="sections:SerialPortRowViewModel">
                                        
                                         <u:UrsaGroupBox  BorderBrush="{DynamicResource SemiColorSecondary}"
+                                                         Background="{DynamicResource SemiColorSecondaryLight}"
                                                          BorderThickness="2"
                                                          CornerRadius="12" HeaderSpacing="12"
                                         >
@@ -119,7 +120,6 @@
                                                     Foreground="{DynamicResource SemiColorSecondary}"
                                                     Text="{Binding DisplayName}" />
                                             </u:UrsaGroupBox.Header>
-                                            
                                             
                                             <StackPanel Spacing="8"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
                                                 <WrapPanel ItemSpacing="15"  >

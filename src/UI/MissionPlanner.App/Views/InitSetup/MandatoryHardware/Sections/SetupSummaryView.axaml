@@ -55,6 +55,7 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models1:SetupSummarySectionViewModel">
                                 <u:UrsaGroupBox HeaderSpacing="12" 
+                                                Background="{DynamicResource SemiColorSecondaryLight}"
                                                 BorderBrush="{DynamicResource SemiColorSecondary}"
                                                 BorderThickness="2"
                                                 CornerRadius="12">

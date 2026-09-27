@@ -85,6 +85,7 @@
 
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
+                                        Background="{DynamicResource SemiColorSecondaryLight}"
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">
@@ -149,6 +150,7 @@
                                     <TextBlock  Text="{Binding SpinMessage}"  Classes="Warning H4" />
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
+                                        Background="{DynamicResource SemiColorSecondaryLight}"
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">
@@ -215,6 +217,7 @@
 
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
+                                        Background="{DynamicResource SemiColorSecondaryLight}"
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">
@@ -252,6 +255,7 @@
 
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
+                                        Background="{DynamicResource SemiColorSecondaryLight}"
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">
