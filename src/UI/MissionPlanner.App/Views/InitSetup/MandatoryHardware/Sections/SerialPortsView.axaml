@@ -111,6 +111,7 @@
 
                                                          BorderThickness="2"
                                                          CornerRadius="12" HeaderSpacing="12"
+                                                         Margin="0,10"
                                                          >
 
                                             <u:UrsaGroupBox.Header >

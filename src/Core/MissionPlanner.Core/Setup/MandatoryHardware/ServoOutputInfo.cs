@@ -25,6 +25,12 @@ public sealed record ServoOutputInfo(
     int AllowedMinimumPwm,
     int AllowedMaximumPwm)
 {
+    /// <summary>Gets the parameter suffixes reported for this output; null denotes a complete legacy projection.</summary>
+    public IReadOnlySet<string>? AvailableFields { get; init; }
+
+    /// <summary>Gets output-specific function metadata when available.</summary>
+    public IReadOnlyList<ServoFunctionOption>? FunctionOptions { get; init; }
+
     /// <summary>Gets the one-based physical output number for compatibility with existing consumers.</summary>
     public int Output => ChannelNumber;
 }

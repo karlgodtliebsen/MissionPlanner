@@ -32,7 +32,7 @@ public sealed class HwIdService : IHwIdService
         var items = parameterRegistry.GetAllParameters(vehicleId)
             .Where(pair => IsHardwareIdentifier(pair.Key))
             .OrderBy(pair => pair.Key, StringComparer.Ordinal)
-            .Select(pair => new HwIdItem(pair.Key, pair.Value.Value, FormatIdentifier(pair.Value.Value)))
+            .Select(pair => HardwareIdDecoder.Decode(pair.Key, pair.Value.Value))
             .ToArray();
         var board = firmware.BoardVersion == 0
             ? "Board identification unavailable"

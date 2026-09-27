@@ -34,6 +34,14 @@ public static class PeripheralSettingFactory
             parameter.Type,
             definition?.RebootRequired ?? false,
             options,
-            isSecret);
+            isSecret)
+        {
+            Description = definition?.Description ?? string.Empty,
+            Units = definition?.Units ?? string.Empty,
+            Minimum = definition?.MinValue,
+            Maximum = definition?.MaxValue,
+            Increment = definition?.IncrementValue is > 0 ? definition.IncrementValue.Value : 1,
+            Bits = definition?.GetBitmaskOptions() ?? new Dictionary<int, string>(),
+        };
     }
 }

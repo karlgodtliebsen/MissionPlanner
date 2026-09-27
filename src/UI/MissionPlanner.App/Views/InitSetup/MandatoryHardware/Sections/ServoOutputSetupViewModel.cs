@@ -203,21 +203,28 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
 
     private bool CanWrite()
     {
-        return Outputs.Any(o => o.IsDirty);
+        return !IsBusy && activeVehicle.IsOnline && Outputs.Any(o => o.IsDirty);
     }
 
     [RelayCommand(CanExecute = nameof(CanWrite))]
     private async Task WriteAsync()
     {
-        foreach (var model in Outputs.Where(output => output.IsDirty).ToArray())
+        SetBusy();
+        try
         {
-            if (!await ApplyAsync(model))
+            foreach (var model in Outputs.Where(output => output.IsDirty).ToArray())
             {
-                break;
+                if (!await ApplyAsync(model))
+                {
+                    break;
+                }
             }
         }
-
-        WriteCommand.NotifyCanExecuteChanged();
+        finally
+        {
+            ResetBusy();
+            WriteCommand.NotifyCanExecuteChanged();
+        }
     }
 
     private CancellationToken StartOperation()
@@ -231,6 +238,7 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
 
     private async void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
+        Dispatcher.Dispatch(() => Outputs.Clear());
         observedServoAt = args.Current.State?.Radio.ServoObservedAt;
         await LoadAsync();
         Dispatcher.Dispatch(() => WriteCommand.NotifyCanExecuteChanged());
@@ -246,7 +254,8 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
             {
                 for (var index = 0; index < Outputs.Count; index++)
                 {
-                    int? pwm = values is not null && index < values.Count ? values[index] : null;
+                    var channelIndex = Outputs[index].ChannelNumber - 1;
+                    int? pwm = values is not null && channelIndex < values.Count ? values[channelIndex] : null;
                     Outputs[index].UpdateLive(pwm, false);
                 }
             });

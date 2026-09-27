@@ -17,4 +17,18 @@ public sealed record PeripheralSetting(
     MavParamType ParameterType,
     bool RebootRequired,
     IReadOnlyList<PeripheralSettingOption> Options,
-    bool IsSecret = false);
+    bool IsSecret = false)
+{
+    /// <summary>Gets explanatory firmware metadata.</summary>
+    public string Description { get; init; } = string.Empty;
+    /// <summary>Gets the measurement units.</summary>
+    public string Units { get; init; } = string.Empty;
+    /// <summary>Gets the recommended lower bound.</summary>
+    public double? Minimum { get; init; }
+    /// <summary>Gets the recommended upper bound.</summary>
+    public double? Maximum { get; init; }
+    /// <summary>Gets the recommended numeric increment.</summary>
+    public double Increment { get; init; } = 1;
+    /// <summary>Gets named bit positions.</summary>
+    public IReadOnlyDictionary<int, string> Bits { get; init; } = new Dictionary<int, string>();
+}

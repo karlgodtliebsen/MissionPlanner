@@ -23,7 +23,7 @@
             <TabItem Header="Failsafe"><sections:FailSafeView /></TabItem>
             <TabItem Header="Initial Tune Params"><sections:InitTuneParametersView /></TabItem>
             <TabItem Header="Hardware ID"><sections:HardwareIdView /></TabItem>
-            <TabItem Header="ADSB"><sections:AdsbView /></TabItem>
+            <TabItem Header="ADS-B"><sections:AdsbView /></TabItem>
             <TabItem Header="Safety"><sections:SafetySetupView /></TabItem>
             <TabItem Header="Summary"><sections:SetupSummaryView /></TabItem>
         </TabControl>

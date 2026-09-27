@@ -13,7 +13,7 @@ namespace MissionPlanner.Core.Setup.MandatoryHardware;
 /// <summary>Projects servo output functions with live PWM and applies confirmed, readback-verified writes.</summary>
 public sealed class ServoOutputConfigurationService : IServoOutputConfigurationService
 {
-    private const int MaximumOutputs = 16;
+    private const int MaximumOutputs = 32;
     private const int DefaultMinimumPwm = 800;
     private const int DefaultMaximumPwm = 2200;
     private static readonly TimeSpan staleWindow = TimeSpan.FromSeconds(2);
@@ -65,14 +65,21 @@ public sealed class ServoOutputConfigurationService : IServoOutputConfigurationS
         for (var output = 1; output <= MaximumOutputs; output++)
         {
             var prefix = $"SERVO{output}_";
-            if (!TryGetInteger(values, prefix + "FUNCTION", out var function) ||
-                !TryGetInteger(values, prefix + "REVERSED", out var reversed) ||
-                !TryGetInteger(values, prefix + "MIN", out var minimum) ||
-                !TryGetInteger(values, prefix + "TRIM", out var trim) ||
-                !TryGetInteger(values, prefix + "MAX", out var maximum))
+            var fields = new[] { "FUNCTION", "REVERSED", "MIN", "TRIM", "MAX" }
+                .Where(suffix => values.ContainsKey(prefix + suffix)).ToHashSet(StringComparer.Ordinal);
+            if (fields.Count == 0)
             {
                 continue;
             }
+
+            TryGetInteger(values, prefix + "FUNCTION", out var function);
+            TryGetInteger(values, prefix + "REVERSED", out var reversed);
+            TryGetInteger(values, prefix + "MIN", out var minimum);
+            TryGetInteger(values, prefix + "TRIM", out var trim);
+            TryGetInteger(values, prefix + "MAX", out var maximum);
+            var rowOptions = metadata.TryGetValue(prefix + "FUNCTION", out var rowDefinition)
+                ? rowDefinition.GetValueOptions().Select(option => new ServoFunctionOption((int)option.Key, option.Value)).ToArray()
+                : options;
 
             int? livePwm = outputs is not null && output <= outputs.Count ? outputs[output - 1] : null;
             var (allowedMinimum, allowedMaximum) = ResolvePwmRange(metadata, prefix);
@@ -87,7 +94,7 @@ public sealed class ServoOutputConfigurationService : IServoOutputConfigurationS
                 livePwm,
                 stale,
                 allowedMinimum,
-                allowedMaximum));
+                allowedMaximum) { AvailableFields = fields, FunctionOptions = rowOptions });
         }
 
         return new ServoOutputConfiguration(vehicleId, result, options);
@@ -108,6 +115,10 @@ public sealed class ServoOutputConfigurationService : IServoOutputConfigurationS
 
         foreach (var (suffix, value) in writes)
         {
+            if (settings.AvailableFields is { } fields && !fields.Contains(suffix))
+            {
+                continue;
+            }
             var name = $"SERVO{settings.ChannelNumber}_{suffix}";
             if (parameterRegistry.GetParameter(vehicleId, name) is not { } parameter)
             {

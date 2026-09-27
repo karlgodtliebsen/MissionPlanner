@@ -13,4 +13,8 @@ public sealed record ServoOutputSettings(
     int FunctionValue,
     int MinimumPwm,
     int TrimPwm,
-    int MaximumPwm);
+    int MaximumPwm)
+{
+    /// <summary>Gets the supported suffixes to write; null denotes all fields.</summary>
+    public IReadOnlySet<string>? AvailableFields { get; init; }
+}

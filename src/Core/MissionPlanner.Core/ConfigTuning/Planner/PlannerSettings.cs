@@ -5,6 +5,9 @@
 /// </summary>
 public sealed record PlannerSettings
 {
+    /// <summary>Gets parameter names pinned first in the ADS-B editor.</summary>
+    public IReadOnlyList<string> AdsbFavorites { get; init; } = [];
+
     /// <summary>The current persisted settings schema.</summary>
     public const int CurrentSchemaVersion = 5;
 

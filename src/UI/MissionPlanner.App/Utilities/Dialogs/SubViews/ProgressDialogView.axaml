@@ -14,7 +14,11 @@
         <StackPanel Orientation="Vertical" Spacing="20">
             
             <controls:ShimmerText Text="{Binding Message}"
-                         TextWrapping="Wrap" Classes="H4" />
+                         TextWrapping="Wrap" Classes="H4" 
+                         BaseColor="{DynamicResource SemiGrey9Color}"
+                         HighlightColor="{DynamicResource SemiRed5Color}"
+                         Duration="00:00:02.5" 
+                         />
 
             <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}"
                          HorizontalAlignment="Stretch"

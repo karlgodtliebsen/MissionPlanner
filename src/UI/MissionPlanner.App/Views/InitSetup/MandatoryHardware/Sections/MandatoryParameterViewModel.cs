@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities;
@@ -18,6 +19,39 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
 
     private readonly IActiveVehicleContext activeVehicle;
     private CancellationTokenSource? operationCancellation;
+    private MissionPlanner.Shared.Models.Vehicles.Models.VehicleId? loadedVehicle;
+
+    /// <summary>Gets or sets the parameter search query.</summary>
+    [ObservableProperty]
+    public partial string SearchText { get; set; } = string.Empty;
+    /// <summary>Gets filtered settings with favorites first.</summary>
+    public IEnumerable<PeripheralSettingViewModel> VisibleSettings => Settings
+        .Where(row => string.IsNullOrWhiteSpace(SearchText) || $"{row.Name} {row.DisplayName} {row.Description}".Contains(SearchText, StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(row => row.IsFavorite).ThenBy(row => row.Name, StringComparer.Ordinal);
+    partial void OnSearchTextChanged(string value) => OnPropertyChanged(nameof(VisibleSettings));
+
+    /// <summary>Gets whether a parameter has a persisted favorite preference.</summary>
+    protected virtual bool IsFavorite(string name) => false;
+
+    /// <summary>Persists a changed favorite preference when supported by the page.</summary>
+    protected virtual Task SaveFavoriteAsync(string name, bool favorite) => Task.CompletedTask;
+
+    private async void OnSettingChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+    {
+        if (sender is not PeripheralSettingViewModel row || args.PropertyName != nameof(PeripheralSettingViewModel.IsFavorite))
+        {
+            return;
+        }
+        OnPropertyChanged(nameof(VisibleSettings));
+        try
+        {
+            await SaveFavoriteAsync(row.Name, row.IsFavorite);
+        }
+        catch (Exception exception)
+        {
+            SetMessages("Could not save favorite preference.", exception.Message);
+        }
+    }
 
     /// <summary>Initializes a metadata-backed mandatory workflow.</summary>
     protected MandatoryParameterViewModel(IActiveVehicleContext activeVehicle, ILogger logger, INavigationService navigation)
@@ -58,7 +92,20 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
         try
         {
             var configuration = await LoadConfigurationAsync(vehicleId, token);
-            Dispatcher.Dispatch(() => Show(configuration));
+            token.ThrowIfCancellationRequested();
+            Dispatcher.Dispatch(() =>
+            {
+                if (token.IsCancellationRequested || activeVehicle.VehicleId != vehicleId)
+                {
+                    return;
+                }
+                if (loadedVehicle != vehicleId)
+                {
+                    ClearSettings();
+                }
+                loadedVehicle = vehicleId;
+                Show(configuration);
+            });
         }
         catch (OperationCanceledException)
         {
@@ -70,7 +117,10 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
         }
         finally
         {
-            ResetBusy();
+            if (operationCancellation?.Token == token)
+            {
+                ResetBusy();
+            }
         }
     }
 
@@ -96,6 +146,7 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
         Cancel();
+        ResetBusy();
         return base.DeactivateAsync();
     }
 
@@ -118,11 +169,59 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
     [RelayCommand]
     private Task RefreshAsync()
     {
-        return LoadAsync();
+        return IsBusy ? Task.CompletedTask : LoadAsync();
     }
+
+    /// <summary>Downloads current vehicle parameters before rebuilding the settings.</summary>
+    protected virtual Task ReloadParametersAsync(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId, CancellationToken token) => Task.CompletedTask;
+
+    [RelayCommand]
+    private async Task ReloadFromVehicleAsync()
+    {
+        if (IsBusy || activeVehicle.VehicleId is not { } id || !activeVehicle.IsOnline)
+        {
+            return;
+        }
+        var token = StartOperation();
+        SetBusy();
+        try
+        {
+            await ReloadParametersAsync(id, token);
+            token.ThrowIfCancellationRequested();
+            await LoadAsync();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception exception)
+        {
+            SetMessages(exception);
+        }
+        finally
+        {
+            if (operationCancellation?.Token == token)
+            {
+                ResetBusy();
+            }
+        }
+    }
+
+    [RelayCommand]
+    private Task ApplyModifiedAsync() => ApplyChanges(Settings.Where(row => row.IsDirty)
+        .OrderBy(row => row.Name.EndsWith("_ENABLE", StringComparison.Ordinal) || row.Name.EndsWith("_ENABLED", StringComparison.Ordinal))
+        .Select(row => (row.Name, row.Value)).ToArray());
 
     private async Task Apply((string Name, double Value) change)
     {
+        await ApplyChanges([change]);
+    }
+
+    private async Task ApplyChanges(IReadOnlyList<(string Name, double Value)> changes)
+    {
+        if (IsBusy)
+        {
+            return;
+        }
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
             ShowDisconnected();
@@ -133,11 +232,26 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
         SetBusy();
         try
         {
-            var result = await ApplySettingAsync(vehicleId, change.Name, change.Value, token);
-            if (result.Success)
+            var applied = 0;
+            if (loadedVehicle != vehicleId)
             {
-                await LoadAsync();
+                SetMessages("Wait for parameters from the selected vehicle before applying edits.");
+                return;
             }
+            foreach (var change in changes)
+            {
+                token.ThrowIfCancellationRequested();
+                var result = await ApplySettingAsync(vehicleId, change.Name, change.Value, token);
+                token.ThrowIfCancellationRequested();
+                if (!result.Success)
+                {
+                    SetMessages($"Confirmed {applied} of {changes.Count} changes. Remaining edits are preserved.", result.Message);
+                    return;
+                }
+                Settings.FirstOrDefault(row => row.Name == change.Name)?.AcceptValue(change.Value);
+                applied++;
+            }
+            SetMessages($"Confirmed {applied} parameter change(s). Other pending edits are preserved.");
         }
         catch (OperationCanceledException)
         {
@@ -148,7 +262,10 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
         }
         finally
         {
-            ResetBusy();
+            if (operationCancellation?.Token == token)
+            {
+                ResetBusy();
+            }
         }
     }
 
@@ -162,24 +279,52 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
 
     private void Show(MandatoryParameterConfiguration configuration)
     {
-        var allSettings = configuration.Settings.Select(s => new PeripheralSettingViewModel(s, Apply));
+        var previous = Settings.ToDictionary(row => row.Name);
+        var allSettings = configuration.Settings.Select(s =>
+        {
+            if (previous.TryGetValue(s.Name, out var old) && old.IsDirty)
+            {
+                return old;
+            }
+            var row = new PeripheralSettingViewModel(s, Apply) { IsFavorite = old?.IsFavorite ?? IsFavorite(s.Name) };
+            row.PropertyChanged += OnSettingChanged;
+            return row;
+        }).ToArray();
         Settings.ReplaceRange(allSettings);
+        foreach (var old in previous.Values.Where(old => !allSettings.Contains(old)))
+        {
+            old.PropertyChanged -= OnSettingChanged;
+        }
         Guidance.ReplaceRange(configuration.Guidance);
 
         SetMessages(Settings.Count == 0
             ? "This firmware does not report settings for this workflow."
             : $"{Settings.Count} supported setting(s) loaded. Review changes before applying.");
         OnPropertyChanged(nameof(HasSettings));
+        OnPropertyChanged(nameof(VisibleSettings));
     }
 
     private void ShowDisconnected()
     {
+        Cancel();
+        ResetBusy();
         Dispatcher.Dispatch(() =>
         {
-            Settings.Clear();
+            ClearSettings();
+            loadedVehicle = null;
+            OnPropertyChanged(nameof(VisibleSettings));
             Guidance.Clear();
             OnPropertyChanged(nameof(HasSettings));
         });
+    }
+
+    private void ClearSettings()
+    {
+        foreach (var row in Settings)
+        {
+            row.PropertyChanged -= OnSettingChanged;
+        }
+        Settings.Clear();
     }
 
     private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)

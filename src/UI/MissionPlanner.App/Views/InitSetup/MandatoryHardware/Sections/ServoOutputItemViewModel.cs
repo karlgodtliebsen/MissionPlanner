@@ -13,6 +13,24 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
     private int originalMinimum;
     private int originalTrim;
     private int originalMaximum;
+    private IReadOnlySet<string>? availableFields;
+
+    /// <summary>Gets whether function assignment is supported.</summary>
+    public bool HasFunction => availableFields is null || availableFields.Contains("FUNCTION");
+    /// <summary>Gets whether reversal is supported.</summary>
+    public bool HasReverse => availableFields is null || availableFields.Contains("REVERSED");
+    /// <summary>Gets whether minimum PWM is supported.</summary>
+    public bool HasMinimum => availableFields is null || availableFields.Contains("MIN");
+    /// <summary>Gets whether trim PWM is supported.</summary>
+    public bool HasTrim => availableFields is null || availableFields.Contains("TRIM");
+    /// <summary>Gets whether maximum PWM is supported.</summary>
+    public bool HasMaximum => availableFields is null || availableFields.Contains("MAX");
+    /// <summary>Gets the live PWM used by the bar.</summary>
+    [ObservableProperty]
+    public partial int LivePwm { get; private set; }
+    /// <summary>Gets whether live output telemetry is available.</summary>
+    [ObservableProperty]
+    public partial bool HasLivePwm { get; private set; }
 
     /// <summary>Initializes a servo output row.</summary>
     /// <param name="info">The output projection.</param>
@@ -25,6 +43,7 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
     {
         this.dirtyChanged = dirtyChanged;
         ChannelNumber = info.ChannelNumber;
+        options = info.FunctionOptions ?? options;
         Functions = options.Any(option => option.Value == info.FunctionValue)
             ? options
             : options.Append(new ServoFunctionOption(info.FunctionValue, info.FunctionName)).ToArray();
@@ -63,7 +82,8 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
     public partial int AllowedMaximumPwm { get; private set; }
 
     /// <summary>Gets the available function options.</summary>
-    public IReadOnlyList<ServoFunctionOption> Functions { get; }
+    [ObservableProperty]
+    public partial IReadOnlyList<ServoFunctionOption> Functions { get; private set; } = [];
 
     /// <summary>Gets the live PWM description.</summary>
     [ObservableProperty]
@@ -83,7 +103,7 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
         SelectedFunction?.Value ?? originalFunction,
         MinimumPwm,
         TrimPwm,
-        MaximumPwm);
+        MaximumPwm) { AvailableFields = availableFields };
 
     /// <summary>Updates live PWM without affecting editable state or dirty tracking.</summary>
     /// <param name="info">The latest output projection.</param>
@@ -95,6 +115,8 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
     /// <summary>Updates live PWM without rebuilding the output configuration.</summary>
     public void UpdateLive(int? livePwm, bool isStale)
     {
+        HasLivePwm = livePwm.HasValue && !isStale;
+        LivePwm = livePwm ?? 0;
         LiveDescription = livePwm is { } pwm
             ? $"{pwm} µs{(isStale ? " (stale)" : string.Empty)}"
             : "—";
@@ -143,6 +165,15 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
     private void ApplyConfiguration(ServoOutputInfo info)
     {
         suppressDirtyTracking = true;
+        var options = info.FunctionOptions ?? Functions;
+        Functions = options.Any(option => option.Value == info.FunctionValue)
+            ? options : options.Append(new ServoFunctionOption(info.FunctionValue, info.FunctionName)).ToArray();
+        availableFields = info.AvailableFields;
+        OnPropertyChanged(nameof(HasFunction));
+        OnPropertyChanged(nameof(HasReverse));
+        OnPropertyChanged(nameof(HasMinimum));
+        OnPropertyChanged(nameof(HasTrim));
+        OnPropertyChanged(nameof(HasMaximum));
         UpdateLive(info);
         Reversed = info.Reversed;
         MinimumPwm = info.MinimumPwm;
@@ -167,11 +198,11 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
             return;
         }
 
-        IsDirty = Reversed != originalReversed ||
-            (SelectedFunction?.Value ?? originalFunction) != originalFunction ||
-            MinimumPwm != originalMinimum ||
-            TrimPwm != originalTrim ||
-            MaximumPwm != originalMaximum;
+        IsDirty = (HasReverse && Reversed != originalReversed) ||
+            (HasFunction && (SelectedFunction?.Value ?? originalFunction) != originalFunction) ||
+            (HasMinimum && MinimumPwm != originalMinimum) ||
+            (HasTrim && TrimPwm != originalTrim) ||
+            (HasMaximum && MaximumPwm != originalMaximum);
     }
 }
 

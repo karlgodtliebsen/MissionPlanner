@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:AdsbViewModel"
+<utilities:UserControlViewBase x:TypeArguments="sections:AdsbViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,19 +6,23 @@
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                               mc:Ignorable="d"
+                               d:DesignWidth="800"
+                               d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AdsbView"
                                x:DataType="sections:AdsbViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa">
-
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+        <Grid.KeyBindings>
+            <KeyBinding Gesture="Ctrl+S" Command="{Binding ApplyModifiedCommand}" />
+        </Grid.KeyBindings>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="ADSB" HorizontalAlignment="Stretch">
+        <u:Banner Classes="Bordered" Header="ADSB" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Theme="{DynamicResource ProgressRing}" />
             </StackPanel>
         </u:Banner>
         <TabControl Grid.Row="1">
@@ -26,56 +30,79 @@
                 <Grid RowDefinitions="Auto,*">
                     <Border Grid.Row="0" Padding="12">
                         <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}" ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
                                 <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Grid.Row="1"  Topic="Adsb" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                    <controls:SetupInformationView Grid.Row="1" Topic="Adsb" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
                 </Grid>
             </TabItem>
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,*">
                     <Border Grid.Row="0" Padding="12">
                         <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
+                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}" ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
                                 <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
                         </StackPanel>
                     </Border>
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
-                        <Border Padding="12" >
+                        <Border Padding="12">
                             <StackPanel Spacing="10">
                                 <ItemsControl ItemsSource="{Binding Guidance}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="x:String">
-                                            <TextBlock Text="{Binding .}" Classes="Warning" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding .}" Classes="Warning" TextWrapping="Wrap" />
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <ItemsControl ItemsSource="{Binding Settings}">
+                                <TextBox PlaceholderText="Search names and descriptions" Text="{Binding SearchText}" />
+                                <WrapPanel ItemSpacing="8">
+                                    <Button Content="Apply modified (Ctrl+S)" Command="{Binding ApplyModifiedCommand}" IsEnabled="{Binding !IsBusy}" />
+                                    <Button Content="Reload from vehicle" Command="{Binding ReloadFromVehicleCommand}" IsEnabled="{Binding !IsBusy}" />
+                                </WrapPanel>
+                                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding ErrorMessage}" Classes="Warning" TextWrapping="Wrap" />
+                                <ItemsControl ItemsSource="{Binding VisibleSettings}" IsEnabled="{Binding !IsBusy}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
                                             <Border Classes="SectionCard" Padding="12">
-                                                <Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="10">
-                                                    <StackPanel Orientation="Vertical">
-                                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" />
-                                                        <TextBlock Text="{Binding Name}" FontSize="11" Opacity="0.7" />
-                                                    </StackPanel>
-                                                    <ComboBox Grid.Column="1" ToolTip.Tip="Value" IsVisible="{Binding HasOptions}" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" DisplayMemberBinding="{Binding Name}" />
-                                                    <TextBox Grid.Column="1" PlaceholderText="Value" IsVisible="{Binding IsNumeric}" Text="{Binding NumericValue}" />
-                                                    <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Apply" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply">
-                                                        <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                                                    </Button>
-                                                </Grid>
+                                                <StackPanel Spacing="6">
+                                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding Name}" Opacity="0.7" />
+                                                        </StackPanel>
+                                                        <CheckBox Grid.Column="1" Content="Favorite" IsChecked="{Binding IsFavorite}" />
+                                                        <Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" IsEnabled="{Binding IsDirty}" />
+                                                    </Grid>
+                                                    <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                                                    <TextBlock Text="{Binding ValueGuidance}" Opacity="0.7" />
+                                                    <ComboBox IsVisible="{Binding HasOptions}" ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" DisplayMemberBinding="{Binding Name}" HorizontalAlignment="Stretch" />
+                                                    <NumericUpDown IsVisible="{Binding IsNumericEditor}" Value="{Binding NumericValue}" Increment="{Binding Increment}" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" HorizontalAlignment="Stretch" />
+                                                    <ItemsControl IsVisible="{Binding HasBits}" ItemsSource="{Binding Bits}">
+                                                        <ItemsControl.ItemsPanel>
+                                                            <ItemsPanelTemplate>
+                                                                <WrapPanel />
+                                                            </ItemsPanelTemplate>
+                                                        </ItemsControl.ItemsPanel>
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="sections:PeripheralBitViewModel">
+                                                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" Margin="0,0,16,4" />
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
+                                                    <TextBlock Text="Value is outside the firmware-recommended range." Classes="Warning" IsVisible="{Binding IsOutsideRange}" />
+                                                    <TextBlock Text="Modified — not yet applied" IsVisible="{Binding IsDirty}" Classes="Warning" />
+                                                    <TextBlock Text="A controller reboot is required after changing this setting." IsVisible="{Binding RebootRequired}" TextWrapping="Wrap" />
+                                                </StackPanel>
                                             </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

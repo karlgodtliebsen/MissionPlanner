@@ -62,15 +62,39 @@ public abstract class MandatoryParameterServiceBase
             return new MandatoryParameterApplyResult(false, $"{name} is not reported by the connected vehicle.");
         }
 
-        var success = await parameterService.SetParameterAsync(
-            vehicleId,
-            name,
-            (float)value,
-            parameter.Type,
-            cancellationToken).ConfigureAwait(false);
-        return success
-            ? new MandatoryParameterApplyResult(true, $"{name} was accepted by the vehicle.")
-            : new MandatoryParameterApplyResult(false, $"The vehicle rejected {name}.");
+        if (!double.IsFinite(value) || !float.IsFinite((float)value))
+        {
+            return new MandatoryParameterApplyResult(false, $"{name} must be a finite value.");
+        }
+
+        var confirmed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnChanged(VehicleParameterChangedEventArgs args)
+        {
+            if (args.VehicleId == vehicleId && args.Parameter is { } current && current.Name == name && current.Value == (float)value)
+            {
+                confirmed.TrySetResult();
+            }
+        }
+
+        parameterRegistry.Changed += OnChanged;
+        try
+        {
+            if (!await parameterService.SetParameterAsync(vehicleId, name, (float)value, parameter.Type, cancellationToken).ConfigureAwait(false))
+            {
+                return new MandatoryParameterApplyResult(false, $"Could not send {name}.");
+            }
+            await parameterService.RequestParameterAsync(vehicleId, name, cancellationToken).ConfigureAwait(false);
+            await confirmed.Task.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
+            return new MandatoryParameterApplyResult(true, $"{name} confirmed by vehicle readback.");
+        }
+        catch (TimeoutException)
+        {
+            return new MandatoryParameterApplyResult(false, $"Readback did not confirm {name}; the pending edit is retained.");
+        }
+        finally
+        {
+            parameterRegistry.Changed -= OnChanged;
+        }
     }
 
     private void RequireActive(VehicleId vehicleId)
