@@ -19,10 +19,12 @@
             <StackPanel Spacing="10">
                 <TextBlock Text="Supported frame configuration" Classes="H2" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                <TextBlock Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}" />
-                <TextBlock Text="Only values advertised by the connected firmware metadata are shown. Current values remain unchanged until Write and Verify is confirmed." />
+                <TextBlock Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}"  TextWrapping="Wrap" />
+                <TextBlock Text="Only values advertised by the connected firmware metadata are shown. Current values remain unchanged until Write and Verify is confirmed." TextWrapping="Wrap" />
                 <TextBlock IsVisible="{Binding RebootRequired}"
-                           Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration." Classes="Warning" FontWeight="Bold" />
+                           Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration." 
+                           TextWrapping="Wrap"
+                           Classes="Warning" FontWeight="Bold" />
             </StackPanel>
         </Border>
         <TabControl Grid.Row="1">
