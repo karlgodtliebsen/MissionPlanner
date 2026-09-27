@@ -11,6 +11,54 @@ public static class SectionHelpCatalog
 
     public static IReadOnlyList<SectionHelp> Sections { get; } =
     [
+        T("Application", "Flight Data",
+            "Monitor the active vehicle through the HUD, mission map and telemetry panels, and access supported vehicle commands.",
+            "Confirm the vehicle identity, connection state and live telemetry before interpreting displayed values.|Use Quick and Gauges for selected readings, Status for detailed telemetry, and Messages for vehicle-reported information and warnings.|Review PreFlight before operation. Use Actions only after checking the requested command and target.|Servo/Relay, Aux Function and Payload Control can affect connected hardware; review output assignments and keep mechanisms clear.|Use DataFlash Logs for the vehicle's onboard recordings; use the separate Logs workspace for PC telemetry recordings and application diagnostics.",
+            "Check fresh telemetry and the vehicle's reported state after a command. A changed control selection is not confirmation that the command succeeded.",
+            "Recorded or stale data is not live vehicle evidence. Review Scripts before execution and remove propellers for bench actuator checks.",
+            "https://ardupilot.org/planner/docs/mission-planner-flight-data.html"),
+        T("Application", "Flight Planner",
+            "Create and edit a local mission, save it to a file, and explicitly transfer it to or from the intended vehicle.",
+            "Load a mission file or read the existing mission from the vehicle before editing it.|Review waypoint order, command types, coordinates, altitude reference and command-specific fields in the map and mission list.|Apply row edits to the local mission or use Revert to discard them. Save a local file when you need a backup.|Use Write mission to vehicle only after reviewing the destination and complete mission.|Read the mission back and compare its important commands and geometry before starting it.",
+            "Verify mission item count, order, altitude references and the intended end-of-mission action. Check terrain and operating limits independently.",
+            "Apply commits local row edits; it does not upload the mission. Clear the local mission does not by itself clear the vehicle's mission. Uploading does not automatically execute a mission.",
+            "https://ardupilot.org/planner/docs/mission-planner-flight-plan.html"),
+        T("Application", "Preferences",
+            "Configure how this application displays information and manages local resources.",
+            "Review the relevant settings group, including appearance, units, maps and telemetry preferences.|Use Save preferences after reviewing changes; export a copy before resetting or importing settings.|Configure a map credential with its dedicated save/test controls when a provider requires one.|For offline use, import or install a supported map pack, select it, and verify the pack.|Use section resets for a limited change; Reset all affects the broader preferences collection.",
+            "Reopen the relevant settings and check the resulting display or map behaviour. Check units again before entering mission or tuning values.",
+            "Application preferences are separate from flight-controller parameters. Clearing a map cache removes cached map data; it does not repair vehicle telemetry. Review exported settings before sharing them.",
+            "https://ardupilot.org/planner/docs/mission-planner-configuration-and-tuning.html"),
+        T("Application", "Simulation",
+            "Prepare and run a supported software-in-the-loop scenario to exercise workflows without a physical airframe.",
+            "Choose the vehicle, model and available simulation runtime or release.|Review the starting location, home, connection endpoints and scenario options before launch.|Inspect additional arguments and environment settings if you use them; load or save a scenario preset for repeatable setup.|Use Start and watch the process output and status. Check the app's connection and simulated vehicle identity before issuing commands.|Use Stop when finished, or Restart when the reviewed scenario needs a fresh run.",
+            "Confirm both that the simulator is running and that telemetry belongs to the expected simulated vehicle. If startup fails, inspect the runtime path, process output and endpoint conflicts.",
+            "A running process is not proof of a telemetry connection. A successful simulation does not validate physical wiring, motor order or real-airframe tuning. Keep live hardware connections distinct from simulation.",
+            "https://ardupilot.org/dev/docs/sitl-simulator-software-in-the-loop.html"),
+        T("Application", "Arming",
+            "Inspect reported arming evidence, review supported arming settings and explicitly request arm or disarm.",
+            "Read Information for the current vehicle state and reported problems.|Refresh cached arming evidence after relevant changes, and use Messages or the live Inspector when you need further context.|In Configuration, review pending parameter changes. Stage firmware default changes only when appropriate, then use Apply and verify to write them.|Use Discard pending changes to abandon local edits or open Parameters Editor for additional supported settings.|Only use Arm Vehicle or Disarm Vehicle when the vehicle state and surroundings are appropriate.",
+            "Check the vehicle's reported armed state and any rejection messages. Review readback and required reboots after parameter changes.",
+            "Refreshing cached evidence does not run a new physical safety test. Do not disable checks just to bypass a reported fault, and do not treat a sent arm command as a successful arm.",
+            "https://ardupilot.org/copter/docs/configuring-hardware.html"),
+        T("Application", "Advanced",
+            "Discover the implemented advanced tools and review their requirements before opening them.",
+            "Select a tool in the Advanced list and read its description and availability status.|Check whether the tool needs an active vehicle, particular firmware support, local data or another connection.|Open the available tool and review its target and operation scope before starting.|For analysis tools, select the intended recording or data source; for hardware tools, verify the connected device and supported controls.|Inspect the tool's result and retain relevant diagnostics before returning to the main workspace.",
+            "Confirm whether the result came from live telemetry, recorded data or a completed hardware operation. Check reported failures instead of assuming a tool ran.",
+            "Unavailable tools are not completed operations. Output and device-management tools may change hardware state; a telemetry-inspection tool does not establish that the hardware is safe.",
+            "https://ardupilot.org/planner/docs/mission-planner-flight-data.html"),
+        T("Application", "Connect / Vehicle Connection",
+            "Select and establish a supported serial or network connection to an ArduPilot vehicle.",
+            "Power the intended device, open Connect and refresh the available channels.|For serial, choose the controller's port and correct baud rate. For a network connection, review the channel, host and port fields shown.|Choose AUTO if you want discovery when you click Connect: one available serial device is preferred; multiple devices require an explicit selection.|With no serial device available, AUTO listens for an ArduPilot UDP heartbeat on the configured local port, using 14550 as the fallback. If none is found, it reports that no endpoint was detected.|After connection, verify the displayed vehicle identity and live telemetry. Use Disconnect before handing the same connection resource to another tool.",
+            "A listed COM port is only a connection candidate. Check the successful vehicle handshake and live status; inspect the connection message if discovery or identification fails.",
+            "AUTO discovery runs when you request Connect, not merely at app startup. Known incompatible serial devices are filtered, but a port name cannot prove firmware identity. STM32 DFU bootloaders belong in Install Firmware, not a normal telemetry connection.",
+            "https://ardupilot.org/copter/docs/initial-setup.html"),
+        T("Application", "Logs",
+            "Inspect PC telemetry recordings and application diagnostics, keeping them distinct from onboard DataFlash logs.",
+            "In Telemetry Logs, check recording state, file path, byte count and recording errors.|Refresh recordings, select a session and use View packets, replay, or export as appropriate; import a .tlog when working with an external recording.|Check recording identity and time before analysis. Use Flight Data's DataFlash Logs tab for the vehicle's onboard log workflow.|In Application Logs, select the current session or a historical file and filter by severity, source, text or UTC time.|Copy or export the relevant event or view when investigating an issue. Review the contents before sharing, and back up a recording before deleting it.",
+            "Check that recording size increases while telemetry is being captured and that the selected log covers the time of the issue. A display filter may hide useful context.",
+            "Replay is recorded data, not a live connection. Clear view only does not delete the underlying application log. Recording level and display filters serve different purposes; verbose recording can produce substantially more data.",
+            "https://ardupilot.org/planner/docs/mission-planner-flight-data.html"),
         T(Mandatory, "Frame",
             "Select the vehicle frame class and geometry so the flight controller uses the appropriate motor layout.",
             "Identify the physical frame and controller orientation.|Review the supported frame choices and apply the matching selection.|Complete any requested reboot, then use Motor Test to check each motor against the motor-order diagram.",
@@ -246,9 +294,9 @@ public static class SectionHelpCatalog
         foreach (var step in topic.Steps) builder.Bullet(step);
         builder.Heading("Verify the result", 3).Paragraph(topic.Verification)
             .Heading("Important details", 3).Note(topic.Note);
-        if (topic.Group != Configuration)
+        if (topic.Group is Mandatory or Optional)
             builder.Paragraph("Available controls depend on the connected firmware and hardware. Refresh after reconnecting; a missing or disabled control is not evidence that a setting has been applied.");
-        else
+        else if (topic.Group == Configuration)
             builder.Paragraph("Keep a backup before changing configuration. Editing or loading values locally is separate from applying them to the connected vehicle.");
         return builder.Build(topic.Title);
     }

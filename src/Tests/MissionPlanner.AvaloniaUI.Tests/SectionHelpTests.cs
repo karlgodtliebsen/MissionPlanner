@@ -46,7 +46,16 @@ public sealed class SectionHelpTests
         using var model = new HelpViewModel(new FirmwareSupportLinkProvider(),
             Substitute.For<IExternalLinkLauncher>(), Substitute.For<IDeviceManagerLauncher>(),
             Substitute.For<IUiDispatcher>(), Substitute.For<IDomainEventHub>(), NullLogger<HelpViewModel>.Instance);
-        Assert.Equal(44, model.Topics.Count);
+        Assert.Equal(52, model.Topics.Count);
+        Assert.Equal(new[] { "Flight Data", "Flight Planner", "Preferences", "Simulation", "Arming", "Advanced", "Connect / Vehicle Connection", "Logs" },
+            model.Topics.Where(topic => topic.Category == "Application").Select(topic => topic.Title).ToArray());
+        foreach (var topic in model.Topics.Where(topic => topic.Category == "Application"))
+        {
+            Assert.NotNull(topic.Article);
+            Assert.Contains("### How to use this section", topic.Article.Document.Markdown);
+            Assert.Contains("### Verify the result", topic.Article.Document.Markdown);
+            Assert.NotEmpty(topic.Article.Resources);
+        }
         Assert.Equal("Tutorial", model.Topics[0].Title);
         Assert.Equal("Install Firmware", model.Topics[1].Title);
         model.SearchText = "  CubeID  ";
