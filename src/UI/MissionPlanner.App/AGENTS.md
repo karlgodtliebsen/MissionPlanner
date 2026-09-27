@@ -1,5 +1,11 @@
 # UI conventions
 
+## External dependencies
+
+Use NuGet packages for third-party libraries. Do not replace them with references
+to local source projects. Local checkouts may be inspected as reference material;
+features absent from the available NuGet packages must wait or use another approach.
+
 ## Dialog and drawer close buttons
 
 For an X button that closes a dialog or drawer, use Ursa's close-button theme:

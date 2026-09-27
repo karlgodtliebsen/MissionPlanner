@@ -107,10 +107,21 @@
                             <ItemsControl ItemsSource="{Binding Ports}" IsEnabled="{Binding CanEdit}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="sections:SerialPortRowViewModel">
-                                        <StackPanel Spacing="4" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-                                            <u:Divider Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="5,10"></u:Divider>
+                                       
+                                        <u:UrsaGroupBox  BorderBrush="{DynamicResource SemiColorSecondary}"
+                                                         BorderThickness="2"
+                                                         CornerRadius="12" HeaderSpacing="12"
+                                        >
+                                            
+                                            <u:UrsaGroupBox.Header >
+                                                <TextBlock
+                                                    FontWeight="SemiBold"
+                                                    Foreground="{DynamicResource SemiColorSecondary}"
+                                                    Text="{Binding DisplayName}" />
+                                            </u:UrsaGroupBox.Header>
+                                            
+                                            
                                             <StackPanel Spacing="8"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding DisplayName}" Classes="H3" />
                                                 <WrapPanel ItemSpacing="15"  >
                                                     <StackPanel Width="180"  Spacing="4">
                                                         <TextBlock Text="Speed:" Classes="H4" />
@@ -129,7 +140,7 @@
                                                     </StackPanel>
                                                 </WrapPanel>
                                             </StackPanel>
-                                        </StackPanel>
+                                        </u:UrsaGroupBox>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>

@@ -10,7 +10,8 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
                                x:DataType="sections:SetupSummaryViewModel"
-                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:u="https://irihi.tech/ursa">
 
     <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
@@ -53,6 +54,31 @@
                     <ItemsControl ItemsSource="{Binding Sections}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="models1:SetupSummarySectionViewModel">
+                                <u:UrsaGroupBox HeaderSpacing="12" 
+                                                BorderBrush="{DynamicResource SemiColorSecondary}"
+                                                BorderThickness="2"
+                                                CornerRadius="12">
+                                    <u:UrsaGroupBox.Header >
+                                        <TextBlock
+                                            FontWeight="SemiBold"
+                                            Foreground="{DynamicResource SemiColorSecondary}"
+                                            Text="{Binding Title}" />
+                                    </u:UrsaGroupBox.Header>
+
+                                    <ItemsControl ItemsSource="{Binding Entries}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="mandatoryHardware:SetupSummaryEntry">
+                                                <Grid ColumnDefinitions="200,*,120" ColumnSpacing="8">
+                                                    <TextBlock Text="{Binding Label}" />
+                                                    <TextBlock Grid.Column="1" Text="{Binding Value}" Opacity="0.8" />
+                                                    <TextBlock Grid.Column="2" Text="{Binding Status}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </u:UrsaGroupBox>
+
+                                <!--
                                 <Border Padding="10" Classes="SectionCard">
                                     <StackPanel Orientation="Vertical" Spacing="4">
                                         <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" />
@@ -68,7 +94,11 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                     </StackPanel>
-                                </Border>
+
+
+                                </Border>-->
+
+
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
