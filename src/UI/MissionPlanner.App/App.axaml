@@ -29,7 +29,8 @@
         <semi:UrsaSemiTheme Locale="en-US" />
         <semi:SemiPopupAnimations />
         <materialIcons:MaterialIconStyles />
-        <StyleInclude Source="/Resources/Styles/SharedStyles.axaml" />
+<!--        <StyleInclude Source="/Resources/Styles/Shimmer.axaml" />
+-->        <StyleInclude Source="/Resources/Styles/SharedStyles.axaml" />
         <StyleInclude Source="/Resources/Styles/VirtualizedItemsGridStyles.axaml" />
         <StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml"/>
     </Application.Styles>
