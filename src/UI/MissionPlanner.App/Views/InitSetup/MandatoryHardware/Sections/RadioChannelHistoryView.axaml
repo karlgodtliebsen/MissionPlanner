@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioChannelHistoryView"
+             x:DataType="sections:RadioSetupViewModel">
+    <StackPanel Spacing="8" Margin="12">
+        <Grid ColumnDefinitions="*,Auto">
+            <StackPanel>
+                <TextBlock Text="Receiver history" FontWeight="SemiBold" />
+                <TextBlock Text="Last 10 seconds · PWM (µs) · sampled every 50 ms" FontSize="12" Opacity="0.7" />
+            </StackPanel>
+            <Button Grid.Column="1" Content="Reset" Classes="EmbeddedTextButton" Click="ResetHistory"
+                    ToolTip.Tip="Clear receiver history" AutomationProperties.Name="Clear receiver history" />
+        </Grid>
+        <sections:RadioChannelHistoryPlot x:Name="HistoryPlot" Channels="{Binding Channels}"
+                                          SessionKey="{Binding HistoryVehicleId}" MinHeight="280"
+                                          AutomationProperties.Name="Live receiver channel history in microseconds" />
+        <TextBlock Text="Gaps indicate stale or missing input. Colours match the channel bars."
+                   FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+    </StackPanel>
+</UserControl>

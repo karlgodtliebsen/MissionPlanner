@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
@@ -10,6 +10,8 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 /// </summary>
 public sealed class RadioChannelMeterView : Control
 {
+    public static readonly StyledProperty<bool> CompactProperty = AvaloniaProperty.Register<RadioChannelMeterView, bool>(nameof(Compact));
+    public bool Compact { get => GetValue(CompactProperty); set => SetValue(CompactProperty, value); }
     public static readonly StyledProperty<int> ChannelNumberProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(ChannelNumber));
     public static readonly StyledProperty<string?> FunctionNameProperty = AvaloniaProperty.Register<RadioChannelMeterView, string?>(nameof(FunctionName));
     public static readonly StyledProperty<int> PwmProperty = AvaloniaProperty.Register<RadioChannelMeterView, int>(nameof(Pwm), 1500);
@@ -31,7 +33,7 @@ public sealed class RadioChannelMeterView : Control
     static RadioChannelMeterView()
     {
         AffectsRender<RadioChannelMeterView>(
-        PwmProperty, DisplayMinimumProperty, DisplayMaximumProperty, ConfiguredMinimumProperty,
+        CompactProperty, ChannelNumberProperty, FunctionNameProperty, PwmProperty, DisplayMinimumProperty, DisplayMaximumProperty, ConfiguredMinimumProperty,
         ConfiguredMaximumProperty, TrimProperty, DeadZoneProperty, CapturedMinimumProperty,
         CapturedMaximumProperty, CandidateTrimProperty, IsCapturingProperty, IsStaleProperty,
         HasSignalProperty, PresentationKindProperty, IsReversedProperty);
@@ -115,6 +117,21 @@ public sealed class RadioChannelMeterView : Control
     public override void Render(DrawingContext context)
     {
         base.Render(context);
+        if (Compact)
+        {
+            var barWidth = Math.Max(0, Bounds.Width);
+            var barHeight = Math.Min(20, Bounds.Height);
+            var top = (Bounds.Height - barHeight) / 2;
+            context.DrawRectangle(new SolidColorBrush(Color.Parse("#45484D")), null,
+                new Rect(0, top, barWidth, barHeight), barHeight / 2, barHeight / 2);
+            if (HasSignal && barWidth > 0)
+            {
+                var color = IsStale ? "#7A818A" : RadioChannelColors.For(FunctionName, ChannelNumber);
+                context.DrawRectangle(new SolidColorBrush(Color.Parse(color)), null,
+                    new Rect(0, top, Position(Pwm, 0, barWidth), barHeight), barHeight / 2, barHeight / 2);
+            }
+            return;
+        }
         const double padding = 8;
         var width = Math.Max(1, Bounds.Width - (padding * 2));
         var center = Bounds.Height / 2;

@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioChannelDetailsView"
+             x:DataType="sections:RadioChannelDisplayViewModel">
+    <ScrollViewer MaxHeight="560" HorizontalScrollBarVisibility="Disabled">
+                                                <Border Margin="0"
+                                                        Padding="5,5" Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                                    <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                                >
+                                                        <StackPanel Orientation="Horizontal"  Spacing="8">
+                                                            <TextBlock Text="{Binding Number, StringFormat='CH {0}'}"  />
+                                                            <TextBlock Text="{Binding RoleLabel}"  />
+                                                        </StackPanel>
+
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <TextBlock Text="REV" IsVisible="{Binding IsReversed}"  />
+                                                            <TextBlock Text="{Binding AuxiliaryState}" Opacity="0.7"/>
+                                                            <TextBlock Text="{Binding Pwm, StringFormat='{}{0} µs'}" />
+                                                        </StackPanel>
+
+                                                        <sections:RadioChannelMeterView
+                                                                                        ChannelNumber="{Binding Number}"
+                                                                                        FunctionName="{Binding FunctionName}"
+                                                                                        Pwm="{Binding Pwm}"
+                                                                                        ConfiguredMinimum="{Binding Minimum}"
+                                                                                        ConfiguredMaximum="{Binding Maximum}"
+                                                                                        Trim="{Binding Trim}"
+                                                                                        DeadZone="{Binding DeadZone}"
+                                                                                        CapturedMinimum="{Binding CapturedMinimum}"
+                                                                                        CapturedMaximum="{Binding CapturedMaximum}"
+                                                                                        CandidateTrim="{Binding CandidateTrim}"
+                                                                                        IsCapturing="{Binding ShowCapturedRange}"
+                                                                                        IsStale="{Binding IsStale}"
+                                                                                        HasSignal="{Binding HasSignal}"
+                                                                                        PresentationKind="{Binding PresentationKind}"
+                                                                                        IsReversed="{Binding IsReversed}" />
+                                                        <TextBlock Text="{Binding Range, StringFormat='Stored MIN / TRIM / MAX {0}'}"  Opacity="0.72"/>
+                                                        <TextBlock Text="{Binding CalibrationIssue}" TextWrapping="Wrap" Classes="Danger H4" />
+                                                        <TextBlock Text="{Binding ObservedValues}" TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding DeadZone, StringFormat='Configured dead-zone: {0} µs'}"/>
+                                                        <TextBlock Text="{Binding Classification}" TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding ValidationStatus}" TextWrapping="Wrap"/>
+                                                        <TextBlock Text="{Binding NeutralDiagnosticText}"
+                                                                   Classes.Warning="{Binding HasNeutralWarning}"
+                                                                   TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </ScrollViewer></UserControl>

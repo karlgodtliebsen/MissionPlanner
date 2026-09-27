@@ -430,8 +430,11 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         Dispatcher.Dispatch(() => Show(args.Snapshot));
     }
 
+    [ObservableProperty] public partial string? HistoryVehicleId { get; private set; }
+
     private void RefreshLiveChannels()
     {
+        HistoryVehicleId = activeVehicle.VehicleId?.ToString();
         RefreshArmingSwitch();
         OnPropertyChanged(nameof(BindAvailability));
         BindReceiverCommand.NotifyCanExecuteChanged();
