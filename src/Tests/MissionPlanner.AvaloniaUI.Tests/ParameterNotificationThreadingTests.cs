@@ -66,7 +66,7 @@ public sealed class ParameterNotificationThreadingTests
         session.GetField("TEST_PARAM").Returns(_ => field);
         session.IsValid.Returns(true);
         session.IsDirty.Returns(_ => field.IsModified);
-        using var model = new FullParametersListTabViewModel(
+        using var model = new ParametersEditorTabViewModel(
           Substitute.For<IDialogService>(),
             Substitute.For<IDomainFactory>(),
               events,
@@ -80,7 +80,7 @@ public sealed class ParameterNotificationThreadingTests
             Substitute.For<IParameterProfileRepository>(),
             Substitute.For<IParameterProfileService>(),
             Substitute.For<IVehicleParameterLoadStatusContext>(),
-            NullLogger<FullParametersListTabViewModel>.Instance,
+            NullLogger<ParametersEditorTabViewModel>.Instance,
             Substitute.For<IVehicleConnectionService>());
 
 

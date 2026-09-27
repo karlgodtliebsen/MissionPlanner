@@ -4,7 +4,7 @@ using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Sections;
 
-public partial class FullParametersListTabViewModel
+public partial class ParametersEditorTabViewModel
 {
     private ActiveVehicleChangedEventArgs? deferredVehicleChange;
 

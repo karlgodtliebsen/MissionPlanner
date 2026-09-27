@@ -317,6 +317,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\ConfigTuning\Sections\ParametersEditor\ParametersEditorTabView.axaml.cs">
+	    <DependentUpon>ParametersEditorTabView.axaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\InitSetup\InstallFirmware\InstallFirmwarePage.axaml.cs">
 	    <DependentUpon>InstallFirmwarePage.axaml</DependentUpon>
 	  </Compile>

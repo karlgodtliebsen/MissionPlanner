@@ -42,7 +42,7 @@ public sealed class AvaloniaMigrationContractTests
         [
             typeof(BasicTuningTabViewModel),
             typeof(ExtendedTuningTabViewModel),
-            typeof(FullParametersListTabViewModel),
+            typeof(ParametersEditorTabViewModel),
             typeof(GeoFenceTabViewModel),
             typeof(OnboardOsdTabViewModel),
             typeof(MavFtpTabViewModel),
@@ -70,7 +70,7 @@ public sealed class AvaloniaMigrationContractTests
             typeof(IDialogService)
         ];
 
-        var constructors = typeof(FullParametersListTabViewModel).Assembly
+        var constructors = typeof(ParametersEditorTabViewModel).Assembly
             .GetTypes()
             .Where(type => typeof(ViewModelBase).IsAssignableFrom(type))
             .SelectMany(type => type.GetConstructors(BindingFlags.Public | BindingFlags.Instance))
@@ -104,7 +104,7 @@ public sealed class AvaloniaMigrationContractTests
 
     /// <summary>Verifies representative migrated pages contain complete current controls.</summary>
     [Theory]
-    [InlineData("Views/ConfigTuning/Tabs/FullParametersListTabView.axaml", "VirtualizedItemsGrid")]
+    [InlineData("Views/ConfigTuning/Tabs/ParametersEditorTabView.axaml", "VirtualizedItemsGrid")]
     [InlineData("Views/InitSetup/InstallFirmware/FirmwareCatalogueView.axaml", "VirtualizedItemsGrid")]
     [InlineData("Views/Navigation/MainShellView.axaml", "u:NavMenu")]
     [InlineData("Views/FlightData/FlightDataPage.axaml", "FlightDataMissionMapView")]

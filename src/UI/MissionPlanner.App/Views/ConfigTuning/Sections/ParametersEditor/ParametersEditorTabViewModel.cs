@@ -18,7 +18,7 @@ using Ursa.Controls;
 namespace MissionPlanner.App.Views.ConfigTuning.Sections;
 
 /// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
-public partial class FullParametersListTabViewModel : ParametersViewModel
+public partial class ParametersEditorTabViewModel : ParametersViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ITextClipboardService clipboard;
@@ -51,7 +51,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     /// <param name="domainEventHub"></param>
     /// <param name="connections">Captures and reconnects the current transport.</param>
     /// <param name="logger">The logger.</param>
-    public FullParametersListTabViewModel(
+    public ParametersEditorTabViewModel(
         IDialogService dialogService,
         IDomainFactory domainFactory,
         IDomainEventHub domainEventHub,
@@ -64,7 +64,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         IParameterProfileRepository profiles,
         IParameterProfileService profileWorkflow,
         IVehicleParameterLoadStatusContext parameterLoadStatus,
-        ILogger<FullParametersListTabViewModel> logger,
+        ILogger<ParametersEditorTabViewModel> logger,
         IVehicleConnectionService connections)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
@@ -125,11 +125,11 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
-    [NotifyCanExecuteChangedFor(nameof(FullParametersListTabViewModel.WriteParametersCommand))]
-    [NotifyCanExecuteChangedFor(nameof(FullParametersListTabViewModel.CompareParametersCommand))]
-    [NotifyCanExecuteChangedFor(nameof(FullParametersListTabViewModel.RevertChangesCommand))]
-    [NotifyCanExecuteChangedFor(nameof(FullParametersListTabViewModel.SaveToFileCommand))]
-    [NotifyCanExecuteChangedFor(nameof(FullParametersListTabViewModel.SaveToJsonFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ParametersEditorTabViewModel.WriteParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ParametersEditorTabViewModel.CompareParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ParametersEditorTabViewModel.RevertChangesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ParametersEditorTabViewModel.SaveToFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ParametersEditorTabViewModel.SaveToJsonFileCommand))]
     public partial bool HasRows
     {
         get; set;
@@ -187,9 +187,16 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 using var applyLifetime = CancellationTokenSource.CreateLinkedTokenSource(token, editorLifetime.Token);
                 applyLifetime.Token.ThrowIfCancellationRequested();
                 if (!ReferenceEquals(EditSession, editorSession) || !editorSession.IsValid || !HasConnection || IsBusy)
+                {
                     throw new InvalidOperationException("The original vehicle connection is no longer available or is busy. Reopen the editor after refreshing parameters.");
+                }
+
                 var parameters = viewModel.UpdateParameters(editorSession.Fields.Select(ToVehicleParameter).ToList());
-                if (parameters.Count == 0) return "No valid parameter assignments were found. No values were written. See the feedback report.";
+                if (parameters.Count == 0)
+                {
+                    return "No valid parameter assignments were found. No values were written. See the feedback report.";
+                }
+
                 var errors = new List<string>();
                 var acceptedNames = new List<string>();
                 var previousValues = editorSession.Fields.ToDictionary(field => field.Name, field => field.PendingValue);
@@ -209,7 +216,11 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                     }
                 }
                 viewModel.ReportSkippedParameters(errors);
-                if (acceptedNames.Count == 0) return "No valid parameter values could be staged. No values were written. See the feedback report.";
+                if (acceptedNames.Count == 0)
+                {
+                    return "No valid parameter values could be staged. No values were written. See the feedback report.";
+                }
+
                 await ApplyParameterChangesAsync(applyLifetime.Token, acceptedNames);
                 return ErrorMessage ?? StatusMessage ?? "Parameter write finished.";
             });
@@ -222,9 +233,20 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             ParametersEditorViewModel? returnModel;
             PropertyChangedEventHandler reportProgress = (_, args) =>
             {
-                if (!viewModel.ApplyModifiedCommand.IsRunning) return;
-                if (args.PropertyName == nameof(ProgressMessage)) viewModel.WriteProgress = ProgressMessage;
-                if (args.PropertyName == nameof(StatusMessage)) viewModel.StatusMessage = StatusMessage;
+                if (!viewModel.ApplyModifiedCommand.IsRunning)
+                {
+                    return;
+                }
+
+                if (args.PropertyName == nameof(ProgressMessage))
+                {
+                    viewModel.WriteProgress = ProgressMessage;
+                }
+
+                if (args.PropertyName == nameof(StatusMessage))
+                {
+                    viewModel.StatusMessage = StatusMessage;
+                }
             };
             PropertyChanged += reportProgress;
             try
@@ -377,7 +399,10 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanWriteParameters))]
-    private Task WriteParametersAsync(CancellationToken cancellationToken) => ApplyParameterChangesAsync(cancellationToken);
+    private Task WriteParametersAsync(CancellationToken cancellationToken)
+    {
+        return ApplyParameterChangesAsync(cancellationToken);
+    }
 
     private async Task ApplyParameterChangesAsync(CancellationToken cancellationToken, IReadOnlyList<string>? names = null)
     {
@@ -426,7 +451,10 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             await Dispatcher.DispatchAsync(async () =>
             {
                 if (!ReferenceEquals(EditSession, session) || !session.IsValid)
+                {
                     throw new InvalidOperationException("The vehicle changed while reviewing parameter writes. No values were written.");
+                }
+
                 var report = await session.ApplyAsync(plan, progress, connectionCancellation.Token);
                 lastApplyReport = report;
                 RebootRequired |= report.RebootRequired;

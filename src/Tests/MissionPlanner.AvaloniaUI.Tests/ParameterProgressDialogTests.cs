@@ -43,7 +43,7 @@ public sealed class ParameterProgressDialogTests
             {
                 Assert.True(editor.ApplyModifiedCommand.CanExecute(null));
                 await editor.ApplyModifiedCommand.ExecuteAsync(null);
-                return (ParametersEditorViewModel?)null;
+                return null;
             });
 
         await fixture.Model.UseQuickEditorCommand.ExecuteAsync(null);
@@ -287,7 +287,7 @@ public sealed class ParameterProgressDialogTests
         internal readonly List<DialogOptions> Options = [];
         internal Func<string>? Message;
         internal Func<Task<IDisposable>>? OpenDialog;
-        internal FullParametersListTabViewModel Model
+        internal ParametersEditorTabViewModel Model
         {
             get;
         }
@@ -340,7 +340,7 @@ public sealed class ParameterProgressDialogTests
                     return OpenDialog?.Invoke() ?? Task.FromResult(handle);
                 });
             Model = new
-                FullParametersListTabViewModel(
+                ParametersEditorTabViewModel(
                     dialogs,
                     DomainFactory,
                     events,
@@ -353,7 +353,7 @@ public sealed class ParameterProgressDialogTests
                     Substitute.For<IParameterProfileRepository>(),
                     Substitute.For<IParameterProfileService>(),
                     statusContext,
-                    NullLogger<FullParametersListTabViewModel>.Instance,
+                    NullLogger<ParametersEditorTabViewModel>.Instance,
                     Connections);
 
 

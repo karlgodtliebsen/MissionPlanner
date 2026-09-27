@@ -25,7 +25,7 @@
                 <TabItem x:Name="ExtendedTuning" Header="Extended Tuning"><sections:ExtendedTuningTabView /></TabItem>
                 <TabItem x:Name="OnboardOsd" Header="Onboard OSD"><sections:OnboardOSDTabView /></TabItem>
                 <TabItem x:Name="MavlinkFtp" Header="Mavlink Ftp"><sections:MAVFtpTabView /></TabItem>
-                <TabItem x:Name="ParametersEditor" Header="Parameters Editor"><sections:FullParametersListTabView /></TabItem>
+                <TabItem x:Name="ParametersEditor" Header="Parameters Editor"><sections:ParametersEditorTabView /></TabItem>
                 <TabItem x:Name="CubeLanSwitch" Header="CubeLan 8 Port Switch "><sections:CubeLan8PortSwitchTabView /></TabItem>
 
             </TabControl>

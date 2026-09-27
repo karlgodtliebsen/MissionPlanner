@@ -1,4 +1,4 @@
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -360,12 +360,12 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ExtendedTuningTabView>();
         services.TryAddTransient<OnboardOSDTabView>();
         services.TryAddTransient<MAVFtpTabView>();
-        services.TryAddTransient<FullParametersListTabView>();
+        services.TryAddTransient<ParametersEditorTabView>();
         services.TryAddTransient<CubeLan8PortSwitchTabView>();
         services.TryAddTransient<ParametersEditorView>();
         services.TryAddTransient<ParameterComparisonView>();
 
-        services.TryAddTransient<FullParametersListTabViewModel>();
+        services.TryAddTransient<ParametersEditorTabViewModel>();
         services.TryAddTransient<ParameterComparisonViewModel>();
         services.TryAddTransient<MavFtpTabViewModel>();
 
