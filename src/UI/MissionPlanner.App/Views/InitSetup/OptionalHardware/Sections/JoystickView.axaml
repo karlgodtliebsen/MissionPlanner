@@ -10,19 +10,18 @@
     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.JoystickView"
     x:DataType="sections:JoystickViewModel"
-    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:u="https://irihi.tech/ursa">
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
-            <StackPanel Spacing="10">
-
-                <TextBlock Text="Joystick Setup" Classes="H2"/>
+        <u:Banner  Classes="Bordered" Header="Joystick Setup" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="{Binding PlatformStatus}" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
-        </Border>
+        </u:Banner>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">

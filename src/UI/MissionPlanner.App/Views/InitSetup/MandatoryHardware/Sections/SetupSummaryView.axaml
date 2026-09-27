@@ -17,10 +17,9 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border HorizontalAlignment="Stretch" Padding="12">
-            <StackPanel Spacing="10">
-                <TextBlock Text="Setup summary" Classes="H2" />
-                <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+        <u:Banner  Classes="Bordered" Header="Setup summary" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                  <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
@@ -28,8 +27,7 @@
                 <TextBlock Text="{Binding Heading}" Classes="H4" />
                 <TextBlock Text="This report describes configuration evidence only and is not a safe-to-fly certification." Opacity="0.75" />
             </StackPanel>
-        </Border>
-
+        </u:Banner>
         <Border Grid.Row="1" Padding="12">
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                 <Button Classes="ToolbarIconButton" ToolTip.Tip="Rebuild summary" Command="{Binding RefreshCommand}" AutomationProperties.Name="Rebuild summary">

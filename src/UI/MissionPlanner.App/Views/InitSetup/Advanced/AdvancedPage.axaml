@@ -1,43 +1,26 @@
 <utilities:NavigationViewBase
+    x:TypeArguments="local:AdvancedViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced"
-    x:TypeArguments="local:AdvancedViewModel"
+    xmlns:warnings="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
+    xmlns:signing="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Signing"
+    xmlns:proximity="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Proximity"
+    xmlns:output="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
+    xmlns:nmea="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Nmea"
+    xmlns:inspector="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Inspector"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.AdvancedPage"
     x:DataType="local:AdvancedViewModel"
     x:CompileBindings="True">
-    <ContentPage Header="Advanced"  >
-        <Grid RowDefinitions="Auto,*" Margin="20"  RowSpacing="14">
-            <Border HorizontalAlignment="Stretch" x:Name="SourceBorder" 
-                    Margin="0,20" MaxWidth="1000">
-                <StackPanel Orientation="Vertical" Spacing="25" HorizontalAlignment="Center" >
-                    <TextBlock Text="Advanced tools" Classes="Title H2" />
-                    <TextBlock Text="Inspect telemetry, manage outputs, and analyze recorded data. Review each tool's requirements before starting."
-                               TextWrapping="Wrap" />
-                    <SelectableTextBlock Text="{Binding StatusMessage}"
-                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
-                                         TextWrapping="Wrap" Classes="Warning" />
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap"
-                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                </StackPanel>
-            </Border>
-            <TabControl Grid.Row="1" ItemsSource="{Binding Tools}" 
-                        TabStripPlacement="Left"
-                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-                <TabControl.ItemTemplate>
-                    <DataTemplate x:DataType="local:AdvancedToolCardViewModel">
-                        <TextBlock Text="{Binding Feature.Title}" 
-                                   MaxWidth="220" TextWrapping="Wrap" />
-                    </DataTemplate>
-                </TabControl.ItemTemplate>
-                <TabControl.ContentTemplate>
-                    <DataTemplate x:DataType="local:AdvancedToolCardViewModel">
-                        <local:AdvancedToolTabView />
-                    </DataTemplate>
-                </TabControl.ContentTemplate>
-            </TabControl>
-        </Grid>
-
+    <ContentPage Header="Advanced Tools"  >
+        <TabControl Margin="20" TabStripPlacement="Left" >
+            <TabItem Header="Warnings"><warnings:WarningManagerPage /></TabItem>
+            <TabItem Header="MAVLink signing"><signing:SigningPage /></TabItem>
+            <TabItem Header="Proximity observations"><proximity:ProximityPage /></TabItem>
+            <TabItem Header="MAVLink mirror"><output:MirrorPage /></TabItem>
+            <TabItem Header="NMEA navigation output"><nmea:NmeaPage /></TabItem>
+            <TabItem Header="Traffic inspection"><inspector:MavLinkInspectorPage /></TabItem>
+        </TabControl>
     </ContentPage>
 </utilities:NavigationViewBase>

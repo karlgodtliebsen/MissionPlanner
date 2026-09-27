@@ -8,6 +8,7 @@
                                xmlns:optionalHardware="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware;assembly=MissionPlanner.Core"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               xmlns:u="https://irihi.tech/ursa"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CompassMotorCalibrationView"
                                x:DataType="sections:CompassMotorCalibrationViewModel">
@@ -15,15 +16,14 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
-            <StackPanel Spacing="10">
-                <TextBlock Text="Compass / Motor Calibration" Classes="H2" />
+        <u:Banner  Classes="Bordered" Header="Compass / Motor Calibration" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="Remove ALL propellers. CompassMot may spin motors." Classes="Warning H4"  />
                 <TextBlock Text="{Binding Instruction}" />
                 <TextBlock Text="{Binding Compensation}" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
-        </Border>
+        </u:Banner>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">
@@ -38,15 +38,15 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                <controls:SetupInformationView Grid.Row="1" Topic="CompassMotor" WorkflowError="{Binding ErrorMessage}" >
-                    <controls:SetupInformationView.WorkflowStatus>
-                        <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
-                            <Binding Path="StatusMessage" />
-                            <Binding Path="Instruction" />
-                            <Binding Path="Compensation" />
-                        </MultiBinding>
-                    </controls:SetupInformationView.WorkflowStatus>
-                </controls:SetupInformationView>
+                    <controls:SetupInformationView Grid.Row="1" Topic="CompassMotor" WorkflowError="{Binding ErrorMessage}" >
+                        <controls:SetupInformationView.WorkflowStatus>
+                            <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
+                                <Binding Path="StatusMessage" />
+                                <Binding Path="Instruction" />
+                                <Binding Path="Compensation" />
+                            </MultiBinding>
+                        </controls:SetupInformationView.WorkflowStatus>
+                    </controls:SetupInformationView>
                 </Grid>
             </TabItem>
             <TabItem Header="Configuration">

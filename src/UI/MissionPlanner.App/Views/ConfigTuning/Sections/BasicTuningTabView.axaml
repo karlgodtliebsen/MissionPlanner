@@ -17,17 +17,17 @@
         <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Center">
 
             <StackPanel Orientation="Vertical">
-                <StackPanel Orientation="Horizontal"   Spacing="8">
-                    <Button Classes="ToolbarButton"  ToolTip.Tip="Import presented fields" Command="{Binding ImportCommand}" Margin="4" >
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Import presented fields" Command="{Binding ImportCommand}" Margin="4" >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                     </Button>
-                    <Button Classes="ToolbarButton"  ToolTip.Tip="Export presented fields" Command="{Binding ExportCommand}" Margin="4" >
+                    <Button Classes="ToolbarButton" ToolTip.Tip="Export presented fields" Command="{Binding ExportCommand}" Margin="4" >
                         <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
                     </Button>
                 </StackPanel>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-
             </StackPanel>
+
 
             <Border Grid.Row="1" Padding="10" Classes="SectionCard">
                 <StackPanel Orientation="Vertical" Spacing="10">

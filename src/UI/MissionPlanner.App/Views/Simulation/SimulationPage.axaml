@@ -10,19 +10,21 @@
     mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
     x:Class="MissionPlanner.App.Views.Simulation.SimulationPage"
     x:DataType="simulation:SimulationViewModel"
-    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:u="https://irihi.tech/ursa">
     <ContentPage Header="Simulation"  >
         <Grid Margin="18" RowDefinitions="Auto,*" RowSpacing="12">
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                <StackPanel Orientation="Vertical" Spacing="3">
-                    <TextBlock Text="Simulation workspace" Classes="H2" />
-                    <TextBlock Text="Persisted profiles and an owned, observable simulator session. Launch adapters are capability-driven; unavailable runtimes fail explicitly." />
-                </StackPanel>
-                <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Export diagnostics" Command="{Binding ExportDiagnosticsCommand}" VerticalAlignment="Center" AutomationProperties.Name="Export diagnostics">
-                    <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
-                </Button>
-            </Grid>
-
+            <u:Banner  Classes="Bordered" Header="Simulation workspace" HorizontalAlignment="Stretch">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <StackPanel Orientation="Vertical" Spacing="3">
+                        <TextBlock Text="" Classes="H2" />
+                        <TextBlock Text="Persisted profiles and an owned, observable simulator session. Launch adapters are capability-driven; unavailable runtimes fail explicitly." />
+                    </StackPanel>
+                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Export diagnostics" Command="{Binding ExportDiagnosticsCommand}" VerticalAlignment="Center" AutomationProperties.Name="Export diagnostics">
+                        <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                    </Button>
+                </Grid>
+            </u:Banner>
             <Grid Grid.Row="1" ColumnDefinitions="0.85*,1.15*" ColumnSpacing="14">
                 <ScrollViewer>
                     <StackPanel Orientation="Vertical" Spacing="12">
@@ -34,13 +36,13 @@
                                     DisplayMemberBinding="{Binding Name}"
                                     SelectedItem="{Binding SelectedProfile}" />
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="New" Command="{Binding NewProfileCommand}" AutomationProperties.Name="New">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="New" Command="{Binding NewProfileCommand}" AutomationProperties.Name="New">
                                         <mdi:MaterialIcon Kind="PlusBoxOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Save" Command="{Binding SaveProfileCommand}" AutomationProperties.Name="Save">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Save" Command="{Binding SaveProfileCommand}" AutomationProperties.Name="Save">
                                         <mdi:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Delete" Command="{Binding DeleteProfileCommand}" AutomationProperties.Name="Delete">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Delete" Command="{Binding DeleteProfileCommand}" AutomationProperties.Name="Delete">
                                         <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
                                     </Button>
                                 </StackPanel>
@@ -91,10 +93,10 @@
 
                                 </Grid>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Start all" Command="{Binding StartAllCommand}" AutomationProperties.Name="Start all">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Start all" Command="{Binding StartAllCommand}" AutomationProperties.Name="Start all">
                                         <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Stop all" Command="{Binding StopAllCommand}" AutomationProperties.Name="Stop all">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Stop all" Command="{Binding StopAllCommand}" AutomationProperties.Name="Stop all">
                                         <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
                                     </Button>
                                 </StackPanel>
@@ -152,13 +154,13 @@
                                     DisplayMemberBinding="{Binding DisplayName}"
                                     SelectedItem="{Binding SelectedInstallation}" />
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Refresh" Command="{Binding RefreshInstallationsCommand}" AutomationProperties.Name="Refresh">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshInstallationsCommand}" AutomationProperties.Name="Refresh">
                                         <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Use selected" Command="{Binding UseSelectedInstallationCommand}" AutomationProperties.Name="Use selected">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Use selected" Command="{Binding UseSelectedInstallationCommand}" AutomationProperties.Name="Use selected">
                                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Remove cached"
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Remove cached"
                                             Command="{Binding RemoveInstallationCommand}"
                                             IsEnabled="{Binding CanRemoveInstallation}" AutomationProperties.Name="Remove cached">
                                         <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
@@ -174,12 +176,12 @@
                                               SelectedItem="{Binding SelectedRelease}" />
                                 </Grid>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Download, verify, and install"
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Download, verify, and install"
                                             Command="{Binding InstallReleaseCommand}"
                                             IsEnabled="{Binding CanInstallRelease}" AutomationProperties.Name="Download, verify, and install">
                                         <mdi:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Cancel"
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Cancel"
                                             Command="{Binding CancelOperationCommand}" AutomationProperties.Name="Cancel">
                                         <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                                     </Button>
@@ -228,7 +230,7 @@
                                         ItemsSource="{Binding LocationPresets}"
                                         DisplayMemberBinding="{Binding Name}"
                                         SelectedItem="{Binding SelectedLocationPreset}" />
-                                    <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Apply preset" Command="{Binding ApplyLocationPresetCommand}" AutomationProperties.Name="Apply preset">
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Apply preset" Command="{Binding ApplyLocationPresetCommand}" AutomationProperties.Name="Apply preset">
                                         <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                     </Button>
                                 </Grid>
@@ -338,16 +340,16 @@
                                 <TextBlock Text="Declarative scenario runner" FontSize="18" FontWeight="Bold" />
                                 <TextBlock Text="Closed schema only. Every step has a timeout; dry-run checks the exact vehicle and required capabilities." />
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Load JSON" Command="{Binding LoadScenarioDocumentCommand}" AutomationProperties.Name="Load JSON">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Load JSON" Command="{Binding LoadScenarioDocumentCommand}" AutomationProperties.Name="Load JSON">
                                         <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Dry run" Command="{Binding DryRunScenarioCommand}" AutomationProperties.Name="Dry run">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Dry run" Command="{Binding DryRunScenarioCommand}" AutomationProperties.Name="Dry run">
                                         <mdi:MaterialIcon Kind="FlaskOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Run" Command="{Binding RunScenarioCommand}" AutomationProperties.Name="Run">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Run" Command="{Binding RunScenarioCommand}" AutomationProperties.Name="Run">
                                         <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Cancel" Command="{Binding CancelOperationCommand}" AutomationProperties.Name="Cancel">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Cancel" Command="{Binding CancelOperationCommand}" AutomationProperties.Name="Cancel">
                                         <mdi:MaterialIcon Kind="CloseCircleOutline" Classes="ActionIcon" />
                                     </Button>
                                 </StackPanel>
@@ -362,16 +364,16 @@
                                     <CheckBox Content="I confirm arm, takeoff, mission start, and fault steps" IsChecked="{Binding ScenarioHazardsConfirmed}" />
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Pause at boundary" Command="{Binding PauseScenarioCommand}" AutomationProperties.Name="Pause at boundary">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Pause at boundary" Command="{Binding PauseScenarioCommand}" AutomationProperties.Name="Pause at boundary">
                                         <mdi:MaterialIcon Kind="PauseCircleOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Resume" Command="{Binding ResumeScenarioCommand}" AutomationProperties.Name="Resume">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Resume" Command="{Binding ResumeScenarioCommand}" AutomationProperties.Name="Resume">
                                         <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Export JSON report" Command="{Binding ExportScenarioJsonCommand}" AutomationProperties.Name="Export JSON report">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Export JSON report" Command="{Binding ExportScenarioJsonCommand}" AutomationProperties.Name="Export JSON report">
                                         <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                                     </Button>
-                                    <Button Classes="ToolbarButton" ToolTip.Tip="Export text report" Command="{Binding ExportScenarioTextCommand}" AutomationProperties.Name="Export text report">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Export text report" Command="{Binding ExportScenarioTextCommand}" AutomationProperties.Name="Export text report">
                                         <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                                     </Button>
                                 </StackPanel>
@@ -386,7 +388,7 @@
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                             <StackPanel Orientation="Vertical" Spacing="4">
                                 <TextBlock Text="{Binding SessionState}" FontSize="20" FontWeight="Bold" />
-                                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
+                                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                                 <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
                                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
@@ -410,7 +412,7 @@
 
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                                 <TextBlock Text="Environment, sensors, and bounded faults" FontSize="18" FontWeight="Bold" />
-                                <Button Classes="ToolbarButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshControlsCommand}" AutomationProperties.Name="Refresh">
+                                <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshControlsCommand}" AutomationProperties.Name="Refresh">
                                     <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                                 </Button>
                             </Grid>
@@ -441,11 +443,11 @@
                                 <TextBlock Text="I confirm this bounded hazardous injection" VerticalAlignment="Center" />
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Apply" Command="{Binding ApplyControlCommand}"
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Apply" Command="{Binding ApplyControlCommand}"
                                         IsEnabled="{Binding SelectedControl.IsAvailable}" AutomationProperties.Name="Apply">
                                     <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                                 </Button>
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Reset" Command="{Binding ResetControlCommand}" AutomationProperties.Name="Reset">
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset" Command="{Binding ResetControlCommand}" AutomationProperties.Name="Reset">
                                     <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                                 </Button>
                             </StackPanel>
@@ -459,13 +461,13 @@
                                           SelectedItem="{Binding SelectedScenarioPreset}" />
                             </Grid>
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Save preset" Command="{Binding SaveScenarioPresetCommand}" AutomationProperties.Name="Save preset">
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Save preset" Command="{Binding SaveScenarioPresetCommand}" AutomationProperties.Name="Save preset">
                                     <mdi:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
                                 </Button>
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Load preset" Command="{Binding LoadScenarioPresetCommand}" AutomationProperties.Name="Load preset">
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Load preset" Command="{Binding LoadScenarioPresetCommand}" AutomationProperties.Name="Load preset">
                                     <mdi:MaterialIcon Kind="FolderOpenOutline" Classes="ActionIcon" />
                                 </Button>
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Delete preset" Command="{Binding DeleteScenarioPresetCommand}" AutomationProperties.Name="Delete preset">
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Delete preset" Command="{Binding DeleteScenarioPresetCommand}" AutomationProperties.Name="Delete preset">
                                     <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
                                 </Button>
                             </StackPanel>
@@ -483,13 +485,13 @@
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                             <TextBlock Text="Live stdout / stderr" FontSize="18" FontWeight="Bold" />
                             <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="8">
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Start" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" AutomationProperties.Name="Start">
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Start" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" AutomationProperties.Name="Start">
                                     <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
                                 </Button>
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Stop" Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" AutomationProperties.Name="Stop">
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Stop" Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" AutomationProperties.Name="Stop">
                                     <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
                                 </Button>
-                                <Button Classes="ToolbarButton" ToolTip.Tip="Restart" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" AutomationProperties.Name="Restart">
+                                <Button Classes="EmbeddedIconButton" ToolTip.Tip="Restart" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" AutomationProperties.Name="Restart">
                                     <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" />
                                 </Button>
                             </StackPanel>

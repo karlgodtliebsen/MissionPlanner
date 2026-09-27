@@ -9,19 +9,20 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.ServoOutputSetupView"
                                x:DataType="sections:ServoOutputSetupViewModel"
-                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:u="https://irihi.tech/ursa">
 
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border HorizontalAlignment="Stretch" Padding="12"  >
-            <StackPanel Spacing="10">
-                <TextBlock  Text="Servo output functions" Classes="H2" />
+        <u:Banner  Classes="Bordered" Header="Servo output functions" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}"
                              IsVisible="{Binding IsBusy}" />
+
             </StackPanel>
-        </Border>
+        </u:Banner>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">

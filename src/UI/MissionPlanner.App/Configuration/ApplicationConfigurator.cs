@@ -288,57 +288,36 @@ public static class ApplicationConfigurator
 
         // Advanced Setup Services and ViewModels
         services.TryAddSingleton<IAdvancedPlatformCapabilities, AdvancedPlatformCapabilitySource>();
-        services.TryAddSingleton<AdvancedAvailabilityService>();
         services.TryAddSingleton<ProximityOptions>();
         services.TryAddSingleton<OutputEndpointOwners>();
         services.TryAddTransient<NmeaSession>();
         services.TryAddSingleton<NmeaOptionsViewModel>();
         services.TryAddSingleton<NmeaPreviewViewModel>();
         services.TryAddSingleton<NmeaViewModel>();
-        services.TryAddTransient<NmeaPage>();
         services.TryAddTransient<BoundedOutputSession>();
         services.TryAddTransient<MirrorSession>();
         services.TryAddSingleton<OutputEndpointViewModel>();
         services.TryAddSingleton<OutputStatusViewModel>();
         services.TryAddSingleton<MirrorViewModel>();
-        services.TryAddTransient<MirrorPage>();
-
         services.TryAddTransient<AdvancedViewModel>();
-        services.TryAddSingleton<AdvancedToolRegistry>();
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddTransient<AdvancedPage>();
-
-        services.AddSingleton(provider => new AdvancedToolRegistration(AdvancedFeatureId.Nmea,
-            () => provider.GetRequiredService<NmeaPage>()));
-        services.AddSingleton(provider => new AdvancedToolRegistration(AdvancedFeatureId.Mirror,
-            () => provider.GetRequiredService<MirrorPage>()));
-        services.AddSingleton(provider => new AdvancedToolRegistration(AdvancedFeatureId.Signing,
-            () => provider.GetRequiredService<SigningPage>()));
-        services.AddSingleton(provider => new AdvancedToolRegistration(AdvancedFeatureId.Proximity,
-            () => provider.GetRequiredService<ProximityPage>()));
-        services.AddSingleton(provider => new AdvancedToolRegistration(AdvancedFeatureId.Inspector,
-            () => provider.GetRequiredService<MavLinkInspectorPage>()));
-        services.AddSingleton(provider => new AdvancedToolRegistration(AdvancedFeatureId.Warnings,
-            () => provider.GetRequiredService<WarningManagerPage>()));
 
         services.TryAddSingleton<SigningKeyRepository>();
         services.TryAddSingleton<SigningSetupOptions>();
         services.TryAddSingleton<SigningSetupService>();
         services.TryAddSingleton<SigningKeyViewModel>();
         services.TryAddSingleton<SigningViewModel>();
-        services.TryAddTransient<SigningPage>();
         services.TryAddTransient<ProximityAggregator>();
         services.TryAddTransient<ProximitySession>();
         services.TryAddSingleton<ProximityRadarViewModel>();
         services.TryAddSingleton<ProximityDiagnosticsViewModel>();
         services.TryAddSingleton<ProximityViewModel>();
-        services.TryAddTransient<ProximityPage>();
         services.TryAddTransient<InspectorAggregator>();
         services.TryAddTransient<InspectorSession>();
         services.TryAddSingleton<InspectorListViewModel>();
         services.TryAddSingleton<InspectorDetailViewModel>();
         services.TryAddSingleton<MavLinkInspectorViewModel>();
-        services.TryAddTransient<MavLinkInspectorPage>();
         services.TryAddSingleton<WarningSources>();
         services.TryAddTransient<WarningEngine>();
         services.TryAddSingleton<WarningRuleRepository>();
@@ -346,7 +325,6 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<WarningRuleEditorViewModel>();
         services.TryAddSingleton<WarningStatusViewModel>();
         services.TryAddSingleton<WarningManagerViewModel>();
-        services.TryAddTransient<WarningManagerPage>();
         services.TryAddSingleton<NamingViewModel>();
 
         services.TryAddTransient<InstallFirmwareViewModel>();
@@ -399,9 +377,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FrameSetupViewModel>();
         services.TryAddTransient<AccelerometerSetupViewModel>();
         services.TryAddTransient<CompassSetupViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Presentation.Documents.IArmingSetupDocumentFactory, MissionPlanner.App.Presentation.Documents.ArmingSetupDocumentFactory>();
-        services.TryAddSingleton<MissionPlanner.App.Presentation.Documents.ICompassSetupDocumentFactory,
-            MissionPlanner.App.Presentation.Documents.CompassSetupDocumentFactory>();
+        services.TryAddSingleton<Presentation.Documents.IArmingSetupDocumentFactory, Presentation.Documents.ArmingSetupDocumentFactory>();
+        services.TryAddSingleton<Presentation.Documents.ICompassSetupDocumentFactory, Presentation.Documents.CompassSetupDocumentFactory>();
         services.TryAddTransient<RadioSetupViewModel>();
         services.TryAddTransient<ServoOutputSetupViewModel>();
         services.TryAddTransient<EscMotorSetupViewModel>();

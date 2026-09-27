@@ -9,24 +9,24 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FrameSetupView"
                                x:DataType="sections:FrameSetupViewModel"
-                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:u="https://irihi.tech/ursa">
 
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
-            <StackPanel Spacing="10">
-                <TextBlock Text="Supported frame configuration" Classes="H2" />
+        <u:Banner  Classes="Bordered" Header="Supported frame configuration" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
                 <TextBlock Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}"  TextWrapping="Wrap" />
                 <TextBlock Text="Only values advertised by the connected firmware metadata are shown. Current values remain unchanged until Write and Verify is confirmed." TextWrapping="Wrap" />
                 <TextBlock IsVisible="{Binding RebootRequired}"
-                           Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration." 
+                           Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration."
                            TextWrapping="Wrap"
                            Classes="Warning" FontWeight="Bold" />
             </StackPanel>
-        </Border>
+        </u:Banner>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">

@@ -1,4 +1,4 @@
-<utilities:NavigationViewBase x:TypeArguments="configTuning:ConfigurationViewModel" 
+<utilities:NavigationViewBase x:TypeArguments="configTuning:ConfigurationViewModel"
                               xmlns="https://github.com/avaloniaui"
                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -11,26 +11,14 @@
                               x:Class="MissionPlanner.App.Views.ConfigTuning.ConfigurationPage"
                               x:DataType="configTuning:ConfigurationViewModel">
     <ContentPage Header="Configuration">
-       
-        <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-            </StackPanel>
-            <TabControl x:Name="ConfigurationTabs" TabStripPlacement="Left" Grid.Row="1" >
-          
-                <TabItem x:Name="GeoFence" Header="GeoFence"><sections:GeoFenceTabView /></TabItem>
-                <TabItem x:Name="BasicTuning" Header="Basic Tuning"><sections:BasicTuningTabView /></TabItem>
-                <TabItem x:Name="ExtendedTuning" Header="Extended Tuning"><sections:ExtendedTuningTabView /></TabItem>
-                <TabItem x:Name="OnboardOsd" Header="Onboard OSD"><sections:OnboardOSDTabView /></TabItem>
-                <TabItem x:Name="MavlinkFtp" Header="Mavlink Ftp"><sections:MAVFtpTabView /></TabItem>
-                <TabItem x:Name="ParametersEditor" Header="Parameters Editor"><parametersEditor:ParametersEditorTabView /></TabItem>
-                <TabItem x:Name="CubeLanSwitch" Header="CubeLan 8 Port Switch "><sections:CubeLan8PortSwitchTabView /></TabItem>
-
-            </TabControl>
-        </Grid>
-
+        <TabControl x:Name="ConfigurationTabs" TabStripPlacement="Left" Grid.Row="1" >
+            <TabItem x:Name="GeoFence" Header="GeoFence"><sections:GeoFenceTabView /></TabItem>
+            <TabItem x:Name="BasicTuning" Header="Basic Tuning"><sections:BasicTuningTabView /></TabItem>
+            <TabItem x:Name="ExtendedTuning" Header="Extended Tuning"><sections:ExtendedTuningTabView /></TabItem>
+            <TabItem x:Name="OnboardOsd" Header="Onboard OSD"><sections:OnboardOSDTabView /></TabItem>
+            <TabItem x:Name="MavlinkFtp" Header="Mavlink Ftp"><sections:MAVFtpTabView /></TabItem>
+            <TabItem x:Name="ParametersEditor" Header="Parameters Editor"><parametersEditor:ParametersEditorTabView /></TabItem>
+            <TabItem x:Name="CubeLanSwitch" Header="CubeLan 8 Port Switch "><sections:CubeLan8PortSwitchTabView /></TabItem>
+        </TabControl>
     </ContentPage>
 </utilities:NavigationViewBase>

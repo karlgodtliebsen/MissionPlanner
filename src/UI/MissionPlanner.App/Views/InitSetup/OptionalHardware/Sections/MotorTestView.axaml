@@ -20,9 +20,8 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border Padding="12">
-            <StackPanel Orientation="Vertical" Spacing="10"  HorizontalAlignment="Center" >
-                <TextBlock Text="Motor Test" Classes="H2"   HorizontalAlignment="Center" />
+        <u:Banner  Classes="Bordered" Header="Motor Test" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="{Binding FrameDisplay}" Classes="H4"   HorizontalAlignment="Center" />
                 <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
                     <TextBlock Text="ArduPilot motor order diagrams" VerticalAlignment="Center" />
@@ -35,7 +34,7 @@
                 </StackPanel>
                 <TextBlock Text="Remove ALL propellers. Motors will spin." Classes="Warning H4"    HorizontalAlignment="Center" />
             </StackPanel>
-        </Border>
+        </u:Banner>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">
@@ -85,7 +84,7 @@
 
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
-                                        
+
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">
@@ -150,7 +149,7 @@
                                     <TextBlock  Text="{Binding SpinMessage}"  Classes="Warning H4" />
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
-                                        
+
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">
@@ -217,7 +216,7 @@
 
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
-                                        
+
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">
@@ -255,7 +254,7 @@
 
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
-                                        
+
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">

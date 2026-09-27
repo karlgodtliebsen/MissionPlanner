@@ -18,23 +18,29 @@
         </Style>
     </NavigationPage.Styles>
     <ContentPage Header="Install Firmware">
-        <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <controls:InformationDocumentView IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}">
-                    <controls:InformationDocumentView.Document>
-                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
-                            <Binding Path="StatusMessage" StringFormat="{}{0}"/>
-                        </MultiBinding>
-                    </controls:InformationDocumentView.Document>
-                </controls:InformationDocumentView>
-                <controls:InformationDocumentView IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}">
-                    <controls:InformationDocumentView.Document>
-                        <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}" ConverterParameter="Error">
-                            <Binding Path="ErrorMessage" StringFormat="{}{0}"/>
-                        </MultiBinding>
-                    </controls:InformationDocumentView.Document>
-                </controls:InformationDocumentView>
-            </StackPanel>
+
+        <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+            </Grid.ColumnDefinitions>
+            <u:Banner Classes="Bordered" Header="Install Firmware Overview" HorizontalAlignment="Stretch" >
+                <StackPanel Spacing="6" HorizontalAlignment="Center">
+                    <controls:InformationDocumentView IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}">
+                        <controls:InformationDocumentView.Document>
+                            <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}">
+                                <Binding Path="StatusMessage" StringFormat="{}{0}"/>
+                            </MultiBinding>
+                        </controls:InformationDocumentView.Document>
+                    </controls:InformationDocumentView>
+                    <controls:InformationDocumentView IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}">
+                        <controls:InformationDocumentView.Document>
+                            <MultiBinding Converter="{x:Static documents:FirmwareDocumentConverter.Instance}" ConverterParameter="Error">
+                                <Binding Path="ErrorMessage" StringFormat="{}{0}"/>
+                            </MultiBinding>
+                        </controls:InformationDocumentView.Document>
+                    </controls:InformationDocumentView>
+                </StackPanel>
+            </u:Banner>
             <TabControl Grid.Row="1" TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                 <TabItem Header="Information">
                     <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,0">
@@ -539,7 +545,6 @@
                             </ScrollViewer>
                         </Grid>
                     </StackPanel>
-
                 </TabItem>
             </TabControl>
         </Grid>

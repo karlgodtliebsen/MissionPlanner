@@ -1,10 +1,11 @@
-using MissionPlanner.App.Utilities;
-
-namespace MissionPlanner.App.Views.InitSetup.Advanced.Proximity;
+﻿namespace MissionPlanner.App.Views.InitSetup.Advanced.Proximity;
 
 /// <summary>Displays proximity observations.</summary>
-public partial class ProximityPage : NavigationViewBase<ProximityViewModel>
+public partial class ProximityPage : UserControlViewBase<ProximityViewModel>
 {
     /// <summary>Initializes the view.</summary>
-    public ProximityPage() => InitializeComponent();
+    public ProximityPage()
+    {
+        InitializeComponent();
+    }
 }

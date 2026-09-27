@@ -1,15 +1,15 @@
 ﻿<utilities:UserControlViewBase
-                xmlns="https://github.com/avaloniaui"
-                xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
-                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                xmlns:models="clr-namespace:MissionPlanner.App.Models"
-                xmlns:u="https://irihi.tech/ursa"
-                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
-                x:TypeArguments="sections:SerialPortsViewModel"
-                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SerialPortsView"
-                x:DataType="sections:SerialPortsViewModel">
+    xmlns="https://github.com/avaloniaui"
+    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:models="clr-namespace:MissionPlanner.App.Models"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+    x:TypeArguments="sections:SerialPortsViewModel"
+    x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SerialPortsView"
+    x:DataType="sections:SerialPortsViewModel">
 
     <utilities:UserControlViewBase.Resources>
         <DataTemplate x:Key="SerialEditor" x:DataType="models:ParameterItemViewModel">
@@ -43,9 +43,8 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border HorizontalAlignment="Stretch" Padding="12"  >
-            <StackPanel Spacing="10">
-                <TextBlock Text="Serial Ports" Classes="H2" />
+        <u:Banner  Classes="Bordered" Header="Serial Ports" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="Configure the flight controller's serial parameters. SERIAL indexes do not establish physical UART wiring. Unreported settings remain blank."
                            TextWrapping="Wrap" />
                 <TextBlock Text="Speed is the configured baud setting; RC protocols may choose a different runtime baud rate."
@@ -58,18 +57,18 @@
                 <TextBlock Text="{Binding Diagnostic}" IsVisible="{Binding Diagnostic, Converter={StaticResource StringNotNullEmptyConverter}}"  Classes="Warning" TextWrapping="Wrap" />
                 <TextBlock Text="Receiver diagnostics include pending edits. No settings are written until Apply changes."
                            Classes="H5" TextWrapping="Wrap" />
-
             </StackPanel>
-        </Border>
+        </u:Banner>
+
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">
                     <Border Grid.Row="0" Padding="12">
                         <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
                             <Button Classes="ToolbarIconButton" Command="{Binding RefreshCommand}"
-                                ToolTip.Tip="Reload reported parameters"
-                                IsEnabled="{Binding !IsBusy}"
-                                AutomationProperties.Name="Reload reported parameters">
+                                    ToolTip.Tip="Reload reported parameters"
+                                    IsEnabled="{Binding !IsBusy}"
+                                    AutomationProperties.Name="Reload reported parameters">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
                             <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
@@ -107,20 +106,20 @@
                             <ItemsControl ItemsSource="{Binding Ports}" IsEnabled="{Binding CanEdit}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate x:DataType="sections:SerialPortRowViewModel">
-                                       
+
                                         <u:UrsaGroupBox  BorderBrush="{DynamicResource SemiColorSecondary}"
-                                                         
+
                                                          BorderThickness="2"
                                                          CornerRadius="12" HeaderSpacing="12"
-                                        >
-                                            
+                                                         >
+
                                             <u:UrsaGroupBox.Header >
                                                 <TextBlock
                                                     FontWeight="SemiBold"
                                                     Foreground="{DynamicResource SemiColorSecondary}"
                                                     Text="{Binding DisplayName}" />
                                             </u:UrsaGroupBox.Header>
-                                            
+
                                             <StackPanel Spacing="8"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
                                                 <WrapPanel ItemSpacing="15"  >
                                                     <StackPanel Width="180"  Spacing="4">

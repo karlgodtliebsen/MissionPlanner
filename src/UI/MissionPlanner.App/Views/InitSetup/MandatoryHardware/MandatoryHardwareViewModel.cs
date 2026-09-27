@@ -1,13 +1,9 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.Setup.Abstractions;
-using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
@@ -17,7 +13,7 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 public partial class MandatoryHardwareViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
-    private readonly Views.Diagnostics.LiveTelemetryInspectorViewModel? inspector;
+    private readonly Diagnostics.LiveTelemetryInspectorViewModel? inspector;
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly ISetupWorkflowCatalog catalog;
     private readonly INavigationService navigation;
@@ -39,8 +35,9 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
         IActiveVehicleContext activeVehicle,
         IVehicleParameterRegistry parameterRegistry,
         ISetupWorkflowCatalog catalog,
-        INavigationService navigation, ILogger<MandatoryHardwareViewModel> logger,
-        Views.Diagnostics.LiveTelemetryInspectorViewModel? inspector = null) : base(logger)
+        INavigationService navigation,
+        ILogger<MandatoryHardwareViewModel> logger,
+        Diagnostics.LiveTelemetryInspectorViewModel? inspector = null) : base(logger)
     {
         this.inspector = inspector;
         this.activeVehicle = activeVehicle;
@@ -50,33 +47,29 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
 
     }
 
-    /// <summary>
-    /// Gets fixed index-aligned headers.
-    /// </summary>
-    public ObservableRangeCollection<TabItemViewModel> Tabs { get; } = [];
+    ///// <summary>
+    ///// Gets fixed index-aligned headers.
+    ///// </summary>
+    //public ObservableRangeCollection<TabItemViewModel> Tabs { get; } = [];
 
-    /// <summary>Gets or sets the selected header.</summary>
-    [ObservableProperty]
-    public partial TabItemViewModel? SelectedTab
-    {
-        get; set;
-    }
+    ///// <summary>Gets or sets the selected header.</summary>
+    //[ObservableProperty]
+    //public partial TabItemViewModel? SelectedTab
+    //{
+    //    get; set;
+    //}
 
-    /// <summary>
-    /// Gets whether the selected workflow links to a Config page.
-    /// </summary>
-    partial void OnSelectedTabChanged(TabItemViewModel? value)
-    {
-        inspector?.SuggestContext(value?.Descriptor.Key);
-    }
-
-    /// <summary>Whether the selected setup workflow has a Config destination.</summary>
-    public bool HasConfigDestination => SelectedTab?.Descriptor.ConfigDestination is not null;
+    ///// <summary>
+    ///// Gets whether the selected workflow links to a Config page.
+    ///// </summary>
+    //partial void OnSelectedTabChanged(TabItemViewModel? value)
+    //{
+    //    inspector?.SuggestContext(value?.Descriptor.Key);
+    //}
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
     public partial string VehicleHeading { get; private set; } = "No vehicle connected";
-
 
     /// <inheritdoc />
     public override Task ActivateAsync()
@@ -120,71 +113,22 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
         Deactivate();
     }
 
-    [RelayCommand]
-    private void Refresh()
-    {
-        RefreshCore();
-    }
+    //[RelayCommand]
+    //private void Refresh()
+    //{
+    //    RefreshCore();
+    //}
 
-    [RelayCommand]
-    private async Task OpenConfigAsync()
-    {
-        if (SelectedTab?.Descriptor.ConfigDestination is not { } destination)
-        {
-            return;
-        }
-
-        try
-        {
-            var parts = destination.Split('|');
-            if (parts.Length != 2 || !parts[0].Equals("Config", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException($"Unsupported Config destination '{destination}'.");
-            }
-
-            var route = parts[1] switch
-            {
-                "Parameters Editor" => MissionPlannerRoutes.ConfigurationParametersEditor,
-                "Onboard OSD" => MissionPlannerRoutes.ConfigurationOnboardOsd,
-                _ => throw new InvalidOperationException($"Unknown Config destination '{parts[1]}'.")
-            };
-            await navigation.NavigateAsync(route);
-            SetMessages(null, null);
-        }
-        catch (Exception exception)
-        {
-            Logger.LogError(exception, "Failed to open Config destination {Destination}.", destination);
-            SetMessages(null, exception.Message);
-        }
-    }
-
-    private bool IsSelected(SetupWorkflowKey key)
-    {
-        return SelectedTab?.Descriptor.Key == key.ToString();
-    }
 
     private void RefreshCore()
     {
-        var selectedKey = SelectedTab?.Descriptor.Key;
         var snapshot = activeVehicle.Current;
-        //var parameters = snapshot.VehicleId is { } id
-        //    ? parameterRegistry.GetAllParameters(id)
-        //    : new Dictionary<string, MavLink.Parameters.VehicleParameter>();
-
-        var tabs = new List<TabItemViewModel>(
-            catalog.Workflows.Select(item =>
-                new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description, item.ConfigDestination)))
-        );
-
-
         SetMessages(null, null);
         Dispatcher.Dispatch(() =>
         {
             VehicleHeading = snapshot.IsOnline
                 ? $"{snapshot.DisplayName} · {snapshot.State!.Identity.Firmware.Family}"
                 : snapshot.VehicleId is null ? "No vehicle connected" : $"{snapshot.DisplayName} · disconnected";
-            Tabs.ReplaceRange(tabs);
-            SelectedTab = Tabs.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ?? Tabs.FirstOrDefault();
         });
     }
 
@@ -198,7 +142,7 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
         Dispatcher.Dispatch(() =>
         {
             CancelParameterRefresh();
-            Refresh();
+            RefreshCore();
         });
     }
 
@@ -239,7 +183,7 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
         {
             if (active && !disposed)
             {
-                Refresh();
+                RefreshCore();
             }
         });
     }

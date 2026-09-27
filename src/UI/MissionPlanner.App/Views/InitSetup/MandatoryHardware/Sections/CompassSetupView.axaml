@@ -12,14 +12,11 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-
-        <Border Padding="12"  >
-            <StackPanel Spacing="8">
-                <TextBlock Text="Compass" Classes="H2" />
+        <u:Banner  Classes="Bordered" Header="Compass" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Theme="{DynamicResource ProgressRing}"/>
             </StackPanel>
-        </Border>
-
+        </u:Banner>
         <TabControl Grid.Row="1"  >
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">
@@ -138,8 +135,8 @@
                                     <ItemsControl ItemsSource="{Binding Settings}" IsEnabled="{Binding CanEdit}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="sections:CompassSettingViewModel">
-                                                <u:UrsaGroupBox HeaderSpacing="12" 
-                                                                
+                                                <u:UrsaGroupBox HeaderSpacing="12"
+
                                                                 BorderBrush="{DynamicResource SemiColorSecondary}"
                                                                 BorderThickness="2"
                                                                 CornerRadius="12"

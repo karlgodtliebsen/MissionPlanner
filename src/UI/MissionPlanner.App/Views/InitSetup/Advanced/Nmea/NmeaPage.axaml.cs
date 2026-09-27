@@ -1,10 +1,11 @@
-using MissionPlanner.App.Utilities;
-
-namespace MissionPlanner.App.Views.InitSetup.Advanced.Nmea;
+﻿namespace MissionPlanner.App.Views.InitSetup.Advanced.Nmea;
 
 /// <summary>Displays NMEA configuration and preview.</summary>
-public partial class NmeaPage : NavigationViewBase<NmeaViewModel>
+public partial class NmeaPage : UserControlViewBase<NmeaViewModel>
 {
     /// <summary>Initializes the view.</summary>
-    public NmeaPage() => InitializeComponent();
+    public NmeaPage()
+    {
+        InitializeComponent();
+    }
 }

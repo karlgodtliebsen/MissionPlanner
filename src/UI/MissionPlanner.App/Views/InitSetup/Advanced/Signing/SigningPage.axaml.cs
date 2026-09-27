@@ -1,10 +1,11 @@
-using MissionPlanner.App.Utilities;
-
-namespace MissionPlanner.App.Views.InitSetup.Advanced.Signing;
+﻿namespace MissionPlanner.App.Views.InitSetup.Advanced.Signing;
 
 /// <summary>Displays explicit signing configuration.</summary>
-public partial class SigningPage : NavigationViewBase<SigningViewModel>
+public partial class SigningPage : UserControlViewBase<SigningViewModel>
 {
     /// <summary>Initializes the view.</summary>
-    public SigningPage() => InitializeComponent();
+    public SigningPage()
+    {
+        InitializeComponent();
+    }
 }

@@ -9,19 +9,19 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.FftSetupView"
                                x:DataType="sections:FftSetupViewModel"
-                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:u="https://irihi.tech/ursa">
 
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
-            <StackPanel Spacing="10">
-                <TextBlock Text="FFT Setup and Analysis" Classes="H2" />
+        <u:Banner  Classes="Bordered" Header="FFT Setup and Analysis" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="FFT/log settings are available only when INS_LOG_BAT or FFT parameters are reported. Log acquisition remains owned by DataFlash Logs." />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
-        </Border>
+        </u:Banner>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">
@@ -59,7 +59,7 @@
                     </Border>
                     <Border Grid.Row="1" HorizontalAlignment="Stretch" Padding="12" Classes="SectionCard"  >
                         <StackPanel Spacing="10">
-                            <NumericUpDown  PlaceholderText="Sample rate Hz" 
+                            <NumericUpDown  PlaceholderText="Sample rate Hz"
                                             HorizontalContentAlignment="Right" Value="{Binding SampleRateHz}" Minimum="0" FormatString="F0" />
                             <TextBox AcceptsReturn="True" PlaceholderText="Paste comma/newline-separated samples from an existing log artifact" Text="{Binding SamplesText}" Height="180" />
                         </StackPanel>

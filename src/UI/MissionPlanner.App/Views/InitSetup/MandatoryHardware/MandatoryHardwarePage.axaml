@@ -10,31 +10,22 @@
     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
     x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwarePage"
     x:DataType="mandatory:MandatoryHardwareViewModel">
-
     <ContentPage Header="Mandatory Hardware"  >
-        <Grid Margin="20" RowDefinitions="Auto,*" RowSpacing="14">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" 
-                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-            </StackPanel>
-            <TabControl TabStripPlacement="Left" Grid.Row="1" >
-                <TabItem Header="Frame"><sections:FrameSetupView /></TabItem>
-                <TabItem Header="Accel Calibration"><sections:AccelerometerSetupView /></TabItem>
-                <TabItem Header="Compass"><sections:CompassSetupView /></TabItem>
-                <TabItem Header="Radio Calibration"><sections:RadioSetupView /></TabItem>
-                <TabItem Header="Servo Output"><sections:ServoOutputSetupView /></TabItem>
-                <TabItem Header="Serial Ports"><sections:SerialPortsView /></TabItem>
-                <TabItem Header="ESC Calibration"><sections:EscMotorSetupView /></TabItem>
-                <TabItem Header="Flight Modes"><sections:FlightModesSetupView /></TabItem>
-                <TabItem Header="Failsafe"><sections:FailSafeView /></TabItem>
-                <TabItem Header="Initial Tune Params"><sections:InitTuneParametersView /></TabItem>
-                <TabItem Header="Hardware ID"><sections:HardwareIdView /></TabItem>
-                <TabItem Header="ADSB"><sections:AdsbView /></TabItem>
-                <TabItem Header="Safety"><sections:SafetySetupView /></TabItem>
-                <TabItem Header="Summary"><sections:SetupSummaryView /></TabItem>
-            </TabControl>
-        </Grid>
+        <TabControl Margin="20" TabStripPlacement="Left" >
+            <TabItem Header="Frame"><sections:FrameSetupView /></TabItem>
+            <TabItem Header="Accel Calibration"><sections:AccelerometerSetupView /></TabItem>
+            <TabItem Header="Compass"><sections:CompassSetupView /></TabItem>
+            <TabItem Header="Radio Calibration"><sections:RadioSetupView /></TabItem>
+            <TabItem Header="Servo Output"><sections:ServoOutputSetupView /></TabItem>
+            <TabItem Header="Serial Ports"><sections:SerialPortsView /></TabItem>
+            <TabItem Header="ESC Calibration"><sections:EscMotorSetupView /></TabItem>
+            <TabItem Header="Flight Modes"><sections:FlightModesSetupView /></TabItem>
+            <TabItem Header="Failsafe"><sections:FailSafeView /></TabItem>
+            <TabItem Header="Initial Tune Params"><sections:InitTuneParametersView /></TabItem>
+            <TabItem Header="Hardware ID"><sections:HardwareIdView /></TabItem>
+            <TabItem Header="ADSB"><sections:AdsbView /></TabItem>
+            <TabItem Header="Safety"><sections:SafetySetupView /></TabItem>
+            <TabItem Header="Summary"><sections:SetupSummaryView /></TabItem>
+        </TabControl>
     </ContentPage>
 </utilities:NavigationViewBase>

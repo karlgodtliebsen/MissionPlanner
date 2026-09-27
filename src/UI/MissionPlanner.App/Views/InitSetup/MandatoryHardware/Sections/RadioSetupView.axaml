@@ -9,26 +9,22 @@
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioSetupView"
                                x:DataType="sections:RadioSetupViewModel"
-                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:u="https://irihi.tech/ursa">
 
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border HorizontalAlignment="Stretch" Padding="12" >
-            <StackPanel Spacing="10">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    <StackPanel Orientation="Vertical" Spacing="2">
-                        <TextBlock Text="Radio Calibration" Classes="H2" />
-                        <TextBlock Text="Live receiver input and verified ArduPilot endpoint calibration" Opacity="0.7" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="1" Text="{Binding CalibrationState}" Padding="12,6"
-                               VerticalAlignment="Center" FontWeight="Bold" Background="{DynamicResource PrimaryContainer}" />
-                </Grid>
+        <u:Banner  Classes="Bordered" Header="Radio Calibration" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
+                <TextBlock Text="Live receiver input and verified ArduPilot endpoint calibration" Opacity="0.7" />
+                <TextBlock Text="{Binding CalibrationState}" Padding="12,6"
+                           VerticalAlignment="Center" FontWeight="Bold" Background="{DynamicResource PrimaryContainer}" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsWriting}" />
             </StackPanel>
-        </Border>
+        </u:Banner>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">
@@ -51,7 +47,7 @@
                                 <Binding Path="SignalStatus" />
                             </MultiBinding>
                         </controls:SetupInformationView.WorkflowStatus>
-                    </controls:SetupInformationView>  
+                    </controls:SetupInformationView>
                 </Grid>
             </TabItem>
             <TabItem Header="Configuration">
@@ -190,36 +186,36 @@
                                     <ItemsControl ItemsSource="{Binding Channels}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
-    <Grid ColumnDefinitions="125,*,80,32" ColumnSpacing="8" Height="34" Margin="8,1">
-        <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-            <TextBlock Text="{Binding Number, StringFormat='CH {0}'}" FontSize="12" Opacity="0.65" />
-            <TextBlock Text="{Binding RoleLabel}" FontSize="12" FontWeight="SemiBold"
-                       MaxWidth="82" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Title}" />
-        </StackPanel>
-        <Grid Grid.Column="1" VerticalAlignment="Center">
-            <sections:RadioChannelMeterView Compact="True" Height="22" MinHeight="22"
-                 ChannelNumber="{Binding Number}" FunctionName="{Binding FunctionName}"
-                 Pwm="{Binding Pwm}" HasSignal="{Binding HasSignal}" IsStale="{Binding IsStale}" />
-            <Border HorizontalAlignment="Center" Background="#B0202020" CornerRadius="7" Padding="7,0">
-                <TextBlock Text="{Binding Pwm, StringFormat='{}{0} µs'}" Foreground="White" FontSize="12"
-                           IsVisible="{Binding HasSignal}" />
-            </Border>
-            <TextBlock Text="No signal" HorizontalAlignment="Center" Foreground="White" FontSize="12"
-                       IsVisible="{Binding !HasSignal}" />
-        </Grid>
-        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
-            <TextBlock Text="STALE" Classes="Warning" FontSize="10" IsVisible="{Binding IsStale}" />
-            <TextBlock Text="REV" FontSize="10" IsVisible="{Binding IsReversed}" />
-            <TextBlock Text="!" Classes="Warning" IsVisible="{Binding HasNeutralWarning}"
-                       ToolTip.Tip="{Binding NeutralDiagnosticText}" />
-        </StackPanel>
-        <Button Grid.Column="3" Classes="EmbeddedIconButton" Width="28" Height="28" MinHeight="0" Padding="3"
-                Click="ShowChannelDetails" ToolTip.Tip="Channel details"
-                AutomationProperties.Name="{Binding Title, StringFormat='Details for {0}'}">
-            <mdi:MaterialIcon Kind="InformationOutline" Width="18" Height="18" Classes="ActionIcon" />
-        </Button>
-    </Grid>
-</DataTemplate>
+                                                <Grid ColumnDefinitions="125,*,80,32" ColumnSpacing="8" Height="34" Margin="8,1">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Number, StringFormat='CH {0}'}" FontSize="12" Opacity="0.65" />
+                                                        <TextBlock Text="{Binding RoleLabel}" FontSize="12" FontWeight="SemiBold"
+                                                                   MaxWidth="82" TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding Title}" />
+                                                    </StackPanel>
+                                                    <Grid Grid.Column="1" VerticalAlignment="Center">
+                                                        <sections:RadioChannelMeterView Compact="True" Height="22" MinHeight="22"
+                                                                                        ChannelNumber="{Binding Number}" FunctionName="{Binding FunctionName}"
+                                                                                        Pwm="{Binding Pwm}" HasSignal="{Binding HasSignal}" IsStale="{Binding IsStale}" />
+                                                        <Border HorizontalAlignment="Center" Background="#B0202020" CornerRadius="7" Padding="7,0">
+                                                            <TextBlock Text="{Binding Pwm, StringFormat='{}{0} µs'}" Foreground="White" FontSize="12"
+                                                                       IsVisible="{Binding HasSignal}" />
+                                                        </Border>
+                                                        <TextBlock Text="No signal" HorizontalAlignment="Center" Foreground="White" FontSize="12"
+                                                                   IsVisible="{Binding !HasSignal}" />
+                                                    </Grid>
+                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                        <TextBlock Text="STALE" Classes="Warning" FontSize="10" IsVisible="{Binding IsStale}" />
+                                                        <TextBlock Text="REV" FontSize="10" IsVisible="{Binding IsReversed}" />
+                                                        <TextBlock Text="!" Classes="Warning" IsVisible="{Binding HasNeutralWarning}"
+                                                                   ToolTip.Tip="{Binding NeutralDiagnosticText}" />
+                                                    </StackPanel>
+                                                    <Button Grid.Column="3" Classes="EmbeddedIconButton" Width="28" Height="28" MinHeight="0" Padding="3"
+                                                            Click="ShowChannelDetails" ToolTip.Tip="Channel details"
+                                                            AutomationProperties.Name="{Binding Title, StringFormat='Details for {0}'}">
+                                                        <mdi:MaterialIcon Kind="InformationOutline" Width="18" Height="18" Classes="ActionIcon" />
+                                                    </Button>
+                                                </Grid>
+                                            </DataTemplate>
                                         </ItemsControl.ItemTemplate>
                                     </ItemsControl>
                                     <sections:RadioChannelHistoryView />

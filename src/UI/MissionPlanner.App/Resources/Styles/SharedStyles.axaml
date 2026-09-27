@@ -22,10 +22,13 @@
         <Setter Property="MaxWidth" Value="1024"></Setter>
 
     </Style>
+    <Style Selector="u|Banner.Bordered">
+        <Setter Property="Margin" Value="0,10,0,25" />
+    </Style>
 
-    <!--        
+    <!--
     <Setter Property="Background" Value="IndianRed"></Setter>
-    -->  
+    -->
     <Style Selector="TextBlock.SectionTitle">
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="14" />
@@ -76,13 +79,13 @@
         <Setter Property="MinWidth" Value="100" />
     </Style>
 
-  
+
     <Style Selector="Button.H5">
         <Setter Property="FontSize" Value="13"></Setter>
         <Setter Property="FontWeight" Value="Light"></Setter>
         <Setter Property="VerticalAlignment" Value="Center"></Setter>
     </Style>
-    
+
     <Style Selector="Button.H6">
         <Setter Property="FontSize" Value="12"></Setter>
         <Setter Property="FontWeight" Value="Light"></Setter>

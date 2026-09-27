@@ -10,20 +10,20 @@
     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.OnboardOsdBridgeView"
     x:DataType="sections:OnboardOsdBridgeViewModel"
-    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:u="https://irihi.tech/ursa">
 
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12"  >
-            <StackPanel Spacing="10">
-                <TextBlock Text="Onboard OSD" Classes="H2"/>
+        <u:Banner  Classes="Bordered" Header="Onboard OSD" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="Configure screens, elements, positions, units and supported options in the existing Onboard OSD workspace." />
                 <TextBlock Text="This entry uses the same OSD configuration service and editing session as Config; it does not create a second configuration engine." Opacity="0.75" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
-        </Border>
+        </u:Banner>
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">
