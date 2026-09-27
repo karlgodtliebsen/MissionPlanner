@@ -2,7 +2,7 @@
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.App.Views.ConfigTuning.Sections;
+namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 
 public partial class ParametersEditorTabViewModel
 {

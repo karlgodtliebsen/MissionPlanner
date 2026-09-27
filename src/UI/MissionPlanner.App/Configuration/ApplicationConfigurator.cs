@@ -81,6 +81,12 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
+using ParameterComparisonView = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterComparisonView;
+using ParameterComparisonViewModel = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterComparisonViewModel;
+using ParametersEditorTabView = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabView;
+using ParametersEditorTabViewModel = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabViewModel;
+using ParametersEditorView = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorView;
+using ParametersEditorViewModel = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorViewModel;
 
 namespace MissionPlanner.App.Configuration;
 

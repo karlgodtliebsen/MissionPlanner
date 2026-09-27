@@ -9,9 +9,10 @@
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:u="https://irihi.tech/ursa"
     xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+    xmlns:parametersEditor="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-    x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParameterComparisonView"
-    x:DataType="sections:ParameterComparisonViewModel"
+    x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterComparisonView"
+    x:DataType="parametersEditor:ParameterComparisonViewModel"
     Margin="50"
     >
     <Grid
@@ -126,7 +127,7 @@
                 </DataTemplate>
             </controls:VirtualizedItemsGrid.HeaderTemplate>
             <controls:VirtualizedItemsGrid.RowTemplate>
-                <DataTemplate x:DataType="sections:ParameterComparisonItemViewModel">
+                <DataTemplate x:DataType="parametersEditor:ParameterComparisonItemViewModel">
                     <controls:VirtualizedItemsGridRow>
                         <CheckBox Grid.Column="0"
                                   IsChecked="{Binding IsSelected, Mode=TwoWay}"

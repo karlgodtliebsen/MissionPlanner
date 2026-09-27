@@ -11,8 +11,9 @@
              xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
              xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
              xmlns:documents="clr-namespace:MissionPlanner.App.Presentation.Documents"
-             x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditorView"
-             x:DataType="sections:ParametersEditorViewModel"
+             xmlns:parametersEditor="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
+             x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorView"
+             x:DataType="parametersEditor:ParametersEditorViewModel"
              >
     <Grid
         HorizontalAlignment="Stretch"

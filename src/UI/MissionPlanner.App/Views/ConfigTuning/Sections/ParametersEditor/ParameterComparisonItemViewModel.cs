@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Library.Math;
 
-namespace MissionPlanner.App.Views.ConfigTuning.Sections;
+namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 
 /// <summary>Selectable presentation row for a parameter comparison result.</summary>
 public sealed partial class ParameterComparisonItemViewModel(ParameterComparisonRow row) : ObservableObject

@@ -15,7 +15,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using Ursa.Controls;
 
-namespace MissionPlanner.App.Views.ConfigTuning.Sections;
+namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 
 /// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
 public partial class ParametersEditorTabViewModel : ParametersViewModel

@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace MissionPlanner.App.Views.ConfigTuning.Sections;
+namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 
 /// <summary>Displays the ParametersEditorView configuration workflow.</summary>
 public partial class ParametersEditorView : UserControl

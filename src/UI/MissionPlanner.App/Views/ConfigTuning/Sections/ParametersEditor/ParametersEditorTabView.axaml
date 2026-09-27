@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:ParametersEditorTabViewModel"
+﻿<utilities:UserControlViewBase x:TypeArguments="parametersEditor:ParametersEditorTabViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,8 +12,9 @@
                                xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:models="clr-namespace:MissionPlanner.App.Models"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
-                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditorTabView"
-                               x:DataType="sections:ParametersEditorTabViewModel">
+                               xmlns:parametersEditor="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
+                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabView"
+                               x:DataType="parametersEditor:ParametersEditorTabViewModel">
     <ContentPage Header="Full Parameters List"  >
 
         <Grid RowDefinitions="Auto,*"

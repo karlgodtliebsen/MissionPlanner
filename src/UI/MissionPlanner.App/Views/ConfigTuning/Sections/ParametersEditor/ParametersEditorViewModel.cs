@@ -1,10 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Globalization;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.MavLink.Parameters;
-using System.Globalization;
 
-namespace MissionPlanner.App.Views.ConfigTuning.Sections;
+namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 
 /// <summary>
 /// ViewModel for editing vehicle parameters in a text format.
@@ -17,7 +17,10 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
 
     /// <summary>Gets or sets live progress from the confirmed parameter-write workflow.</summary>
     [ObservableProperty]
-    public partial string? WriteProgress { get; set; }
+    public partial string? WriteProgress
+    {
+        get; set;
+    }
 
     /// <summary>Gets the report of input lines or values skipped during the last import.</summary>
     [ObservableProperty]
@@ -28,7 +31,9 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
     {
         var report = string.Join(Environment.NewLine, messages);
         if (!string.IsNullOrEmpty(report))
+        {
             FeedbackReport = string.IsNullOrEmpty(FeedbackReport) ? report : FeedbackReport + Environment.NewLine + report;
+        }
     }
 
     /// <summary>Connects the editor to its owning vehicle's confirmed parameter-write workflow.</summary>
@@ -40,12 +45,19 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
 
     partial void OnTextChanged(string value) => ApplyModifiedCommand.NotifyCanExecuteChanged();
 
-    private bool CanApplyModified() => applyModified is not null && !string.IsNullOrWhiteSpace(Text);
+    private bool CanApplyModified()
+    {
+        return applyModified is not null && !string.IsNullOrWhiteSpace(Text);
+    }
 
     [RelayCommand(CanExecute = nameof(CanApplyModified))]
     private async Task ApplyModifiedAsync(CancellationToken cancellationToken)
     {
-        if (!CanApplyModified()) return;
+        if (!CanApplyModified())
+        {
+            return;
+        }
+
         try
         {
             WriteProgress = null;
@@ -155,7 +167,11 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
             {
                 data = data.Substring(0, data.IndexOf("//", StringComparison.Ordinal));
             }
-            if (string.IsNullOrWhiteSpace(data)) continue;
+            if (string.IsNullOrWhiteSpace(data))
+            {
+                continue;
+            }
+
             var parts = data.Split(['=', ',', ':', ';']);
             if (parts.Length != 2)
             {

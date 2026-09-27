@@ -6,6 +6,7 @@
                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                               xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                              xmlns:parametersEditor="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.ConfigurationPage"
                               x:DataType="configTuning:ConfigurationViewModel">
@@ -25,7 +26,7 @@
                 <TabItem x:Name="ExtendedTuning" Header="Extended Tuning"><sections:ExtendedTuningTabView /></TabItem>
                 <TabItem x:Name="OnboardOsd" Header="Onboard OSD"><sections:OnboardOSDTabView /></TabItem>
                 <TabItem x:Name="MavlinkFtp" Header="Mavlink Ftp"><sections:MAVFtpTabView /></TabItem>
-                <TabItem x:Name="ParametersEditor" Header="Parameters Editor"><sections:ParametersEditorTabView /></TabItem>
+                <TabItem x:Name="ParametersEditor" Header="Parameters Editor"><parametersEditor:ParametersEditorTabView /></TabItem>
                 <TabItem x:Name="CubeLanSwitch" Header="CubeLan 8 Port Switch "><sections:CubeLan8PortSwitchTabView /></TabItem>
 
             </TabControl>
