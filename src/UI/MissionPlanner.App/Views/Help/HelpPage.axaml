@@ -7,17 +7,22 @@
                 x:DataType="help:HelpViewModel"
                 x:Class="MissionPlanner.App.Views.Help.HelpPage">
     <ContentPage Header="Help">
-        <Grid ColumnDefinitions="220,*" ColumnSpacing="16" Margin="16">
-            <StackPanel Spacing="12">
+        <Grid ColumnDefinitions="260,*" ColumnSpacing="16" Margin="16">
+            <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
                 <TextBlock Text="Help topics" Classes="H3" />
-                <ListBox ItemsSource="{Binding Topics}" SelectedItem="{Binding SelectedTopic, Mode=TwoWay}">
+                <TextBox Grid.Row="1" PlaceholderText="Search help" Text="{Binding SearchText, Mode=TwoWay}"
+                         AutomationProperties.Name="Search help topics" />
+                <ListBox Grid.Row="2" ItemsSource="{Binding VisibleTopics}" SelectedItem="{Binding SelectedTopic, Mode=TwoWay}">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="help:HelpTopic">
-                            <TextBlock Text="{Binding Title}" TextWrapping="Wrap" />
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding Category}" FontSize="11" Opacity="0.7" />
+                                <TextBlock Text="{Binding Title}" TextWrapping="Wrap" />
+                            </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
-            </StackPanel>
+            </Grid>
             <ContentControl Grid.Column="1" Content="{Binding SelectedTopic}">
                 <ContentControl.ContentTemplate>
                     <DataTemplate x:DataType="help:HelpTopic">
