@@ -75,10 +75,10 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
         for (var slot = 1; slot <= pwmBands.Length; slot++)
         {
             var band = pwmBands[slot - 1];
-            var modeNumber = parameters.TryGetValue($"{slotPrefix}{slot}", out var slotParameter) ? (int)Math.Round(slotParameter.Value) : 0;
-            var option = options.FirstOrDefault(item => item.CustomMode == (uint)modeNumber);
+            float? modeNumber = parameters.TryGetValue($"{slotPrefix}{slot}", out var slotParameter) ? slotParameter.Value : null;
+            var option = options.FirstOrDefault(item => item.CustomMode == modeNumber);
             slots.Add(new FlightModeSlot(slot, band.Low, band.High, modeNumber,
-                option?.Name ?? $"Mode {modeNumber}", activeSlot == slot));
+                option?.Name ?? (modeNumber is null ? "Parameter not loaded" : FormattableString.Invariant($"Unknown mode ({modeNumber})")), activeSlot == slot));
         }
 
         return new FlightModeConfiguration(vehicleId, family, true, modeChannel, slots, options, activeSlot);
@@ -105,6 +105,14 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
         }
 
         var name = $"{slotPrefix}{slot}";
+        if (parameterRegistry.GetParameter(vehicleId, name) is not { } current)
+        {
+            return new FlightModeApplyResult(false, $"Wait for {name} to load before editing it.");
+        }
+        if (current.Value == modeNumber)
+        {
+            return new FlightModeApplyResult(true, $"Slot {slot} is unchanged; no parameter write required.");
+        }
         logger.LogInformation("Assigning flight-mode slot {Slot} to mode {Mode} on {VehicleId}.", slot, modeNumber, vehicleId);
         return await WriteAndConfirmAsync(vehicleId, name, modeNumber, cancellationToken).ConfigureAwait(false)
             ? new FlightModeApplyResult(true, $"Confirmed slot {slot} assignment by vehicle readback.")

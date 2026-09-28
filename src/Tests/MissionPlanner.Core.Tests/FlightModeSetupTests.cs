@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
@@ -18,6 +18,52 @@ namespace MissionPlanner.Core.Tests;
 public sealed class FlightModeSetupTests
 {
     private static readonly VehicleId vehicleId = new(1, 1);
+
+    [Theory]
+    [InlineData(1, "Acro")]
+    [InlineData(123, "Unknown mode (123)")]
+    [InlineData(-1, "Unknown mode (-1)")]
+    [InlineData(1.5f, "Unknown mode (1.5)")]
+    public void ReceivedValuesAreNotRoundedOrReplaced(float value, string label)
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "FLTMODE_CH", 6);
+        Store(registry, "FLTMODE1", value);
+        var now = DateTimeOffset.UtcNow;
+        var service = CreateService(new TestActiveVehicleContext(State(FirmwareFamily.ArduCopter, [], now)), registry, now);
+        var configuration = service.GetConfiguration(vehicleId);
+        configuration.Slots[0].SelectedModeNumber.Should().Be(value);
+        configuration.Slots[0].SelectedModeName.Should().Be(label);
+        configuration.Slots[1].SelectedModeNumber.Should().BeNull();
+        configuration.Slots[1].SelectedModeName.Should().Be("Parameter not loaded");
+    }
+
+    [Theory]
+    [InlineData(FirmwareFamily.ArduCopter, "FLTMODE", "Acro")]
+    [InlineData(FirmwareFamily.ArduPlane, "FLTMODE", "Circle")]
+    [InlineData(FirmwareFamily.Rover, "MODE", "Acro")]
+    public void NumericModeResolutionStaysWithinFirmwareFamily(FirmwareFamily family, string prefix, string label)
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, $"{prefix}_CH", 6);
+        Store(registry, $"{prefix}1", 1);
+        var now = DateTimeOffset.UtcNow;
+        var service = CreateService(new TestActiveVehicleContext(State(family, [], now)), registry, now);
+        service.GetConfiguration(vehicleId).Slots[0].SelectedModeName.Should().Be(label);
+        new ArduPilotModeCatalog().GetModes(FirmwareFamily.Unknown).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task UnloadedSlotCannotBeWritten()
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "FLTMODE_CH", 6);
+        var now = DateTimeOffset.UtcNow;
+        var service = CreateService(new TestActiveVehicleContext(State(FirmwareFamily.ArduCopter, [], now)), registry, now);
+        var result = await service.SetSlotAsync(vehicleId, 1, 1, TestContext.Current.CancellationToken);
+        result.Success.Should().BeFalse();
+        registry.GetParameter(vehicleId, "FLTMODE1").Should().BeNull();
+    }
 
     /// <summary>Verifies Copter projects FLTMODE slots and resolves the live active slot from PWM.</summary>
     [Fact]

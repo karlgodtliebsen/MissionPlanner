@@ -15,7 +15,8 @@ public sealed class ArduPilotModeCatalog : IArduPilotModeCatalog
         {
             [FirmwareFamily.ArduCopter] =
             [
-                new VehicleModeOption("Stabilize", 0, VehicleMode.Stabilize), new VehicleModeOption("Alt Hold", 2, VehicleMode.AltHold),
+                new VehicleModeOption("Stabilize", 0, VehicleMode.Stabilize), new VehicleModeOption("Acro", 1),
+                new VehicleModeOption("Alt Hold", 2, VehicleMode.AltHold),
                 new VehicleModeOption("Auto", 3), new VehicleModeOption("Guided", 4, VehicleMode.Guided), new VehicleModeOption("Loiter", 5, VehicleMode.Loiter),
                 new VehicleModeOption("RTL", 6, VehicleMode.Rtl), new VehicleModeOption("Land", 9, VehicleMode.Land), new VehicleModeOption("Pos Hold", 16),
                 new VehicleModeOption("Brake", 17), new VehicleModeOption("Smart RTL", 21)

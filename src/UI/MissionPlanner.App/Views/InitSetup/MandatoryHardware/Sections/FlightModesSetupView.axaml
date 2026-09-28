@@ -58,11 +58,13 @@
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
                         <Border Classes="SectionCard" Padding="12">
                             <StackPanel Spacing="10">
+                                <TextBlock Text="Choose a mode, then Apply that slot. Listed modes do not guarantee support in this firmware build. The highlighted slot shows the RC switch position, not the active flight mode."
+                                           TextWrapping="Wrap" />
                                 <ItemsControl IsVisible="{Binding IsSupported}" ItemsSource="{Binding Slots}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="sections:FlightModeSlotViewModel">
                                             <Border Padding="10" Classes="SectionCard" HorizontalAlignment="Stretch">
-                                                <Grid ColumnDefinitions="Auto,200,*" ColumnSpacing="8"  HorizontalAlignment="Stretch">
+                                                <Grid ColumnDefinitions="Auto,200,*,Auto" ColumnSpacing="8"  HorizontalAlignment="Stretch">
                                                     <TextBlock Text="●" Foreground="{DynamicResource Info}"
                                                                IsVisible="{Binding IsActive}" VerticalAlignment="Center" />
                                                     <TextBlock Grid.Column="1" Text="{Binding BandDescription}" VerticalAlignment="Center" />
@@ -70,8 +72,10 @@
                                                               HorizontalAlignment="Stretch"
                                                               HorizontalContentAlignment="Right"
                                                               ItemsSource="{Binding Options}"
+                                                              IsEnabled="{Binding IsLoaded}"
                                                               SelectedItem="{Binding SelectedMode}"
                                                               DisplayMemberBinding="{Binding Name}" />
+                                                    <Button Grid.Column="3" Content="Apply" Command="{Binding ApplyCommand}" />
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>

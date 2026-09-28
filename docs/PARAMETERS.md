@@ -432,3 +432,42 @@ The existing XML metadata parser now retains finite defaults supplied by a param
 when absent or invalid. Compass Setup uses this for pending-only reset actions; it never
 infers a firmware default from a current value or enum ordering. Existing Parameters Editor
 editing and write/readback ownership remain unchanged.
+
+## Flight-mode slot assignments
+
+Mandatory Hardware > Flight Modes reads `FLTMODE1`–`FLTMODE6` for Copter/Plane
+and `MODE1`–`MODE6` for Rover. Incoming `PARAM_VALUE` messages pass through
+`ParamValueVehicleHandler` into the per-vehicle `VehicleParameterRegistry`.
+`FlightModeConfigurationService` projects the received float value unchanged into
+`FlightModeSlot.SelectedModeNumber`; null means the parameter has not loaded.
+Labels and known choices come from the shared `IArduPilotModeCatalog`, scoped to
+the vehicle's firmware identity. That identity is resolved from autopilot and
+vehicle type by `MavLinkDomainMappings`. This page does not filter modes through
+downloaded parameter metadata or claim that catalogue membership proves support
+in a particular firmware build.
+
+The Copter catalogue includes Acro with numeric mode ID 1. Previously that entry
+was absent; unloaded slot parameters also fell back to zero, while unrecognised
+received modes produced a null dropdown selection. No automatic unknown-to-Stabilize
+write was established during investigation.
+
+`FlightModeSlotViewModel` retains the received value separately from its selected
+display choice. Each unknown value gets a selected `Unknown mode (value)` placeholder
+in that row only. Missing parameters show `Parameter not loaded` and cannot be edited.
+Neither placeholders nor dropdown indexes are protocol values. Refresh and parameter
+notifications preserve pending edits only while the row's received value is unchanged;
+connection/identity changes and page reactivation rebuild rows from the target vehicle.
+
+Selection stages a choice. The row's explicit Apply command writes only a changed,
+known choice through `SetSlotAsync`, using the slot number to select the parameter
+and the catalogue's numeric ID as its value. Unloaded slots are rejected and unchanged
+values produce no writes. The existing parameter service/readback confirmation remains
+the write boundary. Other slots, including unknown ones, are never included in that
+write. Applying a stored assignment does not request an active flight-mode change.
+The highlighted slot derives from RC PWM bands and remains distinct from the active
+mode reported by heartbeat telemetry.
+
+Regression coverage is in `FlightModeSetupTests` and `FlightModesViewModelTests`:
+Acro, exact unknown values, missing parameters, per-slot writes, family isolation,
+late parameter arrival, refresh, vehicle changes, reconnect, and RC6 switch positions
+1/4/6. Tests use simulated parameter readback; physical firmware support is not verified.

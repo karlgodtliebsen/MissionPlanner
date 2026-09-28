@@ -9,9 +9,9 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// </summary>
 public interface IArduPilotModeCatalog
 {
-    /// <summary>Gets the modes supported by a firmware family.</summary>
+    /// <summary>Gets known mode mappings for a firmware family, not a capability report for a particular build.</summary>
     /// <param name="family">The firmware family.</param>
-    /// <returns>The ordered supported modes, or an empty list for unsupported families.</returns>
+    /// <returns>The ordered known modes, or an empty list for unrecognised families.</returns>
     IReadOnlyList<VehicleModeOption> GetModes(FirmwareFamily family);
 
     /// <summary>Finds a common semantic mode for a firmware family.</summary>

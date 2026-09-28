@@ -3,7 +3,7 @@ using MissionPlanner.Shared.Models.Vehicles.Models;
 namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
-/// Describes a flight mode supported by one ArduPilot firmware family.
+/// Describes a known mode in one ArduPilot firmware family; membership does not establish support in a particular firmware build.
 /// </summary>
 /// <param name="Name">The user-facing ArduPilot mode name.</param>
 /// <param name="CustomMode">The firmware-specific custom-mode value.</param>

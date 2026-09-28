@@ -11,6 +11,9 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.App.Views.Navigation;
+using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -21,6 +24,8 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
 
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IFlightModeConfigurationService modeService;
+    private readonly IVehicleParameterRegistry parameters;
+    private VehicleId? loadedVehicleId;
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes the flight-mode Setup workflow.</summary>
@@ -28,14 +33,19 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
     /// <param name="modeService">The flight-mode configuration service.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="navigation">The application navigation service.</param>
+    /// <param name="parameters">The vehicle parameter notifications.</param>
+    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="eventHub">The application event hub.</param>
     public FlightModesSetupViewModel(
         IActiveVehicleContext activeVehicle,
-        IFlightModeConfigurationService modeService, ILogger<FlightModesSetupViewModel> logger, INavigationService navigation)
-        : base(logger)
+        IFlightModeConfigurationService modeService, ILogger<FlightModesSetupViewModel> logger, INavigationService navigation,
+        IVehicleParameterRegistry parameters, IUiDispatcher dispatcher, IDomainEventHub eventHub)
+        : base(logger, dispatcher, eventHub)
     {
         this.navigation = navigation;
         this.activeVehicle = activeVehicle;
         this.modeService = modeService;
+        this.parameters = parameters;
     }
 
     /// <summary>Gets the six flight-mode slots.</summary>
@@ -66,6 +76,8 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
     {
         SetMessages("Load the connected vehicle's flight-mode configuration.");
         activeVehicle.Changed += OnActiveVehicleChanged;
+        parameters.Changed += OnParameterChanged;
+        Slots.Clear();
         Load();
         return base.ActivateAsync();
     }
@@ -75,7 +87,17 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
     {
         Cancel();
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        parameters.Changed -= OnParameterChanged;
         return base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        Cancel();
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        parameters.Changed -= OnParameterChanged;
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -98,7 +120,7 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
             return;
         }
 
-        if (slot.SelectedMode is not { } mode)
+        if (loadedVehicleId != vehicleId || !Slots.Contains(slot) || !slot.CanApply || slot.SelectedMode?.ModeNumber is not { } mode)
         {
             return;
         }
@@ -108,9 +130,15 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
         SetMessages(null, null);
         try
         {
-            var result = await modeService.SetSlotAsync(vehicleId, slot.Slot, (int)mode.CustomMode, operationCancellation.Token);
-            SetMessages(result.Message);
-            Dispatcher.Dispatch(Load);
+            var result = await modeService.SetSlotAsync(vehicleId, slot.Slot, (int)mode, operationCancellation.Token);
+            if (activeVehicle.VehicleId == vehicleId)
+            {
+                Dispatcher.Dispatch(() =>
+                {
+                    Load();
+                    SetMessages(result.Message);
+                });
+            }
         }
         catch (OperationCanceledException)
         {
@@ -139,6 +167,21 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {
+            Cancel();
+            Dispatcher.Dispatch(() =>
+            {
+                Slots.Clear();
+                Load();
+            });
+        }
+    }
+
+    private void OnParameterChanged(VehicleParameterChangedEventArgs args)
+    {
+        if (args.VehicleId == activeVehicle.VehicleId && (args.Parameter is null ||
+            args.Parameter.Name.StartsWith("FLTMODE", StringComparison.Ordinal) ||
+            args.Parameter.Name.StartsWith("MODE", StringComparison.Ordinal)))
+        {
             Dispatcher.Dispatch(Load);
         }
     }
@@ -148,6 +191,8 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
             Slots.Clear();
+            loadedVehicleId = null;
+            ModeChannelDescription = string.Empty;
             IsSupported = false;
             SetMessages("Connect a vehicle to configure flight modes.");
             return;
@@ -166,6 +211,11 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
         }
 
         IsSupported = configuration.IsSupported;
+        if (loadedVehicleId != vehicleId)
+        {
+            Slots.Clear();
+        }
+        loadedVehicleId = vehicleId;
         if (!configuration.IsSupported)
         {
             Slots.Clear();
@@ -194,7 +244,7 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
             }
         }
 
-        SetMessages("Assign a mode to each switch position. The active slot updates live from the transmitter.");
+        SetMessages("Choose a mode, then Apply that slot. Listed modes are known family mappings, not confirmation of support in this firmware build. The highlighted slot is the RC switch position, not the active mode reported by telemetry.");
     }
 }
 
@@ -202,7 +252,7 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
 public sealed partial class FlightModeSlotViewModel : ObservableObject
 {
     private readonly FlightModesSetupViewModel parent;
-    private bool suppressApply;
+    private float? receivedModeNumber;
 
     /// <summary>Initializes a slot row.</summary>
     /// <param name="slot">The slot projection.</param>
@@ -212,7 +262,6 @@ public sealed partial class FlightModeSlotViewModel : ObservableObject
     {
         this.parent = parent;
         Slot = slot.Slot;
-        Options = options;
         Update(slot, options);
     }
 
@@ -223,11 +272,21 @@ public sealed partial class FlightModeSlotViewModel : ObservableObject
     }
 
     /// <summary>Gets the available modes.</summary>
-    public IReadOnlyList<VehicleModeOption> Options
+    [ObservableProperty]
+    public partial IReadOnlyList<FlightModeChoice> Options
     {
         get;
         private set;
-    }
+    } = [];
+
+    /// <summary>Gets the original parameter value independently of the displayed selection.</summary>
+    public float? ReceivedModeNumber => receivedModeNumber;
+
+    /// <summary>Gets whether the slot parameter has loaded.</summary>
+    public bool IsLoaded => receivedModeNumber.HasValue;
+
+    /// <summary>Gets whether the user has selected a different known mode.</summary>
+    public bool CanApply => IsLoaded && SelectedMode is { IsKnown: true, ModeNumber: { } number } && number != receivedModeNumber;
 
     /// <summary>Gets the PWM band description.</summary>
     [ObservableProperty]
@@ -247,7 +306,9 @@ public sealed partial class FlightModeSlotViewModel : ObservableObject
 
     /// <summary>Gets or sets the selected mode.</summary>
     [ObservableProperty]
-    public partial VehicleModeOption? SelectedMode
+    [NotifyPropertyChangedFor(nameof(CanApply))]
+    [NotifyCanExecuteChangedFor(nameof(ApplyCommand))]
+    public partial FlightModeChoice? SelectedMode
     {
         get;
         set;
@@ -258,20 +319,35 @@ public sealed partial class FlightModeSlotViewModel : ObservableObject
     /// <param name="options">The available modes.</param>
     public void Update(FlightModeSlot slot, IReadOnlyList<VehicleModeOption> options)
     {
-        suppressApply = true;
-        Options = options;
+        var pending = CanApply && receivedModeNumber == slot.SelectedModeNumber ? SelectedMode : null;
+        receivedModeNumber = slot.SelectedModeNumber;
+        var choices = options.Select(option => new FlightModeChoice(option.Name, option.CustomMode, true)).ToList();
+        var stored = choices.FirstOrDefault(option => option.ModeNumber == receivedModeNumber);
+        if (stored is null)
+        {
+            stored = new FlightModeChoice(slot.SelectedModeName, receivedModeNumber, false);
+            choices.Add(stored);
+        }
+        Options = choices;
         BandDescription = slot.PwmLow == 0 ? $"Slot {slot.Slot}: PWM ≤ {slot.PwmHigh}" : $"Slot {slot.Slot}: PWM {slot.PwmLow}-{slot.PwmHigh}";
         IsActive = slot.IsActive;
-        SelectedMode = options.FirstOrDefault(option => option.CustomMode == (uint)slot.SelectedModeNumber);
-        suppressApply = false;
+        SelectedMode = pending is not null ? choices.FirstOrDefault(option => option == pending) ?? stored : stored;
+        OnPropertyChanged(nameof(ReceivedModeNumber));
+        OnPropertyChanged(nameof(IsLoaded));
+        OnPropertyChanged(nameof(CanApply));
+        ApplyCommand.NotifyCanExecuteChanged();
     }
 
-    partial void OnSelectedModeChanged(VehicleModeOption? value)
+    [RelayCommand(CanExecute = nameof(CanApply))]
+    private Task ApplyAsync()
     {
-        if (!suppressApply && value is not null)
-        {
-            _ = parent.ApplySlotAsync(this);
-        }
+        return parent.ApplySlotAsync(this);
     }
 }
+
+/// <summary>A row-specific display choice retaining its numeric value without implying firmware support.</summary>
+/// <param name="Name">The catalogue label or received-value placeholder.</param>
+/// <param name="ModeNumber">The mode value, or null for a parameter that has not loaded.</param>
+/// <param name="IsKnown">Whether this is a choice from the shared family catalogue.</param>
+public sealed record FlightModeChoice(string Name, float? ModeNumber, bool IsKnown);
 
