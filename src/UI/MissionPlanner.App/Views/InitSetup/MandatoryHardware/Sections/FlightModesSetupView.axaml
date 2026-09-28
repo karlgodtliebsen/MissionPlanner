@@ -25,7 +25,7 @@
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">
                     <Border Grid.Row="0" Padding="12">
-                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
+                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" ItemSpacing="8">
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh flight modes"
                                     Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh flight modes">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
@@ -44,7 +44,7 @@
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,*">
                     <Border Grid.Row="0" HorizontalAlignment="Stretch" Padding="12">
-                        <StackPanel Spacing="10">
+                        <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" ItemSpacing="8">
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh flight modes"
                                     Command="{Binding RefreshCommand}" AutomationProperties.Name="Refresh flight modes">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
@@ -53,7 +53,7 @@
                                     ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
                                 <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
                             </Button>
-                        </StackPanel>
+                        </WrapPanel>
                     </Border>
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
                         <Border Classes="SectionCard" Padding="12">
