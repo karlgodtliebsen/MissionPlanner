@@ -40,7 +40,7 @@ public sealed class InspectorWindowService : IInspectorWindowService
         }
         window = new UrsaWindow
         {
-            Title = "Live Telemetry Inspector",
+            Title = "Diagnostics",
             Width = model.DrawerWidth,
             Height = 800,
             MinWidth = 360,

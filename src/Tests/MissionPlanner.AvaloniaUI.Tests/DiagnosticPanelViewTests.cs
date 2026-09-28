@@ -46,12 +46,15 @@ public sealed class DiagnosticPanelViewTests
         var messageStore = Substitute.For<IVehicleMessageStore>();
         var applicationMessages = Substitute.For<IApplicationNotificationStore>();
         var clipboard = Substitute.For<ITextClipboardService>();
+        var windows = Substitute.For<IInspectorWindowService>();
+        windows.IsSupported.Returns(true);
         var services = new ServiceCollection().AddLogging().AddSingleton(domain).AddSingleton(Substitute.For<IUiDispatcher>())
             .AddSingleton(_ => new MessagesTabViewModel(active, messageStore, applicationMessages, clipboard,
                 Substitute.For<IFileSaveService>(), NullLogger<MessagesTabViewModel>.Instance))
             .AddSingleton(_ => new StatusTabViewModel(active, Substitute.For<ITelemetryFieldCatalog>(), Substitute.For<ITelemetrySnapshotProjector>(),
                 settings, domain, Substitute.For<IDateTimeProvider>(), NullLogger<StatusTabViewModel>.Instance))
-            .AddSingleton(provider => new LiveTelemetryInspectorViewModel(diagnostics, active, clipboard, Substitute.For<IInspectorWindowService>(),
+            .AddSingleton(windows)
+            .AddSingleton(provider => new LiveTelemetryInspectorViewModel(diagnostics, active, clipboard, windows,
                 TimeProvider.System, Substitute.For<IUiDispatcher>(), domain, NullLogger<LiveTelemetryInspectorViewModel>.Instance,
                 new PreflightAssessmentService(null, diagnostics), messages: provider.GetRequiredService<MessagesTabViewModel>(),
                 status: provider.GetRequiredService<StatusTabViewModel>()))
@@ -85,6 +88,19 @@ public sealed class DiagnosticPanelViewTests
                     Assert.DoesNotContain("FirmwareSemanticVersion", model.TechnicalDetails);
                     Assert.InRange(view.Bounds.Width, 1, 360);
                     SaveImage(view, destination);
+                    var detach = view.GetVisualDescendants().OfType<Button>().Single(button => ReferenceEquals(button.Command, model.DetachCommand));
+                    var close = view.GetVisualDescendants().OfType<Button>().Single(button => ReferenceEquals(button.Command, model.CloseCommand));
+                    Assert.True(detach.IsEffectivelyVisible);
+                    Assert.True(close.IsEffectivelyVisible);
+                    Assert.Same(detach.Parent, close.Parent);
+                    model.DetachCommand.Execute(null);
+                    Dispatcher.UIThread.RunJobs();
+                    Assert.False(detach.IsEffectivelyVisible);
+                    Assert.False(close.IsEffectivelyVisible);
+                    var windowService = app.ServiceProvider.GetRequiredService<IInspectorWindowService>();
+                    var closed = (Action)windowService.ReceivedCalls().Last(call => call.GetMethodInfo().Name == "Show").GetArguments()[1]!;
+                    closed();
+                    model.OpenDestinationCommand.Execute(destination);
                 }
                 var messages = app.ServiceProvider.GetRequiredService<MessagesTabViewModel>();
                 messages.SearchText = "battery";

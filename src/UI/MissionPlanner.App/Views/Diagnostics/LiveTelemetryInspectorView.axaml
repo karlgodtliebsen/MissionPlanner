@@ -62,22 +62,33 @@
                     </StackPanel>
                 </Expander>
             </StackPanel>
-            <Button
-                Grid.Column="1"
-                Command="{Binding CloseCommand}"
-                ToolTip.Tip="Close diagnostics"
-                AutomationProperties.Name="Close diagnostics"
-                Name="{x:Static u:DrawerControlBase.PART_CloseButton}"
-                Width="32"
-                Height="32"
-                Padding="4"
-                VerticalAlignment="Top"
-                Theme="{DynamicResource OverlayCloseButton}">
-                <mdi:MaterialIcon
-                    Kind="Close"
-                    Width="24"
-                    Height="24" />
-            </Button>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4"
+                        VerticalAlignment="Top" IsVisible="{Binding !IsDetached}">
+                <Button x:Name="DetachDiagnosticsButton"
+                        Command="{Binding DetachCommand}"
+                        IsVisible="{Binding CanDetach}"
+                        ToolTip.Tip="Detach diagnostics"
+                        AutomationProperties.Name="Detach diagnostics"
+                        Width="32" Height="32" Padding="4"
+                        Theme="{DynamicResource BorderlessIconButton}">
+                    <mdi:MaterialIcon Kind="OpenInNew" Width="24" Height="24" />
+                </Button>
+                <Button
+                    Command="{Binding CloseCommand}"
+                    ToolTip.Tip="Close diagnostics"
+                    AutomationProperties.Name="Close diagnostics"
+                    Name="{x:Static u:DrawerControlBase.PART_CloseButton}"
+                    Width="32"
+                    Height="32"
+                    Padding="4"
+                    VerticalAlignment="Top"
+                    Theme="{DynamicResource OverlayCloseButton}">
+                    <mdi:MaterialIcon
+                        Kind="Close"
+                        Width="24"
+                        Height="24" />
+                </Button>
+            </StackPanel>
         </Grid>
         <ComboBox
             Grid.Row="1"
@@ -127,6 +138,7 @@
                 IsVisible="{Binding ShowInspector}"
                 RowDefinitions="Auto,Auto,*,Auto,*">
                 <WrapPanel
+                    HorizontalAlignment="Center"
                     Grid.Row="0"
                     ItemSpacing="5">
                     <Button
@@ -153,16 +165,6 @@
                         ToolTip.Tip="Copy diagnostic events">
                         <mdi:MaterialIcon
                             Kind="ContentCopy"
-                            Width="30"
-                            Height="30" />
-                    </Button>
-                    <Button
-                        Classes="ToolbarButton"
-                        Command="{Binding DetachCommand}"
-                        IsVisible="{Binding CanDetach}"
-                        ToolTip.Tip="Detach Inspector">
-                        <mdi:MaterialIcon
-                            Kind="OpenInNew"
                             Width="30"
                             Height="30" />
                     </Button>
@@ -293,7 +295,7 @@
                         PlaceholderText="Optional marker text"
                         MaxLength="256" />
                     <Button
-                        Classes="ToolbarButton"
+                        Classes="EmbeddedIconButton"
                         Grid.Column="1"
                         Command="{Binding AddMarkerCommand}"
                         ToolTip.Tip="Add marker">

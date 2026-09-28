@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase
+<utilities:UserControlViewBase
     x:TypeArguments="common:TopBarViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -113,38 +113,42 @@
                                           >
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
-                                <StackPanel Orientation="Horizontal">
-                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
-                                    <MenuItem
+                                <MenuItem
                                         ToolTip.Tip="Readiness: current actionable blockers"
-                                        Command="{Binding Diagnostics.OpenDestinationCommand}"
+                                        Command="{Binding Diagnostics.OpenDestinationCommand,FallbackValue='', TargetNullValue=''}"
                                         CommandParameter="Readiness"
-                                        Header="{Binding Diagnostics.BlockerCount, StringFormat='Readiness ({0})'}" />
-                                </StackPanel>
+                                        Header="{Binding Diagnostics.BlockerCount,FallbackValue='', TargetNullValue='', StringFormat='Readiness ({0})'}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
 
-                                <StackPanel Orientation="Horizontal">
-                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
-                                    <MenuItem
+                                <MenuItem
                                         ToolTip.Tip="Messages: unread FC warnings and errors"
-                                        Command="{Binding Diagnostics.OpenDestinationCommand}"
+                                        Command="{Binding Diagnostics.OpenDestinationCommand,FallbackValue='', TargetNullValue=''}"
                                         CommandParameter="Messages"
-                                        Header="{Binding Diagnostics.UnreadWarnings, StringFormat='Messages ({0})'}" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
-                                    <MenuItem
+                                        Header="{Binding Diagnostics.UnreadWarnings,FallbackValue='', TargetNullValue='', StringFormat='Messages ({0})'}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
                                         ToolTip.Tip="Live Telemetry: Inspect Status, Decoded and Raw evidence"
-                                        Command="{Binding Diagnostics.OpenDestinationCommand}"
+                                        Command="{Binding Diagnostics.OpenDestinationCommand,FallbackValue='', TargetNullValue=''}"
                                         CommandParameter="Inspector"
-                                        Header="Live Telemetry Inspector" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
-                                    <MenuItem
-                                        ToolTip.Tip="Open logs, recording and playback workspace"
-                                        Command="{Binding Diagnostics.OpenLogsCommand}"
-                                        Header="Navigate to Logs" />
-                                </StackPanel>
+                                        Header="Live Telemetry Inspector">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                        ToolTip.Tip="Open telemetry/application logs, recording and playback workspace"
+                                        Command="{Binding Diagnostics.OpenLogsCommand,FallbackValue='', TargetNullValue=''}"
+                                        Header="Navigate to telemetry/application logs">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                         <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
