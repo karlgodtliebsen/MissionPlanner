@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:MavFtpTabViewModel"
+<utilities:UserControlViewBase x:TypeArguments="sections:MavFtpTabViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
@@ -32,10 +32,11 @@
                 </Button>
             </Grid>
             <Grid Grid.Row="1" RowDefinitions="Auto,*" MinWidth="640">
-                <Grid ColumnDefinitions="400,100,100" ColumnSpacing="6" Margin="12,0,12,6">
+                <Grid ColumnDefinitions="300,100,100,180" ColumnSpacing="6" Margin="12,0,12,6">
                     <TextBlock Grid.Column="0" Text="Name" Classes="DataGridColumn" />
                     <TextBlock Grid.Column="1" Text="Type" Classes="DataGridColumn" />
                     <TextBlock Grid.Column="2" Text="Size" Classes="DataGridColumn" />
+                    <TextBlock Grid.Column="3" Text="Modified (local)" Classes="DataGridColumn" />
                 </Grid>
 
                 <ListBox Grid.Row="1"
@@ -46,10 +47,11 @@
                          VerticalAlignment="Stretch">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:VehicleFileSystemEntryViewModel">
-                            <Grid ColumnDefinitions="400,100,100" ColumnSpacing="6" MinHeight="38">
+                            <Grid ColumnDefinitions="300,100,100,180" ColumnSpacing="6" MinHeight="38">
                                 <TextBlock Grid.Column="0" Text="{Binding Name}" Classes="DataGridRow" />
                                 <TextBlock Grid.Column="1" Text="{Binding TypeText}" Classes="DataGridRow" />
                                 <TextBlock Grid.Column="2" Text="{Binding SizeText}" Classes="DataGridRow" />
+                                <TextBlock Grid.Column="3" Text="{Binding ModifiedText}" Classes="DataGridRow" />
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>

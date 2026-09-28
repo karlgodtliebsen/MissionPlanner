@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
@@ -39,6 +39,9 @@ public sealed class VehicleCommandPolicy(IDateTimeProvider clock) : IVehicleComm
             VehicleAction.Takeoff => ValidateTakeoff(state),
             VehicleAction.Land or VehicleAction.ReturnToLaunch or VehicleAction.Hold => ValidateInFlightAction(state),
             VehicleAction.RebootAutopilot => ValidateReboot(state),
+            VehicleAction.RebootMassStorage => ValidateReboot(state).IsAllowed
+                ? VehicleCommandDecision.Allow(true, "Reboot into USB mass-storage mode? This interrupts telemetry and control. Connect by USB to access storage; firmware support is required. Restart the controller to resume normal operation.")
+                : ValidateReboot(state),
             VehicleAction.SetHomeHere => ValidateSetHome(state),
             VehicleAction.SetCurrentMissionItem or VehicleAction.RestartMission =>
                 state.Navigation.MissionItemCount is > 0 ? VehicleCommandDecision.Allow() : VehicleCommandDecision.Deny("A mission must be known on the vehicle."),

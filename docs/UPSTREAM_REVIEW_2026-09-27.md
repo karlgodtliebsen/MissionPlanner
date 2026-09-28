@@ -149,3 +149,14 @@ The three page-level gaps were implemented following this review:
 - The shared mandatory-hardware parameter writer now waits for matching vehicle readback before reporting success. Failures leave pending edits intact. Pages without the rich bitmask editor retain their numeric fallback.
 
 Validation: four core tests and four Avalonia/headless tests passed, including the existing hardware-refresh regression. The Avalonia test build compiled the changed XAML. Existing unrelated compiler warnings remain. No live controller writes or interactive visual verification were performed.
+
+## Selected upstream additions — 28 September 2026
+
+Implemented the timestamped MAVFTP listing behavior from `b90cae4`/`d03151d` and the USB mass-storage reboot action from `1bb11f5` using Next Gen's existing protocol, domain and presentation services.
+
+- MAVFTP requests opcode 16, decodes file/directory modification timestamps as UTC, and displays them in local time. Missing, zero or invalid timestamps remain blank. An unsupported-command/general-failure NAK on the first page falls back to the legacy listing; errors after pagination are not hidden by fallback. Capability negotiation occurs per listing to avoid retaining stale support information across reconnections.
+- Skip entries already advanced the pagination offset without appearing in the listing. The projection now also excludes nameless placeholders defensively.
+- Flight Data / Actions exposes **Reboot to USB storage**, sends reboot parameter 1 = 5, and reuses the online/freshness/firmware/disarmed reboot checks and explicit confirmation. Command results remain ACK evidence, not proof that a USB disk mounted. Firmware support and a USB connection are required to use the resulting storage mode.
+- Updated the Flight Data and Mavlink Ftp help topics. No new packages or local project references were introduced.
+
+Validation: 21 focused core tests passed (including timed/legacy listings, skip-offset behavior, unknown timestamps, command encoding and denied reboot requests). The application build succeeded with existing warnings. No real controller was rebooted and no hardware/interactive visual check was performed. Windows drive mounting, plugin extension hooks and unrelated legacy fixes remain separate follow-up candidates.

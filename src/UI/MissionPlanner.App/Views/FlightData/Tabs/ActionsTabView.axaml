@@ -1,4 +1,4 @@
-﻿<utilities:TabItemViewBase x:TypeArguments="tabs:ActionsTabViewModel"
+<utilities:TabItemViewBase x:TypeArguments="tabs:ActionsTabViewModel"
                            xmlns="https://github.com/avaloniaui"
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
@@ -80,6 +80,8 @@
                     <mdi:MaterialIcon Kind="CrosshairsGps" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
             </Grid>
+
+            <Button Content="Reboot to USB storage" Command="{Binding RebootMassStorageCommand}" IsEnabled="{Binding CanReboot}" ToolTip.Tip="Restart supported firmware in USB mass-storage mode. Telemetry will stop." />
 
             <Border Padding="10" Classes="SectionCard" >
                 <StackPanel Orientation="Vertical" Spacing="7">

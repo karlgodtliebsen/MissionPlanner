@@ -408,6 +408,13 @@ public partial class ActionsTabViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private Task RebootMassStorageAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteAsync("Reboot to USB storage", VehicleAction.RebootMassStorage,
+            (id, confirmed, token) => commandService.RebootMassStorageAsync(id, confirmed, token), null, cancellationToken);
+    }
+
+    [RelayCommand]
     private Task SetHomeHereAsync(CancellationToken cancellationToken)
     {
         return ExecuteAsync("Set home here", VehicleAction.SetHomeHere,

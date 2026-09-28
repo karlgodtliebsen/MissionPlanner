@@ -501,7 +501,7 @@ public partial class MavFtpTabViewModel : ViewModelBase
                 var entryViewModels = new List<Models.VehicleFileSystemEntryViewModel>();
                 foreach (var entry in entries.OrderBy(x => x.Type).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    entryViewModels.Add(new Models.VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size));
+                    entryViewModels.Add(new Models.VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size, entry.ModifiedUtc));
                 }
 
                 Entries.ReplaceRange(entryViewModels);

@@ -26,7 +26,9 @@ public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegis
                     x.RemotePath));
 
         var entries = await client.ListDirectoryAsync(Resolve(vehicleId), remotePath, mapped, cancellationToken).ConfigureAwait(false);
-        return entries.Select(x => new VehicleFileSystemEntry(x.Name, x.Type == MavFtpDirectoryEntryType.Directory ? VehicleFileSystemEntryType.Directory : VehicleFileSystemEntryType.File, x.Size)).ToArray();
+        return entries.Where(x => x.Type != MavFtpDirectoryEntryType.Skip && !string.IsNullOrEmpty(x.Name))
+            .Select(x => new VehicleFileSystemEntry(x.Name, x.Type == MavFtpDirectoryEntryType.Directory ? VehicleFileSystemEntryType.Directory : VehicleFileSystemEntryType.File, x.Size)
+            { ModifiedUtc = x.ModifiedUtc }).ToArray();
     }
 
     /// <inheritdoc />

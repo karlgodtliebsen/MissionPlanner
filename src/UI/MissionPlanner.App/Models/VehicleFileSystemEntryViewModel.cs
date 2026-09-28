@@ -6,8 +6,11 @@ namespace MissionPlanner.App.Models;
 /// <summary>
 /// Provides the public API for VehicleFileSystemEntryViewModel.
 /// </summary>
-public sealed partial class VehicleFileSystemEntryViewModel(string name, VehicleFileSystemEntryType type, long? size) : ObservableObject
+public sealed partial class VehicleFileSystemEntryViewModel(string name, VehicleFileSystemEntryType type, long? size, DateTimeOffset? modifiedUtc = null) : ObservableObject
 {
+    /// <summary>Gets the remote modification time in local time; unknown times remain blank.</summary>
+    public string ModifiedText => modifiedUtc?.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss") ?? string.Empty;
+
     /// <summary>
     /// Gets the name of the file system entry.
     /// </summary>

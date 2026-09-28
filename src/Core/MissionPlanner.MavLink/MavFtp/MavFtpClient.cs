@@ -85,6 +85,8 @@ public sealed class MavFtpClient : IMavFtpClient
         return InOperationLockAsync(target, async ct =>
         {
             var entries = new List<MavFtpDirectoryEntry>();
+            // Negotiate per listing so reconnecting to different firmware never retains stale capabilities.
+            var opcode = MavFtpOpcode.ListDirectoryWithTime;
             uint offset = 0;
             while (true)
             {
@@ -92,7 +94,13 @@ public sealed class MavFtpClient : IMavFtpClient
                 try
                 {
                     progress?.Report(new MavFtpProgress(remotePath, offset, null, null));
-                    response = await RequestAsync(target, 0, MavFtpOpcode.ListDirectory, offset, PathBytes(remotePath), remotePath, ct).ConfigureAwait(false);
+                    response = await RequestAsync(target, 0, opcode, offset, PathBytes(remotePath), remotePath, ct).ConfigureAwait(false);
+                }
+                catch (MavFtpRemoteException ex) when (offset == 0 && opcode == MavFtpOpcode.ListDirectoryWithTime &&
+                    ex.Error is MavFtpNakError.UnknownCommand or MavFtpNakError.Failure)
+                {
+                    opcode = MavFtpOpcode.ListDirectory;
+                    continue;
                 }
                 catch (MavFtpRemoteException ex)
                     when (ex.Error == MavFtpNakError.EndOfFile)
@@ -100,13 +108,13 @@ public sealed class MavFtpClient : IMavFtpClient
                     break;
                 }
 
-                var page = MavFtpDirectoryCodec.Decode(response.Data.Span);
+                var page = MavFtpDirectoryCodec.Decode(response.Data.Span, opcode == MavFtpOpcode.ListDirectoryWithTime);
                 if (page.Count == 0)
                 {
                     break;
                 }
 
-                entries.AddRange(page.Where(x => x.Type != MavFtpDirectoryEntryType.Skip));
+                entries.AddRange(page.Where(x => x.Type != MavFtpDirectoryEntryType.Skip && !string.IsNullOrEmpty(x.Name)));
                 offset += checked((uint)page.Count);
             }
 

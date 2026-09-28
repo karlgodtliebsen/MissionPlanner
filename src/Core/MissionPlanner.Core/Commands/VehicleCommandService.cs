@@ -166,6 +166,13 @@ public sealed class VehicleCommandService(
     }
 
     /// <inheritdoc />
+    public Task<VehicleCommandResponse> RebootMassStorageAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken)
+    {
+        return ExecuteAsync(vehicleId, VehicleAction.RebootMassStorage, MavLinkCommandIds.PreflightRebootShutdown,
+            [5, 0, 0, 0, 0, 0, 0], safetyConfirmed, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public Task<VehicleCommandResponse> SetHomeHereAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken)
     {
         return ExecuteAsync(vehicleId, VehicleAction.SetHomeHere, MavLinkCommandIds.DoSetHome,

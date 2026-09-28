@@ -40,5 +40,7 @@ public enum VehicleAction
     /// <summary>Execute a validated expert MAVLink command.</summary>
     ExpertCommand,
     /// <summary>Request receiver binding while disarmed.</summary>
-    ReceiverBind
+    ReceiverBind,
+    /// <summary>Reboot into firmware-supported USB mass-storage mode.</summary>
+    RebootMassStorage
 }

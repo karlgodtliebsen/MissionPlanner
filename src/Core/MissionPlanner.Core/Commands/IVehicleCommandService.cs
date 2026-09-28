@@ -101,6 +101,9 @@ public interface IVehicleCommandService : IAsyncDisposable
     /// <returns>The acknowledged command response.</returns>
     Task<VehicleCommandResponse> RebootAutopilotAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken);
 
+    /// <summary>Requests USB mass-storage mode on supported firmware after reboot safety checks.</summary>
+    Task<VehicleCommandResponse> RebootMassStorageAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken);
+
     /// <summary>Sets home to the vehicle's current position after explicit safety confirmation.</summary>
     /// <param name="vehicleId">The target vehicle.</param>
     /// <param name="safetyConfirmed">Whether the user confirmed changing home.</param>
