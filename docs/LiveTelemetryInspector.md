@@ -1,10 +1,15 @@
 # Live Telemetry Inspector
 
-The shell's **Telemetry Inspector / Why?** action opens the Status/Arming panel without
+The shell's **Inspector** action opens the technical panel without
 navigating away from Setup or Flight Data. The right-side Avalonia drawer leaves the
 uncovered page usable. Its width (360–760), selected vehicle and panel persist for the
 application session. Desktop can detach the same content/ViewModel into an Ursa window.
 Browser/WASM retains drawer mode and hides Detach; it never needs to create a native window.
+
+Readiness and Messages now share this host. See
+[Readiness and diagnostic navigation](READINESS_AND_DIAGNOSTIC_NAVIGATION.md) for the
+compact header, explicit pinning, local timestamps, battery evidence and migration
+from Flight Data tabs. Logs opens the existing recording/playback workspace.
 
 ## Data ownership and EventHub separation
 

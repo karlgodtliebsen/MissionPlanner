@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -18,6 +18,24 @@ namespace MissionPlanner.App.Views.FlightData.Tabs;
 /// </summary>
 public partial class MessagesTabViewModel : ViewModelBase
 {
+    private bool subscribed;
+    private bool inspectionScope;
+    private MissionPlanner.Shared.Models.Vehicles.Models.VehicleId? inspectedVehicle;
+    private MissionPlanner.Shared.Models.Vehicles.Models.VehicleId? TargetVehicle => inspectionScope ? inspectedVehicle : activeVehicle.VehicleId;
+
+    /// <summary>Selects a diagnostic target without changing operational command targeting.</summary>
+    public void Inspect(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId? vehicle)
+    {
+        if (inspectionScope && inspectedVehicle == vehicle)
+        {
+            return;
+        }
+        inspectionScope = true;
+        inspectedVehicle = vehicle;
+        SelectedItems.Clear();
+        SelectedMessage = null;
+        Refresh();
+    }
     private static readonly JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleMessageStore vehicleMessages;
@@ -109,7 +127,7 @@ public partial class MessagesTabViewModel : ViewModelBase
     /// <returns>The complete timestamped text representation.</returns>
     public string CreateTextExport()
     {
-        return string.Join(
+        return $"Vehicle: {TargetVehicle?.ToString() ?? "none"}; captured: {DateTimeOffset.UtcNow:O}; filtered message history{Environment.NewLine}" + string.Join(
             Environment.NewLine,
             Items.Select(item =>
                 $"{item.ReceivedAt:O}\t{item.Origin}\t{item.Source}\t{item.Severity}\t{EscapeText(item.Text)}\tassembled={item.IsAssembled}\ttruncated={item.IsTruncated}"));
@@ -119,7 +137,8 @@ public partial class MessagesTabViewModel : ViewModelBase
     /// <returns>The indented JSON representation.</returns>
     public string CreateJsonExport()
     {
-        return JsonSerializer.Serialize(Items, jsonOptions);
+        return JsonSerializer.Serialize(new { schemaVersion = 1, vehicle = TargetVehicle?.ToString(),
+            capturedAt = DateTimeOffset.UtcNow, severity = SelectedSeverity, search = SearchText, messages = Items }, jsonOptions);
     }
 
     /// <inheritdoc />
@@ -132,6 +151,11 @@ public partial class MessagesTabViewModel : ViewModelBase
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
+        if (subscribed)
+        {
+            return Task.CompletedTask;
+        }
+        subscribed = true;
         vehicleMessages.MessageAdded += OnVehicleMessageAdded;
         applicationMessages.NotificationAdded += OnApplicationMessageAdded;
         Refresh();
@@ -147,6 +171,7 @@ public partial class MessagesTabViewModel : ViewModelBase
 
     private void Deactivate()
     {
+        subscribed = false;
         vehicleMessages.MessageAdded -= OnVehicleMessageAdded;
         applicationMessages.NotificationAdded -= OnApplicationMessageAdded;
     }
@@ -179,7 +204,7 @@ public partial class MessagesTabViewModel : ViewModelBase
     [RelayCommand]
     private void ClearCurrentView()
     {
-        if (activeVehicle.VehicleId is not { } vehicleId)
+        if (TargetVehicle is not { } vehicleId)
         {
             return;
         }
@@ -254,7 +279,7 @@ public partial class MessagesTabViewModel : ViewModelBase
 
     private void OnVehicleMessageAdded(VehicleStatusTextAddedEventArgs args)
     {
-        if (args.Message.VehicleId == activeVehicle.VehicleId)
+        if (args.Message.VehicleId == TargetVehicle)
         {
             Dispatcher.Dispatch(RefreshAfterAppend);
         }
@@ -262,7 +287,7 @@ public partial class MessagesTabViewModel : ViewModelBase
 
     private void OnApplicationMessageAdded(ApplicationNotificationAddedEventArgs args)
     {
-        if (activeVehicle.VehicleId is { } vehicleId &&
+        if (TargetVehicle is { } vehicleId &&
             (args.Notification.VehicleId is null || args.Notification.VehicleId == vehicleId))
         {
             Dispatcher.Dispatch(RefreshAfterAppend);
@@ -281,9 +306,10 @@ public partial class MessagesTabViewModel : ViewModelBase
     private void Refresh()
     {
         var selectedIdentity = SelectedMessage?.Identity;
-        if (activeVehicle.VehicleId is not { } vehicleId)
+        if (TargetVehicle is not { } vehicleId)
         {
-            SetMessages("No active vehicle");
+            Items.Clear();
+            SetMessages("No inspected vehicle");
             return;
         }
 
@@ -293,10 +319,26 @@ public partial class MessagesTabViewModel : ViewModelBase
             .OrderBy(row => row.ReceivedAt)
             .ThenBy(row => row.Identity)
             .ToList();
-        Items.AddRange(rows);
+        var identities = rows.Select(row => row.Identity).ToHashSet();
+        foreach (var removed in Items.Where(row => !identities.Contains(row.Identity)).ToArray())
+        {
+            Items.Remove(removed);
+        }
+        for (var index = 0; index < rows.Count; index++)
+        {
+            var existing = Items.FirstOrDefault(row => row.Identity == rows[index].Identity);
+            if (existing is null)
+            {
+                Items.Insert(index, rows[index]);
+            }
+            else if (Items.IndexOf(existing) != index)
+            {
+                Items.Move(Items.IndexOf(existing), index);
+            }
+        }
 
         SelectedMessage = Items.FirstOrDefault(item => item.Identity == selectedIdentity);
-        SetMessages($"{Items.Count} visible messages for {activeVehicle.Current.DisplayName}.");
+        SetMessages($"{Items.Count} visible messages for {vehicleId}.");
     }
 
     private bool MatchesFilter(MessageListItem item)

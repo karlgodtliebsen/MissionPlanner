@@ -16,5 +16,8 @@ public enum PreflightCheckStatus
     Stale,
 
     /// <summary>The required evidence is unavailable or unsupported.</summary>
-    NotAvailable
+    NotAvailable,
+
+    /// <summary>The check is explicitly disabled or not required for the current profile.</summary>
+    NotApplicable
 }

@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Views.FlightData.Tabs;
+namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>
 /// Represents one display and export row in the Messages tab.
@@ -36,7 +36,7 @@ public sealed class MessageListItem(string identity, MessageListOrigin origin, D
 
 
     /// <summary>Gets a concise source/chunk detail for the row.</summary>
-    public string Details => $"{ReceivedAt:O}  {Source}" +
+    public string Details => $"{ReceivedAt.ToLocalTime():yyyy-MM-dd HH:mm:ss.fff zzz}  {Source}" +
                              (IsAssembled ? "  • assembled" : string.Empty) +
                              (IsTruncated ? "  • TRUNCATED" : string.Empty);
 }
@@ -49,4 +49,3 @@ public sealed class MessageListItem(string identity, MessageListOrigin origin, D
 //                             (IsAssembled ? "  • assembled" : string.Empty) +
 //                             (IsTruncated ? "  • TRUNCATED" : string.Empty);
 //}
-

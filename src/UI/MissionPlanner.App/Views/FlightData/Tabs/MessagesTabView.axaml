@@ -1,4 +1,4 @@
-﻿<utilities:TabItemViewBase x:TypeArguments="tabs:MessagesTabViewModel"
+<utilities:TabItemViewBase x:TypeArguments="tabs:MessagesTabViewModel"
                            xmlns="https://github.com/avaloniaui"
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                            xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
@@ -9,9 +9,8 @@
                            x:Class="MissionPlanner.App.Views.FlightData.Tabs.MessagesTabItemView"
                            x:DataType="tabs:MessagesTabViewModel"
                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <ScrollViewer >
         <Grid  Margin="12" RowDefinitions="Auto,Auto,*" RowSpacing="8">
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
                 <Button Classes="EmbeddedIconButton" ToolTip.Tip="Copy selected" Command="{Binding CopySelectedCommand}" AutomationProperties.Name="Copy selected">
                     <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
                 </Button>
@@ -25,10 +24,10 @@
                     <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
                 </Button>
             </StackPanel>
-            <Grid Grid.Row="1"  ColumnDefinitions="150,Auto,Auto" ColumnSpacing="5">
-                <ComboBox MinWidth="150" ItemsSource="{Binding SeverityFilters}"
+            <Grid Grid.Row="1"  ColumnDefinitions="Auto,*,Auto" ColumnSpacing="5">
+                <ComboBox MaxWidth="120" ItemsSource="{Binding SeverityFilters}"
                           SelectedItem="{Binding SelectedSeverity}"/>
-                <TextBox Grid.Column="1" MinWidth="100" Text="{Binding SearchText}" PlaceholderText="Search messages"/>
+                <TextBox Grid.Column="1" Text="{Binding SearchText}" PlaceholderText="Search messages"/>
                 <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}" AutomationProperties.Name="{Binding PauseButtonText}">
                     <mdi:MaterialIcon Kind="PlayPause" Classes="ActionIcon" Width="20" Height="20" />
                 </Button>
@@ -46,5 +45,4 @@
                 </ListBox>
             </Border>
         </Grid>
-    </ScrollViewer>
 </utilities:TabItemViewBase>

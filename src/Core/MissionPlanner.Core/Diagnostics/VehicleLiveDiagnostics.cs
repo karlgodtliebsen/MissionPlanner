@@ -155,6 +155,8 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
                 }
                 entry.Disconnected = false;
                 entry.Reasons.Clear();
+                entry.BatteryReasons.Clear();
+                entry.SessionStartedAt = connected.ConnectedAt;
                 entry.Transport = connected.ConnectionType;
                 entry.Endpoint = connected.Endpoint;
                 Add(entry, new(input.VehicleId, connected.ConnectedAt, "Connection", $"Connected via {entry.Transport} {entry.Endpoint}"));
@@ -164,11 +166,32 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
                 entry.Disconnected = true;
                 Add(entry, new(input.VehicleId, disconnected.DisconnectedAt, "Connection", $"Disconnected: {disconnected.Reason}"));
             }
-            if (input.State is { } state && !entry.Disconnected)
+            if (input.State is { } state && !entry.Disconnected && state.LastHeartbeatAt >= entry.SessionStartedAt)
             {
                 var previous = entry.State;
                 ObserveArmingInput(entry, previous, state, now);
                 entry.State = state;
+                if (previous is not null && previous.CustomMode != state.CustomMode)
+                {
+                    Add(entry, new(input.VehicleId, state.LastHeartbeatAt, "Mode", $"Flight mode: {state.Flight.Mode} (ID {state.CustomMode})"));
+                }
+                const uint preArmBit = 1u << 28;
+                var recoveryAt = state.IsArmed ? state.LastHeartbeatAt :
+                    state.Health.SensorsPresent is { } present && (present & preArmBit) != 0 &&
+                    state.Health.SensorsEnabled is { } enabled && (enabled & preArmBit) != 0 &&
+                    state.Health.SensorsHealthy is { } healthy && (healthy & preArmBit) != 0
+                        ? state.Health.SystemObservedAt : null;
+                if (recoveryAt is { } recovered && now >= recovered && now - recovered <= TimeSpan.FromSeconds(10))
+                {
+                    foreach (var key in entry.BatteryReasons.Keys.ToArray())
+                    {
+                        var reason = entry.BatteryReasons[key];
+                        if (recovered > reason.ObservedAt && reason.ResolvedAt is null)
+                        {
+                            entry.BatteryReasons[key] = reason with { ResolvedAt = recovered };
+                        }
+                    }
+                }
                 if (state.IsArmed || state.Arming.State == VehicleArmingState.DisarmedReady)
                 {
                     entry.Reasons.Clear();
@@ -205,8 +228,20 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
                     entry.LastArmAttemptAt is { } attempt && text.ReceivedAt >= attempt && text.ReceivedAt - attempt < TimeSpan.FromSeconds(10)
                         ? entry.ArmCorrelation : null;
                 Add(entry, new(input.VehicleId, text.ReceivedAt, "STATUSTEXT", text.Text, correlation));
-                if (text.SourceComponentId == input.VehicleId.ComponentId && !text.IsTruncated)
+                if (text.SourceComponentId == input.VehicleId.ComponentId && !text.IsTruncated &&
+                    !entry.Disconnected && text.ReceivedAt >= entry.SessionStartedAt)
                 {
+                    if ((text.Text.StartsWith("PreArm:", StringComparison.OrdinalIgnoreCase) || text.Text.StartsWith("Arm:", StringComparison.OrdinalIgnoreCase)) &&
+                        text.Text.Contains("Battery", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var match = System.Text.RegularExpressions.Regex.Match(text.Text, @"Battery\s*(\d+)\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                        int? number = match.Success && int.TryParse(match.Groups[1].Value, out var parsed) && parsed is >= 1 and <= 256 ? parsed : null;
+                        var key = number ?? 0;
+                        if (!entry.BatteryReasons.TryGetValue(key, out var previousReason) || text.ReceivedAt >= previousReason.ObservedAt)
+                        {
+                            entry.BatteryReasons[key] = new(number, text.Text, text.ReceivedAt);
+                        }
+                    }
                     if (text.Text.StartsWith("PreArm:", StringComparison.OrdinalIgnoreCase) && text.Text.Length > 7)
                     {
                         if (entry.Reasons.Count >= 32)
@@ -234,6 +269,15 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
             vehicles.Add(id, entry);
         }
         return entry;
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<BatteryArmingEvidence> GetBatteryArmingEvidence(VehicleId vehicleId)
+    {
+        lock (sync)
+        {
+            return Get(vehicleId).BatteryReasons.Values.ToArray();
+        }
     }
 
     private void Add(Entry entry, VehicleDiagnosticEvent item)
@@ -271,6 +315,8 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
         internal readonly Queue<VehicleDiagnosticEvent> Journal = new();
         internal readonly Queue<VehicleRawDiagnostic> Raw = new();
         internal readonly Dictionary<string, DateTimeOffset> Reasons = new(StringComparer.OrdinalIgnoreCase);
+        internal readonly Dictionary<int, BatteryArmingEvidence> BatteryReasons = [];
+        internal DateTimeOffset SessionStartedAt;
         internal string? LastArmFailure;
         internal DateTimeOffset? LastArmAttemptAt;
         internal string? LastArmResult;

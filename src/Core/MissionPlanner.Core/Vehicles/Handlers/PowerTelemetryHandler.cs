@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -46,7 +46,7 @@ public sealed class PowerTelemetryHandler(
                     null,
                     null,
                     status.BatteryRemaining,
-                    status.ReceivedAt));
+                    status.ReceivedAt) { IsInstanceSpecific = false });
                 vehicle.ApplySystemHealth(new VehicleSystemHealthObservation(
                     status.SensorsPresent ?? 0,
                     status.SensorsEnabled ?? 0,

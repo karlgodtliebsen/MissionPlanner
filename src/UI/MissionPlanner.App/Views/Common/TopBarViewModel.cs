@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Avalonia.Controls.Notifications;
 using Avalonia.Media.Imaging;
@@ -27,6 +27,8 @@ namespace MissionPlanner.App.Views.Common;
 /// </summary>
 public partial class TopBarViewModel : ViewModelBase
 {
+    /// <summary>Shared diagnostic navigation, independent of command targeting.</summary>
+    public Views.Diagnostics.LiveTelemetryInspectorViewModel? Diagnostics { get; }
     public new WindowNotificationManager? NotificationManager
     {
         get; set;
@@ -161,6 +163,7 @@ public partial class TopBarViewModel : ViewModelBase
     /// <param name="navigationService">Application route navigation.</param>
     /// <param name="settingsService">The persisted Planner settings service.</param>
     /// <param name="logger">The logger instance.</param>
+    /// <param name="diagnostics">Shared diagnostic navigation and badge presentation.</param>
     public TopBarViewModel(
         ApplicationStateService stateService,
         IServiceFactory serviceFactory,
@@ -169,9 +172,10 @@ public partial class TopBarViewModel : ViewModelBase
         IReplaySessionManager replaySessionManager,
         INavigationService navigationService,
         IPlannerSettingsService settingsService,
-        ILogger<TopBarViewModel> logger) : base(logger)
+        ILogger<TopBarViewModel> logger, Views.Diagnostics.LiveTelemetryInspectorViewModel? diagnostics = null) : base(logger)
     {
         this.stateService = stateService;
+        Diagnostics = diagnostics;
         this.serviceFactory = serviceFactory;
         this.dialogService = dialogService;
         this.domainEventHub = domainEventHub;

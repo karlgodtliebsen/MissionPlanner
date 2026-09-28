@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -29,13 +29,25 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     /// <summary>Initializes a coalesced UI boundary over the always-on diagnostic service.</summary>
     public LiveTelemetryInspectorViewModel(IVehicleLiveDiagnostics diagnostics, IActiveVehicleContext activeVehicle, ITextClipboardService clipboard,
         IInspectorWindowService windows, TimeProvider clock, IUiDispatcher dispatcher,
-        IDomainEventHub events, ILogger<LiveTelemetryInspectorViewModel> logger) : base(logger, dispatcher, events)
+        IDomainEventHub events, ILogger<LiveTelemetryInspectorViewModel> logger,
+        MissionPlanner.Core.FlightData.Preflight.IPreflightAssessmentService? assessmentService = null,
+        MissionPlanner.App.Views.Navigation.INavigationService? navigation = null,
+        MissionPlanner.Core.Vehicles.Abstractions.IVehicleMessageStore? messageStore = null,
+        MissionPlanner.App.Views.FlightData.Tabs.MessagesTabViewModel? messages = null,
+        MissionPlanner.App.Views.FlightData.Tabs.StatusTabViewModel? status = null,
+        MissionPlanner.Core.Replay.IReplaySessionManager? replay = null) : base(logger, dispatcher, events)
     {
         this.diagnostics = diagnostics;
         this.activeVehicle = activeVehicle;
         this.clipboard = clipboard;
         this.windows = windows;
         this.clock = clock;
+        this.assessmentService = assessmentService;
+        this.navigation = navigation;
+        this.messageStore = messageStore;
+        this.messages = messages;
+        this.status = status;
+        this.replay = replay;
         timer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Background, (_, _) => Refresh());
         timer.Start();
     }
@@ -85,7 +97,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     public partial string ExportTarget { get; private set; } = "No export target selected";
 
     /// <summary>Available diagnostic panels.</summary>
-    public IReadOnlyList<string> Panels { get; } = ["Status", "RC", "Outputs", "Power", "Sensors", "Raw"];
+    public IReadOnlyList<string> Panels { get; } = ["Status", "Decoded", "RC", "Outputs", "Power", "Sensors", "Raw"];
 
     /// <summary>Session-retained selected panel.</summary>
     [ObservableProperty]
@@ -146,6 +158,20 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
 
     partial void OnSelectedVehicleChanged(VehicleId? value)
     {
+        if (!followingActive && value is not null)
+        {
+            IsVehiclePinned = true;
+        }
+        messages?.Inspect(value);
+        NavigationMessage = string.Empty;
+        Raw.Clear();
+        Events.Clear();
+        Details.Clear();
+        Channels.Clear();
+        ReadinessChecks.Clear();
+        PassedChecks.Clear();
+        status?.Inspect(null);
+        Header = value?.ToString() ?? "No vehicle selected";
         IsFrozen = false;
         displayedVersion = -1;
         Refresh();
@@ -156,6 +182,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         manualPanelSelection |= !contextSelection;
         OnPropertyChanged(nameof(ShowRc));
         OnPropertyChanged(nameof(ShowRaw));
+        OnPropertyChanged(nameof(ShowStatus));
         displayedVersion = -1;
         Refresh();
     }
@@ -170,7 +197,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         IsOpen = true;
         if (!IsVehiclePinned || SelectedVehicle is null)
         {
-            SelectedVehicle = activeVehicle.VehicleId;
+            FollowSelection();
         }
         if (SelectedVehicle is null && diagnostics.Vehicles.Count > 0)
         {
@@ -251,7 +278,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     private void Freeze()
     {
         IsFrozen = !IsFrozen;
-        LiveLabel = IsFrozen ? $"FROZEN at {clock.GetUtcNow():HH:mm:ss.fff} · Live data is still being collected" : "LIVE";
+        LiveLabel = IsFrozen ? $"DISPLAY PAUSED at {clock.GetUtcNow().ToLocalTime():HH:mm:ss.fff zzz} · Acquisition and recording continue" : "LIVE";
         if (!IsFrozen)
         {
             displayedVersion = -1;
@@ -295,9 +322,14 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     /// <summary>Refreshes presentation at most once per 100 ms timer tick; no per-packet UI dispatch.</summary>
     public void Refresh()
     {
+        RefreshActiveSummary();
         if (presentationDisposed || !IsOpen)
         {
             return;
+        }
+        if (!IsVehiclePinned && activeVehicle.VehicleId is { } activeId && SelectedVehicle != activeId)
+        {
+            FollowSelection();
         }
         foreach (var id in diagnostics.Vehicles)
         {
@@ -317,15 +349,16 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         var snapshot = diagnostics.GetSnapshot(vehicle);
         var arming = diagnostics.GetArming(vehicle);
         var state = snapshot.State;
+        RefreshSharedViews(snapshot, arming);
         var identity = $"{state?.DisplayName ?? vehicle.ToString()} · {vehicle} · {snapshot.Endpoint ?? "Endpoint unknown"} · {(snapshot.Disconnected ? "Disconnected" : state?.Connection.State.ToString() ?? "Unknown")}";
         ExportTarget = $"Inspecting/exporting: {identity} · Last diagnostic update: {snapshot.UpdatedAt:O}" +
             (activeVehicle.VehicleId != vehicle ? $"\nDIFFERENT FROM ACTIVE VEHICLE: {activeVehicle.VehicleId?.ToString() ?? "none"}" : "\nMatches active vehicle");
+        Header = identity;
         if (IsFrozen)
         {
             ExportTarget += "\nExport captures latest collected data; only the displayed samples are frozen.";
             return;
         }
-        Header = $"{identity} · {state?.Flight.Mode} · {arming.Summary}";
         LiveLabel = snapshot.Disconnected || state?.Connection.State == VehicleConnectionState.Offline
             ? "DISCONNECTED · Last values are stale"
             : state?.Connection.State == VehicleConnectionState.Online && clock.GetUtcNow() - state.LastHeartbeatAt <= TimeSpan.FromSeconds(3)
@@ -371,6 +404,11 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     {
         var values = (SelectedPanel == "Outputs" ? diagnostics.GetOutputs(snapshot.VehicleId) :
             VehicleDiagnosticPanels.Describe(SelectedPanel, snapshot, arming, clock.GetUtcNow())).ToArray();
+        if (SelectedPanel == "Power")
+        {
+            values = values.Concat(ReadinessChecks.Concat(PassedChecks).Where(check => check.Key.StartsWith("battery", StringComparison.Ordinal))
+                .Select(check => $"{check.ResultLabel} · {check.Title}\n{check.Summary}")).ToArray();
+        }
         if (ShowRc)
         {
             var channels = diagnostics.GetRcChannels(snapshot.VehicleId);

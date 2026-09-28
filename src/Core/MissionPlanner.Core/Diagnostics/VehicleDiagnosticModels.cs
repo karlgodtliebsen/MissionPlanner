@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Diagnostics;
@@ -42,6 +42,8 @@ public sealed class VehicleLiveDiagnosticOptions
 /// <summary>Always-on, platform-neutral diagnostic state and significant-event history.</summary>
 public interface IVehicleLiveDiagnostics
 {
+    /// <summary>Gets battery arming evidence for the retained connection session.</summary>
+    IReadOnlyList<BatteryArmingEvidence> GetBatteryArmingEvidence(VehicleId vehicleId) => [];
     /// <summary>Gets known vehicle identities, including retained disconnected vehicles.</summary>
     IReadOnlyList<VehicleId> Vehicles { get; }
 

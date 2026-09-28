@@ -405,6 +405,23 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyBattery(VehicleBatteryObservation observation)
     {
+        if (!observation.IsInstanceSpecific && state.Power.HasSpecificPrimaryBattery)
+        {
+            return;
+        }
+        var batteries = new Dictionary<byte, VehicleBatteryState>(state.Power.Batteries);
+        if (batteries.TryGetValue(observation.BatteryId, out var previous) && previous.ObservedAt > observation.ObservedAt)
+        {
+            return;
+        }
+        batteries[observation.BatteryId] = new(observation.BatteryId, observation.VoltageVolts,
+            observation.CurrentAmps, observation.ConsumedMah, observation.ConsumedWh,
+            observation.RemainingPercent, observation.ObservedAt);
+        state = state with { Power = state.Power with
+        {
+            Batteries = batteries,
+            HasSpecificPrimaryBattery = state.Power.HasSpecificPrimaryBattery || observation.IsInstanceSpecific && observation.BatteryId == 0
+        } };
         if (observation.BatteryId > 0)
         {
             state = state with
@@ -428,11 +445,11 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
         {
             Power = state.Power with
             {
-                BatteryVoltageVolts = observation.VoltageVolts ?? state.Power.BatteryVoltageVolts,
+                BatteryVoltageVolts = observation.VoltageVolts,
                 BatteryCurrentAmps = observation.CurrentAmps ?? state.Power.BatteryCurrentAmps,
                 BatteryConsumedMah = observation.ConsumedMah ?? state.Power.BatteryConsumedMah,
                 BatteryConsumedWh = observation.ConsumedWh ?? state.Power.BatteryConsumedWh,
-                BatteryRemainingPercent = observation.RemainingPercent ?? state.Power.BatteryRemainingPercent,
+                BatteryRemainingPercent = observation.RemainingPercent,
                 ObservedAt = observation.ObservedAt
             }
         };

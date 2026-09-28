@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
@@ -31,6 +31,7 @@ public sealed partial class VehicleLiveDiagnostics
                 },
                 Vehicle = vehicle,
                 Arming = GetArming(vehicleId),
+                BatteryArmingEvidence = GetBatteryArmingEvidence(vehicleId),
                 RcChannels = GetRcChannels(vehicleId),
                 Outputs = GetOutputs(vehicleId),
                 Parameters = parameters?.GetAllParameters(vehicleId).ToDictionary(pair => pair.Key, pair => pair.Value),

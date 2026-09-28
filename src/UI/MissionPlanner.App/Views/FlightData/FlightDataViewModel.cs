@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Views.Missions;
 
@@ -9,6 +9,8 @@ namespace MissionPlanner.App.Views.FlightData;
 /// </summary>
 public partial class FlightDataViewModel : ViewModelBase
 {
+    /// <summary>Shared readiness summary and diagnostic navigation.</summary>
+    public Views.Diagnostics.LiveTelemetryInspectorViewModel? Diagnostics { get; }
 
     /// <summary>The shared mission map editor (same instance as the FlightData map).</summary>
     public MissionMapViewModel Map
@@ -33,9 +35,12 @@ public partial class FlightDataViewModel : ViewModelBase
     /// </summary>
     /// <param name="map">The shared mission map editor.</param>
     /// <param name="logger">The logger.</param>
-    public FlightDataViewModel(FlightDataMissionMapViewModel map, ILogger<FlightDataViewModel> logger) : base(logger)
+    /// <param name="diagnostics">Shared active-vehicle readiness presentation.</param>
+    public FlightDataViewModel(FlightDataMissionMapViewModel map, ILogger<FlightDataViewModel> logger,
+        Views.Diagnostics.LiveTelemetryInspectorViewModel? diagnostics = null) : base(logger)
     {
         Map = map;
+        Diagnostics = diagnostics;
         Logger.LogTrace("FlightDataViewModel initialized.");
     }
 

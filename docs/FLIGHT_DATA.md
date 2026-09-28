@@ -9,10 +9,15 @@ subscriptions and use a fresh cancellation source for each activation.
 
 ## Preflight
 
+The current entry point is the topbar **Readiness** panel, with a persistent summary
+on Flight Data. Messages and detailed Status also moved into the shared diagnostics
+host. See [Readiness and diagnostic navigation](READINESS_AND_DIAGNOSTIC_NAVIGATION.md)
+for battery thresholds, evidence recovery, scope, badges and validation.
+
 Preflight is conservative operator assistance, not a declaration that an aircraft is safe
 to fly. It projects promoted immutable vehicle state into explainable checks with a stable
 key, category, status, evidence source and timestamp, summary, and remediation. Statuses are
-`Pass`, `Warning`, `Fail`, `Stale`, and `NotAvailable`; missing evidence is never treated as
+`Pass`, `Warning`, `Fail`, `Stale`, `NotApplicable`, and `NotAvailable`; missing evidence is never treated as
 a pass. Overall status is the highest actionable severity.
 
 Heartbeat evidence is stale after five seconds. GPS, power, system-health, and estimator

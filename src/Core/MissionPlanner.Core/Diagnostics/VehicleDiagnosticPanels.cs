@@ -105,11 +105,12 @@ public static class VehicleDiagnosticPanels
                 $"Last valid packet: {Age(state.Connection.LastPacketAt)} · Heartbeat: {Age(state.Connection.LastHeartbeatAt)}",
                 $"Link drop rate: {Value(state.Health.CommunicationDropRatePercent, "%")} · RX errors: {Value(state.Radio.ReceiveErrors)}",
                 $"Mode: {state.Flight.Mode} · System status: {state.Flight.SystemStatus}",
-                $"Firmware: {state.Identity.Firmware.Family} {state.Identity.Firmware.FlightVersion} · {state.Identity.Firmware.FlightGitHash}",
+                $"Firmware: {state.Identity.Firmware.Family} " + (state.Identity.Firmware.FlightVersion is { } version ? $"{version.Major}.{version.Minor}.{version.Patch} {version.ReleaseType}" : "version unknown") + $" · {state.Identity.Firmware.FlightGitHash}",
                 $"Vehicle: {state.DisplayName} · Board: {state.Identity.Firmware.BoardVersion} · VID/PID: {state.Identity.Firmware.VendorId}/{state.Identity.Firmware.ProductId} · UID: {state.Identity.Firmware.HardwareUid2 ?? state.Identity.Firmware.HardwareUid?.ToString() ?? "unavailable"}",
                 $"Last arm attempt: {Value(arming.LastArmAttemptAt)} · {Value(arming.LastArmResult)}",
                 $"Last arm failure: {Value(arming.LastArmFailure)}"
             }.Concat(arming.Reasons.Select(reason => $"Why not armed? {reason}")).ToArray(),
+            "Decoded" => ["Decoded and promoted telemetry fields for the inspected vehicle. Missing fields remain unavailable; raw wire payloads are in Raw."],
             "Power" => new[]
             {
                 $"Battery: {Value(state.Power.BatteryVoltageVolts, " V")}",

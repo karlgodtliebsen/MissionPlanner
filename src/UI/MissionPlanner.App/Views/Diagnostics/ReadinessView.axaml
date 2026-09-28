@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MissionPlanner.App.Views.Diagnostics"
+             x:Class="MissionPlanner.App.Views.Diagnostics.ReadinessView"
+             x:DataType="local:LiveTelemetryInspectorViewModel">
+    <UserControl.Resources>
+        <DataTemplate x:Key="CheckTemplate" x:DataType="local:ReadinessCheckItem">
+            <Border Classes="SectionCard" Padding="12" Margin="0,0,0,8">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding Title}" FontWeight="Bold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ResultLabel}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <SelectableTextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Remediation}" TextWrapping="Wrap" />
+                    <Expander Header="Evidence details">
+                        <SelectableTextBlock Text="{Binding Evidence}" TextWrapping="Wrap" />
+                    </Expander>
+                    <WrapPanel ItemSpacing="8">
+                        <Button Content="View evidence" Command="{Binding EvidenceCommand}" />
+                        <Button Content="Open configuration" Command="{Binding ConfigureCommand}" IsVisible="{Binding HasConfiguration}"
+                                ToolTip.Tip="Navigate only; no settings are applied" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="8" Margin="0,8">
+            <TextBlock Text="{Binding ReadinessSummary}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding NavigationMessage}" TextWrapping="Wrap" FontWeight="SemiBold" />
+            <ItemsControl ItemsSource="{Binding ReadinessChecks}" ItemTemplate="{StaticResource CheckTemplate}" />
+            <Expander Header="Passed checks" HorizontalAlignment="Stretch">
+                <ItemsControl ItemsSource="{Binding PassedChecks}" ItemTemplate="{StaticResource CheckTemplate}" />
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

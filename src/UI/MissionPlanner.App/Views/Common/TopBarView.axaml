@@ -80,7 +80,7 @@
                                Stretch="Uniform"/>
                     </Button>
 
-                    <Button
+<!--                    <Button
                         CornerRadius="10"
                         Classes="Tertiary"
                         Theme="{DynamicResource BorderlessButton}"
@@ -95,6 +95,61 @@
                         >
                         <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
                     </Button>
+-->
+
+                    <u:IconDropDownButton
+                        x:Name="CompactDiagnostics"
+                        CornerRadius="10"
+                        Classes="Tertiary"
+                        Theme="{DynamicResource BorderlessButton}"
+                        ToolTip.Tip="Diagnostics: Readiness, Messages, Inspector and Logs"
+                        FontWeight="Normal"
+                        Padding="5"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Stretch"
+                       
+                        Width="35"
+                        Height="35"
+                                          >
+                        <DropDownButton.Flyout>
+                            <MenuFlyout Placement="Bottom">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                    <MenuItem
+                                        ToolTip.Tip="Readiness: current actionable blockers"
+                                        Command="{Binding Diagnostics.OpenDestinationCommand}"
+                                        CommandParameter="Readiness"
+                                        Header="{Binding Diagnostics.BlockerCount, StringFormat='Readiness ({0})'}" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                    <MenuItem
+                                        ToolTip.Tip="Messages: unread FC warnings and errors"
+                                        Command="{Binding Diagnostics.OpenDestinationCommand}"
+                                        CommandParameter="Messages"
+                                        Header="{Binding Diagnostics.UnreadWarnings, StringFormat='Messages ({0})'}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                    <MenuItem
+                                        ToolTip.Tip="Live Telemetry: Inspect Status, Decoded and Raw evidence"
+                                        Command="{Binding Diagnostics.OpenDestinationCommand}"
+                                        CommandParameter="Inspector"
+                                        Header="Live Telemetry Inspector" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                    <MenuItem
+                                        ToolTip.Tip="Open logs, recording and playback workspace"
+                                        Command="{Binding Diagnostics.OpenLogsCommand}"
+                                        Header="Navigate to Logs" />
+                                </StackPanel>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                    </u:IconDropDownButton>
+
 
                     <Button
                         Classes="Tertiary"

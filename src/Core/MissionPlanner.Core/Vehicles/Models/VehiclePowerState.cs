@@ -25,6 +25,10 @@ public sealed record VehiclePowerState(
     DateTimeOffset? ObservedAt,
     VehicleBatteryState? SecondaryBattery = null)
 {
+    /// <summary>Per-instance battery samples; rail updates never refresh these timestamps.</summary>
+    public IReadOnlyDictionary<byte, VehicleBatteryState> Batteries { get; init; } = new Dictionary<byte, VehicleBatteryState>();
+    /// <summary>Whether BATTERY_STATUS has established primary-battery identity in this session.</summary>
+    public bool HasSpecificPrimaryBattery { get; init; }
     /// <summary>
     /// Provides the public API for Empty.
     /// </summary>

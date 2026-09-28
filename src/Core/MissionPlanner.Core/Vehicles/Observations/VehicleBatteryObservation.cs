@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 
 namespace MissionPlanner.Core.Vehicles.Observations;
 
@@ -10,4 +10,8 @@ namespace MissionPlanner.Core.Vehicles.Observations;
 /// <param name="RemainingPercent">The remaining charge percentage.</param>
 /// <param name="ObservedAt">The reception timestamp.</param>
 /// <param name="BatteryId">The MAVLink battery instance identifier.</param>
-public sealed record VehicleBatteryObservation(double? VoltageVolts, double? CurrentAmps, double? ConsumedMah, double? ConsumedWh, int? RemainingPercent, DateTimeOffset ObservedAt, byte BatteryId = 0) : IVehicleObservation;
+public sealed record VehicleBatteryObservation(double? VoltageVolts, double? CurrentAmps, double? ConsumedMah, double? ConsumedWh, int? RemainingPercent, DateTimeOffset ObservedAt, byte BatteryId = 0) : IVehicleObservation
+{
+    /// <summary>False for ambiguous SYS_STATUS battery summaries.</summary>
+    public bool IsInstanceSpecific { get; init; } = true;
+}

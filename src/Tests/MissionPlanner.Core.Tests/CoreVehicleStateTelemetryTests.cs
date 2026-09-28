@@ -140,6 +140,25 @@ public sealed class CoreVehicleStateTelemetryTests
         Assert.True(session.State.Power.IsStale(ObservedAt.AddSeconds(6), TimeSpan.FromSeconds(5)));
     }
 
+    /// <summary>Rail updates and ambiguous summaries cannot freshen or overwrite per-instance battery evidence.</summary>
+    [Fact]
+    public void BatterySamplesKeepTheirOwnIdentityValidityAndAge()
+    {
+        var (session, _, _) = CreateSession();
+        session.ApplyBattery(new VehicleBatteryObservation(12, 1, null, null, 99, ObservedAt));
+        session.ApplyBattery(new VehicleBatteryObservation(24, 2, null, null, 80, ObservedAt, 1));
+        session.ApplyPowerRail(new VehiclePowerRailObservation(5, 5, 0, ObservedAt.AddSeconds(20)));
+        Assert.Equal(ObservedAt, session.State.Power.Batteries[0].ObservedAt);
+        Assert.Equal(24, session.State.Power.Batteries[1].VoltageVolts);
+        session.ApplyBattery(new VehicleBatteryObservation(99, null, null, null, 100, ObservedAt.AddSeconds(21)) { IsInstanceSpecific = false });
+        Assert.Equal(12, session.State.Power.Batteries[0].VoltageVolts);
+        session.ApplyBattery(new VehicleBatteryObservation(null, null, null, null, null, ObservedAt.AddSeconds(22)));
+        Assert.Null(session.State.Power.BatteryVoltageVolts);
+        Assert.Null(session.State.Power.Batteries[0].VoltageVolts);
+        Assert.Null(session.State.Power.BatteryRemainingPercent);
+        Assert.Equal(24, session.State.Power.Batteries[1].VoltageVolts);
+    }
+
     private static (VehicleSession Session, IVehicleRegistry Registry, IDomainEventHub EventHub) CreateSession()
     {
         var dateTimeProvider = Substitute.For<IDateTimeProvider>();

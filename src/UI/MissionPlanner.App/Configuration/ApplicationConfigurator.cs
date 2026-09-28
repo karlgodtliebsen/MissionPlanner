@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -263,11 +263,11 @@ public static class ApplicationConfigurator
         // Tabs on FlightData Page
         services.TryAddTransient<QuickTabViewModel>();
         services.TryAddTransient<ActionsTabViewModel>();
-        services.TryAddTransient<MessagesTabViewModel>();
+        services.TryAddSingleton<MessagesTabViewModel>();
         services.TryAddTransient<PreflightTabViewModel>();
         services.TryAddTransient<GaugesTabViewModel>();
         services.TryAddTransient<TransponderTabViewModel>();
-        services.TryAddTransient<StatusTabViewModel>();
+        services.TryAddSingleton<StatusTabViewModel>();
         services.TryAddTransient<ServoRelayTabViewModel>();
         services.TryAddTransient<AuxFunctionTabViewModel>();
         services.TryAddTransient<ScriptsTabViewModel>();

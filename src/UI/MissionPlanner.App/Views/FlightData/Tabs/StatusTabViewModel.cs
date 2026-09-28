@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -14,16 +14,25 @@ namespace MissionPlanner.App.Views.FlightData.Tabs;
 /// <summary>Presents searchable promoted telemetry using the shared descriptor catalog.</summary>
 public partial class StatusTabViewModel : ViewModelBase
 {
+    private MissionPlanner.Core.Vehicles.Models.VehicleState? inspectedState;
+    private bool inspectionScope;
+    /// <summary>Projects the explicitly inspected vehicle, never retargeting commands.</summary>
+    public void Inspect(MissionPlanner.Core.Vehicles.Models.VehicleState? state)
+    {
+        inspectionScope = true;
+        inspectedState = state;
+        Update();
+    }
     private readonly IActiveVehicleContext active;
     private readonly ITelemetryFieldCatalog catalog;
     private readonly ITelemetrySnapshotProjector projector;
     private readonly IPlannerSettingsService settings;
     private readonly IDomainEventHub events;
     private readonly IDateTimeProvider dateTimeProvider;
-    private IDisposable subscription;
+    private IDisposable? subscription;
     private int pending;
 
-    /// <summary>Initializes a transient Status tab.</summary>
+    /// <summary>Initializes the shared, explicitly scoped telemetry view.</summary>
     public StatusTabViewModel(IActiveVehicleContext active, ITelemetryFieldCatalog catalog, ITelemetrySnapshotProjector projector,
         IPlannerSettingsService settings, IDomainEventHub events, IDateTimeProvider dateTimeProvider, ILogger<StatusTabViewModel> logger)
         : base(logger)
@@ -67,12 +76,19 @@ public partial class StatusTabViewModel : ViewModelBase
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
-        var items = new List<StatusTelemetryItemViewModel>();
-        foreach (var descriptor in catalog.Fields.OrderBy(x => x.Category).ThenBy(x => x.Label))
+        if (subscription is not null)
         {
-            items.Add(new StatusTelemetryItemViewModel(descriptor));
+            return Task.CompletedTask;
         }
-        Items.ReplaceRange(items);
+        if (Items.Count == 0)
+        {
+            var items = new List<StatusTelemetryItemViewModel>();
+            foreach (var descriptor in catalog.Fields.OrderBy(x => x.Category).ThenBy(x => x.Label))
+            {
+                items.Add(new StatusTelemetryItemViewModel(descriptor));
+            }
+            Items.ReplaceRange(items);
+        }
         active.Changed += OnChanged;
         subscription = events.SubscribeDomainEventAsync<VehicleStateUpdated>(OnUpdated);
         Update();
@@ -91,7 +107,10 @@ public partial class StatusTabViewModel : ViewModelBase
     {
         active.Changed -= OnChanged;
         subscription?.Dispose();
-        subscription = null!;
+        subscription = null;
+        timer?.Dispose();
+        timer = null;
+        Interlocked.Exchange(ref pending, 0);
     }
 
     private void OnChanged(EventArgs e)
@@ -101,7 +120,7 @@ public partial class StatusTabViewModel : ViewModelBase
 
     private async Task OnUpdated(VehicleStateUpdated e, CancellationToken token)
     {
-        if (e.VehicleId == active.VehicleId && Interlocked.Exchange(ref pending, 1) == 0)
+        if (!inspectionScope && e.VehicleId == active.VehicleId && Interlocked.Exchange(ref pending, 1) == 0)
         {
             await Later(token);
         }
@@ -117,14 +136,12 @@ public partial class StatusTabViewModel : ViewModelBase
            {
                timer?.Dispose();
                Dispatcher.Dispatch(Update);
+               Interlocked.Exchange(ref pending, 0);
 
            }, null, TimeSpan.FromSeconds(1d / Math.Clamp(settings.Current.Telemetry.DisplayRateHz, 1, 30)), TimeSpan.FromMilliseconds(-1));
 
         }
         catch (OperationCanceledException)
-        {
-        }
-        finally
         {
             Interlocked.Exchange(ref pending, 0);
         }
@@ -133,7 +150,7 @@ public partial class StatusTabViewModel : ViewModelBase
 
     private void Update()
     {
-        var state = active.State;
+        var state = inspectionScope ? inspectedState : active.State;
         var now = dateTimeProvider.UtcNow;
         foreach (var row in Items)
         {
@@ -145,7 +162,7 @@ public partial class StatusTabViewModel : ViewModelBase
             {
                 schemaVersion = 1,
                 capturedAt = now,
-                vehicle = active.VehicleId?.ToString(),
+                vehicle = state?.VehicleId.ToString(),
                 fields = Items.Select(x =>
                     new
                     {
@@ -160,4 +177,3 @@ public partial class StatusTabViewModel : ViewModelBase
             new JsonSerializerOptions { WriteIndented = true });
     }
 }
-

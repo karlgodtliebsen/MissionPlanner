@@ -1,4 +1,4 @@
-﻿<utilities:NavigationViewBase
+<utilities:NavigationViewBase
     x:TypeArguments="optional:OptionalHardwareViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -12,13 +12,13 @@
     x:DataType="optional:OptionalHardwareViewModel">
 
     <ContentPage Header="Optional Hardware"  >
-        <TabControl Margin="20" TabStripPlacement="Left" Grid.Row="1">
+        <TabControl x:Name="HardwareSections" Margin="20" TabStripPlacement="Left" Grid.Row="1">
             <TabItem Header="Naming"><sections:NamingView /></TabItem>
             <TabItem Header="RTK/GPS Inject"><sections:RtkGpsInjectView /></TabItem>
             <TabItem Header="CubeID Update"><sections:CubeIdUpdateView /></TabItem>
             <TabItem Header="SiK Radio"><sections:SikRadioView /></TabItem>
             <TabItem Header="CAN GPS Order"><sections:CanGpsOrderView /></TabItem>
-            <TabItem Header="Battery Monitors"><sections:BatterySetupView /></TabItem>
+            <TabItem x:Name="BatteryMonitorsSection" Header="Battery Monitors"><sections:BatterySetupView /></TabItem>
             <TabItem Header="DroneCAN / UAVCAN"><sections:DroneCanUavCanView /></TabItem>
             <TabItem Header="Joystick"><sections:JoystickView /></TabItem>
             <TabItem Header="Compass/Motor Calibration"><sections:CompassMotorCalibrationView /></TabItem>
