@@ -19,7 +19,7 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
     // Standard ArduPilot six-position PWM bands used by the flight-mode channel.
     private static readonly (int Low, int High)[] pwmBands =
     [
-        (0, 1230), (1231, 1360), (1361, 1490), (1491, 1620), (1621, 1749), (1750, 2200)
+        (801, 1230), (1231, 1360), (1361, 1490), (1491, 1620), (1621, 1749), (1750, 2199)
     ];
 
     private readonly IActiveVehicleContext activeVehicle;
@@ -81,7 +81,15 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
                 option?.Name ?? (modeNumber is null ? "Parameter not loaded" : FormattableString.Invariant($"Unknown mode ({modeNumber})")), activeSlot == slot));
         }
 
-        return new FlightModeConfiguration(vehicleId, family, true, modeChannel, slots, options, activeSlot);
+        return new FlightModeConfiguration(vehicleId, family, true, modeChannel, slots, options, activeSlot)
+        {
+            RawPwm = modeChannel > 0 && modeChannel <= state.Radio.ChannelsRaw.Count && state.Radio.ChannelsRaw[modeChannel - 1] is > 0 and < ushort.MaxValue
+                ? state.Radio.ChannelsRaw[modeChannel - 1] : null,
+            IsRadioFresh = !state.Radio.IsStale(clock.UtcNow, staleWindow),
+            ActiveMode = clock.UtcNow - state.LastHeartbeatAt > TimeSpan.FromSeconds(3)
+                ? "Stale heartbeat — active mode unknown"
+                : options.FirstOrDefault(option => option.CustomMode == state.CustomMode)?.Name ?? $"Unknown mode ({state.CustomMode})"
+        };
     }
 
     /// <inheritdoc />

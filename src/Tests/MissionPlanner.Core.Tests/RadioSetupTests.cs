@@ -20,6 +20,33 @@ public sealed class RadioSetupTests
 {
     private static readonly VehicleId vehicleId = new(1, 1);
 
+    /// <summary>Local direction requires an explicit mapping and follows nondefault pitch channels.</summary>
+    [Fact]
+    public void LocalPitchInterpretationRequiresMappingAndUsesRemappedChannel()
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "RC3_MIN", 988);
+        Store(registry, "RC3_TRIM", 1500);
+        Store(registry, "RC3_MAX", 2011);
+        Store(registry, "RC3_DZ", 0);
+        Store(registry, "RC3_REVERSED", 1);
+        var now = DateTimeOffset.UtcNow;
+        var state = StateWithChannels([1500, 1500, 2011, 1500], now);
+        state = state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = MissionPlanner.Firmware.FirmwareFamily.ArduCopter } } };
+        var context = new TestActiveVehicleContext(state);
+        var service = CreateService(context, registry, now);
+        Assert.Null(service.GetLiveChannels(vehicleId).Channels.Single(channel => channel.Number == 3).Interpretation!.Normalized);
+        Store(registry, "RCMAP_THROTTLE", 1);
+        Store(registry, "RCMAP_ROLL", 2);
+        Store(registry, "RCMAP_PITCH", 3);
+        Store(registry, "RCMAP_YAW", 4);
+        var pitch = service.GetLiveChannels(vehicleId).Channels.Single(channel => channel.Number == 3);
+        Assert.Equal("Pitch", pitch.FunctionName);
+        Assert.Equal(-1, pitch.Interpretation!.Normalized);
+        Assert.Contains("Nose down", pitch.Interpretation.Description);
+        Assert.Equal(2011, pitch.Pwm);
+    }
+
     /// <summary>Verifies channel projection maps pilot functions, endpoints, and normalized travel.</summary>
     [Fact]
     public void LiveChannelsProjectFunctionsAndTravel()

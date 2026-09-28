@@ -7,6 +7,16 @@ namespace MissionPlanner.Core.Tests;
 /// <summary>Verifies frame-aware logical motor and motor-test ordering.</summary>
 public sealed class MotorLayoutResolverTests
 {
+    [Fact]
+    public void BetaFlightXUsesSequenceA2B1C3D4AndExpectedGeometry()
+    {
+        var motors = Resolve(1, 12).Motors.OrderBy(motor => motor.TestOrder).ToArray();
+        motors.Select(motor => motor.MotorNumber).Should().Equal(2, 1, 3, 4);
+        motors.Select(motor => (Math.Sign(motor.Roll), Math.Sign(motor.Pitch)))
+            .Should().Equal((-1, 1), (-1, -1), (1, -1), (1, 1));
+        motors.Select(motor => motor.Rotation).Should().Equal(MotorRotation.CounterClockwise,
+            MotorRotation.Clockwise, MotorRotation.CounterClockwise, MotorRotation.Clockwise);
+    }
     /// <summary>Verifies Quad X preserves logical number, test order, rotation, and geometry.</summary>
     [Fact]
     public void QuadXResolvesArduPilotMotorSemantics()
@@ -62,6 +72,7 @@ public sealed class MotorLayoutResolverTests
     {
         var resolver = new MotorLayoutResolver();
         resolver.Resolve(new Dictionary<string, VehicleParameter>()).Should().BeNull();
+        resolver.Resolve(new Dictionary<string, VehicleParameter> { ["FRAME_CLASS"] = new("FRAME_CLASS", 1, MavParamType.Int32, 0, 1) }).Should().BeNull();
         resolver.Resolve(Parameters(1, 999)).Should().BeNull();
     }
 

@@ -25,7 +25,9 @@
         </Grid>
         <StackPanel Grid.Row="1" Spacing="6" Margin="0,8">
             <ComboBox ItemsSource="{Binding Vehicles}" SelectedItem="{Binding SelectedVehicle}" HorizontalAlignment="Stretch" />
+            <CheckBox Content="Pin Inspector vehicle when reopening" IsChecked="{Binding IsVehiclePinned}" />
             <TextBlock Text="{Binding Header}" TextWrapping="Wrap" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding ExportTarget}" TextWrapping="Wrap" FontWeight="Bold" />
             <TextBlock Text="{Binding LiveLabel}" TextWrapping="Wrap" />
         </StackPanel>
         <WrapPanel Grid.Row="2" ItemSpacing="5">

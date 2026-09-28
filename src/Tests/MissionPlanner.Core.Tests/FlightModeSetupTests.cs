@@ -20,6 +20,33 @@ public sealed class FlightModeSetupTests
     private static readonly VehicleId vehicleId = new(1, 1);
 
     [Theory]
+    [InlineData(800, null)]
+    [InlineData(801, 1)]
+    [InlineData(1230, 1)]
+    [InlineData(1231, 2)]
+    [InlineData(1360, 2)]
+    [InlineData(1361, 3)]
+    [InlineData(1490, 3)]
+    [InlineData(1491, 4)]
+    [InlineData(1620, 4)]
+    [InlineData(1621, 5)]
+    [InlineData(1749, 5)]
+    [InlineData(1750, 6)]
+    [InlineData(2199, 6)]
+    [InlineData(2200, null)]
+    [InlineData(0, null)]
+    [InlineData(65535, null)]
+    public void ModeSwitchUsesArduPilotBandsAndRejectsInvalidInput(int pwm, int? expected)
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "FLTMODE_CH", 6);
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(State(FirmwareFamily.ArduCopter, [1500, 1500, 1500, 1500, 1500, (ushort)pwm], now));
+        CreateService(context, registry, now).GetConfiguration(vehicleId).ActiveSlot.Should().Be(expected);
+        CreateService(context, registry, now.AddSeconds(3)).GetConfiguration(vehicleId).ActiveSlot.Should().BeNull();
+    }
+
+    [Theory]
     [InlineData(1, "Acro")]
     [InlineData(123, "Unknown mode (123)")]
     [InlineData(-1, "Unknown mode (-1)")]

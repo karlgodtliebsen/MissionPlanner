@@ -88,6 +88,11 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         var parameters = parameterRegistry.GetAllParameters(vehicleId);
         var functions = ResolveFunctions(parameters);
         var channels = new List<RadioChannelInfo>();
+        var confirmedMappings = ResolvePilotAssignments(parameters)
+            .Where(assignment => parameters.TryGetValue(assignment.Parameter, out var mapping) && mapping.Value == assignment.Channel)
+            .GroupBy(assignment => assignment.Channel)
+            .Where(group => group.Count() == 1)
+            .ToDictionary(group => group.Key, group => group.Single().Function);
         var raw = state.Radio.ChannelsRaw;
         for (var index = 0; index < raw.Count; index++)
         {
@@ -110,10 +115,15 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
                 var _ => RadioChannelKind.Auxiliary
             };
             var deadZone = ReadInt(parameters, $"RC{number}_DZ", 0);
+            float? Value(string suffix) => parameters.TryGetValue($"RC{number}_{suffix}", out var parameter) ? parameter.Value : null;
+            var confirmedFunction = confirmedMappings.GetValueOrDefault(number);
             channels.Add(new RadioChannelInfo(
                 number, pwm, Normalize(pwm, minimum, maximum, trim, reversed),
                 minimum, maximum, trim, reversed, function, deadZone, kind)
             {
+                Interpretation = RadioInputInterpretation.Calculate(state.Identity.Firmware.Family, confirmedFunction, pwm,
+                    Value("MIN"), Value("TRIM"), Value("MAX"), Value("DZ"), Value("REVERSED"), !state.Radio.IsStale(clock.UtcNow, staleWindow)),
+                CalibrationEvidence = $"Mapped axis: {confirmedFunction ?? "unknown (RCMAP missing or ambiguous)"} · MIN / TRIM / MAX: {Value("MIN")?.ToString() ?? "unknown"} / {Value("TRIM")?.ToString() ?? "unknown"} / {Value("MAX")?.ToString() ?? "unknown"} µs · DZ: {Value("DZ")?.ToString() ?? "unknown"} µs · REVERSED: {Value("REVERSED")?.ToString() ?? "unknown"}",
                 NeutralDiagnostic = kind == RadioChannelKind.CenteredAxis
                     ? new RadioNeutralDiagnostic(
                         pwm,

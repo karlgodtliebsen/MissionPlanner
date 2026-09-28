@@ -1,5 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.App.Utilities;
+using CommunityToolkit.Mvvm.Input;
+using MissionPlanner.Shared.Models.Vehicles.Models;
+using Microsoft.Extensions.Logging;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
@@ -13,16 +17,32 @@ public partial class HudViewModel : ViewModelBase
     private readonly IVehicleHudDataService hudDataService;
     private IDisposable? hudDataSubscription;
     private readonly IUiDispatcher dispatcher;
+    private readonly IActiveVehicleContext activeVehicle;
+    private readonly TimeProvider clock;
+    private readonly HudHeadingReference headingReference = new();
+    private readonly Avalonia.Threading.DispatcherTimer referenceTimer;
+    private VehicleId? referenceVehicle;
+    private CancellationToken referenceSession;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HudViewModel"/> class.
     /// </summary>
     /// <param name="hudDataService">The service providing HUD-specific vehicle data.</param>
     /// <param name="dispatcher">The Dispatcher for UI thread operations.</param>
-    public HudViewModel(IVehicleHudDataService hudDataService, IUiDispatcher dispatcher)
+    /// <param name="activeVehicle">Selected vehicle/session boundary.</param>
+    /// <param name="clock">Freshness clock.</param>
+    /// <param name="logger">Presentation logger.</param>
+    /// <param name="events">Application event hub.</param>
+    public HudViewModel(IVehicleHudDataService hudDataService, IUiDispatcher dispatcher, IActiveVehicleContext activeVehicle, TimeProvider clock,
+        ILogger<HudViewModel> logger, IDomainEventHub events) : base(logger, dispatcher, events)
     {
         this.hudDataService = hudDataService ?? throw new ArgumentNullException(nameof(hudDataService));
         this.dispatcher = dispatcher;
+        this.activeVehicle = activeVehicle;
+        this.clock = clock;
+        referenceTimer = new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(100), Avalonia.Threading.DispatcherPriority.Background,
+            (_, _) => RefreshHeadingReference());
+        referenceTimer.Start();
         FlightMode = "Unknown";
         SubscribeToVehicleData();
     }
@@ -150,7 +170,58 @@ public partial class HudViewModel : ViewModelBase
     public override void Dispose()
     {
         hudDataSubscription?.Dispose();
+        referenceTimer.Stop();
         base.Dispose();
+    }
+
+    /// <summary>Angle of the separate display-only heading arrow.</summary>
+    [ObservableProperty]
+    public partial double ModelHeading { get; private set; }
+
+    /// <summary>Freshness and captured offset status.</summary>
+    [ObservableProperty]
+    public partial string HeadingReferenceStatus { get; private set; } = "Heading reference unavailable";
+
+    /// <summary>Whether fresh attitude permits capturing a reference.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ResetModelHeadingCommand))]
+    public partial bool CanResetModelHeading { get; private set; }
+
+    /// <summary>Refreshes display-only reference and freshness from the selected vehicle.</summary>
+    public void RefreshHeadingReference()
+    {
+        if (referenceVehicle != activeVehicle.VehicleId || referenceSession != activeVehicle.ConnectionCancellationToken || !activeVehicle.IsOnline)
+        {
+            headingReference.Restore();
+            referenceVehicle = activeVehicle.VehicleId;
+            referenceSession = activeVehicle.ConnectionCancellationToken;
+        }
+        var motion = activeVehicle.State?.Motion;
+        CanResetModelHeading = activeVehicle.IsOnline && activeVehicle.State?.VehicleId == activeVehicle.VehicleId && motion?.AttitudeObservedAt is { } at &&
+            clock.GetUtcNow() - at >= TimeSpan.Zero && clock.GetUtcNow() - at <= TimeSpan.FromSeconds(2) &&
+            motion.YawRadians is { } yaw && double.IsFinite(yaw);
+        ModelHeading = motion?.YawRadians is { } radians && double.IsFinite(radians) ? headingReference.Project(radians * 180 / Math.PI) : 0;
+        HeadingReferenceStatus = (CanResetModelHeading ? "" : "STALE / unavailable · ") +
+            (headingReference.Offset is { } offset ? $"Display offset active: {offset:0.0}° · arrow zero = captured nose-away" : "Unadjusted yaw · arrow zero = north") +
+            "\nCockpit horizon: roll/pitch unchanged. Compass heading unchanged.";
+    }
+
+    [RelayCommand(CanExecute = nameof(CanResetModelHeading))]
+    private void ResetModelHeading()
+    {
+        RefreshHeadingReference();
+        if (CanResetModelHeading && activeVehicle.State?.Motion.YawRadians is { } yaw)
+        {
+            headingReference.Reset(yaw * 180 / Math.PI, true);
+            RefreshHeadingReference();
+        }
+    }
+
+    [RelayCommand]
+    private void RestoreModelHeading()
+    {
+        headingReference.Restore();
+        RefreshHeadingReference();
     }
 
     private void SubscribeToVehicleData()

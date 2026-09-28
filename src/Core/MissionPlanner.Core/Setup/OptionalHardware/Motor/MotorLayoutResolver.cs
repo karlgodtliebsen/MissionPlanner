@@ -17,15 +17,15 @@ public sealed class MotorLayoutResolver
     {
         var className = parameters.ContainsKey("Q_FRAME_CLASS") ? "Q_FRAME_CLASS" : "FRAME_CLASS";
         var typeName = className[0] == 'Q' ? "Q_FRAME_TYPE" : "FRAME_TYPE";
-        if (!parameters.TryGetValue(className, out var frameClass))
+        if (!parameters.TryGetValue(className, out var frameClass) || !parameters.TryGetValue(typeName, out var frameType) ||
+            !float.IsFinite(frameClass.Value) || !float.IsFinite(frameType.Value) ||
+            frameClass.Value != Math.Truncate(frameClass.Value) || frameType.Value != Math.Truncate(frameType.Value))
         {
             return null;
         }
 
         var frameClassValue = (int)Math.Round(frameClass.Value);
-        var frameTypeValue = parameters.TryGetValue(typeName, out var frameType)
-            ? (int)Math.Round(frameType.Value)
-            : 0;
+        var frameTypeValue = (int)frameType.Value;
 
         if (!layouts.TryGetValue((frameClassValue, frameTypeValue), out var definition))
         {

@@ -25,4 +25,10 @@ public sealed record RadioChannelInfo(
 {
     /// <summary>Gets neutral diagnostics for centered pilot axes; absent for other channels.</summary>
     public RadioNeutralDiagnostic? NeutralDiagnostic { get; init; }
+
+    /// <summary>Locally calculated direction with explicit missing/stale evidence.</summary>
+    public RadioInputInterpretation? Interpretation { get; init; }
+
+    /// <summary>Actual received calibration values; unavailable values are not display fallbacks.</summary>
+    public string CalibrationEvidence { get; init; } = "Calibration evidence unavailable";
 }

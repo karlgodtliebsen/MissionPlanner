@@ -1013,6 +1013,7 @@ public sealed class ParameterEditSession : IParameterEditSession
                     .ToArray())
             {
                 UnitText = metadata.UnitText,
+                DefaultValue = metadata.DefaultValue,
                 RangeText = metadata.Range,
                 ValuesText = metadata.Values,
                 BitmaskText = metadata.Bitmask,

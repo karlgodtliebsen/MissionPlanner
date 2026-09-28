@@ -624,6 +624,14 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
     /// <summary>Gets the compact mapped role or AUX label.</summary>
     public string RoleLabel => FunctionName?.ToUpperInvariant() ?? "AUX";
 
+    /// <summary>Read-only local control direction calculated from available calibration.</summary>
+    [ObservableProperty]
+    public partial string InputInterpretation { get; private set; } = "Local interpretation unavailable";
+
+    /// <summary>Received calibration evidence, without fabricated defaults.</summary>
+    [ObservableProperty]
+    public partial string CalibrationEvidence { get; private set; } = "Calibration evidence unavailable";
+
     /// <summary>Gets the latest PWM value in microseconds.</summary>
     [ObservableProperty]
     public partial int Pwm
@@ -774,6 +782,8 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
         RadioCalibrationState calibrationState = RadioCalibrationState.NotStarted)
     {
         FunctionName = info.FunctionName;
+        InputInterpretation = info.Interpretation?.Description ?? "Local interpretation unavailable";
+        CalibrationEvidence = info.CalibrationEvidence;
         Pwm = info.Pwm;
         Normalized = info.Normalized;
         IsStale = stale;
@@ -812,6 +822,10 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
     /// <summary>Updates only signal availability while retaining the last known raw value.</summary>
     public void SetSignalState(bool hasSignal, bool stale)
     {
+        if (!hasSignal || stale)
+        {
+            InputInterpretation = "Local interpretation unavailable: stale or missing RC input.";
+        }
         HasSignal = hasSignal;
         IsStale = stale;
     }

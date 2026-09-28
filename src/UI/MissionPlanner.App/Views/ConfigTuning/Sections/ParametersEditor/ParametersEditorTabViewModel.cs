@@ -431,7 +431,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
                 return;
             }
             var accepted = await confirmation.ConfirmAsync(
-                "Review parameter writes",
+                "Review parameter writes ",
                 $"{preview}{skippedPreview}{Environment.NewLine}{Environment.NewLine}{rebootCount} change(s) require reboot.",
                 $" {plan.Entries.Count} parameters",
                 connectionCancellation.Token);

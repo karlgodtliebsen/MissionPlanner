@@ -175,7 +175,7 @@ public partial class ParameterComparisonViewModel : DialogViewModelBase
             return;
         }
 
-        var title = "Review parameter writes" + $"Write {plan.Entries.Count} parameters";
+        var title = "Review parameter writes:" + $" {plan.Entries.Count} parameters";
         message = $"Write {plan.Entries.Count} safe modified parameter(s)? " +
                      $"{plan.Skipped.Count} unsafe parameter(s) will be skipped. " +
                      $"{plan.RebootRequiredCount} confirmed change(s) will require reboot.";

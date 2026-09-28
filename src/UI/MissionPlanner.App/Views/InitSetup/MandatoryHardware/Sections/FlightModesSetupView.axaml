@@ -19,6 +19,7 @@
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
                 <TextBlock Text="{Binding ModeChannelDescription}" FontWeight="Bold" />
+                <TextBlock Text="{Binding SwitchEvidence}" TextWrapping="Wrap" />
             </StackPanel>
         </u:Banner>
         <TabControl Grid.Row="1">
@@ -58,6 +59,8 @@
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible" Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
                         <Border Classes="SectionCard" Padding="12">
                             <StackPanel Spacing="10">
+                                <TextBlock Text="A three-position switch commonly selects slots 1, 4 and 6, depending on its PWM values. An assigned mode can differ from the active mode: the FC may reject or override the request; check telemetry and Messages."
+                                           TextWrapping="Wrap" />
                                 <TextBlock Text="Choose a mode, then Apply that slot. Listed modes do not guarantee support in this firmware build. The highlighted slot shows the RC switch position, not the active flight mode."
                                            TextWrapping="Wrap" />
                                 <ItemsControl IsVisible="{Binding IsSupported}" ItemsSource="{Binding Slots}">

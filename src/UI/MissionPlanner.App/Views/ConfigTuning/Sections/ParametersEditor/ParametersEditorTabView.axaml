@@ -279,7 +279,8 @@
 
                                 <TextBlock
                                     Grid.Column="6"
-                                    Text="Default"
+                                    Text="Baseline"
+                                    ToolTip.Tip="First value in this vehicle/firmware editing session, not a factory default. Hover a value for provenance."
                                     Classes="DataGridColumn"
                                     />
 
@@ -431,6 +432,7 @@
                                 <TextBlock
                                     Grid.Column="6"
                                     Text="{Binding OriginalValueText}"
+                                    ToolTip.Tip="{Binding ValueProvenance}"
                                     Classes="DataGridRow"  />
 
 

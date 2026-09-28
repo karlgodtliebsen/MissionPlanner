@@ -14,6 +14,45 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 [Collection("Design preview")]
 public sealed class LiveTelemetryInspectorTests
 {
+    /// <summary>A selection change during copy cannot retarget the already requested export.</summary>
+    [Fact]
+    public async Task SelectionChangeDuringExportKeepsCapturedVehicle()
+    {
+        var first = new VehicleId(11, 1);
+        var second = new VehicleId(12, 1);
+        var diagnostics = Substitute.For<IVehicleLiveDiagnostics>();
+        var clipboard = Substitute.For<ITextClipboardService>();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var release = new ManualResetEventSlim();
+        diagnostics.CreateSnapshotJson(first).Returns(_ =>
+        {
+            started.TrySetResult();
+            if (!release.Wait(TimeSpan.FromSeconds(10)))
+            {
+                throw new TimeoutException("Test export was not released.");
+            }
+            return "vehicle 11 snapshot";
+        });
+        using var model = new LiveTelemetryInspectorViewModel(diagnostics,
+            Substitute.For<IActiveVehicleContext>(), clipboard, Substitute.For<IInspectorWindowService>(),
+            TimeProvider.System, Substitute.For<IUiDispatcher>(), Substitute.For<IDomainEventHub>(),
+            NullLogger<LiveTelemetryInspectorViewModel>.Instance);
+        model.SelectedVehicle = first;
+        var copy = model.CopyEventsCommand.ExecuteAsync(null);
+        try
+        {
+            await started.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+            model.SelectedVehicle = second;
+        }
+        finally
+        {
+            release.Set();
+        }
+        await copy;
+        diagnostics.DidNotReceive().CreateSnapshotJson(second);
+        await clipboard.Received(1).SetTextAsync("vehicle 11 snapshot");
+    }
+
     /// <summary>Freeze affects only presentation, and context never overrides a manual panel choice.</summary>
     [Fact]
     public void FreezeKeepsDisplayWhileDiagnosticsAndMarkersContinue()
@@ -106,6 +145,7 @@ public sealed class LiveTelemetryInspectorTests
         Assert.False(model.CanDetach);
         Assert.Equal(first, model.SelectedVehicle);
         model.SelectedVehicle = second;
+        model.IsVehiclePinned = true;
         model.SelectedPanel = "Power";
         model.DrawerWidth = 650;
         model.DetachCommand.Execute(null);
@@ -116,5 +156,15 @@ public sealed class LiveTelemetryInspectorTests
         Assert.Equal(second, model.SelectedVehicle);
         Assert.Equal("Power", model.SelectedPanel);
         Assert.Equal(650, model.DrawerWidth);
+        Assert.Contains("DIFFERENT FROM ACTIVE", model.ExportTarget);
+        model.CloseCommand.Execute(null);
+        model.IsVehiclePinned = false;
+        model.Open();
+        Assert.Equal(first, model.SelectedVehicle);
+        model.CloseCommand.Execute(null);
+        active.VehicleId.Returns(second);
+        model.Open();
+        Assert.Equal(second, model.SelectedVehicle);
+        Assert.Contains("Matches active", model.ExportTarget);
     }
 }

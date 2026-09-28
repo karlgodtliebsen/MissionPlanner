@@ -26,6 +26,9 @@ public sealed record ParameterFieldMetadata(
     /// <summary>Gets the descriptive unit text supplied by the firmware metadata.</summary>
     public string? UnitText { get; init; }
 
+    /// <summary>Gets a default explicitly supplied by metadata; this is not a board-specific factory-default guarantee.</summary>
+    public double? DefaultValue { get; init; }
+
     /// <summary>Gets the original range expression supplied by the firmware metadata.</summary>
     public string? RangeText { get; init; }
 

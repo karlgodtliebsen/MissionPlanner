@@ -72,6 +72,10 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// </summary>
     public ObservableRangeCollection<MotorLayoutMotor> Motors { get; } = [];
 
+    /// <summary>Expected top-view geometry and independently resolved SERVO assignments.</summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<MotorDiagramPoint> DiagramMotors { get; private set; } = [];
+
     [ObservableProperty]
     public partial string FrameDisplay { get; private set; } = "Frame layout unavailable.";
 
@@ -540,8 +544,11 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             ? resolver.Resolve(parameters.GetAllParameters(id))
             : null;
         RefreshOutputDiagnostics();
+        DiagramMotors = layout?.Motors.Select(motor => new MotorDiagramPoint(motor,
+            activeVehicle.VehicleId is { } diagramId ? outputResolver?.Resolve(diagramId, motor.MotorNumber) : null)).ToArray() ?? [];
         if (layout is null)
         {
+            Motors.Clear();
             FrameDisplay = "Frame layout unavailable; testing is disabled.";
             return;
         }

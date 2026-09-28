@@ -13,10 +13,15 @@ public sealed partial class VehicleLiveDiagnostics
         lock (sync)
         {
             var entry = Get(vehicleId);
+            var capturedAt = clock.GetUtcNow();
+            var vehicle = GetSnapshot(vehicleId);
             snapshot = new
             {
                 SchemaVersion = 1,
-                CapturedAt = clock.GetUtcNow(),
+                CapturedAt = capturedAt,
+                SuggestedFilename = $"diagnostics-sys{vehicleId.SystemId}-comp{vehicleId.ComponentId}-{capturedAt:yyyyMMdd-HHmmssfff}.json",
+                DataStatus = vehicle.Disconnected || vehicle.State?.Connection.State == VehicleConnectionState.Offline ? "Disconnected retained data" :
+                    vehicle.State is null || capturedAt - vehicle.State.LastHeartbeatAt > TimeSpan.FromSeconds(3) ? "Stale or unknown" : "Recent heartbeat",
                 Scope = "Current collected diagnostics; independent of Inspector freeze and filters.",
                 Retention = new
                 {
@@ -24,7 +29,7 @@ public sealed partial class VehicleLiveDiagnostics
                     options.RawCapacity,
                     Note = "Includes all currently retained evidence, not the complete recording."
                 },
-                Vehicle = GetSnapshot(vehicleId),
+                Vehicle = vehicle,
                 Arming = GetArming(vehicleId),
                 RcChannels = GetRcChannels(vehicleId),
                 Outputs = GetOutputs(vehicleId),

@@ -16,9 +16,13 @@
                                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                                             <TextBlock Text="REV" IsVisible="{Binding IsReversed}"  />
                                                             <TextBlock Text="{Binding AuxiliaryState}" Opacity="0.7"/>
-                                                            <TextBlock Text="{Binding Pwm, StringFormat='{}{0} µs'}" />
+                                                            <TextBlock Text="{Binding Pwm, StringFormat='Raw received: {0} µs (before FC reversal)'}" />
                                                         </StackPanel>
 
+                                                        <TextBlock Text="{Binding CalibrationEvidence}" TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding InputInterpretation}" TextWrapping="Wrap" FontWeight="Bold" />
+                                                        <TextBlock Text="Disarmed check: move pitch forward/back and roll left/right, then compare the local direction to your intended control. Raw PWM does not reveal physical stick position and does not change when RCx_REVERSED changes. Remove propellers."
+                                                                   TextWrapping="Wrap" />
                                                         <sections:RadioChannelMeterView
                                                                                         ChannelNumber="{Binding Number}"
                                                                                         FunctionName="{Binding FunctionName}"
@@ -35,10 +39,8 @@
                                                                                         HasSignal="{Binding HasSignal}"
                                                                                         PresentationKind="{Binding PresentationKind}"
                                                                                         IsReversed="{Binding IsReversed}" />
-                                                        <TextBlock Text="{Binding Range, StringFormat='Stored MIN / TRIM / MAX {0}'}"  Opacity="0.72"/>
                                                         <TextBlock Text="{Binding CalibrationIssue}" TextWrapping="Wrap" Classes="Danger H4" />
                                                         <TextBlock Text="{Binding ObservedValues}" TextWrapping="Wrap"/>
-                                                        <TextBlock Text="{Binding DeadZone, StringFormat='Configured dead-zone: {0} µs'}"/>
                                                         <TextBlock Text="{Binding Classification}" TextWrapping="Wrap"/>
                                                         <TextBlock Text="{Binding ValidationStatus}" TextWrapping="Wrap"/>
                                                         <TextBlock Text="{Binding NeutralDiagnosticText}"

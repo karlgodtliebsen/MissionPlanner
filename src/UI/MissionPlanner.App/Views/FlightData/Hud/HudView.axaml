@@ -10,6 +10,16 @@
         <hud:HudCanvas x:Name="Canvas" />
         <Border Grid.Row="1"  Padding="2" VerticalAlignment="Stretch">
             <StackPanel Spacing="3" VerticalAlignment="Center">
+                <WrapPanel ItemSpacing="6">
+                    <TextBlock Text="↑" FontSize="26" ToolTip.Tip="Top-view heading reference; up is nose-away at the captured heading" RenderTransformOrigin="50%,50%">
+                        <TextBlock.RenderTransform>
+                            <RotateTransform Angle="{Binding ModelHeading}" />
+                        </TextBlock.RenderTransform>
+                    </TextBlock>
+                    <Button Content="Reset model heading" Command="{Binding ResetModelHeadingCommand}" />
+                    <Button Content="Restore heading" Command="{Binding RestoreModelHeadingCommand}" />
+                </WrapPanel>
+                <TextBlock Text="{Binding HeadingReferenceStatus}" TextWrapping="Wrap" FontSize="11" />
                 <TextBlock Text="{Binding ArmingLabel}" Classes="H5" TextWrapping="Wrap" 
                            IsVisible="{Binding ArmingLabel, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="{Binding PreArmReason}" Classes="Warning H5" TextWrapping="Wrap" 

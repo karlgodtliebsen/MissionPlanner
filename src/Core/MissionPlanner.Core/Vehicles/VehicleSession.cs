@@ -175,6 +175,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
             Motion = state.Motion with
             {
                 RollRadians = observation.RollRadians,
+                AttitudeObservedAt = observation.ObservedAt,
                 PitchRadians = observation.PitchRadians,
                 YawRadians = observation.YawRadians,
                 RollRateRadiansPerSecond = observation.RollRateRadiansPerSecond,
@@ -355,7 +356,14 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
                 ObservedAt = observation.ObservedAt
             },
             Motion = attitudeIsStale
-                ? state.Motion with { RollRadians = observation.RollRadians, PitchRadians = observation.PitchRadians, YawRadians = observation.YawRadians, ObservedAt = observation.ObservedAt }
+                ? state.Motion with
+                {
+                    RollRadians = observation.RollRadians,
+                    PitchRadians = observation.PitchRadians,
+                    YawRadians = observation.YawRadians,
+                    AttitudeObservedAt = observation.ObservedAt,
+                    ObservedAt = observation.ObservedAt
+                }
                 : state.Motion,
             Position = positionIsStale
                 ? state.Position with { LatitudeDegrees = observation.LatitudeDegrees, LongitudeDegrees = observation.LongitudeDegrees, AltitudeMslMeters = observation.AltitudeMslMeters, ObservedAt = observation.ObservedAt }

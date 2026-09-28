@@ -85,6 +85,8 @@ public sealed class VehicleLiveDiagnosticsTests
         Assert.True(root.TryGetProperty("Arming", out _));
         Assert.True(root.TryGetProperty("Parameters", out _));
         Assert.True(root.TryGetProperty("CapturedAt", out _));
+        Assert.StartsWith("diagnostics-sys4-comp1-", root.GetProperty("SuggestedFilename").GetString());
+        Assert.True(root.TryGetProperty("DataStatus", out _));
         Assert.Equal(300, root.GetProperty("Retention").GetProperty("RawCapacity").GetInt32());
         diagnostics.ClearEvents(id);
         Assert.Contains("export marker", json);

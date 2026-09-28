@@ -27,6 +27,7 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
     private readonly IVehicleParameterRegistry parameters;
     private VehicleId? loadedVehicleId;
     private CancellationTokenSource? operationCancellation;
+    private readonly Avalonia.Threading.DispatcherTimer switchTimer;
 
     /// <summary>Initializes the flight-mode Setup workflow.</summary>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
@@ -46,6 +47,9 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
         this.activeVehicle = activeVehicle;
         this.modeService = modeService;
         this.parameters = parameters;
+        switchTimer = new Avalonia.Threading.DispatcherTimer(TimeSpan.FromMilliseconds(200), Avalonia.Threading.DispatcherPriority.Background,
+            (_, _) => RefreshSwitchEvidence());
+        switchTimer.Stop();
     }
 
     /// <summary>Gets the six flight-mode slots.</summary>
@@ -71,6 +75,10 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
         private set;
     }
 
+    /// <summary>Raw RC switch evidence and heartbeat mode, kept separate from pending assignments.</summary>
+    [ObservableProperty]
+    public partial string SwitchEvidence { get; private set; } = "RC input unavailable";
+
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
@@ -79,12 +87,14 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
         parameters.Changed += OnParameterChanged;
         Slots.Clear();
         Load();
+        switchTimer.Start();
         return base.ActivateAsync();
     }
 
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        switchTimer.Stop();
         Cancel();
         activeVehicle.Changed -= OnActiveVehicleChanged;
         parameters.Changed -= OnParameterChanged;
@@ -94,6 +104,7 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
     /// <inheritdoc />
     public override void Dispose()
     {
+        switchTimer.Stop();
         Cancel();
         activeVehicle.Changed -= OnActiveVehicleChanged;
         parameters.Changed -= OnParameterChanged;
@@ -245,6 +256,44 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
         }
 
         SetMessages("Choose a mode, then Apply that slot. Listed modes are known family mappings, not confirmation of support in this firmware build. The highlighted slot is the RC switch position, not the active mode reported by telemetry.");
+        RefreshSwitchEvidence();
+    }
+
+    private void RefreshSwitchEvidence()
+    {
+        if (!activeVehicle.IsOnline || activeVehicle.VehicleId is not { } id || loadedVehicleId != id)
+        {
+            SwitchEvidence = "Disconnected — RC selection and active mode unavailable";
+            foreach (var row in Slots)
+            {
+                row.SetActive(false);
+            }
+            return;
+        }
+        FlightModeConfiguration config;
+        try
+        {
+            config = modeService.GetConfiguration(id);
+        }
+        catch (InvalidOperationException)
+        {
+            // A disconnect/selection change can race a presentation timer tick.
+            SwitchEvidence = "Vehicle changed — waiting for current configuration";
+            foreach (var row in Slots)
+            {
+                row.SetActive(false);
+            }
+            return;
+        }
+        var selected = config.Slots.FirstOrDefault(slot => slot.IsActive);
+        SwitchEvidence = $"RC{config.ModeChannel} raw: {config.RawPwm?.ToString() ?? "unavailable"} µs" +
+            (config.IsRadioFresh ? "" : " (stale)") +
+            $"\nSelected slot: {selected?.Slot.ToString() ?? "unknown"} · Assigned mode: {selected?.SelectedModeName ?? "unknown"}" +
+            $"\nFC active mode: {config.ActiveMode}";
+        foreach (var row in Slots)
+        {
+            row.SetActive(row.Slot == selected?.Slot);
+        }
     }
 }
 
@@ -343,6 +392,8 @@ public sealed partial class FlightModeSlotViewModel : ObservableObject
     {
         return parent.ApplySlotAsync(this);
     }
+
+    internal void SetActive(bool active) => IsActive = active;
 }
 
 /// <summary>A row-specific display choice retaining its numeric value without implying firmware support.</summary>

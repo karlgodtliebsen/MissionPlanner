@@ -44,7 +44,7 @@ public partial class ParameterItemViewModel : ObservableObject
         get;
     }
 
-    [DisplayName("Default")]
+    [DisplayName("Baseline")]
     [ObservableProperty]
     public partial double OriginalValue
     {
@@ -162,6 +162,12 @@ public partial class ParameterItemViewModel : ObservableObject
  //   [DataGridIgnore]
     [JsonIgnore]
     public string OriginalValueText => FormatParameterValue(OriginalValue);
+
+    /// <summary>Explains comparison and default provenance without inventing factory values.</summary>
+    public string ValueProvenance => $"Baseline: {OriginalValueText} (first value in this vehicle/firmware editing session).\n" +
+        $"Current FC value: {FormatParameterValue(LiveValue)}\n" +
+        $"Metadata default: {(editMetadata?.DefaultValue is { } value ? FormatParameterValue(value) : "Unknown")}\n" +
+        "Firmware/board factory default: Unknown. Baseline is not a reset-to-default value.";
 
     [ObservableProperty]
     public partial double Max
@@ -540,6 +546,7 @@ public partial class ParameterItemViewModel : ObservableObject
         {
             loadingData = false;
             projectedField = field;
+            OnPropertyChanged(nameof(ValueProvenance));
         }
     }
 

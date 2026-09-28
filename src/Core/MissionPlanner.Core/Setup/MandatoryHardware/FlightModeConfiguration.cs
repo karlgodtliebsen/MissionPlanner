@@ -21,6 +21,15 @@ public sealed record FlightModeConfiguration(
     IReadOnlyList<VehicleModeOption> Options,
     int? ActiveSlot)
 {
+    /// <summary>Latest received mode-channel PWM, absent when unavailable.</summary>
+    public int? RawPwm { get; init; }
+
+    /// <summary>Whether the RC sample is fresh enough to identify a selected slot.</summary>
+    public bool IsRadioFresh { get; init; }
+
+    /// <summary>Active flight mode reported by telemetry, distinct from the configured switch assignment.</summary>
+    public string ActiveMode { get; init; } = "Unknown";
+
     /// <summary>Creates an unsupported configuration for the specified vehicle and family.</summary>
     /// <param name="vehicleId">The vehicle identifier.</param>
     /// <param name="family">The firmware family.</param>

@@ -147,6 +147,7 @@
                                         </StackPanel>
                                     </u:UrsaGroupBox>
                                     <TextBlock  Text="{Binding SpinMessage}"  Classes="Warning H4" />
+                                    <sections:MotorLayoutDiagram Motors="{Binding DiagramMotors}" Height="370" MinWidth="600" />
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
 

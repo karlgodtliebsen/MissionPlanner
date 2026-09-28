@@ -76,6 +76,14 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         get; set;
     }
 
+    /// <summary>Retains an explicit Inspector target when reopening instead of following the active vehicle.</summary>
+    [ObservableProperty]
+    public partial bool IsVehiclePinned { get; set; }
+
+    /// <summary>Explains which vehicle an export will use, including differences from the active vehicle.</summary>
+    [ObservableProperty]
+    public partial string ExportTarget { get; private set; } = "No export target selected";
+
     /// <summary>Available diagnostic panels.</summary>
     public IReadOnlyList<string> Panels { get; } = ["Status", "RC", "Outputs", "Power", "Sensors", "Raw"];
 
@@ -160,7 +168,10 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
             SelectedPanel = panel;
         }
         IsOpen = true;
-        SelectedVehicle ??= activeVehicle.VehicleId;
+        if (!IsVehiclePinned || SelectedVehicle is null)
+        {
+            SelectedVehicle = activeVehicle.VehicleId;
+        }
         if (SelectedVehicle is null && diagnostics.Vehicles.Count > 0)
         {
             SelectedVehicle = diagnostics.Vehicles[0];
@@ -284,7 +295,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     /// <summary>Refreshes presentation at most once per 100 ms timer tick; no per-packet UI dispatch.</summary>
     public void Refresh()
     {
-        if (presentationDisposed || !IsOpen || IsFrozen)
+        if (presentationDisposed || !IsOpen)
         {
             return;
         }
@@ -306,10 +317,19 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         var snapshot = diagnostics.GetSnapshot(vehicle);
         var arming = diagnostics.GetArming(vehicle);
         var state = snapshot.State;
-        Header = $"{state?.DisplayName ?? vehicle.ToString()} · {(snapshot.Disconnected ? "Disconnected" : state?.Connection.State.ToString() ?? "Unknown")} · {state?.Flight.Mode} · {arming.Summary}";
+        var identity = $"{state?.DisplayName ?? vehicle.ToString()} · {vehicle} · {snapshot.Endpoint ?? "Endpoint unknown"} · {(snapshot.Disconnected ? "Disconnected" : state?.Connection.State.ToString() ?? "Unknown")}";
+        ExportTarget = $"Inspecting/exporting: {identity} · Last diagnostic update: {snapshot.UpdatedAt:O}" +
+            (activeVehicle.VehicleId != vehicle ? $"\nDIFFERENT FROM ACTIVE VEHICLE: {activeVehicle.VehicleId?.ToString() ?? "none"}" : "\nMatches active vehicle");
+        if (IsFrozen)
+        {
+            ExportTarget += "\nExport captures latest collected data; only the displayed samples are frozen.";
+            return;
+        }
+        Header = $"{identity} · {state?.Flight.Mode} · {arming.Summary}";
         LiveLabel = snapshot.Disconnected || state?.Connection.State == VehicleConnectionState.Offline
             ? "DISCONNECTED · Last values are stale"
-            : state?.Connection.State == VehicleConnectionState.Online ? "LIVE" : "STALE / UNKNOWN · Inspect sample ages";
+            : state?.Connection.State == VehicleConnectionState.Online && clock.GetUtcNow() - state.LastHeartbeatAt <= TimeSpan.FromSeconds(3)
+                ? "LIVE" : "STALE / UNKNOWN · Inspect sample ages";
         ReplaceDetails(snapshot, arming);
         if (ShowRaw && FollowRaw)
         {

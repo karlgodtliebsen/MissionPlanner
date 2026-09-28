@@ -36,6 +36,9 @@ public sealed record VehicleMotionState(
     /// </summary>
     public static VehicleMotionState Empty { get; } = new(null, null, null, null, null, null, null, null, null, null);
 
+    /// <summary>Timestamp of the last attitude observation, independent of velocity updates.</summary>
+    public DateTimeOffset? AttitudeObservedAt { get; init; }
+
     /// <summary>Returns whether motion telemetry is older than <paramref name="maximumAge"/>.</summary>
     public bool IsStale(DateTimeOffset now, TimeSpan maximumAge) => ObservedAt is null || now - ObservedAt > maximumAge;
 }
