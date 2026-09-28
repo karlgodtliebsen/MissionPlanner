@@ -222,6 +222,7 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
+        armingSelectionVehicle = null;
         radioService.StateChanged += OnCalibrationStateChanged;
         activeVehicle.Changed += OnActiveVehicleChanged;
         parameterRegistry.Changed += OnBindParametersChanged;

@@ -1,12 +1,15 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.Core.Setup.MandatoryHardware;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 public sealed partial class RadioSetupViewModel
 {
     private readonly RadioSwitchMovement switchMovement = new();
+    private VehicleId? armingSelectionVehicle;
+    private int[] observedArmingAssignments = [];
 
     /// <summary>Gets available auxiliary channel numbers for explicit selection.</summary>
     public IReadOnlyList<int> ArmingChannels { get; } = Enumerable.Range(1, 16).ToArray();
@@ -29,9 +32,23 @@ public sealed partial class RadioSetupViewModel
     {
         if (activeVehicle.VehicleId is not { } id)
         {
+            armingSelectionVehicle = null;
+            observedArmingAssignments = [];
             ArmingConfigurationSummary = "Connect a vehicle.";
             ArmingSwitchDiagnostic = string.Empty;
             return;
+        }
+        var assignments = ArmingChannels.Where(channel => armingConfiguration.IsAssigned(id, channel)).ToArray();
+        var vehicleChanged = armingSelectionVehicle != id;
+        var assignmentsChanged = !observedArmingAssignments.SequenceEqual(assignments);
+        armingSelectionVehicle = id;
+        observedArmingAssignments = assignments;
+        // Only synchronize when vehicle evidence changes, so live telemetry does not undo a manual choice.
+        if (vehicleChanged || assignmentsChanged)
+        {
+            SelectedArmingChannel = assignments.Length > 0
+                ? !vehicleChanged && assignments.Contains(SelectedArmingChannel) ? SelectedArmingChannel : assignments[0]
+                : vehicleChanged ? 8 : SelectedArmingChannel;
         }
         ArmingConfigurationSummary = RadioArmingConfiguration.Describe(name => parameterRegistry.GetParameter(id, name)?.Value);
         if (activeVehicle.IsOnline && activeVehicle.State?.Radio is { } radio && !radio.IsStale(clock.UtcNow, TimeSpan.FromSeconds(2)))

@@ -22,6 +22,49 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 /// <summary>Regresses RC5's contradictory assigned/conflict presentation.</summary>
 public sealed class RadioArmingViewModelTests
 {
+    [Fact]
+    public void ArmingSelectionFollowsAssignmentsAndVehicleButPreservesManualReview()
+    {
+        var id = new VehicleId(1, 1);
+        var active = Substitute.For<IActiveVehicleContext>();
+        active.VehicleId.Returns(id);
+        var registry = new VehicleParameterRegistry();
+        void Store(int channel, float option) => registry.StoreParameter(id,
+            new VehicleParameter($"RC{channel}_OPTION", option, MavParamType.Int32, 0, 1), CancellationToken.None);
+        var factory = Substitute.For<IDomainFactory>();
+        using var model = new RadioSetupViewModel(active, Substitute.For<IRadioCalibrationService>(),
+            Substitute.For<IDomainEventHub>(), registry, Substitute.For<ISetupCompletionStore>(),
+            Substitute.For<ISetupWorkflowCatalog>(), Substitute.For<IUserConfirmationService>(),
+            Substitute.For<INavigationService>(), Substitute.For<IDateTimeProvider>(),
+            Substitute.For<IVehicleCommandService>(), Substitute.For<IVehicleTelemetryEventHub>(),
+            Substitute.For<IUiDispatcher>(), new RadioArmingConfiguration(active, registry, factory),
+            NullLogger<RadioSetupViewModel>.Instance);
+
+        Store(5, 153);
+        model.RefreshCommand.Execute(null);
+        Assert.Equal(5, model.SelectedArmingChannel);
+        Assert.Contains("Arm function: Assigned", model.ArmingSwitchDiagnostic);
+        model.SelectedArmingChannel = 6;
+        model.RefreshCommand.Execute(null);
+        Assert.Equal(6, model.SelectedArmingChannel);
+        Store(5, 0);
+        Store(9, 153);
+        model.RefreshCommand.Execute(null);
+        Assert.Equal(9, model.SelectedArmingChannel);
+
+        id = new VehicleId(2, 1);
+        active.VehicleId.Returns(id);
+        model.RefreshCommand.Execute(null);
+        Assert.Equal(8, model.SelectedArmingChannel);
+        Store(7, 153); // Parameters can arrive after the page has opened.
+        model.RefreshCommand.Execute(null);
+        Assert.Equal(7, model.SelectedArmingChannel);
+        Store(10, 153);
+        model.RefreshCommand.Execute(null);
+        Assert.Equal(7, model.SelectedArmingChannel);
+        Assert.Empty(factory.ReceivedCalls());
+    }
+
     /// <summary>Movement, assignment, conflict, and confirmation remain distinct for all three option cases.</summary>
     [Theory]
     [InlineData(153)]
