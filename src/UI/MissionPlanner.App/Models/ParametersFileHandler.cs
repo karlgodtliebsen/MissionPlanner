@@ -27,7 +27,7 @@ public sealed class ParametersFileHandler(IFileOpenService fileOpenService, IFil
         }
 
         stream.Position = 0;
-        return await fileSaveService.SaveAsync("ardupilot.params", stream, cancellationToken);
+        return await fileSaveService.SaveAsync("ardupilot.params.csv", stream, cancellationToken);
     }
 
     /// <summary>Saves a UTF-8 text document through the platform file saver.</summary>
@@ -40,9 +40,9 @@ public sealed class ParametersFileHandler(IFileOpenService fileOpenService, IFil
     }
 
     /// <summary>Loads a UTF-8 text document selected through the platform file picker.</summary>
-    public async Task<string?> LoadTextFileAsync(string pickerTitle, CancellationToken cancellationToken)
+    public async Task<string?> LoadTextFileAsync(string pickerTitle, CancellationToken cancellationToken, IReadOnlyList<string>? patterns = null)
     {
-        using var file = await fileOpenService.OpenAsync(pickerTitle, cancellationToken: cancellationToken);
+        using var file = await fileOpenService.OpenAsync(pickerTitle, patterns, cancellationToken);
         if (file is null)
         {
             return null;
@@ -84,7 +84,7 @@ public sealed class ParametersFileHandler(IFileOpenService fileOpenService, IFil
         var parameters = new List<VehicleParameter>();
         using var file = await fileOpenService.OpenAsync(
             "Select a Parameters file",
-            ["*.params", "*.param", "*.txt"],
+            ["*.csv", "*.params", "*.param", "*.txt"],
             cancellationToken);
         if (file is null)
         {

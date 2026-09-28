@@ -895,7 +895,7 @@ public sealed partial class SimulationViewModel : ViewModelBase
         operationCancellation ??= new CancellationTokenSource();
         await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
-            var document = await fileHandler.LoadTextFileAsync("Select a simulation scenario JSON file", cancellationToken);
+            var document = await fileHandler.LoadTextFileAsync("Select a simulation scenario JSON file", cancellationToken, ["*.json"]);
             if (document is not null)
             {
                 ScenarioDocumentText = document;

@@ -1103,7 +1103,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         operationCancellation ??= new CancellationTokenSource();
         return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
-            var document = await fileHandler.LoadTextFileAsync("Select MissionPlanner settings", cancellationToken);
+            var document = await fileHandler.LoadTextFileAsync("Select MissionPlanner settings", cancellationToken, ["*.json"]);
             if (document is null)
             {
                 SetMessages("Settings import cancelled.");

@@ -59,14 +59,14 @@
                             <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
                             <MenuItem
                                 ToolTip.Tip="Save to CSV file"
-                                Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON"
+                                Command="{Binding ExportCsvCommand}" AutomationProperties.Name="Export CSV"
                                 Header="Save to CSV file" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                            <MenuItem ToolTip.Tip="Save to json file"
-                                      Command="{Binding ExportCsvCommand}" AutomationProperties.Name="Export CSV"
-                                      Header="Save to json file" />
+                            <MenuItem ToolTip.Tip="Save to JSON file"
+                                      Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON"
+                                      Header="Save to JSON file" />
                         </StackPanel>
                     </MenuFlyout>
                 </DropDownButton.Flyout>

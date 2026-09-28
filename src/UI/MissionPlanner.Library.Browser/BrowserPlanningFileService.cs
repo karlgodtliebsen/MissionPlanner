@@ -15,13 +15,7 @@ public sealed class BrowserPlanningFileService(IUiDispatcher dispatcher) : IFile
         CancellationToken cancellationToken = default) => dispatcher.DispatchAsync(async () =>
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var files = await GetStorage().OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = title,
-            AllowMultiple = false,
-            FileTypeFilter = patterns is { Count: > 0 }
-                ? [new FilePickerFileType("Supported files") { Patterns = patterns }] : null
-        });
+        var files = await GetStorage().OpenFilePickerAsync(PlanningFilePickerOptions.ForOpen(title, patterns));
         cancellationToken.ThrowIfCancellationRequested();
         var file = files.FirstOrDefault();
         return file is null ? null : new OpenedPlanningFile(file.Name, await file.OpenReadAsync());
@@ -32,7 +26,7 @@ public sealed class BrowserPlanningFileService(IUiDispatcher dispatcher) : IFile
         => dispatcher.DispatchAsync(async () =>
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var file = await GetStorage().SaveFilePickerAsync(new FilePickerSaveOptions { SuggestedFileName = fileName });
+        var file = await GetStorage().SaveFilePickerAsync(PlanningFilePickerOptions.ForSave(fileName));
         cancellationToken.ThrowIfCancellationRequested();
         if (file is null)
         {

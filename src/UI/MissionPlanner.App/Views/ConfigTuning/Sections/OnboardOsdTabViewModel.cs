@@ -319,7 +319,7 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
 
         await RunAsync(async cancellationToken =>
         {
-            var content = await fileHandler.LoadTextFileAsync("Select an onboard OSD layout", cancellationToken);
+            var content = await fileHandler.LoadTextFileAsync("Select an onboard OSD layout", cancellationToken, ["*.json"]);
             if (content is null)
             {
                 SetMessages("OSD import was cancelled.");

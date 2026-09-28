@@ -471,3 +471,12 @@ Regression coverage is in `FlightModeSetupTests` and `FlightModesViewModelTests`
 Acro, exact unknown values, missing parameters, per-slot writes, family isolation,
 late parameter arrival, refresh, vehicle changes, reconnect, and RC6 switch positions
 1/4/6. Tests use simulated parameter readback; physical firmware support is not verified.
+
+### File extensions and picker formats
+
+CSV parameter exports use `ardupilot.params.csv`; JSON exports retain
+`ardupilot.params.json`. CSV imports accept `.csv` and the legacy `.params`, `.param`
+and `.txt` extensions. Comparison exports use their labelled CSV/JSON command.
+The shared desktop/browser picker options specify a save extension and matching
+file-type choice from the suggested filename. Open filters display their supported
+extensions; JSON-only configuration imports explicitly filter for `.json`.

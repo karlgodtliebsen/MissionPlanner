@@ -180,7 +180,7 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
 
         await RunAsync(async cancellationToken =>
         {
-            var content = await fileHandler.LoadTextFileAsync("Select a Basic Tuning JSON file", cancellationToken);
+            var content = await fileHandler.LoadTextFileAsync("Select a Basic Tuning JSON file", cancellationToken, ["*.json"]);
             if (content is null)
             {
                 SetMessages("Basic Tuning import was cancelled.");

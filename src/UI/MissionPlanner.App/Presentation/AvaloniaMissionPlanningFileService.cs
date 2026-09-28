@@ -20,15 +20,9 @@ public sealed class AvaloniaMissionPlanningFileService(
         cancellationToken.ThrowIfCancellationRequested();
         var owner = windowProvider.ActiveWindow ?? throw new InvalidOperationException("No active window is available.");
         var startLocation = await GetStartLocationAsync(owner.StorageProvider, cancellationToken);
-        var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-        {
-            Title = title,
-            AllowMultiple = false,
-            SuggestedStartLocation = startLocation,
-            FileTypeFilter = patterns is { Count: > 0 }
-                ? [new FilePickerFileType("Supported files") { Patterns = patterns }]
-                : null
-        });
+        var options = PlanningFilePickerOptions.ForOpen(title, patterns);
+        options.SuggestedStartLocation = startLocation;
+        var files = await owner.StorageProvider.OpenFilePickerAsync(options);
         var file = files.FirstOrDefault();
         if (file is null)
         {
@@ -48,13 +42,9 @@ public sealed class AvaloniaMissionPlanningFileService(
             cancellationToken.ThrowIfCancellationRequested();
             var owner = windowProvider.ActiveWindow ?? throw new InvalidOperationException("No active window is available.");
             var startLocation = await GetStartLocationAsync(owner.StorageProvider, cancellationToken);
-            var file = await owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-            {
-                Title = "Save file",
-                SuggestedFileName = fileName,
-                DefaultExtension = Path.GetExtension(fileName).TrimStart('.'),
-                SuggestedStartLocation = startLocation
-            });
+            var options = PlanningFilePickerOptions.ForSave(fileName);
+            options.SuggestedStartLocation = startLocation;
+            var file = await owner.StorageProvider.SaveFilePickerAsync(options);
             if (file is null)
             {
                 return null;
