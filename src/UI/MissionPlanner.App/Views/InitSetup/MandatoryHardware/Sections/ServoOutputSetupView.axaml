@@ -78,7 +78,12 @@
                                     <DataGridTemplateColumn Header="Function" Width="*">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
-                                                <ComboBox IsEnabled="{Binding HasFunction}" VerticalAlignment="Center" HorizontalAlignment="Stretch" ToolTip.Tip="Function" ItemsSource="{Binding Functions}" SelectedItem="{Binding SelectedFunction}" DisplayMemberBinding="{Binding Name}" />
+                                                <ComboBox IsEnabled="{Binding HasFunction}" 
+                                                          VerticalAlignment="Center" HorizontalAlignment="Stretch" 
+                                                          ToolTip.Tip="Function" 
+                                                          ItemsSource="{Binding Functions}" 
+                                                          SelectedItem="{Binding SelectedFunction}" 
+                                                          DisplayMemberBinding="{Binding Name}" />
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>

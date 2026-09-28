@@ -1,18 +1,15 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Utilities;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
+using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup.Abstractions;
-using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -78,7 +75,7 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
             // off the UI thread so the selected tab and its busy indicator can render first.
             var configuration = await Task.Run(() => servoService.GetConfigurationAsync(vehicleId, token), token);
 
-            Dispatcher.Dispatch(() =>
+            await Dispatcher.DispatchAsync(() =>
             {
                 if (active && activeVehicle.IsOnline && activeVehicle.VehicleId == vehicleId && !token.IsCancellationRequested)
                 {
@@ -238,10 +235,10 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
 
     private async void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
-        Dispatcher.Dispatch(() => Outputs.Clear());
+        await Dispatcher.DispatchAsync(() => Outputs.Clear());
         observedServoAt = args.Current.State?.Radio.ServoObservedAt;
         await LoadAsync();
-        Dispatcher.Dispatch(() => WriteCommand.NotifyCanExecuteChanged());
+        await Dispatcher.DispatchAsync(() => WriteCommand.NotifyCanExecuteChanged());
     }
 
     private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
@@ -252,11 +249,11 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
             var values = evt.VehicleState.Radio.ServoOutputsRaw;
             Dispatcher.Dispatch(() =>
             {
-                for (var index = 0; index < Outputs.Count; index++)
+                foreach (var viewModel in Outputs)
                 {
-                    var channelIndex = Outputs[index].ChannelNumber - 1;
+                    var channelIndex = viewModel.ChannelNumber - 1;
                     int? pwm = values is not null && channelIndex < values.Count ? values[channelIndex] : null;
-                    Outputs[index].UpdateLive(pwm, false);
+                    viewModel.UpdateLive(pwm, false);
                 }
             });
         }

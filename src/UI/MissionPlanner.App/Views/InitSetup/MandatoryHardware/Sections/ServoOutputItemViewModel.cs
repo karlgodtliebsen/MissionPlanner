@@ -27,10 +27,16 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
     public bool HasMaximum => availableFields is null || availableFields.Contains("MAX");
     /// <summary>Gets the live PWM used by the bar.</summary>
     [ObservableProperty]
-    public partial int LivePwm { get; private set; }
+    public partial int LivePwm
+    {
+        get; private set;
+    }
     /// <summary>Gets whether live output telemetry is available.</summary>
     [ObservableProperty]
-    public partial bool HasLivePwm { get; private set; }
+    public partial bool HasLivePwm
+    {
+        get; private set;
+    }
 
     /// <summary>Initializes a servo output row.</summary>
     /// <param name="info">The output projection.</param>
@@ -44,42 +50,69 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
         this.dirtyChanged = dirtyChanged;
         ChannelNumber = info.ChannelNumber;
         options = info.FunctionOptions ?? options;
-        Functions = options.Any(option => option.Value == info.FunctionValue)
+        var f = options.Any(option => option.Value == info.FunctionValue)
             ? options
             : options.Append(new ServoFunctionOption(info.FunctionValue, info.FunctionName)).ToArray();
+
+        Functions = f.OrderBy(option => option.Name).ToArray();
+
         ApplyConfiguration(info);
     }
 
     /// <summary>Gets whether an editable value differs from its last confirmed value.</summary>
     [ObservableProperty]
-    public partial bool IsDirty { get; private set; }
+    public partial bool IsDirty
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the one-based physical output channel.</summary>
-    public int ChannelNumber { get; }
+    public int ChannelNumber
+    {
+        get;
+    }
 
     /// <summary>Gets or sets whether the output is reversed.</summary>
     [ObservableProperty]
-    public partial bool Reversed { get; set; }
+    public partial bool Reversed
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the minimum PWM.</summary>
     [ObservableProperty]
-    public partial int MinimumPwm { get; set; }
+    public partial int MinimumPwm
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the trim PWM.</summary>
     [ObservableProperty]
-    public partial int TrimPwm { get; set; }
+    public partial int TrimPwm
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the maximum PWM.</summary>
     [ObservableProperty]
-    public partial int MaximumPwm { get; set; }
+    public partial int MaximumPwm
+    {
+        get; set;
+    }
 
     /// <summary>Gets the lowest allowed PWM value.</summary>
     [ObservableProperty]
-    public partial int AllowedMinimumPwm { get; private set; }
+    public partial int AllowedMinimumPwm
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the highest allowed PWM value.</summary>
     [ObservableProperty]
-    public partial int AllowedMaximumPwm { get; private set; }
+    public partial int AllowedMaximumPwm
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the available function options.</summary>
     [ObservableProperty]
@@ -91,7 +124,10 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
 
     /// <summary>Gets or sets the selected function.</summary>
     [ObservableProperty]
-    public partial ServoFunctionOption? SelectedFunction { get; set; }
+    public partial ServoFunctionOption? SelectedFunction
+    {
+        get; set;
+    }
 
     /// <summary>Gets the output header.</summary>
     public string Header => $"# {ChannelNumber}";
@@ -103,7 +139,10 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
         SelectedFunction?.Value ?? originalFunction,
         MinimumPwm,
         TrimPwm,
-        MaximumPwm) { AvailableFields = availableFields };
+        MaximumPwm)
+    {
+        AvailableFields = availableFields
+    };
 
     /// <summary>Updates live PWM without affecting editable state or dirty tracking.</summary>
     /// <param name="info">The latest output projection.</param>
