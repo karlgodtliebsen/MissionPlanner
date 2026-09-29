@@ -180,13 +180,18 @@
                 </StackPanel>
                 <Grid
                     Grid.Row="2"
-                    RowDefinitions="Auto,Auto,*">
-                    <tabs:StatusTabItemView
-                        Grid.Row="2"
-                        IsVisible="{Binding ShowStatus}" />
+                    RowDefinitions="*,*"
+                    ClipToBounds="True">
+                    <Grid
+                        Grid.Row="1"
+                        IsVisible="{Binding ShowStatus}">
+                        <tabs:StatusTabItemView />
+                    </Grid>
                     <ListBox
+                        x:Name="InspectorDetailsList"
+                        Grid.RowSpan="{Binding DetailsRowSpan}"
                         ItemsSource="{Binding Details}"
-                        MaxHeight="300">
+                        ClipToBounds="True">
                         <ListBox.ItemTemplate>
                             <DataTemplate
                                 x:DataType="x:String">
@@ -223,7 +228,7 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                     <Grid
-                        Grid.Row="2"
+                        Grid.Row="1"
                         RowDefinitions="Auto,*"
                         IsVisible="{Binding ShowRaw}">
                         <StackPanel
@@ -291,6 +296,7 @@
                     Margin="0,8"
                     ColumnSpacing="5">
                     <TextBox
+                        x:Name="InspectorMarkerText"
                         Text="{Binding MarkerText}"
                         PlaceholderText="Optional marker text"
                         MaxLength="256" />

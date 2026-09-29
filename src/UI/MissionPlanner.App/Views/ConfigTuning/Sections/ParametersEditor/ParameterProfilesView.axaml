@@ -1,0 +1,136 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
+             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:profiles="clr-namespace:MissionPlanner.Core.ConfigTuning.Profiles;assembly=MissionPlanner.Core"
+             x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterProfilesView"
+             x:DataType="local:ParameterProfilesViewModel"
+             x:CompileBindings="True">
+    <Grid RowDefinitions="Auto,Auto,*" Margin="20" RowSpacing="12">
+        <TextBlock Text="{Binding Feedback}" TextWrapping="Wrap" />
+        <ScrollViewer Grid.Row="1" MaxHeight="360" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="8" IsEnabled="{Binding !Working}">
+                <TextBlock Text="Saved parameter profiles" FontWeight="Bold" />
+                <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" HorizontalAlignment="Stretch"
+                          PlaceholderText="Select a profile" AutomationProperties.Name="Saved parameter profiles">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="profiles:ParameterProfile">
+                            <TextBlock Text="{Binding Name}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBox Text="{Binding ProfileName}" PlaceholderText="Profile name" AutomationProperties.Name="Profile name" />
+                <TextBox Text="{Binding Description}" PlaceholderText="Description" AutomationProperties.Name="Profile description" />
+                <TextBox Text="{Binding Tags}" PlaceholderText="Tags, separated by commas" AutomationProperties.Name="Profile tags" />
+                <WrapPanel ItemSpacing="8" LineSpacing="8">
+                    
+                    <Button Classes="EmbeddedIconButton"
+                            Command="{Binding SaveDetailsCommand}"
+                            ToolTip.Tip="Save the selected profile name, description, and tags."
+                            AutomationProperties.Name="Save details"
+                            AutomationProperties.HelpText="Save the selected profile name, description, and tags."
+                            AutomationProperties.AutomationId="ParameterProfilesSaveDetails">
+                        <mdi:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button Classes="EmbeddedIconButton"
+                            Command="{Binding DuplicateCommand}"
+                            ToolTip.Tip="Create a copy of the selected profile."
+                            AutomationProperties.Name="Duplicate profile"
+                            AutomationProperties.HelpText="Create a copy of the selected profile."
+                            AutomationProperties.AutomationId="ParameterProfilesDuplicate">
+                        <mdi:MaterialIcon Kind="ContentCopy" Width="30" Height="30" />
+                    </Button>
+                    
+                    <Button Classes="EmbeddedIconButton"
+                            Command="{Binding DeleteCommand}"
+                            ToolTip.Tip="Delete the selected profile after confirmation."
+                            AutomationProperties.Name="Delete profile"
+                            AutomationProperties.HelpText="Delete the selected profile after confirmation."
+                            AutomationProperties.AutomationId="ParameterProfilesDelete">
+                        <mdi:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
+                    </Button>
+                    <Button Classes="EmbeddedIconButton"
+                            Command="{Binding ImportCommand}"
+                            ToolTip.Tip="Import a parameter profile from a JSON file."
+                            AutomationProperties.Name="Import profile"
+                            AutomationProperties.HelpText="Import a parameter profile from a JSON file."
+                            AutomationProperties.AutomationId="ParameterProfilesImport">
+                        <mdi:MaterialIcon Kind="Import" Width="30" Height="30" />
+                    </Button>
+                    <Button Classes="EmbeddedIconButton"
+                            Command="{Binding ExportCommand}"
+                            ToolTip.Tip="Export the selected profile to a JSON file."
+                            AutomationProperties.Name="Export profile"
+                            AutomationProperties.HelpText="Export the selected profile to a JSON file."
+                            AutomationProperties.AutomationId="ParameterProfilesExport">
+                        <mdi:MaterialIcon Kind="Export" Width="30" Height="30" />
+                    </Button>
+
+
+                </WrapPanel>
+                <TextBlock Text="Create a new profile from current values (including pending edits)" FontWeight="Bold" TextWrapping="Wrap" />
+                <ComboBox ItemsSource="{Binding Scopes}" SelectedItem="{Binding Scope}" HorizontalAlignment="Stretch"
+                          AutomationProperties.Name="Profile creation scope" />
+                <TextBox Text="{Binding SelectedNames}" PlaceholderText="For Selected names: MAV_SYSID, BRD_SERIAL_NUM"
+                         AutomationProperties.Name="Selected parameter names" />
+                <Button Classes="EmbeddedIconButton"
+                            Command="{Binding CreateCommand}"
+                            ToolTip.Tip="Create a profile from the chosen scope, including pending edits."
+                            AutomationProperties.Name="Create new profile"
+                            AutomationProperties.HelpText="Create a profile from the chosen scope, including pending edits."
+                            AutomationProperties.AutomationId="ParameterProfilesCreate">
+                        <mdi:MaterialIcon Kind="Plus" Width="30" Height="30" />
+                    </Button>
+            </StackPanel>
+        </ScrollViewer>
+        <Grid Grid.Row="2" RowDefinitions="Auto,Auto,*" RowSpacing="8" IsEnabled="{Binding !Working}">
+            <TextBlock Text="{Binding ReviewText}" TextWrapping="Wrap" />
+            <WrapPanel Grid.Row="1" ItemSpacing="8" LineSpacing="8">
+                <Button Classes="EmbeddedIconButton"
+                            Command="{Binding ReviewCommand}"
+                            ToolTip.Tip="Compare the selected profile with current vehicle parameters."
+                            AutomationProperties.Name="Refresh comparison"
+                            AutomationProperties.HelpText="Compare the selected profile with current vehicle parameters."
+                            AutomationProperties.AutomationId="ParameterProfilesReview">
+                        <mdi:MaterialIcon Kind="Refresh" Width="30" Height="30" />
+                    </Button>
+                <Button Classes="EmbeddedIconButton"
+                            Command="{Binding SelectSafeCommand}"
+                            ToolTip.Tip="Select compatible parameter differences for staging."
+                            AutomationProperties.Name="Select compatible differences"
+                            AutomationProperties.HelpText="Select compatible parameter differences for staging."
+                            AutomationProperties.AutomationId="ParameterProfilesSelectSafe">
+                        <mdi:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
+                    </Button>
+                <Button Classes="EmbeddedIconButton"
+                            Command="{Binding StageCommand}"
+                            ToolTip.Tip="Stage selected differences as pending edits; this does not write to the flight controller."
+                            AutomationProperties.Name="Stage selected"
+                            AutomationProperties.HelpText="Stage selected differences as pending edits; this does not write to the flight controller."
+                            AutomationProperties.AutomationId="ParameterProfilesStage">
+                        <mdi:MaterialIcon Kind="PlaylistPlus" Width="30" Height="30" />
+                    </Button>
+            </WrapPanel>
+            <ListBox Grid.Row="2" ItemsSource="{Binding Rows}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="local:ParameterComparisonItemViewModel">
+                        <Grid ColumnDefinitions="Auto,*" Margin="4">
+                            <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="{Binding CanStage}" Margin="0,0,10,0"
+                                      AutomationProperties.Name="{Binding Name}" />
+                            <StackPanel Grid.Column="1" Spacing="3">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <WrapPanel ItemSpacing="8">
+                                    <TextBlock Text="{Binding LeftValueText, StringFormat='Live: {0}'}" />
+                                    <TextBlock Text="{Binding RightValueText, StringFormat='Profile: {0}'}" />
+                                    <TextBlock Text="{Binding Units}" />
+                                    <TextBlock Text="{Binding Status}" />
+                                </WrapPanel>
+                                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Grid>
+</UserControl>

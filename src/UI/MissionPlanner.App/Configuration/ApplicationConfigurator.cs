@@ -428,6 +428,7 @@ public static class ApplicationConfigurator
         domainFactory.Add<IDialogService, AvaloniaDialogService>();
         domainFactory.Add<DiagnosticsReportViewModel>();
         domainFactory.Add<ParameterComparisonViewModel>();
+        domainFactory.Add<MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterProfilesViewModel>();
         domainFactory.Add<MissionItemListViewPage>();
         domainFactory.Add<MissionMapPresenter>();
         domainFactory.Add<ParametersEditorViewModel>();

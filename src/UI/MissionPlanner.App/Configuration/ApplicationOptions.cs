@@ -22,8 +22,9 @@ public class ApplicationOptions
         "AUTO",
         "TCP",
         "UDP",
-        "UDPCI",
-        "WS"
+        "UDPCl",
+        "WS",
+        "WSS"
     ];
 
     /// <summary>

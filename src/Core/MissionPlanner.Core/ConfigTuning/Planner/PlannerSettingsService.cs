@@ -14,8 +14,9 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
             "AUTO",
             "TCP",
             "UDP",
-            "UDPCI",
-            "WS"
+            "UDPCl",
+            "WS",
+            "WSS"
         };
 
     private static readonly HashSet<string> allowedUpdateChannels = new(StringComparer.OrdinalIgnoreCase) { "Stable", "Beta", "Development" };
@@ -141,7 +142,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
             errors.Add(new PlannerSettingsValidationError(
                 PlannerSettingsSection.Connection,
                 nameof(settings.Connection.Channel),
-                "Connection channel must be AUTO, TCP, UDP, UDPCI, or WS."));
+                "Connection channel must be AUTO, TCP, UDP, UDPCl, or WS."));
         }
 
         if (string.IsNullOrWhiteSpace(settings.Connection.Host) || settings.Connection.Host.Length > 255)

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -512,35 +512,18 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     [RelayCommand]
     private async Task LoadPreSavedAsync(CancellationToken cancellationToken)
     {
-        var saved = await profiles.GetAllAsync(cancellationToken);
-        if (saved.Count == 1 && EditSession is not null)
+        if (EditSession is not { IsValid: true } session)
         {
-            var review = profileWorkflow.Review(saved[0], EditSession);
-            var safe = review.Comparison.Rows.Where(row => row.CanStage).Select(row => row.Name).ToArray();
-            var warning = review.Warnings.Count == 0
-                ? string.Empty
-                : Environment.NewLine + string.Join(Environment.NewLine, review.Warnings);
-            var accepted = await confirmation.ConfirmAsync(
-                $"Stage profile: {saved[0].Name}",
-                $"{safe.Length} compatible difference(s) can be staged. Unsupported, invalid, absent, and read-only entries will remain unstaged.{warning}",
-                $"Stage {safe.Length} values",
-                cancellationToken);
-            if (accepted)
-            {
-                var staged = profileWorkflow.Stage(review, EditSession, safe);
-                SetMessages($"Staged {staged.Count} profile values as unapplied edits. Review and apply them separately.");
-                NotificationManager?.Show(StatusMessage ?? "");
-            }
-
+            SetMessages(null, "Load parameters for the current vehicle before opening profiles.");
             return;
         }
-
-        await ShowMessageAsync("Parameter profiles", saved.Count == 0
-            ? "No previously saved parameter profiles have been found."
-            : string.Join(Environment.NewLine, saved.Select(profile => $"{profile.Name} — {profile.Values.Count} values — {profile.UpdatedAt:g}")),
-            cancellationToken);
+        var model = domainFactory.Create<ParameterProfilesViewModel, IParameterEditSession>(session);
+        await model.InitializeAsync(cancellationToken);
+        var options = dialogService.CreateOptions("Parameter profiles", "Close", null);
+        options.FullScreen = true;
+        await dialogService.ShowCustomDialogAsync<ParameterProfilesView, ParameterProfilesViewModel>(
+            model, options, cancellationToken: cancellationToken);
     }
-
     /// <inheritdoc />
     protected override bool CanCancelLoad()
     {

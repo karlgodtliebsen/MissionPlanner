@@ -1,5 +1,12 @@
 # UI conventions
 
+## Input placeholders and button icons
+
+Use `PlaceholderText` for input hints; `Watermark` is obsolete.
+Include an appropriate icon on new or updated action buttons, using the existing
+Material Icons library and shared button styles. Provide descriptive tooltips
+and automation names so icon buttons remain understandable and accessible.
+
 ## External dependencies
 
 Use NuGet packages for third-party libraries. Do not replace them with references

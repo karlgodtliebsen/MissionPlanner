@@ -1,19 +1,15 @@
 Missing functionality:
 
 
-
+Done-->
 Servo Output
-
 Hardware ID: Configuration
-
 ADSB: Configuration
-
-
+Done-->
 
 What are the roles of:
 Safety and Arming
 Summary
-
 
 
 Complete Simulator

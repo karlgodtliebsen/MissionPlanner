@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Maps.Catalog;
@@ -157,7 +156,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     public IReadOnlyList<string> ConnectionChannels
     {
         get;
-    } = ["AUTO", "TCP", "UDP", "UDPCI", "WS"];
+    } = ["AUTO", "TCP", "UDP", "UDPCl", "WS", "WSS"];
 
     /// <summary>Gets available parameter-cache policies.</summary>
     public IReadOnlyList<ParameterCachePolicy> ParameterCachePolicies

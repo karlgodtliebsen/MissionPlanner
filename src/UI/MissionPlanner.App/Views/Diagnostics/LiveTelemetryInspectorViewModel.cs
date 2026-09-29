@@ -139,6 +139,9 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     /// <summary>Whether RC channel visualization is selected.</summary>
     public bool ShowRc => SelectedPanel == "RC";
 
+    /// <summary>Lets summary-only panels use the full details viewport while other panels share it.</summary>
+    public int DetailsRowSpan => ShowRc || ShowRaw || ShowStatus ? 1 : 2;
+
     /// <summary>Recent significant diagnostic events, newest first.</summary>
     public ObservableCollection<VehicleDiagnosticEvent> Events { get; } = [];
 
@@ -186,6 +189,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         OnPropertyChanged(nameof(ShowRc));
         OnPropertyChanged(nameof(ShowRaw));
         OnPropertyChanged(nameof(ShowStatus));
+        OnPropertyChanged(nameof(DetailsRowSpan));
         displayedVersion = -1;
         Refresh();
     }

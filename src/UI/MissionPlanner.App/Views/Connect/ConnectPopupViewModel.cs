@@ -253,7 +253,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                     if (SelectedChannel != stateService.SelectedChannel)
                     {
                         SelectedChannel = stateService.SelectedChannel;
-                        ShowSelectedHost = SelectedChannel is "TCP" or "UDP" or "UDPCI";
+                        ShowSelectedHost = SelectedChannel is "TCP" or "UDP" or "UDPCl" or "WS" or "WSS";
                         ShowSelectedCom = !ShowSelectedHost;
                     }
 
@@ -351,7 +351,9 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                     && (preferSerial || string.Equals(SelectedChannel, "AUTO", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (!availablePorts.Contains(SelectedChannel, StringComparer.OrdinalIgnoreCase))
+                    {
                         SelectedChannel = availablePorts[0];
+                    }
                 }
                 else if (SelectedChannel is null || !channels.Contains(SelectedChannel, StringComparer.OrdinalIgnoreCase))
                 {
@@ -380,7 +382,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                 if (SelectedChannel != stateService.SelectedChannel)
                 {
                     stateService?.SelectedChannel = SelectedChannel!;
-                    ShowSelectedHost = SelectedChannel is "TCP" or "UDP" or "UDPCI";
+                    ShowSelectedHost = SelectedChannel is "TCP" or "UDP" or "UDPCl" or "WS" or "WSS";
                     ShowSelectedCom = !ShowSelectedHost;
                 }
 
@@ -419,10 +421,16 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
 
 
     [RelayCommand]
-    private Task RefreshAsync() => RefreshPortListAsync();
+    private Task RefreshAsync()
+    {
+        return RefreshPortListAsync();
+    }
 
-    private static bool IsSerialChannel(string channel) => channel.StartsWith("COM", StringComparison.OrdinalIgnoreCase)
+    private static bool IsSerialChannel(string channel)
+    {
+        return channel.StartsWith("COM", StringComparison.OrdinalIgnoreCase)
         || channel.StartsWith("/dev/", StringComparison.OrdinalIgnoreCase);
+    }
 
     [RelayCommand]
     private async Task ConnectAsync()
@@ -495,10 +503,25 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                 selection = "tcp";
                 SelectedChannel = "TCP";
             }
-            else if (selection is "udp" or "udpci")
+            else if (selection is "udp")
             {
                 selection = "udp";
                 SelectedChannel = "UDP";
+            }
+            else if (selection is "UDPCl")
+            {
+                selection = "udpcl";
+                SelectedChannel = "UDPCl";
+            }
+            else if (selection is "ws")
+            {
+                selection = "ws";
+                SelectedChannel = "WS";
+            }
+            else if (selection is "wss")
+            {
+                selection = "wss";
+                SelectedChannel = "WSS";
             }
             else
             {

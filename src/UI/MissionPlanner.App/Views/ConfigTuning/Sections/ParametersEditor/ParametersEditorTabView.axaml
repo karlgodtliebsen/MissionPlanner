@@ -109,11 +109,13 @@
                                     </MenuItem.Icon>
                                 </MenuItem>
 
-                                <!--
-                                TODO: Add back in when parameter profiles are implemented
                                 <MenuItem ToolTip.Tip="Parameter profiles"
                                 Command="{Binding LoadPreSavedCommand}"
-                                Header="Parameter profiles" />-->
+                                Header="Parameter profiles">
+                                    <MenuItem.Icon>
+                                        <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                         <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />

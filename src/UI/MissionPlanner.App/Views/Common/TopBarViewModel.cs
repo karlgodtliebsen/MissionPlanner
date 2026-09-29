@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Avalonia.Controls.Notifications;
 using Avalonia.Media.Imaging;
@@ -28,7 +28,10 @@ namespace MissionPlanner.App.Views.Common;
 public partial class TopBarViewModel : ViewModelBase
 {
     /// <summary>Shared diagnostic navigation, independent of command targeting.</summary>
-    public Views.Diagnostics.LiveTelemetryInspectorViewModel? Diagnostics { get; }
+    public Views.Diagnostics.LiveTelemetryInspectorViewModel? Diagnostics
+    {
+        get;
+    }
     public new WindowNotificationManager? NotificationManager
     {
         get; set;
@@ -239,7 +242,7 @@ public partial class TopBarViewModel : ViewModelBase
         {
             IsConnected = stateService.IsConnected;
             Channel = stateService.SelectedChannel;
-            ShowHost = Channel is "TCP" or "UDP" or "UDPCI";
+            ShowHost = Channel is "TCP" or "UDP" or "UDPCl" or "WS" or "WSS";
             ShowCom = !ShowHost;
             ShowVehicleName = !string.IsNullOrEmpty(stateService.VehicleName);
             Host = ShowHost ? stateService.SelectedHost : null;

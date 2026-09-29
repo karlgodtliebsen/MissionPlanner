@@ -114,6 +114,14 @@ public sealed class DiagnosticPanelViewTests
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
                     Assert.Equal(panel, model.SelectedPanel);
+                    Assert.Equal(model.ShowStatus,
+                        view.GetVisualDescendants().OfType<StatusTabItemView>().Single().IsEffectivelyVisible);
+                    var details = view.FindControl<ListBox>("InspectorDetailsList")!;
+                    var marker = view.FindControl<TextBox>("InspectorMarkerText")!;
+                    var detailsTop = details.TranslatePoint(default, view)!.Value.Y;
+                    var markerTop = marker.TranslatePoint(default, view)!.Value.Y;
+                    Assert.True(detailsTop + details.Bounds.Height <= markerTop,
+                        $"{panel}: details must stay above the marker field.");
                 }
                 Assert.Single(view.GetVisualDescendants().OfType<MessagesTabItemView>());
                 Assert.Single(view.GetVisualDescendants().OfType<StatusTabItemView>());
