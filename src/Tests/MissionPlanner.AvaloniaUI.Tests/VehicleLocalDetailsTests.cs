@@ -1,5 +1,9 @@
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.Core.Vehicles;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using MissionPlanner.App.Configuration;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Shared.Models.Vehicles.Models;
@@ -10,6 +14,24 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 
 public sealed class VehicleLocalDetailsTests
 {
+    [Fact]
+    public void ApplicationRegistersOnePersistentVehicleDetailsStore()
+    {
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["ApplicationSettings:Channel"] = "AUTO",
+            ["TransportEndpoint:Protocol"] = "udp"
+        }).Build();
+        var services = new ServiceCollection();
+        services.AddApplicationConfiguration(configuration);
+        var registration = Assert.Single(services, item => item.ServiceType == typeof(IVehicleLocalDetailsStore));
+        Assert.Equal(ServiceLifetime.Singleton, registration.Lifetime);
+        Assert.Equal(typeof(JsonVehicleLocalDetailsStore), registration.ImplementationType);
+        using var provider = services.BuildServiceProvider();
+        var store = provider.GetRequiredService<IVehicleLocalDetailsStore>();
+        Assert.Same(store, provider.GetRequiredService<IVehicleLocalDetailsStore>());
+    }
+
     internal static VehicleState State(byte id = 1, ulong uid = 42)
     {
         var state = new VehicleState(new VehicleId(id, 1), 0, 2, 3, 0, 0, 3,

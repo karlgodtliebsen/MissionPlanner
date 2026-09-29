@@ -347,6 +347,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         }
         if (SelectedVehicle is not { } vehicle)
         {
+            VehicleInfoText = "No vehicle information is available. Connect a vehicle to view its details.";
             if (Vehicles.Count > 0)
             {
                 SelectedVehicle = activeVehicle.VehicleId ?? Vehicles[0];
@@ -368,6 +369,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         displayedSession = snapshot.SessionStartedAt;
         var arming = diagnostics.GetArming(vehicle);
         var state = snapshot.State;
+        VehicleInfoText = MissionPlanner.App.Presentation.VehicleInfoFormatter.Format(state);
         RefreshSharedViews(snapshot, arming);
         var identity = $"{state?.DisplayName ?? vehicle.ToString()} · {vehicle} · {snapshot.Endpoint ?? "Endpoint unknown"} · {(snapshot.Disconnected ? "Disconnected" : state?.Connection.State.ToString() ?? "Unknown")}";
         ExportTarget = $"Inspecting/exporting: {identity} · Last diagnostic update: {snapshot.UpdatedAt:O}" +

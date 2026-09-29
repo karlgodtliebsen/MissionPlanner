@@ -1,5 +1,6 @@
 ﻿using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -169,6 +170,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IArduPilotRuntimeVerifier, TemporaryMavLinkBootloaderGateway>();
         services.TryAddTransient<ITextClipboardService, TextClipboardService>();
         services.TryAddSingleton<ISetupCompletionStore, JsonSetupCompletionStore>();
+        services.TryAddSingleton<IVehicleLocalDetailsStore, JsonVehicleLocalDetailsStore>();
 
         services.TryAddSingleton<IIntroductionContentLoader, IntroductionContentLoader>();
         services.TryAddSingleton<IExternalLinkLauncher, ExternalLinkLauncher>();

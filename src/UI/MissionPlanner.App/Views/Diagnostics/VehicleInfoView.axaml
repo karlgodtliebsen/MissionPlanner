@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MissionPlanner.App.Views.Diagnostics"
+             x:Class="MissionPlanner.App.Views.Diagnostics.VehicleInfoView"
+             x:DataType="local:LiveTelemetryInspectorViewModel">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="12" Margin="8">
+            <TextBlock Text="Vehicle Info" FontSize="20" FontWeight="SemiBold" />
+            <SelectableTextBlock Text="{Binding VehicleInfoText}" TextWrapping="Wrap"
+                                 AutomationProperties.Name="Vehicle information" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

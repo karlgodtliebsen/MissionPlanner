@@ -33,7 +33,10 @@ public sealed class DiagnosticPanelViewTests
         var active = Substitute.For<IActiveVehicleContext>();
         var id = new VehicleId(16, 1);
         var state = new VehicleState(id, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, DateTimeOffset.UtcNow,
-            VehicleMode.Unknown, false, null, null, null, null, null, null, null, null);
+            VehicleMode.Unknown, false, null, null, null, null, null, null, null, null)
+        {
+            LocalDetails = new MissionPlanner.Core.Vehicles.VehicleLocalDetails("Test product", "https://example.com/product", "Test nickname")
+        };
         active.VehicleId.Returns(id);
         active.State.Returns(state);
         var diagnostics = Substitute.For<IVehicleLiveDiagnostics>();
@@ -77,7 +80,7 @@ public sealed class DiagnosticPanelViewTests
                 var view = new LiveTelemetryInspectorView();
                 var window = new Window { Content = view, Width = 360, Height = 900 };
                 window.Show();
-                foreach (var destination in new[] { "Readiness", "Messages", "Inspector", "Messages", "Readiness", "Inspector" })
+                foreach (var destination in new[] { "Readiness", "Messages", "Inspector", "Vehicle Info", "Messages", "Readiness", "Inspector" })
                 {
                     model.OpenDestinationCommand.Execute(destination);
                     Dispatcher.UIThread.RunJobs();
@@ -87,6 +90,14 @@ public sealed class DiagnosticPanelViewTests
                     Assert.Contains("COM15", model.Header);
                     Assert.DoesNotContain("FirmwareSemanticVersion", model.TechnicalDetails);
                     Assert.InRange(view.Bounds.Width, 1, 360);
+                    if (destination == "Vehicle Info")
+                    {
+                        Assert.True(model.ShowVehicleInfo);
+                        Assert.Contains("Test nickname", model.VehicleInfoText);
+                        Assert.Contains("Test product", model.VehicleInfoText);
+                        Assert.Contains("https://example.com/product", model.VehicleInfoText);
+                        Assert.True(view.GetVisualDescendants().OfType<VehicleInfoView>().Single().IsEffectivelyVisible);
+                    }
                     SaveImage(view, destination);
                     var detach = view.GetVisualDescendants().OfType<Button>().Single(button => ReferenceEquals(button.Command, model.DetachCommand));
                     var close = view.GetVisualDescendants().OfType<Button>().Single(button => ReferenceEquals(button.Command, model.CloseCommand));

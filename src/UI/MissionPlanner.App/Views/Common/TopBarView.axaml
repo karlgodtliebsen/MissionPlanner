@@ -103,7 +103,7 @@
                         CornerRadius="10"
                         Classes="Tertiary"
                         Theme="{DynamicResource BorderlessButton}"
-                        ToolTip.Tip="Diagnostics: Readiness, Messages, Inspector and Logs"
+                        ToolTip.Tip="Diagnostics: Readiness, Messages, Inspector, Vehicle Info and Logs"
                         FontWeight="Normal"
                         Padding="5"
                         HorizontalAlignment="Right"
@@ -140,6 +140,16 @@
                                         Header="Live Telemetry Inspector">
                                     <MenuItem.Icon>
                                         <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem
+                                        Header="Vehicle Info"
+                                        ToolTip.Tip="Show saved vehicle details and reported identity"
+                                        AutomationProperties.Name="Vehicle Info"
+                                        Command="{Binding Diagnostics.OpenDestinationCommand}"
+                                        CommandParameter="Vehicle Info">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="CardAccountDetailsOutline" Width="30" Height="30" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                                 <MenuItem
