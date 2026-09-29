@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:NamingViewModel"
+<utilities:UserControlViewBase x:TypeArguments="sections:NamingViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -39,7 +39,7 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Configuration">
-                <Grid RowDefinitions="Auto,Auto">
+                <Grid RowDefinitions="Auto,*">
                     <Border Grid.Row="0" Padding="12">
                         <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
 
@@ -61,15 +61,36 @@
                             </Button>
                         </WrapPanel>
                     </Border>
-                    <Border Grid.Row="1" HorizontalAlignment="Stretch" Padding="25" Classes="SectionCard" MaxWidth="450"
-                            IsEnabled="{Binding CanEdit}">
-                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,130" RowSpacing="10" ColumnSpacing="10" HorizontalAlignment="Center">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Mav System ID" Classes="H4" />
-                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding MavSystemId, Mode=TwoWay}" Classes="H4" HorizontalContentAlignment="Right"/>
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Board Serial Number" Classes="H4" />
-                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding BoardSerialNumber, Mode=TwoWay}" Classes="H4" HorizontalContentAlignment="Right"/>
-                        </Grid>
-                    </Border>
+                    <ScrollViewer Grid.Row="1">
+                        <StackPanel Spacing="12">
+                            <Border HorizontalAlignment="Stretch" Padding="25" Classes="SectionCard" MaxWidth="450"
+                                    IsEnabled="{Binding CanEdit}">
+                                <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,130" RowSpacing="10" ColumnSpacing="10" HorizontalAlignment="Center">
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Mav System ID" Classes="H4" />
+                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding MavSystemId, Mode=TwoWay}" Classes="H4" HorizontalContentAlignment="Right"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Board Serial Number" Classes="H4" />
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding BoardSerialNumber, Mode=TwoWay}" Classes="H4" HorizontalContentAlignment="Right"/>
+                                </Grid>
+                            </Border>
+                            <Border Classes="SectionCard" Padding="25" MaxWidth="600" HorizontalAlignment="Stretch">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Local vehicle details" Classes="H4" />
+                                    <TextBlock Text="Product name" />
+                                    <TextBox Text="{Binding ProductName}" PlaceholderText="BETAFPV Pavo20 Pro Brushless Whoop Quadcopter" AutomationProperties.Name="Product name" MaxLength="500" />
+                                    <TextBlock Text="Product information URL" />
+                                    <TextBox Text="{Binding ProductUrl}" PlaceholderText="https://…" AutomationProperties.Name="Product information URL" MaxLength="2048" />
+                                    <TextBlock Text="Nickname" />
+                                    <TextBox Text="{Binding Nickname}" PlaceholderText="Pavo 20 Pro" AutomationProperties.Name="Vehicle nickname" MaxLength="200" />
+                                    <Button Classes="ToolbarIconButton" Command="{Binding SaveLocalDetailsCommand}" HorizontalAlignment="Center"
+                                            ToolTip.Tip="Save vehicle details on this device" AutomationProperties.Name="Save vehicle details">
+                                        <avalonia:MaterialIcon Kind="ContentSave" Width="24" Height="24" />
+
+                                    </Button>
+                                    <TextBlock Text="{Binding LocalDetailsStatus}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Grid>
             </TabItem>
         </TabControl>

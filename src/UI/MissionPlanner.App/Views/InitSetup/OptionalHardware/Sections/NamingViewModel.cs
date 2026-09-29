@@ -23,7 +23,8 @@ public partial class NamingViewModel(
     IDomainEventHub eventHub,
     ILogger<NamingViewModel> logger,
     IVehicleConnectionService connections,
-    IDialogService dialogs, INavigationService navigation) : OptionalHardwareBaseViewModel(logger, dispatcher, eventHub)
+    IDialogService dialogs, INavigationService navigation,
+    IVehicleLocalDetailsStore? localDetails = null) : OptionalHardwareBaseViewModel(logger, dispatcher, eventHub)
 {
     /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
     [RelayCommand]
@@ -80,6 +81,7 @@ public partial class NamingViewModel(
         {
             active = true;
             vehicle.Changed += OnVehicleChanged;
+            detailsSubscription = eventHub.SubscribeDomainEventAsync<MissionPlanner.Core.DomainEvents.VehicleStateUpdated>(OnDetailsStateUpdated);
         }
         await Dispatcher.DispatchAsync(LoadAsync);
     }
@@ -89,6 +91,9 @@ public partial class NamingViewModel(
     {
         active = false;
         vehicle.Changed -= OnVehicleChanged;
+        detailsSubscription?.Dispose();
+        detailsSubscription = null;
+        CanSaveLocalDetails = false;
         operation?.Cancel();
         CanEdit = false;
         return Task.CompletedTask;
@@ -97,6 +102,7 @@ public partial class NamingViewModel(
     /// <inheritdoc />
     public override void Dispose()
     {
+        detailsSubscription?.Dispose();
         active = false;
         vehicle.Changed -= OnVehicleChanged;
         operation?.Cancel();
@@ -122,6 +128,7 @@ public partial class NamingViewModel(
 
     private async Task LoadAsync()
     {
+        LoadLocalDetails(vehicle.State, force: true);
         operation?.Cancel();
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(vehicle.ConnectionCancellationToken);
         operation = lifetime;

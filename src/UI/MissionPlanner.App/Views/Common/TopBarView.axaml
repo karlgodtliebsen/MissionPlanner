@@ -41,6 +41,7 @@
                              HorizontalAlignment="Right"
                              VerticalAlignment="Center" 
                              Spacing="5" 
+                             Margin="0,0,5,0"
                              Orientation="Horizontal">
                     <Label Content="{Binding Channel}" FontSize="12"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
                     <Label Content="•"  FontSize="16" IsVisible="{Binding ShowHost}" VerticalAlignment="Stretch"  VerticalContentAlignment="Center"/>

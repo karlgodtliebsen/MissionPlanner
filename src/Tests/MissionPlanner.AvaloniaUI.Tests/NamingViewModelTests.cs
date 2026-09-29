@@ -14,6 +14,33 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 /// <summary>Verifies live identifier loading, confirmed writes and active-vehicle lifetime handling.</summary>
 public sealed class NamingViewModelTests
 {
+    [Fact]
+    public async Task LocalDetailsSaveWithoutParameterWritesAndRejectUnsafeUrls()
+    {
+        using var fixture = new Fixture();
+        fixture.Active.State.Returns(VehicleLocalDetailsTests.State());
+        await fixture.Model.ActivateAsync();
+        fixture.Model.ProductName = "BETAFPV Pavo20 Pro";
+        fixture.Model.Nickname = "Pavo 20 Pro";
+        fixture.Model.ProductUrl = "javascript:alert(1)";
+        fixture.Model.SaveLocalDetailsCommand.Execute(null);
+        Assert.Contains("absolute", fixture.Model.LocalDetailsStatus);
+        var key = VehicleLocalDetails.GetKey(fixture.Active.State!.Identity.Firmware)!;
+        Assert.Null(fixture.Details.Get(key));
+        fixture.Model.ProductUrl = "https://example.com/pavo";
+        fixture.Model.SaveLocalDetailsCommand.Execute(null);
+        Assert.Equal("Pavo 20 Pro", fixture.Details.Get(key)!.Nickname);
+        Assert.Empty(fixture.Writes);
+        await fixture.Model.RefreshCommand.ExecuteAsync(null);
+        Assert.Equal("Pavo 20 Pro", fixture.Model.Nickname);
+        fixture.Active.State.Returns(VehicleLocalDetailsTests.State(uid: 43));
+        await fixture.Model.RefreshCommand.ExecuteAsync(null);
+        Assert.Empty(fixture.Model.Nickname);
+        fixture.Active.State.Returns(VehicleLocalDetailsTests.State(uid: 0));
+        await fixture.Model.RefreshCommand.ExecuteAsync(null);
+        Assert.False(fixture.Model.SaveLocalDetailsCommand.CanExecute(null));
+    }
+
     /// <summary>Activation explicitly reads both values; unchanged values are never written.</summary>
     [Fact]
     public async Task ActivationLoadsFreshValuesAndApplyStartsDisabled()
@@ -308,6 +335,7 @@ public sealed class NamingViewModelTests
         internal readonly IVehicleConnectionService Connections = Substitute.For<IVehicleConnectionService>();
         internal readonly MissionPlanner.App.Utilities.Dialogs.IDialogService Dialogs = Substitute.For<MissionPlanner.App.Utilities.Dialogs.IDialogService>();
         internal readonly NamingViewModel Model;
+        internal readonly MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services.JsonVehicleLocalDetailsStore Details = new(null);
         internal float CurrentSystem = 1;
         internal float CurrentSerial = 42;
         internal bool ConfirmReads = true;
@@ -353,7 +381,7 @@ public sealed class NamingViewModelTests
                     }
                     return true;
                 });
-            Model = new(Active, Parameters, Registry, new InlineDispatcher(), Substitute.For<IDomainEventHub>(), NullLogger<NamingViewModel>.Instance, Connections, Dialogs, Substitute.For<INavigationService>());
+            Model = new(Active, Parameters, Registry, new InlineDispatcher(), Substitute.For<IDomainEventHub>(), NullLogger<NamingViewModel>.Instance, Connections, Dialogs, Substitute.For<INavigationService>(), Details);
         }
 
         internal void Store(string name, float value)
