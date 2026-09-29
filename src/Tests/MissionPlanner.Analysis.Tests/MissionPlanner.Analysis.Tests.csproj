@@ -5,7 +5,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="../../../TestData/MissionPlanner-FFT-Synthetic-TestData/**/*.csv;../../../TestData/MissionPlanner-FFT-Synthetic-TestData/**/*.json;../../../TestData/MissionPlanner-FFT-Synthetic-TestData/SHA256SUMS.txt" Link="TestData/SuppliedFft/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../TestData/MissionPlanner-FFT-Synthetic-TestData/**/*.csv;../../../TestData/MissionPlanner-FFT-Synthetic-TestData/**/*.json;../../../TestData/MissionPlanner-FFT-Synthetic-TestData/SHA256SUMS.txt;../../../TestData/MissionPlanner-FFT-Synthetic-TestData/README.md" Link="TestData/SuppliedFft/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../../TestData/Frequency/Synthetic/*.json" Link="TestData/Frequency/Synthetic/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit.v3" />

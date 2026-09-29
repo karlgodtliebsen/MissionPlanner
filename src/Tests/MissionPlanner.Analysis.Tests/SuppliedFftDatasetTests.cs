@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using MissionPlanner.Analysis.Frequency;
 using MissionPlanner.Analysis.Vibration;
@@ -12,15 +13,21 @@ public sealed class SuppliedFftDatasetTests
 {
     private static readonly string FixtureRoot = Path.Combine(AppContext.BaseDirectory, "TestData", "SuppliedFft");
 
-    /// <summary>Ensures the complete pack is copied unchanged and agrees with its declared sampling contract.</summary>
+    /// <summary>Checks fixture content integrity, allowing checkout newline conversion, and the sampling contract.</summary>
     [Fact]
     public void ManifestAndChecksumsDescribeAllSixteenUsableDatasets()
     {
         foreach (var line in File.ReadLines(Path.Combine(FixtureRoot, "SHA256SUMS.txt")))
         {
             var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            using var stream = File.OpenRead(Path.Combine(FixtureRoot, parts[1]));
-            Assert.Equal(parts[0], Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant());
+            var content = File.ReadAllText(Path.Combine(FixtureRoot, parts[1])).Replace("\r\n", "\n");
+            // The supplied hashes use CRLF for CSV, LF for JSON/Markdown. Git may convert either.
+            if (parts[1].EndsWith(".csv", StringComparison.Ordinal))
+            {
+                content = content.Replace("\n", "\r\n");
+            }
+            var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(content))).ToLowerInvariant();
+            Assert.True(parts[0] == hash, $"Fixture content checksum: {parts[1]}");
         }
         using var manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(FixtureRoot, "manifest.json")));
         var datasets = manifest.RootElement.GetProperty("datasets").EnumerateArray().ToArray();
@@ -56,6 +63,11 @@ public sealed class SuppliedFftDatasetTests
         var data = Load(name);
         var spectrum = Spectrum(data);
         var peaks = Peaks(spectrum);
+        if (data.Expected.TryGetProperty("nyquistHz", out var nyquist))
+        {
+            Assert.Equal(nyquist.GetDouble(), spectrum.NyquistHz);
+            Assert.Equal(nyquist.GetDouble(), spectrum.Bins[^1].FrequencyHz);
+        }
         var tolerance = data.Expected.TryGetProperty("frequencyToleranceHz", out var value)
             ? value.GetDouble() : spectrum.ResolutionHz;
         foreach (var frequency in ExpectedTones(data.Expected))
@@ -210,8 +222,9 @@ public sealed class SuppliedFftDatasetTests
         }
         var injected = elevated.Expected.GetProperty("injectedFault");
         var differences = new SpectrumComparer().Compare(baseline, current);
-        foreach (var hz in injected.GetProperty("strongHarmonicsHz").EnumerateArray().Select(v => v.GetDouble())
-            .Prepend(injected.GetProperty("fundamentalHz").GetDouble()))
+        var fundamental = injected.GetProperty("fundamentalHz").GetDouble();
+        Assert.True(Amplitude(current, fundamental) > Amplitude(baseline, fundamental));
+        foreach (var hz in injected.GetProperty("strongHarmonicsHz").EnumerateArray().Select(v => v.GetDouble()))
         {
             var row = differences.MinBy(d => Math.Abs(d.FrequencyHz - hz))!;
             Assert.True(row.Current > 2 * row.Baseline, $"Elevated evidence at {hz} Hz");

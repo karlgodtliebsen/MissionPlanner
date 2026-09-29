@@ -272,6 +272,31 @@ already applied to the logged signal, and does not recommend or write FC paramet
 frequency/amplitude metadata; binary batch fixtures are constructed in tests.
 See [the fixture guide](../TestData/Frequency/README.md). No large logs are committed.
 
+The supplied [FFT synthetic fixture pack](../TestData/MissionPlanner-FFT-Synthetic-TestData/README.md)
+remains in `TestData/MissionPlanner-FFT-Synthetic-TestData`. The analysis test project
+links and copies its CSV, metadata, README and checksum files into its output directory;
+the source data does not need moving into the test project. `SuppliedFftDatasetTests`
+adds 18 regression cases covering all 16 datasets, using the actual CSV samples rather
+than regenerating the signals. It also checks sample counts, finite values, uniform
+timestamps and content checksums. Checksum verification restores the pack's original
+line endings (CRLF for CSV, LF for JSON/Markdown), allowing Git checkout conversion.
+
+Stationary comparisons use 4096-sample Hann windows with 50% overlap and mean removal;
+time-localized checks use 512-sample windows with 50% overlap. Frequency expectations
+come from the supplied metadata or the STFT bin spacing. Checks cover peaks, harmonic
+families and negative controls, DC removal, near-Nyquist frequencies, sweep ridges,
+intermittent energy, measured CSV RPM correlation, localized amplification,
+motor-3 harmonic increases against the baseline, and relative axis coupling.
+The near-harmonic fixture checks observed peaks without imposing a binary family
+classification. The 137 Hz source in dataset 11 has only two observed orders, so it
+must retain its peaks without meeting the detector's three-member series threshold.
+Dataset 10 has no measured RPM: its resonance test explicitly uses the known
+synthetic sweep as excitation reference. These are evidence tests, not validation
+of real-world fault diagnoses or DataFlash ingestion; the CSV loader is test-only.
+
+Validation: `dotnet test src/Tests/MissionPlanner.Analysis.Tests/MissionPlanner.Analysis.Tests.csproj --no-restore`
+passes all **64 tests**, including the **18 supplied-fixture cases**.
+
 Automated tests cover numerical models, regular and batch parsing, malformed inputs,
 gap handling, metadata-backed static/dynamic behavior, read-only saved import,
 unit mismatch, view lifetime cancellation, evidence export and compiled view layout
