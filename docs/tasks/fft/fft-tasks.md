@@ -4,14 +4,26 @@ I would split it into staged tasks so Codex does not mix the DSP/domain work wit
 
 ## FFT / Vibration Analysis — Codex task set
 
+### Execution status — 2026-09-29
+
+Tasks 1–6 are implemented for the first review. See
+[FftAnalysisDesign.md](../../FftAnalysisDesign.md) for the legacy audit, numerical
+contracts, implementation choices and limitations. The standalone analysis project
+has no Avalonia, MAVLink or DataFlash dependency. Tasks 7–15 remain pending this review.
+
+Validation: `dotnet test` on `MissionPlanner.Analysis.Tests` passed all 37 tests.
+`dotnet build src/MissionPlanner.slnx --no-restore` succeeded with 0 errors and 55
+warnings in existing projects. No new analysis-project warnings or CS1591/CS1587
+warnings were reported. The full solution test suite and hardware tests were not run.
+
 ### Task 1 — Audit existing Fourier/FFT functionality
 
-**Goal:** Establish what already exists in MissionPlanner Next Gen and in `src-v.1.38` before implementing anything.
+**Goal:** Establish what already exists in MissionPlanner Next Gen and in the original [ArduPilot/MissionPlanner repository](https://github.com/ArduPilot/MissionPlanner) before implementing anything. The local `src-v.1.38` directory has been deleted; see [legacy source guidance](../../LEGACY_SOURCE.md).
 
 **Instructions for Codex:**
 
 * Search the current solution for FFT, Fourier, vibration, IMU batch sampling, harmonic notch, spectrogram, gyro and accelerometer analysis.
-* Inspect equivalent functionality in `src-v.1.38`.
+* Inspect equivalent functionality in the upstream ArduPilot/MissionPlanner repository and record the inspected commit or tag. Historical audit results may retain the exact Git revision of the former local snapshot.
 * Identify:
 
   * existing FFT implementation/library;

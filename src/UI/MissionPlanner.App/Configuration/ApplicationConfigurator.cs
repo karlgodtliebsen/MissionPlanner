@@ -1,6 +1,5 @@
 ﻿using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
-using MissionPlanner.Core.Vehicles.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -66,6 +65,7 @@ using MissionPlanner.Core.Setup.Advanced.Signing;
 using MissionPlanner.Core.Setup.Advanced.Warnings;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Betaflight;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
@@ -241,6 +241,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FlightPlannerMissionMapViewModel>();
         services.TryAddTransient<AIViewModel>();
         services.TryAddTransient<FlightPlannerPage>();
+        services.TryAddTransient<FlightPlannerViewModel>();
+
         services.TryAddTransient<PreferencesViewModel>();
         services.TryAddTransient<PreferencesPage>();
         services.TryAddTransient<SimulationPage>();

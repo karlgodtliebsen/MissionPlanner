@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Core/">
+    <Project Path="Core/MissionPlanner.Analysis/MissionPlanner.Analysis.csproj" />
     <Project Path="Core/MissionPlanner.Core/MissionPlanner.Core.csproj" />
     <Project Path="Core/MissionPlanner.Firmware/MissionPlanner.Firmware.csproj" />
     <Project Path="Core/MissionPlanner.Maps/MissionPlanner.Maps.csproj" />
@@ -58,6 +59,7 @@
     <File Path="../.github/workflows/dotnet-build.yml" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Tests/MissionPlanner.Analysis.Tests/MissionPlanner.Analysis.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.AvaloniaUI.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.BrowserBridge.Tests/MissionPlanner.BrowserBridge.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj" />

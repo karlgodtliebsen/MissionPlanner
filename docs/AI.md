@@ -18,6 +18,11 @@ architecture and discuss the implementation before changing architectural bounda
 
 # Read First
 
+The original Mission Planner source is available at
+[ArduPilot/MissionPlanner](https://github.com/ArduPilot/MissionPlanner). The former
+local `src-v.1.38` directory has been deleted. For historical task paths and version
+provenance, follow [LEGACY_SOURCE.md](LEGACY_SOURCE.md).
+
 Before implementing architectural changes, read:
 
 1. docs/DESIGN_CONCEPTS.md

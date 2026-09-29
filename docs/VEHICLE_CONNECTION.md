@@ -255,7 +255,9 @@ Controllers that do not send an exact board banner require manual catalog select
 Verification: numeric comparison, shared-board variants, non-ArduPilot skip, missing target,
 catalog failure, cancellation, repeated-update suppression and newer-release notification
 have automated tests. Installer tests verify exact Stable target/version/variant selection
-without firmware preparation. The original src-v.1.38 reference tree is absent in this checkout.
+without firmware preparation. The original local `src-v.1.38` reference tree was deleted;
+use [ArduPilot/MissionPlanner](https://github.com/ArduPilot/MissionPlanner) for legacy
+source reference, following [LEGACY_SOURCE.md](LEGACY_SOURCE.md).
 
 ## Continuous connection health
 

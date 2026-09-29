@@ -23,7 +23,7 @@ Do not duplicate those documents here.
 - `src/Core/MissionPlanner.Core`: domain models, observations, application/domain services.
 - `src/UI/AvaloniaUI/MissionPlanner.AvaloniaUI.App`: Avalonia views and ViewModels.
 - `src/Tests`: unit, simulator, smoke, and hardware integration tests.
-- `src-v.1.38`: original Mission Planner source for behavioral reference only; do not modify it unless explicitly requested.
+- Original Mission Planner: [ArduPilot/MissionPlanner on GitHub](https://github.com/ArduPilot/MissionPlanner), for behavioral reference only. The local `src-v.1.38` directory was deleted. Resolve historical paths using [LEGACY_SOURCE.md](LEGACY_SOURCE.md); do not assume a local checkout exists.
 
 ## Working rules
 

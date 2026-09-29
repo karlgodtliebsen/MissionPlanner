@@ -2,6 +2,15 @@
 
 # MissionPlanner Design Concepts
 
+## Offline numerical analysis
+
+`MissionPlanner.Analysis` is the independent frequency/vibration domain described in
+[FftAnalysisDesign.md](FftAnalysisDesign.md). It accepts numerical samples, sample rates
+and options without referencing Core, MAVLink, DataFlash or Avalonia. Results retain
+immutable measurements separately from qualified interpretations. Later application
+adapters own log decoding, gap handling, units and background execution; presentation
+does not own DSP. Application wiring remains deferred at the initial domain review.
+
 
 
 ## Introduction

@@ -2,6 +2,11 @@
 
 The new application lives in `src/`;
 
+The original Mission Planner source is on
+[GitHub](https://github.com/ArduPilot/MissionPlanner); the local `src-v.1.38` tree
+has been deleted. See [LEGACY_SOURCE.md](LEGACY_SOURCE.md) for how to resolve
+legacy paths in older tasks and preserve historical audit provenance.
+
 Documentation lives in `docs/` and is organized into three categories: core documents, subsystem references, and point-in-time reviews.
 
 
@@ -12,6 +17,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [DESIGN_CONCEPTS.md](DESIGN_CONCEPTS.md) | Architecture philosophy: layers, DDD, pipeline, immutable state, UI patterns |
 | [ARCHITECTURE_DECISION_RECORDS.md](ARCHITECTURE_DECISION_RECORDS.md) | ADRs, naming conventions, data flow, future direction |
 | [FEATURES.md](FEATURES.md) | Feature status per area (domain, UI screens): implemented vs missing |
+| [LEGACY_SOURCE.md](LEGACY_SOURCE.md) | Upstream legacy source and historical path/version conventions |
 | [MAPS.md](MAPS.md) | Map catalog, policy, attribution, offline, and renderer architecture |
 | [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md) | Manual verification matrix for the current Avalonia desktop target |
 | [MISSIONS.md](MISSIONS.md#mission-map-menu-feature-guide) | Mission-map menu ownership, safety, formats, and known limitations |
@@ -23,6 +29,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [VEHICLE_CONNECTION.md](VEHICLE_CONNECTION.md) | Connection model, transports & resilience, telemetry streams, cleanup, test practices |
 | [MISSIONS.md](MISSIONS.md) | Mission domain, planner UI, files, validation, upload/download, execution monitoring |
 | [PARAMETERS.md](PARAMETERS.md) | Parameter request/set, bulk streaming, storage, metadata system |
+| [FftAnalysisDesign.md](FftAnalysisDesign.md) | FFT audit, standalone frequency/vibration domain, numerical contracts and review boundary |
 | [MAVLINK.md](MAVLINK.md) | Official dialect provenance, generated coverage, and maintenance workflow |
 | [MAVLINK_DOMAIN_PROMOTION.md](MAVLINK_DOMAIN_PROMOTION.md) | Rules and machine-readable ownership catalog for domain promotion |
 | [MAVFTP.md](MAVFTP.md) | MAVLink filesystem streaming, correlation, retries, and limitations |

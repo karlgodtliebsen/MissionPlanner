@@ -1,5 +1,21 @@
 # Domain
 
+Historical `src-v.1.38/...` references in this feature inventory refer to the original
+[Mission Planner repository](https://github.com/ArduPilot/MissionPlanner), not a local
+source tree. See [LEGACY_SOURCE.md](LEGACY_SOURCE.md) for path and version conventions.
+
+## FFT / vibration analysis
+
+Implemented for domain review: standalone `MissionPlanner.Analysis` with normalized
+one-sided radix-two FFT, Hann/rectangular windows, DC removal, configurable peak
+thresholds, harmonic evidence, overlapping STFT and conservative vibration assessments.
+Deterministic synthetic tests cover numerical correctness and edge cases. Numerical
+observations remain available behind each assessment. See [FftAnalysisDesign.md](FftAnalysisDesign.md).
+
+The existing FFT setup page still uses its earlier sample-text DFT service. DataFlash
+IMU/batch integration, RPM correlation, resonance detection, new FFT/spectrogram UI,
+baseline comparison and filter analysis/simulation remain pending the Tasks 1–6 review.
+
 ## Map source architecture
 
 Map subsystem status is tracked separately as **Infrastructure implemented**, **Runtime integrated**, and **Manually verified**. Catalog, policy, credentials, cache, attribution, pack, and resolution infrastructure is implemented. Built-in raster, blank, installed raster MBTiles, supported hosted raster, and custom XYZ/TMS are runtime integrated. Interactive platform verification remains Not run unless recorded in [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md). Vector/PMTiles remains deferred under ADR-0006. See [MAPS.md](MAPS.md).
