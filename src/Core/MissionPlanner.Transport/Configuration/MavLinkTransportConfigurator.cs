@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -28,6 +28,7 @@ public static class MavLinkTransportConfigurator
         services.TryAddTransient<ISerialMavLinkTransport, SerialMavLinkTransport>();
         services.TryAddTransient<IUdpMavLinkTransport, UdpMavLinkTransport>();
         services.TryAddTransient<ITcpMavLinkTransport, TcpMavLinkTransport>();
+        services.TryAddTransient<IWebSocketMavLinkTransport, WebSocketMavLinkTransport>();
 
         return services;
     }

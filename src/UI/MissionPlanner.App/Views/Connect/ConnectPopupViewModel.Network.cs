@@ -1,10 +1,89 @@
 using System.Net;
 using CommunityToolkit.Mvvm.ComponentModel;
 
+using MissionPlanner.Core.Vehicles;
+using MissionPlanner.Core.ConfigTuning.Planner;
 namespace MissionPlanner.App.Views.Connect;
 
 public partial class ConnectPopupViewModel
 {
+    private readonly IPlannerSettingsService? plannerSettings;
+
+    private Task<VehicleConnectionResult> ConnectNetworkAsync()
+    {
+        var settings = new NetworkConnectionSettings
+        {
+            Channel = SelectedChannel!,
+            RemoteHost = SelectedHost?.Trim() ?? "",
+            RemotePort = int.TryParse(SelectedPort, out var remote) ? remote : 14560,
+            LocalPort = ShowUdpClient ? int.Parse(ClientLocalPort) : int.TryParse(SelectedPort, out var local) ? local : 14550,
+            LocalBindAddress = LocalBindAddress.Trim(),
+            WebSocketUrl = WebSocketUrl.Trim()
+        };
+        return connectionService.ConnectNetworkAsync(settings,
+            new Progress<string>(message => Dispatcher.Dispatch(() =>
+            {
+                if (IsConnecting)
+                {
+                    StatusMessage = message;
+                }
+            })), connectionCancellation?.Token ?? CancellationToken.None);
+    }
+
+    private void LoadNetworkDrafts()
+    {
+        if (plannerSettings is null)
+        {
+            return;
+        }
+        foreach (var (channel, draft) in plannerSettings.Current.Connection.NetworkDrafts)
+        {
+            var key = channel.Equals("UDPCL", StringComparison.OrdinalIgnoreCase) ? "UDPCl" : channel.ToUpperInvariant();
+            networkDrafts[key] = (draft.Host, draft.Port, draft.Bind, draft.LocalPort, draft.Url);
+        }
+    }
+
+    private async Task SaveNetworkDraftsAsync()
+    {
+        if (SelectedChannel is "TCP" or "UDP" or "UDPCl" or "WS" or "WSS")
+        {
+            networkDrafts[SelectedChannel] = (SelectedHost, SelectedPort, LocalBindAddress, ClientLocalPort, WebSocketUrl);
+        }
+        if (plannerSettings is null)
+        {
+            return;
+        }
+        var drafts = new Dictionary<string, PlannerNetworkDraft>();
+        foreach (var (key, value) in networkDrafts.Where(pair => pair.Key is "TCP" or "UDP" or "UDPCl" or "WS" or "WSS"))
+        {
+            // Do not export/persist access tokens inside ordinary planner preferences.
+            var url = Uri.TryCreate(value.Url, UriKind.Absolute, out var uri)
+                && string.IsNullOrEmpty(uri.Query) && string.IsNullOrEmpty(uri.UserInfo)
+                ? value.Url : key == "WSS" ? "wss://127.0.0.1:8765/" : "ws://127.0.0.1:8765/";
+            drafts[key] = new() { Host = value.Host, Port = value.Port, Bind = value.Bind, LocalPort = value.LocalPort, Url = url };
+        }
+        var current = plannerSettings.Current;
+        var result = await plannerSettings.SaveAsync(current with { Connection = current.Connection with { NetworkDrafts = drafts } });
+        if (!result.Success)
+        {
+            throw new IOException("Connection settings could not be saved.");
+        }
+    }
+
+    /// <inheritdoc />
+    public override async void OK()
+    {
+        try
+        {
+            await SaveNetworkDraftsAsync();
+            base.OK();
+        }
+        catch
+        {
+            StatusMessage = "Could not save connection settings. Please try again.";
+        }
+    }
+
     /// <summary>Optional local interface for UDP sockets; blank means all interfaces.</summary>
     [ObservableProperty]
     public partial string LocalBindAddress { get; set; } = "";
@@ -39,8 +118,8 @@ public partial class ConnectPopupViewModel
     public string TransportHelp => SelectedChannel switch
     {
         "UDP" => "Listen for MAVLink on a local UDP port. A vehicle heartbeat is required before connecting.",
-        "UDPCl" => "Send MAVLink to a remote UDP listener and receive replies on the same local socket. UDP Client transport is not implemented yet.",
-        "WS" or "WSS" => "Connect to a bridge carrying raw binary MAVLink using a full ws:// or wss:// URL. WebSocket transport is not implemented yet.",
+        "UDPCl" => "Send MAVLink to a remote UDP listener and receive replies on the same local socket.",
+        "WS" or "WSS" => "Connect to a bridge carrying raw binary MAVLink using a full ws:// or wss:// URL.",
         "TCP" => "Connect to a remote TCP MAVLink endpoint.",
         "AUTO" => "Use an available serial controller, or detect an ArduPilot UDP heartbeat when no serial port is available.",
         _ => "Select the controller's serial port and baud rate."

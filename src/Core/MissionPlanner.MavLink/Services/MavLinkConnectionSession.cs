@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.MavFtp.Abstractions;
@@ -65,6 +65,22 @@ public sealed class MavLinkConnectionSession(
         isDisposed = true;
         await CancellationTokenSource.CancelAsync().ConfigureAwait(false);
 
+        try
+        {
+            await connectionTask.WaitAsync(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (TimeoutException)
+        {
+            logger.LogWarning("Connection task did not stop within five seconds; disposing its transport.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogDebug(ex, "Connection startup ended before session disposal.");
+        }
+
         // Stop and dispose services
         try
         {
@@ -95,6 +111,7 @@ public sealed class MavLinkConnectionSession(
         {
             logger.LogDebug(ex, "Non Critical Failure Disposing client ");
         }
+        CancellationTokenSource.Dispose();
     }
 
     /// <summary>
@@ -102,6 +119,10 @@ public sealed class MavLinkConnectionSession(
     /// </summary>
     public async Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
+        if (isDisposed)
+        {
+            return;
+        }
         try
         {
             // Stop background tasks gracefully. Cancel first; otherwise the wait below just waits for the timeout.

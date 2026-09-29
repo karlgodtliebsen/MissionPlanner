@@ -12,6 +12,9 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// </summary>
 public interface IVehicleConnectionSession : IAsyncDisposable
 {
+    /// <summary>Opens an explicitly configured network connection through the shared pipeline.</summary>
+    Task<CancellationTokenSource> CreateNetworkConnection(NetworkConnectionSettings settings, byte gcsSystemId = 255, CancellationToken cancellationToken = default);
+
     /// <summary>Gets the protocol of the transport being acquired or currently owned.</summary>
     string? ActiveTransportProtocol => null;
 

@@ -27,7 +27,9 @@ public partial class VehicleConnectionService
             {
                 deadline.Token.ThrowIfCancellationRequested();
                 progress?.Report($"Reconnecting to {target.Description} (attempt {attempt} of 3). Waiting for a vehicle heartbeat…");
-                result = target.ConnectionType switch
+                result = target.Network is { } network
+                    ? await ConnectNetworkCoreAsync(network, false, progress, deadline.Token).ConfigureAwait(false)
+                    : target.ConnectionType switch
                 {
                     "Serial" => await ConnectSerialExclusiveAsync(target.Address!, target.BaudRate, deadline.Token).ConfigureAwait(false),
                     "TCP" => await ConnectTcpCoreAsync(target.Address!, target.Port, false, deadline.Token).ConfigureAwait(false),

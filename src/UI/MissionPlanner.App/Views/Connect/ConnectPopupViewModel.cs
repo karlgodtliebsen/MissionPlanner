@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using System.Net;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -26,6 +27,8 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     private readonly IVehicleConnectionService connectionService;
     private readonly IList<IDisposable> disposables = [];
     private readonly ApplicationStateService stateService;
+    private PropertyChangedEventHandler? stateChanged;
+    private CancellationTokenSource? connectionCancellation;
 
     /// <summary>
     /// Provides the public API for Channels.
@@ -194,6 +197,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     /// <param name="domainEventHub"></param>
     /// <param name="logger"></param>
     /// <param name="serialDevices">Current serial devices with USB identity for excluding non-telemetry endpoints.</param>
+    /// <param name="plannerSettings">Persistence for individual network endpoints.</param>
     /// <param name="udpDiscovery">Passive UDP discovery used only when the user connects with AUTO.</param>
     public ConnectPopupViewModel(
         ISerialPortDiscoveryService portDiscovery,
@@ -203,13 +207,16 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
         IOptionsMonitor<ApplicationOptions> options,
         ILogger<ConnectPopupViewModel> logger,
         IFirmwareSerialDeviceCatalog? serialDevices = null,
-        IUdpVehicleDiscovery? udpDiscovery = null)
+        IUdpVehicleDiscovery? udpDiscovery = null,
+        IPlannerSettingsService? plannerSettings = null)
     {
         this.portDiscovery = portDiscovery;
         this.serialDevices = serialDevices;
         this.udpDiscovery = udpDiscovery;
         this.connectionService = connectionService;
         this.stateService = stateService;
+        this.plannerSettings = plannerSettings;
+        LoadNetworkDrafts();
         configuredChannels = options.CurrentValue.Channels.ToList();
         Channels = new ObservableRangeCollection<string>(configuredChannels);
         BaudRates = new ObservableRangeCollection<string>(options.CurrentValue.BaudRates);
@@ -220,7 +227,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
         }
         SelectedHost = options.CurrentValue.Host;
         SelectedPort = options.CurrentValue.Port;
-        SelectedChannel = stateService.SelectedChannel;
+        SelectedChannel = string.Equals(stateService.SelectedChannel, "UDPCL", StringComparison.OrdinalIgnoreCase) ? "UDPCl" : stateService.SelectedChannel;
         defaultChannel = options.CurrentValue.Channel;
         SelectedBaudRate = stateService.SelectedBaudRate;
         IsConnected = stateService.IsConnected;
@@ -248,14 +255,14 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     private void OnStateServiceChanged()
     {
         // Subscribe to state changes
-        stateService.PropertyChanged += (sender, args) =>
+        stateChanged = (sender, args) =>
         {
             switch (args.PropertyName)
             {
                 case nameof(ApplicationStateService.SelectedChannel):
                     if (SelectedChannel != stateService.SelectedChannel)
                     {
-                        SelectedChannel = stateService.SelectedChannel;
+                        SelectedChannel = string.Equals(stateService.SelectedChannel, "UDPCL", StringComparison.OrdinalIgnoreCase) ? "UDPCl" : stateService.SelectedChannel;
                         ShowSelectedHost = SelectedChannel is "TCP" or "UDP" or "UDPCl" or "WS" or "WSS";
                         ShowSelectedCom = !ShowSelectedHost;
                     }
@@ -311,6 +318,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                     break;
             }
         };
+        stateService.PropertyChanged += stateChanged;
     }
 
 
@@ -464,17 +472,8 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
             StatusMessage = NetworkValidationMessage;
             return;
         }
-        if (SelectedChannel is "UDPCl" or "WS" or "WSS")
-        {
-            StatusMessage = "This transport is not implemented yet. No connection was attempted.";
-            return;
-        }
-        if (ShowUdpListen && !string.IsNullOrWhiteSpace(LocalBindAddress))
-        {
-            StatusMessage = "Custom UDP bind addresses are not implemented yet. Leave the bind address blank to listen on all interfaces.";
-            return;
-        }
-
+        connectionCancellation?.Dispose();
+        connectionCancellation = new CancellationTokenSource();
         IsConnecting = true;
         StatusMessage = "Connecting...";
         if (NotificationManager is not null)
@@ -485,6 +484,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
         try
 
         {
+            await SaveNetworkDraftsAsync();
             var selection = SelectedChannel.ToLowerInvariant();
             IPEndPoint? discoveredUdp = null;
 
@@ -563,6 +563,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                 "udp" => discoveredUdp is null ? await ConnectUdpAsync()
                     : await connectionService.ConnectUdpAsync(int.TryParse(SelectedPort, out var udpPort) ? udpPort : 14550,
                         discoveredUdp.Address.ToString(), discoveredUdp.Port),
+                "udpcl" or "ws" or "wss" => await ConnectNetworkAsync(),
                 var _ => new VehicleConnectionResult(false, null, null, "Unsupported connection type")
             };
             await Task.Yield();
@@ -691,17 +692,9 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
         return await connectionService.ConnectTcpAsync(host, portNumber);
     }
 
-    private async Task<VehicleConnectionResult> ConnectUdpAsync()
+    private Task<VehicleConnectionResult> ConnectUdpAsync()
     {
-        // For UDP, use the baud rate field as the local port (or a separate field in real UI)
-        if (!int.TryParse(SelectedPort, out var localPort))
-        {
-            localPort = 14550; // Default UDP port
-        }
-        await Task.Yield();
-        var result = await connectionService.ConnectUdpAsync(localPort);
-        await Task.Yield();
-        return result;
+        return ConnectNetworkAsync();
     }
 
     private async Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
@@ -745,13 +738,17 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     public async ValueTask DisposeAsync()
     {
         Dispose();
-        await connectionService.DisposeAsync().ConfigureAwait(false);
+        await Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        UpdateConnectionStatus();
+        if (IsConnecting)
+        {
+            connectionCancellation?.Cancel();
+        }
+        stateService.PropertyChanged -= stateChanged;
         foreach (var disposable in disposables)
         {
             disposable.Dispose();

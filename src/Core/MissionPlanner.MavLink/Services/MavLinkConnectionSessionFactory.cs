@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
@@ -13,7 +13,8 @@ namespace MissionPlanner.MavLink.Services;
 /// </summary>
 /// <param name="domainFactory"></param>
 /// <param name="logger"></param>
-public sealed class MavLinkConnectionSessionFactory(IDomainFactory domainFactory, ILogger<MavLinkConnectionSessionFactory> logger) :
+/// <param name="crcProvider">CRC metadata for session-owned GCS heartbeats.</param>
+public sealed partial class MavLinkConnectionSessionFactory(IDomainFactory domainFactory, ILogger<MavLinkConnectionSessionFactory> logger, IMavLinkCrcExtraProvider crcProvider) :
     IMavLinkConnectionSessionFactory
 {
     /// <summary>

@@ -8,6 +8,9 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// </summary>
 public interface IVehicleConnectionService : IAsyncDisposable
 {
+    /// <summary>Connects using explicit UDP listener, UDP client, or WebSocket settings.</summary>
+    Task<VehicleConnectionResult> ConnectNetworkAsync(NetworkConnectionSettings settings, IProgress<string>? progress = null, CancellationToken cancellationToken = default);
+
     /// <summary>Captures the current connection's exact endpoint/settings before an identifier change.</summary>
     /// <returns>A reconnect target, or null when there is no active connection.</returns>
     VehicleReconnectTarget? CaptureReconnectTarget();

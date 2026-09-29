@@ -3,6 +3,9 @@
 /// <summary>Configures connection defaults without storing credentials.</summary>
 public sealed record PlannerConnectionSettings
 {
+    /// <summary>Per-transport endpoint fields, independent of the default connection selection.</summary>
+    public Dictionary<string, PlannerNetworkDraft> NetworkDrafts { get; init; } = new();
+
     /// <summary>Gets the default connection channel.</summary>
     public string Channel { get; init; } = "AUTO";
 

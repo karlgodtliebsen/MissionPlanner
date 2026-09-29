@@ -8,6 +8,9 @@ namespace MissionPlanner.MavLink.Services;
 /// </summary>
 public interface IMavLinkConnectionSessionFactory
 {
+    /// <summary>Creates a network session and starts a GCS heartbeat for an initiating peer.</summary>
+    Task<IMavLinkConnectionSession> CreateNetworkConnection(IOptions<TransportEndpoint> options, byte gcsSystemId = 255, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Creates a serial connection to a vehicle using the specified port name and baud rate. Optionally, a configuration action can be provided to customize the transport endpoint settings. The connection process is cancellable via the provided cancellation token.
     /// </summary>

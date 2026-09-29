@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -28,7 +28,7 @@ namespace MissionPlanner.Core.Vehicles;
 /// <param name="logger"></param>
 /// <param name="messagePumpCoordinator">Shared inbound MAVLink dispatch coordinator.</param>
 /// <param name="resetRegistryOnLifecycle">Whether this session owns the complete vehicle registry lifecycle.</param>
-public sealed class VehicleConnectionSession(
+public sealed partial class VehicleConnectionSession(
     IVehicleParameterRegistry parameterRegistry,
     IDomainFactory domainFactory,
     IServiceFactory serviceFactory,

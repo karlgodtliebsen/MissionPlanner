@@ -1,166 +1,139 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Transport.Abstractions;
-using Polly;
-using Polly.Retry;
 
 namespace MissionPlanner.Transport;
 
-/// <inheritdoc />
+/// <summary>One UDP socket for listening or communication with a fixed remote peer.</summary>
 public sealed class UdpMavLinkTransport : IUdpMavLinkTransport
 {
-    private readonly ILogger<UdpMavLinkTransport> logger;
     private readonly TransportEndpoint endpoint;
-    private readonly ResiliencePipeline retryPipeline;
-    private UdpClient? udpClient;
-    private volatile bool isConnected;
+    private readonly ILogger<UdpMavLinkTransport> logger;
+    private UdpClient? client;
+    private IPEndPoint? peer;
+    private byte[]? pending;
+    private int pendingOffset;
+    private IPEndPoint? pendingSource;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
-    /// <exception cref="ArgumentException"></exception>
+    /// <summary>Creates a UDP transport with explicit listening or client semantics.</summary>
     public UdpMavLinkTransport(IOptions<TransportEndpoint> options, ILogger<UdpMavLinkTransport> logger)
     {
-        this.logger = logger;
         endpoint = options.Value;
-
-        var remoteHost = endpoint.RemoteHost;
-        var remotePort = endpoint.RemotePort;
-        var localPort = endpoint.LocalPort;
-
-        if (localPort is <= 0 or > 65535)
+        this.logger = logger;
+        if (endpoint.LocalPort < (endpoint.IsUdpClient ? 0 : 1) || endpoint.LocalPort > 65535)
         {
-            throw new ArgumentOutOfRangeException(nameof(localPort));
+            throw new ArgumentOutOfRangeException(nameof(options), "Invalid local UDP port.");
         }
-
-        if (remotePort is <= 0 or > 65535)
+        if (endpoint.IsUdpClient && (endpoint.RemotePort is < 1 or > 65535 || string.IsNullOrWhiteSpace(endpoint.RemoteHost)))
         {
-            throw new ArgumentOutOfRangeException(nameof(remotePort));
+            throw new ArgumentException("UDP Client requires a remote host and port.", nameof(options));
         }
-
-        if (string.IsNullOrWhiteSpace(remoteHost))
-        {
-            throw new ArgumentException("Remote host must be specified.", nameof(remoteHost));
-        }
-
-        // Configure Polly retry pipeline for resilient UDP socket creation
-        retryPipeline = new ResiliencePipelineBuilder()
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromMilliseconds(500),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                OnRetry = args =>
-                {
-                    logger.LogWarning(
-                        args.Outcome.Exception,
-                        "Retry attempt {AttemptNumber} of {MaxRetryAttempts} for UDP connection on port {LocalPort}. Waiting {RetryDelay}ms before next attempt.",
-                        args.AttemptNumber,
-                        3,
-                        localPort,
-                        args.RetryDelay.TotalMilliseconds);
-                    return ValueTask.CompletedTask;
-                }
-            })
-            .Build();
     }
 
+    /// <summary>Gets the resolved client peer after opening, or null for a listener.</summary>
+    public TransportEndPoint? RemotePeer => peer is null ? null : new("udp", peer);
+
     /// <inheritdoc />
-    public bool IsConnected => isConnected;
+    public bool IsConnected => client is not null;
 
     /// <inheritdoc />
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        var localPort = endpoint.LocalPort;
-        var localHost = endpoint.LocalHost;
-
-        // Use Polly retry mechanism to handle transient network errors when binding UDP socket
-        await retryPipeline.ExecuteAsync(async ct => await Task.Run(() =>
+        if (client is not null)
         {
-            ct.ThrowIfCancellationRequested();
-
-            var localAddress = string.IsNullOrWhiteSpace(localHost)
-                ? IPAddress.Any
-                : IPAddress.Parse(localHost);
-
-            udpClient = new UdpClient(new IPEndPoint(localAddress, localPort));
-            isConnected = true;
-
-            logger.LogInformation("UDP transport connected successfully to host: {LocalHost} on port: {LocalPort}",
-                localHost ?? "Any", localPort);
-        }, ct).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
+            return;
+        }
+        var bind = string.IsNullOrWhiteSpace(endpoint.LocalHost) ? null : IPAddress.Parse(endpoint.LocalHost);
+        IPEndPoint? remote = null;
+        if (endpoint.IsUdpClient)
+        {
+            var addresses = await Dns.GetHostAddressesAsync(endpoint.RemoteHost, cancellationToken).ConfigureAwait(false);
+            var address = addresses.OrderBy(a => a.AddressFamily == AddressFamily.InterNetwork ? 0 : 1)
+                .FirstOrDefault(a => bind is null || a.AddressFamily == bind.AddressFamily)
+                ?? throw new IOException("The remote host has no address matching the local interface.");
+            remote = new(address, endpoint.RemotePort);
+        }
+        bind ??= remote?.AddressFamily == AddressFamily.InterNetworkV6 ? IPAddress.IPv6Any : IPAddress.Any;
+        var socket = new UdpClient(new IPEndPoint(bind, endpoint.LocalPort));
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (remote is not null)
+            {
+                // Connected UDP filters incoming datagrams to this address and port.
+                socket.Connect(remote);
+            }
+            peer = remote;
+            pending = null;
+            pendingOffset = 0;
+            client = socket;
+            logger.LogInformation("UDP socket ready on {LocalEndpoint}; awaiting MAVLink traffic", socket.Client.LocalEndPoint);
+        }
+        catch
+        {
+            socket.Dispose();
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public async ValueTask<TransportReceiveResult> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
     {
-        if (!isConnected)
+        if (buffer.IsEmpty)
         {
-            throw new InvalidOperationException("UDP transport is not connected.");
+            throw new ArgumentException("A non-empty receive buffer is required.", nameof(buffer));
         }
-
-        if (udpClient is null)
+        var socket = client ?? throw new IOException("UDP socket is closed.");
+        while (pending is null)
         {
-            throw new InvalidOperationException("UDP Client is not initialized.");
+            var datagram = await socket.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+            if (datagram.Buffer.Length == 0)
+            {
+                continue;
+            }
+            // Retain the remainder rather than truncating large datagrams.
+            pending = datagram.Buffer;
+            pendingOffset = 0;
+            pendingSource = datagram.RemoteEndPoint;
         }
-
-        var result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
-        var bytesToCopy = Math.Min(result.Buffer.Length, buffer.Length);
-        result.Buffer.AsMemory(0, bytesToCopy).CopyTo(buffer);
-
-        var remoteEndpoint = new TransportEndPoint("udp", result.RemoteEndPoint);
-        logger.LogTrace("UdpMavLinkTransport - Received {Bytes} bytes from {RemoteEndPoint}", bytesToCopy, remoteEndpoint);
-        return new TransportReceiveResult(bytesToCopy, remoteEndpoint);
+        var count = Math.Min(buffer.Length, pending.Length - pendingOffset);
+        pending.AsMemory(pendingOffset, count).CopyTo(buffer);
+        pendingOffset += count;
+        var source = new TransportEndPoint("udp", pendingSource!);
+        if (pendingOffset == pending.Length)
+        {
+            pending = null;
+        }
+        return new(count, source);
     }
 
     /// <inheritdoc />
     public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken)
     {
-        if (!isConnected)
+        var socket = client ?? throw new IOException("UDP socket is closed.");
+        if (peer is not null)
         {
-            throw new InvalidOperationException("UDP transport is not connected.");
+            if (!peer.Equals(endPoint.ToIPEndPoint()))
+            {
+                throw new IOException("The requested destination differs from the configured UDP peer.");
+            }
+            await socket.SendAsync(data, cancellationToken).ConfigureAwait(false);
         }
-
-        if (udpClient is null)
+        else
         {
-            throw new InvalidOperationException("UDP Client is not initialized.");
+            await socket.SendAsync(data, endPoint.ToIPEndPoint(), cancellationToken).ConfigureAwait(false);
         }
-
-        var ipEndpoint = endPoint.ToIPEndPoint();
-        logger.LogTrace("UdpMavLinkTransport - UDP sending {Length} bytes to {RemoteAddress}:{RemotePort}", data.Length, ipEndpoint.Address, ipEndpoint.Port);
-
-        await udpClient.SendAsync(data, ipEndpoint, cancellationToken).ConfigureAwait(false);
     }
-
 
     /// <inheritdoc />
     public Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        isConnected = false;
-        // Shutdown and the cancelled receive loop can both disconnect.
-        // Transfer ownership once rather than dereferencing a field another
-        // caller may clear between Close and Dispose.
-        var clientToClose = Interlocked.Exchange(ref udpClient, null!);
-        clientToClose?.Dispose();
-
-        var localPort = endpoint.LocalPort;
-        var localHost = endpoint.LocalHost;
-        logger.LogTrace("UdpMavLinkTransport - UDP transport disconnected from host: {localHost} on port: {localPort}", localHost, localPort);
+        Interlocked.Exchange(ref client, null)?.Dispose();
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        await DisconnectAsync().ConfigureAwait(false);
-        logger.LogTrace("UdpMavLinkTransport - UDP transport disposed");
-    }
+    public async ValueTask DisposeAsync() => await DisconnectAsync().ConfigureAwait(false);
 }

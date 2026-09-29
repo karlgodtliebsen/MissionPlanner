@@ -8,9 +8,11 @@
 /// <param name="BaudRate">Original serial baud rate; zero for network transports.</param>
 public sealed record VehicleReconnectTarget(Guid ConnectionId, string ConnectionType, string? Address, int Port, int BaudRate)
 {
+    /// <summary>Full network configuration for owned reconnect; never log its URL.</summary>
+    public NetworkConnectionSettings? Network { get; init; }
     /// <summary>Gets the optional UDP remote port.</summary>
     public int? RemotePort { get; init; }
 
     /// <summary>Gets the endpoint description shown during recovery.</summary>
-    public string Description => ConnectionType == "Serial" ? Address ?? "serial device" : $"{ConnectionType} {Address}:{Port}";
+    public string Description => Network?.Description ?? (ConnectionType == "Serial" ? Address ?? "serial device" : $"{ConnectionType} {Address}:{Port}");
 }

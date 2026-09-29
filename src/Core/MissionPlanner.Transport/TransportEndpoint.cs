@@ -129,6 +129,12 @@ public sealed class TransportEndPoint : IEquatable<TransportEndPoint>
 /// </summary>
 public class TransportEndpoint
 {
+    /// <summary>Full WebSocket request URL. Never include it in diagnostics.</summary>
+    public string? WebSocketUrl { get; set; }
+
+    /// <summary>Restricts UDP reception and transmission to the resolved remote peer.</summary>
+    public bool IsUdpClient { get; set; }
+
     public const string SectionName = "TransportEndpoint";
     public const string Template = "TransportEndpoint template";
     /// <summary>

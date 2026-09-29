@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using MissionPlanner.Library.EventHub;
 using MissionPlanner.Library.EventHub.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -289,6 +289,7 @@ public static class DomainConfigurator
         domainFactory.Add<ISerialMavLinkTransport, SerialMavLinkTransport>();
         domainFactory.Add<IUdpMavLinkTransport, UdpMavLinkTransport>();
         domainFactory.Add<ITcpMavLinkTransport, TcpMavLinkTransport>();
+        domainFactory.Add<IWebSocketMavLinkTransport, WebSocketMavLinkTransport>();
         domainFactory.Add<IMavLinkClient, MavLinkClient>();
         domainFactory.Add<IMavLinkConnection, MavLinkConnection>();
         domainFactory.Add<IMavLinkCommandService, MavLinkCommandService>();
