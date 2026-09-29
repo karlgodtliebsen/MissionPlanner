@@ -15,6 +15,65 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 [Collection("Document rendering")]
 public sealed class DiagnosticMenuAndFirmwareLayoutTests
 {
+    /// <summary>Renders the untouched topbar button layout with the distinct menu icons using offline design data.</summary>
+    [Fact]
+    public async Task TopbarRetainsLayoutWithDistinctMenuIcons()
+    {
+        var session = HeadlessUnitTestSession.StartNew(typeof(DiagnosticMenuAndFirmwareLayoutTests));
+        try
+        {
+            await session.Dispatch(() =>
+            {
+                var designMode = typeof(Design).GetProperty(nameof(Design.IsDesignMode))!;
+                var previous = Design.IsDesignMode;
+                try
+                {
+                    designMode.SetValue(null, true);
+                    var topbar = new TopBarView();
+                    var dropdown = topbar.FindControl<DropDownButton>("CompactDiagnostics")!;
+                    var menu = Assert.IsType<MenuFlyout>(dropdown.Flyout);
+                    var icons = menu.Items.Cast<MenuItem>().Select(item =>
+                        Assert.IsType<Material.Icons.Avalonia.MaterialIcon>(item.Icon).Kind).ToArray();
+                    Assert.Equal(4, icons.Distinct().Count());
+                    Assert.Equal(35, dropdown.Width);
+                    Assert.Equal(35, dropdown.Height);
+                    var window = new Window
+                    {
+                        Width = 1440, Height = 100,
+                        Content = new StackPanel
+                        {
+                            Children =
+                            {
+                                topbar,
+                                new TextBlock { Text = "OFFLINE DESIGN PREVIEW — no connected vehicle", Margin = new Thickness(10) }
+                            }
+                        }
+                    };
+                    window.Show();
+                    Dispatcher.UIThread.RunJobs();
+                    window.UpdateLayout();
+                    var directory = Environment.GetEnvironmentVariable("MISSIONPLANNER_VISUAL_TEST_OUTPUT");
+                    if (!string.IsNullOrWhiteSpace(directory))
+                    {
+                        Directory.CreateDirectory(directory);
+                        using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(1440, 100));
+                        bitmap.Render(window);
+                        bitmap.Save(Path.Combine(directory, "topbar-offline.png"));
+                    }
+                    window.Close();
+                }
+                finally
+                {
+                    designMode.SetValue(null, previous);
+                }
+            }, TestContext.Current.CancellationToken);
+        }
+        finally
+        {
+            await Task.Run(session.Dispose, CancellationToken.None);
+        }
+    }
+
     /// <summary>Creates the existing offline firmware fixture with production themes.</summary>
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure(() =>
         new MissionPlanner.App.App(FirmwarePanelViewModelTests.CreateServices()))

@@ -70,8 +70,8 @@ treated as failures. These local checks are not an exhaustive flight-release che
 
 ## Shared host and scope
 
-Labelled Readiness, Messages, Inspector and Logs actions are available in the
-topbar. Narrow windows use the Diagnostics menu. The first three share one panel;
+Readiness, Messages, Inspector and Logs actions are available in the existing
+topbar Diagnostics dropdown. The first three share one panel;
 Logs opens the existing recording/playback workspace. The panel's width control
 is in expanded technical details; its width is clamped to the host on small windows.
 Flight Data retains a clickable active-vehicle readiness summary and its unrelated
@@ -87,11 +87,24 @@ endpoint, connection, mode and FC arming summary. Firmware, exact timestamps and
 export scope live in an expander. Pausing freezes displayed diagnostics, not telemetry
 acquisition or recording. Connection loss and replay remain explicitly labelled.
 
-Readiness's badge counts current failed checks for the active operational vehicle;
+Readiness's menu count counts current failed checks for the vehicle that the entry point opens
+(the explicitly pinned vehicle, otherwise the active operational vehicle);
 FC and local checks may describe overlapping causes. Unknown/stale checks are not
 counted as failures. Messages' badge counts retained unread FC Warning-or-higher
 messages for the inspected vehicle (active vehicle when following). **Mark current
 warnings read** acknowledges that retained range only; it never clears arming evidence.
+
+Flight Data's persistent summary remains scoped to the active operational vehicle,
+independently of pinned diagnostic selection. Changing diagnostic selection invalidates
+the count cache immediately; normal periodic refresh remains throttled.
+
+Readiness links capture the diagnostic connection start as well as vehicle identity.
+If that vehicle reconnects before a retained link is used, evidence/configuration
+navigation is refused with an explanation rather than silently opening the new session.
+Current checks are rebuilt for the new session. Reconnect also releases display freeze
+and clears old displayed samples, even if a disconnect notification was not observed.
+The connection start is included in diagnostic snapshot exports. Retained journal/raw
+history remains history; this does not introduce a historical-session navigation UI.
 
 Messages reuses the existing severity/search filters, selection, copy and exports,
 and includes the diagnostic mode/command event timeline. Stable rows avoid replacing

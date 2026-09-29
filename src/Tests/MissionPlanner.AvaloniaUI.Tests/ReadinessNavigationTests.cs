@@ -31,9 +31,13 @@ public sealed class ReadinessNavigationTests
         active.VehicleId.Returns(first);
         active.State.Returns(state);
         var diagnostics = Substitute.For<IVehicleLiveDiagnostics>();
+        var sessionStartedAt = DateTimeOffset.UtcNow.AddMinutes(-1);
         diagnostics.Vehicles.Returns(new[] { first, second });
         diagnostics.GetSnapshot(Arg.Any<VehicleId>()).Returns(call => new VehicleLiveDiagnosticSnapshot(call.Arg<VehicleId>(),
-            state with { VehicleId = call.Arg<VehicleId>() }, "test", "fixture", false, 1, DateTimeOffset.UtcNow));
+            state with { VehicleId = call.Arg<VehicleId>() }, "test", "fixture", false, 1, DateTimeOffset.UtcNow)
+        {
+            SessionStartedAt = sessionStartedAt
+        });
         diagnostics.GetArming(Arg.Any<VehicleId>()).Returns(new VehicleArmingDiagnostic("Not ready", false, false, [], null, null, null));
         diagnostics.GetBatteryArmingEvidence(first).Returns(new[] { new BatteryArmingEvidence(1, "PreArm: Battery 1 below minimum", DateTimeOffset.UtcNow) });
         var messages = Substitute.For<IVehicleMessageStore>();
@@ -44,6 +48,8 @@ public sealed class ReadinessNavigationTests
             NullLogger<LiveTelemetryInspectorViewModel>.Instance, new PreflightAssessmentService(null, diagnostics), navigation, messages);
         model.OpenDestinationCommand.Execute("Readiness");
         Assert.Equal(1, model.UnreadWarnings);
+        var activeBlockers = model.BlockerCount;
+        var activeSummary = model.ActiveReadinessSummary;
         var battery = Assert.Single(model.ReadinessChecks, item => item.Key == "battery");
         Assert.Equal("✖ Failed", battery.ResultLabel);
         model.MarkMessagesReadCommand.Execute(null);
@@ -54,6 +60,9 @@ public sealed class ReadinessNavigationTests
         Assert.Equal("Power", model.SelectedPanel);
         Assert.Contains(model.Details, item => item.Contains("FC blocker"));
         model.OpenEvidence(second, "fc-arming");
+        Assert.True(model.BlockerCount < activeBlockers);
+        Assert.Equal(activeSummary, model.ActiveReadinessSummary);
+        Assert.Equal(0, model.UnreadWarnings);
         Assert.True(model.IsVehiclePinned);
         Assert.Equal("Messages", model.Destination);
         Assert.Equal(first, active.VehicleId);
@@ -65,6 +74,24 @@ public sealed class ReadinessNavigationTests
         model.FollowActiveVehicleCommand.Execute(null);
         Assert.Equal(first, model.SelectedVehicle);
         Assert.False(model.IsVehiclePinned);
+        Assert.Equal(activeBlockers, model.BlockerCount);
+
+        // A retained link must never resolve against a later session of the same vehicle.
+        model.FreezeCommand.Execute(null);
+        sessionStartedAt = sessionStartedAt.AddSeconds(30);
+        battery.EvidenceCommand.Execute(null);
+        battery.ConfigureCommand.Execute(null);
+        Assert.Equal("Readiness", model.Destination);
+        Assert.Contains("earlier connection session", model.NavigationMessage);
+        Assert.True(model.IsFrozen);
+        await navigation.DidNotReceive().NavigateAsync(Arg.Any<string>());
+        model.Refresh();
+        Assert.False(model.IsFrozen);
+        var refreshedBattery = Assert.Single(model.ReadinessChecks, item => item.Key == "battery");
+        Assert.NotSame(battery, refreshedBattery);
+        refreshedBattery.EvidenceCommand.Execute(null);
+        Assert.Equal("Inspector", model.Destination);
+        Assert.Equal("Power", model.SelectedPanel);
         await model.OpenLogsCommand.ExecuteAsync(null);
         await navigation.Received(1).NavigateAsync(MissionPlannerRoutes.Logs);
         Assert.Single(diagnostics.GetBatteryArmingEvidence(first));

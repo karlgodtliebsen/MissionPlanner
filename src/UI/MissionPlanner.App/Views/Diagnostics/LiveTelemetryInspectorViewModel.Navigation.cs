@@ -23,6 +23,7 @@ public sealed partial class LiveTelemetryInspectorViewModel
     private bool followingActive;
     private DateTimeOffset summaryUpdatedAt;
     private VehicleId? readinessVehicle;
+    private DateTimeOffset? readinessSession;
 
     /// <summary>The shared side-panel destinations.</summary>
     public IReadOnlyList<string> Destinations { get; } = ["Readiness", "Messages", "Inspector"];
@@ -38,7 +39,7 @@ public sealed partial class LiveTelemetryInspectorViewModel
     public bool ShowInspector => Destination == "Inspector";
     /// <summary>Whether the detailed decoded/promoted telemetry table is selected.</summary>
     public bool ShowStatus => SelectedPanel == "Decoded";
-    /// <summary>Current blockers for the active operational vehicle; unknown checks are not counted as failures.</summary>
+    /// <summary>Current blockers for the vehicle the diagnostic entry point opens; unknown checks are not failures.</summary>
     [ObservableProperty]
     public partial int BlockerCount { get; private set; }
     /// <summary>Retained unread warning/error messages for the inspected or active vehicle.</summary>
@@ -78,6 +79,22 @@ public sealed partial class LiveTelemetryInspectorViewModel
         {
             followingActive = false;
         }
+    }
+
+    partial void OnIsVehiclePinnedChanged(bool value)
+    {
+        summaryUpdatedAt = default;
+        RefreshActiveSummary();
+    }
+
+    private bool HasEvidenceSession(VehicleId vehicle, DateTimeOffset session)
+    {
+        if (diagnostics.GetSnapshot(vehicle).SessionStartedAt == session)
+        {
+            return true;
+        }
+        NavigationMessage = "This evidence belongs to an earlier connection session. Review the refreshed readiness checks; navigation was not retargeted to the new session.";
+        return false;
     }
 
     [RelayCommand]
@@ -167,10 +184,15 @@ public sealed partial class LiveTelemetryInspectorViewModel
         summaryUpdatedAt = clock.GetUtcNow();
         var state = activeVehicle.State;
         var assessment = state is null ? null : assessmentService?.Assess(state, summaryUpdatedAt);
-        BlockerCount = assessment?.Checks.Count(check => check.Status == PreflightCheckStatus.Fail) ?? 0;
+        var activeBlockers = assessment?.Checks.Count(check => check.Status == PreflightCheckStatus.Fail) ?? 0;
         ActiveReadinessSummary = assessment is null ? "Readiness unknown — no active vehicle" :
-            $"{state!.VehicleId} · {BlockerCount} blockers · {ReadinessCheckItem.Label(assessment.OverallStatus)}";
+            $"{state!.VehicleId} · {activeBlockers} blockers · {ReadinessCheckItem.Label(assessment.OverallStatus)}";
         var id = IsVehiclePinned ? SelectedVehicle : activeVehicle.VehicleId;
+        var inspectedState = id == activeVehicle.VehicleId ? state :
+            id is { } inspected ? diagnostics.GetSnapshot(inspected)?.State : null;
+        var inspectedAssessment = ReferenceEquals(inspectedState, state) ? assessment :
+            inspectedState is null ? null : assessmentService?.Assess(inspectedState, summaryUpdatedAt);
+        BlockerCount = inspectedAssessment?.Checks.Count(check => check.Status == PreflightCheckStatus.Fail) ?? 0;
         UnreadWarnings = id is { } vehicle && messageStore is not null
             ? messageStore.GetMessages(vehicle).Count(item => (int)item.Severity <= 4 && item.Identity > readThrough.GetValueOrDefault(vehicle)) : 0;
     }
@@ -213,18 +235,19 @@ public sealed partial class LiveTelemetryInspectorViewModel
         }
         var assessment = assessmentService.Assess(state, clock.GetUtcNow());
         ReadinessSummary = $"NextGen assessment: {ReadinessCheckItem.Label(assessment.OverallStatus)}. FC readiness is shown separately. Operator assistance, not flight approval.";
-        if (readinessVehicle != snapshot.VehicleId)
+        if (readinessVehicle != snapshot.VehicleId || readinessSession != snapshot.SessionStartedAt)
         {
             ReadinessChecks.Clear();
             PassedChecks.Clear();
             readinessVehicle = snapshot.VehicleId;
+            readinessSession = snapshot.SessionStartedAt;
         }
         UpdateChecks(ReadinessChecks, assessment.Checks.Where(item => item.Status != PreflightCheckStatus.Pass)
-            .OrderBy(item => item.Status == PreflightCheckStatus.Fail ? 0 : item.Status == PreflightCheckStatus.Warning ? 1 : 2).ToArray(), snapshot.VehicleId);
-        UpdateChecks(PassedChecks, assessment.Checks.Where(item => item.Status == PreflightCheckStatus.Pass).ToArray(), snapshot.VehicleId);
+            .OrderBy(item => item.Status == PreflightCheckStatus.Fail ? 0 : item.Status == PreflightCheckStatus.Warning ? 1 : 2).ToArray(), snapshot.VehicleId, snapshot.SessionStartedAt);
+        UpdateChecks(PassedChecks, assessment.Checks.Where(item => item.Status == PreflightCheckStatus.Pass).ToArray(), snapshot.VehicleId, snapshot.SessionStartedAt);
     }
 
-    private void UpdateChecks(ObservableCollection<ReadinessCheckItem> target, IReadOnlyList<PreflightCheckResult> checks, VehicleId vehicle)
+    private void UpdateChecks(ObservableCollection<ReadinessCheckItem> target, IReadOnlyList<PreflightCheckResult> checks, VehicleId vehicle, DateTimeOffset session)
     {
         foreach (var removed in target.Where(item => checks.All(check => check.Key != item.Key)).ToArray())
         {
@@ -236,7 +259,19 @@ public sealed partial class LiveTelemetryInspectorViewModel
             var item = target.FirstOrDefault(row => row.Key == check.Key);
             if (item is null)
             {
-                target.Insert(index, new(check, vehicle, OpenEvidence, Configure));
+                target.Insert(index, new(check, vehicle, (id, key) =>
+                {
+                    if (HasEvidenceSession(id, session))
+                    {
+                        OpenEvidence(id, key);
+                    }
+                }, (id, key) =>
+                {
+                    if (HasEvidenceSession(id, session))
+                    {
+                        Configure(id, key);
+                    }
+                }));
             }
             else
             {

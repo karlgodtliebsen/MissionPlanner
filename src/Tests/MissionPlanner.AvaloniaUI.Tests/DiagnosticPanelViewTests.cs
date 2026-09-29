@@ -120,6 +120,36 @@ public sealed class DiagnosticPanelViewTests
                 var diagnostics = app.ServiceProvider.GetRequiredService<IVehicleLiveDiagnostics>();
                 var id = model.SelectedVehicle!.Value;
                 var snapshot = diagnostics.GetSnapshot(id);
+                window.Width = 700;
+                model.SelectedPanel = "Status";
+                Dispatcher.UIThread.RunJobs();
+                window.UpdateLayout();
+                SaveImage(view, "Desktop");
+                var connectionDetails = view.GetVisualDescendants().OfType<Expander>()
+                    .Single(item => Equals(item.Header, "Vehicle and technical details"));
+                connectionDetails.IsExpanded = true;
+                Dispatcher.UIThread.RunJobs();
+                window.UpdateLayout();
+                SaveImage(view, "Expanded-details");
+                var pinned = new VehicleId(17, 1);
+                diagnostics.GetSnapshot(pinned).Returns(snapshot with
+                {
+                    VehicleId = pinned,
+                    State = snapshot.State! with { VehicleId = pinned },
+                    Endpoint = "OFFLINE TEST DATA — second vehicle"
+                });
+                var pinnedArming = diagnostics.GetArming(id);
+                diagnostics.GetArming(pinned).Returns(pinnedArming);
+                diagnostics.Vehicles.Returns(new[] { id, pinned });
+                model.Refresh();
+                model.OpenEvidence(pinned, "fc-arming");
+                Dispatcher.UIThread.RunJobs();
+                window.UpdateLayout();
+                SaveImage(view, "Pinned-other-vehicle");
+                Assert.Contains("PINNED", model.SelectionSummary);
+                model.FollowActiveVehicleCommand.Execute(null);
+                connectionDetails.IsExpanded = false;
+                window.Width = 360;
                 model.FreezeCommand.Execute(null);
                 diagnostics.GetSnapshot(id).Returns(snapshot with { Disconnected = true });
                 model.Refresh();
@@ -147,8 +177,10 @@ public sealed class DiagnosticPanelViewTests
         if (!string.IsNullOrWhiteSpace(directory))
         {
             Directory.CreateDirectory(directory);
-            using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(360, 900));
-            bitmap.Render((Visual?)TopLevel.GetTopLevel(view) ?? view);
+            var visual = (Visual?)TopLevel.GetTopLevel(view) ?? view;
+            using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(
+                new PixelSize((int)visual.Bounds.Width, (int)visual.Bounds.Height));
+            bitmap.Render(visual);
             bitmap.Save(Path.Combine(directory, $"panel-{scenario}.png"));
         }
     }

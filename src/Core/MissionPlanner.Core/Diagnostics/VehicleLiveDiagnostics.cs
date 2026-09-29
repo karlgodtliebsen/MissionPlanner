@@ -99,7 +99,10 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
         lock (sync)
         {
             var entry = Get(vehicleId);
-            return new(vehicleId, entry.State, entry.Transport, entry.Endpoint, entry.Disconnected, entry.Version, entry.UpdatedAt);
+            return new(vehicleId, entry.State, entry.Transport, entry.Endpoint, entry.Disconnected, entry.Version, entry.UpdatedAt)
+            {
+                SessionStartedAt = entry.SessionStartedAt
+            };
         }
     }
 
@@ -141,7 +144,7 @@ public sealed partial class VehicleLiveDiagnostics : IVehicleLiveDiagnostics, ID
             var now = clock.GetUtcNow();
             if (input.Connected is { } connected)
             {
-                if (entry.Disconnected)
+                if (entry.Disconnected || entry.SessionStartedAt != connected.ConnectedAt)
                 {
                     // Retain the journal, but never present the previous session's
                     // telemetry as current while waiting for the new state stream.

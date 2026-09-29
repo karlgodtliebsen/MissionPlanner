@@ -25,6 +25,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     private bool presentationDisposed;
     private bool contextSelection;
     private bool manualPanelSelection;
+    private DateTimeOffset? displayedSession;
 
     /// <summary>Initializes a coalesced UI boundary over the always-on diagnostic service.</summary>
     public LiveTelemetryInspectorViewModel(IVehicleLiveDiagnostics diagnostics, IActiveVehicleContext activeVehicle, ITextClipboardService clipboard,
@@ -158,6 +159,8 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
 
     partial void OnSelectedVehicleChanged(VehicleId? value)
     {
+        summaryUpdatedAt = default;
+        displayedSession = null;
         if (!followingActive && value is not null)
         {
             IsVehiclePinned = true;
@@ -347,6 +350,18 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
             return;
         }
         var snapshot = diagnostics.GetSnapshot(vehicle);
+        if (displayedSession is { } previousSession && previousSession != snapshot.SessionStartedAt)
+        {
+            // Freezing must not carry an earlier connection's samples into the new session.
+            IsFrozen = false;
+            Raw.Clear();
+            Events.Clear();
+            Details.Clear();
+            Channels.Clear();
+            status?.Inspect(null);
+            displayedVersion = -1;
+        }
+        displayedSession = snapshot.SessionStartedAt;
         var arming = diagnostics.GetArming(vehicle);
         var state = snapshot.State;
         RefreshSharedViews(snapshot, arming);

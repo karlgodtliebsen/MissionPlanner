@@ -34,19 +34,21 @@
             <u:IconDropDownButton  >
                 <DropDownButton.Flyout>
                     <MenuFlyout Placement="Bottom">
-                        <StackPanel Orientation="Horizontal">
-                            <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
-                            <MenuItem
-                                ToolTip.Tip="Select all safe differences"
-                                Command="{Binding SelectAllSafeDifferencesCommand}" AutomationProperties.Name="Select all safe differences"
-                                Header="Select all safe differences" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
-                            <MenuItem ToolTip.Tip="Stage selected"
-                                      Command="{Binding StageSelectedDifferencesCommand}" AutomationProperties.Name="Stage selected"
-                                      Header="Stage selected" />
-                        </StackPanel>
+                        <MenuItem
+                            ToolTip.Tip="Select all safe differences"
+                            Command="{Binding SelectAllSafeDifferencesCommand}" AutomationProperties.Name="Select all safe differences"
+                            Header="Select all safe differences">
+                            <MenuItem.Icon>
+                                <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem ToolTip.Tip="Stage selected"
+                                  Command="{Binding StageSelectedDifferencesCommand}" AutomationProperties.Name="Stage selected"
+                                  Header="Stage selected">
+                            <MenuItem.Icon>
+                                <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuFlyout>
                 </DropDownButton.Flyout>
                 <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
@@ -55,19 +57,21 @@
             <u:IconDropDownButton  >
                 <DropDownButton.Flyout>
                     <MenuFlyout Placement="Bottom">
-                        <StackPanel Orientation="Horizontal">
-                            <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                            <MenuItem
-                                ToolTip.Tip="Save to CSV file"
-                                Command="{Binding ExportCsvCommand}" AutomationProperties.Name="Export CSV"
-                                Header="Save to CSV file" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                            <MenuItem ToolTip.Tip="Save to JSON file"
-                                      Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON"
-                                      Header="Save to JSON file" />
-                        </StackPanel>
+                        <MenuItem
+                            ToolTip.Tip="Save to CSV file"
+                            Command="{Binding ExportCsvCommand}" AutomationProperties.Name="Export CSV"
+                            Header="Save to CSV file">
+                            <MenuItem.Icon>
+                                <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem ToolTip.Tip="Save to JSON file"
+                                  Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON"
+                                  Header="Save to JSON file">
+                            <MenuItem.Icon>
+                                <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                            </MenuItem.Icon>
+                        </MenuItem>
                     </MenuFlyout>
                 </DropDownButton.Flyout>
                 <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />

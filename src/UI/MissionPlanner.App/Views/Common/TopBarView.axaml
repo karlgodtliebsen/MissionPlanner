@@ -119,7 +119,7 @@
                                         CommandParameter="Readiness"
                                         Header="{Binding Diagnostics.BlockerCount,FallbackValue='', TargetNullValue='', StringFormat='Readiness ({0})'}">
                                     <MenuItem.Icon>
-                                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                        <materialIcons:MaterialIcon Kind="ClipboardCheckOutline" Width="30" Height="30" />
                                     </MenuItem.Icon>
                                 </MenuItem>
 
@@ -129,7 +129,7 @@
                                         CommandParameter="Messages"
                                         Header="{Binding Diagnostics.UnreadWarnings,FallbackValue='', TargetNullValue='', StringFormat='Messages ({0})'}">
                                     <MenuItem.Icon>
-                                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                        <materialIcons:MaterialIcon Kind="MessageAlertOutline" Width="30" Height="30" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                                 <MenuItem
@@ -146,7 +146,7 @@
                                         Command="{Binding Diagnostics.OpenLogsCommand,FallbackValue='', TargetNullValue=''}"
                                         Header="Navigate to telemetry/application logs">
                                     <MenuItem.Icon>
-                                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
+                                        <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="30" Height="30" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                             </MenuFlyout>

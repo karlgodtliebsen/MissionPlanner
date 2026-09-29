@@ -22,20 +22,21 @@
                     <u:IconDropDownButton ToolTip.Tip="Load/Write File">
                         <DropDownButton.Flyout>
                             <MenuFlyout Placement="Bottom">
-                                <StackPanel Orientation="Horizontal">
-                                    <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
-                                    <MenuItem
-                                        ToolTip.Tip="Load File"
-                                        Command="{Binding Map.LoadWpFileCommand}"
-                                        Header="Load File" />
-                                </StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                                    <MenuItem ToolTip.Tip="Save File"
-                                              Command="{Binding Map.SaveWpFileCommand}"
-                                              Header="Save File"
-                                    />
-                                </StackPanel>
+                                <MenuItem
+                                    ToolTip.Tip="Load File"
+                                    Command="{Binding Map.LoadWpFileCommand}"
+                                    Header="Load File">
+                                    <MenuItem.Icon>
+                                        <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem ToolTip.Tip="Save File"
+                                          Command="{Binding Map.SaveWpFileCommand}"
+                                          Header="Save File">
+                                    <MenuItem.Icon>
+                                        <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                         <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />

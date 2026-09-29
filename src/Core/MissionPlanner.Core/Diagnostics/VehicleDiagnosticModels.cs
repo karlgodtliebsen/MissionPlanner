@@ -21,7 +21,11 @@ public sealed record VehicleDiagnosticEvent(VehicleId VehicleId, DateTimeOffset 
 /// <param name="Version">Monotonic diagnostic revision.</param>
 /// <param name="UpdatedAt">Last diagnostic update.</param>
 public sealed record VehicleLiveDiagnosticSnapshot(VehicleId VehicleId, VehicleState? State,
-    string? Transport, string? Endpoint, bool Disconnected, long Version, DateTimeOffset UpdatedAt);
+    string? Transport, string? Endpoint, bool Disconnected, long Version, DateTimeOffset UpdatedAt)
+{
+    /// <summary>Connection start identifying the evidence session; default means no connection was observed.</summary>
+    public DateTimeOffset SessionStartedAt { get; init; }
+}
 
 /// <summary>Configures per-vehicle retention and transient diagnostic evidence.</summary>
 public sealed class VehicleLiveDiagnosticOptions

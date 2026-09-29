@@ -14,9 +14,11 @@ public sealed class BatteryEvidenceLifecycleTests
 {
     /// <summary>Only newer positive FC evidence resolves blockers; reconnect clears session scope.</summary>
     [Theory]
-    [InlineData("PreArm:")]
-    [InlineData("Arm:")]
-    public async Task IsolatesVehiclesResolvesAndResetsOnReconnect(string prefix)
+    [InlineData("PreArm:", true)]
+    [InlineData("Arm:", true)]
+    [InlineData("PreArm:", false)]
+    [InlineData("Arm:", false)]
+    public async Task IsolatesVehiclesResolvesAndResetsOnReconnect(string prefix, bool disconnected)
     {
         using var hub = new EventHub(NullLogger<EventHub>.Instance);
         using var domain = new DomainEventHub(NullLogger<EventHub>.Instance);
@@ -30,6 +32,7 @@ public sealed class BatteryEvidenceLifecycleTests
         await domain.PublishDomainEventAsync(new VehicleStatusTextReceived(new VehicleStatusText(first, 16, 1,
             MavSeverity.Warning, $"{prefix} Battery 1 below minimum arming voltage", now.AddSeconds(-2))), token);
         await VehicleLiveDiagnosticsTests.UntilAsync(() => diagnostics.GetBatteryArmingEvidence(first).Count == 1);
+        Assert.Equal(now.AddSeconds(-5), diagnostics.GetSnapshot(first).SessionStartedAt);
         Assert.Empty(diagnostics.GetBatteryArmingEvidence(second));
         var state = VehicleLiveDiagnosticsTests.State(first);
         await domain.PublishDomainEventAsync(new VehicleStateUpdated(state), token);
@@ -43,9 +46,13 @@ public sealed class BatteryEvidenceLifecycleTests
         await domain.PublishDomainEventAsync(new VehicleStateUpdated(recovered), token);
         await VehicleLiveDiagnosticsTests.UntilAsync(() => diagnostics.GetBatteryArmingEvidence(first)[0].ResolvedAt is not null);
         Assert.Equal(now, diagnostics.GetBatteryArmingEvidence(first)[0].ResolvedAt);
-        await domain.PublishDomainEventAsync(new VehicleDisconnected(first, now, "fixture"), token);
+        if (disconnected)
+        {
+            await domain.PublishDomainEventAsync(new VehicleDisconnected(first, now, "fixture"), token);
+        }
         await domain.PublishDomainEventAsync(new VehicleConnected(first, "test", "new session", now.AddMilliseconds(1)), token);
         await VehicleLiveDiagnosticsTests.UntilAsync(() => diagnostics.GetSnapshot(first).Endpoint == "new session");
+        Assert.Equal(now.AddMilliseconds(1), diagnostics.GetSnapshot(first).SessionStartedAt);
         Assert.Empty(diagnostics.GetBatteryArmingEvidence(first));
         Assert.Contains(diagnostics.GetRecentEvents(first), item => item.Message.Contains("Battery 1"));
         await domain.PublishDomainEventAsync(new VehicleStateUpdated(state with
