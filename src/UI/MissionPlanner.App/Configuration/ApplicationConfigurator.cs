@@ -1,4 +1,4 @@
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -11,9 +11,11 @@ using MissionPlanner.App.Services;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.App.Utilities.Dispatching;
+using MissionPlanner.App.Views.AI;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Sections;
+using MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.Diagnostics;
 using MissionPlanner.App.Views.FlightData;
@@ -81,12 +83,6 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
-using ParameterComparisonView = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterComparisonView;
-using ParameterComparisonViewModel = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterComparisonViewModel;
-using ParametersEditorTabView = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabView;
-using ParametersEditorTabViewModel = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabViewModel;
-using ParametersEditorView = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorView;
-using ParametersEditorViewModel = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -240,12 +236,16 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FlightDataPage>();
         services.TryAddTransient<HudViewModel>();
         services.TryAddTransient<FlightPlannerMissionMapViewModel>();
-        services.TryAddTransient<FlightPlannerViewModel>();
+        services.TryAddTransient<AIViewModel>();
         services.TryAddTransient<FlightPlannerPage>();
         services.TryAddTransient<PreferencesViewModel>();
         services.TryAddTransient<PreferencesPage>();
         services.TryAddTransient<SimulationPage>();
         services.TryAddTransient<SimulationViewModel>();
+
+
+        services.TryAddTransient<AIPage>();
+        services.TryAddTransient<AIViewModel>();
 
         services.TryAddTransient<HelpPage>();
 
@@ -332,7 +332,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<OptionalHardwareTabCatalog>();
 
         services.TryAddTransient<FlightDataViewModel>();
-        services.TryAddTransient<FlightPlannerViewModel>();
+        services.TryAddTransient<AIViewModel>();
         services.TryAddTransient<DialogDemoViewModel>();
 
         // Tabs on Config View

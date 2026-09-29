@@ -1,5 +1,6 @@
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
+using MissionPlanner.App.Views.AI;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.FlightData;
 using MissionPlanner.App.Views.FlightPlanner;
@@ -9,7 +10,6 @@ using MissionPlanner.App.Views.InitSetup.Arming;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware;
-using MissionPlanner.App.Views.Introduction;
 using MissionPlanner.App.Views.Preferences;
 using MissionPlanner.App.Views.Samples;
 using MissionPlanner.App.Views.Simulation;
@@ -59,6 +59,11 @@ public sealed class NavigationPageFactory(IServiceProvider services) : INavigati
 
             MissionPlannerRoutes.Simulation =>
                 services.GetRequiredService<SimulationPage>(),
+
+
+            MissionPlannerRoutes.AI =>
+                services.GetRequiredService<AIPage>(),
+
 
             MissionPlannerRoutes.Introduction =>
                 services.GetRequiredService<HelpPage>(),

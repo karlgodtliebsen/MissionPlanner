@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Models;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.Firmware;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.DateTime.Domain;
