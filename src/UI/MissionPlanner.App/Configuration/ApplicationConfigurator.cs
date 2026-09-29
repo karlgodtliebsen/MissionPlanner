@@ -1,5 +1,4 @@
-using Avalonia.Threading;
-using MissionPlanner.Core.Vehicles.Abstractions;
+﻿using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -15,6 +14,7 @@ using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Sections;
+using MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.Diagnostics;
 using MissionPlanner.App.Views.FlightData;
@@ -63,6 +63,7 @@ using MissionPlanner.Core.Setup.Advanced.Signing;
 using MissionPlanner.Core.Setup.Advanced.Warnings;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Betaflight;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
@@ -82,12 +83,6 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
-using ParameterComparisonView = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterComparisonView;
-using ParameterComparisonViewModel = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterComparisonViewModel;
-using ParametersEditorTabView = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabView;
-using ParametersEditorTabViewModel = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabViewModel;
-using ParametersEditorView = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorView;
-using ParametersEditorViewModel = MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -397,8 +392,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<CubeIdUpdateViewModel>();
         services.TryAddTransient<CanGpsOrderViewModel>();
         services.TryAddTransient<BatterySetupViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Presentation.Documents.SetupReportDocumentFactory>();
-        services.TryAddTransient<MissionPlanner.App.Presentation.Documents.SetupInformationViewModel>();
+        services.TryAddSingleton<Presentation.Documents.SetupReportDocumentFactory>();
+        services.TryAddTransient<Presentation.Documents.SetupInformationViewModel>();
         services.TryAddTransient<DroneCanUavCanViewModel>();
         services.TryAddTransient<JoystickViewModel>();
         services.TryAddTransient<CompassMotorCalibrationViewModel>();
@@ -430,7 +425,7 @@ public static class ApplicationConfigurator
         domainFactory.Add<IDialogService, AvaloniaDialogService>();
         domainFactory.Add<DiagnosticsReportViewModel>();
         domainFactory.Add<ParameterComparisonViewModel>();
-        domainFactory.Add<MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterProfilesViewModel>();
+        domainFactory.Add<ParameterProfilesViewModel>();
         domainFactory.Add<MissionItemListViewPage>();
         domainFactory.Add<MissionMapPresenter>();
         domainFactory.Add<ParametersEditorViewModel>();
