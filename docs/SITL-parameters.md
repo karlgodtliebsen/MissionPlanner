@@ -1,6 +1,30 @@
 sim_vehicle.py -v ArduCopter --console --map --out=udp:127.0.0.1:14550
 
 
+------------------
+Combined
+tcp connection from shell
+
+
+sim_vehicle.py -v ArduCopter -f quad --no-mavproxy
+
+shell:
+mavproxy.py --master=tcp:127.0.0.1:5760 --out=udpin:127.0.0.1:14560
+------------------
+
+
+
+Combined
+wsl connection from shell
+
+sim_vehicle.py -v ArduCopter -f quad --no-mavproxy
+
+websockify 127.0.0.1:8765 127.0.0.1:5760
+
+
+------------------
+
+
 
 One small clarification: the label is **UDPCl**, meaning **UDP Client**—the last character is a lowercase “L”. Classic Mission Planner distinguishes UDP, UDPCl and WebSocket transports. We still need to inspect NextGen to establish which implementations are complete and which options are only present in the dropdown. ([GitHub][1])
 
