@@ -64,6 +64,7 @@ using MissionPlanner.Core.Setup.Advanced.Signing;
 using MissionPlanner.Core.Setup.Advanced.Warnings;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Betaflight;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
@@ -395,8 +396,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<CubeIdUpdateViewModel>();
         services.TryAddTransient<CanGpsOrderViewModel>();
         services.TryAddTransient<BatterySetupViewModel>();
-        services.TryAddSingleton<MissionPlanner.App.Presentation.Documents.SetupReportDocumentFactory>();
-        services.TryAddTransient<MissionPlanner.App.Presentation.Documents.SetupInformationViewModel>();
+        services.TryAddSingleton<Presentation.Documents.SetupReportDocumentFactory>();
+        services.TryAddTransient<Presentation.Documents.SetupInformationViewModel>();
         services.TryAddTransient<DroneCanUavCanViewModel>();
         services.TryAddTransient<JoystickViewModel>();
         services.TryAddTransient<CompassMotorCalibrationViewModel>();
@@ -428,7 +429,7 @@ public static class ApplicationConfigurator
         domainFactory.Add<IDialogService, AvaloniaDialogService>();
         domainFactory.Add<DiagnosticsReportViewModel>();
         domainFactory.Add<ParameterComparisonViewModel>();
-        domainFactory.Add<MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterProfilesViewModel>();
+        domainFactory.Add<ParameterProfilesViewModel>();
         domainFactory.Add<MissionItemListViewPage>();
         domainFactory.Add<MissionMapPresenter>();
         domainFactory.Add<ParametersEditorViewModel>();
