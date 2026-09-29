@@ -64,7 +64,6 @@ using MissionPlanner.Core.Setup.Advanced.Signing;
 using MissionPlanner.Core.Setup.Advanced.Warnings;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
-using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Betaflight;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
