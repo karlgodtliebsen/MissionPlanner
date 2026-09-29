@@ -132,8 +132,8 @@ public static class SectionHelpCatalog
             "This summary reflects available vehicle evidence; it is not an independent airworthiness check."),
 
         T(Optional, "Naming",
-            "Set the vehicle identifiers used for addressing and recognition.",
-            "Connect the intended vehicle and read its current identifiers.|Choose a system ID that does not conflict with other vehicles on the link.|Apply and check the returned confirmation; reconnect if addressing changes.",
+            "Set flight-controller identifiers and keep a local product name, product URL, and nickname.",
+            "Connect the intended vehicle and read its current identifiers.|Enter local vehicle details and choose Save vehicle details. These are matched by hardware UID on future connections and never written to the controller. Saving requires a reported hardware UID; storage-limited platforms retain details for the app session only.|Choose a system ID that does not conflict with other vehicles on the link.|Apply and check the returned confirmation; reconnect if addressing changes.",
             "Verify the vehicle identity shown after reconnection. A local label and a flight-controller identifier are different things.",
             "If confirmation times out, reload before retrying because an earlier change may already have been saved."),
         T(Optional, "RTK/GPS Inject",

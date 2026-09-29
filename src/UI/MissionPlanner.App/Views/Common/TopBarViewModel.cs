@@ -13,6 +13,7 @@ using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Replay;
+using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.EventHub.Events;
@@ -47,6 +48,7 @@ public partial class TopBarViewModel : ViewModelBase
     private readonly IReplaySessionManager replaySessionManager;
     private readonly INavigationService navigationService;
     private readonly IPlannerSettingsService settingsService;
+    private readonly ISimulationVehicleChannelRegistry? simulationChannels;
     private bool changingTheme;
     private bool disposed;
 
@@ -133,7 +135,7 @@ public partial class TopBarViewModel : ViewModelBase
 
     [ObservableProperty] public partial bool ShowCom { get; set; } = true;
     [ObservableProperty] public partial bool ShowVehicleName { get; set; } = true;
-    [ObservableProperty] public partial string DataSourceMode { get; private set; } = "LIVE / SIMULATION";
+    [ObservableProperty] public partial string DataSourceMode { get; private set; } = "LIVE";
 
     [ObservableProperty]
     public partial bool IsReplayReadOnly
@@ -167,6 +169,7 @@ public partial class TopBarViewModel : ViewModelBase
     /// <param name="settingsService">The persisted Planner settings service.</param>
     /// <param name="logger">The logger instance.</param>
     /// <param name="diagnostics">Shared diagnostic navigation and badge presentation.</param>
+    /// <param name="simulationChannels">Exact ownership of connected simulation vehicles.</param>
     public TopBarViewModel(
         ApplicationStateService stateService,
         IServiceFactory serviceFactory,
@@ -175,7 +178,8 @@ public partial class TopBarViewModel : ViewModelBase
         IReplaySessionManager replaySessionManager,
         INavigationService navigationService,
         IPlannerSettingsService settingsService,
-        ILogger<TopBarViewModel> logger, Views.Diagnostics.LiveTelemetryInspectorViewModel? diagnostics = null) : base(logger)
+        ILogger<TopBarViewModel> logger, Views.Diagnostics.LiveTelemetryInspectorViewModel? diagnostics = null,
+        ISimulationVehicleChannelRegistry? simulationChannels = null) : base(logger)
     {
         this.stateService = stateService;
         Diagnostics = diagnostics;
@@ -185,6 +189,7 @@ public partial class TopBarViewModel : ViewModelBase
         this.replaySessionManager = replaySessionManager;
         this.navigationService = navigationService;
         this.settingsService = settingsService;
+        this.simulationChannels = simulationChannels;
         // Subscribe to connection events
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
@@ -254,12 +259,17 @@ public partial class TopBarViewModel : ViewModelBase
 
             ConnectionStatus = stateService.IsConnected ? "Connected" : "Disconnected";
             ConnectionImage = stateService.IsConnected ? LoadImage(ConnectImage) : LoadImage(DisConnectImage);
+            UpdateDataSourceMode();
         });
     }
 
     private async Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
     {
-        await Dispatcher.DispatchAsync(() => ConnectionStatus = $"Connected: {evt.VehicleId}");
+        await Dispatcher.DispatchAsync(() =>
+        {
+            ConnectionStatus = $"Connected: {evt.VehicleId}";
+            UpdateDataSourceMode();
+        });
     }
 
     private async Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
@@ -268,13 +278,20 @@ public partial class TopBarViewModel : ViewModelBase
         {
             ConnectionStatus = $"Disconnected: {evt.VehicleId}";
             FirmwareIdentity = null;
+            UpdateDataSourceMode();
         });
     }
 
     private async Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken ct)
     {
-        var display = VehicleFirmwareDisplayFormatter.Format(evt.VehicleState.Identity.Firmware);
-        await Dispatcher.DispatchAsync(() => FirmwareIdentity = display);
+        await Dispatcher.DispatchAsync(() =>
+        {
+            if (evt.VehicleId == stateService.VehicleId)
+            {
+                FirmwareIdentity = VehicleFirmwareDisplayFormatter.Format(evt.VehicleState.Identity.Firmware);
+            }
+            UpdateDataSourceMode();
+        });
     }
 
     [RelayCommand(CanExecute = nameof(CanOpenConnection))]
@@ -356,10 +373,18 @@ public partial class TopBarViewModel : ViewModelBase
         Dispatcher.Dispatch(() =>
         {
             IsReplayReadOnly = snapshot.IsTransmissionProhibited;
-            DataSourceMode = IsReplayReadOnly ? "REPLAY · READ ONLY" : "LIVE / SIMULATION";
+            UpdateDataSourceMode();
             OnPropertyChanged(nameof(CanOpenConnection));
             ConnectCommand.NotifyCanExecuteChanged();
         });
+    }
+
+    private void UpdateDataSourceMode()
+    {
+        DataSourceMode = IsReplayReadOnly ? "REPLAY · READ ONLY"
+            : stateService.VehicleId is { } id && simulationChannels?.Find(id) is not null
+                ? "SIMULATION"
+                : "LIVE";
     }
 }
 public sealed class ShowTelemetryEvent : DomainEvent

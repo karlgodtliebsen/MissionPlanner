@@ -15,7 +15,9 @@ namespace MissionPlanner.Core.Vehicles;
 /// <param name="initialState">The initial state of the vehicle.</param>
 /// <param name="endPoint">The transport endpoint for communication.</param>
 /// <param name="dateTimeProvider">The provider for current date and time.</param>
-public class VehicleSession(VehicleState initialState, TransportEndPoint endPoint, IDateTimeProvider dateTimeProvider)
+/// <param name="localDetails">Optional cached local vehicle descriptions.</param>
+public class VehicleSession(VehicleState initialState, TransportEndPoint endPoint, IDateTimeProvider dateTimeProvider,
+    MissionPlanner.Core.Vehicles.Abstractions.IVehicleLocalDetailsStore? localDetails = null)
 {
     /// <summary>Applies connection health while preserving the last known telemetry and heartbeat.</summary>
     public void ApplyConnectionHealth(VehicleConnectionState connectionState, DateTimeOffset? lastPacketAt,
@@ -34,7 +36,11 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     }
 
     private const byte MavModeFlagSafetyArmed = 0b1000_0000;
-    private VehicleState state = initialState;
+    private VehicleState state = initialState with
+    {
+        LocalDetails = VehicleLocalDetails.GetKey(initialState.Identity.Firmware) is { } key ? localDetails?.Get(key) : null
+    };
+    private string? localDetailsKey = VehicleLocalDetails.GetKey(initialState.Identity.Firmware);
     private bool? preArmHealthy;
     private DateTimeOffset? primaryAttitudeAt;
     private DateTimeOffset? globalPositionAt;
@@ -106,6 +112,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
         state = state with
         {
             Identity = identity,
+            LocalDetails = localDetailsKey is { } key ? localDetails?.Get(key) : null,
             Flight = new VehicleFlightState(
                 observation.CustomMode,
                 observation.BaseMode,
@@ -131,8 +138,10 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     {
         var flightHash = ToOptionalHex(observation.FlightCustomVersion);
         var uid2 = ToOptionalHex(observation.Uid2);
+        localDetailsKey = VehicleLocalDetails.GetKey(state.Identity.Firmware with { HardwareUid = observation.Uid, HardwareUid2 = uid2 });
         state = state with
         {
+            LocalDetails = localDetailsKey is { } key ? localDetails?.Get(key) : null,
             Identity = state.Identity with
             {
                 Firmware = state.Identity.Firmware with

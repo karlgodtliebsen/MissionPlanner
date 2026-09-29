@@ -1,6 +1,30 @@
 sim_vehicle.py -v ArduCopter --console --map --out=udp:127.0.0.1:14550
 
 
+------------------
+Combined
+tcp connection from shell
+
+
+sim_vehicle.py -v ArduCopter -f quad --no-mavproxy
+
+shell:
+mavproxy.py --master=tcp:127.0.0.1:5760 --out=udpin:127.0.0.1:14560
+------------------
+
+
+
+Combined
+wsl connection from shell
+
+sim_vehicle.py -v ArduCopter -f quad --no-mavproxy
+
+websockify 127.0.0.1:8765 127.0.0.1:5760
+
+
+------------------
+
+
 
 One small clarification: the label is **UDPCl**, meaning **UDP Client**—the last character is a lowercase “L”. Classic Mission Planner distinguishes UDP, UDPCl and WebSocket transports. We still need to inspect NextGen to establish which implementations are complete and which options are only present in the dropdown. ([GitHub][1])
 
@@ -88,3 +112,20 @@ For the first test, success means **vehicle identity, live attitude and a comple
 [2]: https://ardupilot.org/dev/docs/learning-ardupilot-uarts-and-the-console.html?utm_source=chatgpt.com "UARTs and the Console"
 [3]: https://ardupilot.org/dev/docs/making-a-mavlink-wifi-bridge-using-the-raspberry-pi.html?utm_source=chatgpt.com "Making a MAVLink WiFi bridge using the Raspberry Pi"
 [4]: https://github.com/novnc/websockify?utm_source=chatgpt.com "GitHub - novnc/websockify: Websockify is a WebSocket to TCP proxy/bridge. This allows a browser to connect to any application/server/service."
+
+
+
+
+
+
+
+The next useful checks are:
+
+Disconnect/reconnect: parameters and MAVFTP still work after reconnecting.
+Connection interruption: stop the simulator or bridge; confirm telemetry becomes stale, then recovers when restarted.
+Two vehicles: confirm their telemetry stays separate and commands reach the selected vehicle.
+
+Those checks would cover the main remaining risks beyond the successful initial connection.
+
+
+

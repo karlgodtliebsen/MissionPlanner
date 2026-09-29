@@ -12,6 +12,23 @@ VEHICLE_CONNECTION_BEST_PRACTICES documents, updated to match the current code
 
 ## Single-connection model
 
+### Local vehicle descriptions
+
+Optional Hardware → Naming provides product name, product information URL, and nickname.
+The separate **Save vehicle details** action never writes flight-controller parameters.
+The app stores these in `MissionPlanner Next Gen/vehicle-details.json` under the user's
+local application-data directory, alongside (but separate from) setup-completion evidence.
+Browser or unavailable filesystem storage falls back to session memory with an explicit status.
+An unreadable existing file is preserved rather than overwritten.
+
+`IVehicleLocalDetailsStore` is a platform-owned cached store. `VehicleSession` attaches
+the matching record as `VehicleState.LocalDetails` when AUTOPILOT_VERSION supplies a
+hardware UID, and refreshes saved edits on subsequent heartbeats. Extended UID is
+preferred, with legacy UID as fallback. COM ports, system IDs, board serial parameters,
+and nicknames are not storage keys. Missing hardware identity disables saving; replacing
+the flight controller creates a new identity. These annotations are user descriptions,
+not verified firmware or hardware capabilities. Existing setup-progress evidence is unchanged.
+
 `VehicleConnectionService` (singleton) supports **one active connection at a time**:
 
 ```csharp

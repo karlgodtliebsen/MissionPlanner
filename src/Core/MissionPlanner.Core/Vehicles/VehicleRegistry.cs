@@ -10,7 +10,8 @@ using MissionPlanner.Transport;
 namespace MissionPlanner.Core.Vehicles;
 
 /// <inheritdoc />
-public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider dateTimeProvider, ILogger<VehicleRegistry> logger) : IVehicleRegistry
+public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider dateTimeProvider, ILogger<VehicleRegistry> logger,
+    IVehicleLocalDetailsStore? localDetails = null) : IVehicleRegistry
 {
     private readonly System.Collections.Concurrent.ConcurrentDictionary<VehicleId, VehicleSession> vehicles = [];
 
@@ -123,7 +124,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
                 VehicleNavigationState.Empty,
                 VehicleHealthState.Empty);
 
-            var candidate = new VehicleSession(state, endPoint, dateTimeProvider);
+            var candidate = new VehicleSession(state, endPoint, dateTimeProvider, localDetails);
             identityWasNew = vehicles.TryAdd(vehicleId, candidate);
             session = identityWasNew ? candidate : vehicles[vehicleId];
             if (identityWasNew)

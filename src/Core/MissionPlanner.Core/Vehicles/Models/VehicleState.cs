@@ -18,6 +18,9 @@ public sealed record VehicleState(
     VehicleNavigationState Navigation,
     VehicleHealthState Health)
 {
+    /// <summary>Gets local user annotations, separate from telemetry and firmware identity.</summary>
+    public VehicleLocalDetails? LocalDetails { get; init; }
+
     /// <summary>Gets vehicle onboard logger evidence, separate from PC recording.</summary>
     public VehicleOnboardLoggingStatus OnboardLogging { get; init; } = VehicleOnboardLoggingStatus.Empty;
 
