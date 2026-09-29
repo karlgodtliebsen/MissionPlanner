@@ -225,7 +225,7 @@ public sealed class ParameterProfilesViewModelTests
             Session.GetField(Arg.Any<string>()).Returns(call => fields.FirstOrDefault(field => field.Name == call.Arg<string>()));
             Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
             Model = new ParameterProfilesViewModel(Repository, Workflow, Confirmation, Files, Exports, Session,
-                NullLogger<ParameterProfilesViewModel>.Instance, Substitute.For<IUiDispatcher>(), Substitute.For<IDomainEventHub>());
+                Substitute.For<IUiDispatcher>(), Substitute.For<IDomainEventHub>(), NullLogger<ParameterProfilesViewModel>.Instance);
         }
 
         public void Dispose()

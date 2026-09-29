@@ -84,9 +84,12 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
             return;
         }
 
-        if (int.TryParse(value, out var port) && SelectedIntPort != port)
+        if (int.TryParse(value, out var port))
         {
-            SelectedIntPort = port;
+            if (SelectedIntPort != port)
+            {
+                SelectedIntPort = port;
+            }
         }
         else
         {
@@ -344,11 +347,11 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
             // Configured/stale COM entries must not bypass current device discovery.
             var channels = availablePorts.Concat(configuredChannels.Where(channel => !IsSerialChannel(channel)))
                 .Distinct(StringComparer.OrdinalIgnoreCase).Order().ToArray();
-            Dispatcher.Dispatch(() =>
+            await Dispatcher.DispatchAsync(() =>
             {
                 Channels.ReplaceRange(channels);
                 if (!IsConnected && availablePorts.Length > 0
-                    && (preferSerial || string.Equals(SelectedChannel, "AUTO", StringComparison.OrdinalIgnoreCase)))
+                                 && (preferSerial || string.Equals(SelectedChannel, "AUTO", StringComparison.OrdinalIgnoreCase)))
                 {
                     if (!availablePorts.Contains(SelectedChannel, StringComparer.OrdinalIgnoreCase))
                     {
@@ -358,7 +361,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                 else if (SelectedChannel is null || !channels.Contains(SelectedChannel, StringComparer.OrdinalIgnoreCase))
                 {
                     SelectedChannel = availablePorts.FirstOrDefault()
-                        ?? (channels.Contains(defaultChannel) ? defaultChannel : channels.FirstOrDefault());
+                                      ?? (channels.Contains(defaultChannel) ? defaultChannel : channels.FirstOrDefault());
                 }
             });
 
@@ -376,6 +379,11 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     protected override void OnPropertyChanged(PropertyChangedEventArgs args)
     {
         base.OnPropertyChanged(args);
+        if (!changingNetworkDraft && args.PropertyName is nameof(SelectedHost) or nameof(SelectedPort)
+            or nameof(LocalBindAddress) or nameof(ClientLocalPort) or nameof(WebSocketUrl))
+        {
+            OnPropertyChanged(nameof(NetworkValidationMessage));
+        }
         switch (args.PropertyName)
         {
             case nameof(SelectedChannel):
@@ -451,6 +459,22 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
             return;
         }
 
+        if (!string.IsNullOrEmpty(NetworkValidationMessage))
+        {
+            StatusMessage = NetworkValidationMessage;
+            return;
+        }
+        if (SelectedChannel is "UDPCl" or "WS" or "WSS")
+        {
+            StatusMessage = "This transport is not implemented yet. No connection was attempted.";
+            return;
+        }
+        if (ShowUdpListen && !string.IsNullOrWhiteSpace(LocalBindAddress))
+        {
+            StatusMessage = "Custom UDP bind addresses are not implemented yet. Leave the bind address blank to listen on all interfaces.";
+            return;
+        }
+
         IsConnecting = true;
         StatusMessage = "Connecting...";
         if (NotificationManager is not null)
@@ -508,7 +532,7 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                 selection = "udp";
                 SelectedChannel = "UDP";
             }
-            else if (selection is "UDPCl")
+            else if (selection is "udpcl")
             {
                 selection = "udpcl";
                 SelectedChannel = "UDPCl";

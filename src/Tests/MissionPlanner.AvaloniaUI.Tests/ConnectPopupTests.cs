@@ -1,4 +1,7 @@
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using System.Net;
 using Avalonia.Headless;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +32,7 @@ public sealed class ConnectPopupTests
         var services = new ServiceCollection().AddLogging().AddSingleton(dispatcher)
             .AddSingleton(Substitute.For<IDomainEventHub>()).BuildServiceProvider();
         return AppBuilder.Configure(() => new MissionPlanner.App.App(services))
-            .UseHeadless(new AvaloniaHeadlessPlatformOptions());
+            .UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
     }
 
     [Fact]
@@ -93,6 +96,58 @@ public sealed class ConnectPopupTests
                 await model.ConnectCommand.ExecuteAsync(null);
                 await connection.Received(1).ConnectUdpAsync(14550, "127.0.0.1", 15555, Arg.Any<CancellationToken>());
                 Assert.Equal("UDP", model.SelectedChannel);
+
+                connection.ClearReceivedCalls();
+                model.SelectedChannel = "UDPCl";
+                Assert.True(model.ShowRemoteEndpoint);
+                Assert.False(model.ShowBaudRate);
+                model.SelectedHost = "bridge.local";
+                model.SelectedPort = "14561";
+                model.ClientLocalPort = "14600";
+                model.SelectedChannel = "WS";
+                model.WebSocketUrl = "ws://localhost:8765/mavlink?stream=2";
+                Assert.Equal("", model.NetworkValidationMessage);
+                Assert.True(model.ShowWebSocket);
+                model.SelectedChannel = "UDPCl";
+                Assert.Equal("bridge.local", model.SelectedHost);
+                Assert.Equal("14561", model.SelectedPort);
+                Assert.Equal("14600", model.ClientLocalPort);
+                model.SelectedPort = "65536";
+                await model.ConnectCommand.ExecuteAsync(null);
+                Assert.Contains("65535", model.StatusMessage);
+                Assert.Empty(connection.ReceivedCalls());
+                model.SelectedPort = "14561";
+                await model.ConnectCommand.ExecuteAsync(null);
+                Assert.Contains("not implemented", model.StatusMessage);
+                Assert.Empty(connection.ReceivedCalls());
+                model.SelectedChannel = "WS";
+                Assert.Equal("ws://localhost:8765/mavlink?stream=2", model.WebSocketUrl);
+                model.WebSocketUrl = "https://localhost/";
+                Assert.NotEmpty(model.NetworkValidationMessage);
+                model.WebSocketUrl = "wss://localhost:8765/mavlink";
+                Assert.Empty(model.NetworkValidationMessage);
+                await model.ConnectCommand.ExecuteAsync(null);
+                Assert.Empty(connection.ReceivedCalls());
+
+                var view = new ConnectPopupView { DataContext = model };
+                var window = new Window { Width = 380, Height = 650, Content = view };
+                window.Show();
+                foreach (var channel in new[] { "UDP", "UDPCl", "WS" })
+                {
+                    model.SelectedChannel = channel;
+                    model.StatusMessage = "";
+                    Dispatcher.UIThread.RunJobs();
+                    window.UpdateLayout();
+                    var output = Environment.GetEnvironmentVariable("MISSIONPLANNER_VISUAL_TEST_OUTPUT");
+                    if (!string.IsNullOrEmpty(output))
+                    {
+                        Directory.CreateDirectory(output);
+                        using var bitmap = new RenderTargetBitmap(new PixelSize(380, 650));
+                        bitmap.Render(window);
+                        bitmap.Save(Path.Combine(output, $"connection-{channel}.png"));
+                    }
+                }
+                window.Close();
             }, TestContext.Current.CancellationToken);
         }
         finally
