@@ -1,0 +1,104 @@
+{
+  "formatVersion": "1.0",
+  "suite": "MissionPlanner Next Gen FFT/Vibration Synthetic Test Data",
+  "generatedSeed": 260929,
+  "defaultSampleRateHz": 1000.0,
+  "datasets": [
+    {
+      "dataset": "01-SingleTone73",
+      "path": "01-SingleTone73/samples.csv",
+      "expected": "01-SingleTone73/expected.json",
+      "description": "Pure 73 Hz sinusoid. Basic FFT amplitude/frequency sanity test."
+    },
+    {
+      "dataset": "02-Harmonics73",
+      "path": "02-Harmonics73/samples.csv",
+      "expected": "02-Harmonics73/expected.json",
+      "description": "Known 1x/2x/3x harmonic family at 73/146/219 Hz."
+    },
+    {
+      "dataset": "03-NoisyHarmonics73",
+      "path": "03-NoisyHarmonics73/samples.csv",
+      "expected": "03-NoisyHarmonics73/expected.json",
+      "description": "73 Hz harmonic family with Gaussian broadband noise."
+    },
+    {
+      "dataset": "04-DcOffset73",
+      "path": "04-DcOffset73/samples.csv",
+      "expected": "04-DcOffset73/expected.json",
+      "description": "73 Hz signal with large DC offset; validates DC-removal path."
+    },
+    {
+      "dataset": "05-BetweenBins73_35",
+      "path": "05-BetweenBins73_35/samples.csv",
+      "expected": "05-BetweenBins73_35/expected.json",
+      "description": "Non-bin-centred 73.35 Hz tone for windowing and interpolation tests."
+    },
+    {
+      "dataset": "06-NearNyquist470",
+      "path": "06-NearNyquist470/samples.csv",
+      "expected": "06-NearNyquist470/expected.json",
+      "description": "470 Hz tone at 1 kHz sampling, close to the 500 Hz Nyquist limit."
+    },
+    {
+      "dataset": "07-NegativeNonHarmonic",
+      "path": "07-NegativeNonHarmonic/samples.csv",
+      "expected": "07-NegativeNonHarmonic/expected.json",
+      "description": "Strong unrelated tones; negative control for harmonic-series detection."
+    },
+    {
+      "dataset": "08-NearHarmonicImperfect",
+      "path": "08-NearHarmonicImperfect/samples.csv",
+      "expected": "08-NearHarmonicImperfect/expected.json",
+      "description": "Near-but-imperfect harmonic family to exercise confidence/tolerance policy."
+    },
+    {
+      "dataset": "09-FrequencySweep50-300",
+      "path": "09-FrequencySweep50-300/samples.csv",
+      "expected": "09-FrequencySweep50-300/expected.json",
+      "description": "Linear 50\u2192300 Hz chirp for STFT/spectrogram tests."
+    },
+    {
+      "dataset": "10-Resonance180",
+      "path": "10-Resonance180/samples.csv",
+      "expected": "10-Resonance180/expected.json",
+      "description": "Frequency sweep amplified by a synthetic structural resonance centred near 180 Hz."
+    },
+    {
+      "dataset": "11-TwoHarmonicSources",
+      "path": "11-TwoHarmonicSources/samples.csv",
+      "expected": "11-TwoHarmonicSources/expected.json",
+      "description": "Two simultaneous independent harmonic families."
+    },
+    {
+      "dataset": "12-IntermittentFault160",
+      "path": "12-IntermittentFault160/samples.csv",
+      "expected": "12-IntermittentFault160/expected.json",
+      "description": "Intermittent 160 Hz vibration and second harmonic present only from 5\u201312 seconds."
+    },
+    {
+      "dataset": "13-ChangingRpm80-240",
+      "path": "13-ChangingRpm80-240/samples.csv",
+      "expected": "13-ChangingRpm80-240/expected.json",
+      "description": "Synthetic motor frequency increases 80\u2192240 Hz with explicit RPM/reference-frequency channels."
+    },
+    {
+      "dataset": "14-FourMotorHealthy",
+      "path": "14-FourMotorHealthy/samples.csv",
+      "expected": "14-FourMotorHealthy/expected.json",
+      "description": "Healthy-ish four-motor synthetic gyro signal with close motor fundamentals and weak H2 content."
+    },
+    {
+      "dataset": "15-FourMotorMotor3Fault",
+      "path": "15-FourMotorMotor3Fault/samples.csv",
+      "expected": "15-FourMotorMotor3Fault/expected.json",
+      "description": "Four-motor signal with deliberately elevated motor-3 fundamental, second and third harmonics."
+    },
+    {
+      "dataset": "16-ThreeAxisMechanical",
+      "path": "16-ThreeAxisMechanical/samples.csv",
+      "expected": "16-ThreeAxisMechanical/expected.json",
+      "description": "Three-axis vibration fixture demonstrating different mechanical coupling by axis."
+    }
+  ]
+}

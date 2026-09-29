@@ -46,6 +46,7 @@
     <ItemGroup>
         <Using Include="Xunit" />
         <None Update="Fixtures\mavlink-signing.json" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="../../../TestData/Frequency/DataFlash/*" Link="TestData/Frequency/DataFlash/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

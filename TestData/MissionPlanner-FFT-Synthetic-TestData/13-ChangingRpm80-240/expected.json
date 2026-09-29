@@ -1,0 +1,25 @@
+{
+  "dataset": "13-ChangingRpm80-240",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 20,
+  "sampleCount": 20000,
+  "channels": [
+    "gyro_x",
+    "motor1_rpm",
+    "motor1_rotation_hz"
+  ],
+  "description": "Synthetic motor frequency increases 80\u2192240 Hz with explicit RPM/reference-frequency channels.",
+  "expectedMotorFrequency": {
+    "startHz": 80.0,
+    "endHz": 240.0
+  },
+  "expectedRpm": {
+    "start": 4800.0,
+    "end": 14400.0
+  },
+  "expectedCorrelation": "strong positive frequency/RPM tracking",
+  "harmonics": [
+    1,
+    2
+  ]
+}

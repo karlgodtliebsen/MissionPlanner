@@ -1,0 +1,13 @@
+{
+  "dataset": "06-NearNyquist470",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 8,
+  "sampleCount": 8000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "470 Hz tone at 1 kHz sampling, close to the 500 Hz Nyquist limit.",
+  "expectedPeakHz": 470.0,
+  "nyquistHz": 500.0,
+  "frequencyToleranceHz": 1.0
+}

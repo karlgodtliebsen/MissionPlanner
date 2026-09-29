@@ -9,7 +9,9 @@ public sealed class FftAnalysisTests
     {
         const int count = 1000; const double rate = 1000;
         var samples = Enumerable.Range(0, count).Select(i => Math.Sin(2 * Math.PI * expectedHz * i / rate)).ToArray();
-        var result = new FftAnalysisService().Analyze(samples, rate);
+        var result = new FftAnalysisService(new MissionPlanner.Analysis.Frequency.FftAnalyzer()).Analyze(samples, rate);
         Assert.InRange(result.Peak.FrequencyHz, expectedHz - 1, expectedHz + 1);
+        Assert.Equal(512, result.SamplesUsed);
+        Assert.Equal(488, result.UnusedTailSamples);
     }
 }

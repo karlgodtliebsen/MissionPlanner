@@ -1,0 +1,13 @@
+{
+  "dataset": "05-BetweenBins73_35",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 8,
+  "sampleCount": 8000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "Non-bin-centred 73.35 Hz tone for windowing and interpolation tests.",
+  "expectedPeakHz": 73.35,
+  "frequencyToleranceHz": 0.75,
+  "purpose": "spectral leakage / non-bin-centred tone"
+}

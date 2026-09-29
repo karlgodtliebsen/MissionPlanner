@@ -3,7 +3,7 @@ using MissionPlanner.App.Utilities;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
-/// <summary>Placeholder for the future DataFlash log workflow.</summary>
+/// <summary>Hosts offline DataFlash analysis; controller log acquisition remains a separate future workflow.</summary>
 public partial class DataFlashLogsTabViewModel(ILogger<DataFlashLogsTabViewModel> logger) : ViewModelBase(logger)
 {
     /// <inheritdoc />

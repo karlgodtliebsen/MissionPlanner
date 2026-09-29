@@ -6,15 +6,24 @@ I would split it into staged tasks so Codex does not mix the DSP/domain work wit
 
 ### Execution status — 2026-09-29
 
-Tasks 1–6 are implemented for the first review. See
+Tasks 1–6 were reviewed and approved by the user. Tasks 7–15 are implemented as the
+initial offline integration. See
 [FftAnalysisDesign.md](../../FftAnalysisDesign.md) for the legacy audit, numerical
 contracts, implementation choices and limitations. The standalone analysis project
-has no Avalonia, MAVLink or DataFlash dependency. Tasks 7–15 remain pending this review.
+has no Avalonia, MAVLink or DataFlash dependency. Core owns DataFlash adaptation;
+the shared Avalonia view is accessible from Logs, DataFlash Logs and FFT Setup.
 
-Validation: `dotnet test` on `MissionPlanner.Analysis.Tests` passed all 37 tests.
-`dotnet build src/MissionPlanner.slnx --no-restore` succeeded with 0 errors and 55
-warnings in existing projects. No new analysis-project warnings or CS1591/CS1587
-warnings were reported. The full solution test suite and hardware tests were not run.
+Scope limits: batches remain separate uniform segments; no controller log downloader
+is introduced. RPM correlation uses actual logged RPM, while PWM is explicitly not
+converted. Filter simulation is a generic static model, not firmware-exact dynamic
+tracking. Real flight logs and interactive hardware/browser behavior remain manual
+validation work. Numerical evidence and configuration are retained in JSON exports.
+
+The first review checkpoint passed 37 analysis tests. Current integration validation
+is recorded in [FftAnalysisDesign.md](../../FftAnalysisDesign.md).
+Final focused verification: 46 numerical tests, 15 FFT/Core tests and three FFT UI
+tests passed; the full solution builds. The broader UI suite still has unrelated-area
+navigation/document/rendering failures, detailed in the design document.
 
 ### Task 1 — Audit existing Fourier/FFT functionality
 

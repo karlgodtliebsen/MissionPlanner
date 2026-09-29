@@ -1,0 +1,18 @@
+{
+  "dataset": "07-NegativeNonHarmonic",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 12,
+  "sampleCount": 12000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "Strong unrelated tones; negative control for harmonic-series detection.",
+  "expectedPeaksHz": [
+    71.0,
+    153.0,
+    247.0
+  ],
+  "expectedHarmonicSeries": [],
+  "frequencyToleranceHz": 1.0,
+  "mustNotClassifyAsSingleHarmonicFamily": true
+}

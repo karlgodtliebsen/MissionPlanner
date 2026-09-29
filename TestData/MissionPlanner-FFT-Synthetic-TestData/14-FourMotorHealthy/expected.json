@@ -1,0 +1,25 @@
+{
+  "dataset": "14-FourMotorHealthy",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 20,
+  "sampleCount": 20000,
+  "channels": [
+    "gyro_x",
+    "motor1_rpm",
+    "motor2_rpm",
+    "motor3_rpm",
+    "motor4_rpm"
+  ],
+  "description": "Healthy-ish four-motor synthetic gyro signal with close motor fundamentals and weak H2 content.",
+  "motorFundamentalsHz": [
+    157.0,
+    161.0,
+    159.0,
+    164.0
+  ],
+  "expectedClusterHz": [
+    155.0,
+    166.0
+  ],
+  "expectedAssessment": "multiple close motor-related fundamentals; no deliberately injected fault"
+}

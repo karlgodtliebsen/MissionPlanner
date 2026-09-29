@@ -1,0 +1,12 @@
+{
+  "dataset": "synthetic-dataflash-gyro-128",
+  "file": "regular-128.dftext",
+  "format": "DataFlash text with FMT",
+  "sampleRateHz": 1024,
+  "sampleCount": 256,
+  "expected": {
+    "fundamentalHz": 128,
+    "amplitude": 1,
+    "notes": "Generated GYR records, zero-based instance 0; timestamps rounded to microseconds. Not a flight recording."
+  }
+}

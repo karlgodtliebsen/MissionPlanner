@@ -36,7 +36,7 @@ Offline tools are RTK source setup, SiK radio, DroneCAN direct-adapter selection
 | Parachute | Parachute | Reported CHUTE parameters | Parameter module tests | Safe bench verification |
 | ESP8266 Setup | ESP8266 Setup | Explicit MAV_COMP_ID_UDP_BRIDGE target; packed strings isolated | Packed string/redaction tests | Component discovery and read/write adapter |
 | Antenna Tracker | Antenna Tracker | AntennaTracker firmware plus reported servo/PID settings; operation is separate | Capability catalog tests | Tracker actuator adapter and operation gate |
-| FFT Setup | FFT Setup | Reported FFT/INS_LOG_BAT parameters; consumes existing artifacts | Synthetic known-frequency tests | DataFlash format integration |
+| FFT Setup | FFT Setup; also Logs → FFT / Vibration | Offline binary/text DataFlash import, uniform IMU/batch segments, spectrum/spectrogram, baseline and read-only notch analysis | Synthetic DSP, DataFlash integrity, parameter snapshots, UI lifetime/export/rendering tests | Representative real flight logs, interactive plots and connected parameter capture |
 
 ## Test strategy
 

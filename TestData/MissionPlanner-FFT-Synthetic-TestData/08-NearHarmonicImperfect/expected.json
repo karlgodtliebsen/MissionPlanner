@@ -1,0 +1,22 @@
+{
+  "dataset": "08-NearHarmonicImperfect",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 12,
+  "sampleCount": 12000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "Near-but-imperfect harmonic family to exercise confidence/tolerance policy.",
+  "expectedPeaksHz": [
+    73.0,
+    145.0,
+    221.0
+  ],
+  "nominalFundamentalHz": 73.0,
+  "exactHarmonicFrequenciesHz": [
+    73.0,
+    146.0,
+    219.0
+  ],
+  "purpose": "harmonic tolerance/confidence boundary; do not require a binary expected classification"
+}

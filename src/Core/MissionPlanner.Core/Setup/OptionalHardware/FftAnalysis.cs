@@ -1,32 +1,57 @@
-using System.Numerics;
+using MissionPlanner.Analysis.Frequency;
 
 namespace MissionPlanner.Core.Setup.OptionalHardware;
 
+/// <summary>Strongest non-DC frequency in the compatibility sample-text workflow.</summary>
+/// <param name="FrequencyHz">Measured bin frequency.</param>
+/// <param name="Magnitude">Normalized peak amplitude in source units.</param>
 public sealed record FftPeak(double FrequencyHz, double Magnitude);
-public sealed record FftSpectrum(double SampleRateHz, IReadOnlyList<double> Frequencies, IReadOnlyList<double> Magnitudes, FftPeak Peak);
-public interface IFftAnalysisService { FftSpectrum Analyze(IReadOnlyList<double> samples, double sampleRateHz); }
 
-public sealed class FftAnalysisService : IFftAnalysisService
+/// <summary>Compatibility projection of the reusable FFT domain.</summary>
+/// <param name="SampleRateHz">Input rate.</param>
+/// <param name="Frequencies">One-sided bin centers.</param>
+/// <param name="Magnitudes">Normalized peak amplitudes.</param>
+/// <param name="Peak">Largest non-DC bin.</param>
+public sealed record FftSpectrum(double SampleRateHz, IReadOnlyList<double> Frequencies, IReadOnlyList<double> Magnitudes, FftPeak Peak)
 {
+    /// <summary>Length of the largest complete power-of-two window used from the input start.</summary>
+    public int SamplesUsed { get; init; }
+    /// <summary>Explicitly unprocessed samples after the selected window.</summary>
+    public int UnusedTailSamples { get; init; }
+}
+
+/// <summary>Compatibility boundary for manual numerical sample input.</summary>
+public interface IFftAnalysisService
+{
+    /// <summary>Analyzes the largest complete power-of-two prefix and reports its unused tail.</summary>
+    /// <param name="samples">At least four finite values.</param>
+    /// <param name="sampleRateHz">Finite positive sampling rate.</param>
+    /// <returns>Normalized spectrum with explicit sample accounting.</returns>
+    FftSpectrum Analyze(IReadOnlyList<double> samples, double sampleRateHz);
+}
+
+/// <summary>Adapts manual samples to the shared FFT; no separate DFT remains.</summary>
+public sealed class FftAnalysisService(FftAnalyzer fft) : IFftAnalysisService
+{
+    /// <inheritdoc />
     public FftSpectrum Analyze(IReadOnlyList<double> samples, double sampleRateHz)
     {
-        if (samples.Count < 2) throw new ArgumentException("At least two samples are required.", nameof(samples));
-        if (sampleRateHz <= 0) throw new ArgumentOutOfRangeException(nameof(sampleRateHz));
-        var bins = samples.Count / 2 + 1;
-        var frequencies = new double[bins];
-        var magnitudes = new double[bins];
-        for (var k = 0; k < bins; k++)
+        ArgumentNullException.ThrowIfNull(samples);
+        if (samples.Count < 4 || samples.Any(v => !double.IsFinite(v)))
         {
-            Complex sum = Complex.Zero;
-            for (var n = 0; n < samples.Count; n++)
-            {
-                var window = .5 - .5 * Math.Cos(2 * Math.PI * n / (samples.Count - 1));
-                sum += samples[n] * window * Complex.FromPolarCoordinates(1, -2 * Math.PI * k * n / samples.Count);
-            }
-            frequencies[k] = k * sampleRateHz / samples.Count;
-            magnitudes[k] = 2 * sum.Magnitude / samples.Count;
+            throw new ArgumentException("Supply at least four finite samples.", nameof(samples));
         }
-        var peakIndex = Enumerable.Range(1, Math.Max(1, bins - 1)).MaxBy(i => magnitudes[i]);
-        return new FftSpectrum(sampleRateHz, frequencies, magnitudes, new FftPeak(frequencies[peakIndex], magnitudes[peakIndex]));
+        var size = 4;
+        while (size <= samples.Count / 2)
+        {
+            size *= 2;
+        }
+        var spectrum = fft.Analyze(samples.Take(size).ToArray(), sampleRateHz, new FftOptions { Size = size });
+        var peak = spectrum.Bins.Skip(1).MaxBy(b => b.Amplitude)!;
+        return new FftSpectrum(sampleRateHz, spectrum.Bins.Select(b => b.FrequencyHz).ToArray(),
+            spectrum.Bins.Select(b => b.Amplitude).ToArray(), new FftPeak(peak.FrequencyHz, peak.Amplitude))
+        {
+            SamplesUsed = size, UnusedTailSamples = samples.Count - size
+        };
     }
 }

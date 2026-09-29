@@ -1,0 +1,15 @@
+{
+  "dataset": "synthetic-reference-73",
+  "sampleRateHz": 1000,
+  "sampleCount": 4096,
+  "tones": [
+    { "frequencyHz": 73, "amplitude": 1.0 },
+    { "frequencyHz": 146, "amplitude": 0.4 },
+    { "frequencyHz": 219, "amplitude": 0.2 }
+  ],
+  "expected": {
+    "fundamentalHz": 73,
+    "harmonicsHz": [146, 219],
+    "notes": "Synthetic periodic excitation, not a labeled mechanical defect. Frequency tolerance is one FFT bin."
+  }
+}

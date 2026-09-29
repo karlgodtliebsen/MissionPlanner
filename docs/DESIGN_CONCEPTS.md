@@ -9,7 +9,10 @@
 and options without referencing Core, MAVLink, DataFlash or Avalonia. Results retain
 immutable measurements separately from qualified interpretations. Later application
 adapters own log decoding, gap handling, units and background execution; presentation
-does not own DSP. Application wiring remains deferred at the initial domain review.
+does not own DSP. Core owns the DataFlash-to-uniform-segment adapter and analysis
+coordination; Avalonia owns file selection, view lifetime cancellation and rendering.
+Parameter snapshots are read-only and carry existing firmware metadata. Simulated
+responses remain distinct from measurements in both presentation and evidence exports.
 
 
 

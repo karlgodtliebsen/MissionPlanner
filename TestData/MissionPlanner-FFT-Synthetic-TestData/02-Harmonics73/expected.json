@@ -1,0 +1,21 @@
+{
+  "dataset": "02-Harmonics73",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 10,
+  "sampleCount": 10000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "Known 1x/2x/3x harmonic family at 73/146/219 Hz.",
+  "expectedFundamentalHz": 73.0,
+  "expectedHarmonicsHz": [
+    146.0,
+    219.0
+  ],
+  "expectedHarmonicOrders": [
+    1,
+    2,
+    3
+  ],
+  "frequencyToleranceHz": 0.5
+}

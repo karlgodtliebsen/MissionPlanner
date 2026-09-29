@@ -1,0 +1,17 @@
+{
+  "dataset": "03-NoisyHarmonics73",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 15,
+  "sampleCount": 15000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "73 Hz harmonic family with Gaussian broadband noise.",
+  "expectedFundamentalHz": 73.0,
+  "expectedHarmonicsHz": [
+    146.0,
+    219.0
+  ],
+  "frequencyToleranceHz": 1.0,
+  "noiseStdDev": 0.18
+}

@@ -1,0 +1,29 @@
+{
+  "dataset": "15-FourMotorMotor3Fault",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 20,
+  "sampleCount": 20000,
+  "channels": [
+    "gyro_x",
+    "motor1_rpm",
+    "motor2_rpm",
+    "motor3_rpm",
+    "motor4_rpm"
+  ],
+  "description": "Four-motor signal with deliberately elevated motor-3 fundamental, second and third harmonics.",
+  "motorFundamentalsHz": [
+    157.0,
+    161.0,
+    159.0,
+    164.0
+  ],
+  "injectedFault": {
+    "motor": 3,
+    "fundamentalHz": 159.0,
+    "strongHarmonicsHz": [
+      318.0,
+      477.0
+    ]
+  },
+  "expectedAssessment": "elevated motor-3 fundamental and unusually strong H2/H3 evidence"
+}

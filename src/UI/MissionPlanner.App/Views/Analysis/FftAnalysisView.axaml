@@ -1,0 +1,123 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:local="clr-namespace:MissionPlanner.App.Views.Analysis" xmlns:core="clr-namespace:MissionPlanner.Core.Analysis;assembly=MissionPlanner.Core" xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia" x:TypeArguments="local:FftAnalysisViewModel" x:Class="MissionPlanner.App.Views.Analysis.FftAnalysisView" x:DataType="local:FftAnalysisViewModel" x:CompileBindings="True">
+    <ScrollViewer>
+        <StackPanel Margin="16" Spacing="12">
+            <TextBlock Text="FFT / Vibration Analysis" FontSize="22" FontWeight="SemiBold" />
+            <TextBlock Text="Analyze existing DataFlash logs offline. Peaks and resonance candidates retain numerical evidence; they do not identify a mechanical defect." TextWrapping="Wrap" />
+            <WrapPanel ItemSpacing="8" LineSpacing="8">
+                <Button Command="{Binding OpenLogCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Open an existing DataFlash binary or text log" AutomationProperties.Name="Open DataFlash log">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <mdi:MaterialIcon Kind="FolderOpen" />
+                        <TextBlock Text="Open log" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding AnalyzeCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Compute the selected interval on a background worker" AutomationProperties.Name="Analyze selected interval">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <mdi:MaterialIcon Kind="ChartBellCurve" />
+                        <TextBlock Text="Analyze" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding CaptureBaselineCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Retain the completed measured spectrum as baseline, then open or select current data" AutomationProperties.Name="Capture baseline">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <mdi:MaterialIcon Kind="ContentCopy" />
+                        <TextBlock Text="Capture baseline" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding ClearBaselineCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Remove the retained baseline" AutomationProperties.Name="Clear baseline">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <mdi:MaterialIcon Kind="Close" />
+                        <TextBlock Text="Clear baseline" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding ExportEvidenceCommand}" IsEnabled="{Binding !IsBusy}" ToolTip.Tip="Export all structured measurements, configuration and simulation evidence as JSON" AutomationProperties.Name="Export FFT evidence">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <mdi:MaterialIcon Kind="Download" />
+                        <TextBlock Text="Export evidence" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" ToolTip.Tip="Cancel the current load or analysis" AutomationProperties.Name="Cancel FFT operation">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <mdi:MaterialIcon Kind="Stop" />
+                        <TextBlock Text="Cancel" />
+                    </StackPanel>
+                </Button>
+            </WrapPanel>
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="4" />
+            <TextBlock Text="{Binding ErrorMessage}" Classes="Warning" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding SourceDescription}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding BaselineDescription, StringFormat='Baseline: {0}'}" TextWrapping="Wrap" />
+            <StackPanel IsEnabled="{Binding !IsBusy}" Spacing="8">
+                <TextBlock Text="Source · IMU instance / signal / axis / uniform segment" />
+                <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}" HorizontalAlignment="Stretch" AutomationProperties.Name="IMU signal axis and segment">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="core:ImuSampleSeries">
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <WrapPanel ItemSpacing="12" LineSpacing="8">
+                    <StackPanel>
+                        <TextBlock Text="Start (log seconds)" />
+                        <NumericUpDown Value="{Binding StartSeconds}" FormatString="F6" Width="170" AutomationProperties.Name="Analysis start seconds" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="End (log seconds)" />
+                        <NumericUpDown Value="{Binding EndSeconds}" FormatString="F6" Width="170" AutomationProperties.Name="Analysis end seconds" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="FFT window samples" />
+                        <ComboBox ItemsSource="{Binding FftSizes}" SelectedItem="{Binding FftSize}" Width="130" AutomationProperties.Name="FFT window size" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Minimum Hz" />
+                        <NumericUpDown Value="{Binding MinimumHz}" Minimum="0" Width="130" AutomationProperties.Name="Minimum plot frequency" />
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock Text="Maximum Hz (0 = Nyquist)" />
+                        <NumericUpDown Value="{Binding MaximumHz}" Minimum="0" Width="170" AutomationProperties.Name="Maximum plot frequency" />
+                    </StackPanel>
+                </WrapPanel>
+            </StackPanel>
+            <CheckBox IsChecked="{Binding ShowSpectrogram}" Content="Spectrogram (unchecked: Spectrum)" AutomationProperties.Name="Switch spectrum or spectrogram" />
+            <TextBlock Text="Completed result: green = measured; blue = simulated supported current static filters; orange = simulated proposal. Change controls, then Analyze to refresh. Spectrogram: time on X, Hz on Y, relative magnitude −60…0 dB. Hover to inspect original bins." TextWrapping="Wrap" />
+            <local:FrequencyPlot Result="{Binding Result}" ShowSpectrogram="{Binding ShowSpectrogram}" Height="320" MinWidth="350" AutomationProperties.Name="Frequency spectrum and spectrogram plot" />
+            <Expander Header="Notch configuration and offline simulation" IsExpanded="False">
+                <StackPanel Spacing="10" IsEnabled="{Binding !IsBusy}">
+                    <TextBlock Text="Read-only analysis. No parameter writes. Current and proposed simulations use a generic static notch model; they do not reproduce firmware tracking, transients, or exact attenuation." TextWrapping="Wrap" />
+                    <WrapPanel ItemSpacing="8" LineSpacing="8">
+                        <Button Command="{Binding ReadConnectedCommand}" ToolTip.Tip="Capture connected parameter values and existing firmware metadata" AutomationProperties.Name="Read connected filter parameters">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <mdi:MaterialIcon Kind="Refresh" />
+                                <TextBlock Text="Read connected snapshot" />
+                            </StackPanel>
+                        </Button>
+                        <ComboBox ItemsSource="{Binding VehicleFamilies}" SelectedItem="{Binding VehicleFamily}" AutomationProperties.Name="Saved parameter firmware family" />
+                        <Button Command="{Binding OpenParametersCommand}" ToolTip.Tip="Load a saved name/value parameter file using the selected metadata family" AutomationProperties.Name="Load saved filter parameters">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <mdi:MaterialIcon Kind="FolderOpen" />
+                                <TextBlock Text="Load saved snapshot" />
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+                    <TextBox Text="{Binding ParameterReport}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Height="180" AutomationProperties.Name="Filter parameter snapshot and metadata" />
+                    <CheckBox IsChecked="{Binding SimulateProposal}" Content="Include proposed static notch in the next analysis" />
+                    <WrapPanel ItemSpacing="12" LineSpacing="8">
+                        <StackPanel>
+                            <TextBlock Text="Proposed center Hz" />
+                            <NumericUpDown Value="{Binding ProposedCenterHz}" Width="150" Minimum="1" AutomationProperties.Name="Proposed notch frequency" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Proposed bandwidth Hz" />
+                            <NumericUpDown Value="{Binding ProposedBandwidthHz}" Width="150" Minimum="1" AutomationProperties.Name="Proposed notch bandwidth" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Proposed attenuation dB" />
+                            <NumericUpDown Value="{Binding ProposedAttenuationDb}" Width="150" Minimum="0" Maximum="120" AutomationProperties.Name="Proposed notch attenuation" />
+                        </StackPanel>
+                    </WrapPanel>
+                </StackPanel>
+            </Expander>
+            <TextBlock Text="Peaks, harmonic evidence, RPM correlation and baseline differences" FontWeight="SemiBold" />
+            <TextBox Text="{Binding Report}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" Height="360" AutomationProperties.Name="Structured vibration analysis report" />
+        </StackPanel>
+    </ScrollViewer>
+</utilities:UserControlViewBase>

@@ -1,0 +1,19 @@
+{
+  "dataset": "12-IntermittentFault160",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 18,
+  "sampleCount": 18000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "Intermittent 160 Hz vibration and second harmonic present only from 5\u201312 seconds.",
+  "event": {
+    "startSeconds": 5.0,
+    "endSeconds": 12.0,
+    "fundamentalHz": 160.0,
+    "harmonicsHz": [
+      320.0
+    ]
+  },
+  "spectrogramExpectation": "160/320 Hz energy is localized to the event interval"
+}

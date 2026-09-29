@@ -6,15 +6,20 @@ source tree. See [LEGACY_SOURCE.md](LEGACY_SOURCE.md) for path and version conve
 
 ## FFT / vibration analysis
 
-Implemented for domain review: standalone `MissionPlanner.Analysis` with normalized
+Implemented: standalone `MissionPlanner.Analysis` with normalized
 one-sided radix-two FFT, Hann/rectangular windows, DC removal, configurable peak
 thresholds, harmonic evidence, overlapping STFT and conservative vibration assessments.
 Deterministic synthetic tests cover numerical correctness and edge cases. Numerical
 observations remain available behind each assessment. See [FftAnalysisDesign.md](FftAnalysisDesign.md).
 
-The existing FFT setup page still uses its earlier sample-text DFT service. DataFlash
-IMU/batch integration, RPM correlation, resonance detection, new FFT/spectrogram UI,
-baseline comparison and filter analysis/simulation remain pending the Tasks 1–6 review.
+Following approval of Tasks 1–6, offline DataFlash binary/text and IMU batch import,
+RPM correlation, qualified resonance candidates, a shared spectrum/spectrogram view,
+baseline comparison, metadata-backed notch snapshots and generic static filter simulation
+are integrated. Open Logs → FFT / Vibration, Flight Data → DataFlash Logs, or FFT Setup.
+Exports retain numerical evidence and captured configuration. Manual sample input now
+uses the shared FFT and reports unused samples. Synthetic regressions and headless UI
+tests are included; real-flight-log and interactive hardware validation remain pending.
+Controller log download and firmware-exact dynamic filter simulation are not implemented.
 
 ## Map source architecture
 
@@ -280,9 +285,10 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 * Start/stop recording of live raw MAVLink frames with retention policy
 * Export KML and graph-ready data
 
-### DataFlash Logs (Missing)
+### DataFlash Logs (Offline analysis implemented)
 
-* Download dataflash logs over MAVLink, browse/graph, automatic log analysis
+* Open existing DataFlash binary/text artifacts for FFT/vibration analysis, including IMU batch samples.
+* Controller log download, general log browsing and broader automatic log analysis remain missing.
 
 ## Connection
 
@@ -791,7 +797,7 @@ Remaining v1.38 feature inventory:
 * **Standard / Advanced Params**: "friendly" curated parameter lists with combos/sliders
 * **Full Parameter Tree**: tree-grouped variant of the raw parameter editor
 * **MAVFTP**: remote filesystem browser, navigation, session reset, streaming download, progress, cancellation, burst recovery, and navigation-safe transient client recreation with application-wide per-vehicle operation/sequence coordination; SITL re-validation pending after endpoint/sequence interoperability fixes
-* v1.38 extras to consider later: FFT analysis, REPL/Terminal, DroneCAN tooling
+* Offline FFT analysis is available under Logs and DataFlash Logs; REPL/Terminal and additional DroneCAN tooling remain future work.
 
 
 

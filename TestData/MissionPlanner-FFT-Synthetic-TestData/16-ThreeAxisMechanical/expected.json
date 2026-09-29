@@ -1,0 +1,22 @@
+{
+  "dataset": "16-ThreeAxisMechanical",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 15,
+  "sampleCount": 15000,
+  "channels": [
+    "gyro_x",
+    "gyro_y",
+    "gyro_z"
+  ],
+  "description": "Three-axis vibration fixture demonstrating different mechanical coupling by axis.",
+  "dominantFamilyHz": [
+    162.0,
+    324.0
+  ],
+  "expectedAxisOrdering": [
+    "gyro_x",
+    "gyro_y",
+    "gyro_z"
+  ],
+  "expectedAssessment": "same 162 Hz source couples most strongly into X, less into Y and Z"
+}

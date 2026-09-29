@@ -1,8 +1,8 @@
 # FFT and vibration analysis
 
-Status: Tasks 1–6 implemented for the first domain/API review (2026-09-29).
-Tasks 7–15 remain deferred at the review point specified in
-[the task set](tasks/fft/fft-tasks.md). The new domain has no Avalonia, MAVLink,
+Status: Tasks 1–6 reviewed and approved by the user; Tasks 7–15 implemented as the
+initial offline integration (2026-09-29). See the integration contracts and verification
+below and [the task set](tasks/fft/fft-tasks.md). The numerical domain has no Avalonia, MAVLink,
 DataFlash, vehicle-parameter, filesystem or third-party DSP dependency.
 
 ## Audit provenance
@@ -30,8 +30,8 @@ legacy source. References below identify paths within that historical tree.
 Regular legacy sources use `AccX/Y/Z` or `GyrX/Y/Z` and `TimeUS`/`SampleUS` to
 estimate sampling rate. Batch data uses the header sample rate and multiplier.
 These are historical implementation facts, not guarantees about current firmware.
-Batch sequencing, gaps, units and scaling must be verified against representative
-logs when implementing Task 7. Generated MAVLink `ISBD_LINK_STATUS` is unrelated
+Batch sequencing, gaps, units and scaling still need validation against representative
+real flight logs. Generated MAVLink `ISBD_LINK_STATUS` is unrelated
 to DataFlash `ISBD` and must not be used as its decoder.
 
 Reusable concepts are explicit sensor/axis selection, timestamp-derived sample
@@ -51,10 +51,12 @@ The task set explicitly requested this independent boundary. It uses
 `System.Numerics.Complex` with a small radix-two FFT, avoiding a new package and
 avoiding coupling the generic domain to the older Core setup service.
 
-The existing `IFftAnalysisService` and its consumers are unchanged pending review.
-Its old arbitrary-length input and amplitude semantics differ from the new API;
-replacing it silently would be a breaking behavioral change. After review, migrate
-it through an explicit adapter and retire its DFT rather than adding a third path.
+The existing `IFftAnalysisService` is now a compatibility adapter to `FftAnalyzer`;
+its separate O(N²) DFT has been retired. Manual text input uses the largest complete
+power-of-two prefix, requires at least four finite samples, and explicitly reports
+`SamplesUsed` and `UnusedTailSamples`. Magnitudes now have the domain's coherent-gain
+normalization. The setup page reports these changes and performs analysis on a worker.
+The domain FFT's exact-length contract is unchanged.
 
 ```text
 uniform samples + sample rate + options
@@ -113,16 +115,36 @@ long uniform sequence → SpectrogramAnalyzer → timed spectrum frames
 
 Results use immutable collections. Services are stateless and safe for independent
 concurrent calls. Composed services receive their analyzers by constructor injection.
-No application registrations are added until the domain review and integration phase.
-The batch API materializes every frame; long-log streaming, memory budgets and
-incremental presentation belong in the later log/application integration design.
+Application registrations now live in `DomainConfigurator`. The application layer
+limits materialized data and frames as described below; the numerical API remains
+independent of those application budgets.
 
 ## Verification
 
-Verified 2026-09-29: all 37 analysis tests pass with no build warnings in the new
-projects. The full solution builds with `--no-restore`: 0 errors, 55 warnings in
-existing projects. No CS1591/CS1587 warnings were reported. The full solution test
-suite and hardware tests were not run; no UI or hardware behavior was changed.
+The initial Tasks 1–6 checkpoint passed 37 numerical tests and a full solution build.
+After the approved integration, validation covers the expanded numerical suite,
+DataFlash/Core suite and Avalonia suite. Final command results are recorded below.
+No hardware operations were exercised.
+
+Final integration verification (2026-09-29):
+
+| Command / scope | Result |
+|---|---|
+| `dotnet build src/MissionPlanner.slnx --no-restore --verbosity quiet` | Passed; 0 errors, 16 warnings in existing Core test files on the final incremental build |
+| `dotnet test src/Tests/MissionPlanner.Analysis.Tests/MissionPlanner.Analysis.Tests.csproj --no-build --no-restore` | 46 passed |
+| `dotnet test src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --no-build --no-restore --filter FullyQualifiedName~Fft` | 15 passed, including the final time-bracketing regression |
+| Core suite excluding `Category=ManualHardware` and `NetworkSitlTests` | 989 passed, five existing serial tests skipped; run before adding the final time-bracketing test |
+| Avalonia suite filtered to `FullyQualifiedName~FftAnalysisViewTests` | 3 passed: compiled themed view/plot modes, load/analyze/baseline/export, deactivation/reactivation |
+| Full Avalonia suite | 337 passed, 10 failed in existing navigation-contract/document/layout tests outside FFT |
+| Existing Avalonia tests with the new FFT test class excluded | 333 passed, 11 failed; the same failure areas persisted, with an additional servo-rendering failure |
+
+The full UI suite is **not green**. Failures include stale `Views/ConfigTuning/Tabs`
+paths, firmware menu expectations, expected four versus actual five diagnostic menu
+items, and headless document/dispatcher/layout failures (FirmwareDocument,
+SetupInformation, CompassInformation, DiagnosticPanel, Readiness; ServoOutput in
+the isolation run). They do not depend on execution of the new FFT test class.
+No unrelated UI files or assertions were changed to mask those failures.
+No new FFT-file warnings or CS1591/CS1587 warnings appeared in the checked build logs.
 
 `MissionPlanner.Analysis.Tests` uses a seeded `SignalBuilder` with sine mixtures,
 DC, uniform noise, and a linear chirp. Coverage includes the 73/146/219 Hz and
@@ -137,24 +159,122 @@ Run:
 dotnet test C:\Projects\MissionPlanner\src\Tests\MissionPlanner.Analysis.Tests\MissionPlanner.Analysis.Tests.csproj
 ```
 
-## Review boundary and later work
+## DataFlash integration (Task 7)
 
-Tasks 1–6 are the first review deliverable. `ResonanceDetector` and
-`MotorFrequencyCorrelator` were suggested in the Task 6 directory sketch, but their
-behavior is explicitly defined by Tasks 8–9; they are deferred rather than shipped
-as empty classes or unsupported diagnoses.
+`Core/Analysis/DataFlashRecordReader` consumes self-describing DataFlash binary
+packets or FMT-based text exports from a caller-owned stream. It uses packet lengths
+from FMT and decodes only relevant IMU/motor records. Unsupported field layouts,
+missing FMT, corrupt packet boundaries and truncated packets fail explicitly. It is
+an offline analysis importer, not a general log browser or controller downloader.
 
-After review:
+`DataFlashImuSampleProvider` supports modern `GYR`, `ACC`, `IMU` plus legacy numbered
+variants, using `I` where present and `SampleUS` before `TimeUS`. Axis values remain
+in logged rad/s or m/s². Regular sequences split on non-increasing timestamps, gaps
+or interval jitter exceeding max(2 µs, 2% of the established interval). Segments
+with cumulative timing deviation above 0.25 sample are rejected. No interpolation
+is applied to IMU samples. Sample rate is derived from accepted segment timestamps.
 
-1. Task 7 needs a DataFlash parser/provider boundary; there is no complete existing
-   parser workflow to simply connect. Supply immutable uniform sample segments,
-   units, IMU identity, start/end times and batch/gap diagnostics to this domain.
-2. Tasks 8–9 add time-aligned RPM evidence and resonance candidates. Output percentage
-   must never be relabeled as RPM. Retain numeric correlation/amplification evidence.
-3. Tasks 10–11 add background execution and spectrum/heatmap UI, selection, cursor
-   inspection, time ranges and log timeline synchronization.
-4. Task 12 compares matched/interpolated physical frequencies across resolutions.
-5. Tasks 13–14 consume metadata-backed parameter snapshots, assess attenuation
-   regions and label offline simulations distinctly; no automatic FC writes.
-6. Task 15 adds small regression datasets and metadata. Current synthetic fixtures
-   are generated in tests; no large logs have been committed.
+ISBH/ISBD decoding uses header batch number, type, instance, sample count, first
+sample time, sample rate and multiplier. It requires sequential 32-value axis chunks;
+scaled samples are raw int16 divided by `mul`. Incomplete or out-of-order batches
+are discarded with diagnostics. Batches remain separate selectable segments, so
+sampling pauses cannot be hidden by concatenation. Spectrogram/correlation currently
+operate within one uniform segment, not across disjoint batch intervals.
+
+The inspected ArduPilot definitions are `libraries/AP_InertialSensor/LogStructure.h`
+and `libraries/AP_ESC_Telem/LogStructure.h` at local checkout revision
+`e9fc86200fac8d5d77d68a90a212eaea9c47dedf`. Fixtures are generated from those layouts;
+they do not substitute for real firmware/log compatibility testing.
+
+Import budgets: seekable artifacts up to 256 MiB, ten million records, six million
+retained/pending axis values, one million values per regular axis segment, one
+million motor observations and 20,000 output segments. Analysis is limited to 2,048
+frames and two million time-frequency bins. Exceeding a budget requests a shorter
+export/interval rather than silently dropping data. Parsing and DSP run on workers.
+
+## RPM and resonance evidence (Tasks 8–9)
+
+ESC `RPM` and RPM sensor `rpm1/rpm2` values retain their logged index and identity.
+RPM sensor-to-motor mapping is explicitly unknown. `RCOU` outputs retain PWM units
+and are never converted to RPM. Within each frame, the dominant measured band is
+selected independently of RPM. RPM is linearly interpolated only between surrounding
+telemetry points at most 0.5 seconds apart; there is no extrapolation over gaps.
+
+`MotorFrequencyCorrelator` retains every time/RPM/frequency/amplitude pair, Pearson
+correlation, mean expected/observed frequencies, mean difference and RMS residual.
+Constant speed or frequency has undefined correlation. The UI currently uses shaft
+order 1; the numerical API supports an explicit positive order. A high correlation
+alone does not establish that the frequency equals shaft frequency: inspect the
+residual and source identity as well.
+
+`ResonanceDetector` requires at least five measurements, positive correlation >=0.7,
+frequency coverage on both sides of a candidate band and amplitude amplification
+>=3 relative to the out-of-band median. The strongest peak defines the candidate;
+the application uses width max(10 Hz, four bins). Confidence is correlation times
+`1 - 1/amplification`, a heuristic rather than a probability. Changing excitation,
+load or a transient remains an alternative explanation. No specific defect is asserted.
+
+## User workflow and comparison (Tasks 10–12)
+
+The shared `FftAnalysisView` is available under **Logs → FFT / Vibration**,
+**Flight Data → DataFlash Logs**, and **Optional Hardware → FFT → FFT / Vibration
+Analysis**. The Logs path is available without vehicle parameter discovery.
+
+1. Open an existing `.bin` or FMT-based `.log` artifact.
+2. Select an IMU/signal/axis/uniform segment. Inspect source diagnostics.
+3. Set start/end in log boot-time seconds, FFT size and frequency range (maximum 0
+   means Nyquist), then Analyze. The spectrum is the arithmetic mean of linear
+   amplitudes over complete 50%-overlapped Hann windows, with unused tail reported.
+4. Switch Spectrum/Spectrogram and hover for original numerical bins. Heatmap
+   rendering max-pools to at most 256×128 display cells; exported frames are not
+   decimated. Its −60…0 dB colors are relative to the largest selected-frame amplitude.
+5. Capture a completed spectrum as baseline, then open/select the current dataset
+   and Analyze. Comparisons use matching units, window and DC settings and linear
+   interpolation onto the coarser physical-frequency grid within shared Nyquist.
+   Results show frequency, baseline, current and change. Different resolution/window
+   leakage can still affect apparent amplitudes; this is not a PSD comparison.
+6. Export evidence as schema-versioned JSON. It includes all source values, bins,
+   frames, threshold evidence, harmonic matches, paired RPM observations, baseline,
+   captured analysis choices, parameter snapshot and proposed static filters.
+
+The shared source clock synchronizes interval selection and spectrogram inspection.
+There is no separate DataFlash replay timeline to synchronize with. Loading/analysis
+can be cancelled; deactivation cancels the view lifetime and suppresses late results.
+Plots represent the last completed operation; press Analyze after changing controls.
+
+## Notch analysis and simulation (Tasks 13–14)
+
+`NotchParameterAnalysisService` reads actual connected registry values or saved
+name/value `.param/.params/.csv/.txt` files. Saved files require an explicit firmware
+family for metadata lookup. Descriptions come from `IVehicleParameterMetadataService`;
+missing metadata is marked unavailable. Snapshots are frozen and identified by source,
+not live subscriptions. The service has no parameter-write dependency or operation.
+
+Static `INS_HNTCH` and `INS_HNTC2` bands require an enabled, complete configuration,
+MODE=0, OPTS=0, valid FREQ/BW/ATT and an integer harmonic mask. Unknown/dynamic
+settings are listed as limitations, never interpreted as disabled. Harmonic center
+and bandwidth scale with order. Peaks are labeled inside/outside supported nominal
+center ± bandwidth/2 regions; actual attenuation is not claimed. Harmonics at/above
+the selected sample Nyquist are excluded from simulation with a note.
+
+`NotchFilterSimulator` uses a generic digital biquad notch with Q=center/bandwidth.
+A dry/wet blend sets center attenuation; transfer magnitudes multiply for cascades.
+It applies the response to the measured spectrum and keeps measured and simulated
+amplitudes separate. Current supported static filters (blue) and a user-proposed
+static notch (orange) can be compared to measured data (green). It is not ArduPilot's
+exact filter, does not reproduce dynamic tracking, phase/transients, or undo filters
+already applied to the logged signal, and does not recommend or write FC parameters.
+
+## Regression infrastructure and remaining validation (Task 15)
+
+`TestData/Frequency/Synthetic` contains discoverable JSON signal manifests.
+`TestData/Frequency/DataFlash` contains a small generated text fixture plus expected
+frequency/amplitude metadata; binary batch fixtures are constructed in tests.
+See [the fixture guide](../TestData/Frequency/README.md). No large logs are committed.
+
+Automated tests cover numerical models, regular and batch parsing, malformed inputs,
+gap handling, metadata-backed static/dynamic behavior, read-only saved import,
+unit mismatch, view lifetime cancellation, evidence export and compiled view layout
+in both light/dark themes and both plot modes. Real flight logs, connected-controller
+parameter capture and interactive desktop/browser cursor behavior still require
+manual validation. No controller hardware operation was performed.

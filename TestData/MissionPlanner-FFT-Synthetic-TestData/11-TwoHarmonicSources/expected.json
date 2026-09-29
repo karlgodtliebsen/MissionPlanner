@@ -1,0 +1,26 @@
+{
+  "dataset": "11-TwoHarmonicSources",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 15,
+  "sampleCount": 15000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "Two simultaneous independent harmonic families.",
+  "expectedFamilies": [
+    {
+      "fundamentalHz": 83.0,
+      "harmonicsHz": [
+        166.0,
+        249.0
+      ]
+    },
+    {
+      "fundamentalHz": 137.0,
+      "harmonicsHz": [
+        274.0
+      ]
+    }
+  ],
+  "frequencyToleranceHz": 1.0
+}

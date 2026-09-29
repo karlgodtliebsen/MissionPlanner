@@ -1,0 +1,16 @@
+{
+  "dataset": "09-FrequencySweep50-300",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 20,
+  "sampleCount": 20000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "Linear 50\u2192300 Hz chirp for STFT/spectrogram tests.",
+  "expectedSweep": {
+    "startHz": 50.0,
+    "endHz": 300.0,
+    "direction": "increasing"
+  },
+  "spectrogramExpectation": "dominant ridge rises approximately linearly with time"
+}

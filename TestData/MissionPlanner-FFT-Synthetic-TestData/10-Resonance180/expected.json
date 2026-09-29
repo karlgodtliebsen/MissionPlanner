@@ -1,0 +1,22 @@
+{
+  "dataset": "10-Resonance180",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 20,
+  "sampleCount": 20000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "Frequency sweep amplified by a synthetic structural resonance centred near 180 Hz.",
+  "expectedSweep": {
+    "startHz": 50.0,
+    "endHz": 300.0
+  },
+  "expectedResonance": {
+    "centerHz": 180.0,
+    "approxRangeHz": [
+      165.0,
+      195.0
+    ]
+  },
+  "frequencyToleranceHz": 5.0
+}

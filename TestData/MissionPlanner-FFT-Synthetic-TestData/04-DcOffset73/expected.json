@@ -1,0 +1,15 @@
+{
+  "dataset": "04-DcOffset73",
+  "sampleRateHz": 1000.0,
+  "durationSeconds": 10,
+  "sampleCount": 10000,
+  "channels": [
+    "gyro_x"
+  ],
+  "description": "73 Hz signal with large DC offset; validates DC-removal path.",
+  "expectedPeaksAfterDcRemovalHz": [
+    73.0
+  ],
+  "dcOffset": 2.75,
+  "frequencyToleranceHz": 0.5
+}
