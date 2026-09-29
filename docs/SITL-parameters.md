@@ -112,3 +112,20 @@ For the first test, success means **vehicle identity, live attitude and a comple
 [2]: https://ardupilot.org/dev/docs/learning-ardupilot-uarts-and-the-console.html?utm_source=chatgpt.com "UARTs and the Console"
 [3]: https://ardupilot.org/dev/docs/making-a-mavlink-wifi-bridge-using-the-raspberry-pi.html?utm_source=chatgpt.com "Making a MAVLink WiFi bridge using the Raspberry Pi"
 [4]: https://github.com/novnc/websockify?utm_source=chatgpt.com "GitHub - novnc/websockify: Websockify is a WebSocket to TCP proxy/bridge. This allows a browser to connect to any application/server/service."
+
+
+
+
+
+
+
+The next useful checks are:
+
+Disconnect/reconnect: parameters and MAVFTP still work after reconnecting.
+Connection interruption: stop the simulator or bridge; confirm telemetry becomes stale, then recovers when restarted.
+Two vehicles: confirm their telemetry stays separate and commands reach the selected vehicle.
+
+Those checks would cover the main remaining risks beyond the successful initial connection.
+
+
+
