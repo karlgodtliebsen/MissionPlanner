@@ -206,7 +206,7 @@ public sealed class ConnectPopupTests
                         Directory.CreateDirectory(output);
                         using var bitmap = new RenderTargetBitmap(new PixelSize(380, 650));
                         bitmap.Render(window);
-                        bitmap.Save(Path.Combine(output, $"connection-{channel}.png"));
+                        bitmap.Save(Path.Combine(output, $"connection-{channel}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
                     }
                 }
                 window.Close();

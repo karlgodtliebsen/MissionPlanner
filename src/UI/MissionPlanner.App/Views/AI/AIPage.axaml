@@ -1,17 +1,23 @@
-<utilities:NavigationViewBase x:TypeArguments="flightPlanner:AIViewModel" 
+<utilities:NavigationViewBase x:TypeArguments="ai:AIViewModel"
                               xmlns="https://github.com/avaloniaui"
                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                              xmlns:flightPlanner="clr-namespace:MissionPlanner.App.Views.FlightPlanner"
+                              xmlns:ai="clr-namespace:MissionPlanner.App.Views.AI"
+                              xmlns:sections="clr-namespace:MissionPlanner.App.Views.AI.Sections"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              x:DataType="ai:AIViewModel"
                               x:Class="MissionPlanner.App.Views.AI.AIPage">
     <ContentPage Header="AI">
+        
 
+        <TabControl Margin="20" TabStripPlacement="Left" >
+               
+            <TabItem Header="Frame"><sections:VehicleDslView /></TabItem>
+            <TabItem Header="Accel Calibration"><sections:MissionDslView /></TabItem>
+           
+        </TabControl>
 
-        <TextBlock Text="Welcome to AI !"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
     </ContentPage>
 </utilities:NavigationViewBase>

@@ -77,7 +77,7 @@ public sealed class ReadinessViewTests
                             Directory.CreateDirectory(directory);
                             using var bitmap = new RenderTargetBitmap(new PixelSize(width, 950));
                             bitmap.Render(view);
-                            bitmap.Save(Path.Combine(directory, $"readiness-{theme}-{width}.png"));
+                            bitmap.Save(Path.Combine(directory, $"readiness-{theme}-{width}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
                         }
                     }
                 }

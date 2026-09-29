@@ -1,23 +1,23 @@
-using Microsoft.Extensions.Options;
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using MissionPlanner.App.Utilities.Dispatching;
-using MissionPlanner.Library.EventHub.Abstractions;
+using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Firmware;
 using MissionPlanner.Firmware.Model;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Headless;
-using Avalonia.Threading;
-using Avalonia.VisualTree;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace MissionPlanner.AvaloniaUI.Tests;
 
@@ -26,12 +26,16 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 public sealed class ParameterProfilesViewModelTests
 {
     /// <summary>Creates an offline renderer with production styles.</summary>
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure(() =>
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        return AppBuilder.Configure(() =>
         new MissionPlanner.App.App(new ServiceCollection().AddLogging().BuildServiceProvider()))
         .UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
+    }
 
     /// <summary>The profile browser and comparison render with compiled bindings.</summary>
     [Fact]
+    [Obsolete]
     public async Task ProfileDialogRenders()
     {
         var renderer = HeadlessUnitTestSession.StartNew(typeof(ParameterProfilesViewModelTests));
@@ -56,14 +60,14 @@ public sealed class ParameterProfilesViewModelTests
                     Directory.CreateDirectory(directory);
                     using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(900, 850));
                     bitmap.Render(window);
-                    bitmap.Save(Path.Combine(directory, "parameter-profiles.png"));
+                    bitmap.Save(Path.Combine(directory, "parameter-profiles.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
                 }
                 window.Close();
             }, TestContext.Current.CancellationToken);
         }
         finally
         {
-            await Task.Run(renderer.Dispose);
+            await Task.Run(renderer.Dispose, TestContext.Current.CancellationToken);
         }
     }
 
@@ -73,7 +77,7 @@ public sealed class ParameterProfilesViewModelTests
     {
         using var fixture = new Fixture();
         var profile = fixture.Workflow.Create(fixture.Session, "Backup");
-        await fixture.Repository.SaveAsync(profile);
+        await fixture.Repository.SaveAsync(profile, TestContext.Current.CancellationToken);
         fixture.Model.SelectedProfile = profile;
         byte[]? exported = null;
         fixture.Exports.SaveAsync(Arg.Any<string>(), Arg.Any<Stream>(), Arg.Any<CancellationToken>()).Returns(call =>
@@ -93,10 +97,10 @@ public sealed class ParameterProfilesViewModelTests
         Assert.NotEqual(profile.Id, fixture.Model.SelectedProfile!.Id);
         fixture.Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
         await fixture.Model.DeleteCommand.ExecuteAsync(null);
-        Assert.Equal(2, (await fixture.Repository.GetAllAsync()).Count);
+        Assert.Equal(2, (await fixture.Repository.GetAllAsync(TestContext.Current.CancellationToken)).Count);
         fixture.Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
         await fixture.Model.DeleteCommand.ExecuteAsync(null);
-        Assert.Equal(profile.Id, Assert.Single(await fixture.Repository.GetAllAsync()).Id);
+        Assert.Equal(profile.Id, Assert.Single(await fixture.Repository.GetAllAsync(TestContext.Current.CancellationToken)).Id);
         AssertNoWrites(fixture.Session);
     }
     /// <summary>Each creation scope persists the intended values and metadata.</summary>
@@ -108,7 +112,7 @@ public sealed class ParameterProfilesViewModelTests
     {
         using var fixture = new Fixture();
         var model = fixture.Model;
-        await model.InitializeAsync();
+        await model.InitializeAsync(TestContext.Current.CancellationToken);
         Assert.Empty(model.Profiles);
         model.ProfileName = "Camera setup";
         model.Description = "Reusable settings";
@@ -116,7 +120,7 @@ public sealed class ParameterProfilesViewModelTests
         model.Scope = scope;
         model.SelectedNames = "GAIN";
         await model.CreateCommand.ExecuteAsync(null);
-        var saved = Assert.Single(await fixture.Repository.GetAllAsync());
+        var saved = Assert.Single(await fixture.Repository.GetAllAsync(TestContext.Current.CancellationToken));
         Assert.Equal(count, saved.Values.Count);
         Assert.Equal(2, saved.Values["GAIN"]);
         Assert.Equal("Reusable settings", saved.Description);
@@ -143,12 +147,12 @@ public sealed class ParameterProfilesViewModelTests
         fixture.Model.SelectedNames = "GAIN,UNKNOWN";
         await fixture.Model.CreateCommand.ExecuteAsync(null);
         Assert.Contains("UNKNOWN", fixture.Model.Feedback);
-        Assert.Empty(await fixture.Repository.GetAllAsync());
+        Assert.Empty(await fixture.Repository.GetAllAsync(TestContext.Current.CancellationToken));
         fixture.Model.Scope = "All parameters";
         fixture.Model.ProfileName = " ";
         await fixture.Model.CreateCommand.ExecuteAsync(null);
         Assert.Contains("failed", fixture.Model.Feedback);
-        Assert.Empty(await fixture.Repository.GetAllAsync());
+        Assert.Empty(await fixture.Repository.GetAllAsync(TestContext.Current.CancellationToken));
     }
 
     /// <summary>Mismatch and missing parameters remain visible, and only explicitly selected values stage.</summary>
@@ -161,8 +165,8 @@ public sealed class ParameterProfilesViewModelTests
             FirmwareFamily = FirmwareFamily.ArduPlane,
             Values = new Dictionary<string, double> { ["GAIN"] = 3, ["UNKNOWN"] = 7 }
         };
-        await fixture.Repository.SaveAsync(profile);
-        await fixture.Model.InitializeAsync();
+        await fixture.Repository.SaveAsync(profile, TestContext.Current.CancellationToken);
+        await fixture.Model.InitializeAsync(TestContext.Current.CancellationToken);
         fixture.Model.SelectedProfile = Assert.Single(fixture.Model.Profiles);
         Assert.Contains("does not match", fixture.Model.ReviewText);
         Assert.False(fixture.Model.Rows.Single(row => row.Name == "UNKNOWN").CanStage);
@@ -196,8 +200,10 @@ public sealed class ParameterProfilesViewModelTests
         AssertNoWrites(fixture.Session);
     }
 
-    private static void AssertNoWrites(IParameterEditSession session) =>
+    private static void AssertNoWrites(IParameterEditSession session)
+    {
         Assert.DoesNotContain(session.ReceivedCalls(), call => call.GetMethodInfo().Name is "ApplyAsync" or "RetryFailedAsync");
+    }
 
     private sealed class Fixture : IDisposable
     {
@@ -207,8 +213,14 @@ public sealed class ParameterProfilesViewModelTests
         internal IFileOpenService Files { get; } = Substitute.For<IFileOpenService>();
         internal IFileSaveService Exports { get; } = Substitute.For<IFileSaveService>();
         internal IParameterProfileService Workflow { get; } = new ParameterProfileService(new ParameterComparisonService(new ParameterValueEquivalence()));
-        internal IParameterProfileRepository Repository { get; }
-        internal ParameterProfilesViewModel Model { get; }
+        internal IParameterProfileRepository Repository
+        {
+            get;
+        }
+        internal ParameterProfilesViewModel Model
+        {
+            get;
+        }
 
         internal Fixture()
         {

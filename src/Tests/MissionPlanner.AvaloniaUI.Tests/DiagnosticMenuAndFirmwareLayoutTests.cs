@@ -58,7 +58,7 @@ public sealed class DiagnosticMenuAndFirmwareLayoutTests
                         Directory.CreateDirectory(directory);
                         using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(1440, 100));
                         bitmap.Render(window);
-                        bitmap.Save(Path.Combine(directory, "topbar-offline.png"));
+                        bitmap.Save(Path.Combine(directory, "topbar-offline.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
                     }
                     window.Close();
                 }

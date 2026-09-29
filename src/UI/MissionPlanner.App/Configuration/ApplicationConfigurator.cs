@@ -12,6 +12,7 @@ using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.AI;
+using MissionPlanner.App.Views.AI.Sections;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Sections;
@@ -246,6 +247,11 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<AIPage>();
         services.TryAddTransient<AIViewModel>();
+
+        services.TryAddTransient<VehicleDslView>();
+        services.TryAddTransient<VehicleDslViewModel>();
+        services.TryAddTransient<MissionDslView>();
+        services.TryAddTransient<MissionDslViewModel>();
 
         services.TryAddTransient<HelpPage>();
 

@@ -189,7 +189,7 @@ public sealed class DiagnosticPanelViewTests
             using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(
                 new PixelSize((int)visual.Bounds.Width, (int)visual.Bounds.Height));
             bitmap.Render(visual);
-            bitmap.Save(Path.Combine(directory, $"panel-{scenario}.png"));
+            bitmap.Save(Path.Combine(directory, $"panel-{scenario}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
         }
     }
 }

@@ -52,7 +52,7 @@ public sealed class LogStorageTests : IDisposable
     public async Task StorageSupportsExclusiveCreationReadExportAndDelete(bool browser)
     {
         ILogStorage storage = browser ? new BrowserLogStorage() : new DesktopLogStorage(new DesktopLogPathProvider(_ => temporary));
-        Assert.Empty(await storage.ListAsync(LogStorageArea.Application));
+        Assert.Empty(await storage.ListAsync(LogStorageArea.Application, TestContext.Current.CancellationToken));
         await using (var writer = await storage.CreateAsync(LogStorageArea.Telemetry, "flight.tlog", TestContext.Current.CancellationToken))
         {
             await writer.WriteAsync(new byte[] { 1, 2, 3 }, TestContext.Current.CancellationToken);
