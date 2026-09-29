@@ -8,7 +8,7 @@
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     x:Class="MissionPlanner.App.Views.Main.MainWindow"
     x:DataType="main:MainViewModel"
-    Icon="/Resources/AppIcon/mpdesktop.png"
+    Icon="/Resources/AppIcon/mpdesktop.ico"
     TitleBarMargin="0,0,138,0"
     Title="MissionPlanner Next Generation">
 

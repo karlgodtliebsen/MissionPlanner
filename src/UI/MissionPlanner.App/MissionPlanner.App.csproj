@@ -15,6 +15,7 @@
 
 	<ItemGroup>
 	  <AvaloniaResource Include="Resources\AppIcon\mpdesktop.png" />
+	  <AvaloniaResource Include="Resources\AppIcon\mpdesktop.ico" />
 	  <AvaloniaResource Include="Resources\AppIcon\mpdesktop.svg" />
 	  <AvaloniaResource Include="Resources\Images\ardupilot.png" />
 	  <AvaloniaResource Include="Resources\Images\light_connect_icon.png" />

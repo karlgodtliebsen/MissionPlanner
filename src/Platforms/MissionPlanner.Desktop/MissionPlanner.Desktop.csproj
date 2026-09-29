@@ -12,9 +12,13 @@
 
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\UI\MissionPlanner.App\Resources\AppIcon\mpdesktop.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Also available to shortcuts that launch a script or dotnet run. -->
+    <Content Include="..\..\UI\MissionPlanner.App\Resources\AppIcon\mpdesktop.ico"
+             Link="mpdesktop.ico" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />
   </ItemGroup>

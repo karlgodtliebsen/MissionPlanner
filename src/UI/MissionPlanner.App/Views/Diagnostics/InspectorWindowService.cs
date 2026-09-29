@@ -38,9 +38,12 @@ public sealed class InspectorWindowService : IInspectorWindowService
             window.Activate();
             return;
         }
+        using var iconStream = Avalonia.Platform.AssetLoader.Open(
+            new Uri("avares://MissionPlanner.App/Resources/AppIcon/mpdesktop.ico"));
         window = new UrsaWindow
         {
             Title = "Diagnostics",
+            Icon = new Avalonia.Controls.WindowIcon(iconStream),
             Width = model.DrawerWidth,
             Height = 800,
             MinWidth = 360,
