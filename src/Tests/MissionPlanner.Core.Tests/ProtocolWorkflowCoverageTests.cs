@@ -68,6 +68,35 @@ public sealed class ProtocolWorkflowCoverageTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => wait);
     }
 
+    /// <summary>Verifies cleanup of an acknowledged command cannot remove its successor.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task CompletedCommandCleanupDoesNotRemoveNextWaiter(bool cancelPrevious)
+    {
+        var tracker = new CommandAckTracker();
+        var vehicle = new VehicleId(1, 1);
+        using var previousLifetime = new CancellationTokenSource();
+        var previous = tracker.WaitForAckAsync(vehicle, 400, TimeSpan.FromMilliseconds(100), previousLifetime.Token);
+        var ack = new CommandAckMessage(1, 1, EndPoint, 400, 0, ObservedAt);
+        tracker.Handle(ack);
+        Assert.Same(ack, await previous);
+
+        using var nextLifetime = new CancellationTokenSource();
+        var next = tracker.WaitForAckAsync(vehicle, 400, TimeSpan.FromSeconds(5), nextLifetime.Token);
+        if (cancelPrevious)
+        {
+            await previousLifetime.CancelAsync();
+        }
+
+        // Let the old delay's cancellation or timeout cleanup run while the new
+        // registration is pending, before delivering the second ACK.
+        await Task.Delay(TimeSpan.FromMilliseconds(300), TestContext.Current.CancellationToken);
+        tracker.Handle(ack);
+        Assert.Same(ack, await next.WaitAsync(TimeSpan.FromSeconds(1), TestContext.Current.CancellationToken));
+        await nextLifetime.CancelAsync();
+    }
+
     /// <summary>Verifies mission download buffers early/out-of-order items and rejects the wrong system.</summary>
     [Fact]
     public async Task MissionDownloadHandlesOutOfOrderAndWrongVehicleResponses()

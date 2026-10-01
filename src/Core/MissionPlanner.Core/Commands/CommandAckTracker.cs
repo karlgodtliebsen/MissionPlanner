@@ -54,16 +54,18 @@ public sealed class CommandAckTracker : ICommandAckTracker
         {
             await Task.Delay(timeout, cancellationToken).ConfigureAwait(false);
 
-            if (pending.TryRemove(key, out var removed))
+            // A later command may already be waiting under the same key. Only
+            // remove the registration owned by this timeout/cancellation task.
+            if (pending.TryRemove(new KeyValuePair<CommandAckKey, TaskCompletionSource<CommandAckMessage>>(key, completion)))
             {
-                removed.TrySetException(new TimeoutException($"Timed out waiting for ACK for command '{key.Command}' from vehicle '{key.VehicleId}'."));
+                completion.TrySetException(new TimeoutException($"Timed out waiting for ACK for command '{key.Command}' from vehicle '{key.VehicleId}'."));
             }
         }
         catch (OperationCanceledException ex)
         {
-            if (pending.TryRemove(key, out var removed))
+            if (pending.TryRemove(new KeyValuePair<CommandAckKey, TaskCompletionSource<CommandAckMessage>>(key, completion)))
             {
-                removed.TrySetCanceled(ex.CancellationToken);
+                completion.TrySetCanceled(ex.CancellationToken);
             }
         }
     }
