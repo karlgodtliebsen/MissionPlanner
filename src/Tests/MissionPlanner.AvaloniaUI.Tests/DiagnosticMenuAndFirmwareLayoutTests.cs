@@ -34,7 +34,7 @@ public sealed class DiagnosticMenuAndFirmwareLayoutTests
                     var menu = Assert.IsType<MenuFlyout>(dropdown.Flyout);
                     var icons = menu.Items.Cast<MenuItem>().Select(item =>
                         Assert.IsType<Material.Icons.Avalonia.MaterialIcon>(item.Icon).Kind).ToArray();
-                    Assert.Equal(4, icons.Distinct().Count());
+                    Assert.Equal(6, icons.Distinct().Count());
                     Assert.Equal(35, dropdown.Width);
                     Assert.Equal(35, dropdown.Height);
                     var window = new Window
@@ -104,7 +104,9 @@ public sealed class DiagnosticMenuAndFirmwareLayoutTests
                 var dropdown = topbar.FindControl<DropDownButton>("CompactDiagnostics")!;
                 var menu = Assert.IsType<MenuFlyout>(dropdown.Flyout);
                 var items = menu.Items.Cast<MenuItem>().ToArray();
-                Assert.Equal(4, items.Length);
+                Assert.Equal(6, items.Length);
+                var dataFlash = Assert.Single(items, item => Equals(item.Header, "DataFlash Logs"));
+                Assert.Equal("DataFlash Logs", dataFlash.CommandParameter);
                 var anchor = new Button { Content = "Diagnostics", Flyout = menu };
                 var window = new Window { Content = anchor, Width = 800, Height = 450 };
                 window.Show();

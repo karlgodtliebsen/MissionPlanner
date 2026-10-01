@@ -13,13 +13,13 @@
             <TextBlock Text="{Binding Details}" TextWrapping="Wrap" />
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button Classes="ToolbarButton" Command="{Binding ViewUpgradeCommand}" ToolTip.Tip="View Upgrade" AutomationProperties.Name="View Upgrade">
-                    <mdi:MaterialIcon Kind="Upload" />
+                    <mdi:MaterialIcon Kind="Upload"  Classes="ActionIcon" />
                 </Button>
                 <Button Classes="ToolbarButton" Command="{Binding ReleaseNotesCommand}" ToolTip.Tip="Release Notes" AutomationProperties.Name="Release Notes">
-                    <mdi:MaterialIcon Kind="FileDocumentOutline" />
+                    <mdi:MaterialIcon Kind="FileDocumentOutline"  Classes="ActionIcon" />
                 </Button>
                 <Button Classes="ToolbarButton" Command="{Binding LaterCommand}" ToolTip.Tip="Later" AutomationProperties.Name="Later">
-                    <mdi:MaterialIcon Kind="Close" />
+                    <mdi:MaterialIcon Kind="Close"  Classes="ActionIcon" />
                 </Button>
             </StackPanel>
         </StackPanel>

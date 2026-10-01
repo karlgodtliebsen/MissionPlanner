@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Analysis.Frequency;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Utilities;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.Core.Analysis;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -23,9 +22,22 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
     private CancellationTokenSource? lifetime;
     private CancellationTokenSource? operation;
     private int generation;
+    private int activePresentations;
     private ImuLogData? log;
     private FftBaseline? baseline;
     private NotchParameterSnapshot? parameterSnapshot;
+    /// <summary>Raised after a log finishes loading and its initial analysis completes.</summary>
+    public event EventHandler? LogLoaded;
+    /// <summary>Latest automatic refresh, also available to callers awaiting a source change.</summary>
+    public Task SelectionAnalysis { get; private set; } = Task.CompletedTask;
+    /// <summary>Display title of the loaded log.</summary>
+    [ObservableProperty] public partial string FileName { get; set; } = "DataFlash Logs";
+    /// <summary>Selected workspace tab: file information or graphs.</summary>
+    [ObservableProperty]
+    public partial int SelectedTab
+    {
+        get; set;
+    }
 
     /// <summary>Creates the analysis presentation with explicit file, domain and dispatch services.</summary>
     public FftAnalysisViewModel(DataFlashImuSampleProvider provider, FftWorkspaceService workspace,
@@ -42,23 +54,53 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
     /// <summary>Selectable uniform segments, each identifying IMU, signal and axis.</summary>
     [ObservableProperty] public partial ImmutableArray<ImuSampleSeries> Sources { get; set; } = [];
     /// <summary>Selected sensor/axis segment.</summary>
-    [ObservableProperty] public partial ImuSampleSeries? SelectedSource { get; set; }
+    [ObservableProperty]
+    public partial ImuSampleSeries? SelectedSource
+    {
+        get; set;
+    }
     /// <summary>Artifact name and quality diagnostics.</summary>
     [ObservableProperty] public partial string SourceDescription { get; set; } = "Open an existing DataFlash .bin or FMT-based .log file.";
+    /// <summary>Data-quality details for a successfully loaded artifact.</summary>
+    [ObservableProperty] public partial string SourceDiagnostics { get; set; } = "No log loaded.";
     /// <summary>Selected start on the log boot-time clock.</summary>
-    [ObservableProperty] public partial double StartSeconds { get; set; }
+    [ObservableProperty]
+    public partial double StartSeconds
+    {
+        get; set;
+    }
     /// <summary>Selected inclusive end on the log boot-time clock.</summary>
-    [ObservableProperty] public partial double EndSeconds { get; set; }
+    [ObservableProperty]
+    public partial double EndSeconds
+    {
+        get; set;
+    }
     /// <summary>Selected FFT window length.</summary>
     [ObservableProperty] public partial int FftSize { get; set; } = 1024;
     /// <summary>Lower frequency bound.</summary>
-    [ObservableProperty] public partial double MinimumHz { get; set; }
+    [ObservableProperty]
+    public partial double MinimumHz
+    {
+        get; set;
+    }
     /// <summary>Upper frequency bound; zero selects Nyquist.</summary>
-    [ObservableProperty] public partial double MaximumHz { get; set; }
+    [ObservableProperty]
+    public partial double MaximumHz
+    {
+        get; set;
+    }
     /// <summary>Whether the plot shows time-frequency magnitude.</summary>
-    [ObservableProperty] public partial bool ShowSpectrogram { get; set; }
+    [ObservableProperty]
+    public partial bool ShowSpectrogram
+    {
+        get; set;
+    }
     /// <summary>Completed immutable plot/evidence model.</summary>
-    [ObservableProperty] public partial FftWorkspaceResult? Result { get; set; }
+    [ObservableProperty]
+    public partial FftWorkspaceResult? Result
+    {
+        get; set;
+    }
     /// <summary>Bounded textual assessment and comparison.</summary>
     [ObservableProperty] public partial string Report { get; set; } = "Select a source and interval, then Analyze.";
     /// <summary>Retained baseline provenance.</summary>
@@ -68,7 +110,11 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
     /// <summary>Explicit metadata family for saved parameters.</summary>
     [ObservableProperty] public partial string VehicleFamily { get; set; } = "ArduCopter";
     /// <summary>Whether a proposed static filter is included in the next analysis.</summary>
-    [ObservableProperty] public partial bool SimulateProposal { get; set; }
+    [ObservableProperty]
+    public partial bool SimulateProposal
+    {
+        get; set;
+    }
     /// <summary>Offline proposed center frequency.</summary>
     [ObservableProperty] public partial double ProposedCenterHz { get; set; } = 150;
     /// <summary>Offline proposed bandwidth.</summary>
@@ -76,7 +122,7 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
     /// <summary>Offline proposed center attenuation.</summary>
     [ObservableProperty] public partial double ProposedAttenuationDb { get; set; } = 30;
     /// <summary>Supported FFT selection sizes.</summary>
-    public IReadOnlyList<int> FftSizes { get; } = new[] { 64, 128, 256, 512, 1024, 2048, 4096, 8192 };
+    public IReadOnlyList<int> FftSizes { get; } = new[] { 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192 };
     /// <summary>Metadata families exposed without protocol types.</summary>
     public IReadOnlyList<string> VehicleFamilies => NotchParameterAnalysisService.VehicleFamilies;
 
@@ -90,12 +136,24 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
             EndSeconds = value.EndTimeSeconds;
             MaximumHz = 0;
             MinimumHz = 0;
+            if (value.SampleCount < FftSize)
+            {
+                FftSize = FftSizes.LastOrDefault(size => size <= value.SampleCount, 16);
+            }
+            if (!IsBusy && lifetime is not null && log is not null && value.SampleCount >= 16)
+            {
+                SelectionAnalysis = AnalyzeAsync();
+            }
         }
     }
 
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
+        if (++activePresentations > 1)
+        {
+            return Task.CompletedTask;
+        }
         lifetime?.Cancel();
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
@@ -107,6 +165,10 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        if (activePresentations == 0 || --activePresentations > 0)
+        {
+            return Task.CompletedTask;
+        }
         generation++;
         lifetime?.Cancel();
         lifetime?.Dispose();
@@ -115,29 +177,54 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private Task OpenLogAsync() => RunAsync(async token =>
+    private async Task OpenLogAsync()
     {
-        using var file = await files.OpenAsync("Open DataFlash for FFT analysis", ["*.bin", "*.log"], token);
-        if (file is null)
+        var loadedSuccessfully = false;
+        await RunAsync(async token =>
         {
-            return;
-        }
-        var loaded = await Task.Run(() => provider.Read(file.Content, file.FileName,
-            file.FileName.EndsWith(".bin", StringComparison.OrdinalIgnoreCase), token), token);
-        token.ThrowIfCancellationRequested();
-        log = loaded;
-        Sources = loaded.Series;
-        SelectedSource = Sources.FirstOrDefault();
-        SourceDescription = $"{loaded.Name}: {Sources.Length} uniform axis segments.\n{string.Join("\n", loaded.Diagnostics)}";
-        if (Sources.IsEmpty)
+            using var file = await files.OpenAsync("Open DataFlash for FFT analysis", ["*.bin", "*.log"], token);
+            if (file is null)
+            {
+                return;
+            }
+            var loaded = await Task.Run(() => provider.Read(file.Content, file.FileName,
+                file.FileName.EndsWith(".bin", StringComparison.OrdinalIgnoreCase), token), token);
+            token.ThrowIfCancellationRequested();
+            log = loaded;
+            FileName = loaded.Name;
+            Sources = loaded.Series;
+            SelectedSource = Sources.FirstOrDefault();
+            SourceDescription = $"Loaded {loaded.Name}: {Sources.Length} usable axis segments.";
+            SourceDiagnostics = string.Join("\n", loaded.Diagnostics);
+            if (Sources.IsEmpty)
+            {
+                Result = null;
+                Report = "No valid IMU segments were found. Inspect the source diagnostics.";
+            }
+            else if (SelectedSource is { SampleCount: >= 16 })
+            {
+                await AnalyzeCurrentAsync(token);
+            }
+            else
+            {
+                Report = "Log loaded. Select a segment with at least 16 samples to display an FFT graph.";
+            }
+            SelectedTab = Result is not null ? 1 : 0;
+            loadedSuccessfully = true;
+        });
+        if (loadedSuccessfully)
         {
-            Result = null;
-            Report = "No valid IMU segments were found. Inspect the source diagnostics.";
+            LogLoaded?.Invoke(this, EventArgs.Empty);
         }
-    });
+    }
 
     [RelayCommand]
-    private Task AnalyzeAsync() => RunAsync(async token =>
+    private Task AnalyzeAsync()
+    {
+        return RunAsync(AnalyzeCurrentAsync);
+    }
+
+    private async Task AnalyzeCurrentAsync(CancellationToken token)
     {
         var capturedLog = log ?? throw new InvalidOperationException("Open a DataFlash log first.");
         var source = SelectedSource ?? throw new InvalidOperationException("Select a uniform IMU segment.");
@@ -150,7 +237,7 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
         token.ThrowIfCancellationRequested();
         Result = result;
         Report = report;
-    });
+    }
 
     [RelayCommand]
     private void CaptureBaseline()
@@ -173,40 +260,51 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private Task ReadConnectedAsync() => RunAsync(async token =>
+    private Task ReadConnectedAsync()
+    {
+        return RunAsync(async token =>
     {
         var snapshot = await parameters.ReadConnectedAsync(token);
         token.ThrowIfCancellationRequested();
         parameterSnapshot = snapshot;
         ParameterReport = FftReportFormatter.FormatParameters(snapshot);
     });
+    }
 
     [RelayCommand]
-    private Task OpenParametersAsync() => RunAsync(async token =>
+    private Task OpenParametersAsync()
     {
-        using var file = await files.OpenAsync("Open saved notch parameter snapshot", ["*.param", "*.params", "*.csv", "*.txt"], token);
-        if (file is null)
-        {
-            return;
-        }
-        var snapshot = await parameters.ReadSavedAsync(file.Content, file.FileName, VehicleFamily, token);
-        token.ThrowIfCancellationRequested();
-        parameterSnapshot = snapshot;
-        ParameterReport = FftReportFormatter.FormatParameters(snapshot);
-    });
+        return RunAsync(async token =>
+            {
+                using var file = await files.OpenAsync("Open saved notch parameter snapshot", ["*.param", "*.params", "*.csv", "*.txt"], token);
+                if (file is null)
+                {
+                    return;
+                }
+                var snapshot = await parameters.ReadSavedAsync(file.Content, file.FileName, VehicleFamily, token);
+                token.ThrowIfCancellationRequested();
+                parameterSnapshot = snapshot;
+                ParameterReport = FftReportFormatter.FormatParameters(snapshot);
+            });
+    }
 
     [RelayCommand]
-    private Task ExportEvidenceAsync() => RunAsync(async token =>
+    private Task ExportEvidenceAsync()
     {
-        var result = Result ?? throw new InvalidOperationException("Analyze a source first.");
-        var bytes = await Task.Run(() => JsonSerializer.SerializeToUtf8Bytes(new
-        {
-            SchemaVersion = 1, Dataset = log?.Name, Result = result
-        }, new JsonSerializerOptions { WriteIndented = true }), token);
-        using var content = new MemoryStream(bytes);
-        token.ThrowIfCancellationRequested();
-        await saves.SaveAsync("fft-evidence.json", content, token);
-    });
+        return RunAsync(async token =>
+            {
+                var result = Result ?? throw new InvalidOperationException("Analyze a source first.");
+                var bytes = await Task.Run(() => JsonSerializer.SerializeToUtf8Bytes(new
+                {
+                    SchemaVersion = 1,
+                    Dataset = log?.Name,
+                    Result = result
+                }, new JsonSerializerOptions { WriteIndented = true }), token);
+                using var content = new MemoryStream(bytes);
+                token.ThrowIfCancellationRequested();
+                await saves.SaveAsync("fft-evidence.json", content, token);
+            });
+    }
 
     [RelayCommand]
     private void Cancel()
@@ -217,6 +315,7 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
     /// <inheritdoc />
     public override void Dispose()
     {
+        activePresentations = 0;
         generation++;
         lifetime?.Cancel();
         lifetime?.Dispose();

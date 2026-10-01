@@ -26,10 +26,12 @@ public sealed partial class LiveTelemetryInspectorViewModel
     private DateTimeOffset? readinessSession;
 
     /// <summary>The shared side-panel destinations.</summary>
-    public IReadOnlyList<string> Destinations { get; } = ["Readiness", "Messages", "Inspector", "Vehicle Info"];
+    public IReadOnlyList<string> Destinations { get; } = ["Readiness", "Messages", "Inspector", "Vehicle Info", "DataFlash Logs"];
+    /// <summary>Session-retained offline DataFlash analysis presentation.</summary>
+    public DataFlashLogsViewModel? DataFlashLogs { get; }
     /// <summary>Current destination; controls remain mounted to retain scroll and filters.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowReadiness), nameof(ShowMessages), nameof(ShowInspector), nameof(ShowVehicleInfo))]
+    [NotifyPropertyChangedFor(nameof(ShowReadiness), nameof(ShowMessages), nameof(ShowInspector), nameof(ShowVehicleInfo), nameof(ShowDataFlashLogs))]
     public partial string Destination { get; set; } = "Inspector";
     /// <summary>Whether the assessment view is selected.</summary>
     public bool ShowReadiness => Destination == "Readiness";
@@ -39,6 +41,8 @@ public sealed partial class LiveTelemetryInspectorViewModel
     public bool ShowInspector => Destination == "Inspector";
     /// <summary>Whether the vehicle identity and local descriptions are selected.</summary>
     public bool ShowVehicleInfo => Destination == "Vehicle Info";
+    /// <summary>Whether offline onboard-log analysis is selected.</summary>
+    public bool ShowDataFlashLogs => Destination == "DataFlash Logs";
     /// <summary>Read-only identity for the inspected vehicle, including its local naming details.</summary>
     [ObservableProperty]
     public partial string VehicleInfoText { get; private set; } = "No vehicle information is available. Connect a vehicle to view its details.";

@@ -1,5 +1,8 @@
 ﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls;
+using System.ComponentModel;
+using MissionPlanner.App.Views.Analysis;
 using Ursa.Controls;
 
 namespace MissionPlanner.App.Views.Diagnostics;
@@ -48,14 +51,57 @@ public sealed class InspectorWindowService : IInspectorWindowService
             Height = 800,
             MinWidth = 360,
             MinHeight = 400,
-            Content = new LiveTelemetryInspectorView { DataContext = model }
+            WindowStartupLocation = WindowStartupLocation.CenterOwner
         };
+        void UpdateContent()
+        {
+            if (window is null)
+            {
+                return;
+            }
+            if (model.ShowDataFlashLogs)
+            {
+                if (window.Content is not FftAnalysisView)
+                {
+                    window.Content = new FftAnalysisView();
+                    window.Width = 1200;
+                    window.Height = 850;
+                    window.MinWidth = 800;
+                }
+                window.Title = "DataFlash Log Browser";
+            }
+            else if (window.Content is not LiveTelemetryInspectorView)
+            {
+                window.Content = new LiveTelemetryInspectorView { DataContext = model };
+                window.Title = "Diagnostics";
+                window.MinWidth = 360;
+                window.Width = model.DrawerWidth;
+            }
+        }
+        void DestinationChanged(object? sender, PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName == nameof(model.Destination))
+            {
+                UpdateContent();
+            }
+        }
+        UpdateContent();
+        model.PropertyChanged += DestinationChanged;
         window.Closed += (_, _) =>
         {
+            model.PropertyChanged -= DestinationChanged;
             window = null;
             closed();
         };
-        window.Show();
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime { MainWindow: { } owner })
+        {
+            window.Show(owner);
+        }
+        else
+        {
+            window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            window.Show();
+        }
     }
 
     /// <inheritdoc />

@@ -8,13 +8,18 @@
                               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                               xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                              x:Class="MissionPlanner.App.Views.FlightData.FlightDataPage" x:DataType="flightData:FlightDataViewModel">
+                              x:Class="MissionPlanner.App.Views.FlightData.FlightDataPage" 
+                              x:DataType="flightData:FlightDataViewModel">
     <ContentPage Header="Flight Data">
         <Grid ColumnDefinitions="400,5,*">
             <Grid Grid.Column="0" RowDefinitions="350,5,Auto,*" RowSpacing="2">
                 <hud:HudView Grid.Row="0" />
                 <GridSplitter Grid.Row="1" Height="5" ResizeDirection="Rows" />
-                <Button Grid.Row="2" Command="{Binding Diagnostics.OpenActiveReadinessCommand}" HorizontalAlignment="Stretch"><TextBlock Text="{Binding Diagnostics.ActiveReadinessSummary}" TextWrapping="Wrap" /></Button>
+                <Button Grid.Row="2" 
+                        Command="{Binding Diagnostics.OpenActiveReadinessCommand,FallbackValue='',TargetNullValue=''}" 
+                        HorizontalAlignment="Stretch">
+                    <TextBlock Text="{Binding Diagnostics.ActiveReadinessSummary,FallbackValue='',TargetNullValue=''}" TextWrapping="Wrap" />
+                </Button>
                 <TabControl x:Name="TabView" Grid.Row="3" Margin="5" >
                     <TabItem Header="Quick"><tabs:QuickTabItemView /></TabItem>
                     <TabItem Header="Actions"><tabs:ActionsTabItemView /></TabItem>
@@ -24,8 +29,6 @@
                     <TabItem Header="Aux Function"><tabs:AuxFunctionTabItemView /></TabItem>
                     <TabItem Header="Scripts"><tabs:ScriptsTabItemView /></TabItem>
                     <TabItem Header="Payload Control"><tabs:PayloadControlTabItemView /></TabItem>
-
-                    <TabItem Header="DataFlash Logs"><tabs:DataFlashLogsTabItemView /></TabItem>
                 </TabControl>
             </Grid>
             <GridSplitter Grid.Column="1" Width="5" ResizeDirection="Columns" />

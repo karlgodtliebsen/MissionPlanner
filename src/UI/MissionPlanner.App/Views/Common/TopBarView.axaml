@@ -160,6 +160,15 @@
                                         <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="30" Height="30" />
                                     </MenuItem.Icon>
                                 </MenuItem>
+                                <MenuItem Header="DataFlash Logs"
+                                          ToolTip.Tip="Open onboard DataFlash logs for offline FFT analysis"
+                                          AutomationProperties.Name="DataFlash Logs"
+                                          Command="{Binding Diagnostics.OpenDestinationCommand}"
+                                          CommandParameter="DataFlash Logs">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="ChartLine" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </MenuFlyout>
                         </DropDownButton.Flyout>
                         <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />

@@ -20,6 +20,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     private readonly ITextClipboardService clipboard;
     private readonly IInspectorWindowService windows;
     private readonly TimeProvider clock;
+    private readonly Analysis.FftAnalysisViewModel? analysis;
     private readonly DispatcherTimer timer;
     private long displayedVersion = -1;
     private bool presentationDisposed;
@@ -36,7 +37,9 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         MissionPlanner.Core.Vehicles.Abstractions.IVehicleMessageStore? messageStore = null,
         MissionPlanner.App.Views.FlightData.Tabs.MessagesTabViewModel? messages = null,
         MissionPlanner.App.Views.FlightData.Tabs.StatusTabViewModel? status = null,
-        MissionPlanner.Core.Replay.IReplaySessionManager? replay = null) : base(logger, dispatcher, events)
+        MissionPlanner.Core.Replay.IReplaySessionManager? replay = null,
+        DataFlashLogsViewModel? dataFlashLogs = null,
+        Analysis.FftAnalysisViewModel? analysis = null) : base(logger, dispatcher, events)
     {
         this.diagnostics = diagnostics;
         this.activeVehicle = activeVehicle;
@@ -49,6 +52,12 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         this.messages = messages;
         this.status = status;
         this.replay = replay;
+        DataFlashLogs = dataFlashLogs;
+        this.analysis = analysis;
+        if (analysis is not null)
+        {
+            analysis.LogLoaded += OnDataFlashLogLoaded;
+        }
         timer = new DispatcherTimer(TimeSpan.FromMilliseconds(100), DispatcherPriority.Background, (_, _) => Refresh());
         timer.Start();
     }
@@ -281,6 +290,13 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         });
     }
 
+    private void OnDataFlashLogLoaded(object? sender, EventArgs e)
+    {
+        Destination = "DataFlash Logs";
+        IsOpen = true;
+        Detach();
+    }
+
     [RelayCommand]
     private void Freeze()
     {
@@ -470,6 +486,10 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
     public override void Dispose()
     {
         presentationDisposed = true;
+        if (analysis is not null)
+        {
+            analysis.LogLoaded -= OnDataFlashLogLoaded;
+        }
         timer.Stop();
         windows.Close();
         base.Dispose();

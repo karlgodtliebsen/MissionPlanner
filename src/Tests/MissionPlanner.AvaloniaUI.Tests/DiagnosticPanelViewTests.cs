@@ -52,6 +52,8 @@ public sealed class DiagnosticPanelViewTests
         var windows = Substitute.For<IInspectorWindowService>();
         windows.IsSupported.Returns(true);
         var services = new ServiceCollection().AddLogging().AddSingleton(domain).AddSingleton(Substitute.For<IUiDispatcher>())
+            .AddSingleton(new DataFlashLogsViewModel(NullLogger<DataFlashLogsViewModel>.Instance, Substitute.For<IUiDispatcher>(), domain))
+            .AddSingleton(FftAnalysisViewTests.Create(Substitute.For<IFileOpenService>(), Substitute.For<IFileSaveService>()))
             .AddSingleton(_ => new MessagesTabViewModel(active, messageStore, applicationMessages, clipboard,
                 Substitute.For<IFileSaveService>(), NullLogger<MessagesTabViewModel>.Instance))
             .AddSingleton(_ => new StatusTabViewModel(active, Substitute.For<ITelemetryFieldCatalog>(), Substitute.For<ITelemetrySnapshotProjector>(),
@@ -60,7 +62,8 @@ public sealed class DiagnosticPanelViewTests
             .AddSingleton(provider => new LiveTelemetryInspectorViewModel(diagnostics, active, clipboard, windows,
                 TimeProvider.System, Substitute.For<IUiDispatcher>(), domain, NullLogger<LiveTelemetryInspectorViewModel>.Instance,
                 new PreflightAssessmentService(null, diagnostics), messages: provider.GetRequiredService<MessagesTabViewModel>(),
-                status: provider.GetRequiredService<StatusTabViewModel>()))
+                status: provider.GetRequiredService<StatusTabViewModel>(),
+                dataFlashLogs: provider.GetRequiredService<DataFlashLogsViewModel>()))
             .AddSingleton(diagnostics).BuildServiceProvider();
         return AppBuilder.Configure(() => new MissionPlanner.App.App(services)).UseSkia()
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
@@ -80,7 +83,7 @@ public sealed class DiagnosticPanelViewTests
                 var view = new LiveTelemetryInspectorView();
                 var window = new Window { Content = view, Width = 360, Height = 900 };
                 window.Show();
-                foreach (var destination in new[] { "Readiness", "Messages", "Inspector", "Vehicle Info", "Messages", "Readiness", "Inspector" })
+                foreach (var destination in new[] { "Readiness", "Messages", "Inspector", "Vehicle Info", "DataFlash Logs", "Messages", "Readiness", "DataFlash Logs", "Inspector" })
                 {
                     model.OpenDestinationCommand.Execute(destination);
                     Dispatcher.UIThread.RunJobs();

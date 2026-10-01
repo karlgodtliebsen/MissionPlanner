@@ -294,7 +294,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ApplicationLogsViewModel>();
         services.AddKeyedTransient<Avalonia.Controls.Control, TelemetryLogsTabItemView>(LogsSection.Telemetry);
         services.AddKeyedTransient<Avalonia.Controls.Control, ApplicationLogsView>(LogsSection.Application);
-        services.TryAddTransient<DataFlashLogsTabViewModel>();
+        services.TryAddSingleton<DataFlashLogsViewModel>();
 
         // Advanced Setup Services and ViewModels
         services.TryAddSingleton<IAdvancedPlatformCapabilities, AdvancedPlatformCapabilitySource>();
@@ -423,7 +423,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<Esp8266SetupViewModel>();
         services.TryAddTransient<AntennaTrackerViewModel>();
         services.TryAddTransient<FftSetupViewModel>();
-        services.TryAddTransient<MissionPlanner.App.Views.Analysis.FftAnalysisViewModel>();
+        services.TryAddSingleton<MissionPlanner.App.Views.Analysis.FftAnalysisViewModel>();
         services.TryAddTransient<SerialPortsViewModel>();
         services.TryAddTransient<ConfirmDfuTargetViewModel>();
 

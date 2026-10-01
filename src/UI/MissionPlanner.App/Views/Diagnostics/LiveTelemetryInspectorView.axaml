@@ -101,6 +101,13 @@
             <local:ReadinessView
                 IsVisible="{Binding ShowReadiness}" />
             <local:VehicleInfoView IsVisible="{Binding ShowVehicleInfo}" />
+            <ContentControl Content="{Binding DataFlashLogs}" IsVisible="{Binding ShowDataFlashLogs}">
+                <ContentControl.ContentTemplate>
+                    <DataTemplate x:DataType="local:DataFlashLogsViewModel">
+                        <local:DataFlashLogsView />
+                    </DataTemplate>
+                </ContentControl.ContentTemplate>
+            </ContentControl>
             <Grid
                 IsVisible="{Binding ShowMessages}"
                 RowDefinitions="Auto,*,Auto,*">

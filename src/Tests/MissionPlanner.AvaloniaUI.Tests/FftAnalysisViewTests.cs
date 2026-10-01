@@ -45,6 +45,7 @@ public sealed class FftAnalysisViewTests
                 var log = new DataFlashImuSampleProvider(new DataFlashRecordReader()).Read(samples, "test.log", false, TestContext.Current.CancellationToken);
                 model.Sources = log.Series;
                 model.SelectedSource = log.Series[0];
+                model.SelectedTab = 1;
                 model.Result = Workspace().Analyze(log, log.Series[0], new(0, log.Series[0].EndTimeSeconds, 64, 0, null),
                     null, null, [], TestContext.Current.CancellationToken);
                 var view = new FftAnalysisView();
@@ -52,6 +53,26 @@ public sealed class FftAnalysisViewTests
                 try
                 {
                     window.Show();
+                    view.IsDrawerMode = true;
+                    Dispatcher.UIThread.RunJobs();
+                    var tabs = Assert.Single(view.GetVisualDescendants().OfType<TabControl>());
+                    Assert.False(tabs.IsVisible);
+                    var toolbarCommands = new object[] { model.OpenLogCommand, model.AnalyzeCommand,
+                        model.CaptureBaselineCommand, model.ClearBaselineCommand, model.ExportEvidenceCommand, model.CancelCommand };
+                    var toolbarButtons = view.GetVisualDescendants().OfType<Button>()
+                        .Where(button => toolbarCommands.Contains(button.Command!)).ToArray();
+                    Assert.Equal(6, toolbarButtons.Length);
+                    foreach (var button in toolbarButtons)
+                    {
+                        Assert.Contains("ToolbarButton", button.Classes);
+                        Assert.IsType<Material.Icons.Avalonia.MaterialIcon>(button.Content);
+                        Assert.Equal(Avalonia.Automation.AutomationProperties.GetName(button), ToolTip.GetTip(button));
+                        Assert.Equal(ReferenceEquals(button.Command, model.OpenLogCommand), button.IsVisible);
+                    }
+                    view.IsDrawerMode = false;
+                    Dispatcher.UIThread.RunJobs();
+                    Assert.True(tabs.IsVisible);
+                    Assert.All(toolbarButtons, button => Assert.True(button.IsVisible));
                     foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
                     {
                         window.RequestedThemeVariant = theme;
@@ -148,7 +169,69 @@ public sealed class FftAnalysisViewTests
         Assert.Equal(3, model.Sources.Length);
     }
 
-    private static FftAnalysisViewModel Create(IFileOpenService files, IFileSaveService saves)
+    [Fact]
+    public async Task RealLogWarningsDoNotPreventInitialGraphOrSpectrogram()
+    {
+        var files = Substitute.For<IFileOpenService>();
+        var path = Path.Combine(AppContext.BaseDirectory, "TestData", "RealFft", "df-isb-fft-sample.bin");
+        files.OpenAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult<OpenedPlanningFile?>(new("df-isb-fft-sample.bin", File.OpenRead(path))));
+        using var model = Create(files, Substitute.For<IFileSaveService>());
+        await model.ActivateAsync();
+        await model.OpenLogCommand.ExecuteAsync(null);
+        Assert.Null(model.ErrorMessage);
+        Assert.StartsWith("Loaded df-isb-fft-sample.bin", model.SourceDescription);
+        Assert.Contains("Truncated", model.SourceDiagnostics);
+        Assert.NotNull(model.Result);
+        Assert.NotEmpty(model.Result.Spectrogram.Frames);
+        var previous = model.Result;
+        model.SelectedSource = model.Sources.First(s => s.SampleCount == 1024 && s != model.SelectedSource);
+        await model.SelectionAnalysis;
+        Assert.Null(model.ErrorMessage);
+        Assert.NotNull(model.Result);
+        Assert.NotSame(previous, model.Result);
+        Assert.Equal(model.SelectedSource, model.Result.Source);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SuccessfulLoadDetachesWhenPlatformSupportsWindows(bool supportsWindows)
+    {
+        var files = Substitute.For<IFileOpenService>();
+        files.OpenAsync(Arg.Any<string>(), Arg.Any<IReadOnlyList<string>>(), Arg.Any<CancellationToken>())
+            .Returns(_ => Task.FromResult<OpenedPlanningFile?>(new("test.log", Fixture())));
+        using var analysis = Create(files, Substitute.For<IFileSaveService>());
+        var windows = Substitute.For<MissionPlanner.App.Views.Diagnostics.IInspectorWindowService>();
+        windows.IsSupported.Returns(supportsWindows);
+        using var inspector = new MissionPlanner.App.Views.Diagnostics.LiveTelemetryInspectorViewModel(
+            Substitute.For<MissionPlanner.Core.Diagnostics.IVehicleLiveDiagnostics>(),
+            Substitute.For<IActiveVehicleContext>(), Substitute.For<ITextClipboardService>(), windows,
+            TimeProvider.System, new InlineDispatcher(), Substitute.For<IDomainEventHub>(),
+            NullLogger<MissionPlanner.App.Views.Diagnostics.LiveTelemetryInspectorViewModel>.Instance, analysis: analysis);
+        await analysis.ActivateAsync();
+        await analysis.OpenLogCommand.ExecuteAsync(null);
+        Assert.False(analysis.IsBusy);
+        Assert.Equal("DataFlash Logs", inspector.Destination);
+        Assert.Equal(supportsWindows, inspector.IsDetached);
+        if (supportsWindows)
+        {
+            windows.Received(1).Show(inspector, Arg.Any<Action>());
+        }
+        else
+        {
+            Assert.True(inspector.IsDrawerOpen);
+            windows.DidNotReceive().Show(Arg.Any<MissionPlanner.App.Views.Diagnostics.LiveTelemetryInspectorViewModel>(), Arg.Any<Action>());
+        }
+        // Closing one of two hosts must leave the remaining presentation usable.
+        await analysis.ActivateAsync();
+        await analysis.DeactivateAsync();
+        analysis.SelectedSource = analysis.Sources[1];
+        await analysis.SelectionAnalysis;
+        Assert.Equal(analysis.SelectedSource, analysis.Result!.Source);
+    }
+
+    internal static FftAnalysisViewModel Create(IFileOpenService files, IFileSaveService saves)
     {
         return new FftAnalysisViewModel(new DataFlashImuSampleProvider(new DataFlashRecordReader()), Workspace(),
             new NotchParameterAnalysisService(Substitute.For<IActiveVehicleContext>(), Substitute.For<IVehicleParameterRegistry>(),

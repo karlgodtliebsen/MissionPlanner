@@ -1,19 +1,21 @@
-<utilities:TabItemViewBase x:TypeArguments="tabs:DataFlashLogsTabViewModel"
+<utilities:UserControlViewBase x:TypeArguments="local:DataFlashLogsViewModel"
                            xmlns="https://github.com/avaloniaui"
                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                           xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                           xmlns:local="clr-namespace:MissionPlanner.App.Views.Diagnostics"
                            xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                            xmlns:analysis="clr-namespace:MissionPlanner.App.Views.Analysis"
                            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                            mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                           x:Class="MissionPlanner.App.Views.FlightData.Tabs.DataFlashLogsTabItemView"
-                           x:DataType="tabs:DataFlashLogsTabViewModel">
+                           x:Class="MissionPlanner.App.Views.Diagnostics.DataFlashLogsView"
+                           x:DataType="local:DataFlashLogsViewModel">
 
 
     <Grid RowDefinitions="Auto,*">
-        <TextBlock Margin="16,8" Text="Open an existing onboard DataFlash artifact for offline analysis. Controller log download is not implemented here." TextWrapping="Wrap" />
-        <analysis:FftAnalysisView Grid.Row="1" />
+        <TextBlock Margin="16,8" 
+                   Text="Open an onboard DataFlash log for offline FFT analysis." 
+                   TextWrapping="Wrap" />
+        <analysis:FftAnalysisView Grid.Row="1" IsDrawerMode="True" />
     </Grid>
 
-</utilities:TabItemViewBase>
+</utilities:UserControlViewBase>
