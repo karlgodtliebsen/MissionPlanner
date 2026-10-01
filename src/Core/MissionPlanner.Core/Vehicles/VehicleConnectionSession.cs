@@ -1,8 +1,7 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -48,16 +47,25 @@ public sealed partial class VehicleConnectionSession(
     private IMavLinkConnectionSession? connectionSession = null;
 
     /// <inheritdoc />
-    public string? ActiveTransportProtocol { get; private set; }
+    public string? ActiveTransportProtocol
+    {
+        get; private set;
+    }
 
     /// <inheritdoc />
     public CancellationToken ConnectionCancellationToken => connectionSession?.Connection.Activity?.LifetimeToken ?? serviceCts.Token;
 
     /// <inheritdoc />
-    public string? DisconnectReason { get; set; }
+    public string? DisconnectReason
+    {
+        get; set;
+    }
 
     /// <inheritdoc />
-    public string? ActiveSerialPort { get; private set; }
+    public string? ActiveSerialPort
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets the established message pump. Throws an exception if no message pump is established.
@@ -78,17 +86,17 @@ public sealed partial class VehicleConnectionSession(
     /// <summary>
     /// Gets the established MAVLink connection. Throws an exception if no connection is established.
     /// </summary>
-    public IMavLinkConnection Connection => connectionSession!.Connection ?? throw new InvalidOperationException("No connection established");
+    public IMavLinkConnection Connection => connectionSession?.Connection ?? throw new InvalidOperationException("No connection established");
 
     /// <summary>
     /// Gets the established MAVLink client. Throws an exception if no client is established.
     /// </summary>
-    public IMavLinkClient Client => connectionSession!.Client ?? throw new InvalidOperationException("No client established");
+    public IMavLinkClient Client => connectionSession?.Client ?? throw new InvalidOperationException("No client established");
 
     /// <summary>
     /// Gets the established MAVLink transport. Throws an exception if no transport is established.
     /// </summary>
-    public IMavLinkTransport Transport => connectionSession!.Transport ?? throw new InvalidOperationException("No transport established");
+    public IMavLinkTransport Transport => connectionSession?.Transport ?? throw new InvalidOperationException("No transport established");
 
 
     /// <inheritdoc />

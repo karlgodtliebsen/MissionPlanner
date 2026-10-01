@@ -155,7 +155,7 @@
                                 <MenuItem
                                         ToolTip.Tip="Open telemetry/application logs, recording and playback workspace"
                                         Command="{Binding Diagnostics.OpenLogsCommand,FallbackValue='', TargetNullValue=''}"
-                                        Header="Navigate to telemetry/application logs">
+                                        Header="Telemetry/application logs">
                                     <MenuItem.Icon>
                                         <materialIcons:MaterialIcon Kind="FileDocumentOutline" Width="30" Height="30" />
                                     </MenuItem.Icon>

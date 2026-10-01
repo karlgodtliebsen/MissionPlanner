@@ -6,20 +6,6 @@ using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.Analysis;
 
-/// <summary>Read-only parameter value with firmware metadata.</summary>
-/// <param name="Name">Exact parameter name.</param>
-/// <param name="Value">Snapshot value.</param>
-/// <param name="Description">Metadata-backed explanation, or explicit unavailability.</param>
-public sealed record NotchParameterValue(string Name, double Value, string Description);
-
-/// <summary>Frozen filter configuration; it cannot write to a controller.</summary>
-/// <param name="Source">Connected or saved source identity.</param>
-/// <param name="Values">Actual values and descriptions.</param>
-/// <param name="StaticFilters">Static harmonic bands that can be modeled.</param>
-/// <param name="Limitations">Unsupported/dynamic/missing configuration information.</param>
-public sealed record NotchParameterSnapshot(string Source, ImmutableArray<NotchParameterValue> Values,
-    ImmutableArray<NotchFilter> StaticFilters, ImmutableArray<string> Limitations);
-
 /// <summary>Reads existing parameter snapshots and metadata for analysis only.</summary>
 public sealed class NotchParameterAnalysisService(IActiveVehicleContext active, IVehicleParameterRegistry registry,
     IVehicleParameterMetadataService metadata)
@@ -41,11 +27,9 @@ public sealed class NotchParameterAnalysisService(IActiveVehicleContext active, 
         var values = registry.GetAllParameters(id).ToDictionary(p => p.Key, p => (double)p.Value.Value, StringComparer.Ordinal);
         var definitions = await metadata.GetAllMetadataAsync(id, linked.Token).ConfigureAwait(false);
         linked.Token.ThrowIfCancellationRequested();
-        if (active.VehicleId != id)
-        {
-            throw new OperationCanceledException("Vehicle changed during parameter capture.");
-        }
-        return Build($"Connected snapshot: {vehicle.DisplayName}", values, definitions);
+        return active.VehicleId != id
+            ? throw new OperationCanceledException("Vehicle changed during parameter capture.")
+            : Build($"Connected snapshot: {vehicle.DisplayName}", values, definitions);
     }
 
     /// <summary>Reads invariant name/value parameter text and enriches it with the selected firmware metadata.</summary>
@@ -100,7 +84,11 @@ public sealed class NotchParameterAnalysisService(IActiveVehicleContext active, 
         var limitations = ImmutableArray.CreateBuilder<string>();
         foreach (var prefix in new[] { "INS_HNTCH", "INS_HNTC2" })
         {
-            double Value(string suffix) => values.GetValueOrDefault(prefix + "_" + suffix, double.NaN);
+            double Value(string suffix)
+            {
+                return values.GetValueOrDefault(prefix + "_" + suffix, double.NaN);
+            }
+
             if (!values.ContainsKey(prefix + "_ENABLE"))
             {
                 limitations.Add($"{prefix}: enable state unavailable.");

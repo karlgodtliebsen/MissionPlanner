@@ -47,6 +47,7 @@
         <Using Include="Xunit" />
         <None Update="Fixtures\mavlink-signing.json" CopyToOutputDirectory="PreserveNewest" />
         <None Include="../../../TestData/Frequency/DataFlash/*" Link="TestData/Frequency/DataFlash/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+        <None Include="../../../TestData/MissionPlanner-FFT-Real-TestData/df-isb-fft-sample.bin" Link="TestData/RealFft/df-isb-fft-sample.bin" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

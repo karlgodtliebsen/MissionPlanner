@@ -5,12 +5,6 @@ using System.Text.RegularExpressions;
 
 namespace MissionPlanner.Core.Analysis;
 
-internal sealed record DataFlashRecord(string Name, IReadOnlyDictionary<string, object> Fields)
-{
-    internal double Number(string key, double fallback = double.NaN) =>
-        Fields.TryGetValue(key, out var value) && value is double number ? number : fallback;
-}
-
 /// <summary>Reads self-describing DataFlash binary or FMT-based text exports for offline analysis.</summary>
 public sealed class DataFlashRecordReader
 {
@@ -21,9 +15,12 @@ public sealed class DataFlashRecordReader
         return binary ? ReadBinary(stream, token) : ReadText(stream, token);
     }
 
-    private static bool Relevant(string name) => name is "ISBH" or "ISBD" or "RPM" or "RCOU" or "PARM" ||
+    private static bool Relevant(string name)
+    {
+        return name is "ISBH" or "ISBD" or "RPM" or "RCOU" or "PARM" ||
         name.StartsWith("IMU", StringComparison.Ordinal) || name.StartsWith("ACC", StringComparison.Ordinal) ||
         name.StartsWith("GYR", StringComparison.Ordinal) || name.StartsWith("ESC", StringComparison.Ordinal);
+    }
 
     private static IEnumerable<DataFlashRecord> ReadBinary(Stream stream, CancellationToken token)
     {
@@ -47,6 +44,10 @@ public sealed class DataFlashRecordReader
                 throw new InvalidDataException("Invalid DataFlash packet boundary; recover the damaged log before analysis.");
             }
             var id = stream.ReadByte();
+            if (!formats.ContainsKey(id) && stream.CanSeek && FindLaterFormat(stream, id, token) is { } laterFormat)
+            {
+                formats[id] = laterFormat;
+            }
             if (!formats.TryGetValue(id, out var format) || format.Length < 3)
             {
                 throw new InvalidDataException($"Missing FMT definition for message {id}.");
@@ -54,7 +55,8 @@ public sealed class DataFlashRecordReader
             var payload = reader.ReadBytes(format.Length - 3);
             if (payload.Length != format.Length - 3)
             {
-                throw new InvalidDataException("Truncated DataFlash packet.");
+                yield return new DataFlashRecord("TRUNCATED", new Dictionary<string, object>());
+                yield break;
             }
             if (id == 128)
             {
@@ -79,16 +81,61 @@ public sealed class DataFlashRecordReader
                 {
                     fields[format.Columns[i]] = Decode(payload, ref offset, format.Types[i]);
                 }
-                if (offset != payload.Length)
-                {
-                    throw new InvalidDataException($"FMT length mismatch for {format.Name}.");
-                }
-                yield return new DataFlashRecord(format.Name, fields);
+                yield return offset != payload.Length
+                    ? throw new InvalidDataException($"FMT length mismatch for {format.Name}.")
+                    : new DataFlashRecord(format.Name, fields);
             }
         }
     }
 
-    private static string Text(ReadOnlySpan<byte> bytes) => Encoding.ASCII.GetString(bytes).TrimEnd('\0').Trim();
+    // Some firmware emits a message before logging its FMT. Look ahead without
+    // consuming records, then resume decoding at the original payload position.
+    private static Format? FindLaterFormat(Stream stream, int id, CancellationToken token)
+    {
+        var position = stream.Position;
+        var buffer = new byte[65536 + 88];
+        var retained = 0;
+        try
+        {
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+                var read = stream.Read(buffer, retained, buffer.Length - retained);
+                var available = retained + read;
+                for (var i = 0; i + 89 <= available; i++)
+                {
+                    if (buffer[i] != 0xA3 || buffer[i + 1] != 0x95 || buffer[i + 2] != 128 || buffer[i + 3] != id)
+                    {
+                        continue;
+                    }
+                    var payload = buffer.AsSpan(i + 3, 86);
+                    var name = Text(payload.Slice(2, 4));
+                    var types = Text(payload.Slice(6, 16));
+                    var columns = Text(payload.Slice(22, 64)).Split(',');
+                    if (payload[1] >= 3 && name.Length > 0 && types.Length > 0 && types.Length == columns.Length &&
+                        types.All(c => "bBMhHcCiIeELfnqQdNZa".Contains(c)))
+                    {
+                        return new Format(payload[1], name, types, columns);
+                    }
+                }
+                if (read == 0)
+                {
+                    return null;
+                }
+                retained = Math.Min(88, available);
+                buffer.AsSpan(available - retained, retained).CopyTo(buffer);
+            }
+        }
+        finally
+        {
+            stream.Position = position;
+        }
+    }
+
+    private static string Text(ReadOnlySpan<byte> bytes)
+    {
+        return Encoding.ASCII.GetString(bytes).TrimEnd('\0').Trim();
+    }
 
     private static object Decode(byte[] payload, ref int offset, char type)
     {

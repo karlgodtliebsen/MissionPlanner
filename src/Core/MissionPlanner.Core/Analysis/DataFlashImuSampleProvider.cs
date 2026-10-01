@@ -64,7 +64,8 @@ public sealed class DataFlashImuSampleProvider(DataFlashRecordReader reader)
         {
             pendingValues -= batch.Axes.Sum(a => a.Count);
             var header = batch.Header;
-            var count = header.Number("smp_cnt");
+            // Older ISBH formats omit smp_cnt; their next header ends the batch.
+            var count = header.Number("smp_cnt", batch.Axes[0].Count);
             var rate = header.Number("smp_rate");
             var multiplier = header.Number("mul");
             var start = header.Number("SampleUS") / 1e6;
@@ -108,8 +109,23 @@ public sealed class DataFlashImuSampleProvider(DataFlashRecordReader reader)
 
         foreach (var record in reader.Read(stream, binary, cancellationToken))
         {
+            if (record.Name == "TRUNCATED")
+            {
+                diagnostics.Add("Truncated final DataFlash packet was discarded; incomplete IMU batches were rejected.");
+                foreach (var batch in batches.Values)
+                {
+                    batch.Invalid = true;
+                }
+                continue;
+            }
             if (record.Name == "ISBH")
             {
+                foreach (var previousNumber in batches.Where(p => !p.Value.Header.Fields.ContainsKey("smp_cnt"))
+                             .Select(p => p.Key).ToArray())
+                {
+                    FlushBatch(previousNumber, batches[previousNumber]);
+                    batches.Remove(previousNumber);
+                }
                 var n = record.Number("N");
                 if (!double.IsFinite(n) || n < 0 || n > 65535 || n != Math.Truncate(n))
                 {
@@ -134,7 +150,7 @@ public sealed class DataFlashImuSampleProvider(DataFlashRecordReader reader)
                     continue;
                 }
                 var arrays = new[] { "x", "y", "z" }.Select(key => record.Fields.GetValueOrDefault(key) as double[]).ToArray();
-                var count = batch.Header.Number("smp_cnt");
+                var count = batch.Header.Number("smp_cnt", 65535);
                 if (record.Number("seqno") != batch.NextSequence || arrays.Any(a => a is null || a.Length != 32 ||
                     a.Any(v => !double.IsFinite(v) || v < short.MinValue || v > short.MaxValue || v != Math.Truncate(v))) ||
                     count < 4 || count > 65535)

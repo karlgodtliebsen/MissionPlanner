@@ -4,57 +4,6 @@ using MissionPlanner.Analysis.Vibration;
 
 namespace MissionPlanner.Core.Analysis;
 
-/// <summary>Analysis choices captured before starting background computation.</summary>
-/// <param name="StartSeconds">Inclusive source-log start time.</param>
-/// <param name="EndSeconds">Inclusive source-log end time.</param>
-/// <param name="FftSize">Power-of-two window length.</param>
-/// <param name="MinimumHz">Lower retained spectrogram frequency.</param>
-/// <param name="MaximumHz">Upper retained frequency, null for Nyquist.</param>
-public sealed record FftAnalysisRequest(double StartSeconds, double EndSeconds, int FftSize, double MinimumHz, double? MaximumHz);
-
-/// <summary>A retained measured baseline with explicit units and provenance.</summary>
-/// <param name="Name">Dataset label.</param>
-/// <param name="Unit">Physical amplitude unit.</param>
-/// <param name="Spectrum">Measured spectrum.</param>
-public sealed record FftBaseline(string Name, string Unit, FrequencySpectrum Spectrum);
-
-/// <summary>Peak location relative to nominal static filter regions.</summary>
-/// <param name="Peak">Measured peak evidence.</param>
-/// <param name="InsideStaticBand">Whether a supported nominal band contains the frequency.</param>
-/// <param name="Assessment">Qualified static coverage description.</param>
-public sealed record NotchPeakCoverage(SpectralPeak Peak, bool InsideStaticBand, string Assessment);
-
-/// <summary>Immutable analysis output consumed by presentation and exports.</summary>
-/// <param name="Source">Uniform source segment.</param>
-/// <param name="StartSeconds">Actual selected first sample time.</param>
-/// <param name="Spectrum">Measured mean-amplitude spectrum.</param>
-/// <param name="Spectrogram">Measured time-frequency frames relative to StartSeconds.</param>
-/// <param name="Peaks">Peak observations.</param>
-/// <param name="Harmonics">Harmonic candidates.</param>
-/// <param name="Correlations">Actual RPM evidence paired to independently selected dominant peaks.</param>
-/// <param name="Resonances">Localized amplification candidates.</param>
-/// <param name="Comparison">Optional baseline differences on a common frequency grid.</param>
-/// <param name="Coverage">Static filter-band assessment.</param>
-/// <param name="CurrentSimulation">Generic current-static-configuration prediction.</param>
-/// <param name="ProposedSimulation">Generic proposed-configuration prediction.</param>
-/// <param name="Notes">Interpretation and source limitations.</param>
-public sealed record FftWorkspaceResult(ImuSampleSeries Source, double StartSeconds, FrequencySpectrum Spectrum, Spectrogram Spectrogram,
-    ImmutableArray<SpectralPeak> Peaks, ImmutableArray<HarmonicSeries> Harmonics,
-    ImmutableArray<MotorFrequencyCorrelation> Correlations, ImmutableArray<ResonanceCandidate> Resonances,
-    ImmutableArray<SpectrumDifference> Comparison, ImmutableArray<NotchPeakCoverage> Coverage,
-    ImmutableArray<SimulatedFrequencyBin> CurrentSimulation, ImmutableArray<SimulatedFrequencyBin> ProposedSimulation,
-    ImmutableArray<string> Notes)
-{
-    /// <summary>Exact captured interval and transform choices.</summary>
-    public FftAnalysisRequest? Request { get; init; }
-    /// <summary>Read-only parameter snapshot used by this completed result.</summary>
-    public NotchParameterSnapshot? ParameterSnapshot { get; init; }
-    /// <summary>Exact generic proposed filter configurations used by this result.</summary>
-    public ImmutableArray<NotchFilter> ProposedFilters { get; init; } = [];
-    /// <summary>Measured baseline and provenance used for comparison.</summary>
-    public FftBaseline? Baseline { get; init; }
-}
-
 /// <summary>Coordinates offline DSP; views only select inputs and display immutable outputs.</summary>
 public sealed class FftWorkspaceService(SpectrumAverager average, SpectrogramAnalyzer spectrograms, PeakDetector peaks,
     HarmonicDetector harmonics, MotorFrequencyCorrelator correlator, ResonanceDetector resonances,
@@ -78,15 +27,15 @@ public sealed class FftWorkspaceService(SpectrumAverager average, SpectrogramAna
         {
             throw new ArgumentException("Choose an interval inside the selected segment and FFT size 16–16384.");
         }
-        var first = Math.Max(0, (int)Math.Ceiling((request.StartSeconds - source.StartTimeSeconds) * source.SampleRateHz - 1e-7));
-        var last = Math.Min(source.SampleCount - 1, (int)Math.Floor((request.EndSeconds - source.StartTimeSeconds) * source.SampleRateHz + 1e-7));
+        var first = Math.Max(0, (int)Math.Ceiling(((request.StartSeconds - source.StartTimeSeconds) * source.SampleRateHz) - 1e-7));
+        var last = Math.Min(source.SampleCount - 1, (int)Math.Floor(((request.EndSeconds - source.StartTimeSeconds) * source.SampleRateHz) + 1e-7));
         var count = last - first + 1;
         if (count < request.FftSize)
         {
             throw new ArgumentException("The selected interval must contain at least one full FFT window.");
         }
-        var frameCount = 1 + (count - request.FftSize) / (request.FftSize / 2);
-        if (frameCount > 2048 || (long)frameCount * (request.FftSize / 2 + 1) > 2_000_000)
+        var frameCount = 1 + ((count - request.FftSize) / (request.FftSize / 2));
+        if (frameCount > 2048 || (long)frameCount * ((request.FftSize / 2) + 1) > 2_000_000)
         {
             throw new ArgumentException("Select a shorter interval (maximum 2048 frames and two million time-frequency bins).");
         }
@@ -95,8 +44,10 @@ public sealed class FftWorkspaceService(SpectrumAverager average, SpectrogramAna
         var spectrum = average.Analyze(samples, source.SampleRateHz, options, token);
         var frames = spectrograms.Analyze(samples, source.SampleRateHz, new SpectrogramOptions
         {
-            Fft = options, OverlapSamples = request.FftSize / 2,
-            MinimumFrequencyHz = request.MinimumHz, MaximumFrequencyHz = request.MaximumHz
+            Fft = options,
+            OverlapSamples = request.FftSize / 2,
+            MinimumFrequencyHz = request.MinimumHz,
+            MaximumFrequencyHz = request.MaximumHz
         }, token);
         var detected = peaks.Detect(spectrum, new PeakDetectionOptions());
         var relationships = harmonics.Detect(detected, spectrum.ResolutionHz);
@@ -104,7 +55,7 @@ public sealed class FftWorkspaceService(SpectrumAverager average, SpectrogramAna
         var candidates = ImmutableArray.CreateBuilder<ResonanceCandidate>();
         var notes = ImmutableArray.CreateBuilder<string>();
         notes.AddRange(log.Diagnostics);
-        var start = source.StartTimeSeconds + first / source.SampleRateHz;
+        var start = source.StartTimeSeconds + (first / source.SampleRateHz);
         foreach (var group in log.MotorSamples.Where(m => m.IsRpm).GroupBy(m => (m.Index, m.Source)))
         {
             var speeds = group.OrderBy(m => m.TimeSeconds).ToArray();
@@ -124,7 +75,7 @@ public sealed class FftWorkspaceService(SpectrumAverager average, SpectrogramAna
                 }
                 var left = speeds[position];
                 var right = speeds[position + 1];
-                var rpm = left.Value + (right.Value - left.Value) * (time - left.TimeSeconds) / (right.TimeSeconds - left.TimeSeconds);
+                var rpm = left.Value + ((right.Value - left.Value) * (time - left.TimeSeconds) / (right.TimeSeconds - left.TimeSeconds));
                 var peak = frame.Bins.Where(b => b.FrequencyHz > 0).MaxBy(b => b.Amplitude);
                 if (rpm > 0 && peak is { Amplitude: > 0.01 })
                 {
@@ -179,7 +130,10 @@ public sealed class FftWorkspaceService(SpectrumAverager average, SpectrogramAna
             supported.Length == 0 ? [] : simulator.Simulate(spectrum, supported),
             proposed.Count == 0 ? [] : simulator.Simulate(spectrum, proposed), notes.ToImmutable())
         {
-            Request = request, ParameterSnapshot = parameters, ProposedFilters = proposed.ToImmutableArray(), Baseline = baseline
+            Request = request,
+            ParameterSnapshot = parameters,
+            ProposedFilters = proposed.ToImmutableArray(),
+            Baseline = baseline
         };
     }
 }

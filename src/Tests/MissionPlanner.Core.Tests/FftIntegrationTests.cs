@@ -97,14 +97,29 @@ public sealed class FftIntegrationTests
     }
 
     [Fact]
-    public void TruncatedBinaryAndTextWithoutFmtFailExplicitly()
+    public void TruncatedFinalBatchIsRejectedAndTextWithoutFmtFailsExplicitly()
     {
         using var stream = BatchStream();
         var bytes = stream.ToArray();
         using var truncated = new MemoryStream(bytes[..^10]);
-        Assert.Throws<InvalidDataException>(() => provider.Read(truncated, "truncated.bin", true, TestContext.Current.CancellationToken));
+        var log = provider.Read(truncated, "truncated.bin", true, TestContext.Current.CancellationToken);
+        Assert.Empty(log.Series);
+        Assert.Contains(log.Diagnostics, d => d.Contains("Truncated"));
         using var text = new MemoryStream(Encoding.UTF8.GetBytes("GYR,0,0,0,1,2,3"));
         Assert.Throws<InvalidDataException>(() => provider.Read(text, "no-fmt.log", false, TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public void RealLogWithLateFormatsAndTruncatedTailPreservesCompleteBatches()
+    {
+        var path = Path.Combine(AppContext.BaseDirectory, "TestData", "RealFft", "df-isb-fft-sample.bin");
+        using var stream = File.OpenRead(path);
+        var log = provider.Read(stream, "df-isb-fft-sample.bin", true, TestContext.Current.CancellationToken);
+        var batches = log.Series.Where(s => s.BatchNumber.HasValue).ToArray();
+        Assert.Equal(384, batches.Length);
+        Assert.All(batches, s => Assert.Equal(1024, s.SampleCount));
+        Assert.Contains(log.Diagnostics, d => d.Contains("Truncated"));
+        Assert.All(log.Series, s => Assert.True(s.SampleCount >= 4));
     }
 
     [Fact]
