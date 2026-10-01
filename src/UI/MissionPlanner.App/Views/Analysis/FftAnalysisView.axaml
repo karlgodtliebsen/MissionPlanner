@@ -3,6 +3,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.Analysis"
     xmlns:core="clr-namespace:MissionPlanner.Core.Analysis;assembly=MissionPlanner.Core"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -129,10 +130,9 @@
                                     Foreground="{DynamicResource SemiColorSecondary}"
                                     Text="Analysis report" />
                             </u:UrsaGroupBox.Header>
-                            <TextBox Text="{Binding Report}" 
-                                     Padding="25"
-                                     IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="300"
-                                     AutomationProperties.Name="Structured vibration analysis report" />
+                            <controls:InformationDocumentView Document="{Binding ReportDocument}"
+                                                              Margin="12"
+                                                              AutomationProperties.Name="Structured vibration analysis report" />
                         </u:UrsaGroupBox>
 
                     </StackPanel>

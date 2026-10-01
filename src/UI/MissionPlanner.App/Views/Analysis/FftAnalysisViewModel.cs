@@ -102,7 +102,11 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
         get; set;
     }
     /// <summary>Bounded textual assessment and comparison.</summary>
-    [ObservableProperty] public partial string Report { get; set; } = "Select a source and interval, then Analyze.";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ReportDocument))]
+    public partial string Report { get; set; } = "Select a source and interval, then Analyze.";
+    /// <summary>Selectable Markdown report rendered with the shared application document styling.</summary>
+    public MissionPlanner.App.Presentation.Documents.UserDocument ReportDocument => new(Report, "Vibration analysis");
     /// <summary>Retained baseline provenance.</summary>
     [ObservableProperty] public partial string BaselineDescription { get; set; } = "No baseline captured.";
     /// <summary>Parameter values with metadata-backed explanations.</summary>

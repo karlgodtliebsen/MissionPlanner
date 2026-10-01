@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
@@ -48,6 +48,7 @@ public sealed class FftAnalysisViewTests
                 model.SelectedTab = 1;
                 model.Result = Workspace().Analyze(log, log.Series[0], new(0, log.Series[0].EndTimeSeconds, 64, 0, null),
                     null, null, [], TestContext.Current.CancellationToken);
+                model.Report = FftReportFormatter.Format(model.Result);
                 var view = new FftAnalysisView();
                 var window = new Window { Content = view, Width = 1200, Height = 950 };
                 try
@@ -60,14 +61,14 @@ public sealed class FftAnalysisViewTests
                     var toolbarCommands = new object[] { model.OpenLogCommand, model.AnalyzeCommand,
                         model.CaptureBaselineCommand, model.ClearBaselineCommand, model.ExportEvidenceCommand, model.CancelCommand };
                     var toolbarButtons = view.GetVisualDescendants().OfType<Button>()
-                        .Where(button => toolbarCommands.Contains(button.Command!)).ToArray();
+                        .Where(button => toolbarCommands.Contains(button.Command!) && button.Classes.Contains("ToolbarButton")).ToArray();
                     Assert.Equal(6, toolbarButtons.Length);
                     foreach (var button in toolbarButtons)
                     {
                         Assert.Contains("ToolbarButton", button.Classes);
                         Assert.IsType<Material.Icons.Avalonia.MaterialIcon>(button.Content);
                         Assert.Equal(Avalonia.Automation.AutomationProperties.GetName(button), ToolTip.GetTip(button));
-                        Assert.Equal(ReferenceEquals(button.Command, model.OpenLogCommand), button.IsVisible);
+                        Assert.False(button.IsVisible);
                     }
                     view.IsDrawerMode = false;
                     Dispatcher.UIThread.RunJobs();
@@ -76,6 +77,14 @@ public sealed class FftAnalysisViewTests
                     foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
                     {
                         window.RequestedThemeVariant = theme;
+                        model.SelectedTab = 0;
+                        Dispatcher.UIThread.RunJobs();
+                        window.UpdateLayout();
+                        var report = Assert.Single(view.GetVisualDescendants().OfType<MissionPlanner.App.Controls.InformationDocumentView>());
+                        Assert.Equal(model.Report, report.Document!.Markdown);
+                        Assert.Contains("### Measured peaks", report.Document.Markdown);
+                        Assert.True(report.Bounds.Height > 0);
+                        model.SelectedTab = 1;
                         foreach (var spectrogram in new[] { false, true })
                         {
                             model.ShowSpectrogram = spectrogram;
