@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="MissionPlanner.App.Views.Preferences.Sections.LegacyUnitsAndSpeechTabView"
+             x:DataType="preferences:PreferencesViewModel">
+    <Grid RowDefinitions="Auto,*"
+
+          HorizontalAlignment="Center"
+          VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <Border Padding="14" Classes="SectionCard"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    MinWidth="400" MinHeight="400">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
+
+                    <StackPanel Orientation="Horizontal" Grid.Column="1">
+                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset section" 
+                                Command="{Binding ResetSectionCommand}" CommandParameter="Legacy" >
+                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel 
+                                Grid.Row="1" Orientation="Vertical" Spacing="8"
+                                VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Grid ColumnDefinitions="220,*"
+                              VerticalAlignment="Center"
+                              RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                              RowSpacing="15">
+                            <TextBlock Text="Distance units" VerticalAlignment="Center" />
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding DistanceUnits}" SelectedItem="{Binding DistanceUnit}" />
+                            <TextBlock Grid.Row="1" Text="Altitude units" VerticalAlignment="Center" />
+                            <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AltitudeUnits}" SelectedItem="{Binding AltitudeUnit}" />
+                            <TextBlock Grid.Row="2" Text="Speed units" VerticalAlignment="Center" />
+                            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding SpeedUnits}" SelectedItem="{Binding SpeedUnit}" />
+                            <TextBlock Grid.Row="3" Text="Enable speech" VerticalAlignment="Center" />
+                            <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding SpeechEnabled}" HorizontalAlignment="Left" />
+                            <TextBlock Grid.Row="4" Text="Minimum spoken severity" VerticalAlignment="Center" />
+                            <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding SpeechSeverities}" SelectedItem="{Binding SpeechSeverity}" />
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

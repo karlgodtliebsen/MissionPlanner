@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:mapSettings="clr-namespace:MissionPlanner.Maps.Settings;assembly=MissionPlanner.Maps"
+    xmlns:sections="clr-namespace:MissionPlanner.App.Views.Preferences.Sections"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
     xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -16,627 +16,85 @@
     x:DataType="preferences:PreferencesViewModel">
     <ContentPage Header="Preferences" >
         <Grid Margin="20" RowDefinitions="Auto,Auto,*" RowSpacing="14"  HorizontalAlignment="Stretch" >
-            <u:Banner Grid.Row="0"  Classes="Bordered" Header="MissionPlanner Preferences" HorizontalAlignment="Center">
-                <StackPanel Grid.Row="0" Orientation="Vertical" Spacing="14"  HorizontalAlignment="Center" >
-                    <TextBlock Text="These settings belong to MissionPlanner on this device." TextWrapping="Wrap" />
-                    <TextBlock Text="They never write flight-controller parameters. Credentials and tokens are stored separately in platform secure storage and are never exported." TextWrapping="Wrap" />
-                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <TextBlock Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}"
-                               Classes="Warning" FontWeight="Bold" />
-                    <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
-                </StackPanel>
-            </u:Banner>
-            <WrapPanel  Grid.Row="1" HorizontalAlignment="Center" Margin="0,10" ItemSpacing="10">
-                <Button Classes="ToolbarButton"  ToolTip.Tip="Import" AutomationProperties.Name="Import" Command="{Binding ImportCommand}" >
-                    <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
-                </Button>
-                <Button Classes="ToolbarButton"  ToolTip.Tip="Export" AutomationProperties.Name="Export" Command="{Binding ExportCommand}" >
-                    <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
-                </Button>
-                <Button Classes="ToolbarButton"  ToolTip.Tip="Reset all" AutomationProperties.Name="Reset all" Command="{Binding ResetAllCommand}" >
-                    <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                </Button>
-                <Button Classes="ToolbarButton"  ToolTip.Tip="Save preferences" AutomationProperties.Name="Save preferences" Command="{Binding SaveCommand}"  >
-                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                </Button>
-            </WrapPanel>
 
             <TabControl x:Name="PreferencesTabs" Grid.Row="2" TabStripPlacement="Left" HorizontalAlignment="Stretch">
-                <TabItem Header="Application appearance" >
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Orientation="Horizontal" Grid.Column="1">
-                                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset appearance" Command="{Binding ResetApplicationCommand}" CommandParameter="Appearance" >
-                                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                        </Button>
-                                    </StackPanel>
-                                </Grid>
-                                <StackPanel Orientation="Vertical" Spacing="8">
-                                    <CheckBox Content="Show Tutorial at Startup" IsChecked="{Binding IsTutorialVisibleAtStartup,Mode=TwoWay}" />
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                <TabItem Header="Application appearance">
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:ApplicationAppearanceTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Units and appearance">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5">
-                                        <Button Classes="EmbeddedIconButton"  ToolTip.Tip="Reset units" Command="{Binding ResetSectionCommand}" CommandParameter="Units" >
-                                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                        </Button>
-                                        <Button Classes="EmbeddedIconButton"  ToolTip.Tip="Reset appearance" Command="{Binding ResetSectionCommand}" CommandParameter="Appearance" >
-                                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                        </Button>
-                                    </StackPanel>
-                                </Grid>
-                                <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Unit system" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Column="1" ItemsSource="{Binding UnitSystems}" SelectedItem="{Binding SelectedUnitSystem}" />
-                                    <TextBlock Grid.Row="1" Text="Theme (live preview)" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Row="1" Grid.Column="1"
-                                              ItemsSource="{Binding Themes}"
-                                              SelectedItem="{Binding SelectedTheme}"
-                                              DisplayMemberBinding="{Binding Name}" />
-                                    <TextBlock Grid.Row="2" Text="Layout" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:UnitsAndAppearanceTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Map">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Button Classes="EmbeddedIconButton"  Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Map" >
-                                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                    </Button>
-                                </Grid>
-                                <TextBlock Text="Choose by source purpose. Protocol details remain in the source definition; changing source requires restart." FontSize="12" />
-
-                                <TextBlock Text="Offline packs" FontWeight="Bold" />
-                                <ItemsControl ItemsSource="{Binding OfflineMapSources}"
-                                              Height="58">
-
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
-                                                    Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
-                                                    CommandParameter="{Binding .}"  >
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
-                                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-
-                                <TextBlock Text="Self-hosted/custom" FontWeight="Bold" />
-                                <ItemsControl ItemsSource="{Binding CustomMapSources}" Height="58">
-
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
-                                                    Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
-                                                    CommandParameter="{Binding .}" >
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
-                                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-
-                                <TextBlock Text="Online providers" FontWeight="Bold" />
-                                <ItemsControl ItemsSource="{Binding OnlineMapSources}" Height="58">
-
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
-                                                    Margin="0,10,0,10"
-                                                    Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
-                                                    CommandParameter="{Binding .}"  >
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
-                                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-
-                                <TextBlock Text="Blank map" FontWeight="Bold"  />
-                                <ItemsControl  ItemsSource="{Binding BlankMapSources}" Height="68" VerticalAlignment="Top">
-
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
-                                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
-                                                    VerticalAlignment="Center"
-                                                    Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
-                                                    CommandParameter="{Binding .}" >
-                                                <StackPanel Orientation="Horizontal" Spacing="6">
-                                                    <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
-                                                    <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
-                                                </StackPanel>
-                                            </Button>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-
-                                <Border Padding="10" Classes="SectionCard">
-                                    <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="5">
-                                        <TextBlock Text="Selected source" FontWeight="Bold" />
-                                        <TextBlock Grid.Column="1" Text="{Binding SelectedMapSource.DisplayName}" />
-                                        <TextBlock Grid.Row="1" Text="Provider / product" />
-                                        <TextBlock Grid.Row="1" Grid.Column="1"  Text="{Binding SelectedMapSource.ProviderAndProduct}" />
-                                        <TextBlock Grid.Row="2" Text="Access / rendering" />
-                                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedMapSource.Connectivity, StringFormat='{}{0}'}" />
-                                        <TextBlock Grid.Row="3" Text="Format" />
-                                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedMapSource.Rendering}" />
-                                        <TextBlock Grid.Row="4" Text="Credentials" />
-                                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedMapSource.CredentialState}" />
-                                        <TextBlock Grid.Row="5" Text="Attribution" />
-                                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedMapSource.AttributionPreview}" />
-                                        <TextBlock Grid.Row="6" Text="Cache / packs" />
-                                        <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedMapSource.CacheBehavior}" />
-                                        <TextBlock Grid.Row="7" Text="Pack availability" />
-                                        <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedMapSource.OfflinePackAvailability}" />
-                                        <TextBlock Grid.Row="8" Text="Policy reviewed" />
-                                        <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding SelectedMapSource.PolicyReviewDate}" />
-                                    </Grid>
-                                </Border>
-                                <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Default zoom (1–22)" VerticalAlignment="Center" />
-                                    <NumericUpDown
-                                        Grid.Column="1"
-                                        Value="{Binding DefaultMapZoom, Mode=TwoWay}"
-                                        FormatString="F1"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                    <TextBlock Grid.Row="1" Text="HTTP cache enabled" />
-                                    <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding MapHttpCacheEnabled}" HorizontalAlignment="Left" />
-                                    <TextBlock Grid.Row="2" Text="HTTP cache limit (MiB)" />
-                                    <NumericUpDown Grid.Row="2" Grid.Column="1"
-                                                   Value="{Binding MapHttpCacheLimitMiB, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}" FormatString="F0" />
-                                </Grid>
-                                <TextBlock Text="Credentials" FontWeight="Bold" />
-                                <TextBlock Text="Secrets are written directly to secure storage and the input is cleared after save." FontSize="12" />
-                                <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="5">
-                                    <TextBox Text="{Binding MapCredentialInput}" PasswordChar="●" PlaceholderText="Credential for selected source" />
-
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Set and save map credential" Command="{Binding SaveMapCredentialCommand}"  >
-                                        <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                                    </Button>
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Remove map credential" Command="{Binding RemoveMapCredentialCommand}"  >
-                                        <avalonia:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
-                                    </Button>
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="3" ToolTip.Tip="Test map credential" Command="{Binding TestMapCredentialCommand}"  >
-                                        <avalonia:MaterialIcon Kind="FlaskOutline" Width="30" Height="30" />
-                                    </Button>
-
-                                </Grid>
-                                <Border Padding="10" BorderThickness="1" Classes="SectionCard">
-                                    <StackPanel Orientation="Vertical" Spacing="6">
-                                        <TextBlock Text="Offline pack manager" FontWeight="Bold" />
-                                        <TextBlock Text="Installed packs are validated archives, not HTTP cache entries." FontSize="12" />
-                                        <ComboBox ItemsSource="{Binding InstalledMapPacks}" SelectedItem="{Binding SelectedMapPack}" />
-                                        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="5">
-                                            <Button Classes="EmbeddedIconButton" Grid.Column="0" ToolTip.Tip="Import / install" Command="{Binding ImportMapPackCommand}" >
-                                                <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
-                                            </Button>
-                                            <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Select map pack" Command="{Binding SelectMapPackCommand}" >
-                                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
-                                            </Button>
-                                            <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Verify map pack" Command="{Binding VerifyMapPackCommand}" >
-                                                <avalonia:MaterialIcon Kind="ShieldCheckOutline" Width="30" Height="30" />
-                                            </Button>
-                                            <Button Classes="EmbeddedIconButton" Grid.Column="3" ToolTip.Tip="Remove map pack" Command="{Binding RemoveMapPackCommand}" >
-                                                <avalonia:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
-                                            </Button>
-
-                                        </Grid>
-                                        <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                                            <TextBlock Text="Coverage" />
-                                            <TextBlock Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Bounds}" />
-                                            <TextBlock Grid.Row="1" Text="Zoom" />
-                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.MinimumZoom, StringFormat='Minimum {0}'}" />
-                                            <TextBlock Grid.Row="2" Text="Size" />
-                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.SizeBytes, StringFormat='{}{0} bytes'}" />
-                                            <TextBlock Grid.Row="3" Text="Version / source" />
-                                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Version}" />
-                                            <TextBlock Grid.Row="4" Text="Attribution" />
-                                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Attribution}" />
-                                            <TextBlock Grid.Row="5" Text="License" />
-                                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.LicenseNotice}" />
-                                        </Grid>
-                                    </StackPanel>
-                                </Border>
-                                <Border Padding="10" BorderThickness="1" Classes="SectionCard">
-                                    <StackPanel Orientation="Vertical" Spacing="6">
-                                        <TextBlock Text="HTTP cache manager" FontWeight="Bold" />
-                                        <TextBlock Text="{Binding MapHttpCacheSizeMiB, StringFormat='Current size: {0:F1} MiB'}" />
-                                        <StackPanel Orientation="Horizontal" Spacing="5">
-                                            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Clear selected source" Command="{Binding ClearSelectedMapCacheCommand}">
-                                                <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
-                                            </Button>
-                                            <Button Classes="EmbeddedIconButton"   ToolTip.Tip="Clear all HTTP cache" Command="{Binding ClearAllMapCacheCommand}" >
-                                                <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
-                                            </Button>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:MapTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Telemetry display">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Telemetry" >
-                                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                    </Button>
-                                </Grid>
-                                <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Maximum display rate (Hz)" VerticalAlignment="Center" />
-                                    <NumericUpDown
-                                        Grid.Column="1"
-                                        Value="{Binding TelemetryDisplayRateHz, Mode=TwoWay}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-
-                                    <TextBlock Grid.Row="1" Text="Chart history (seconds)" VerticalAlignment="Center" />
-                                    <NumericUpDown
-                                        Grid.Row="1"
-                                        Grid.Column="1"
-                                        Value="{Binding ChartHistorySeconds, Mode=TwoWay}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:TelemetryDisplayTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Connection defaults">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard"  HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
-                                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                    </Button>
-                                </Grid>
-                                <TextBlock Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." FontSize="12" />
-
-                                <Grid ColumnDefinitions="120,220" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-
-                                    <TextBlock Grid.Column="0"  Grid.Row="0" Text="Channel" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Column="1"   Grid.Row="0" ItemsSource="{Binding ConnectionChannels}"
-                                              SelectedItem="{Binding ConnectionChannel}" />
-
-                                    <TextBlock Grid.Column="0" Grid.Row="1" Text="Host" VerticalAlignment="Center" />
-                                    <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding ConnectionHost}" PlaceholderText="Use platform default" />
-
-                                    <TextBlock Grid.Column="0" Grid.Row="2" Text="Port" VerticalAlignment="Center" />
-                                    <NumericUpDown
-                                        Grid.Column="1"
-                                        Grid.Row="2"
-                                        Value="{Binding ConnectionPort, Mode=TwoWay}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-
-                                    <TextBlock Grid.Column="0" Grid.Row="3" Text="Serial baud rate" VerticalAlignment="Center" />
-                                    <NumericUpDown
-                                        Grid.Column="1"
-                                        Grid.Row="3"
-                                        Value="{Binding ConnectionBaudRate, Mode=TwoWay}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:ConnectionDefaultsTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Parameter cache">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="ParameterCache" >
-                                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                    </Button>
-                                </Grid>
-                                <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Policy" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Column="1" ItemsSource="{Binding ParameterCachePolicies}" SelectedItem="{Binding SelectedParameterCachePolicy}" />
-                                    <TextBlock Grid.Row="1" Text="Maximum age (minutes)" VerticalAlignment="Center" />
-                                    <NumericUpDown
-                                        Grid.Row="1" Grid.Column="1"
-                                        Value="{Binding ParameterCacheMaximumAgeMinutes, Mode=TwoWay}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:ParameterCacheTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Confirmations">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Confirmations" >
-                                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                    </Button>
-                                </Grid>
-                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Confirm vehicle parameter writes" VerticalAlignment="Center" />
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding ConfirmParameterWrites}" />
-                                    <TextBlock Grid.Row="1" Text="Confirm arm/disarm operations" VerticalAlignment="Center" />
-                                    <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding ConfirmArmDisarm}" />
-                                    <TextBlock Grid.Row="2" Text="Confirm firmware changes" VerticalAlignment="Center" />
-                                    <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding ConfirmFirmwareChanges}" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:ConfirmationsTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Logging and updates">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5">
-                                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset logging" Command="{Binding ResetSectionCommand}" CommandParameter="Logging" >
-                                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                        </Button>
-                                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset updates" Command="{Binding ResetSectionCommand}" CommandParameter="Updates" >
-                                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                        </Button>
-                                    </StackPanel>
-                                </Grid>
-                                <TextBlock Text="Logging changes and update-channel changes take effect after restart." FontSize="12" />
-                                <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Logging level" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Column="1" ItemsSource="{Binding LoggingLevels}" SelectedItem="{Binding SelectedLoggingLevel}" />
-                                    <TextBlock Grid.Row="1" Text="Log retention (days)" VerticalAlignment="Center" />
-                                    <NumericUpDown
-                                        Grid.Row="1" Grid.Column="1"
-                                        Value="{Binding LogRetentionDays, Mode=TwoWay}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                    <TextBlock Grid.Row="2" Text="Automatic update checks" VerticalAlignment="Center" />
-                                    <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding CheckUpdatesAutomatically}" HorizontalAlignment="Left" />
-                                    <TextBlock Grid.Row="3" Text="Check interval (days)" VerticalAlignment="Center" />
-                                    <NumericUpDown
-                                        Grid.Row="3" Grid.Column="1"
-                                        Value="{Binding UpdateCheckIntervalDays, Mode=TwoWay}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-
-                                    <TextBlock Grid.Row="4" Text="Update channel" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding UpdateChannels}" SelectedItem="{Binding UpdateChannel}" />
-                                    <TextBlock Grid.Row="5" Text="Log storage" VerticalAlignment="Center" />
-                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="Logs → Open folder. Desktop: Documents/Mission Planner/logs. Browser: session storage." TextWrapping="Wrap" />
-
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:LoggingAndUpdatesTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Accessibility">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Accessibility" >
-                                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                    </Button>
-
-                                </Grid>
-                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="High-contrast telemetry" VerticalAlignment="Center" />
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding HighContrastTelemetry}" />
-                                    <TextBlock Grid.Row="1" Text="Reduce telemetry motion" VerticalAlignment="Center" />
-                                    <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding ReduceMotion}" />
-                                    <TextBlock Grid.Row="2" Text="Text scale (0.8–2.0)" VerticalAlignment="Center" />
-                                    <NumericUpDown
-                                        Grid.Row="2" Grid.Column="1"
-                                        Width="140"
-                                        Value="{Binding TextScale, Mode=TwoWay}"
-                                        FormatString="F1"
-                                        HorizontalAlignment="Stretch"
-                                        />
-
-                                    <TextBlock Grid.Row="3" Text="Announce telemetry warnings" VerticalAlignment="Center" />
-                                    <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding AnnounceTelemetryWarnings}" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:AccessibilityTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Legacy units and speech">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Legacy" >
-                                        <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                                    </Button>
-
-                                </Grid>
-                                <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Distance units" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Column="1" ItemsSource="{Binding DistanceUnits}" SelectedItem="{Binding DistanceUnit}" />
-                                    <TextBlock Grid.Row="1" Text="Altitude units" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AltitudeUnits}" SelectedItem="{Binding AltitudeUnit}" />
-                                    <TextBlock Grid.Row="2" Text="Speed units" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding SpeedUnits}" SelectedItem="{Binding SpeedUnit}" />
-                                    <TextBlock Grid.Row="3" Text="Enable speech" VerticalAlignment="Center" />
-                                    <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding SpeechEnabled}" HorizontalAlignment="Left" />
-                                    <TextBlock Grid.Row="4" Text="Minimum spoken severity" VerticalAlignment="Center" />
-                                    <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding SpeechSeverities}" SelectedItem="{Binding SpeechSeverity}" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:LegacyUnitsAndSpeechTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Telemetry stream rates">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <TextBlock Text="Requested MAVLink stream rates in hertz. A value of zero disables the stream request." FontSize="12" />
-                                <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Attitude" />
-                                    <NumericUpDown
-                                        Grid.Column="1"
-                                        Width="140"
-                                        Value="{Binding AttitudeRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                    <TextBlock Grid.Row="1" Text="Position" />
-                                    <NumericUpDown
-                                        Grid.Row="1" Grid.Column="1"
-                                        Width="140"
-                                        Value="{Binding PositionRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                    <TextBlock Grid.Row="2" Text="Mode / status" />
-                                    <NumericUpDown
-                                        Grid.Row="2" Grid.Column="1"
-                                        Width="140"
-                                        Value="{Binding StatusRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                    <TextBlock Grid.Row="3" Text="RC" />
-                                    <NumericUpDown
-                                        Grid.Row="3" Grid.Column="1"
-                                        Width="140"
-                                        Value="{Binding RcRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                    <TextBlock Grid.Row="4" Text="Sensors" />
-                                    <NumericUpDown
-                                        Grid.Row="4" Grid.Column="1"
-                                        Width="140"
-                                        Value="{Binding SensorRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:TelemetryStreamRatesTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Connection and vehicle behavior">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Reset flight controller on USB connect (toggle DTR)" />
-                                    <ToggleSwitch Grid.Column="1" IsChecked="{Binding ResetOnUsbConnect}" />
-                                    <TextBlock Grid.Row="1" Text="Disable RTS reset for ESP32 Serial/JTAG" />
-                                    <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding DisableEsp32RtsReset}" />
-                                    <TextBlock Grid.Row="2" Text="Load waypoints on connect" />
-                                    <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding LoadWaypointsOnConnect}" />
-                                    <TextBlock Grid.Row="3" Text="Download parameters in background" />
-                                    <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding DownloadParametersInBackground}" />
-                                    <TextBlock Grid.Row="4" Text="No RC receiver" />
-                                    <ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding NoRcReceiver}" />
-                                    <TextBlock Grid.Row="5" Text="Slow computer mode" />
-                                    <ToggleSwitch Grid.Row="5" Grid.Column="1" IsChecked="{Binding SlowComputerMode}" />
-                                    <TextBlock Grid.Row="6" Text="GCS system ID (0–255)" />
-                                    <NumericUpDown
-                                        Grid.Row="6" Grid.Column="1"
-                                        Value="{Binding GcsSystemId, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:ConnectionAndVehicleBehaviorTabView />
+                    </StackPanel>
                 </TabItem>
                 <TabItem Header="Flight map and aircraft icon">
-                    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                        <Border Padding="14" Classes="SectionCard" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="400" MinHeight="400">
-                            <StackPanel Orientation="Vertical" Spacing="8">
-                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
-                                    <TextBlock Text="Track length" />
-                                    <!--<TextBox Grid.Column="1" Width="140" Text="{Binding }" Keyboard="Numeric" />-->
-                                    <NumericUpDown
-                                        Grid.Column="1"
-                                        Width="140"
-                                        Value="{Binding TrackLength, Mode=TwoWay}"
-                                        FormatString="F0"
-                                        HorizontalAlignment="Stretch"
-                                        />
-                                    <TextBlock Grid.Row="1" Text="Display distance to home" />
-                                    <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowDistanceToHome}" />
-                                    <TextBlock Grid.Row="2" Text="Rotate map to follow aircraft" />
-                                    <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding RotateMapToHeading}" />
-                                    <TextBlock Grid.Row="3" Text="Display course over ground" />
-                                    <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding DisplayCourseOverGround}" />
-                                    <TextBlock Grid.Row="4" Text="Display heading" />
-                                    <ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding DisplayHeading}" />
-                                    <TextBlock Grid.Row="5" Text="Display navigation bearing" />
-                                    <ToggleSwitch Grid.Row="5" Grid.Column="1" IsChecked="{Binding DisplayNavigationBearing}" />
-                                    <TextBlock Grid.Row="6" Text="Display turn radius" />
-                                    <ToggleSwitch Grid.Row="6" Grid.Column="1" IsChecked="{Binding DisplayTurnRadius}" />
-                                    <TextBlock Grid.Row="7" Text="Display target" />
-                                    <ToggleSwitch Grid.Row="7" Grid.Column="1" IsChecked="{Binding DisplayTarget}" />
-                                    <TextBlock Grid.Row="8" Text="Display aircraft tooltip" />
-                                    <ToggleSwitch Grid.Row="8" Grid.Column="1" IsChecked="{Binding DisplayAircraftToolTip}" />
-                                    <TextBlock Grid.Row="9" Text="Aircraft line length" />
-                                    <NumericUpDown
-                                        Grid.Row="9" Grid.Column="1"
-                                        Width="140"
-                                        Value="{Binding AircraftLineLength, Mode=TwoWay}"
-                                        FormatString="F1"
-                                        HorizontalAlignment="Stretch"
-                                        />
-
-                                    <TextBlock Grid.Row="10" Text="Show airports / ADS-B" />
-                                    <StackPanel Orientation="Horizontal" Grid.Row="10" Grid.Column="1">
-                                        <ToggleSwitch IsChecked="{Binding ShowAirports}" />
-                                        <ToggleSwitch IsChecked="{Binding ShowAdsb}" />
-                                    </StackPanel>
-                                    <TextBlock Grid.Row="11" Text="Show no-fly zones / TFRs" />
-                                    <StackPanel Orientation="Horizontal" Grid.Row="11" Grid.Column="1">
-                                        <ToggleSwitch IsChecked="{Binding ShowNoFlyZones}" />
-                                        <ToggleSwitch IsChecked="{Binding ShowTemporaryFlightRestrictions}" />
-                                    </StackPanel>
-                                    <TextBlock Grid.Row="12" Text="Map access mode" />
-                                    <ComboBox Grid.Row="12" Grid.Column="1" Width="220" ItemsSource="{Binding MapAccessModes}" SelectedItem="{Binding MapAccessMode}" />
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
+                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                        <sections:TopSectionView/>
+                        <sections:FlightMapAndAircraftIconTabView />
+                    </StackPanel>
                 </TabItem>
             </TabControl>
         </Grid>

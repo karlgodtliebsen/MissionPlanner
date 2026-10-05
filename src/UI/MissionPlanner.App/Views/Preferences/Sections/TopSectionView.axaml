@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+             xmlns:u="https://irihi.tech/ursa"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="preferences:PreferencesViewModel"
+             x:Class="MissionPlanner.App.Views.Preferences.Sections.TopSectionView">
+
+    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+        <u:Banner Grid.Row="0"  Classes="Bordered" Header="MissionPlanner Preferences" HorizontalAlignment="Center">
+            <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Center" >
+                <TextBlock Text="These settings belong to MissionPlanner on this device." TextWrapping="Wrap" />
+                <TextBlock Text="They never write flight-controller parameters. Credentials and tokens are stored separately in platform secure storage and are never exported." TextWrapping="Wrap" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <TextBlock Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}"
+                           Classes="Warning" FontWeight="Bold" />
+                <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
+            </StackPanel>
+        </u:Banner>
+        <WrapPanel  Grid.Row="1" HorizontalAlignment="Center" ItemSpacing="10">
+            <Button Classes="ToolbarButton"  ToolTip.Tip="Import" AutomationProperties.Name="Import" Command="{Binding ImportCommand}" >
+                <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
+            </Button>
+            <Button Classes="ToolbarButton"  ToolTip.Tip="Export" AutomationProperties.Name="Export" Command="{Binding ExportCommand}" >
+                <avalonia:MaterialIcon Kind="FileExportOutline" Width="30" Height="30" />
+            </Button>
+            <Button Classes="ToolbarButton"  ToolTip.Tip="Reset all" AutomationProperties.Name="Reset all" Command="{Binding ResetAllCommand}" >
+                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+            </Button>
+            <Button Classes="ToolbarButton"  ToolTip.Tip="Save preferences" AutomationProperties.Name="Save preferences" Command="{Binding SaveCommand}"  >
+                <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+            </Button>
+        </WrapPanel>
+
+    </StackPanel>
+
+
+</UserControl>

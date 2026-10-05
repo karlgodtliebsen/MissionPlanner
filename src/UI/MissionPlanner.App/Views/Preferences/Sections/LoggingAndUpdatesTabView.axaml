@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="MissionPlanner.App.Views.Preferences.Sections.LoggingAndUpdatesTabView"
+             x:DataType="preferences:PreferencesViewModel">
+
+    <Grid RowDefinitions="Auto,*"
+
+          HorizontalAlignment="Center"
+          VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <Border Padding="14" Classes="SectionCard"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    MinWidth="400" MinHeight="400">
+
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="5">
+                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset logging" Command="{Binding ResetSectionCommand}" CommandParameter="Logging" >
+                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+                        </Button>
+                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset updates" Command="{Binding ResetSectionCommand}" CommandParameter="Updates" >
+                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8"
+                                VerticalAlignment="Center" HorizontalAlignment="Center">
+
+                        <TextBlock Text="Logging changes and update-channel changes take effect after restart." FontSize="12" />
+                        <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                            <TextBlock Text="Logging level" VerticalAlignment="Center" />
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding LoggingLevels}" SelectedItem="{Binding SelectedLoggingLevel}" />
+                            <TextBlock Grid.Row="1" Text="Log retention (days)" VerticalAlignment="Center" />
+                            <NumericUpDown
+                                Grid.Row="1" Grid.Column="1"
+                                Value="{Binding LogRetentionDays, Mode=TwoWay}"
+                                FormatString="F0"
+                                HorizontalAlignment="Stretch"
+                                />
+                            <TextBlock Grid.Row="2" Text="Automatic update checks" VerticalAlignment="Center" />
+                            <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding CheckUpdatesAutomatically}" HorizontalAlignment="Left" />
+                            <TextBlock Grid.Row="3" Text="Check interval (days)" VerticalAlignment="Center" />
+                            <NumericUpDown
+                                Grid.Row="3" Grid.Column="1"
+                                Value="{Binding UpdateCheckIntervalDays, Mode=TwoWay}"
+                                FormatString="F0"
+                                HorizontalAlignment="Stretch"
+                                />
+
+                            <TextBlock Grid.Row="4" Text="Update channel" VerticalAlignment="Center" />
+                            <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding UpdateChannels}" SelectedItem="{Binding UpdateChannel}" />
+                            <TextBlock Grid.Row="5" Text="Log storage" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="Logs → Open folder. Desktop: Documents/Mission Planner/logs. Browser: session storage." TextWrapping="Wrap" />
+
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

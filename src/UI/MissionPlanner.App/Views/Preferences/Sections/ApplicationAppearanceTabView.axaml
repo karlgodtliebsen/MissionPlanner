@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="MissionPlanner.App.Views.Preferences.Sections.ApplicationAppearanceTabView"
+             x:DataType="preferences:PreferencesViewModel"
+
+             >
+
+    <Grid RowDefinitions="Auto,*"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <Border Padding="14" Classes="SectionCard"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    MinHeight="400" MinWidth="400"
+                    >
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
+                    <StackPanel Orientation="Horizontal" Grid.Column="1">
+                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset appearance"
+                                Command="{Binding ResetApplicationCommand}"
+                                CommandParameter="Appearance" >
+                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8"
+                                VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <CheckBox Content="Show Tutorial at Startup"
+                                  
+                                  IsChecked="{Binding IsTutorialVisibleAtStartup,Mode=TwoWay}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

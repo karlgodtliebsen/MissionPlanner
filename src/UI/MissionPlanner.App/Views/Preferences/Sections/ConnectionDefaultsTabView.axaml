@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="MissionPlanner.App.Views.Preferences.Sections.ConnectionDefaultsTabView"
+             x:DataType="preferences:PreferencesViewModel">
+
+    <Grid RowDefinitions="Auto,*"
+          
+          HorizontalAlignment="Center"
+          VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <Border Padding="14" Classes="SectionCard"  HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Orientation="Vertical" Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
+                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+                        </Button>
+                    </Grid>
+                    <TextBlock Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." FontSize="12" />
+
+                    <Grid ColumnDefinitions="120,220" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                        <TextBlock Grid.Column="0"  Grid.Row="0" Text="Channel" VerticalAlignment="Center" />
+                        <ComboBox Grid.Column="1"   Grid.Row="0" ItemsSource="{Binding ConnectionChannels}"
+                                  SelectedItem="{Binding ConnectionChannel}" />
+
+                        <TextBlock Grid.Column="0" Grid.Row="1" Text="Host" VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding ConnectionHost}" PlaceholderText="Use platform default" />
+
+                        <TextBlock Grid.Column="0" Grid.Row="2" Text="Port" VerticalAlignment="Center" />
+                        <NumericUpDown
+                            Grid.Column="1"
+                            Grid.Row="2"
+                            Value="{Binding ConnectionPort, Mode=TwoWay}"
+                            FormatString="F0"
+                            HorizontalAlignment="Stretch"
+                            />
+
+                        <TextBlock Grid.Column="0" Grid.Row="3" Text="Serial baud rate" VerticalAlignment="Center" />
+                        <NumericUpDown
+                            Grid.Column="1"
+                            Grid.Row="3"
+                            Value="{Binding ConnectionBaudRate, Mode=TwoWay}"
+                            FormatString="F0"
+                            HorizontalAlignment="Stretch"
+                            />
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

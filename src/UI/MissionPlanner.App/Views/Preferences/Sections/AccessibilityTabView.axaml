@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="MissionPlanner.App.Views.Preferences.Sections.AccessibilityTabView"
+             x:DataType="preferences:PreferencesViewModel">
+    <Grid RowDefinitions="Auto,*"
+
+          HorizontalAlignment="Center"
+          VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <Border Padding="14" Classes="SectionCard"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    MinWidth="400" MinHeight="400">
+
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
+                    <StackPanel Orientation="Horizontal" Grid.Column="1">
+
+                        <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}"
+                                CommandParameter="Accessibility" >
+                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+                        </Button>
+
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8"
+                                VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
+                            <TextBlock Text="High-contrast telemetry" VerticalAlignment="Center" />
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding HighContrastTelemetry}" />
+                            <TextBlock Grid.Row="1" Text="Reduce telemetry motion" VerticalAlignment="Center" />
+                            <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding ReduceMotion}" />
+                            <TextBlock Grid.Row="2" Text="Text scale (0.8–2.0)" VerticalAlignment="Center" />
+                            <NumericUpDown
+                                Grid.Row="2" Grid.Column="1"
+                                Width="140"
+                                Value="{Binding TextScale, Mode=TwoWay}"
+                                FormatString="F1"
+                                HorizontalAlignment="Stretch"
+                                />
+
+                            <TextBlock Grid.Row="3" Text="Announce telemetry warnings" VerticalAlignment="Center" />
+                            <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding AnnounceTelemetryWarnings}" />
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

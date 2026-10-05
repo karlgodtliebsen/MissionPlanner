@@ -1,0 +1,212 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+             xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:mapSettings="clr-namespace:MissionPlanner.Maps.Settings;assembly=MissionPlanner.Maps"
+             x:Class="MissionPlanner.App.Views.Preferences.Sections.MapTabView"
+             x:DataType="preferences:PreferencesViewModel">
+
+    <Grid RowDefinitions="Auto,*"
+
+          HorizontalAlignment="Center"
+          VerticalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <Border Padding="14" Classes="SectionCard"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    MinWidth="400" MinHeight="400">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
+
+                    <StackPanel Orientation="Horizontal" Grid.Column="1">
+                        <Button Classes="EmbeddedIconButton"  Grid.Column="1" ToolTip.Tip="Reset section"
+                                Command="{Binding ResetSectionCommand}"
+                                CommandParameter="Map" >
+                            <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+                        </Button>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8"
+                                VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="Choose by source purpose. Protocol details remain in the source definition; changing source requires restart." FontSize="12" />
+
+                        <TextBlock Text="Offline packs" FontWeight="Bold" />
+                        <ItemsControl ItemsSource="{Binding OfflineMapSources}"
+                                      Height="58">
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
+                                            Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
+                                            CommandParameter="{Binding .}"  >
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Self-hosted/custom" FontWeight="Bold" />
+                        <ItemsControl ItemsSource="{Binding CustomMapSources}" Height="58">
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
+                                            Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
+                                            CommandParameter="{Binding .}" >
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Online providers" FontWeight="Bold" />
+                        <ItemsControl ItemsSource="{Binding OnlineMapSources}" Height="58">
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
+                                            Margin="0,10,0,10"
+                                            Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
+                                            CommandParameter="{Binding .}"  >
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Text="Blank map" FontWeight="Bold"  />
+                        <ItemsControl  ItemsSource="{Binding BlankMapSources}" Height="68" VerticalAlignment="Top">
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="mapSettings:MapSettingsSourceItem">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="{Binding DisplayName}"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding $parent[ItemsControl].((preferences:PreferencesViewModel)DataContext).SelectMapSourceCommand}"
+                                            CommandParameter="{Binding .}" >
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <avalonia:MaterialIcon Kind="MapCheckOutline" Width="30" Height="30" />
+                                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Border Padding="10" Classes="SectionCard">
+                            <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="5">
+                                <TextBlock Text="Selected source" FontWeight="Bold" />
+                                <TextBlock Grid.Column="1" Text="{Binding SelectedMapSource.DisplayName}" />
+                                <TextBlock Grid.Row="1" Text="Provider / product" />
+                                <TextBlock Grid.Row="1" Grid.Column="1"  Text="{Binding SelectedMapSource.ProviderAndProduct}" />
+                                <TextBlock Grid.Row="2" Text="Access / rendering" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedMapSource.Connectivity, StringFormat='{}{0}'}" />
+                                <TextBlock Grid.Row="3" Text="Format" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedMapSource.Rendering}" />
+                                <TextBlock Grid.Row="4" Text="Credentials" />
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedMapSource.CredentialState}" />
+                                <TextBlock Grid.Row="5" Text="Attribution" />
+                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedMapSource.AttributionPreview}" />
+                                <TextBlock Grid.Row="6" Text="Cache / packs" />
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedMapSource.CacheBehavior}" />
+                                <TextBlock Grid.Row="7" Text="Pack availability" />
+                                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedMapSource.OfflinePackAvailability}" />
+                                <TextBlock Grid.Row="8" Text="Policy reviewed" />
+                                <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding SelectedMapSource.PolicyReviewDate}" />
+                            </Grid>
+                        </Border>
+                        <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                            <TextBlock Text="Default zoom (1–22)" VerticalAlignment="Center" />
+                            <NumericUpDown
+                                Grid.Column="1"
+                                Value="{Binding DefaultMapZoom, Mode=TwoWay}"
+                                FormatString="F1"
+                                HorizontalAlignment="Stretch"
+                                />
+                            <TextBlock Grid.Row="1" Text="HTTP cache enabled" />
+                            <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding MapHttpCacheEnabled}" HorizontalAlignment="Left" />
+                            <TextBlock Grid.Row="2" Text="HTTP cache limit (MiB)" />
+                            <NumericUpDown Grid.Row="2" Grid.Column="1"
+                                           Value="{Binding MapHttpCacheLimitMiB, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}" FormatString="F0" />
+                        </Grid>
+                        <TextBlock Text="Credentials" FontWeight="Bold" />
+                        <TextBlock Text="Secrets are written directly to secure storage and the input is cleared after save." FontSize="12" />
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="5">
+                            <TextBox Text="{Binding MapCredentialInput}" PasswordChar="●" PlaceholderText="Credential for selected source" />
+
+                            <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Set and save map credential" Command="{Binding SaveMapCredentialCommand}"  >
+                                <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
+                            </Button>
+                            <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Remove map credential" Command="{Binding RemoveMapCredentialCommand}"  >
+                                <avalonia:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
+                            </Button>
+                            <Button Classes="EmbeddedIconButton" Grid.Column="3" ToolTip.Tip="Test map credential" Command="{Binding TestMapCredentialCommand}"  >
+                                <avalonia:MaterialIcon Kind="FlaskOutline" Width="30" Height="30" />
+                            </Button>
+
+                        </Grid>
+                        <Border Padding="10" BorderThickness="1" Classes="SectionCard">
+                            <StackPanel Orientation="Vertical" Spacing="6">
+                                <TextBlock Text="Offline pack manager" FontWeight="Bold" />
+                                <TextBlock Text="Installed packs are validated archives, not HTTP cache entries." FontSize="12" />
+                                <ComboBox ItemsSource="{Binding InstalledMapPacks}" SelectedItem="{Binding SelectedMapPack}" />
+                                <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="5">
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="0" ToolTip.Tip="Import / install" Command="{Binding ImportMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
+                                    </Button>
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Select map pack" Command="{Binding SelectMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
+                                    </Button>
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="2" ToolTip.Tip="Verify map pack" Command="{Binding VerifyMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="ShieldCheckOutline" Width="30" Height="30" />
+                                    </Button>
+                                    <Button Classes="EmbeddedIconButton" Grid.Column="3" ToolTip.Tip="Remove map pack" Command="{Binding RemoveMapPackCommand}" >
+                                        <avalonia:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
+                                    </Button>
+
+                                </Grid>
+                                <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                                    <TextBlock Text="Coverage" />
+                                    <TextBlock Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Bounds}" />
+                                    <TextBlock Grid.Row="1" Text="Zoom" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.MinimumZoom, StringFormat='Minimum {0}'}" />
+                                    <TextBlock Grid.Row="2" Text="Size" />
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.SizeBytes, StringFormat='{}{0} bytes'}" />
+                                    <TextBlock Grid.Row="3" Text="Version / source" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Version}" />
+                                    <TextBlock Grid.Row="4" Text="Attribution" />
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Attribution}" />
+                                    <TextBlock Grid.Row="5" Text="License" />
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.LicenseNotice}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                        <Border Padding="10" BorderThickness="1" Classes="SectionCard">
+                            <StackPanel Orientation="Vertical" Spacing="6">
+                                <TextBlock Text="HTTP cache manager" FontWeight="Bold" />
+                                <TextBlock Text="{Binding MapHttpCacheSizeMiB, StringFormat='Current size: {0:F1} MiB'}" />
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Clear selected source" Command="{Binding ClearSelectedMapCacheCommand}">
+                                        <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
+                                    </Button>
+                                    <Button Classes="EmbeddedIconButton"   ToolTip.Tip="Clear all HTTP cache" Command="{Binding ClearAllMapCacheCommand}" >
+                                        <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
