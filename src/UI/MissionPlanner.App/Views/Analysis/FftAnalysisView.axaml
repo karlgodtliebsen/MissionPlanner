@@ -139,7 +139,7 @@
                 </ScrollViewer>
             </TabItem>
             <TabItem Header="Graphs">
-                <Grid ColumnDefinitions="*,5,380" Margin="0,8" ColumnSpacing="12">
+                <Grid ColumnDefinitions="*,5,390" Margin="0,8" ColumnSpacing="12">
                     <Grid RowDefinitions="Auto,*,Auto">
                         <TextBlock Text="{Binding SelectedSource.DisplayName,FallbackValue='', TargetNullValue=''}"
                                    FontWeight="SemiBold" TextWrapping="Wrap" HorizontalAlignment="Center" />
@@ -166,7 +166,7 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
-                                    <WrapPanel ItemSpacing="12" LineSpacing="8">
+                                    <StackPanel Orientation="Vertical" Spacing="12">
                                         <WrapPanel ItemSpacing="12" LineSpacing="8">
                                             <StackPanel>
                                                 <TextBlock Text="Start (log seconds)" />
@@ -196,7 +196,7 @@
                                                                AutomationProperties.Name="Maximum plot frequency" />
                                             </StackPanel>
                                         </WrapPanel>
-                                    </WrapPanel>
+                                    </StackPanel>
                                 </StackPanel>
                             </u:UrsaGroupBox>
                             <CheckBox IsChecked="{Binding ShowSpectrogram}" Content="Spectrogram (unchecked: Spectrum)" AutomationProperties.Name="Switch spectrum or spectrogram" />

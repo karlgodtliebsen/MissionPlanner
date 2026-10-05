@@ -1,14 +1,14 @@
-﻿using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Media;
 using MissionPlanner.Core.Analysis;
+using ScottPlot;
+using ScottPlot.Avalonia;
 
 namespace MissionPlanner.App.Views.Analysis;
 
-/// <summary>Renders completed measurements only; no FFT or filter computation occurs in this control.</summary>
-public sealed class FrequencyPlot : Control
+/// <summary>ScottPlot presentation of completed FFT evidence; performs no signal analysis.</summary>
+public sealed class FrequencyPlot : AvaPlot
 {
     /// <summary>Completed analysis property.</summary>
     public static readonly StyledProperty<FftWorkspaceResult?> ResultProperty =
@@ -30,135 +30,138 @@ public sealed class FrequencyPlot : Control
         set => SetValue(ShowSpectrogramProperty, value);
     }
 
-    private static readonly IBrush[] heatColors = Enumerable.Range(0, 64).Select(i =>
-        (IBrush)new SolidColorBrush(Color.FromRgb((byte)(i * 4), (byte)Math.Min(255, i * 6), (byte)(120 - i)))).ToArray();
-    private double maximum = 1;
-    private Rect Plot => new(58, 24, Math.Max(1, Bounds.Width - 78), Math.Max(1, Bounds.Height - 66));
-
-    static FrequencyPlot()
-    {
-        AffectsRender<FrequencyPlot>(ResultProperty, ShowSpectrogramProperty);
-    }
+    /// <summary>Initializes an interactive plot with a black background.</summary>
+    public FrequencyPlot() => RebuildPlot();
 
     /// <inheritdoc />
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == ResultProperty)
-        {
-            maximum = Math.Max(1e-12, Result?.Spectrogram.Frames.SelectMany(f => f.Bins).Max(b => b.Amplitude) ?? 1);
-        }
+        if (change.Property == ResultProperty || change.Property == ShowSpectrogramProperty)
+            RebuildPlot();
     }
 
-    /// <inheritdoc />
-    public override void Render(DrawingContext context)
+    private void RebuildPlot()
     {
-        base.Render(context);
-        var foreground = this.TryFindResource("ThemeForegroundBrush", out var resource) && resource is IBrush brush ? brush : Brushes.Gray;
-        var plot = Plot;
-        context.DrawRectangle(null, new Pen(foreground, 1), plot);
-        if (Result is not { } result)
+        // Reset also releases the previous plot and removes heatmap colorbar panels.
+        Reset();
+        Plot.FigureBackground.Color = Colors.Black;
+        Plot.DataBackground.Color = Colors.Black;
+        Plot.Axes.Color(Colors.White);
+        Plot.Grid.MajorLineColor = Color.FromHex("#303030");
+        Plot.Legend.BackgroundColor = Colors.Black;
+        Plot.Legend.FontColor = Colors.White;
+        Plot.Legend.OutlineColor = Color.FromHex("#606060");
+        ToolTip.SetTip(this, null);
+
+        if (Result is not { } result || result.Spectrogram.Frames.IsEmpty)
         {
-            Label(context, "Open a log and analyze a uniform segment", plot.Left + 8, plot.Top + 12, foreground);
+            Plot.Title("Open a log and select a source");
+            Refresh();
             return;
         }
-        var frames = result.Spectrogram.Frames;
-        var minimumHz = frames[0].Bins[0].FrequencyHz;
-        var maximumHz = frames[0].Bins[^1].FrequencyHz;
-        var span = Math.Max(result.Spectrum.ResolutionHz, maximumHz - minimumHz);
+        var bins = result.Spectrogram.Frames[0].Bins;
+        var minimumHz = bins[0].FrequencyHz;
+        var maximumHz = bins[^1].FrequencyHz;
         if (ShowSpectrogram)
         {
-            var columns = Math.Min(256, frames.Length);
-            var rows = Math.Min(128, frames[0].Bins.Length);
-            for (var x = 0; x < columns; x++)
-            {
-                var firstFrame = x * frames.Length / columns;
-                var endFrame = (x + 1) * frames.Length / columns;
-                for (var y = 0; y < rows; y++)
-                {
-                    var firstBin = y * frames[0].Bins.Length / rows;
-                    var endBin = (y + 1) * frames[0].Bins.Length / rows;
-                    var amplitude = 0.0;
-                    for (var frame = firstFrame; frame < endFrame; frame++)
-                    {
-                        for (var bin = firstBin; bin < endBin; bin++)
-                        {
-                            amplitude = Math.Max(amplitude, frames[frame].Bins[bin].Amplitude);
-                        }
-                    }
-                    var db = 20 * Math.Log10(Math.Max(1e-12, amplitude / maximum));
-                    var color = heatColors[(int)Math.Clamp((db + 60) / 60 * 63, 0, 63)];
-                    context.DrawRectangle(color, null, new Rect(plot.Left + x * plot.Width / columns,
-                        plot.Bottom - (y + 1) * plot.Height / rows, plot.Width / columns + 0.5, plot.Height / rows + 0.5));
-                }
-            }
-            Label(context, $"{maximumHz:F0} Hz", 0, plot.Top, foreground);
-            Label(context, $"{minimumHz:F0} Hz", 0, plot.Bottom - 14, foreground);
-            Label(context, $"{result.StartSeconds + frames[0].CenterTimeSeconds:F2}s", plot.Left, plot.Bottom + 8, foreground);
-            Label(context, $"{result.StartSeconds + frames[^1].CenterTimeSeconds:F2}s", Math.Max(plot.Left, plot.Right - 75), plot.Bottom + 8, foreground);
-            Label(context, $"Magnitude: −60…0 dB relative to {maximum:G3} {result.Source.Unit}", plot.Left, 2, foreground);
+            AddSpectrogram(result);
         }
         else
         {
-            var maxAmplitude = Math.Max(1e-12, result.Spectrum.Bins.Where(b => b.FrequencyHz >= minimumHz && b.FrequencyHz <= maximumHz).Max(b => b.Amplitude));
-            void Draw(IEnumerable<(double Hz, double Value)> values, IBrush color)
+            void AddCurve(IEnumerable<(double Hz, double Amplitude)> values, Color color, string label)
             {
-                Point? previous = null;
-                foreach (var value in values.Where(v => v.Hz >= minimumHz && v.Hz <= maximumHz))
-                {
-                    var point = new Point(plot.Left + (value.Hz - minimumHz) / span * plot.Width,
-                        plot.Bottom - Math.Clamp(value.Value / maxAmplitude, 0, 1) * plot.Height);
-                    if (previous is { } last)
-                    {
-                        context.DrawLine(new Pen(color, 1.5), last, point);
-                    }
-                    previous = point;
-                }
+                var selected = values.Where(v => v.Hz >= minimumHz && v.Hz <= maximumHz).ToArray();
+                if (selected.Length == 0)
+                    return;
+                var curve = Plot.Add.Scatter(selected.Select(v => v.Hz).ToArray(), selected.Select(v => v.Amplitude).ToArray());
+                curve.Color = color;
+                curve.LineWidth = 1.5f;
+                curve.MarkerSize = 0;
+                curve.LegendText = label;
             }
-            Draw(result.Spectrum.Bins.Select(b => (b.FrequencyHz, b.Amplitude)), Brushes.MediumSeaGreen);
-            Draw(result.CurrentSimulation.Select(b => (b.FrequencyHz, b.SimulatedAmplitude)), Brushes.DodgerBlue);
-            Draw(result.ProposedSimulation.Select(b => (b.FrequencyHz, b.SimulatedAmplitude)), Brushes.DarkOrange);
-            Label(context, $"{maxAmplitude:G3}", 0, plot.Top, foreground);
-            Label(context, "0", 30, plot.Bottom - 14, foreground);
-            Label(context, $"{minimumHz:F0} Hz", plot.Left, plot.Bottom + 8, foreground);
-            Label(context, $"{maximumHz:F0} Hz", Math.Max(plot.Left, plot.Right - 75), plot.Bottom + 8, foreground);
-            Label(context, $"Mean peak amplitude ({result.Source.Unit})", plot.Left, 2, foreground);
+            AddCurve(result.Spectrum.Bins.Select(b => (b.FrequencyHz, b.Amplitude)), Colors.MediumSeaGreen, "Measured");
+            AddCurve(result.CurrentSimulation.Select(b => (b.FrequencyHz, b.SimulatedAmplitude)), Colors.DodgerBlue, "Current filters (simulated)");
+            AddCurve(result.ProposedSimulation.Select(b => (b.FrequencyHz, b.SimulatedAmplitude)), Colors.DarkOrange, "Proposed filter (simulated)");
+            Plot.Title("Frequency spectrum");
+            Plot.XLabel("Frequency (Hz)");
+            Plot.YLabel($"Mean peak amplitude ({result.Source.Unit})");
+            Plot.ShowLegend();
+            Plot.Axes.AutoScale();
+            var upperHz = maximumHz > minimumHz ? maximumHz : minimumHz + result.Spectrum.ResolutionHz;
+            var maximumAmplitude = result.Spectrum.Bins.Where(b => b.FrequencyHz >= minimumHz && b.FrequencyHz <= maximumHz).Max(b => b.Amplitude);
+            maximumAmplitude = Math.Max(maximumAmplitude, result.CurrentSimulation.Select(b => b.SimulatedAmplitude).DefaultIfEmpty(0).Max());
+            maximumAmplitude = Math.Max(maximumAmplitude, result.ProposedSimulation.Select(b => b.SimulatedAmplitude).DefaultIfEmpty(0).Max());
+            Plot.Axes.SetLimits(minimumHz, upperHz, 0, Math.Max(1e-12, maximumAmplitude) * 1.05);
         }
+        Refresh();
+    }
+
+    private void AddSpectrogram(FftWorkspaceResult result)
+    {
+        var frames = result.Spectrogram.Frames;
+        var bins = frames[0].Bins;
+        // Duplicate a single frame/bin only for display: ScottPlot heatmap extents
+        // require two cell centers. Hover and exports still use original evidence.
+        var columns = Math.Max(2, frames.Length);
+        var rows = Math.Max(2, bins.Length);
+        var maximum = Math.Max(1e-12, frames.SelectMany(f => f.Bins).Max(b => b.Amplitude));
+        var intensities = new double[rows, columns];
+        for (var column = 0; column < columns; column++)
+        {
+            var frame = frames[Math.Min(column, frames.Length - 1)];
+            for (var row = 0; row < rows; row++)
+                intensities[row, column] = Math.Clamp(20 * Math.Log10(Math.Max(1e-12, frame.Bins[Math.Min(row, bins.Length - 1)].Amplitude / maximum)), -60, 0);
+        }
+        var hop = (result.Spectrogram.Options.Fft.Size - result.Spectrogram.Options.OverlapSamples) / result.Source.SampleRateHz;
+        var firstTime = result.StartSeconds + frames[0].CenterTimeSeconds;
+        var lastTime = result.StartSeconds + frames[^1].CenterTimeSeconds;
+        var minimumHz = bins[0].FrequencyHz;
+        var maximumHz = bins[^1].FrequencyHz;
+        var heatmap = Plot.Add.Heatmap(intensities);
+        heatmap.FlipVertically = true;
+        heatmap.Smooth = false;
+        heatmap.Colormap = new ScottPlot.Colormaps.Turbo();
+        heatmap.ManualRange = new ScottPlot.Range(-60, 0);
+        heatmap.Position = new CoordinateRect(
+            frames.Length == 1 ? firstTime - hop / 4 : firstTime,
+            frames.Length == 1 ? firstTime + hop / 4 : lastTime,
+            bins.Length == 1 ? minimumHz - result.Spectrum.ResolutionHz / 4 : minimumHz,
+            bins.Length == 1 ? minimumHz + result.Spectrum.ResolutionHz / 4 : maximumHz);
+        var colorbar = Plot.Add.ColorBar(heatmap);
+        colorbar.Label = "Magnitude (dB relative)";
+        colorbar.LabelStyle.ForeColor = Colors.White;
+        colorbar.Axis.TickLabelStyle.ForeColor = Colors.White;
+        Plot.Title($"Spectrogram · 0 dB = {maximum:G3} {result.Source.Unit}");
+        Plot.XLabel("Time (log seconds)");
+        Plot.YLabel("Frequency (Hz)");
+        Plot.Axes.SetLimits(firstTime - hop / 2, lastTime + hop / 2,
+            Math.Max(0, minimumHz - result.Spectrum.ResolutionHz / 2), maximumHz + result.Spectrum.ResolutionHz / 2);
     }
 
     /// <inheritdoc />
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
-        if (Result is not { } result || !Plot.Contains(e.GetPosition(this)))
-        {
+        if (Result is not { } result || result.Spectrogram.Frames.IsEmpty)
             return;
-        }
         var point = e.GetPosition(this);
-        var plot = Plot;
+        var coordinates = Plot.GetCoordinates(new Pixel((float)point.X * DisplayScale, (float)point.Y * DisplayScale));
         var frames = result.Spectrogram.Frames;
         if (ShowSpectrogram)
         {
-            var frameIndex = Math.Clamp((int)((point.X - plot.Left) / plot.Width * frames.Length), 0, frames.Length - 1);
+            var hop = (result.Spectrogram.Options.Fft.Size - result.Spectrogram.Options.OverlapSamples) / result.Source.SampleRateHz;
+            var frameIndex = Math.Clamp((int)Math.Round((coordinates.X - result.StartSeconds - frames[0].CenterTimeSeconds) / hop), 0, frames.Length - 1);
             var frame = frames[frameIndex];
-            var index = Math.Clamp((int)((plot.Bottom - point.Y) / plot.Height * frame.Bins.Length), 0, frame.Bins.Length - 1);
-            var bin = frame.Bins[index];
+            var binIndex = Math.Clamp((int)Math.Round((coordinates.Y - frame.Bins[0].FrequencyHz) / result.Spectrum.ResolutionHz), 0, frame.Bins.Length - 1);
+            var bin = frame.Bins[binIndex];
             ToolTip.SetTip(this, $"Measured {result.StartSeconds + frame.CenterTimeSeconds:F4}s · {bin.FrequencyHz:F3} Hz · {bin.Amplitude:G5} {result.Source.Unit}");
         }
         else
         {
-            var minimum = frames[0].Bins[0].FrequencyHz;
-            var maximumHz = frames[0].Bins[^1].FrequencyHz;
-            var hz = minimum + (point.X - plot.Left) / plot.Width * (maximumHz - minimum);
-            var index = Math.Clamp((int)Math.Round(hz / result.Spectrum.ResolutionHz), 0, result.Spectrum.Bins.Length - 1);
+            var index = Math.Clamp((int)Math.Round(coordinates.X / result.Spectrum.ResolutionHz), 0, result.Spectrum.Bins.Length - 1);
             var bin = result.Spectrum.Bins[index];
             ToolTip.SetTip(this, $"Measured {bin.FrequencyHz:F3} Hz · {bin.Amplitude:G5} {result.Source.Unit}");
         }
-    }
-
-    private static void Label(DrawingContext context, string text, double x, double y, IBrush brush)
-    {
-        context.DrawText(new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-            Typeface.Default, 12, brush), new Point(x, y));
     }
 }

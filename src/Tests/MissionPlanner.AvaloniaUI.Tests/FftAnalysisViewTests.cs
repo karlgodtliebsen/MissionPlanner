@@ -29,7 +29,8 @@ public sealed class FftAnalysisViewTests
             .AddSingleton(Create(Substitute.For<IFileOpenService>(), Substitute.For<IFileSaveService>()))
             .BuildServiceProvider();
         return AppBuilder.Configure(() => new MissionPlanner.App.App(services))
-            .UseHeadless(new AvaloniaHeadlessPlatformOptions());
+            .UseSkia()
+            .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
     }
 
     [Fact]
@@ -93,12 +94,44 @@ public sealed class FftAnalysisViewTests
                             var plot = Assert.Single(view.GetVisualDescendants().OfType<FrequencyPlot>());
                             Assert.Same(model.Result, plot.Result);
                             Assert.Equal(spectrogram, plot.ShowSpectrogram);
+                            Assert.IsAssignableFrom<ScottPlot.Avalonia.AvaPlot>(plot);
+                            Assert.Equal(ScottPlot.Colors.Black, plot.Plot.FigureBackground.Color);
+                            Assert.Equal(ScottPlot.Colors.Black, plot.Plot.DataBackground.Color);
+                            if (spectrogram)
+                            {
+                                var heatmap = Assert.Single(plot.Plot.GetPlottables<ScottPlot.Plottables.Heatmap>());
+                                Assert.True(heatmap.FlipVertically);
+                                Assert.Equal(model.Result.Spectrogram.Frames.Length, heatmap.Intensities.GetLength(1));
+                                Assert.Equal(-60, heatmap.GetRange().Min);
+                                Assert.Equal(0, heatmap.GetRange().Max);
+                            }
+                            else
+                            {
+                                Assert.NotEmpty(plot.Plot.GetPlottables<ScottPlot.Plottables.Scatter>());
+                                Assert.Empty(plot.Plot.GetPlottables<ScottPlot.Plottables.Heatmap>());
+                            }
+                            var imageDirectory = Environment.GetEnvironmentVariable("MISSIONPLANNER_VISUAL_TEST_OUTPUT");
+                            if (!string.IsNullOrWhiteSpace(imageDirectory))
+                            {
+                                Directory.CreateDirectory(imageDirectory);
+                                plot.Plot.SavePng(Path.Combine(imageDirectory, spectrogram ? "scottplot-spectrogram.png" : "scottplot-spectrum.png"), 1000, 600);
+                            }
                             Assert.True(plot.Bounds.Width > 300);
                             Assert.True(plot.Bounds.Height > 200);
                             Assert.Contains(view.GetVisualDescendants().OfType<Button>(), b => ReferenceEquals(b.Command, model.AnalyzeCommand));
                             Assert.Contains(view.GetVisualDescendants().OfType<ComboBox>(), b => ReferenceEquals(b.SelectedItem, model.SelectedSource));
                         }
                     }
+                    model.Result = Workspace().Analyze(log, log.Series[0], new(0, log.Series[0].EndTimeSeconds, 128, 0, null),
+                        null, null, [], TestContext.Current.CancellationToken);
+                    model.ShowSpectrogram = true;
+                    Dispatcher.UIThread.RunJobs();
+                    var singleFramePlot = Assert.Single(view.GetVisualDescendants().OfType<FrequencyPlot>());
+                    var singleFrameHeatmap = Assert.Single(singleFramePlot.Plot.GetPlottables<ScottPlot.Plottables.Heatmap>());
+                    var extent = singleFrameHeatmap.GetAlignedExtent();
+                    Assert.True(double.IsFinite(extent.Width) && extent.Width > 0);
+                    Assert.True(double.IsFinite(extent.Height) && extent.Height > 0);
+                    Assert.Equal(singleFrameHeatmap.Intensities[0, 0], singleFrameHeatmap.Intensities[0, 1]);
                 }
                 finally
                 {
