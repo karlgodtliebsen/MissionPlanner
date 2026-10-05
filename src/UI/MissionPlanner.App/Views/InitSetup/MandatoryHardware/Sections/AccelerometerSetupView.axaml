@@ -15,7 +15,8 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="Accelerometer and level calibration" HorizontalAlignment="Stretch">
+        <u:Banner  Classes="Bordered" Header="Accelerometer and level calibration" 
+                   HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration." TextWrapping="Wrap" Classes="Warning H4" />
                 <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />

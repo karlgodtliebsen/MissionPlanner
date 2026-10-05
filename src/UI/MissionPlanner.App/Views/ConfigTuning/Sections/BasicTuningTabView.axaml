@@ -14,7 +14,8 @@
 
     <ContentPage Header="Basic Tuning"  >
 
-        <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Center">
+        <Grid RowDefinitions="Auto,Auto,*" Margin="12"
+              RowSpacing="10" HorizontalAlignment="Center">
 
             <StackPanel Orientation="Vertical">
                 <StackPanel Orientation="Horizontal" Spacing="8">

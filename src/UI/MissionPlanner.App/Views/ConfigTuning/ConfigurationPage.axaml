@@ -11,7 +11,7 @@
                               x:Class="MissionPlanner.App.Views.ConfigTuning.ConfigurationPage"
                               x:DataType="configTuning:ConfigurationViewModel">
     <ContentPage Header="Configuration">
-        <TabControl x:Name="ConfigurationTabs" TabStripPlacement="Left" Grid.Row="1" >
+        <TabControl x:Name="ConfigurationTabs" TabStripPlacement="Left" >
             <TabItem x:Name="GeoFence" Header="GeoFence"><sections:GeoFenceTabView /></TabItem>
             <TabItem x:Name="BasicTuning" Header="Basic Tuning"><sections:BasicTuningTabView /></TabItem>
             <TabItem x:Name="ExtendedTuning" Header="Extended Tuning"><sections:ExtendedTuningTabView /></TabItem>

@@ -333,4 +333,8 @@
 	  </Compile>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Views\Preferences\Sections\" />
+	</ItemGroup>
+
 </Project>
