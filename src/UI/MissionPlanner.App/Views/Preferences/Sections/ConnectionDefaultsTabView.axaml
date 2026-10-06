@@ -15,20 +15,6 @@
         </Grid.ColumnDefinitions>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <Border Padding="14" Classes="SectionCard"  HorizontalAlignment="Center" VerticalAlignment="Center">
-                <!--                <StackPanel Orientation="Vertical" Spacing="8">
-                <Grid ColumnDefinitions="*,Auto">
-                <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
-                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
-                </Button>
-                </Grid>
-                <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
-                <ComboBox ItemsSource="{Binding ConnectionChannels}" SelectedItem="{Binding ConnectionChannel}" u:FormItem.Label="Channel" />
-                <u:IPv4Box IPAddress="{Binding ConnectionHost}" u:FormItem.Label="Host" ToolTip.Tip="Use platform default" />
-                <NumericUpDown Value="{Binding ConnectionPort, Mode=TwoWay}" FormatString="F0" u:FormItem.Label="Port" />
-                <NumericUpDown Value="{Binding ConnectionBaudRate, Mode=TwoWay}" FormatString="F0" u:FormItem.Label="Serial baud rate" />
-                </u:Form>
-                </StackPanel>-->
-
                 <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
                         <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
