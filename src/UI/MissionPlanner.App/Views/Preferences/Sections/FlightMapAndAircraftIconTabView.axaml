@@ -17,54 +17,110 @@
                             VerticalAlignment="Center" HorizontalAlignment="Center">
                  
                     
-                    <Grid ColumnDefinitions="*,Auto" 
+                    <Grid ColumnDefinitions="250,150" 
                           RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" 
-                          RowSpacing="10">
+                          RowSpacing="10" ColumnSpacing="15">
+
                         <TextBlock Text="Track length" />
                         <NumericUpDown
                             Grid.Column="1"
-                            Width="140"
                             Value="{Binding TrackLength, Mode=TwoWay}"
                             FormatString="F0"
-                            HorizontalAlignment="Stretch"
+                            MinWidth="140"
+                            HorizontalAlignment="Right"
+                            HorizontalContentAlignment="Right"
                             />
                         <TextBlock Grid.Row="1" Text="Display distance to home" />
-                        <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowDistanceToHome}" />
+                        <ToggleSwitch Grid.Row="1" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      IsChecked="{Binding ShowDistanceToHome}" />
+                        
                         <TextBlock Grid.Row="2" Text="Rotate map to follow aircraft" />
-                        <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding RotateMapToHeading}" />
+                        <ToggleSwitch Grid.Row="2" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      IsChecked="{Binding RotateMapToHeading}" />
+                       
                         <TextBlock Grid.Row="3" Text="Display course over ground" />
-                        <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding DisplayCourseOverGround}" />
+                        <ToggleSwitch Grid.Row="3" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      IsChecked="{Binding DisplayCourseOverGround}" />
+                        
                         <TextBlock Grid.Row="4" Text="Display heading" />
-                        <ToggleSwitch Grid.Row="4" Grid.Column="1" IsChecked="{Binding DisplayHeading}" />
+                        <ToggleSwitch Grid.Row="4" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      IsChecked="{Binding DisplayHeading}" />
+                        
                         <TextBlock Grid.Row="5" Text="Display navigation bearing" />
-                        <ToggleSwitch Grid.Row="5" Grid.Column="1" IsChecked="{Binding DisplayNavigationBearing}" />
+                        <ToggleSwitch Grid.Row="5" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      IsChecked="{Binding DisplayNavigationBearing}" />
+                        
                         <TextBlock Grid.Row="6" Text="Display turn radius" />
-                        <ToggleSwitch Grid.Row="6" Grid.Column="1" IsChecked="{Binding DisplayTurnRadius}" />
+                        <ToggleSwitch Grid.Row="6" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      IsChecked="{Binding DisplayTurnRadius}" />
+                        
                         <TextBlock Grid.Row="7" Text="Display target" />
-                        <ToggleSwitch Grid.Row="7" Grid.Column="1" IsChecked="{Binding DisplayTarget}" />
+                        <ToggleSwitch Grid.Row="7" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      IsChecked="{Binding DisplayTarget}" />
+                        
                         <TextBlock Grid.Row="8" Text="Display aircraft tooltip" />
-                        <ToggleSwitch Grid.Row="8" Grid.Column="1" IsChecked="{Binding DisplayAircraftToolTip}" />
+                        <ToggleSwitch Grid.Row="8" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      IsChecked="{Binding DisplayAircraftToolTip}" />
+                        
                         <TextBlock Grid.Row="9" Text="Aircraft line length" />
                         <NumericUpDown
                             Grid.Row="9" Grid.Column="1"
-                            Width="140"
                             Value="{Binding AircraftLineLength, Mode=TwoWay}"
                             FormatString="F1"
-                            HorizontalAlignment="Stretch"
+                            MinWidth="140"
+                            HorizontalAlignment="Right"
+                            HorizontalContentAlignment="Right"
                             />
 
                         <TextBlock Grid.Row="10" Text="Show airports / ADS-B" />
-                        <StackPanel Orientation="Horizontal" Grid.Row="10" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal" Grid.Row="10" Grid.Column="1"
+                                    MinWidth="140"
+                                    HorizontalAlignment="Right"
+                                    >
                             <ToggleSwitch IsChecked="{Binding ShowAirports}" />
                             <ToggleSwitch IsChecked="{Binding ShowAdsb}" />
                         </StackPanel>
+                       
                         <TextBlock Grid.Row="11" Text="Show no-fly zones / TFRs" />
-                        <StackPanel Orientation="Horizontal" Grid.Row="11" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal" Grid.Row="11" Grid.Column="1"
+                                    MinWidth="140"
+                                    HorizontalAlignment="Right"
+                                    >
                             <ToggleSwitch IsChecked="{Binding ShowNoFlyZones}" />
                             <ToggleSwitch IsChecked="{Binding ShowTemporaryFlightRestrictions}" />
                         </StackPanel>
+
                         <TextBlock Grid.Row="12" Text="Map access mode" />
-                        <ComboBox Grid.Row="12" Grid.Column="1" Width="220" ItemsSource="{Binding MapAccessModes}" SelectedItem="{Binding MapAccessMode}" />
+                        <ComboBox Grid.Row="12" Grid.Column="1" 
+                                  
+                                  MinWidth="140"
+                                  HorizontalAlignment="Right"
+                                  HorizontalContentAlignment="Right"
+                                  ItemsSource="{Binding MapAccessModes}" SelectedItem="{Binding MapAccessMode}" />
                     </Grid>
 
 

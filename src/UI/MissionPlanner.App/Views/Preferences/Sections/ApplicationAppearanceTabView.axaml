@@ -27,7 +27,7 @@
                         </Button>
                     </StackPanel>
 
-                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8"
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
                                 VerticalAlignment="Center" HorizontalAlignment="Center">
                         <CheckBox Content="Show Tutorial at Startup"
                                   

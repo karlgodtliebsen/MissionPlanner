@@ -22,17 +22,24 @@
                             <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                         </Button>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8"
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
                                 VerticalAlignment="Center" HorizontalAlignment="Center">
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
                             <TextBlock Text="Policy" VerticalAlignment="Center" />
-                            <ComboBox Grid.Column="1" ItemsSource="{Binding ParameterCachePolicies}" SelectedItem="{Binding SelectedParameterCachePolicy}" />
+                            <ComboBox Grid.Column="1" 
+                                      MinWidth="150"
+                                      HorizontalContentAlignment="Right"
+                                      HorizontalAlignment="Right"
+                                      ItemsSource="{Binding ParameterCachePolicies}" 
+                                      SelectedItem="{Binding SelectedParameterCachePolicy}" />
                             <TextBlock Grid.Row="1" Text="Maximum age (minutes)" VerticalAlignment="Center" />
                             <NumericUpDown
                                 Grid.Row="1" Grid.Column="1"
                                 Value="{Binding ParameterCacheMaximumAgeMinutes, Mode=TwoWay}"
                                 FormatString="F0"
-                                HorizontalAlignment="Stretch"
+                                MinWidth="150"
+                                HorizontalContentAlignment="Right"
+                                HorizontalAlignment="Right"
                                 />
 
                         </Grid>

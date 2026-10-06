@@ -18,47 +18,53 @@
   
                 <StackPanel  Orientation="Vertical" Spacing="8"
                             VerticalAlignment="Center" HorizontalAlignment="Center">
+                   
                     <TextBlock Text="Requested MAVLink stream rates in hertz. A value of zero disables the stream request." FontSize="12" />
-                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                    <Grid ColumnDefinitions="220,150" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="15">
                         <TextBlock Text="Attitude" />
                         <NumericUpDown
                             Grid.Column="1"
-                            Width="140"
+                            MinWidth="140"
+                            HorizontalAlignment="Right"
+                            HorizontalContentAlignment="Right"
                             Value="{Binding AttitudeRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
                             FormatString="F0"
-                            HorizontalAlignment="Stretch"
                             />
                         <TextBlock Grid.Row="1" Text="Position" />
                         <NumericUpDown
                             Grid.Row="1" Grid.Column="1"
-                            Width="140"
                             Value="{Binding PositionRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
                             FormatString="F0"
-                            HorizontalAlignment="Stretch"
+                            MinWidth="140"
+                            HorizontalAlignment="Right"
+                            HorizontalContentAlignment="Right"
                             />
                         <TextBlock Grid.Row="2" Text="Mode / status" />
                         <NumericUpDown
                             Grid.Row="2" Grid.Column="1"
-                            Width="140"
                             Value="{Binding StatusRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
                             FormatString="F0"
-                            HorizontalAlignment="Stretch"
+                            MinWidth="140"
+                            HorizontalAlignment="Right"
+                            HorizontalContentAlignment="Right"
                             />
                         <TextBlock Grid.Row="3" Text="RC" />
                         <NumericUpDown
                             Grid.Row="3" Grid.Column="1"
-                            Width="140"
                             Value="{Binding RcRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
                             FormatString="F0"
-                            HorizontalAlignment="Stretch"
+                            MinWidth="140"
+                            HorizontalAlignment="Right"
+                            HorizontalContentAlignment="Right"
                             />
                         <TextBlock Grid.Row="4" Text="Sensors" />
                         <NumericUpDown
                             Grid.Row="4" Grid.Column="1"
-                            Width="140"
                             Value="{Binding SensorRateHz, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
                             FormatString="F0"
-                            HorizontalAlignment="Stretch"
+                            MinWidth="140"
+                            HorizontalAlignment="Right"
+                            HorizontalContentAlignment="Right"
                             />
                     </Grid>
                 </StackPanel>

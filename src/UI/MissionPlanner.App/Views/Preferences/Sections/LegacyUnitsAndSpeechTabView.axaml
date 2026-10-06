@@ -26,22 +26,51 @@
                     </StackPanel>
 
                     <StackPanel 
-                                Grid.Row="1" Orientation="Vertical" Spacing="8"
+                                Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
                                 VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Grid ColumnDefinitions="220,*"
+                        <Grid ColumnDefinitions="220,150"
                               VerticalAlignment="Center"
                               RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                              RowSpacing="15">
+                              RowSpacing="10" ColumnSpacing="17">
+                            
                             <TextBlock Text="Distance units" VerticalAlignment="Center" />
-                            <ComboBox Grid.Column="1" ItemsSource="{Binding DistanceUnits}" SelectedItem="{Binding DistanceUnit}" />
+                            <ComboBox Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      ItemsSource="{Binding DistanceUnits}" 
+                                      SelectedItem="{Binding DistanceUnit}" />
+                            
                             <TextBlock Grid.Row="1" Text="Altitude units" VerticalAlignment="Center" />
-                            <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AltitudeUnits}" SelectedItem="{Binding AltitudeUnit}" />
+                            <ComboBox Grid.Row="1" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      ItemsSource="{Binding AltitudeUnits}" 
+                                      SelectedItem="{Binding AltitudeUnit}" />
+                            
                             <TextBlock Grid.Row="2" Text="Speed units" VerticalAlignment="Center" />
-                            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding SpeedUnits}" SelectedItem="{Binding SpeedUnit}" />
+                            <ComboBox Grid.Row="2" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      ItemsSource="{Binding SpeedUnits}" 
+                                      SelectedItem="{Binding SpeedUnit}" />
+                            
                             <TextBlock Grid.Row="3" Text="Enable speech" VerticalAlignment="Center" />
-                            <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding SpeechEnabled}" HorizontalAlignment="Left" />
+                            <ToggleSwitch Grid.Row="3" Grid.Column="1" 
+                                          MinWidth="140"
+                                          HorizontalAlignment="Right"
+                                          HorizontalContentAlignment="Right"
+                                          IsChecked="{Binding SpeechEnabled}"  />
+                            
                             <TextBlock Grid.Row="4" Text="Minimum spoken severity" VerticalAlignment="Center" />
-                            <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding SpeechSeverities}" SelectedItem="{Binding SpeechSeverity}" />
+                            <ComboBox Grid.Row="4" Grid.Column="1" 
+                                      MinWidth="140"
+                                      HorizontalAlignment="Right"
+                                      HorizontalContentAlignment="Right"
+                                      ItemsSource="{Binding SpeechSeverities}" 
+                                      SelectedItem="{Binding SpeechSeverity}" />
                         </Grid>
                     </StackPanel>
                 </Grid>

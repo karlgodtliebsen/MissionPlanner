@@ -6,7 +6,7 @@
              x:DataType="preferences:PreferencesViewModel">
 
     <Grid RowDefinitions="Auto,*"
-          
+
           HorizontalAlignment="Center"
           VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
@@ -20,33 +20,47 @@
                             <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                         </Button>
                     </Grid>
-                    <TextBlock Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." FontSize="12" />
+                    <TextBlock Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." Classes="H4" />
 
-                    <Grid ColumnDefinitions="120,220" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid ColumnDefinitions="120,220" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8"  Grid.ColumnSpan="2" 
+                          HorizontalAlignment="Center" VerticalAlignment="Center">
 
                         <TextBlock Grid.Column="0"  Grid.Row="0" Text="Channel" VerticalAlignment="Center" />
-                        <ComboBox Grid.Column="1"   Grid.Row="0" ItemsSource="{Binding ConnectionChannels}"
+                        <ComboBox Grid.Column="1"   Grid.Row="0"
+                                  MinWidth="150"
+                                  HorizontalContentAlignment="Right"
+                                  HorizontalAlignment="Right"
+                                  ItemsSource="{Binding ConnectionChannels}"
                                   SelectedItem="{Binding ConnectionChannel}" />
 
                         <TextBlock Grid.Column="0" Grid.Row="1" Text="Host" VerticalAlignment="Center" />
-                        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding ConnectionHost}" PlaceholderText="Use platform default" />
+                        
+                        <TextBox Grid.Column="1" Grid.Row="1" 
+                                 MinWidth="140"
+                                 HorizontalAlignment="Right"
+                                 HorizontalContentAlignment="Right"
+                                 Text="{Binding ConnectionHost}" PlaceholderText="Use platform default" />
 
                         <TextBlock Grid.Column="0" Grid.Row="2" Text="Port" VerticalAlignment="Center" />
                         <NumericUpDown
                             Grid.Column="1"
                             Grid.Row="2"
+                            MinWidth="150"
+                            HorizontalContentAlignment="Right"
+                            HorizontalAlignment="Right"
                             Value="{Binding ConnectionPort, Mode=TwoWay}"
                             FormatString="F0"
-                            HorizontalAlignment="Stretch"
                             />
 
                         <TextBlock Grid.Column="0" Grid.Row="3" Text="Serial baud rate" VerticalAlignment="Center" />
                         <NumericUpDown
                             Grid.Column="1"
                             Grid.Row="3"
+                            MinWidth="150"
+                            HorizontalContentAlignment="Right"
+                            HorizontalAlignment="Right"
                             Value="{Binding ConnectionBaudRate, Mode=TwoWay}"
                             FormatString="F0"
-                            HorizontalAlignment="Stretch"
                             />
                     </Grid>
                 </StackPanel>

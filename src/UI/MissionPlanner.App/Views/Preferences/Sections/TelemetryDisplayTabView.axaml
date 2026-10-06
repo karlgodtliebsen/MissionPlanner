@@ -21,12 +21,14 @@
                             <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                         </Button>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8"
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
                                 VerticalAlignment="Center" HorizontalAlignment="Center">
                         <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
                             <TextBlock Text="Maximum display rate (Hz)" VerticalAlignment="Center" />
                             <NumericUpDown
                                 Grid.Column="1"
+                                HorizontalContentAlignment="Right"
+                                MinWidth="150"
                                 Value="{Binding TelemetryDisplayRateHz, Mode=TwoWay}"
                                 FormatString="F0"
                                 HorizontalAlignment="Stretch"
@@ -36,8 +38,10 @@
                             <NumericUpDown
                                 Grid.Row="1"
                                 Grid.Column="1"
+                                MinWidth="150"
                                 Value="{Binding ChartHistorySeconds, Mode=TwoWay}"
                                 FormatString="F0"
+                                HorizontalContentAlignment="Right"
                                 HorizontalAlignment="Stretch"
                                 />
                         </Grid>

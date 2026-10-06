@@ -23,14 +23,15 @@
                             <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                         </Button>
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8"
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
                                 VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                            <TextBlock Text="Confirm vehicle parameter writes" VerticalAlignment="Center" />
+                        
+                        <Grid ColumnDefinitions="250,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="15">
+                            <TextBlock Text="Confirm vehicle parameter writes" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                             <ToggleSwitch Grid.Column="1" IsChecked="{Binding ConfirmParameterWrites}" />
-                            <TextBlock Grid.Row="1" Text="Confirm arm/disarm operations" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="1" Text="Confirm arm/disarm operations" VerticalAlignment="Center" HorizontalAlignment="Left" />
                             <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding ConfirmArmDisarm}" />
-                            <TextBlock Grid.Row="2" Text="Confirm firmware changes" VerticalAlignment="Center" />
+                            <TextBlock Grid.Row="2" Text="Confirm firmware changes" VerticalAlignment="Center"  HorizontalAlignment="Left"/>
                             <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding ConfirmFirmwareChanges}" />
                         </Grid>
                     </StackPanel>
