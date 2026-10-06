@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:u="https://irihi.tech/ursa"
              x:Class="MissionPlanner.App.Views.Preferences.Sections.ParameterCacheTabView"
              x:DataType="preferences:PreferencesViewModel">
     <Grid RowDefinitions="Auto,*"
@@ -23,26 +24,11 @@
                         </Button>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
-                                VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
-                            <TextBlock Text="Policy" VerticalAlignment="Center" />
-                            <ComboBox Grid.Column="1" 
-                                      MinWidth="150"
-                                      HorizontalContentAlignment="Right"
-                                      HorizontalAlignment="Right"
-                                      ItemsSource="{Binding ParameterCachePolicies}" 
-                                      SelectedItem="{Binding SelectedParameterCachePolicy}" />
-                            <TextBlock Grid.Row="1" Text="Maximum age (minutes)" VerticalAlignment="Center" />
-                            <NumericUpDown
-                                Grid.Row="1" Grid.Column="1"
-                                Value="{Binding ParameterCacheMaximumAgeMinutes, Mode=TwoWay}"
-                                FormatString="F0"
-                                MinWidth="150"
-                                HorizontalContentAlignment="Right"
-                                HorizontalAlignment="Right"
-                                />
-
-                        </Grid>
+                                VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                        <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
+                            <ComboBox  HorizontalAlignment="Right" HorizontalContentAlignment="Right" ItemsSource="{Binding ParameterCachePolicies}" SelectedItem="{Binding SelectedParameterCachePolicy}" u:FormItem.Label="Policy" />
+                            <NumericUpDown  HorizontalAlignment="Right" HorizontalContentAlignment="Right" Value="{Binding ParameterCacheMaximumAgeMinutes, Mode=TwoWay}" FormatString="F0" u:FormItem.Label="Maximum age (minutes)" />
+                        </u:Form>
                     </StackPanel>
                 </Grid>
             </Border>

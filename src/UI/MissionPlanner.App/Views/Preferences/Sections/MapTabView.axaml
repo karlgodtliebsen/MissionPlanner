@@ -3,6 +3,7 @@
              xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:mapSettings="clr-namespace:MissionPlanner.Maps.Settings;assembly=MissionPlanner.Maps"
+             xmlns:u="https://irihi.tech/ursa"
              x:Class="MissionPlanner.App.Views.Preferences.Sections.MapTabView"
              x:DataType="preferences:PreferencesViewModel">
 
@@ -106,41 +107,23 @@
                         </ItemsControl>
 
                         <Border Padding="10" Classes="SectionCard">
-                            <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="5">
-                                <TextBlock Text="Selected source" FontWeight="Bold" />
-                                <TextBlock Grid.Column="1" Text="{Binding SelectedMapSource.DisplayName}" />
-                                <TextBlock Grid.Row="1" Text="Provider / product" />
-                                <TextBlock Grid.Row="1" Grid.Column="1"  Text="{Binding SelectedMapSource.ProviderAndProduct}" />
-                                <TextBlock Grid.Row="2" Text="Access / rendering" />
-                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedMapSource.Connectivity, StringFormat='{}{0}'}" />
-                                <TextBlock Grid.Row="3" Text="Format" />
-                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedMapSource.Rendering}" />
-                                <TextBlock Grid.Row="4" Text="Credentials" />
-                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedMapSource.CredentialState}" />
-                                <TextBlock Grid.Row="5" Text="Attribution" />
-                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedMapSource.AttributionPreview}" />
-                                <TextBlock Grid.Row="6" Text="Cache / packs" />
-                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedMapSource.CacheBehavior}" />
-                                <TextBlock Grid.Row="7" Text="Pack availability" />
-                                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedMapSource.OfflinePackAvailability}" />
-                                <TextBlock Grid.Row="8" Text="Policy reviewed" />
-                                <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding SelectedMapSource.PolicyReviewDate}" />
-                            </Grid>
+                            <u:Form LabelPosition="Left" LabelWidth="*">
+                                <TextBlock Text="{Binding SelectedMapSource.DisplayName}" u:FormItem.Label="Selected source" />
+                                <TextBlock Text="{Binding SelectedMapSource.ProviderAndProduct}" u:FormItem.Label="Provider / product" />
+                                <TextBlock Text="{Binding SelectedMapSource.Connectivity, StringFormat='{}{0}'}" u:FormItem.Label="Access / rendering" />
+                                <TextBlock Text="{Binding SelectedMapSource.Rendering}" u:FormItem.Label="Format" />
+                                <TextBlock Text="{Binding SelectedMapSource.CredentialState}" u:FormItem.Label="Credentials" />
+                                <TextBlock Text="{Binding SelectedMapSource.AttributionPreview}" u:FormItem.Label="Attribution" />
+                                <TextBlock Text="{Binding SelectedMapSource.CacheBehavior}" u:FormItem.Label="Cache / packs" />
+                                <TextBlock Text="{Binding SelectedMapSource.OfflinePackAvailability}" u:FormItem.Label="Pack availability" />
+                                <TextBlock Text="{Binding SelectedMapSource.PolicyReviewDate}" u:FormItem.Label="Policy reviewed" />
+                            </u:Form>
                         </Border>
-                        <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                            <TextBlock Text="Default zoom (1–22)" VerticalAlignment="Center" />
-                            <NumericUpDown
-                                Grid.Column="1"
-                                Value="{Binding DefaultMapZoom, Mode=TwoWay}"
-                                FormatString="F1"
-                                HorizontalAlignment="Stretch"
-                                />
-                            <TextBlock Grid.Row="1" Text="HTTP cache enabled" />
-                            <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding MapHttpCacheEnabled}" HorizontalAlignment="Left" />
-                            <TextBlock Grid.Row="2" Text="HTTP cache limit (MiB)" />
-                            <NumericUpDown Grid.Row="2" Grid.Column="1"
-                                           Value="{Binding MapHttpCacheLimitMiB, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}" FormatString="F0" />
-                        </Grid>
+                        <u:Form LabelPosition="Left" LabelWidth="*">
+                            <NumericUpDown Value="{Binding DefaultMapZoom, Mode=TwoWay}" FormatString="F1" u:FormItem.Label="Default zoom (1–22)" />
+                            <ToggleSwitch IsChecked="{Binding MapHttpCacheEnabled}" u:FormItem.Label="HTTP cache enabled" />
+                            <NumericUpDown Value="{Binding MapHttpCacheLimitMiB, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}" FormatString="F0" u:FormItem.Label="HTTP cache limit (MiB)" />
+                            </u:Form>
                         <TextBlock Text="Credentials" FontWeight="Bold" />
                         <TextBlock Text="Secrets are written directly to secure storage and the input is cleared after save." FontSize="12" />
                         <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="5">
@@ -176,20 +159,14 @@
                                         <avalonia:MaterialIcon Kind="DeleteOutline" Width="30" Height="30" />
                                     </Button>
                                 </Grid>
-                                <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
-                                    <TextBlock Text="Coverage" />
-                                    <TextBlock Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Bounds}" />
-                                    <TextBlock Grid.Row="1" Text="Zoom" />
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.MinimumZoom, StringFormat='Minimum {0}'}" />
-                                    <TextBlock Grid.Row="2" Text="Size" />
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.SizeBytes, StringFormat='{}{0} bytes'}" />
-                                    <TextBlock Grid.Row="3" Text="Version / source" />
-                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Version}" />
-                                    <TextBlock Grid.Row="4" Text="Attribution" />
-                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Attribution}" />
-                                    <TextBlock Grid.Row="5" Text="License" />
-                                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.LicenseNotice}" />
-                                </Grid>
+                                <u:Form LabelPosition="Left" LabelWidth="*">
+                                    <TextBlock Text="{Binding SelectedMapPack.Manifest.Bounds}" u:FormItem.Label="Coverage" />
+                                    <TextBlock Text="{Binding SelectedMapPack.Manifest.MinimumZoom, StringFormat='Minimum {0}'}" u:FormItem.Label="Zoom" />
+                                    <TextBlock Text="{Binding SelectedMapPack.Manifest.SizeBytes, StringFormat='{}{0} bytes'}" u:FormItem.Label="Size" />
+                                    <TextBlock Text="{Binding SelectedMapPack.Manifest.Version}" u:FormItem.Label="Version / source" />
+                                    <TextBlock Text="{Binding SelectedMapPack.Manifest.Attribution}" u:FormItem.Label="Attribution" />
+                                    <TextBlock Text="{Binding SelectedMapPack.Manifest.LicenseNotice}" u:FormItem.Label="License" />
+                                    </u:Form>
                             </StackPanel>
                         </Border>
                         <Border Padding="10" BorderThickness="1" Classes="SectionCard">

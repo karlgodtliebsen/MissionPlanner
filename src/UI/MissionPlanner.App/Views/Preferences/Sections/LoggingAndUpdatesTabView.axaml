@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:u="https://irihi.tech/ursa"
              x:Class="MissionPlanner.App.Views.Preferences.Sections.LoggingAndUpdatesTabView"
              x:DataType="preferences:PreferencesViewModel">
 
@@ -28,59 +29,22 @@
                     </StackPanel>
 
                     <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Vertical" Spacing="8"
-                                VerticalAlignment="Center" HorizontalAlignment="Center">
+                                VerticalAlignment="Center" HorizontalAlignment="Stretch">
 
-                        <TextBlock Text="Logging changes and update-channel changes take effect after restart." FontSize="12" />
-                        <Grid ColumnDefinitions="220,250" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="15">
-                            
-                            <TextBlock Text="Logging level" VerticalAlignment="Center" />
-                            <ComboBox Grid.Column="1" 
-                                      MinWidth="140"
-                                      HorizontalAlignment="Right" 
-                                      HorizontalContentAlignment="Right"
-                                      ItemsSource="{Binding LoggingLevels}"
-                                      SelectedItem="{Binding SelectedLoggingLevel}" />
-                            
-                            <TextBlock Grid.Row="1" Text="Log retention (days)" VerticalAlignment="Center" />
-                            <NumericUpDown
-                                Grid.Row="1" Grid.Column="1"
-                                Value="{Binding LogRetentionDays, Mode=TwoWay}"
-                                FormatString="F0"
-                                MinWidth="140"
-                                HorizontalAlignment="Right" 
-                                HorizontalContentAlignment="Right"
-                                />
-                            <TextBlock Grid.Row="2" Text="Automatic update checks" VerticalAlignment="Center" />
-                            <ToggleSwitch Grid.Row="2" Grid.Column="1" 
-                                          MinWidth="140"
-                                          IsChecked="{Binding CheckUpdatesAutomatically}" HorizontalAlignment="Right" />
-                           
-                            <TextBlock Grid.Row="3" Text="Check interval (days)" VerticalAlignment="Center" />
-                            <NumericUpDown
-                                Grid.Row="3" Grid.Column="1"
-                                Value="{Binding UpdateCheckIntervalDays, Mode=TwoWay}"
-                                FormatString="F0"
-                                MinWidth="140"
-                                HorizontalAlignment="Right" 
-                                HorizontalContentAlignment="Right"
-                                />
-
-                            <TextBlock Grid.Row="4" Text="Update channel" VerticalAlignment="Center" />
-                            <ComboBox Grid.Row="4" Grid.Column="1" 
-                                      ItemsSource="{Binding UpdateChannels}" 
-                                      SelectedItem="{Binding UpdateChannel}" 
-                                      MinWidth="140"
-                                      HorizontalContentAlignment="Right"
-                                      HorizontalAlignment="Right" 
-                                      />
-                            
-                            <TextBlock Grid.Row="5" Text="Log storage" VerticalAlignment="Center" />
-                            <TextBlock Grid.Row="5" Grid.Column="1" 
-                                       MinWidth="140"
-                                       Text="Logs → Open folder. Desktop: Documents/Mission Planner/logs. Browser: session storage." 
-                                       TextWrapping="Wrap" />
-
-                        </Grid>
+                        <TextBlock Text="Logging changes and update-channel changes take effect after restart." Classes="H4" HorizontalAlignment="Left" />
+                        <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
+                            <ComboBox  HorizontalAlignment="Right" HorizontalContentAlignment="Right" ItemsSource="{Binding LoggingLevels}" SelectedItem="{Binding SelectedLoggingLevel}" 
+                                       u:FormItem.Label="Logging level" />
+                            <NumericUpDown  HorizontalAlignment="Right" HorizontalContentAlignment="Right" Value="{Binding LogRetentionDays, Mode=TwoWay}" FormatString="F0" 
+                                            u:FormItem.Label="Log retention (days)" />
+                            <ToggleSwitch  HorizontalAlignment="Right" HorizontalContentAlignment="Right" IsChecked="{Binding CheckUpdatesAutomatically}" u:FormItem.Label="Automatic update checks" />
+                            <NumericUpDown  HorizontalAlignment="Right" HorizontalContentAlignment="Right" Value="{Binding UpdateCheckIntervalDays, Mode=TwoWay}" FormatString="F0"
+                                            u:FormItem.Label="Check interval (days)" />
+                            <ComboBox  HorizontalAlignment="Right" HorizontalContentAlignment="Right" ItemsSource="{Binding UpdateChannels}" SelectedItem="{Binding UpdateChannel}" 
+                                       u:FormItem.Label="Update channel" />
+                            <TextBlock Text="Logs → Open folder. Desktop: Documents/Mission Planner/logs. Browser: session storage." TextWrapping="Wrap" 
+                                       u:FormItem.Label="Log storage" />
+                        </u:Form>
                     </StackPanel>
                 </Grid>
 

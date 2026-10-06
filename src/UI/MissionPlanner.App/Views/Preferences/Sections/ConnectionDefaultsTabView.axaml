@@ -15,55 +15,39 @@
         </Grid.ColumnDefinitions>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <Border Padding="14" Classes="SectionCard"  HorizontalAlignment="Center" VerticalAlignment="Center">
-                <StackPanel Orientation="Vertical" Spacing="8">
-                    <Grid ColumnDefinitions="*,Auto">
+                <!--                <StackPanel Orientation="Vertical" Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
+                <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
+                </Button>
+                </Grid>
+                <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
+                <ComboBox ItemsSource="{Binding ConnectionChannels}" SelectedItem="{Binding ConnectionChannel}" u:FormItem.Label="Channel" />
+                <u:IPv4Box IPAddress="{Binding ConnectionHost}" u:FormItem.Label="Host" ToolTip.Tip="Use platform default" />
+                <NumericUpDown Value="{Binding ConnectionPort, Mode=TwoWay}" FormatString="F0" u:FormItem.Label="Port" />
+                <NumericUpDown Value="{Binding ConnectionBaudRate, Mode=TwoWay}" FormatString="F0" u:FormItem.Label="Serial baud rate" />
+                </u:Form>
+                </StackPanel>-->
+
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
+                    <StackPanel Orientation="Horizontal" Grid.Column="1">
                         <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" >
                             <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                         </Button>
-                    </Grid>
-                    <TextBlock Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." Classes="H4" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2"
+                                VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Defaults update the connection UI immediately while disconnected." Classes="H4" HorizontalAlignment="Left"/>
+                        <TextBlock Text="They never interrupt an active connection." Classes="H4" HorizontalAlignment="Left"/>
+                        <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
+                            <ComboBox  HorizontalAlignment="Right" HorizontalContentAlignment="Right" ItemsSource="{Binding ConnectionChannels}" SelectedItem="{Binding ConnectionChannel}" u:FormItem.Label="Channel" />
+                            <u:IPv4Box  HorizontalAlignment="Right" IPAddress="{Binding ConnectionHost}" u:FormItem.Label="Host" ToolTip.Tip="Use platform default" />
+                            <NumericUpDown  HorizontalAlignment="Right" HorizontalContentAlignment="Right" Value="{Binding ConnectionPort, Mode=TwoWay}" FormatString="F0" u:FormItem.Label="Port" />
+                            <NumericUpDown  HorizontalAlignment="Right" HorizontalContentAlignment="Right" Value="{Binding ConnectionBaudRate, Mode=TwoWay}" FormatString="F0" u:FormItem.Label="Serial baud rate" />
+                        </u:Form>
+                    </StackPanel>
+                </Grid>
 
-                    <Grid ColumnDefinitions="120,220" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8"  Grid.ColumnSpan="2" 
-                          HorizontalAlignment="Center" VerticalAlignment="Center">
-
-                        <TextBlock Grid.Column="0"  Grid.Row="0" Text="Channel" VerticalAlignment="Center" />
-                        <ComboBox Grid.Column="1"   Grid.Row="0"
-                                  MinWidth="150"
-                                  HorizontalContentAlignment="Right"
-                                  HorizontalAlignment="Right"
-                                  ItemsSource="{Binding ConnectionChannels}"
-                                  SelectedItem="{Binding ConnectionChannel}" />
-
-                        <TextBlock Grid.Column="0" Grid.Row="1" Text="Host" ToolTip.Tip="Use platform default" VerticalAlignment="Center" />
-                        
-                        <u:IPv4Box Grid.Column="1" Grid.Row="1" 
-                                 MinWidth="140"
-                                 HorizontalAlignment="Right"
-                                 IPAddress ="{Binding ConnectionHost}" 
-                        />
-                        <TextBlock Grid.Column="0" Grid.Row="2" Text="Port" VerticalAlignment="Center" />
-                        <NumericUpDown
-                            Grid.Column="1"
-                            Grid.Row="2"
-                            MinWidth="150"
-                            HorizontalContentAlignment="Right"
-                            HorizontalAlignment="Right"
-                            Value="{Binding ConnectionPort, Mode=TwoWay}"
-                            FormatString="F0"
-                            />
-
-                        <TextBlock Grid.Column="0" Grid.Row="3" Text="Serial baud rate" VerticalAlignment="Center" />
-                        <NumericUpDown
-                            Grid.Column="1"
-                            Grid.Row="3"
-                            MinWidth="150"
-                            HorizontalContentAlignment="Right"
-                            HorizontalAlignment="Right"
-                            Value="{Binding ConnectionBaudRate, Mode=TwoWay}"
-                            FormatString="F0"
-                            />
-                    </Grid>
-                </StackPanel>
             </Border>
         </ScrollViewer>
     </Grid>

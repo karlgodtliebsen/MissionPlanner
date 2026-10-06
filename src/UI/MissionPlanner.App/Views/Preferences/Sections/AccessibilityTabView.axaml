@@ -25,60 +25,24 @@
                         </Button>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2"
-                                VerticalAlignment="Center" HorizontalAlignment="Center">
+                                VerticalAlignment="Center" HorizontalAlignment="Stretch">
 
-                        <u:Form LabelPosition="Left" LabelWidth="*" >
-                            <ToggleSwitch u:FormItem.Label="High-contrast telemetry"
+                        <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
+                            <ToggleSwitch HorizontalAlignment="Right" HorizontalContentAlignment="Right"  u:FormItem.Label="High-contrast telemetry"
                                           IsChecked="{Binding HighContrastTelemetry}" />
 
-                            <ToggleSwitch u:FormItem.Label="Reduce telemetry motion"
+                            <ToggleSwitch HorizontalAlignment="Right" HorizontalContentAlignment="Right"  u:FormItem.Label="Reduce telemetry motion"
                                           IsChecked="{Binding ReduceMotion}" />
                             <NumericUpDown
+                                HorizontalAlignment="Right" HorizontalContentAlignment="Right" 
                                 u:FormItem.Label="Text scale (0.8–2.0)"
                                 Value="{Binding TextScale, Mode=TwoWay}"
                                 FormatString="F1"
                             />
-                            <ToggleSwitch  u:FormItem.Label="Announce telemetry warnings" IsChecked="{Binding AnnounceTelemetryWarnings}"
+                            <ToggleSwitch HorizontalAlignment="Right" HorizontalContentAlignment="Right" u:FormItem.Label="Announce telemetry warnings"
+                                          IsChecked="{Binding AnnounceTelemetryWarnings}"
                             />
-
                         </u:Form>
-                            
-                        
-<!--                        
-                            <Grid ColumnDefinitions="250,150" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
-                                <TextBlock Text="High-contrast telemetry" VerticalAlignment="Center" />
-                                <ToggleSwitch Grid.Column="1"
-                                              HorizontalAlignment="Right"
-                                              MinWidth="140"
-
-                                              IsChecked="{Binding HighContrastTelemetry}" />
-
-                                <TextBlock Grid.Row="1" Text="Reduce telemetry motion" VerticalAlignment="Center" />
-                                <ToggleSwitch Grid.Row="1" Grid.Column="1"
-                                              HorizontalAlignment="Right"
-                                              MinWidth="140"
-                                              IsChecked="{Binding ReduceMotion}" />
-
-                                <TextBlock Grid.Row="2" Text="Text scale (0.8–2.0)" VerticalAlignment="Center" />
-                                <NumericUpDown
-                                    Grid.Row="2" Grid.Column="1"
-                                    Value="{Binding TextScale, Mode=TwoWay}"
-                                    FormatString="F1"
-                                    MinWidth="140"
-                                    HorizontalAlignment="Right"
-                                    HorizontalContentAlignment="Right"
-                                    />
-
-                                <TextBlock Grid.Row="3" Text="Announce telemetry warnings" VerticalAlignment="Center" />
-                                <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding AnnounceTelemetryWarnings}"
-                                              HorizontalAlignment="Right"
-                                              MinWidth="140"
-
-                                              />
-
-                            </Grid>
--->
-
                     </StackPanel>
                 </Grid>
             </Border>

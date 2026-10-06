@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:u="https://irihi.tech/ursa"
              x:Class="MissionPlanner.App.Views.Preferences.Sections.ConfirmationsTabView"
              x:DataType="preferences:PreferencesViewModel">
 
@@ -24,16 +25,13 @@
                         </Button>
                     </StackPanel>
                     <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
-                                VerticalAlignment="Center" HorizontalAlignment="Center">
+                                VerticalAlignment="Center" HorizontalAlignment="Stretch">
                         
-                        <Grid ColumnDefinitions="250,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="15">
-                            <TextBlock Text="Confirm vehicle parameter writes" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding ConfirmParameterWrites}" />
-                            <TextBlock Grid.Row="1" Text="Confirm arm/disarm operations" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                            <ToggleSwitch Grid.Row="1" Grid.Column="1" IsChecked="{Binding ConfirmArmDisarm}" />
-                            <TextBlock Grid.Row="2" Text="Confirm firmware changes" VerticalAlignment="Center"  HorizontalAlignment="Left"/>
-                            <ToggleSwitch Grid.Row="2" Grid.Column="1" IsChecked="{Binding ConfirmFirmwareChanges}" />
-                        </Grid>
+                        <u:Form LabelPosition="Left" LabelWidth="250" MinWidth="400" HorizontalAlignment="Center">
+                            <ToggleSwitch  HorizontalAlignment="Right" HorizontalContentAlignment="Right" IsChecked="{Binding ConfirmParameterWrites}" u:FormItem.Label="Confirm vehicle parameter writes" />
+                            <ToggleSwitch  HorizontalAlignment="Right" HorizontalContentAlignment="Right" IsChecked="{Binding ConfirmArmDisarm}" u:FormItem.Label="Confirm arm/disarm operations" />
+                            <ToggleSwitch  HorizontalAlignment="Right" HorizontalContentAlignment="Right" IsChecked="{Binding ConfirmFirmwareChanges}" u:FormItem.Label="Confirm firmware changes" />
+                        </u:Form>
                     </StackPanel>
                 </Grid>
             </Border>
