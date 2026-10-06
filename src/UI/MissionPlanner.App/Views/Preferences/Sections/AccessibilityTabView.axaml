@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:u="https://irihi.tech/ursa"
              x:Class="MissionPlanner.App.Views.Preferences.Sections.AccessibilityTabView"
              x:DataType="preferences:PreferencesViewModel">
     <Grid RowDefinitions="Auto,*"
@@ -18,47 +19,66 @@
 
                 <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
-
                         <Button Classes="EmbeddedIconButton" Grid.Column="1" ToolTip.Tip="Reset section" Command="{Binding ResetSectionCommand}"
                                 CommandParameter="Accessibility" >
                             <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
                         </Button>
-
                     </StackPanel>
-                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
+                    <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2"
                                 VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Grid ColumnDefinitions="250,150" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
-                            <TextBlock Text="High-contrast telemetry" VerticalAlignment="Center" />
-                            <ToggleSwitch Grid.Column="1" 
-                                          HorizontalAlignment="Right"
-                                          MinWidth="140"
 
+                        <u:Form LabelPosition="Left" LabelWidth="*" >
+                            <ToggleSwitch u:FormItem.Label="High-contrast telemetry"
                                           IsChecked="{Binding HighContrastTelemetry}" />
 
-                            <TextBlock Grid.Row="1" Text="Reduce telemetry motion" VerticalAlignment="Center" />
-                            <ToggleSwitch Grid.Row="1" Grid.Column="1" 
-                                          HorizontalAlignment="Right"
-                                          MinWidth="140"
+                            <ToggleSwitch u:FormItem.Label="Reduce telemetry motion"
                                           IsChecked="{Binding ReduceMotion}" />
-
-                            <TextBlock Grid.Row="2" Text="Text scale (0.8–2.0)" VerticalAlignment="Center" />
                             <NumericUpDown
-                                Grid.Row="2" Grid.Column="1"
+                                u:FormItem.Label="Text scale (0.8–2.0)"
                                 Value="{Binding TextScale, Mode=TwoWay}"
                                 FormatString="F1"
-                                MinWidth="140"
-                                HorizontalAlignment="Right"
-                                HorizontalContentAlignment="Right"
-                                />
+                            />
+                            <ToggleSwitch  u:FormItem.Label="Announce telemetry warnings" IsChecked="{Binding AnnounceTelemetryWarnings}"
+                            />
 
-                            <TextBlock Grid.Row="3" Text="Announce telemetry warnings" VerticalAlignment="Center" />
-                            <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding AnnounceTelemetryWarnings}"
-                                          HorizontalAlignment="Right"
-                                          MinWidth="140"
+                        </u:Form>
+                            
+                        
+<!--                        
+                            <Grid ColumnDefinitions="250,150" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
+                                <TextBlock Text="High-contrast telemetry" VerticalAlignment="Center" />
+                                <ToggleSwitch Grid.Column="1"
+                                              HorizontalAlignment="Right"
+                                              MinWidth="140"
 
-                                          />
+                                              IsChecked="{Binding HighContrastTelemetry}" />
 
-                        </Grid>
+                                <TextBlock Grid.Row="1" Text="Reduce telemetry motion" VerticalAlignment="Center" />
+                                <ToggleSwitch Grid.Row="1" Grid.Column="1"
+                                              HorizontalAlignment="Right"
+                                              MinWidth="140"
+                                              IsChecked="{Binding ReduceMotion}" />
+
+                                <TextBlock Grid.Row="2" Text="Text scale (0.8–2.0)" VerticalAlignment="Center" />
+                                <NumericUpDown
+                                    Grid.Row="2" Grid.Column="1"
+                                    Value="{Binding TextScale, Mode=TwoWay}"
+                                    FormatString="F1"
+                                    MinWidth="140"
+                                    HorizontalAlignment="Right"
+                                    HorizontalContentAlignment="Right"
+                                    />
+
+                                <TextBlock Grid.Row="3" Text="Announce telemetry warnings" VerticalAlignment="Center" />
+                                <ToggleSwitch Grid.Row="3" Grid.Column="1" IsChecked="{Binding AnnounceTelemetryWarnings}"
+                                              HorizontalAlignment="Right"
+                                              MinWidth="140"
+
+                                              />
+
+                            </Grid>
+-->
+
                     </StackPanel>
                 </Grid>
             </Border>
