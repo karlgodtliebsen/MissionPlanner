@@ -43,19 +43,22 @@
             </u:Banner>
             <TabControl Grid.Row="1" TabStripPlacement="Top" SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                 <TabItem Header="Information">
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,0">
+                    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,0">
                         <Button Content="Help &amp; support"
                                 Classes="EmbeddedTextButton" HorizontalAlignment="Right"
                                 Margin="20,12" Click="OpenFirmwareHelp"
                                 ToolTip.Tip="Open the 'Install Firmware' guide in Help"/>
-
-                        <Grid RowDefinitions="*" Margin="20" RowSpacing="12" HorizontalAlignment="Center">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900"/>
-                            </Grid.ColumnDefinitions>
-                            <local:LandingView Grid.Row="0"/>
-                        </Grid>
-                    </StackPanel>
+                        <ScrollViewer x:Name="InformationScroll" Grid.Row="1" Margin="20" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,0">
+                                <Grid RowDefinitions="*" Margin="20" RowSpacing="12" HorizontalAlignment="Center">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900"/>
+                                    </Grid.ColumnDefinitions>
+                                    <local:LandingView Grid.Row="0"/>
+                                </Grid>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
                 </TabItem>
                 <TabItem Header="Configuration">
                     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="20,0">
