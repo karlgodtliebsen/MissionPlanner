@@ -31,10 +31,10 @@
                     </StackPanel>
                 </TabItem>
                 <TabItem Header="Map">
-                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
-                        <sections:TopSectionView/>
-                        <sections:MapTabView />
-                    </StackPanel>
+                    <Grid RowDefinitions="Auto,*" RowSpacing="14" HorizontalAlignment="Stretch">
+                        <sections:TopSectionView />
+                        <sections:MapTabView Grid.Row="1" />
+                    </Grid>
                 </TabItem>
                 <TabItem Header="Telemetry display">
                     <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
