@@ -81,23 +81,6 @@
                                Stretch="Uniform"/>
                     </Button>
 
-<!--                    <Button
-                        CornerRadius="10"
-                        Classes="Tertiary"
-                        Theme="{DynamicResource BorderlessButton}"
-                        ToolTip.Tip="Live Telemetry Inspector"
-                        FontWeight="Normal"
-                        Padding="5"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Stretch"
-                        Command="{Binding ShowTelemetryCommand}"
-                        Width="35"
-                        Height="35"
-                        >
-                        <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
-                    </Button>
--->
-
                     <u:IconDropDownButton
                         x:Name="CompactDiagnostics"
                         CornerRadius="10"
@@ -173,8 +156,22 @@
                         </DropDownButton.Flyout>
                         <materialIcons:MaterialIcon Kind="InformationOutline" Width="30" Height="30" />
                     </u:IconDropDownButton>
-
-
+                    <Button
+                        CornerRadius="10"
+                        Classes="Tertiary"
+                        Theme="{DynamicResource BorderlessButton}"
+                        ToolTip.Tip="Navigate to Preferences"
+                        FontWeight="Normal"
+                        Padding="5"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Stretch"
+                        Command="{Binding OpenPreferencesCommand}"
+                        Width="35"
+                        Height="35"
+                        >
+                        <materialIcons:MaterialIcon Kind="SettingsApplications" Width="30" Height="30" />
+                    </Button>
+       
                     <Button
                         Classes="Tertiary"
                         CornerRadius="10"
@@ -203,23 +200,8 @@
                                 </u:Form>
                             </Flyout>
                         </Button.Flyout>
-                    </Button>
+                    </Button>         
 
-                    <Button
-                        CornerRadius="10"
-                        Classes="Tertiary"
-                        Theme="{DynamicResource BorderlessButton}"
-                        ToolTip.Tip="Navigate to Preferences"
-                        FontWeight="Normal"
-                        Padding="5"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Stretch"
-                        Command="{Binding OpenPreferencesCommand}"
-                        Width="35"
-                        Height="35"
-                        >
-                        <materialIcons:MaterialIcon Kind="SettingsApplications" Width="30" Height="30" />
-                    </Button>
                 </StackPanel>
             </StackPanel>
         </Grid>

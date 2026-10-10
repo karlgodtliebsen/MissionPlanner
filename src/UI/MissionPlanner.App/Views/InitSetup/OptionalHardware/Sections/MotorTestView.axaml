@@ -217,7 +217,6 @@
 
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
-
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">
@@ -227,7 +226,7 @@
                                                 Foreground="{DynamicResource SemiColorSecondary}"
                                                 Text="Motor Spin Arm" />
                                         </u:UrsaGroupBox.Header>
-                                        <StackPanel>
+                                        <StackPanel Orientation="Vertical" Margin="30,0" Spacing="20">
                                             <controls:InformationDocumentView>
                                                 <controls:InformationDocumentView.Document>
                                                     <MultiBinding Converter="{x:Static documents:MotorSpinDocumentConverter.Instance}" ConverterParameter="MOT_SPIN_ARM">
@@ -244,7 +243,9 @@
                                                                Minimum="1" Maximum="{Binding SpinArmMaximum}" MinWidth="70"
                                                                AutomationProperties.Name="MOT_SPIN_ARM offset percent" />
                                             </StackPanel>
-                                            <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" AutomationProperties.Name="Set Motor Spin Arm">
+                                            <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                    ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" 
+                                                    AutomationProperties.Name="Set Motor Spin Arm">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" Width="20" Height="20" />
                                                     <TextBlock Text="Set Motor Spin Arm" VerticalAlignment="Center" />
@@ -255,7 +256,6 @@
 
                                     <u:UrsaGroupBox
                                         BorderBrush="{DynamicResource SemiColorSecondary}"
-
                                         BorderThickness="2"
                                         CornerRadius="12"
                                         HeaderSpacing="12">
@@ -283,7 +283,9 @@
                                                                Minimum="1" Maximum="{Binding SpinMinMaximum}" MinWidth="70"
                                                                AutomationProperties.Name="MOT_SPIN_MIN offset percent" />
                                             </StackPanel>
-                                            <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" AutomationProperties.Name="Set Motor Spin Min">
+                                            <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                                    ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" 
+                                                    AutomationProperties.Name="Set Motor Spin Min">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" Width="20" Height="20" />
                                                     <TextBlock Text="Set Motor Spin Min" VerticalAlignment="Center" />
