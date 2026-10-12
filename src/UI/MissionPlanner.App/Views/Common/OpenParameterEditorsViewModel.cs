@@ -92,7 +92,13 @@ public partial class OpenParameterEditorsViewModel(INavigationService navigation
             MinHeight = 600,
             CanResize = true,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Content = new Grid { Children = { view, new OverlayDialogHost { HostId = hostId ?? $"parameter-editor-{Guid.NewGuid():N}" } } }
+            Content = new Grid
+            {
+                // Ursa draws its title bar over the client area. Reserve the same
+                // space as MainWindow so it cannot intercept editor toolbar clicks.
+                Margin = new Thickness(0, 50, 0, 0),
+                Children = { view, new OverlayDialogHost { HostId = hostId ?? $"parameter-editor-{Guid.NewGuid():N}" } }
+            }
         };
         var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         window.Closing += (_, args) => args.Cancel = isBusy();

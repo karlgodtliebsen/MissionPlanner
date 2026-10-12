@@ -22,7 +22,7 @@
         Margin="25">
 
         <TextBlock Grid.Row="0"
-                   Classes="H2" Text="Edit Parameters and Values"
+                   Classes="H2" Text="Edit Parameters Values"
                    HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
 
         <Border Grid.Row="1" HorizontalAlignment="Center"
@@ -65,8 +65,8 @@
                                 ItemsSource="{Binding ParameterNames}"
                                 Text="{Binding SearchText, Mode=TwoWay}"
                                 FilterMode="Contains" MinimumPrefixLength="1"
-                                PlaceholderText="Search parameter names"
-                                AutomationProperties.Name="Search parameter names" />
+                                PlaceholderText="Search vehicle parameters"
+                                AutomationProperties.Name="Search vehicle parameters" />
                         </Grid>
 
                         <Button Grid.Row="0"  Grid.Column="1" Classes="EmbeddedIconButton" Command="{Binding AddParameterCommand}"
