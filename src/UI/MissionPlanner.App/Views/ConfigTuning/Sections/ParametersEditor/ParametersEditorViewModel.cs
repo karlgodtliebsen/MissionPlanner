@@ -14,6 +14,85 @@ namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 public partial class ParametersEditorViewModel(IDialogService dialogService) : ViewModelBase
 {
     private Func<CancellationToken, Task<string>>? applyModified;
+    private readonly Dictionary<string, KeyValuePair<string, double>> currentParameters = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Available names for parameter search.</summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<string> ParameterNames { get; private set; } = [];
+
+    /// <summary>Name being searched for or selected from the suggestions.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddParameterCommand))]
+    public partial string SearchText { get; set; } = string.Empty;
+
+    /// <summary>Refreshes the confirmed vehicle values used by search and the read-only preview.</summary>
+    public void SetCurrentParameters(IEnumerable<KeyValuePair<string, double>> parameters)
+    {
+        currentParameters.Clear();
+        foreach (var parameter in parameters)
+        {
+            currentParameters[parameter.Key] = parameter;
+        }
+        var names = currentParameters.Values.Select(parameter => parameter.Key).Order(StringComparer.Ordinal).ToArray();
+        if (!ParameterNames.SequenceEqual(names))
+        {
+            ParameterNames = names;
+        }
+        RefreshUsedParameters();
+        AddParameterCommand.NotifyCanExecuteChanged();
+    }
+
+    private static IEnumerable<string> ReadParameterNames(string text)
+    {
+        foreach (var line in text.Replace('\r', '\n').Split('\n'))
+        {
+            var data = line.Split("//", 2, StringSplitOptions.None)[0];
+            var name = data.Split(['=', ',', ':', ';'], 2)[0].Trim();
+            if (name.Length > 0)
+            {
+                yield return name;
+            }
+        }
+    }
+
+    private static string FormatParameter(KeyValuePair<string, double> parameter)
+    {
+        return $"{parameter.Key} = {parameter.Value.ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private void RefreshUsedParameters()
+    {
+        UsedParametersText = string.Join(Environment.NewLine,
+            ReadParameterNames(Text).Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(currentParameters.ContainsKey).Select(name => FormatParameter(currentParameters[name])));
+    }
+
+    private bool CanAddParameter()
+    {
+        return currentParameters.ContainsKey(SearchText?.Trim() ?? string.Empty);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAddParameter))]
+    private void AddParameter()
+    {
+        if (!CanAddParameter() || ApplyModifiedCommand.IsRunning)
+        {
+            return;
+        }
+        var parameter = currentParameters[SearchText.Trim()];
+        if (!ReadParameterNames(Text).Contains(parameter.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var separator = Text.Length == 0 || Text.EndsWith('\n') || Text.EndsWith('\r') ? string.Empty : Environment.NewLine;
+            Text += separator + FormatParameter(parameter) + Environment.NewLine;
+        }
+        SearchText = string.Empty;
+    }
+
+    [RelayCommand]
+    private void ClearSearch()
+    {
+        SearchText = string.Empty;
+    }
 
     /// <summary>Gets or sets live progress from the confirmed parameter-write workflow.</summary>
     [ObservableProperty]
@@ -43,7 +122,11 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
         ApplyModifiedCommand.NotifyCanExecuteChanged();
     }
 
-    partial void OnTextChanged(string value) => ApplyModifiedCommand.NotifyCanExecuteChanged();
+    partial void OnTextChanged(string value)
+    {
+        ApplyModifiedCommand.NotifyCanExecuteChanged();
+        RefreshUsedParameters();
+    }
 
     private bool CanApplyModified()
     {
@@ -109,42 +192,11 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
         set;
     }
 
-    ///// <summary>
-    ///// Gets or sets a value indicating whether the operation was cancelled.
-    ///// </summary>
-    //public bool Cancelled
-    //{
-    //    get;
-    //    set;
-    //}
-
-    //[RelayCommand]
-    //private Task CancelAsync(CancellationToken cancellationToken)
-    //{
-    //    Cancelled = true;
-    //    return dialogService.CloseAsync(cancellationToken);
-    //}
-
-    //[RelayCommand]
-    //private Task UseParametersAsync(CancellationToken cancellationToken)
-    //{
-    //    UseParameters = true;
-    //    useCallback(this);
-    //    return dialogService.CloseAsync(cancellationToken);
-    //}
-
     [RelayCommand]
     private void Clear()
     {
         Text = string.Empty;
     }
-
-    //[RelayCommand]
-    //private Task WriteParametersAsync(CancellationToken cancellationToken)
-    //{
-    //    applyCallback(this);
-    //    return dialogService.CloseAsync(cancellationToken);
-    //}
 
     /// <summary>
     /// Updates the parameters in the provided list based on the current Text property.
@@ -191,7 +243,7 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
             }
 
             var name = parts[0].Trim();
-            var parameter = fullParametersList.FirstOrDefault(p => p.Name == name);
+            var parameter = fullParametersList.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
             if (parameter is not null)
             {
                 var p = parts[1].Trim();
@@ -205,7 +257,7 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
                 {
                     Value = v
                 };
-                result.RemoveAll(item => item.Name == name);
+                result.RemoveAll(item => item.Name == parameter.Name);
                 result.Add(param);
             }
             else

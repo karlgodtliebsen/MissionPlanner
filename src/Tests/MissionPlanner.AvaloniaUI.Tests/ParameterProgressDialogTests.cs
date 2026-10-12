@@ -92,6 +92,82 @@ public sealed class ParameterProgressDialogTests
     }
 
     [Theory]
+    [InlineData("TEST_PARAM = 99\nSECOND = 88")]
+    [InlineData("// comment\r\nTEST_PARAM =\r\nSECOND = invalid // comment\r\nUNKNOWN = 3\r\nTEST_PARAM = 4")]
+    [InlineData("test_param:99\rSECOND;88")]
+    public void QuickEditorPreviewsConfirmedValuesForEnteredNames(string text)
+    {
+        using var fixture = new Fixture();
+        using var editor = new ParametersEditorViewModel(fixture.Dialogs);
+        editor.SetCurrentParameters([new("TEST_PARAM", 1.5), new("SECOND", 2)]);
+        editor.Text = text;
+        Assert.Equal($"TEST_PARAM = 1.5{Environment.NewLine}SECOND = 2", editor.UsedParametersText);
+        Assert.Equal(text, editor.Text);
+
+        editor.SetCurrentParameters([new("TEST_PARAM", 3), new("SECOND", 2)]);
+        Assert.StartsWith("TEST_PARAM = 3", editor.UsedParametersText);
+        editor.ClearCommand.Execute(null);
+        Assert.Empty(editor.UsedParametersText);
+    }
+
+    [Fact]
+    public void QuickEditorSearchAddsCanonicalNameAndPreservesExistingEdits()
+    {
+        using var fixture = new Fixture();
+        using var editor = new ParametersEditorViewModel(fixture.Dialogs);
+        editor.SetCurrentParameters([new("TEST_PARAM", 1.5), new("SECOND", 2)]);
+        Assert.Equal(new[] { "SECOND", "TEST_PARAM" }, editor.ParameterNames);
+        editor.SearchText = "unknown";
+        Assert.False(editor.AddParameterCommand.CanExecute(null));
+        editor.SearchText = "test_param";
+        Assert.True(editor.AddParameterCommand.CanExecute(null));
+        editor.AddParameterCommand.Execute(null);
+        Assert.Equal($"TEST_PARAM = 1.5{Environment.NewLine}", editor.Text);
+        Assert.Equal("TEST_PARAM = 1.5", editor.UsedParametersText);
+        Assert.Empty(editor.SearchText);
+
+        editor.Text = "TEST_PARAM = 99";
+        editor.SearchText = "TEST_PARAM";
+        editor.AddParameterCommand.Execute(null);
+        Assert.Equal("TEST_PARAM = 99", editor.Text);
+        editor.SearchText = "SECOND";
+        editor.AddParameterCommand.Execute(null);
+        Assert.Equal($"TEST_PARAM = 99{Environment.NewLine}SECOND = 2{Environment.NewLine}", editor.Text);
+        editor.SearchText = "SECOND";
+        editor.ClearSearchCommand.Execute(null);
+        Assert.Empty(editor.SearchText);
+        editor.SetCurrentParameters([]);
+        Assert.Empty(editor.UsedParametersText);
+        Assert.Empty(editor.ParameterNames);
+    }
+
+    [Fact]
+    public async Task QuickEditorTracksLiveValuesRatherThanPendingEdits()
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        var field = new ParameterEditField("TEST_PARAM", MavParamType.Real32, 1, 1, 99, ParameterFieldMetadata.Empty, null);
+        fixture.Session.Fields.Returns(new[] { field });
+        using var editor = new ParametersEditorViewModel(fixture.Dialogs) { Text = "TEST_PARAM = 10" };
+        fixture.DomainFactory.Create<ParametersEditorViewModel>().Returns(editor);
+
+        await fixture.Model.OpenQuickEditorAsync((presented, _) =>
+        {
+            Assert.Equal("TEST_PARAM = 1", presented.UsedParametersText);
+            fixture.Session.Fields.Returns(new[] { field with { LiveValue = 2 } });
+            fixture.Session.Changed?.Invoke();
+            Assert.Equal("TEST_PARAM = 2", presented.UsedParametersText);
+            fixture.Session.IsValid.Returns(false);
+            fixture.Session.Changed?.Invoke();
+            Assert.Empty(presented.UsedParametersText);
+            Assert.Empty(presented.ParameterNames);
+            Assert.Equal("TEST_PARAM = 10", presented.Text);
+            return Task.FromResult<ParametersEditorViewModel?>(null);
+        }, TestContext.Current.CancellationToken);
+    }
+
+    [Theory]
     [InlineData("TEST_PARAM = invalid")]
     [InlineData("TEST_PARAM = NaN")]
     [InlineData("TEST_PARAM = 2\nUNKNOWN = 3")]

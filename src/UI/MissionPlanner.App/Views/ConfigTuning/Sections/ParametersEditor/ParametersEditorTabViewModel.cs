@@ -193,6 +193,19 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             var viewModel = domainFactory.Create<ParametersEditorViewModel>();
             var editorSession = EditSession;
             using var editorLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            void RefreshEditorParameters()
+            {
+                Dispatcher.Dispatch(() =>
+                {
+                    if (!editorLifetime.IsCancellationRequested)
+                    {
+                        viewModel.SetCurrentParameters(ReferenceEquals(EditSession, editorSession) && editorSession.IsValid && HasConnection
+                            ? editorSession.Fields.Select(field => new KeyValuePair<string, double>(field.Name, field.LiveValue))
+                            : []);
+                    }
+                });
+            }
+            RefreshEditorParameters();
             viewModel.ConfigureApply(async token =>
             {
                 using var applyLifetime = CancellationTokenSource.CreateLinkedTokenSource(token, editorLifetime.Token);
@@ -260,6 +273,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
                 }
             };
             PropertyChanged += reportProgress;
+            editorSession.Changed += RefreshEditorParameters;
             try
             {
                 returnModel = showEditor is null
@@ -269,6 +283,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             finally
             {
                 PropertyChanged -= reportProgress;
+                editorSession.Changed -= RefreshEditorParameters;
                 editorLifetime.Cancel();
             }
             if (returnModel is not null && !viewModel.ApplyModifiedCommand.IsRunning && ReferenceEquals(EditSession, editorSession) && editorSession.IsValid)
