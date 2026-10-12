@@ -24,17 +24,6 @@ public sealed partial class AntennaTrackerViewModel(IActiveVehicleContext vehicl
         SetMessages(TargetStatus);
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     public string TargetStatus => vehicle.IsOnline ? "Tracker vehicle connected. Settings are shown only when reported by its parameter metadata." : "Connect an AntennaTracker vehicle.";
     public string SafetyStatus => "Actuator test is unavailable until a bounded tracker-specific output adapter and operation gate are present.";
 

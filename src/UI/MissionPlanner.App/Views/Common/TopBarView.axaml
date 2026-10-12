@@ -86,7 +86,7 @@
                         CornerRadius="10"
                         Classes="Tertiary"
                         Theme="{DynamicResource BorderlessButton}"
-                        ToolTip.Tip="Diagnostics: Readiness, Messages, Inspector, Vehicle Info and Logs"
+                        ToolTip.Tip="Diagnostics and tools: Readiness, Messages, Inspector, Vehicle Info, Logs and Parameters Editor"
                         FontWeight="Normal"
                         Padding="5"
                         HorizontalAlignment="Right"
@@ -150,6 +150,15 @@
                                           CommandParameter="DataFlash Logs">
                                     <MenuItem.Icon>
                                         <materialIcons:MaterialIcon Kind="ChartLine" Width="30" Height="30" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem Header="Parameters Editor…"
+                                          ToolTip.Tip="Open Parameters Editor in a separate window"
+                                          AutomationProperties.Name="Open Parameters Editor in a separate window"
+                                          Command="{Binding OpenParametersEditorWindowCommand}">
+                                    <MenuItem.Icon>
+                                        <materialIcons:MaterialIcon Kind="FormatListBulleted" Width="30" Height="30" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                             </MenuFlyout>

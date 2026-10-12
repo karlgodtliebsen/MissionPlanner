@@ -25,9 +25,11 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 public sealed class ParameterProgressDialogTests
 {
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task QuickEditorAppliesOnlyEnteredParametersAfterConfirmation(bool accepted)
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    public async Task QuickEditorAppliesOnlyEnteredParametersAfterConfirmation(bool accepted, bool detached)
     {
         using var fixture = new Fixture();
         fixture.SetCompleteCache();
@@ -38,7 +40,7 @@ public sealed class ParameterProgressDialogTests
         var editor = new ParametersEditorViewModel(fixture.Dialogs) { Text = "//Pavo 20 Pro\nTEST_PARAM = 2 // test\nUNKNOWN = 3\nTEST_PARAM = invalid" };
         fixture.DomainFactory.Create<ParametersEditorViewModel>().Returns(editor);
         fixture.Dialogs.ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(editor,
-            Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<CancellationToken>())
+            Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(async _ =>
             {
                 Assert.True(editor.ApplyModifiedCommand.CanExecute(null));
@@ -46,7 +48,20 @@ public sealed class ParameterProgressDialogTests
                 return null;
             });
 
-        await fixture.Model.UseQuickEditorCommand.ExecuteAsync(null);
+        if (detached)
+        {
+            await fixture.Model.OpenQuickEditorAsync(async (presentedEditor, _) =>
+            {
+                Assert.Same(editor, presentedEditor);
+                Assert.True(editor.ApplyModifiedCommand.CanExecute(null));
+                await editor.ApplyModifiedCommand.ExecuteAsync(null);
+                return null;
+            }, TestContext.Current.CancellationToken);
+        }
+        else
+        {
+            await fixture.Model.UseQuickEditorCommand.ExecuteAsync(null);
+        }
 
         fixture.Session.Received(1).TrySetPending("TEST_PARAM", 2, out Arg.Any<string?>());
         fixture.Session.Received(1).CreateWritePlan(Arg.Is<IReadOnlyList<string>>(names => names != null && names.Count == 1 && names[0] == "TEST_PARAM"));
@@ -55,6 +70,25 @@ public sealed class ParameterProgressDialogTests
         Assert.Contains("unknown parameter: UNKNOWN", editor.FeedbackReport);
         Assert.Contains("invalid numeric value", editor.FeedbackReport);
         Assert.Contains("skipped 2 input line(s)", editor.FeedbackReport);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("parameters-editor-window-1")]
+    [InlineData("parameters-editor-window-2")]
+    public async Task QuickEditorUsesOwningDialogHost(string? hostId)
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        fixture.Model.DialogHostId = hostId;
+        var editor = new ParametersEditorViewModel(fixture.Dialogs);
+        fixture.DomainFactory.Create<ParametersEditorViewModel>().Returns(editor);
+
+        await fixture.Model.UseQuickEditorCommand.ExecuteAsync(null);
+
+        await fixture.Dialogs.Received(1).ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(
+            editor, Arg.Any<Ursa.Controls.OverlayDialogOptions>(), hostId, Arg.Any<CancellationToken>());
     }
 
     [Theory]

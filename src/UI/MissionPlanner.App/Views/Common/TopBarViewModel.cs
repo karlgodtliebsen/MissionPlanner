@@ -308,6 +308,14 @@ public partial class TopBarViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task OpenParametersEditorWindowAsync()
+    {
+        using var editor = serviceFactory.Create<OpenParameterEditorsViewModel>();
+        editor.NotificationManager = base.NotificationManager ?? NotificationManager;
+        await editor.OpenFullParametersCommand.ExecuteAsync("ParametersEditorInWindow");
+    }
+
+    [RelayCommand]
     private async Task OpenPreferencesAsync(CancellationToken cancellationToken)
     {
         await navigationService.NavigateAsync(MissionPlannerRoutes.Preferences);

@@ -90,6 +90,17 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
     } = string.Empty;
 
     /// <summary>
+    /// Whenever the user enters a parameter value in Text, this property shows the parameter=value for the existing parameters.
+    /// </summary>
+    [ObservableProperty]
+    public partial string UsedParametersText
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    /// <summary>
+    /// 
     /// Gets or sets a value indicating whether the operation was applied.
     /// </summary>
     public bool UseParameters

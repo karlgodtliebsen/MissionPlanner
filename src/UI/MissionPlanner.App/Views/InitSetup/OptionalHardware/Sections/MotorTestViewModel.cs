@@ -6,6 +6,7 @@ using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Presentation.Documents;
 using MissionPlanner.App.Utilities.Dialogs;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
@@ -14,9 +15,6 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 
-using MissionPlanner.App.Views.Navigation;
-using MissionPlanner.App.Views.InitSetup.InstallFirmware.SubViews.Models;
-
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>
@@ -24,18 +22,6 @@ namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 /// </summary>
 public sealed partial class MotorTestViewModel : ParametersViewModel
 {
-    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
-    private readonly INavigationService navigation;
     private readonly IExternalLinkLauncher externalLinkLauncher;
 
     [RelayCommand]
@@ -184,12 +170,12 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
     /// <param name="thresholdAssistant">Guided frame-aware motor start-threshold workflow.</param>
     /// <param name="outputResolver">Existing logical-to-physical output resolver.</param>
-    /// <param name="navigation">The application navigation service.</param>
     /// <param name="externalLinkLauncher">Opens documentation in the default external browser.</param>
     public MotorTestViewModel(
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
-        IParameterEditSessionFactory editSessionFactory, IVehicleParameterLoadStatusContext parameterLoadStatus,
+        IParameterEditSessionFactory editSessionFactory,
+        IVehicleParameterLoadStatusContext parameterLoadStatus,
         IDialogService dialogService,
         IDomainFactory domainFactory,
         IDomainEventHub domainEventHub,
@@ -198,12 +184,12 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         IActuatorTestService service,
         IMotorSpinParameterService spinParameters,
         MotorLayoutResolver resolver,
-        IUserConfirmationService confirmation, INavigationService navigation, MotorStartThresholdService? thresholdAssistant = null,
+        IUserConfirmationService confirmation,
+        MotorStartThresholdService? thresholdAssistant = null,
         IMotorOutputResolver? outputResolver = null,
         IExternalLinkLauncher? externalLinkLauncher = null)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
-        this.navigation = navigation;
         this.externalLinkLauncher = externalLinkLauncher ?? new ExternalLinkLauncher();
         this.activeVehicle = activeVehicle;
         this.parameters = parameters;
@@ -228,7 +214,10 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
     /// <summary>Gets whether an assistant pulse or write is executing.</summary>
     [ObservableProperty]
-    public partial bool ThresholdBusy { get; private set; }
+    public partial bool ThresholdBusy
+    {
+        get; private set;
+    }
 
     [RelayCommand]
     private async Task StartThresholdAsync(CancellationToken cancellationToken)
@@ -572,7 +561,10 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
     /// <summary>Gets the complete motor-output evidence for the Information tab.</summary>
     [ObservableProperty]
-    public partial UserDocument OutputDiagnosticsDocument { get; private set; } =
+    public partial UserDocument OutputDiagnosticsDocument
+    {
+        get; private set;
+    } =
         MotorOutputDocumentFactory.Create("No active vehicle.", string.Empty);
 
     private void UpdateOutputDocument()

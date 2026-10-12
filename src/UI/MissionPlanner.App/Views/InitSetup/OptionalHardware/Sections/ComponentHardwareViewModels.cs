@@ -22,13 +22,6 @@ public sealed partial class DroneCanUavCanViewModel(IDroneCanService service, IL
         get; set;
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace.</summary>
-    [RelayCommand]
-    private Task OpenFullParametersAsync()
-    {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand]
     private async Task ConnectAsync()
     {

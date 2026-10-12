@@ -1,0 +1,49 @@
+<utilities:UserControlViewBase x:TypeArguments="common:OpenParameterEditorsViewModel"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+                               xmlns:u="https://irihi.tech/ursa"
+                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                               x:DataType="common:OpenParameterEditorsViewModel"
+                               x:Class="MissionPlanner.App.Views.Common.OpenParameterEditorsView"
+                               >
+    <u:IconDropDownButton  >
+        <DropDownButton.Flyout>
+            <MenuFlyout Placement="Bottom">
+                <MenuItem
+                    ToolTip.Tip="Navigate to Parameters Editor"
+                    Command="{Binding OpenFullParametersCommand}"
+                    CommandParameter="Navigate"
+                    AutomationProperties.Name="Navigate to Parameters Editor"
+                    Header="Navigate to Parameters Editor">
+                    <MenuItem.Icon>
+                        <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem ToolTip.Tip="Open Parameters Editor In Window"
+                          Command="{Binding OpenFullParametersCommand}"
+                          CommandParameter="ParametersEditorInWindow"
+                          AutomationProperties.Name="Open Parameters Editor In Window"
+                          Header="Open Parameters Editor In Window">
+                    <MenuItem.Icon>
+                        <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem ToolTip.Tip="Open Parameters Quick Editor In Window"
+                          Command="{Binding OpenFullParametersCommand}"
+                          CommandParameter="QuickEditorInWindow"
+                          AutomationProperties.Name="Open Parameters Quick Editor In Window"
+                          Header="Open Parameters Quick Editor In Window">
+                    <MenuItem.Icon>
+                        <avalonia:MaterialIcon Kind="ApplicationEditOutline" Width="30" Height="30" />
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuFlyout>
+        </DropDownButton.Flyout>
+        <avalonia:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" Width="30" Height="30"  />
+    </u:IconDropDownButton>
+</utilities:UserControlViewBase>

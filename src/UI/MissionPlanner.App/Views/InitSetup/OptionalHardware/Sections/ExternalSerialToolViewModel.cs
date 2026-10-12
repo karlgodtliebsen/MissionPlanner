@@ -17,17 +17,6 @@ public abstract partial class ExternalSerialToolViewModel(IFirmwareSerialDeviceC
         return RefreshPortsAsync();
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     private CancellationTokenSource lifetime = new();
     public ObservableRangeCollection<string> Ports { get; } = [];
     [ObservableProperty]

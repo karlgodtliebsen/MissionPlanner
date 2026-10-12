@@ -66,13 +66,6 @@ public sealed partial class SafetySetupViewModel : ViewModelBase
         return base.DeactivateAsync();
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace.</summary>
-    [RelayCommand]
-    private Task OpenFullParametersAsync()
-    {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand]
     private void Refresh()
     {

@@ -21,17 +21,6 @@ public sealed partial class CubeIdUpdateViewModel(ILogger<CubeIdUpdateViewModel>
         return InspectAsync();
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [ObservableProperty] public partial string FirmwarePath { get; set; } = string.Empty;
     [ObservableProperty] public partial string FirmwareSummary { get; set; } = "Select a local .bin image. Updating remains disabled until a CubeID component is detected.";
     [ObservableProperty]

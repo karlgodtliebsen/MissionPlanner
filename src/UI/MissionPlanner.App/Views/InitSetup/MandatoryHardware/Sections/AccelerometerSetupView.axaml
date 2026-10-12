@@ -10,7 +10,8 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AccelerometerSetupView"
                                x:DataType="sections:AccelerometerSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                               xmlns:u="https://irihi.tech/ursa">
+                               xmlns:u="https://irihi.tech/ursa"
+                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common">
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
@@ -31,10 +32,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <controls:SetupInformationView Grid.Row="1" Topic="Accelerometer" WorkflowError="{Binding ErrorMessage}" >
@@ -55,10 +53,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </StackPanel>
                     </Border>
                     <Border Grid.Row="1"  Classes="SectionCard" Padding="12">

@@ -179,13 +179,6 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         }
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace.</summary>
-    [RelayCommand]
-    private Task OpenFullParametersAsync()
-    {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand]
     private Task RefreshAsync()
     {

@@ -446,17 +446,6 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (HasPendingChanges && !await confirmation.ConfirmAsync("Leave Compass setup", "Discard local compass edits and open Parameters Editor?", "Discard and open"))
-        {
-            return;
-        }
-        Discard();
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand(CanExecute = nameof(CanReboot))]
     private async Task RebootAsync()
     {

@@ -1,6 +1,7 @@
 ﻿<utilities:UserControlViewBase
     xmlns="https://github.com/avaloniaui"
     xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
@@ -71,10 +72,7 @@
                                     AutomationProperties.Name="Reload reported parameters">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <controls:SetupInformationView Grid.Row="1"  Topic="SerialPorts"
@@ -92,10 +90,7 @@
                                     AutomationProperties.Name="Reload reported parameters">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply changes" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" AutomationProperties.Name="Apply changes">
                                 <mdi:MaterialIcon Kind="Check" Classes="ActionIcon"/>
                             </Button>

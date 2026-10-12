@@ -162,18 +162,4 @@ public sealed partial class ArmingViewModel
         }
     }
 
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        if (HasPendingChanges && !await confirmation.ConfirmAsync("Open Parameters Editor", "Discard local arming edits and open Parameters Editor?", "Discard and open"))
-        {
-            return;
-        }
-        Discard();
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
 }

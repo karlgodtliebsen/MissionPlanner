@@ -59,8 +59,6 @@ public sealed class HardwareRefreshTests
                 await model.RefreshCommand.ExecuteAsync(null);
                 await hardware.Received(1).RefreshAsync(id, Arg.Any<CancellationToken>());
                 Assert.Equal("Refreshed", model.StatusMessage);
-                await model.OpenFullParametersCommand.ExecuteAsync(null);
-                await navigation.Received(1).NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
 
                 var late = new TaskCompletionSource<IReadOnlyList<OptionalHardwareModuleView>>();
                 CancellationToken requestToken = default;

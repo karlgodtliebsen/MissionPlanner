@@ -21,17 +21,6 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         return IsBusy ? Task.CompletedTask : Dispatcher.DispatchAsync(() => LoadCoreAsync(true));
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await Navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     /// <summary>Gets the navigation service shared by optional parameter workflows.</summary>
     protected INavigationService Navigation { get; }
 

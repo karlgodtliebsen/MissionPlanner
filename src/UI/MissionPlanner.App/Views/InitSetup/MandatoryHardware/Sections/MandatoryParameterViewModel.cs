@@ -159,13 +159,6 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
     protected abstract Task<MandatoryParameterApplyResult> ApplySettingAsync(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId,
         string name, double value, CancellationToken cancellationToken);
 
-    /// <summary>Opens the shared Parameters Editor workspace.</summary>
-    [RelayCommand]
-    private Task OpenFullParametersAsync()
-    {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand]
     private Task RefreshAsync()
     {

@@ -248,6 +248,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<SimulationPage>();
         services.TryAddTransient<SimulationViewModel>();
 
+        services.TryAddTransient<OpenParameterEditorsView>();
+        services.TryAddTransient<OpenParameterEditorsViewModel>();
 
         services.TryAddTransient<AIPage>();
         services.TryAddTransient<AIViewModel>();

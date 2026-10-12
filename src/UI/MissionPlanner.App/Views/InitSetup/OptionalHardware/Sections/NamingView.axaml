@@ -1,6 +1,7 @@
 <utilities:UserControlViewBase x:TypeArguments="sections:NamingViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -28,10 +29,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <avalonia:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <avalonia:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <controls:SetupInformationView Grid.Row="1" Topic="Naming" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
@@ -46,10 +44,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <avalonia:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <avalonia:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
 
                             <Button Classes="ToolbarIconButton" Width="100" ToolTip.Tip="Apply changed identifiers" AutomationProperties.Name="Apply changed identifiers"
                                     Command="{Binding ApplyCommand}" >

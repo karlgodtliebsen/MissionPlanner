@@ -185,13 +185,6 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
         }
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace.</summary>
-    [RelayCommand]
-    private Task OpenFullParametersAsync()
-    {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand]
     private Task RefreshAsync()
     {

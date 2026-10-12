@@ -33,17 +33,6 @@ public partial class NamingViewModel(
         return applying || recovering || IsBusy ? Task.CompletedTask : LoadAsync();
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     private const string systemIdName = "MAV_SYSID";
     private const string serialNumberName = "BRD_SERIAL_NUM";
     private CancellationTokenSource? operation;

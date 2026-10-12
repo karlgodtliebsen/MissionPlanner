@@ -196,13 +196,6 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
     }
 
 
-    /// <summary>Opens the shared Parameters Editor workspace.</summary>
-    [RelayCommand]
-    private Task OpenFullParametersAsync()
-    {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand]
     private Task LoadCommandAsync()
     {

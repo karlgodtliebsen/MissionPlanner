@@ -93,13 +93,6 @@ public sealed partial class SerialPortsViewModel : ViewModelBase
         base.Dispose();
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace.</summary>
-    [RelayCommand]
-    private Task OpenFullParametersAsync()
-    {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand]
     private async Task RefreshAsync()
     {

@@ -8,6 +8,7 @@
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                                xmlns:u="https://irihi.tech/ursa"
+                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.EscMotorSetupView"
                                x:DataType="sections:EscMotorSetupViewModel">
@@ -39,10 +40,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <controls:SetupInformationView Grid.Row="1" Topic="EscMotor" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
@@ -56,10 +54,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Test motor" Command="{Binding TestMotorCommand}" AutomationProperties.Name="Test motor">
                                 <mdi:MaterialIcon Kind="Fan" Classes="ActionIcon" />
                             </Button>

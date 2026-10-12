@@ -321,16 +321,6 @@ public sealed partial class RadioSetupViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand(CanExecute = nameof(CanWrite))]
     private async Task ConfirmAndWriteAsync()
     {

@@ -207,15 +207,6 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
         return Task.CompletedTask;
     }
 
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
     [RelayCommand(CanExecute = nameof(CanTest))]
     private async Task TestSequenceAsync()
     {

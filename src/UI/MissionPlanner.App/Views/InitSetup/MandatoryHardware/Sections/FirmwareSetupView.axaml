@@ -9,7 +9,8 @@
                                mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FirmwareSetupView"
                                x:DataType="sections:FirmwareSetupViewModel"
-                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common">
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
@@ -28,10 +29,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <controls:SetupInformationView Grid.Row="1" Topic="Firmware" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
@@ -44,10 +42,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1" Margin="16"  HorizontalScrollBarVisibility="Disabled">

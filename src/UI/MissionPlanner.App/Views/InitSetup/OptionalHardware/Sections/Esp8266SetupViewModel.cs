@@ -27,17 +27,6 @@ public sealed partial class Esp8266SetupViewModel(ILogger<Esp8266SetupViewModel>
         }
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     /// <summary>
     /// The component ID for the UDP bridge.
     /// </summary>

@@ -11,6 +11,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:u="https://irihi.tech/ursa"
+    xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
     x:DataType="sections:MotorTestViewModel"
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.MotorTestView"
@@ -43,10 +44,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <controls:SetupInformationView Grid.Row="1" Topic="MotorTest" WorkflowError="{Binding ErrorMessage}"
@@ -70,10 +68,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
 
@@ -243,8 +238,8 @@
                                                                Minimum="1" Maximum="{Binding SpinArmMaximum}" MinWidth="70"
                                                                AutomationProperties.Name="MOT_SPIN_ARM offset percent" />
                                             </StackPanel>
-                                            <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center" 
-                                                    ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}" 
+                                            <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                    ToolTip.Tip="Set Motor Spin Arm" Command="{Binding SetMotorSpinArmCommand}"
                                                     AutomationProperties.Name="Set Motor Spin Arm">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" Width="20" Height="20" />
@@ -283,8 +278,8 @@
                                                                Minimum="1" Maximum="{Binding SpinMinMaximum}" MinWidth="70"
                                                                AutomationProperties.Name="MOT_SPIN_MIN offset percent" />
                                             </StackPanel>
-                                            <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center" 
-                                                    ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}" 
+                                            <Button Classes="EmbeddedTextButton" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                    ToolTip.Tip="Set Motor Spin Min" Command="{Binding SetMotorSpinMinCommand}"
                                                     AutomationProperties.Name="Set Motor Spin Min">
                                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                                     <mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" Width="20" Height="20" />

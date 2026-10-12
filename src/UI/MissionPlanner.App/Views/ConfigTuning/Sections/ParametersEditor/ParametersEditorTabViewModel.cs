@@ -20,6 +20,9 @@ namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 /// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
 public partial class ParametersEditorTabViewModel : ParametersViewModel
 {
+    /// <summary>Identifies the owning window's overlay host; null uses the main application host.</summary>
+    public string? DialogHostId { get; set; }
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ITextClipboardService clipboard;
     private readonly IDialogService dialogService;
@@ -169,7 +172,15 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     }
 
     [RelayCommand]
-    private async Task UseQuickEditorAsync(CancellationToken cancellationToken)
+    private Task UseQuickEditorAsync(CancellationToken cancellationToken)
+    {
+        return OpenQuickEditorAsync(null, cancellationToken);
+    }
+
+    /// <summary>Opens the quick editor using the current session and an optional detached presenter.</summary>
+    public async Task OpenQuickEditorAsync(
+        Func<ParametersEditorViewModel, CancellationToken, Task<ParametersEditorViewModel?>>? showEditor,
+        CancellationToken cancellationToken)
     {
         if (EditSession is null)
         {
@@ -251,7 +262,9 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             PropertyChanged += reportProgress;
             try
             {
-                returnModel = await dialogService.ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(viewModel, options, cancellationToken: cancellationToken);
+                returnModel = showEditor is null
+                    ? await dialogService.ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(viewModel, options, overLayHost: DialogHostId, cancellationToken: cancellationToken)
+                    : await showEditor(viewModel, cancellationToken);
             }
             finally
             {
@@ -267,7 +280,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         {
             var viewModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
             var options = dialogService.CreateOptions("Load failed", "Ok", null);
-            await dialogService.ShowCustomDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, cancellationToken: cancellationToken);
+            await dialogService.ShowCustomDialogAsync<ErrorView, ErrorViewModel>(viewModel, options, overLayHost: DialogHostId, cancellationToken: cancellationToken);
         }
 
         HasRows = Parameters.Count > 0;

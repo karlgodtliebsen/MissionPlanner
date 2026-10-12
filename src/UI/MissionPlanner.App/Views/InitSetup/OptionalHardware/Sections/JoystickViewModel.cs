@@ -31,13 +31,6 @@ public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoyst
     /// </summary>
     public string PlatformStatus => provider.IsSupported ? "Joystick adapter available." : "No joystick platform adapter is installed on this platform.";
 
-    /// <summary>Opens the shared Parameters Editor workspace.</summary>
-    [RelayCommand]
-    private Task OpenFullParametersAsync()
-    {
-        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     [RelayCommand]
     private async Task RefreshAsync()
     {

@@ -2,6 +2,7 @@
     x:TypeArguments="sections:JoystickViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -30,10 +31,7 @@
                             <Button Classes="ToolbarIconButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <controls:SetupInformationView Grid.Row="1"  Topic="Joystick" WorkflowError="{Binding ErrorMessage}" >
@@ -53,10 +51,7 @@
                             <Button Classes="ToolbarIconButton" Grid.Column="1" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" AutomationProperties.Name="Refresh">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
                                 <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                             </Button>

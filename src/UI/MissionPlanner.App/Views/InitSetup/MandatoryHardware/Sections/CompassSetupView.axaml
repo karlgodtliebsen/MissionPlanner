@@ -6,6 +6,7 @@
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa"
                                xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                x:DataType="sections:CompassSetupViewModel">
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" >
@@ -25,10 +26,7 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh values" AutomationProperties.Name="Refresh values" Command="{Binding RefreshInventoryCommand}">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-                            <Button Classes="ToolbarIconButton" Command="{Binding OpenFullParametersCommand}"
-                                    ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -48,11 +46,7 @@
                                     Command="{Binding RefreshInventoryCommand}">
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
-
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Open Parameters Editor" AutomationProperties.Name="Open Parameters Editor"
-                                    Command="{Binding OpenFullParametersCommand}">
-                                <mdi:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" />
-                            </Button>
+                            <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">

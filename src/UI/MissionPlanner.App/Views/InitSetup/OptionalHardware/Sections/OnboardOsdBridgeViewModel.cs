@@ -14,17 +14,6 @@ public sealed partial class OnboardOsdBridgeViewModel(INavigationService navigat
         SetMessages("Open Onboard OSD to load and configure the connected vehicle’s supported OSD settings.");
     }
 
-    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     /// <summary>Opens the existing OSD editor.</summary>
     [RelayCommand]
     private Task OpenOnboardOsdAsync()

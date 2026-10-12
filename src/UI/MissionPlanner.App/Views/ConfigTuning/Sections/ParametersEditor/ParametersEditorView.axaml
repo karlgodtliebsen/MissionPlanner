@@ -8,7 +8,6 @@
              d:DesignHeight="450"
              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
              xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
              xmlns:documents="clr-namespace:MissionPlanner.App.Presentation.Documents"
              xmlns:parametersEditor="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
@@ -47,7 +46,7 @@
                 VerticalAlignment="Stretch"
                 Classes="SectionCard">
 
-            <Grid RowDefinitions="200,400" RowSpacing="25" >
+            <Grid RowDefinitions="100,*,200" RowSpacing="25" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
                 </Grid.ColumnDefinitions>
@@ -67,6 +66,7 @@
                         </controls:InformationDocumentView.Document>
                     </controls:InformationDocumentView>
                 </ScrollViewer>
+               
                 <Border Grid.Row="1" CornerRadius="10">
                     <TextBox 
                               x:Name="ParameterTextEditor"
@@ -82,6 +82,21 @@
                               VerticalAlignment="Stretch"
                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
                               ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                </Border>
+                <Border Grid.Row="2" CornerRadius="10">
+                    <TextBox 
+                        AcceptsReturn="False"
+                        Focusable="False"
+                        Padding="10"
+                        IsReadOnly="True"
+                        FontSize="9"
+                        MaxHeight="200"
+                        VerticalContentAlignment="Top"
+                        Text="{Binding UsedParametersText}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch"
+                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                        ScrollViewer.VerticalScrollBarVisibility="Auto" />
                 </Border>
             </Grid>
         </Border>

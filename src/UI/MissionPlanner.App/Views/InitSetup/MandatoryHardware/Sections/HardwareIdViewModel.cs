@@ -16,17 +16,6 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 /// </summary>
 public sealed partial class HardwareIdViewModel : ViewModelBase
 {
-    /// <summary>Opens the shared Parameters Editor workspace when no operation is running.</summary>
-    [RelayCommand]
-    private async Task OpenFullParametersAsync()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-        await navigation.NavigateAsync(MissionPlannerRoutes.ConfigurationParametersEditor);
-    }
-
     private readonly INavigationService navigation;
 
     private readonly IActiveVehicleContext activeVehicle;
