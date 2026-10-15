@@ -1,18 +1,66 @@
 Mission Planner Next gen new tasks
 
+********************************************************
 
 
 
 New color scheme
+********************************************************
 
-Based on the very popular use of orange, like in this VLC style improvements, I would like to have a new Ursa
+Based on the very popular use of orange, like in this VLC style improvements, 
+https://www.youtube.com/watch?v=ERFeOgqk324&t=725s
+
+I would like to have a new Ursa theme/color using these nce color
+
+
+App.axaml contains this:
+
+        <semi:SemiTheme Locale="en-US" />
+        <semi:UrsaSemiTheme Locale="en-US" />
+
+
+GitHub references:
+
+https://github.com/irihitech/Ursa.Avalonia/tree/main/src/Ursa.Themes.Semi
+https://github.com/irihitech/Semi.Avalonia/tree/main/src/Semi.Avalonia/Themes
+
+
+An image showing the theme: Dark
+https://github.com/irihitech/Semi.Avalonia/blob/main/docs/Dark.png
+
+
+
+********************************************************
+
+
+Motor test
+
+********************************************************
+During motor test, when pressing 
 
 
 
 
+
+********************************************************
+
+
+Install Firmware
+I just flashed a new Foxeer F405 V2+ FC
+After flashing, when I disconnect the FC to get it started up on Ardupilot mode, Mission Planner Next Gen waits. It takes some time, but the Windows Device Settings eventually registers the FC as an Ardupilot device.
+However Mission Planner Next Gen continues waiting.
+I chose to cancel, and apart from some messages about Cancelled DFU Bootloader, I could connect to the FC, parameters got loaded etc.
+
+
+********************************************************
+
+
+********************************************************
 
 
 Extending Parameters Editor functionality:
+********************************************************
+
 
 When Importing a file with parameters, in order to apply it for another similar FC,
 
@@ -37,12 +85,14 @@ Often minor floating point differences are so small, caused by a decimal
 
 
 
-
-
+********************************************************
 
 Profiles
+Create load compare etc
+********************************************************
 
 
-
-Tuning and Profiles
+********************************************************
+Tuning and Vehicle Profiles
+********************************************************
 
