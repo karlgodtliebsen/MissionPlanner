@@ -72,7 +72,10 @@ Map support diagnostics are separate from exported Planner settings. They contai
 Saved settings raise one observable change event containing previous/current immutable
 snapshots and the affected restart-bound sections.
 
-* Theme changes preview immediately and persist through the same settings service.
+* Theme and color-scheme changes preview immediately and persist through the same settings service.
+  `Appearance.ColorSchemeId` selects `original` or `mission-orange` independently of `ThemeId`.
+  Missing fields in older settings retain Original. See [Mission Orange](MISSION_ORANGE.md)
+  for palette resources, high-contrast behavior, runtime switching and verification.
 * Connection defaults update the shared connection UI only while disconnected; saving
   preferences never interrupts an active vehicle connection.
 * Map default zoom is used by point-centering actions. Provider/style is selected when a

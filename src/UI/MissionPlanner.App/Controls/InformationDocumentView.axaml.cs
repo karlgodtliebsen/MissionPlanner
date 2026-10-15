@@ -43,8 +43,15 @@ public partial class InformationDocumentView : UserControl
     {
         InitializeComponent();
         ActualThemeVariantChanged += (_, _) => UpdateTheme();
-        AttachedToVisualTree += (_, _) => UpdateTheme();
+        AttachedToVisualTree += (_, _) =>
+        {
+            Views.Navigation.AvaloniaThemeCatalog.PaletteChanged += OnPaletteChanged;
+            UpdateTheme();
+        };
+        DetachedFromVisualTree += (_, _) => Views.Navigation.AvaloniaThemeCatalog.PaletteChanged -= OnPaletteChanged;
     }
+
+    private void OnPaletteChanged(object? sender, EventArgs args) => UpdateTheme();
 
     /// <inheritdoc />
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

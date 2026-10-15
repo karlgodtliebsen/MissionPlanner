@@ -1,0 +1,29 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Selection glyphs need contrast against both sampled orange backgrounds. -->
+    <Style Selector="CheckBox:not(:disabled) /template/ PathIcon#CheckGlyph">
+        <Setter Property="Foreground" Value="{DynamicResource MissionOnAccent}" />
+    </Style>
+    <Style Selector="CheckBox:not(:disabled):pressed /template/ PathIcon#CheckGlyph">
+        <Setter Property="Foreground" Value="{DynamicResource MissionOnAccentPressed}" />
+    </Style>
+    <Style Selector="RadioButton:not(:disabled) /template/ Ellipse#CheckGlyph">
+        <Setter Property="Fill" Value="{DynamicResource MissionOnAccent}" />
+        <Setter Property="Stroke" Value="{DynamicResource MissionOnAccent}" />
+    </Style>
+    <Style Selector="RadioButton:not(:disabled):pressed /template/ Ellipse#CheckGlyph">
+        <Setter Property="Fill" Value="{DynamicResource MissionOnAccentPressed}" />
+        <Setter Property="Stroke" Value="{DynamicResource MissionOnAccentPressed}" />
+    </Style>
+    <Style Selector="ToggleButton:checked:not(:disabled):not(.Secondary):not(.Tertiary):not(.Success):not(.Warning):not(.Danger):not(.Colorful) /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource MissionOnAccent}" />
+    </Style>
+    <Style Selector="ToggleButton:checked:pressed:not(:disabled):not(.Secondary):not(.Tertiary):not(.Success):not(.Warning):not(.Danger):not(.Colorful) /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{DynamicResource MissionOnAccentPressed}" />
+    </Style>
+    <!-- A selected item has a visible leading marker as well as the brown fill. -->
+    <Style Selector=":is(ListBoxItem):selected:not(:disabled)">
+        <Setter Property="BorderBrush" Value="{DynamicResource SemiColorFocusBorder}" />
+        <Setter Property="BorderThickness" Value="2,0,0,0" />
+    </Style>
+</Styles>

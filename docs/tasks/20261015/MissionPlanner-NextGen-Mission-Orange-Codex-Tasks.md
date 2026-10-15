@@ -6,7 +6,15 @@ Updated: 16 October 2026
 
 Add a selectable **Mission Orange** color scheme to the existing Avalonia Semi/Ursa UI, using the orange palette sampled from Karl's screenshot of the VLC design video. Retain the existing theme providers and shared control styling.
 
-This document consolidates all six tasks and supersedes the initial orange palette proposal. It is an implementation brief, not a record of completed changes or created GitHub issues.
+This document consolidates all six tasks and supersedes the initial orange palette proposal. The implementation and verification record is linked below; no GitHub issues were created.
+
+## Implementation status — 16 October 2026
+
+All six implementation tasks are delivered. See [Mission Orange implementation and source audit](../../MISSION_ORANGE.md)
+for installed versions, resource chains, palette/contrast decisions, persistence, and before/after screenshots.
+The checklist records implementation and targeted headless verification, not a certification of every platform
+or third-party control. Native OS appearance-change notifications and native dialogs remain manual platform
+smoke checks; operational colors and existing provider status styling are deliberately preserved.
 
 ## Evidence and scope
 
@@ -124,10 +132,10 @@ Warning resources already use orange in Semi. Keep them semantically independent
 
 ### Acceptance criteria
 
-- [ ] Installed versions and relevant existing files are documented.
-- [ ] The override demonstrably reaches both representative controls.
-- [ ] Resource lookup and static-alias limitations are understood.
-- [ ] The implementation extends existing infrastructure without introducing a second competing theme service.
+- [x] Installed versions and relevant existing files are documented.
+- [x] The override demonstrably reaches both representative controls.
+- [x] Resource lookup and static-alias limitations are understood.
+- [x] The implementation extends existing infrastructure without introducing a second competing theme service.
 
 ## Task 2 — Implement the Mission Orange palette
 
@@ -149,11 +157,11 @@ Warning resources already use orange in Semi. Keep them semantically independent
 
 ### Acceptance criteria
 
-- [ ] Dark-mode primary colors match the sampled palette.
-- [ ] Light mode uses a separately validated palette.
-- [ ] Resource types match their consumers and no resources are unresolved.
-- [ ] Both Semi and Ursa controls receive the intended brushes.
-- [ ] Semantic status colors and existing high-contrast behavior are preserved.
+- [x] Dark-mode primary colors match the sampled palette.
+- [x] Light mode uses a separately validated palette.
+- [x] Resource types match their consumers and no resources are unresolved.
+- [x] Both Semi and Ursa controls receive the intended brushes.
+- [x] Semantic status colors and existing high-contrast behavior are preserved.
 
 ## Task 3 — Correct foregrounds and interaction states
 
@@ -175,11 +183,11 @@ Warning resources already use orange in Semi. Keep them semantically independent
 
 ### Acceptance criteria
 
-- [ ] Normal text meets the 4.5:1 target and meaningful focus/control indicators meet 3:1.
-- [ ] Solid primary foregrounds follow the state-specific contrast requirements.
-- [ ] Selection, focus and disabled states are distinguishable.
-- [ ] Warning and danger controls retain their independent appearance.
-- [ ] Screenshots show representative controls and states in dark and light modes.
+- [x] Normal text meets the 4.5:1 target and meaningful focus/control indicators meet 3:1.
+- [x] Solid primary foregrounds follow the state-specific contrast requirements.
+- [x] Selection, focus and disabled states are distinguishable.
+- [x] Warning and danger controls retain their independent appearance.
+- [x] Screenshots show representative controls and states in dark and light modes.
 
 ## Task 4 — Apply the scheme to MissionPlanner's shared UI
 
@@ -199,11 +207,11 @@ Warning resources already use orange in Semi. Keep them semantically independent
 
 ### Acceptance criteria
 
-- [ ] Active navigation and ordinary primary actions use Mission Orange consistently.
-- [ ] Shared topbar controls retain a consistent layout and interaction model.
-- [ ] Operational and safety-related colors retain their intended meanings.
-- [ ] Dialogs, popups and custom-rendered elements are included in the review.
-- [ ] No unrelated layout or behavioral changes are introduced.
+- [x] Active navigation and ordinary primary actions use Mission Orange consistently.
+- [x] Shared topbar controls retain a consistent layout and interaction model.
+- [x] Operational and safety-related colors retain their intended meanings.
+- [x] Dialogs, popups and custom-rendered elements are included in the review.
+- [x] No unrelated layout or behavioral changes are introduced.
 
 ## Task 5 — Add appearance selection and persistence
 
@@ -224,11 +232,11 @@ Warning resources already use orange in Semi. Keep them semantically independent
 
 ### Acceptance criteria
 
-- [ ] Scheme and appearance mode are independently selectable.
-- [ ] Preferences survive restart and old settings migrate safely.
-- [ ] Runtime switching updates the entire UI without reopening it.
-- [ ] Original restores the previous palette without leftover orange overrides.
-- [ ] System-mode transitions preserve the scheme choice.
+- [x] Scheme and appearance mode are independently selectable.
+- [x] Preferences survive restart and old settings migrate safely.
+- [x] Runtime switching updates the entire UI without reopening it.
+- [x] Original restores the previous palette without leftover orange overrides.
+- [x] System-mode transitions preserve the scheme choice.
 
 ## Task 6 — Verify and document the finished theme
 
@@ -249,11 +257,11 @@ Warning resources already use orange in Semi. Keep them semantically independent
 
 ### Acceptance criteria
 
-- [ ] Build and relevant checks pass.
-- [ ] No missing resources or stale colors after switching remain.
-- [ ] Primary controls are readable in their interaction states.
-- [ ] Status and high-contrast behavior remain intact.
-- [ ] Documentation and screenshots make the final implementation reviewable.
+- [x] Build and relevant checks pass.
+- [x] No missing resources or stale colors after switching remain.
+- [x] Primary controls are readable in their interaction states.
+- [x] Status and high-contrast behavior remain intact.
+- [x] Documentation and screenshots make the final implementation reviewable.
 
 ## Delivery order
 

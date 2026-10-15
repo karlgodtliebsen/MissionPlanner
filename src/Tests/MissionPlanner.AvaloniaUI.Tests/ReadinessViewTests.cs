@@ -29,8 +29,10 @@ public sealed class ReadinessViewTests
         .UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 
     /// <summary>All outcome types wrap without object strings, retain buttons and collapse successful checks.</summary>
-    [Fact]
-    public async Task MixedResultsRenderAtNarrowAndWideWidths()
+    [Theory]
+    [InlineData("original")]
+    [InlineData("mission-orange")]
+    public async Task MixedResultsRenderAtNarrowAndWideWidths(string colorScheme)
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(ReadinessViewTests));
         try
@@ -55,6 +57,8 @@ public sealed class ReadinessViewTests
                 var view = new ReadinessView { DataContext = model };
                 var window = new Window { Content = view, Width = 700, Height = 950 };
                 window.Show();
+                MissionPlanner.App.Views.Navigation.AvaloniaThemeCatalog.ApplyColorScheme(
+                    MissionPlanner.App.Views.Navigation.AvaloniaThemeCatalog.ResolveColorScheme(colorScheme));
                 foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
                 {
                     Application.Current!.RequestedThemeVariant = theme;
@@ -76,8 +80,8 @@ public sealed class ReadinessViewTests
                         {
                             Directory.CreateDirectory(directory);
                             using var bitmap = new RenderTargetBitmap(new PixelSize(width, 950));
-                            bitmap.Render(view);
-                            bitmap.Save(Path.Combine(directory, $"readiness-{theme}-{width}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+                            bitmap.Render(window);
+                            bitmap.Save(Path.Combine(directory, $"readiness-{colorScheme}-{theme}-{width}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
                         }
                     }
                 }

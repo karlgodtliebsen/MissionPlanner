@@ -21,9 +21,58 @@ public sealed class ThemeItem(string id, string name, ThemeVariant theme)
 /// <summary>Maps persisted Planner theme identifiers to Avalonia and Semi theme variants.</summary>
 public static class AvaloniaThemeCatalog
 {
+    private static Application? paletteApplication;
+    private static MissionOrangePalette? palette;
+
+    /// <summary>Gets the available color schemes, independent of appearance mode.</summary>
+    public static IReadOnlyList<ColorSchemeItem> ColorSchemes { get; } =
+    [
+        new("original", "Original"),
+        new("mission-orange", "Mission Orange")
+    ];
+
+    /// <summary>Gets the current color scheme.</summary>
+    public static ColorSchemeItem ColorScheme { get; private set; } = ColorSchemes[0];
+
+    /// <summary>Raised when palette resources have changed, including appearance transitions.</summary>
+    public static event EventHandler? PaletteChanged;
+
+    /// <summary>Resolves a saved scheme, retaining Original for missing or unknown values.</summary>
+    public static ColorSchemeItem ResolveColorScheme(string? id) =>
+        ColorSchemes.FirstOrDefault(item => item.Id == id) ?? ColorSchemes[0];
+
+    /// <summary>Applies the independently selected color scheme to all application resources.</summary>
+    public static void ApplyColorScheme(ColorSchemeItem scheme)
+    {
+        ArgumentNullException.ThrowIfNull(scheme);
+        ColorScheme = ResolveColorScheme(scheme.Id);
+        if (Application.Current is { } application)
+        {
+            if (!ReferenceEquals(application, paletteApplication))
+            {
+                if (paletteApplication is not null)
+                {
+                    paletteApplication.ActualThemeVariantChanged -= OnActualThemeChanged;
+                }
+                paletteApplication = application;
+                palette = new MissionOrangePalette(application);
+                application.ActualThemeVariantChanged += OnActualThemeChanged;
+            }
+            RefreshPalette();
+        }
+    }
+
+    private static void OnActualThemeChanged(object? sender, EventArgs args) => RefreshPalette();
+
+    private static void RefreshPalette()
+    {
+        palette?.Apply(ColorScheme.Id == "mission-orange");
+        PaletteChanged?.Invoke(null, EventArgs.Empty);
+    }
+
     private static readonly IReadOnlyList<ThemeItem> items =
     [
-        new("system", "Default", ThemeVariant.Default),
+        new("system", "System", ThemeVariant.Default),
         new("light", "Light", ThemeVariant.Light),
         new("dark", "Dark", ThemeVariant.Dark),
         new("aquatic", "Aquatic", SemiTheme.Aquatic),

@@ -28,6 +28,10 @@
                         <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
                             <ComboBox HorizontalAlignment="Right" HorizontalContentAlignment="Right"  ItemsSource="{Binding UnitSystems}" SelectedItem="{Binding SelectedUnitSystem}" u:FormItem.Label="Unit system" />
                             <ComboBox HorizontalAlignment="Right" HorizontalContentAlignment="Right"  ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" DisplayMemberBinding="{Binding Name}" u:FormItem.Label="Theme (live preview)" />
+                            <ComboBox HorizontalAlignment="Right" HorizontalContentAlignment="Right"
+                                      ItemsSource="{Binding ColorSchemes}" SelectedItem="{Binding SelectedColorScheme}"
+                                      DisplayMemberBinding="{Binding Name}" u:FormItem.Label="Color scheme (live preview)"
+                                      AutomationProperties.Name="Color scheme" />
                             <ComboBox HorizontalAlignment="Right" HorizontalContentAlignment="Right"  ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" u:FormItem.Label="Layout" />
                         </u:Form>
                     </StackPanel>

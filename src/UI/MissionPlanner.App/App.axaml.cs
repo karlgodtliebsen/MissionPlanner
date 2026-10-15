@@ -5,6 +5,8 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.Main;
+using MissionPlanner.App.Views.Navigation;
+using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.App;
 
@@ -34,6 +36,9 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        var appearance = ServiceProvider?.GetService<IPlannerSettingsService>()?.Current.Appearance;
+        AvaloniaThemeCatalog.Apply(AvaloniaThemeCatalog.Resolve(appearance?.ThemeId));
+        AvaloniaThemeCatalog.ApplyColorScheme(AvaloniaThemeCatalog.ResolveColorScheme(appearance?.ColorSchemeId));
     }
 
     /// <summary>

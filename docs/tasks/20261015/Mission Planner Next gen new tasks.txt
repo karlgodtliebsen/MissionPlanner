@@ -46,6 +46,20 @@ During motor test, when pressing
 
 
 Install Firmware
+
+1:
+I just plugged a new FC using USB. It registers as  STMicroelectronics Virtual COM Port (COM4)
+I opened the Information page, 
+The I disconnected pressed boot button and connected.
+The Devices registers as STK32 Bootloader, but Mission Planner Next Gen does not refresh/auto detect
+
+
+It think the simplest solution is to add a Refresh button to the Information and Configuration tabs.
+
+
+2:
+
+
 I just flashed a new Foxeer F405 V2+ FC
 After flashing, when I disconnect the FC to get it started up on Ardupilot mode, Mission Planner Next Gen waits. It takes some time, but the Windows Device Settings eventually registers the FC as an Ardupilot device.
 However Mission Planner Next Gen continues waiting.

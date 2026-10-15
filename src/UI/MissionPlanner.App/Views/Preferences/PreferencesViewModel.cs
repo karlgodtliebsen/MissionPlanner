@@ -86,6 +86,21 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     /// <summary>Gets the themes supported by Avalonia and Semi.</summary>
     public ObservableCollection<ThemeItem> Themes { get; } = [.. AvaloniaThemeCatalog.Items];
 
+    /// <summary>Gets color schemes that can be combined with light, dark, or system mode.</summary>
+    public IReadOnlyList<ColorSchemeItem> ColorSchemes => AvaloniaThemeCatalog.ColorSchemes;
+
+    /// <summary>Gets or sets the color scheme being previewed.</summary>
+    [ObservableProperty]
+    public partial ColorSchemeItem? SelectedColorScheme { get; set; }
+
+    partial void OnSelectedColorSchemeChanged(ColorSchemeItem? value)
+    {
+        if (!loading && !changingTheme && value is not null)
+        {
+            AvaloniaThemeCatalog.ApplyColorScheme(value);
+        }
+    }
+
     /// <summary>Gets or sets the live application theme.</summary>
     [ObservableProperty]
     public partial ThemeItem? SelectedTheme
@@ -697,6 +712,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
 
         Debug.Print("Activating PreferencesViewModel");
         AvaloniaThemeCatalog.ThemeChanged += OnThemeChanged;
+        AvaloniaThemeCatalog.PaletteChanged += OnPaletteChanged;
 
         var cancellation = new CancellationTokenSource();
         activationCancellation = cancellation;
@@ -768,6 +784,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         Debug.Print("Deactivating PreferencesViewModel");
         active = false;
         AvaloniaThemeCatalog.ThemeChanged -= OnThemeChanged;
+        AvaloniaThemeCatalog.PaletteChanged -= OnPaletteChanged;
         Cancel(Interlocked.Exchange(ref activationCancellation, null));
         Cancel(Interlocked.Exchange(ref operationCancellation, null));
     }
@@ -1131,6 +1148,8 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         {
             IsTutorialVisibleAtStartup = settings.Appearance.IsTutorialVisibleAtStartup;
             SetSelectedTheme(AvaloniaThemeCatalog.Resolve(settings.Appearance.ThemeId));
+            SelectedColorScheme = AvaloniaThemeCatalog.ResolveColorScheme(settings.Appearance.ColorSchemeId);
+            AvaloniaThemeCatalog.ApplyColorScheme(SelectedColorScheme);
 
             SelectedUnitSystem = settings.Units.System;
             DefaultMapZoom = settings.Map.DefaultZoom;
@@ -1206,7 +1225,12 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings { DefaultZoom = DefaultMapZoom, SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard", HttpCacheEnabled = MapHttpCacheEnabled, HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L },
             Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
-            Appearance = new PlannerAppearanceSettings { ThemeId = SelectedTheme?.Id ?? PlannerAppearanceSettings.DefaultThemeId, IsTutorialVisibleAtStartup = IsTutorialVisibleAtStartup },
+            Appearance = new PlannerAppearanceSettings
+            {
+                ThemeId = SelectedTheme?.Id ?? PlannerAppearanceSettings.DefaultThemeId,
+                ColorSchemeId = SelectedColorScheme?.Id ?? "original",
+                IsTutorialVisibleAtStartup = IsTutorialVisibleAtStartup
+            },
             Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays, LogDirectory = LogDirectory },
             Connection = new PlannerConnectionSettings { Channel = ConnectionChannel, Host = ConnectionHost, Port = ConnectionPort, BaudRate = ConnectionBaudRate },
             ParameterCache = new PlannerParameterCacheSettings { Policy = SelectedParameterCachePolicy, MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes },
@@ -1271,6 +1295,16 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         {
             changingTheme = true;
             SelectedTheme = Themes.First(item => item.Id == theme.Id);
+            changingTheme = false;
+        });
+    }
+
+    private void OnPaletteChanged(object? sender, EventArgs args)
+    {
+        Dispatcher.Dispatch(() =>
+        {
+            changingTheme = true;
+            SelectedColorScheme = AvaloniaThemeCatalog.ColorScheme;
             changingTheme = false;
         });
     }

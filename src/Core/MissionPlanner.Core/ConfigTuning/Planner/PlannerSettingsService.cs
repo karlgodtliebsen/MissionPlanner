@@ -134,6 +134,13 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         ValidateRange(settings.Telemetry.DisplayRateHz, 1, 30, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.DisplayRateHz), errors);
         ValidateRange(settings.Telemetry.ChartHistorySeconds, 10, 3600, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.ChartHistorySeconds), errors);
         ValidateThemeId(settings.Appearance.ThemeId, errors);
+        if (settings.Appearance.ColorSchemeId is not ("original" or "mission-orange"))
+        {
+            errors.Add(new PlannerSettingsValidationError(
+                PlannerSettingsSection.Appearance,
+                nameof(PlannerAppearanceSettings.ColorSchemeId),
+                "Color scheme must be original or mission-orange."));
+        }
         ValidateEnum(settings.Logging.Level, PlannerSettingsSection.Logging, nameof(settings.Logging.Level), errors);
         ValidateRange(settings.Logging.RetentionDays, 1, 90, PlannerSettingsSection.Logging, nameof(settings.Logging.RetentionDays), errors);
 

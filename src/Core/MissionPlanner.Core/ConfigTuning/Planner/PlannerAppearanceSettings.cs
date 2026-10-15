@@ -9,6 +9,9 @@ public sealed record PlannerAppearanceSettings
     /// <summary>Gets the stable persisted theme or selection-policy identifier.</summary>
     public string ThemeId { get; init; } = DefaultThemeId;
 
+    /// <summary>Gets the independent color scheme; omitted legacy values retain Original.</summary>
+    public string ColorSchemeId { get; init; } = "original";
+
     /// <summary>Gets or sets whether the legacy MAUI flyout is shown at startup.</summary>
     public bool IsFlyoutVisibleAtStartup { get; set; }
 
