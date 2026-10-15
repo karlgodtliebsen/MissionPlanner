@@ -20,9 +20,6 @@ namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 /// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
 public partial class ParametersEditorTabViewModel : ParametersViewModel
 {
-    /// <summary>Identifies the owning window's overlay host; null uses the main application host.</summary>
-    public string? DialogHostId { get; set; }
-
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ITextClipboardService clipboard;
     private readonly IDialogService dialogService;
@@ -191,6 +188,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         try
         {
             var viewModel = domainFactory.Create<ParametersEditorViewModel>();
+            viewModel.DialogHostId = DialogHostId;
             var editorSession = EditSession;
             using var editorLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             void RefreshEditorParameters()
@@ -458,11 +456,12 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
                 NotificationManager?.Show(ErrorMessage ?? "");
                 return;
             }
-            var accepted = await confirmation.ConfirmAsync(
-                "Review parameter writes ",
-                $"{preview}{skippedPreview}{Environment.NewLine}{Environment.NewLine}{rebootCount} change(s) require reboot.",
-                $" {plan.Entries.Count} parameters",
-                connectionCancellation.Token);
+            var message = $"{preview}{skippedPreview}{Environment.NewLine}{Environment.NewLine}{rebootCount} change(s) require reboot.";
+            var accepted = DialogHostId is null
+                ? await confirmation.ConfirmAsync("Review parameter writes ", message, $" {plan.Entries.Count} parameters", connectionCancellation.Token)
+                : await dialogService.ConfirmAsync(
+                    dialogService.CreateOptions("Review parameter writes ", $" {plan.Entries.Count} parameters", null),
+                    message, connectionCancellation.Token, overLayHost: DialogHostId);
             if (!accepted)
             {
                 Logger.LogInformation("Parameter write plan was cancelled for {VehicleId}.", session.VehicleId);
@@ -561,7 +560,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     private async Task<bool> ShowMessageAsync(string title, string message, CancellationToken cancellationToken)
     {
         var options = dialogService.CreateOptions(title, "Ok", null);
-        var result = await dialogService.ConfirmAsync(options, message, cancellationToken);
+        var result = await dialogService.ConfirmAsync(options, message, cancellationToken, overLayHost: DialogHostId);
         return result;
     }
 

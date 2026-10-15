@@ -21,6 +21,9 @@ namespace MissionPlanner.App.Models;
 /// </summary>
 public partial class ParametersViewModel : VehicleConnectionViewModel
 {
+    /// <summary>Identifies the owning window's overlay host; null uses the main application host.</summary>
+    public string? DialogHostId { get; set; }
+
     private const string DefaultStatusMessage = "Connect a vehicle, then refresh parameters.";
     private readonly IVehicleConnectionSession connectionSession;
     private readonly IVehicleParameterRegistry parameterRegistry;
@@ -933,7 +936,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             backgroundProgressDialog = background;
             try
             {
-                var options = new DialogOptions { Title = "Loading parameters" };
+                var options = new DialogOptions { Title = "Loading parameters", HostId = DialogHostId };
                 var dialog = await dialogService.DisplayProgressCancellableAsync(
                     () => ProgressMessage ?? string.Empty, options, cancellationToken);
                 if (generation != progressDialogGeneration || disposed || !activated || cancellationToken.IsCancellationRequested)

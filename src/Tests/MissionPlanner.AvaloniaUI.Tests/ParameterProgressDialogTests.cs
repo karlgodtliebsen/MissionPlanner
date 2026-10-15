@@ -35,6 +35,9 @@ public sealed class ParameterProgressDialogTests
         fixture.SetCompleteCache();
         await fixture.Model.ActivateAsync();
         fixture.ConfigureWrite(false);
+        fixture.Model.DialogHostId = detached ? "quick-editor-window" : null;
+        fixture.Dialogs.ConfirmAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string>(),
+            Arg.Any<CancellationToken>(), "quick-editor-window").Returns(accepted);
         fixture.Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(accepted);
         fixture.Session.TrySetPending("TEST_PARAM", 2, out Arg.Any<string?>()).Returns(true);
         var editor = new ParametersEditorViewModel(fixture.Dialogs) { Text = "//Pavo 20 Pro\nTEST_PARAM = 2 // test\nUNKNOWN = 3\nTEST_PARAM = invalid" };
@@ -53,6 +56,7 @@ public sealed class ParameterProgressDialogTests
             await fixture.Model.OpenQuickEditorAsync(async (presentedEditor, _) =>
             {
                 Assert.Same(editor, presentedEditor);
+                Assert.Equal("quick-editor-window", editor.DialogHostId);
                 Assert.True(editor.ApplyModifiedCommand.CanExecute(null));
                 await editor.ApplyModifiedCommand.ExecuteAsync(null);
                 return null;
@@ -70,6 +74,11 @@ public sealed class ParameterProgressDialogTests
         Assert.Contains("unknown parameter: UNKNOWN", editor.FeedbackReport);
         Assert.Contains("invalid numeric value", editor.FeedbackReport);
         Assert.Contains("skipped 2 input line(s)", editor.FeedbackReport);
+        if (detached)
+        {
+            await fixture.Dialogs.Received(1).ConfirmAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(),
+                Arg.Any<string>(), Arg.Any<CancellationToken>(), "quick-editor-window");
+        }
     }
 
     [Theory]
@@ -234,17 +243,21 @@ public sealed class ParameterProgressDialogTests
     }
 
     /// <summary>Opening a page with a completed cache loads it once under the same dialog.</summary>
-    [Fact]
-    public async Task CompletedCacheIsProjectedOnceOnActivation()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("quick-editor-window")]
+    public async Task CompletedCacheIsProjectedOnceOnActivation(string? hostId)
     {
         using var fixture = new Fixture();
         fixture.SetCompleteCache();
         fixture.SetStatus(ParameterLoadState.Completed, "Downloaded");
+        fixture.Model.DialogHostId = hostId;
 
         await fixture.Model.ActivateAsync();
 
         Assert.Single(fixture.Model.Parameters);
         Assert.Single(fixture.Handles);
+        Assert.Equal(hostId, Assert.Single(fixture.Options).HostId);
         await fixture.Session.Received(1).LoadAsync(null, Arg.Any<CancellationToken>());
         fixture.Handles[0].Received(1).Dispose();
         Assert.False(fixture.Model.IsShowingProgressDialog);
@@ -326,14 +339,18 @@ public sealed class ParameterProgressDialogTests
 
     /// <summary>Only confirmed reboot-required changes reconnect, retaining the reboot indication.</summary>
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task ApplyReconnectsOnlyWhenReportRequiresReboot(bool rebootRequired)
+    [InlineData(true, null)]
+    [InlineData(false, null)]
+    [InlineData(true, "quick-editor-window")]
+    public async Task ApplyReconnectsOnlyWhenReportRequiresReboot(bool rebootRequired, string? hostId)
     {
         using var fixture = new Fixture();
         fixture.SetCompleteCache();
         await fixture.Model.ActivateAsync();
         fixture.ConfigureWrite(rebootRequired);
+        fixture.Model.DialogHostId = hostId;
+        fixture.Dialogs.ConfirmAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string>(),
+            Arg.Any<CancellationToken>(), hostId).Returns(true);
         var target = new MissionPlanner.Core.Vehicles.VehicleReconnectTarget(Guid.NewGuid(), "Serial", "COM11", 0, 57600);
         fixture.Connections.CaptureReconnectTarget().Returns(target);
         fixture.Connections.ReconnectAsync(target, Arg.Any<IProgress<string>>(), Arg.Any<CancellationToken>())
@@ -352,6 +369,7 @@ public sealed class ParameterProgressDialogTests
         {
             fixture.Handles[^1].Received(1).Dispose();
             Assert.Contains("Reconnected", fixture.Model.StatusMessage);
+            Assert.Equal(hostId, fixture.Options[^1].HostId);
         }
     }
 

@@ -10,6 +10,9 @@ public sealed record DialogOptions
 
     public string Title { get; init; } = string.Empty;
 
+    /// <summary>The owning window's overlay host, or null for the main window.</summary>
+    public string? HostId { get; init; }
+
     public double? Width { get; init; } = 460;
 
     public double? Height { get; init; } = 300;

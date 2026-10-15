@@ -13,6 +13,9 @@ namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 /// <param name="dialogService"></param>
 public partial class ParametersEditorViewModel(IDialogService dialogService) : ViewModelBase
 {
+    /// <summary>The owning window's overlay host for apply errors.</summary>
+    public string? DialogHostId { get; set; }
+
     private Func<CancellationToken, Task<string>>? applyModified;
     private readonly Dictionary<string, KeyValuePair<string, double>> currentParameters = new(StringComparer.OrdinalIgnoreCase);
 
@@ -155,7 +158,7 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
         {
             SetMessages(errorMessage: exception.Message);
             var options = dialogService.CreateOptions("Parameters could not be applied", "OK", null);
-            await dialogService.ConfirmAsync(options, exception.Message, cancellationToken);
+            await dialogService.ConfirmAsync(options, exception.Message, cancellationToken, overLayHost: DialogHostId);
         }
         finally
         {

@@ -14,10 +14,11 @@
              x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorView"
              x:DataType="parametersEditor:ParametersEditorViewModel"
              >
+    <ScrollViewer x:Name="EditorScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <Grid
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
-        RowDefinitions="Auto,*"
+        RowDefinitions="Auto,Auto"
         RowSpacing="10"
         Margin="25">
 
@@ -25,13 +26,13 @@
                    Classes="H2" Text="Edit Parameters Values"
                    HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
 
-        <Border Grid.Row="1" HorizontalAlignment="Center"
+        <Border Grid.Row="1" HorizontalAlignment="Stretch" MaxWidth="900"
                 VerticalAlignment="Stretch"
                 Classes="SectionCard">
 
-            <Grid RowDefinitions="Auto,*" RowSpacing="25" >
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="25" >
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <controls:InformationDocumentView
                     HorizontalAlignment="Stretch"
@@ -49,7 +50,7 @@
 
                 <Border Grid.Row="1" CornerRadius="10" Padding="25">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20" RowSpacing="25"
-                          RowDefinitions="Auto,*,Auto"
+                          RowDefinitions="Auto,Auto,Auto"
                           >
                         <Grid Grid.Row="0" Grid.Column="0" 
                               ColumnSpacing="10"
@@ -113,7 +114,7 @@
 
                         <Grid Grid.Row="2" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
                             <TextBlock Text="Current vehicle values:" Classes="H4" />
-                            <TextBox  Grid.Row="1" Padding="10" FontSize="11"
+                            <TextBox x:Name="CurrentParameterValues" Grid.Row="1" Padding="10" FontSize="11"
                                       MaxLines="2000"
                                       MinHeight="200"
                                       MaxHeight="600"
@@ -132,4 +133,5 @@
             </Grid>
         </Border>
     </Grid>
+    </ScrollViewer>
 </UserControl>

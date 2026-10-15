@@ -26,7 +26,8 @@ public interface IDialogService
     /// <param name="message">The message to display in the confirmation dialog.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains true if the user confirmed; otherwise, false.</returns>
-    Task<bool> ConfirmAsync(OverlayDialogOptions options, string message, CancellationToken cancellationToken = default);
+    /// <param name="overLayHost">The owning window's overlay host, or null for the default host.</param>
+    Task<bool> ConfirmAsync(OverlayDialogOptions options, string message, CancellationToken cancellationToken = default, string? overLayHost = null);
 
     /// <summary>
     /// Displays a choice dialog with the specified options and choices.

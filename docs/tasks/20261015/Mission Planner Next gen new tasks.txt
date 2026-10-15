@@ -1,0 +1,48 @@
+Mission Planner Next gen new tasks
+
+
+
+
+New color scheme
+
+Based on the very popular use of orange, like in this VLC style improvements, I would like to have a new Ursa
+
+
+
+
+
+
+Extending Parameters Editor functionality:
+
+When Importing a file with parameters, in order to apply it for another similar FC,
+
+
+The Parameters View, must be split into 2-3 tabs, where quick editor is used more 
+
+
+Quick Editor must also be able to show the Compare Parameters dialogue.
+
+
+
+
+Quick Editor layout must be improved.
+
+
+
+
+In the Compare Parameters Dialog, does it make sense to have staging and safe differences
+
+
+Often minor floating point differences are so small, caused by a decimal 
+
+
+
+
+
+
+Profiles
+
+
+
+Tuning and Profiles
+

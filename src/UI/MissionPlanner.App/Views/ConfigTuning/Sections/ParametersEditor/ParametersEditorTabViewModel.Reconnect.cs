@@ -53,6 +53,7 @@ public partial class ParametersEditorTabViewModel
                 new DialogOptions
                 {
                     Title = "Reconnecting after parameter changes",
+                    HostId = DialogHostId,
                     RequestCancellation = () => lifetime.Cancel()
                 }, lifetime.Token);
             await Task.Yield();

@@ -150,12 +150,12 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
 
 
     /// <inheritdoc/>
-    public async Task<bool> ConfirmAsync(OverlayDialogOptions options, string message, CancellationToken cancellationToken = default)
+    public async Task<bool> ConfirmAsync(OverlayDialogOptions options, string message, CancellationToken cancellationToken = default, string? overLayHost = null)
     {
         return await dispatcher.DispatchAsync(async () =>
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var result = await ShowCustomDialogAsync<ConfirmDialogView, ConfirmDialogViewModel>(new ConfirmDialogViewModel(message), options, cancellationToken: cancellationToken);
+            var result = await ShowCustomDialogAsync<ConfirmDialogView, ConfirmDialogViewModel>(new ConfirmDialogViewModel(message), options, overLayHost, cancellationToken);
             return result.Confirmation;
         });
     }
@@ -291,14 +291,14 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
                 CanLightDismiss = false,
                 CanDragMove = false,
                 CanResize = false,
-                TopLevelHashCode = windowProvider.ActiveWindow?.GetHashCode()
+                TopLevelHashCode = options.HostId is null ? windowProvider.ActiveWindow?.GetHashCode() : null
             };
 
             Task<ProgressDialogViewModel> completion;
             try
             {
                 completion = ShowCustomDialogAsync<ProgressDialogView, ProgressDialogViewModel>(
-                    model, overlayOptions, cancellationToken: lifetime.Token);
+                    model, overlayOptions, overLayHost: options.HostId, cancellationToken: lifetime.Token);
                 if (completion.IsCompleted)
                 {
                     // Report immediate presentation failures to the operation's caller.
