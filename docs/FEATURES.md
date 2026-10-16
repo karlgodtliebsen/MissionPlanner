@@ -1094,8 +1094,9 @@ Compass Setup separates configured, detected, required, and healthy states, incl
 empty sensor slots, raw IDs, decoded bus/address/type, external flags, and EKF yaw
 source evidence. See [compass diagnostics](COMPASS_DIAGNOSTICS.md).
 
-Motor Test includes a frame-aware guided start-threshold assistant with props-off
-acknowledgement, one-second pulses, per-motor reliable-rotation observations, and
+Motor Test uses a props-off acknowledgement checkbox for manual tests and guided
+pulses, replacing repeated warning dialogs. Its frame-aware start-threshold
+assistant includes one-second pulses, per-motor reliable-rotation observations, and
 reviewed 0.17/0.20-style recommendations. See [motor thresholds](MOTOR_START_THRESHOLDS.md).
 
 Motor Test includes a read-only [motor output diagnostic summary](MOTOR_OUTPUT_DIAGNOSTICS.md) joining frame, output, protocol and observed-rotation evidence.

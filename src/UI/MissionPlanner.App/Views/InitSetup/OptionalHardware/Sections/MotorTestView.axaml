@@ -34,6 +34,14 @@
                     </Button>
                 </StackPanel>
                 <TextBlock Text="Remove ALL propellers. Motors will spin." Classes="Warning H4"    HorizontalAlignment="Center" />
+                <CheckBox x:Name="MotorTestSafetyCheckBox"
+                          IsChecked="{Binding IsMotorTestSafetyAcknowledged, Mode=TwoWay}"
+                          HorizontalAlignment="Center"
+                          ToolTip.Tip="Enable motor tests after removing all propellers and clearing the area"
+                          AutomationProperties.Name="I confirm ALL propellers are removed and the area is clear">
+                    <TextBlock Text="I confirm ALL propellers are removed and the area is clear."
+                               TextWrapping="Wrap" />
+                </CheckBox>
             </StackPanel>
         </u:Banner>
         <TabControl Grid.Row="1">

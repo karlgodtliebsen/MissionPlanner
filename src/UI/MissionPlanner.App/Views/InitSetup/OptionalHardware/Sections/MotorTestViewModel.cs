@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -78,6 +78,15 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     [ObservableProperty]
     public partial int DurationSeconds { get; set; } = 2;
 
+    /// <summary>Gets or sets the props-removed acknowledgement for this visit and vehicle connection.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(TestMotorCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TestSequenceCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TestAllCommand))]
+    [NotifyCanExecuteChangedFor(nameof(StartThresholdCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PulseThresholdCommand))]
+    public partial bool IsMotorTestSafetyAcknowledged { get; set; }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SpinArmSum))]
     [NotifyPropertyChangedFor(nameof(SpinMinSum))]
@@ -141,6 +150,8 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     [NotifyCanExecuteChangedFor(nameof(TestSequenceCommand))]
     [NotifyCanExecuteChangedFor(nameof(TestAllCommand))]
     [NotifyCanExecuteChangedFor(nameof(StopCommand))]
+    [NotifyCanExecuteChangedFor(nameof(StartThresholdCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PulseThresholdCommand))]
     public partial bool IsReady
     {
         get; set;
@@ -214,28 +225,34 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
     /// <summary>Gets whether an assistant pulse or write is executing.</summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(StartThresholdCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PulseThresholdCommand))]
     public partial bool ThresholdBusy
     {
         get; private set;
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanStartThreshold))]
     private async Task StartThresholdAsync(CancellationToken cancellationToken)
     {
-        if (thresholdAssistant is null || ThresholdBusy || !await ConfirmAsync(cancellationToken))
+        if (!CanStartThreshold())
         {
             return;
         }
         await RunThresholdAsync(() =>
         {
-            thresholdAssistant.Start(true);
+            thresholdAssistant!.Start(IsMotorTestSafetyAcknowledged);
             return Task.CompletedTask;
         });
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanPulseThreshold))]
     private Task PulseThresholdAsync(CancellationToken cancellationToken)
     {
+        if (!CanPulseThreshold())
+        {
+            return Task.CompletedTask;
+        }
         return RunThresholdAsync(() => thresholdAssistant!.PulseAsync(cancellationToken));
     }
 
@@ -344,6 +361,8 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         TestMotorCommand.NotifyCanExecuteChanged();
         TestSequenceCommand.NotifyCanExecuteChanged();
         TestAllCommand.NotifyCanExecuteChanged();
+        StartThresholdCommand.NotifyCanExecuteChanged();
+        PulseThresholdCommand.NotifyCanExecuteChanged();
         StopCommand.NotifyCanExecuteChanged();
         SetMotorSpinArmCommand.NotifyCanExecuteChanged();
         SetMotorSpinMinCommand.NotifyCanExecuteChanged();
@@ -354,6 +373,22 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private bool CanExecuteCommand()
     {
         return canExecute && thresholdAssistant?.HasSession != true;
+    }
+
+    private bool CanTestMotors()
+    {
+        return IsMotorTestSafetyAcknowledged && CanExecuteCommand();
+    }
+
+    private bool CanStartThreshold()
+    {
+        return IsMotorTestSafetyAcknowledged && thresholdAssistant is not null && !ThresholdBusy;
+    }
+
+    private bool CanPulseThreshold()
+    {
+        return IsMotorTestSafetyAcknowledged && thresholdAssistant?.HasSession == true
+            && !thresholdAssistant.IsComplete && !ThresholdBusy;
     }
 
     private bool CanSetSpinMin()
@@ -435,10 +470,10 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         RefreshSpinParameters(id);
     }
 
-    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
+    [RelayCommand(CanExecute = nameof(CanTestMotors))]
     private async Task TestMotor(MotorLayoutMotor motor, CancellationToken cancellationToken)
     {
-        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync(cancellationToken))
+        if (!CanTestMotors() || layout is null || activeVehicle.VehicleId is not { } id)
         {
             return;
         }
@@ -449,10 +484,10 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         SetMessages(result.Message);
     }
 
-    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
+    [RelayCommand(CanExecute = nameof(CanTestMotors))]
     private async Task TestSequenceAsync(CancellationToken cancellationToken)
     {
-        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync(cancellationToken))
+        if (!CanTestMotors() || layout is null || activeVehicle.VehicleId is not { } id)
         {
             return;
         }
@@ -462,10 +497,10 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     }
 
 
-    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
+    [RelayCommand(CanExecute = nameof(CanTestMotors))]
     private async Task TestAllAsync(CancellationToken cancellationToken)
     {
-        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync(cancellationToken))
+        if (!CanTestMotors() || layout is null || activeVehicle.VehicleId is not { } id)
         {
             return;
         }
@@ -498,11 +533,6 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private async Task StopAsync(CancellationToken cancellationToken)
     {
         await service.EmergencyStopAsync(cancellationToken);
-    }
-
-    private async Task<bool> ConfirmAsync(CancellationToken cancellationToken)
-    {
-        return await confirmation.ConfirmAsync("Confirm motor-test safety", "Confirm ALL propellers are removed and the area is clear.", "Propellers removed – test", cancellationToken);
     }
 
     [RelayCommand]
@@ -617,6 +647,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     {
         Dispatcher.Dispatch(() =>
         {
+            IsMotorTestSafetyAcknowledged = false;
             spinInputsInitialized = false;
             Refresh();
             RefreshThreshold();
@@ -685,6 +716,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             return;
         }
         activated = false;
+        IsMotorTestSafetyAcknowledged = false;
         activeVehicle.Changed -= Changed;
         service.StateChanged -= StateChanged;
         if (thresholdAssistant?.HasSession == true)
@@ -706,6 +738,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
         disposed = true;
         activated = false;
+        IsMotorTestSafetyAcknowledged = false;
         activeVehicle.Changed -= Changed;
         service.StateChanged -= StateChanged;
         thresholdAssistant?.Dispose();

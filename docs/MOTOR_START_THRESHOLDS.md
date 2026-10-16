@@ -1,7 +1,14 @@
 # Guided motor start thresholds
 
-The existing Motor Test page now has a guided assistant. Start requires an explicit
-props-removed acknowledgement. The workflow never arms the vehicle. It derives all
+The Motor Test page includes a props-removed acknowledgement checkbox beside its
+warning. Check it after removing all propellers and clearing the area to enable
+individual, all-motor, and sequence tests, plus the guided assistant's Start and
+Pulse buttons. Repeated tests do not show another propeller-warning dialog.
+Unchecking it disables further tests; Stop and Cancel do not require it. The
+acknowledgement survives parameter refreshes but resets when leaving the page,
+changing the active vehicle, or disconnecting/reconnecting.
+
+The guided workflow never arms the vehicle. It derives all
 motor steps and test ordering from the connected frame and resolves physical
 outputs with the existing MotorOutputResolver.
 
