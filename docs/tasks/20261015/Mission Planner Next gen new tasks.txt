@@ -28,7 +28,7 @@ https://github.com/irihitech/Semi.Avalonia/blob/main/docs/Dark.png
 
 
 ********************************************************
-Motor test
+Motor test -> Done
 ********************************************************
 During motor test, when pressing Test an additional popup appears, to warn the user about propellars
 This is good from a security standpoint, but bothers when testing many motors/same motor multiple times
@@ -38,7 +38,8 @@ Please remove that, and add a Checkbox that warns and when Unchecked the buttons
 
 
 ********************************************************
-Install Firmware
+Install Firmware -> Done
+
 ********************************************************
 
 I just flashed a new Foxeer F405 V2+ FC
@@ -51,6 +52,8 @@ I chose to cancel, and apart from some messages about Cancelled DFU Bootloader, 
 ********************************************************
 Extending Parameters Editor functionality:
 ********************************************************
+
+Currently the ParameterComparisonView/ParameterComparisonViewModel seems a little strange
 
 
 When Importing a file with parameters, in order to apply it for another similar FC,

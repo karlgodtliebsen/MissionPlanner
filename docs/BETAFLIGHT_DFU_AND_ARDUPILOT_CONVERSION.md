@@ -64,6 +64,20 @@ suffixes are stripped to compare physical USB ports. Browser uses the unsupporte
 stops before reboot. Existing Windows serial arrival timestamps now persist while the same device
 remains present instead of changing on every scan, which is essential to cache/revalidation logic.
 
+After DFU programming, the installer uses the same topology provider to rediscover
+the application. It captures the selected DFU device's physical USB location before
+programming, then waits for one current serial endpoint at that location. Changed
+USB serial numbers, PnP identities and COM numbers do not prevent rediscovery.
+Unrelated ports and ambiguous interfaces are not selected, and delayed driver
+enumeration is retried within the existing bounded wait. Reconnect to the same
+physical USB port for this automatic handoff. Endpoint discovery still does not
+prove the running firmware identity; that is established by the normal connection.
+
+If the user cancels this final wait after programming and verification succeeded,
+the result explicitly reports successful programming and cancelled controller
+detection, then refreshes discovery. Cancellation before programming remains a
+cancelled installation.
+
 ## ROM reboot
 
 `BootloaderEntryTarget` separates the existing ArduPilot serial strategies from the Betaflight

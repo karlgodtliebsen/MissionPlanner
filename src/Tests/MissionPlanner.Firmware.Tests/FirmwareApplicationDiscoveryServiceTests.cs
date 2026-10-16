@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Betaflight;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Model;
@@ -100,19 +101,95 @@ public sealed class FirmwareApplicationDiscoveryServiceTests
 
     private static FirmwareApplicationDiscoveryService Create(
         IReadOnlyList<SerialDeviceDescriptor> snapshot,
-        IReadOnlyList<FirmwareDeviceChange> changes)
+        IReadOnlyList<FirmwareDeviceChange> changes,
+        IUsbTopologyProvider? topology = null)
     {
         return new FirmwareApplicationDiscoveryService(
-            new FakeCatalog(snapshot),
+            new FakeCatalog(() => snapshot),
             new FakeMonitor(changes),
-            Options.Create(new FirmwareOptions { BootloaderDiscoveryTimeout = TimeSpan.FromMilliseconds(50) }));
+            Options.Create(new FirmwareOptions
+            {
+                BootloaderDiscoveryTimeout = TimeSpan.FromMilliseconds(50),
+                BootloaderDiscoveryPollInterval = TimeSpan.FromMilliseconds(1)
+            }), topology ?? new UnsupportedUsbTopologyProvider());
     }
 
-    private sealed class FakeCatalog(IReadOnlyList<SerialDeviceDescriptor> devices) : IFirmwareSerialDeviceCatalog
+    /// <summary>DFU conversion can change every USB identity field, including the serial number and COM port.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DfuRediscoveryUsesCapturedLocationAfterDelayedDriverEnumeration(bool hasPreviousApplication)
+    {
+        var dfu = new SerialDeviceDescriptor("DFU", "dfu", new(0x0483, 0xdf11), "ROM-SERIAL");
+        var previous = new SerialDeviceDescriptor("COM9", "betaflight", new(0x0483, 0x5740), "BTFL-SERIAL");
+        var application = new SerialDeviceDescriptor("COM14", "ardupilot", new(0x1209, 0x5741), "AP-SERIAL", "ArduPilot");
+        var unrelated = new SerialDeviceDescriptor("COM15", "other", productName: "ArduPilot");
+        var scans = 0;
+        var service = new FirmwareApplicationDiscoveryService(
+            new FakeCatalog(() => ++scans < 3 ? [unrelated] : [unrelated, application]),
+            new FakeMonitor([]),
+            Options.Create(new FirmwareOptions { BootloaderDiscoveryPollInterval = TimeSpan.FromMilliseconds(1) }),
+            new Topology(new() { ["ardupilot"] = "USB-PORT-1", ["other"] = "USB-PORT-2" }));
+
+        var result = await service.FindAsync(new(dfu, hasPreviousApplication ? previous : null, TimeSpan.FromSeconds(1))
+        {
+            PhysicalLocation = "USB-PORT-1"
+        }, TestContext.Current.CancellationToken);
+
+        Assert.Same(application, result);
+        Assert.True(scans >= 3);
+    }
+
+    /// <summary>A matching serial number cannot override missing or conflicting physical-port evidence.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("USB-PORT-2")]
+    public async Task PhysicalLocationDoesNotFallBackToAnUnrelatedDevice(string? candidateLocation)
+    {
+        var dfu = new SerialDeviceDescriptor("DFU", usbSerialNumber: "ABC");
+        var candidate = new SerialDeviceDescriptor("COM14", "candidate", usbSerialNumber: "ABC");
+        var service = Create([candidate], [], new Topology(new() { ["candidate"] = candidateLocation }));
+
+        var result = await service.FindAsync(new(dfu, Timeout: TimeSpan.FromMilliseconds(20))
+        {
+            PhysicalLocation = "USB-PORT-1"
+        }, TestContext.Current.CancellationToken);
+
+        Assert.Null(result);
+    }
+
+    /// <summary>An arrival event cannot select one of multiple current interfaces at the same USB location.</summary>
+    [Fact]
+    public async Task AmbiguousPhysicalLocationRemainsUnmatched()
+    {
+        var first = new SerialDeviceDescriptor("COM14", "interface-1");
+        var second = new SerialDeviceDescriptor("COM15", "interface-2");
+        var service = Create([first, second],
+            [new(FirmwareDeviceChangeKind.Arrived, first, DateTimeOffset.UtcNow)],
+            new Topology(new() { ["interface-1"] = "USB-PORT-1", ["interface-2"] = "USB-PORT-1" }));
+
+        var result = await service.FindAsync(new(new SerialDeviceDescriptor("DFU"), Timeout: TimeSpan.FromMilliseconds(20))
+        {
+            PhysicalLocation = "USB-PORT-1"
+        }, TestContext.Current.CancellationToken);
+
+        Assert.Null(result);
+    }
+
+    private sealed class Topology(Dictionary<string, string?> locations) : IUsbTopologyProvider
+    {
+        public Task<string?> GetLocationAsync(string? instanceId, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(instanceId is null ? null : locations.GetValueOrDefault(instanceId));
+        }
+    }
+
+    private sealed class FakeCatalog(Func<IReadOnlyList<SerialDeviceDescriptor>> devices) : IFirmwareSerialDeviceCatalog
     {
         public Task<IReadOnlyList<SerialDeviceDescriptor>> GetDevicesAsync(CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(devices);
+            return Task.FromResult(devices());
         }
     }
 

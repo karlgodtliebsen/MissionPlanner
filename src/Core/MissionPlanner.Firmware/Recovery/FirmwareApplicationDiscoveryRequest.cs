@@ -1,4 +1,4 @@
-using MissionPlanner.Firmware.Model;
+﻿using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Firmware.Recovery;
 
@@ -6,4 +6,8 @@ namespace MissionPlanner.Firmware.Recovery;
 public sealed record FirmwareApplicationDiscoveryRequest(
     SerialDeviceDescriptor BootloaderDevice,
     SerialDeviceDescriptor? OriginalApplicationDevice = null,
-    TimeSpan? Timeout = null);
+    TimeSpan? Timeout = null)
+{
+    /// <summary>Gets the physical USB port captured before a mode change that can replace USB identity.</summary>
+    public string? PhysicalLocation { get; init; }
+}

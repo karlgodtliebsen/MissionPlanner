@@ -71,7 +71,7 @@ public sealed class FirmwareInteractionService(IUserConfirmationService userConf
     public Task<bool> AcknowledgePowerCycleAsync(DfuInstallationConfirmation request, CancellationToken cancellationToken = default) =>
         confirmation.ConfirmAsync(
             "Restart the flight controller",
-            "Programming and verification completed. Release BOOT/DFU, then press RESET or reconnect USB so the new ArduPilot firmware can start.",
+            "Programming and verification completed. Release BOOT/DFU, then press RESET or reconnect USB to the same USB port so the new ArduPilot firmware can start.",
             "Continue",
             cancellationToken);
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Betaflight;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Model;
@@ -9,7 +10,8 @@ namespace MissionPlanner.Firmware.Recovery;
 public sealed class FirmwareApplicationDiscoveryService(
     IFirmwareSerialDeviceCatalog catalog,
     IFirmwareDeviceMonitor monitor,
-    IOptions<FirmwareOptions> options) : IFirmwareApplicationDiscoveryService
+    IOptions<FirmwareOptions> options,
+    IUsbTopologyProvider topology) : IFirmwareApplicationDiscoveryService
 {
     /// <inheritdoc />
     public async Task<SerialDeviceDescriptor?> FindAsync(FirmwareApplicationDiscoveryRequest request,
@@ -26,10 +28,18 @@ public sealed class FirmwareApplicationDiscoveryService(
             next = changes.MoveNextAsync().AsTask();
             while (true)
             {
-                var matches = (await catalog.GetDevicesAsync(deadline.Token).ConfigureAwait(false))
-                    .Where(device => Matches(device, request)).ToArray();
-                if (matches.Length == 1)
+                deadline.Token.ThrowIfCancellationRequested();
+                var matches = new List<SerialDeviceDescriptor>();
+                foreach (var device in await catalog.GetDevicesAsync(deadline.Token).ConfigureAwait(false))
                 {
+                    if (await MatchesAsync(device, request, deadline.Token).ConfigureAwait(false))
+                    {
+                        matches.Add(device);
+                    }
+                }
+                if (matches.Count == 1)
+                {
+                    deadline.Token.ThrowIfCancellationRequested();
                     // This is only endpoint discovery; the caller must prove application identity by MAVLink.
                     return matches[0];
                 }
@@ -43,7 +53,10 @@ public sealed class FirmwareApplicationDiscoveryService(
                     }
                     var change = changes.Current;
                     next = changes.MoveNextAsync().AsTask();
-                    if (change.Kind == FirmwareDeviceChangeKind.Arrived && Matches(change.Device, request))
+                    // Physical-port matching must use a complete current snapshot: an arrival
+                    // alone cannot rule out multiple serial interfaces at the same USB location.
+                    if (string.IsNullOrWhiteSpace(request.PhysicalLocation)
+                        && change.Kind == FirmwareDeviceChangeKind.Arrived && Matches(change.Device, request))
                     {
                         return change.Device;
                     }
@@ -73,6 +86,17 @@ public sealed class FirmwareApplicationDiscoveryService(
             }
             await changes.DisposeAsync().ConfigureAwait(false);
         }
+    }
+
+    private async Task<bool> MatchesAsync(SerialDeviceDescriptor candidate, FirmwareApplicationDiscoveryRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!string.IsNullOrWhiteSpace(request.PhysicalLocation))
+        {
+            var location = await topology.GetLocationAsync(candidate.OsDeviceId, cancellationToken).ConfigureAwait(false);
+            return string.Equals(location, request.PhysicalLocation, StringComparison.OrdinalIgnoreCase);
+        }
+        return Matches(candidate, request);
     }
 
     private static bool Matches(SerialDeviceDescriptor candidate, FirmwareApplicationDiscoveryRequest request)

@@ -18,7 +18,13 @@
         <Setter Property="VerticalAlignment" Value="Center"></Setter>
         <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
     </Style>
-
+    
+    <Style Selector="CheckBox.DataGridRow">
+        <Setter Property="FontSize" Value="14"></Setter>
+        <Setter Property="Margin" Value="10,0"></Setter>
+        <Setter Property="VerticalAlignment" Value="Center"></Setter>
+        <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+    </Style>
     <Style Selector="NumericUpDown.DataGridRow">
         <Setter Property="FontSize" Value="14"></Setter>
         <Setter Property="Margin" Value="10,0"></Setter>

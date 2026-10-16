@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -683,22 +683,28 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
             await DfuModel.RefreshAfterInstallationAsync(CancellationToken.None);
 
             var diagnosticReport = BuildDfuDiagnosticReport(result, platform, boardId, selectedDfuDevice.Descriptor);
-            SetMessages(result.State == DfuOperationState.Completed
+            var detectionCancelled = result.State == DfuOperationState.Cancelled
+                && result.ProgrammingSucceeded && result.VerificationSucceeded;
+            var installationCompleted = result.State == DfuOperationState.Completed || detectionCancelled;
+            SetMessages(detectionCancelled
+                ? "Firmware programming and verification completed. Waiting for the controller was cancelled; connect to ArduPilot manually."
+                : result.State == DfuOperationState.Completed
                 ? result.ApplicationRediscovered
                     ? "Initial ArduPilot installation completed and the application device was detected."
                     : "Programming and verification completed. Reconnect or reset the controller if ArduPilot does not appear."
                 : result.Failure?.Message ?? $"STM32 DFU installation {result.State}.");
-            RecordWorkflowResult(StatusMessage ?? "DFU operation finished.", result.State == DfuOperationState.Completed);
+            RecordWorkflowResult(StatusMessage ?? "DFU operation finished.", installationCompleted);
 
             CloseOperationDialog();
             var options = dialogService.CreateOptions(result.State switch
             {
                 DfuOperationState.Completed => "Firmware installation completed.",
+                DfuOperationState.Cancelled when detectionCancelled => "Firmware programmed; controller detection cancelled.",
                 DfuOperationState.Cancelled => "Firmware installation cancelled.",
                 _ => "Firmware installation failed."
             }, "Ok", null);
             var viewModel = domainFactory.Create<DiagnosticsReportViewModel, string, string>(diagnosticReport ?? "", "");
-            if (result.State == DfuOperationState.Completed)
+            if (installationCompleted)
             {
                 await dialogService.ShowCustomDialogAsync<DiagnosticsReportView, DiagnosticsReportViewModel>(viewModel, options,
                     cancellationToken: lifetime?.Token ?? CancellationToken.None);

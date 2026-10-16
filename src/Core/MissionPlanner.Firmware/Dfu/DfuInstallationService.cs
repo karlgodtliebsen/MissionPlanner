@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Betaflight;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Operations;
@@ -19,7 +20,8 @@ public sealed class DfuInstallationService(
     IDfuUserInteraction interaction,
     IFirmwareApplicationDiscoveryService applicationDiscovery,
     IOptions<DfuOptions> options,
-    ILogger<DfuInstallationService> logger) : IDfuInstallationService
+    ILogger<DfuInstallationService> logger,
+    IUsbTopologyProvider topology) : IDfuInstallationService
 {
     private readonly DfuOptions configured = options.Value;
 
@@ -53,6 +55,11 @@ public sealed class DfuInstallationService(
             if (device is null) return Fail("dfu.device-not-found", "The selected DFU device is no longer present.", DfuProgrammingOutcome.NoDfuDevice);
             if (device.DriverState != DfuDriverState.PresentReady)
                 return Fail("dfu.driver-not-ready", $"The selected DFU device driver state is {device.DriverState}.", DfuProgrammingOutcome.ConnectionFailed);
+
+            // Capture this while DFU is still present. Its USB serial/PnP identity need
+            // not survive the transition to ArduPilot, and topology is lost on removal.
+            var physicalLocation = await topology.GetLocationAsync(device.PnpInstanceId ?? device.ProviderId,
+                cancellationToken).ConfigureAwait(false);
 
             Transition(FirmwareOperationState.IdentifyingBootloader, DfuOperationState.InspectingDevice, "dfu.inspecting-device");
             var deviceInformation = await programmer.InspectAsync(device, cancellationToken).ConfigureAwait(false);
@@ -98,7 +105,10 @@ public sealed class DfuInstallationService(
                 "DFU", device.PnpInstanceId ?? device.ProviderId, new UsbIdentifier(device.VendorId, device.ProductId),
                 device.SerialNumber, device.ProductName, device.Manufacturer, arrivedAt: device.ArrivedAt ?? device.ObservedAt);
             var application = await applicationDiscovery.FindAsync(new FirmwareApplicationDiscoveryRequest(
-                bootloaderEvidence, request.PreviousApplicationDevice, configured.DfuApplicationRediscoveryTimeout), cancellationToken).ConfigureAwait(false);
+                bootloaderEvidence, request.PreviousApplicationDevice, configured.DfuApplicationRediscoveryTimeout)
+            {
+                PhysicalLocation = physicalLocation
+            }, cancellationToken).ConfigureAwait(false);
             if (application is null) warnings.Add("dfu.application-not-rediscovered");
             Transition(FirmwareOperationState.Completed, DfuOperationState.Completed, "dfu.completed");
             return Result(DfuOperationState.Completed, application is not null);

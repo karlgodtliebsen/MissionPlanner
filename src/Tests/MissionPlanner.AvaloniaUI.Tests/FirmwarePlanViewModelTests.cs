@@ -109,11 +109,13 @@ public sealed class FirmwarePlanViewModelTests
     }
 
     [Theory]
-    [InlineData(DfuOperationState.Completed)]
-    [InlineData(DfuOperationState.Failed)]
-    [InlineData(DfuOperationState.Cancelled)]
-    public async Task SuccessfulDfuReturnsToLandingAndRediscoversAfterDiagnosticsClose(DfuOperationState outcome)
+    [InlineData(DfuOperationState.Completed, true)]
+    [InlineData(DfuOperationState.Failed, false)]
+    [InlineData(DfuOperationState.Cancelled, false)]
+    [InlineData(DfuOperationState.Cancelled, true)]
+    public async Task SuccessfulDfuReturnsToLandingAndRediscoversAfterDiagnosticsClose(DfuOperationState outcome, bool programmingVerified)
     {
+        var installed = outcome == DfuOperationState.Completed || (outcome == DfuOperationState.Cancelled && programmingVerified);
         using var services = Services(null);
         var page = services.GetRequiredService<InstallFirmwareViewModel>();
         await page.ActivateAsync();
@@ -131,7 +133,7 @@ public sealed class FirmwarePlanViewModelTests
         Assert.True(page.InstallDfuFirmwareCommand.CanExecute(null));
         services.GetRequiredService<IDfuInstallationService>()
             .InstallAsync(Arg.Any<DfuInstallationRequest>(), Arg.Any<IProgress<DfuProgress>>(), Arg.Any<CancellationToken>())
-            .Returns(new DfuProgrammingResult(outcome, outcome == DfuOperationState.Completed, outcome == DfuOperationState.Completed, false));
+            .Returns(new DfuProgrammingResult(outcome, programmingVerified, programmingVerified, false));
         var shown = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var closed = new TaskCompletionSource<DiagnosticsReportViewModel>(TaskCreationOptions.RunContinuationsAsynchronously);
         services.GetRequiredService<IDialogService>()
@@ -143,9 +145,16 @@ public sealed class FirmwarePlanViewModelTests
                 return closed.Task;
             });
         var install = page.InstallDfuFirmwareCommand.ExecuteAsync(null);
-        if (outcome == DfuOperationState.Completed)
+        if (installed)
         {
             await shown.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+            if (outcome == DfuOperationState.Cancelled)
+            {
+                Assert.Contains("programming and verification completed", page.StatusMessage);
+                Assert.Contains("Waiting for the controller was cancelled", page.StatusMessage);
+                services.GetRequiredService<IDialogService>().Received().CreateOptions(
+                    "Firmware programmed; controller detection cancelled.", "Ok", null);
+            }
             Assert.Equal(1, page.SelectedTabIndex);
             Assert.True(page.IsFirmwareSelected);
             // Simulate the reconnected application becoming visible while the report is open.
@@ -155,7 +164,7 @@ public sealed class FirmwarePlanViewModelTests
         }
         await install.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         Assert.False(page.IsOperationInProgress);
-        if (outcome == DfuOperationState.Completed)
+        if (installed)
         {
             Assert.Equal(0, page.SelectedTabIndex);
             Assert.False(page.IsFirmwareSelected);

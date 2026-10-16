@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Betaflight;
 using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
@@ -24,6 +25,7 @@ public sealed class DfuInstallationServiceTests
         result.ApplicationRediscovered.Should().BeTrue();
         result.OperationId.Should().NotBeNull();
         fixture.Programmer.ProgramCalls.Should().Be(1);
+        fixture.Discovery.Request!.PhysicalLocation.Should().Be("USB-PORT-1");
     }
 
     [Fact]
@@ -62,6 +64,26 @@ public sealed class DfuInstallationServiceTests
         fixture.Programmer.ProgramCalls.Should().Be(0);
     }
 
+    /// <summary>Cancelling rediscovery retains the already verified programming result and releases ownership.</summary>
+    [Fact]
+    public async Task CancelAfterProgrammingPreservesVerifiedResult()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var fixture = new Fixture(applicationReturns: false);
+        fixture.Discovery.OnFind = () => cancellation.Cancel();
+
+        var result = await fixture.Service.InstallAsync(fixture.Request, cancellationToken: cancellation.Token);
+
+        Assert.Equal(DfuOperationState.Cancelled, result.State);
+        Assert.True(result.ProgrammingSucceeded);
+        Assert.True(result.VerificationSucceeded);
+        Assert.False(result.ApplicationRediscovered);
+        Assert.Equal(DfuProgrammingOutcome.Succeeded, result.Outcome);
+        Assert.Equal(DfuOperationState.WaitingForApplication, result.Failure?.Stage);
+        using var next = fixture.Coordinator.Begin(FirmwareOperationKind.ProbeFirmwareIdentity);
+        next.Transition(new FirmwareProgress(FirmwareOperationState.Completed, null, "test.ownership-released"));
+    }
+
     private sealed class Fixture
     {
         private readonly MutableCatalog catalog;
@@ -77,10 +99,12 @@ public sealed class DfuInstallationServiceTests
             catalog = new MutableCatalog(Device);
             interaction = new Interaction(() => Confirm);
             Programmer = new Programmer(catalog);
-            var coordinator = new FirmwareOperationCoordinator(NullLogger<FirmwareOperationCoordinator>.Instance);
-            Service = new DfuInstallationService(coordinator, new Locator(), new Resolver(Artifact), catalog,
-                new Monitor(), Programmer, new Safety(), interaction, new Discovery(applicationReturns),
-                Options.Create(new DfuOptions { DfuDisappearanceTimeout = TimeSpan.FromMilliseconds(20) }), NullLogger<DfuInstallationService>.Instance);
+            Coordinator = new FirmwareOperationCoordinator(NullLogger<FirmwareOperationCoordinator>.Instance);
+            Discovery = new Discovery(applicationReturns);
+            Service = new DfuInstallationService(Coordinator, new Locator(), new Resolver(Artifact), catalog,
+                new Monitor(), Programmer, new Safety(), interaction, Discovery,
+                Options.Create(new DfuOptions { DfuDisappearanceTimeout = TimeSpan.FromMilliseconds(20) }),
+                NullLogger<DfuInstallationService>.Instance, new Topology(catalog));
         }
 
         public bool Confirm { get; set; } = true;
@@ -89,6 +113,8 @@ public sealed class DfuInstallationServiceTests
         public DfuInstallationRequest Request { get; }
         public Programmer Programmer { get; }
         public DfuInstallationService Service { get; }
+        public Discovery Discovery { get; }
+        public FirmwareOperationCoordinator Coordinator { get; }
     }
 
     private sealed class Connection : IFirmwareConnectionGateway
@@ -152,7 +178,23 @@ public sealed class DfuInstallationServiceTests
 
     private sealed class Discovery(bool returnsDevice) : IFirmwareApplicationDiscoveryService
     {
-        public Task<SerialDeviceDescriptor?> FindAsync(FirmwareApplicationDiscoveryRequest request, CancellationToken cancellationToken = default) =>
-            Task.FromResult<SerialDeviceDescriptor?>(returnsDevice ? new SerialDeviceDescriptor("COM9", "application") : null);
+        public FirmwareApplicationDiscoveryRequest? Request { get; private set; }
+        public Action? OnFind { get; set; }
+
+        public Task<SerialDeviceDescriptor?> FindAsync(FirmwareApplicationDiscoveryRequest request, CancellationToken cancellationToken = default)
+        {
+            Request = request;
+            OnFind?.Invoke();
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult<SerialDeviceDescriptor?>(returnsDevice ? new SerialDeviceDescriptor("COM9", "application") : null);
+        }
+    }
+
+    private sealed class Topology(MutableCatalog catalog) : IUsbTopologyProvider
+    {
+        public Task<string?> GetLocationAsync(string? instanceId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(catalog.Devices.Any(device => device.PnpInstanceId == instanceId) ? "USB-PORT-1" : null);
+        }
     }
 }
