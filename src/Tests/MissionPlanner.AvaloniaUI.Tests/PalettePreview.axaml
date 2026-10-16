@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:u="https://irihi.tech/ursa"
+             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="MissionPlanner.AvaloniaUI.Tests.PalettePreview">
     <StackPanel Margin="24" Spacing="16">
         <TextBlock Name="Title" Text="Palette controls" FontSize="28" />
@@ -10,6 +11,14 @@
             <Button Theme="{DynamicResource SolidButton}" IsEnabled="False" Content="Disabled" />
             <Button Classes="Success" Theme="{DynamicResource SolidButton}" Content="Success" />
             <Button Classes="Danger" Theme="{DynamicResource SolidButton}" Content="Danger" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Name="Toolbar" Classes="ToolbarButton" Width="80">
+                <mdi:MaterialIcon Kind="ContentSaveOutline" Width="24" Height="24" />
+            </Button>
+            <u:IconDropDownButton Name="Dropdown" Theme="{DynamicResource SolidIconDropDownButton}">
+                <mdi:MaterialIcon Kind="FolderOpenOutline" Width="24" Height="24" />
+            </u:IconDropDownButton>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="16">
             <ToggleButton Name="Toggle" IsChecked="True" Content="Selected toggle" />

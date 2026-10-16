@@ -10,15 +10,15 @@ or copied control templates are needed.
 | Location in MissionPlanner.Themes | Responsibility | Shared by |
 | --- | --- | --- |
 | `Tokens/Base/Dark.axaml`, `Light.axaml` | Raw Semi color scales, neutral surfaces, text, shadows, status colors | All palettes of that brightness |
-| `Tokens/Accent.axaml` | Maps palette inputs to Semi primary, secondary, information, link and focus roles | All palettes |
+| `Tokens/Accent.axaml` | Maps palette inputs to Semi primary, secondary, information, link and focus roles; defines shared button foreground states | All palettes |
 | `Themes/Dark/`, `Themes/Light/` | Maps semantic roles to Semi and Ursa control states | All palettes of that brightness |
-| `Palettes/<Name>/` | Selects accent shades and readable foreground colors; composes the shared layers | One palette, with Dark and Light files |
+| `Palettes/<Name>/` | Selects accent shades, link and selection text colors; composes the shared layers | One palette, with Dark and Light files |
 | `MissionPlannerTheme.axaml` | Registers the composed dictionaries under named Avalonia variants | Application |
 
 The former `Themes/DarkOrange` and `Themes/LightOrange` directories are now the shared
 `Themes/Dark` and `Themes/Light` directories. The former full Orange token dictionaries
 were split into shared base tokens and small palette mappings. Each palette file has
-twelve color inputs and three shared includes. A new palette does not copy any control
+nine color inputs and three shared includes. A new palette does not copy any control
 resource files, raw color scales, status definitions, or templates.
 
 Primary, secondary, and information accents follow the selected palette. Success,
@@ -44,14 +44,16 @@ another complete dictionary; it does not mutate a global brush collection or rel
 
 `MissionPlannerTheme` adds small foreground/glyph adapters based on installed control themes.
 It discovers the registered palette dictionary keys, so new palettes receive the same
-adapters automatically. These adapters preserve readable on-accent foregrounds without
-changing the success/warning/danger templates.
+adapters automatically. All accent palettes use white button text/icons normally and on
+hover, and black while pressed. The shared accent layer defines these states, including
+toolbar and dropdown buttons; individual palettes cannot reverse them. Disabled states
+and success/warning/danger templates retain their existing behavior.
 
 ## Adding a palette
 
 1. Create `Palettes/<Name>/Dark.axaml` and `Light.axaml` using Orange or Purple as examples.
    Keep the three shared merge includes. Select colors from the appropriate base's named
-   Semi scales, or supply explicit `Color` values for the twelve inputs.
+   Semi scales, or supply explicit `Color` values for the nine inputs.
 2. Define stable named variants in `MissionPlannerThemeVariants`, inheriting ordinary
    `ThemeVariant.Dark` and `ThemeVariant.Light`.
 3. Register the two palette files in `MissionPlannerTheme.axaml` under those variants.
@@ -62,18 +64,25 @@ changing the success/warning/danger templates.
 
 The inputs are `PaletteNormalColor`, `PaletteHoverColor`, `PalettePressedColor`,
 `PaletteDisabledColor`, `PaletteSubtleColor`, `PaletteSubtleHoverColor`,
-`PaletteSubtlePressedColor`, `PaletteTextColor`, `PaletteOnAccentColor`,
-`PaletteOnAccentHoverColor`, `PaletteOnAccentPressedColor`, and
+`PaletteSubtlePressedColor`, `PaletteTextColor`, and
 `PaletteSelectionTextColor`. `Tokens/Accent.axaml` maps these to semantic brushes.
-Dark and Light need independently chosen shades and foregrounds; equal scale indices
+Dark and Light need independently chosen shades; equal scale indices
 do not imply equivalent contrast.
 
 The selector offers Dark and Light appearances for Orange, Purple, Red, Pink, Violet,
 Indigo, Yellow, Lime, Light Green, Light Blue, Teal, Cyan, Green, Grey, and AI Purple.
 These are thirty palette variants, backed by the same shared control resources.
-Each family uses its corresponding `Semi<Name><Shade>Color` tokens; normal, hover,
-pressed and on-accent shades are chosen independently for readable text. In particular,
-Light Yellow and Light Lime use darker normal fills and a dark foreground when pressed.
+Each family uses its corresponding `Semi<Name><Shade>Color` tokens for normal, hover
+and pressed fills. White/black button foregrounds are a consistent interaction convention,
+not a per-fill contrast calculation. Link text and selection text still use palette-specific
+contrast checks.
+
+The top bar and Preferences share `ThemeMenuFlyout`. Default selects the normal system
+appearance. Dark and Light are parent menus, each containing Blue (the built-in palette)
+and the fifteen additional colors. A High contrast submenu keeps the existing Semi choices
+available. Radio marks follow the selected theme across submenus and stay synchronized
+when another selector or a settings reload changes it. The menu derives its choices from
+the catalog and binds to the existing ViewModels, preserving live preview and persistence.
 
 Orange IDs remain `dark-orange` and `light-orange`. All other palette IDs follow the
 same pattern, including `dark-light-green`, `light-light-blue`, and `dark-ai-purple`.
@@ -86,10 +95,12 @@ any high-contrast dictionaries or changes to those choices.
 
 `PaletteThemeRenderingTests` loads the real application styles. It resolves all shared
 control aliases for inactive palettes before switching, compares status/neutral brushes
-with their base appearances, checks accent text contrast, switches the complete catalog
+with their base appearances, checks link/selection contrast and button text/icon states, switches the complete catalog
 in both directions, and verifies real Semi buttons and Ursa banners in two windows.
 One window retains Purple while the other changes, including Orange at the same brightness.
-Set `MISSIONPLANNER_VISUAL_TEST_OUTPUT` to export the thirty control previews.
+`ThemeMenuTests` covers catalog completeness, nested keyboard selection, flyout dismissal,
+radio exclusivity, and two-way selection synchronization. Set `MISSIONPLANNER_VISUAL_TEST_OUTPUT`
+to export the thirty control previews.
 
 Run rendering fixtures in separate processes from fixtures using a different headless
 drawing configuration. For example, after building the UI test project:

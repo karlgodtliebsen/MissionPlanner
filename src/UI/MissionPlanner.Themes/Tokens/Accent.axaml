@@ -27,8 +27,9 @@
     <SolidColorBrush x:Key="SemiColorLinkVisited" Color="{StaticResource PaletteTextColor}" />
     <SolidColorBrush x:Key="SemiColorFocusBorder" Color="{StaticResource PaletteTextColor}" />
     <SolidColorBrush x:Key="MissionAccentText" Color="{StaticResource PaletteTextColor}" />
-    <SolidColorBrush x:Key="MissionOnPrimary" Color="{StaticResource PaletteOnAccentColor}" />
-    <SolidColorBrush x:Key="MissionOnPrimaryHover" Color="{StaticResource PaletteOnAccentHoverColor}" />
-    <SolidColorBrush x:Key="MissionOnPrimaryPressed" Color="{StaticResource PaletteOnAccentPressedColor}" />
+    <!-- All accent palettes share the same button text/icon interaction states. -->
+    <SolidColorBrush x:Key="MissionOnPrimary" Color="{StaticResource SemiWhiteColor}" />
+    <SolidColorBrush x:Key="MissionOnPrimaryHover" Color="{StaticResource SemiWhiteColor}" />
+    <SolidColorBrush x:Key="MissionOnPrimaryPressed" Color="{StaticResource SemiBlackColor}" />
     <SolidColorBrush x:Key="MissionSelectionText" Color="{StaticResource PaletteSelectionTextColor}" />
 </ResourceDictionary>

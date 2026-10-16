@@ -26,11 +26,12 @@
                                      HorizontalAlignment="Stretch" />
                             <Button x:Name="PART_ClearSearchButton"
                                     Grid.Column="1"
+                                    Classes ="EmbeddedIconButton"
                                     ToolTip.Tip="Clear search filters"
                                     AutomationProperties.Name="Clear search filters"
                                     Padding="8,2"
                                     VerticalAlignment="Center"  >
-                                <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />
+                                <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon" />
                             </Button>
                             <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="5"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
                                 <Label  HorizontalAlignment="Stretch"

@@ -187,6 +187,7 @@
                         IsEnabled="{Binding CanOpenConnection}"
                         Theme="{DynamicResource BorderlessButton}"
                         ToolTip.Tip="Select Theme"
+                        AutomationProperties.Name="Select theme"
                         FontWeight="Normal"
                         Padding="5"
                         HorizontalAlignment="Right"
@@ -196,18 +197,9 @@
                         >
                         <materialIcons:MaterialIcon Kind="ThemeLightDark" Width="30" Height="30" />
                         <Button.Flyout>
-                            <Flyout
-                                Placement="RightEdgeAlignedBottom">
-                                <u:Form
-                                    LabelPosition="Left">
-                                    <ComboBox
-                                        Width="220"
-                                        u:FormItem.Label="Theme"
-                                        DisplayMemberBinding="{Binding Name}"
-                                        ItemsSource="{Binding Themes}"
-                                        SelectedItem="{Binding SelectedTheme}" />
-                                </u:Form>
-                            </Flyout>
+                            <common:ThemeMenuFlyout
+                                Placement="BottomEdgeAlignedRight"
+                                SelectedTheme="{Binding SelectedTheme, Mode=TwoWay}" />
                         </Button.Flyout>
                     </Button>         
 

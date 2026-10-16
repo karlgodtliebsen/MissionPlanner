@@ -13,8 +13,5 @@
     <StaticResource x:Key="PaletteSubtleHoverColor" ResourceKey="SemiLime1Color" />
     <StaticResource x:Key="PaletteSubtlePressedColor" ResourceKey="SemiLime1Color" />
     <StaticResource x:Key="PaletteTextColor" ResourceKey="SemiLime8Color" />
-    <Color x:Key="PaletteOnAccentColor">#FFFFFF</Color>
-    <Color x:Key="PaletteOnAccentHoverColor">#FFFFFF</Color>
-    <Color x:Key="PaletteOnAccentPressedColor">#16161A</Color>
     <Color x:Key="PaletteSelectionTextColor">#16161A</Color>
 </ResourceDictionary>

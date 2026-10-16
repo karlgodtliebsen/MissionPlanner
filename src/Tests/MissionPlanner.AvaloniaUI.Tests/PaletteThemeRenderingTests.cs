@@ -2,6 +2,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -163,9 +164,6 @@ public sealed class PaletteThemeRenderingTests
         }
         foreach (var (foreground, background) in new[]
         {
-            ("MissionOnPrimary", "SemiColorPrimary"),
-            ("MissionOnPrimaryHover", "SemiColorPrimaryPointerover"),
-            ("MissionOnPrimaryPressed", "SemiColorPrimaryActive"),
             ("MissionAccentText", "SemiColorBackground2"),
             ("MissionSelectionText", "SemiColorPrimaryLightPointerover")
         })
@@ -178,15 +176,41 @@ public sealed class PaletteThemeRenderingTests
     private static void VerifyRendered(PalettePreview preview, ThemeVariant variant)
     {
         var app = Application.Current!;
-        foreach (var name in new[] { "Primary", "Secondary" })
+        foreach (var name in new[] { "Primary", "Secondary", "Toolbar", "Dropdown" })
         {
             var button = preview.FindControl<Button>(name)!;
             var presenter = button.GetVisualDescendants().OfType<ContentPresenter>()
                 .Single(control => control.Name == "PART_ContentPresenter");
-            Assert.Equal(Brush(app, "SemiColorPrimary", variant).Color,
-                Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Background).Color);
+            if (name is "Primary" or "Secondary")
+            {
+                Assert.Equal(Brush(app, "SemiColorPrimary", variant).Color,
+                    Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Background).Color);
+            }
             Assert.Equal(Brush(app, "MissionOnPrimary", variant).Color,
                 Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Foreground).Color);
+            var states = (IPseudoClasses)button.Classes;
+            AssertForeground(Colors.White);
+            states.Set(":pointerover", true);
+            AssertForeground(Colors.White);
+            states.Set(":pressed", true);
+            AssertForeground(Colors.Black);
+            states.Set(":pressed", false);
+            AssertForeground(Colors.White);
+            states.Set(":pointerover", false);
+            button.IsEnabled = false;
+            Assert.Equal(Brush(app, "SemiColorDisabledText", variant).Color,
+                Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Foreground).Color);
+            button.IsEnabled = true;
+            AssertForeground(Colors.White);
+
+            void AssertForeground(Color color)
+            {
+                Assert.Equal(color, Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Foreground).Color);
+                if (button.Content is Material.Icons.Avalonia.MaterialIcon icon)
+                {
+                    Assert.Equal(color, Assert.IsAssignableFrom<ISolidColorBrush>(icon.Foreground).Color);
+                }
+            }
         }
         foreach (var (name, key) in new[] { ("Information", "SemiColorPrimaryLight"),
             ("Success", "SemiColorSuccessLight"), ("Warning", "SemiColorWarningLight"), ("Error", "SemiColorDangerLight") })

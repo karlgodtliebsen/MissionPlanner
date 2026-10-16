@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+             xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:u="https://irihi.tech/ursa"
              x:Class="MissionPlanner.App.Views.Preferences.Sections.ApplicationAppearanceTabView"
@@ -32,9 +33,16 @@
                         <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
                             <CheckBox  HorizontalAlignment="Right" HorizontalContentAlignment="Right" u:FormItem.Label="Show Tutorial at Startup" 
                                        IsChecked="{Binding IsTutorialVisibleAtStartup,Mode=TwoWay}" />
-                            <ComboBox HorizontalAlignment="Right" HorizontalContentAlignment="Right"  ItemsSource="{Binding Themes}" 
-                                      SelectedItem="{Binding SelectedTheme}" DisplayMemberBinding="{Binding Name}" 
-                                      u:FormItem.Label="Theme (live preview)" />
+                            <DropDownButton HorizontalAlignment="Right" u:FormItem.Label="Theme (live preview)"
+                                            ToolTip.Tip="Select theme" AutomationProperties.Name="Select theme">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <avalonia:MaterialIcon Kind="ThemeLightDark" Width="20" Height="20" />
+                                    <TextBlock Text="{Binding SelectedTheme.Name}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <DropDownButton.Flyout>
+                                    <common:ThemeMenuFlyout SelectedTheme="{Binding SelectedTheme, Mode=TwoWay}" />
+                                </DropDownButton.Flyout>
+                            </DropDownButton>
                             <ComboBox HorizontalAlignment="Right" HorizontalContentAlignment="Right"  ItemsSource="{Binding LayoutModes}" 
                                       SelectedItem="{Binding LayoutMode}" u:FormItem.Label="Layout" />
                         </u:Form>
