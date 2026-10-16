@@ -47,26 +47,6 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
 
     }
 
-    ///// <summary>
-    ///// Gets fixed index-aligned headers.
-    ///// </summary>
-    //public ObservableRangeCollection<TabItemViewModel> Tabs { get; } = [];
-
-    ///// <summary>Gets or sets the selected header.</summary>
-    //[ObservableProperty]
-    //public partial TabItemViewModel? SelectedTab
-    //{
-    //    get; set;
-    //}
-
-    ///// <summary>
-    ///// Gets whether the selected workflow links to a Config page.
-    ///// </summary>
-    //partial void OnSelectedTabChanged(TabItemViewModel? value)
-    //{
-    //    inspector?.SuggestContext(value?.Descriptor.Key);
-    //}
-
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
     public partial string VehicleHeading { get; private set; } = "No vehicle connected";
@@ -112,13 +92,6 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
         disposed = true;
         Deactivate();
     }
-
-    //[RelayCommand]
-    //private void Refresh()
-    //{
-    //    RefreshCore();
-    //}
-
 
     private void RefreshCore()
     {
