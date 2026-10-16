@@ -32,9 +32,10 @@ public sealed class DiagnosticMenuAndFirmwareLayoutTests
                     var topbar = new TopBarView();
                     var dropdown = topbar.FindControl<DropDownButton>("CompactDiagnostics")!;
                     var menu = Assert.IsType<MenuFlyout>(dropdown.Flyout);
-                    var icons = menu.Items.Cast<MenuItem>().Select(item =>
+                    var icons = menu.Items.OfType<MenuItem>().Select(item =>
                         Assert.IsType<Material.Icons.Avalonia.MaterialIcon>(item.Icon).Kind).ToArray();
-                    Assert.Equal(6, icons.Distinct().Count());
+                    Assert.Equal(7, icons.Distinct().Count());
+                    Assert.Single(menu.Items.OfType<Separator>());
                     Assert.Equal(35, dropdown.Width);
                     Assert.Equal(35, dropdown.Height);
                     var window = new Window
@@ -80,7 +81,7 @@ public sealed class DiagnosticMenuAndFirmwareLayoutTests
         .UseSkia()
         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 
-    /// <summary>All four diagnostic menu items close their flyout on keyboard activation.</summary>
+    /// <summary>All diagnostic and editor menu items close their flyout on keyboard activation.</summary>
     [Fact]
     public async Task SelectingDiagnosticMenuItemClosesFlyout()
     {
@@ -103,8 +104,8 @@ public sealed class DiagnosticMenuAndFirmwareLayoutTests
                 }
                 var dropdown = topbar.FindControl<DropDownButton>("CompactDiagnostics")!;
                 var menu = Assert.IsType<MenuFlyout>(dropdown.Flyout);
-                var items = menu.Items.Cast<MenuItem>().ToArray();
-                Assert.Equal(6, items.Length);
+                var items = menu.Items.OfType<MenuItem>().ToArray();
+                Assert.Equal(7, items.Length);
                 var dataFlash = Assert.Single(items, item => Equals(item.Header, "DataFlash Logs"));
                 Assert.Equal("DataFlash Logs", dataFlash.CommandParameter);
                 var anchor = new Button { Content = "Diagnostics", Flyout = menu };

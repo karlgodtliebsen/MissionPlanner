@@ -86,7 +86,7 @@ public partial class InformationDocumentView : UserControl
                 Renderer.Resources[target] = value;
             }
         }
-        Renderer.CodeBlockColorTheme = ActualThemeVariant == ThemeVariant.Dark
+        Renderer.CodeBlockColorTheme = MissionPlanner.Themes.MissionPlannerThemeVariants.IsDark(ActualThemeVariant)
             ? TextMateSharp.Grammars.ThemeName.DarkPlus : TextMateSharp.Grammars.ThemeName.LightPlus;
     }
 

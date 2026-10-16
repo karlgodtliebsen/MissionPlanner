@@ -1,11 +1,45 @@
 ﻿using Avalonia.Styling;
-using MissionPlanner.App.Views.Navigation;
+using MissionPlanner.Themes;
+using NSubstitute;
 
 namespace MissionPlanner.AvaloniaUI.Tests;
 
 /// <summary>Verifies the persisted Avalonia theme contract and application style composition.</summary>
 public sealed class AvaloniaThemeTests
 {
+    /// <summary>Named variants keep their ordinary base and survive the production settings serializer.</summary>
+    [Theory]
+    [InlineData("dark-orange", true)]
+    [InlineData("light-orange", false)]
+    [InlineData("system", false)]
+    [InlineData("night-sky", true)]
+    public async Task AppearanceSelectionSurvivesReload(string identifier, bool isDark)
+    {
+        var store = NSubstitute.Substitute.For<MissionPlanner.Core.ConfigTuning.Planner.IPlannerSettingsStore>();
+        string? document = null;
+        store.ReadAsync(Arg.Any<CancellationToken>()).Returns(_ => ValueTask.FromResult(document));
+        store.WriteAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            document = call.Arg<string>();
+            return ValueTask.CompletedTask;
+        });
+        var logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<MissionPlanner.Core.ConfigTuning.Planner.PlannerSettingsService>.Instance;
+        var service = new MissionPlanner.Core.ConfigTuning.Planner.PlannerSettingsService(store, logger);
+        await service.InitializeAsync(TestContext.Current.CancellationToken);
+        Assert.True((await service.SaveAsync(service.Current with
+        {
+            Appearance = service.Current.Appearance with
+            {
+                ThemeId = identifier
+            }
+        }, TestContext.Current.CancellationToken)).Success);
+        var reloaded = new MissionPlanner.Core.ConfigTuning.Planner.PlannerSettingsService(store, logger);
+        await reloaded.InitializeAsync(TestContext.Current.CancellationToken);
+        var item = AvaloniaThemeCatalog.Resolve(reloaded.Current.Appearance.ThemeId);
+        Assert.Equal(identifier, item.Id);
+        Assert.Equal(isDark, MissionPlanner.Themes.MissionPlannerThemeVariants.IsDark(item.Theme));
+    }
+
     /// <summary>Verifies every persisted identifier is unique and resolves to itself.</summary>
     [Fact]
     public void CatalogIdentifiersAreUniqueAndResolvable()

@@ -73,6 +73,10 @@ Saved settings raise one observable change event containing previous/current imm
 snapshots and the affected restart-bound sections.
 
 * Theme changes preview immediately and persist through the same settings service.
+  The existing selector includes **Dark Orange** (`dark-orange`) and **Light Orange**
+  (`light-orange`), defined in `MissionPlanner.Themes` with ordinary Dark/Light
+  fallback. Original and high-contrast themes remain available. See
+  [named orange themes](ORANGE_THEME_VARIANTS.md) for resource composition and validation.
 * Connection defaults update the shared connection UI only while disconnected; saving
   preferences never interrupts an active vehicle connection.
 * Map default zoom is used by point-centering actions. Provider/style is selected when a

@@ -1,0 +1,26 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:MissionPlanner.Themes"
+        x:Class="MissionPlanner.Themes.MissionPlannerTheme">
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceInclude x:Key="{x:Static local:MissionPlannerThemeVariants.DarkOrange}"
+                                 Source="avares://MissionPlanner.Themes/Themes/DarkOrange/_index.axaml" />
+                <ResourceInclude x:Key="{x:Static local:MissionPlannerThemeVariants.LightOrange}"
+                                 Source="avares://MissionPlanner.Themes/Themes/LightOrange/_index.axaml" />
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Styles.Resources>
+    <!-- Keep implicit control-theme lookup live when a window changes named variants.
+         Original variants resolve their original provider themes through these same keys. -->
+    <Style Selector="ToggleButton">
+        <Setter Property="Theme" Value="{DynamicResource {x:Type ToggleButton}}" />
+    </Style>
+    <Style Selector="CheckBox">
+        <Setter Property="Theme" Value="{DynamicResource {x:Type CheckBox}}" />
+    </Style>
+    <Style Selector="RadioButton">
+        <Setter Property="Theme" Value="{DynamicResource {x:Type RadioButton}}" />
+    </Style>
+</Styles>

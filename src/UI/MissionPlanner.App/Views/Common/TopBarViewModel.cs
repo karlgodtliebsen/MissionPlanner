@@ -18,6 +18,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.EventHub.Events;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Themes;
 using Notification = Ursa.Controls.Notification;
 using WindowNotificationManager = Ursa.Controls.WindowNotificationManager;
 

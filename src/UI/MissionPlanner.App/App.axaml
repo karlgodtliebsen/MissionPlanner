@@ -3,6 +3,7 @@
              x:Class="MissionPlanner.App.App"
              xmlns:local="using:AvaloniaApplication2"
              xmlns:semi="https://irihi.tech/semi"
+             xmlns:mpThemes="using:MissionPlanner.Themes"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:converters="clr-namespace:MissionPlanner.App.Converters"
              RequestedThemeVariant="Default">
@@ -28,6 +29,7 @@
         <semi:SemiTheme Locale="en-US" />
         <semi:DataGridSemiTheme />
         <semi:UrsaSemiTheme Locale="en-US" />
+        <mpThemes:MissionPlannerTheme />
         <semi:SemiPopupAnimations />
         <materialIcons:MaterialIconStyles />
         <StyleInclude Source="/Resources/Styles/SharedStyles.axaml" />

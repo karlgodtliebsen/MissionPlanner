@@ -55,7 +55,9 @@ public sealed class ReadinessViewTests
                 var view = new ReadinessView { DataContext = model };
                 var window = new Window { Content = view, Width = 700, Height = 950 };
                 window.Show();
-                foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark })
+                foreach (var theme in new[] { ThemeVariant.Light, ThemeVariant.Dark,
+                    MissionPlanner.Themes.MissionPlannerThemeVariants.LightOrange,
+                    MissionPlanner.Themes.MissionPlannerThemeVariants.DarkOrange })
                 {
                     Application.Current!.RequestedThemeVariant = theme;
                     foreach (var width in new[] { 360, 700 })
@@ -76,7 +78,7 @@ public sealed class ReadinessViewTests
                         {
                             Directory.CreateDirectory(directory);
                             using var bitmap = new RenderTargetBitmap(new PixelSize(width, 950));
-                            bitmap.Render(view);
+                            bitmap.Render(window);
                             bitmap.Save(Path.Combine(directory, $"readiness-{theme}-{width}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
                         }
                     }

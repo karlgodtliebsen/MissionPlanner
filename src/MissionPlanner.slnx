@@ -78,5 +78,6 @@
     <Project Path="UI/MissionPlanner.Library.Linux/MissionPlanner.Library.Linux.csproj" />
     <Project Path="UI/MissionPlanner.Library.MacOs/MissionPlanner.Library.MacOs.csproj" />
     <Project Path="UI/MissionPlanner.Library.Windows/MissionPlanner.Library.Windows.csproj" />
+    <Project Path="UI/MissionPlanner.Themes/MissionPlanner.Themes.csproj" Id="c927e97d-538f-4eb2-8e1f-b76ccca7d4dd" />
   </Folder>
 </Solution>

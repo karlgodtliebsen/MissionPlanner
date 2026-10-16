@@ -30,7 +30,13 @@
                     <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
                                 VerticalAlignment="Center" HorizontalAlignment="Stretch">
                         <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
-                            <CheckBox  HorizontalAlignment="Right" HorizontalContentAlignment="Right" u:FormItem.Label="Show Tutorial at Startup" IsChecked="{Binding IsTutorialVisibleAtStartup,Mode=TwoWay}" />
+                            <CheckBox  HorizontalAlignment="Right" HorizontalContentAlignment="Right" u:FormItem.Label="Show Tutorial at Startup" 
+                                       IsChecked="{Binding IsTutorialVisibleAtStartup,Mode=TwoWay}" />
+                            <ComboBox HorizontalAlignment="Right" HorizontalContentAlignment="Right"  ItemsSource="{Binding Themes}" 
+                                      SelectedItem="{Binding SelectedTheme}" DisplayMemberBinding="{Binding Name}" 
+                                      u:FormItem.Label="Theme (live preview)" />
+                            <ComboBox HorizontalAlignment="Right" HorizontalContentAlignment="Right"  ItemsSource="{Binding LayoutModes}" 
+                                      SelectedItem="{Binding LayoutMode}" u:FormItem.Label="Layout" />
                         </u:Form>
                     </StackPanel>
                 </Grid>
