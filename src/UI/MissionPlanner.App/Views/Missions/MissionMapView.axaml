@@ -52,19 +52,19 @@
                     VerticalAlignment="Center"
                     Margin="0,0,12,0"
                     Spacing="6">
-            <Button Classes="ToolbarButton" Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
-                    ToolTip.Tip="Zoom in" Click="OnZoomInClicked" AutomationProperties.Name="+">
+            <Button Classes="MapIconButton"
+                    ToolTip.Tip="Zoom in" Click="OnZoomInClicked" AutomationProperties.Name="Zoom in">
                 <mdi:MaterialIcon Kind="MagnifyPlusOutline" Classes="ActionIcon" />
             </Button>
-            <Button Classes="ToolbarButton" Width="38" Height="38" Padding="0" FontSize="20" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
-                    ToolTip.Tip="Zoom out" Click="OnZoomOutClicked" AutomationProperties.Name="−">
+            <Button Classes="MapIconButton"
+                    ToolTip.Tip="Zoom out" Click="OnZoomOutClicked" AutomationProperties.Name="Zoom out">
                 <mdi:MaterialIcon Kind="MagnifyMinusOutline" Classes="ActionIcon" />
             </Button>
-            <Button Classes="ToolbarButton" Width="38" Height="38" Padding="0" FontSize="25" CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
-                    ToolTip.Tip="Center on my location" Click="OnCenterOnMyLocationClicked" AutomationProperties.Name="◎">
+            <Button Classes="MapIconButton"
+                    ToolTip.Tip="Center on my location" Click="OnCenterOnMyLocationClicked" AutomationProperties.Name="Center on my location">
                 <mdi:MaterialIcon Kind="CrosshairsGps" Classes="ActionIcon" />
             </Button>
-            <Button Classes="ToolbarButton" Width="38" Height="38" Padding="0" FontWeight="SemiBold"  CornerRadius="20" Background="Transparent" BorderThickness="1" BorderBrush="Black" Foreground="Black"
+            <Button Classes="MapIconButton"
                     ToolTip.Tip="Reset map rotation to north" Click="OnResetNorthClicked" AutomationProperties.Name="Reset map rotation to north">
                 <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
             </Button>

@@ -49,6 +49,17 @@ hover, and black while pressed. The shared accent layer defines these states, in
 toolbar and dropdown buttons; individual palettes cannot reverse them. Disabled states
 and success/warning/danger templates retain their existing behavior.
 
+Map overlay buttons are an explicit exception: `MapIconButton` keeps a black foreground
+over the map. Its shared style binds the template's `PART_ContentPresenter.Foreground`
+back to `Button.Foreground`, so the icon inherits the button's chosen color in every
+theme and interaction state. Setting only the button property does not override a
+foreground assigned directly to the presenter by a control theme.
+Both `GeoFenceMapView` and `MissionMapView` use this class for their four navigation
+buttons. The latter supplies the maps in Flight Data and Flight Planner. Do not use
+`ToolbarButton` on these overlays: its solid accent theme supplies different icon states.
+`MapOverlayThemeTests` loads all three production views and checks their actual icons
+through the complete theme catalog and normal, hover, pressed and disabled states.
+
 ## Adding a palette
 
 1. Create `Palettes/<Name>/Dark.axaml` and `Light.axaml` using Orange or Purple as examples.

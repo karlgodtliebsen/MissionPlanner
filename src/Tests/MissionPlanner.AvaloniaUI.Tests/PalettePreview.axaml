@@ -13,6 +13,9 @@
             <Button Classes="Danger" Theme="{DynamicResource SolidButton}" Content="Danger" />
         </StackPanel>
         <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Name="MapOverlay" Classes="MapIconButton">
+                <mdi:MaterialIcon Kind="CrosshairsGps" Classes="ActionIcon" />
+            </Button>
             <Button Name="Toolbar" Classes="ToolbarButton" Width="80">
                 <mdi:MaterialIcon Kind="ContentSaveOutline" Width="24" Height="24" />
             </Button>

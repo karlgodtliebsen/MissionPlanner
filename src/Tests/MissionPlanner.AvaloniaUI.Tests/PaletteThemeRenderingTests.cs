@@ -96,6 +96,7 @@ public sealed class PaletteThemeRenderingTests
                         Dispatcher.UIThread.RunJobs();
                         window.UpdateLayout();
                         other.UpdateLayout();
+                        VerifyMapOverlay(preview);
                         Assert.Equal(MissionPlannerThemeVariants.DarkPurple, other.ActualThemeVariant);
                         VerifyRendered(otherPreview, MissionPlannerThemeVariants.DarkPurple);
                         if (expectedColors.ContainsKey(item.Theme))
@@ -222,6 +223,33 @@ public sealed class PaletteThemeRenderingTests
         var editor = preview.FindControl<TextBox>("Editor")!;
         Assert.Equal(Brush(app, "SemiColorPrimaryLightPointerover", variant).Color,
             Assert.IsAssignableFrom<ISolidColorBrush>(editor.SelectionBrush).Color);
+    }
+
+    private static void VerifyMapOverlay(PalettePreview preview)
+    {
+        var button = preview.FindControl<Button>("MapOverlay")!;
+        var presenter = button.GetVisualDescendants().OfType<ContentPresenter>()
+            .Single(control => control.Name == "PART_ContentPresenter");
+        var icon = Assert.IsType<Material.Icons.Avalonia.MaterialIcon>(button.Content);
+        var states = (IPseudoClasses)button.Classes;
+        AssertForeground();
+        states.Set(":pointerover", true);
+        AssertForeground();
+        states.Set(":pressed", true);
+        AssertForeground();
+        states.Set(":pressed", false);
+        states.Set(":pointerover", false);
+        button.IsEnabled = false;
+        AssertForeground();
+        button.IsEnabled = true;
+        AssertForeground();
+
+        void AssertForeground()
+        {
+            Assert.Equal(Colors.Black, Assert.IsAssignableFrom<ISolidColorBrush>(button.Foreground).Color);
+            Assert.Equal(Colors.Black, Assert.IsAssignableFrom<ISolidColorBrush>(presenter.Foreground).Color);
+            Assert.Equal(Colors.Black, Assert.IsAssignableFrom<ISolidColorBrush>(icon.Foreground).Color);
+        }
     }
 
     private static ISolidColorBrush Brush(Application app, string key, ThemeVariant variant)

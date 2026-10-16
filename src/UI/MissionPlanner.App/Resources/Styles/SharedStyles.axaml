@@ -38,6 +38,10 @@
         <Setter Property="CornerRadius" Value="20" />
         <Setter Property="FontSize" Value="20" />
     </Style>
+    <!-- Theme states set the presenter's foreground separately from the button. -->
+    <Style Selector="Button.MapIconButton /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" />
+    </Style>
 
     <Style Selector="TextBlock.SectionTitle">
         <Setter Property="FontWeight" Value="SemiBold" />
@@ -71,7 +75,7 @@
     </Style>
     <Style Selector="Button.EmbeddedTextIconButton">
         <Setter Property="MinWidth" Value="100" />
-        <Setter Property="Theme" Value="{DynamicResource SolidIconButton}" />>
+        <Setter Property="Theme" Value="{DynamicResource SolidIconButton}" />
     </Style>
     <Style Selector="Button.SmallButton">
         <Setter Property="MinWidth" Value="20" />

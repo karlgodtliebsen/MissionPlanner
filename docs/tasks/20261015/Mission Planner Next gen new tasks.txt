@@ -73,6 +73,13 @@ Often minor floating point differences are so small, caused by a decimal
 
 
 ********************************************************
+Map overlay button colors
+********************************************************
+While we are working with GeoFenceMapView.
+
+The Attribution button is shown twice, slightly unaligned and with different colors
+
+********************************************************
 
 Profiles
 Create load compare etc.
