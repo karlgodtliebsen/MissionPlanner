@@ -5,13 +5,13 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Maps.Catalog;
 using MissionPlanner.Maps.Credentials;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Offline;
 using MissionPlanner.Maps.Settings;
+using MissionPlanner.Themes;
 
 namespace MissionPlanner.App.Views.Preferences;
 

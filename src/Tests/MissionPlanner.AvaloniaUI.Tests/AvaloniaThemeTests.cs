@@ -1,5 +1,5 @@
 ﻿using Avalonia.Styling;
-using MissionPlanner.App.Views.Navigation;
+using MissionPlanner.Themes;
 
 namespace MissionPlanner.AvaloniaUI.Tests;
 

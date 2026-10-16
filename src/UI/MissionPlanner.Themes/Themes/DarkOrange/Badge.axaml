@@ -1,0 +1,33 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StaticResource x:Key="BadgeBorderBrush" ResourceKey="SemiColorBackground1" />
+    <StaticResource x:Key="BadgeForeground" ResourceKey="SemiColorBackground2" />
+    <StaticResource x:Key="BadgeContentForeground" ResourceKey="SemiColorText0" />
+    <!-- Solid -->
+    <StaticResource x:Key="BadgePrimaryBadgeBackground" ResourceKey="SemiColorPrimary" />
+    <StaticResource x:Key="BadgeSecondaryBadgeBackground" ResourceKey="SemiColorSecondary" />
+    <StaticResource x:Key="BadgeTertiaryBadgeBackground" ResourceKey="SemiColorTertiary" />
+    <StaticResource x:Key="BadgeSuccessBadgeBackground" ResourceKey="SemiColorSuccess" />
+    <StaticResource x:Key="BadgeWarningBadgeBackground" ResourceKey="SemiColorWarning" />
+    <StaticResource x:Key="BadgeDangerBadgeBackground" ResourceKey="SemiColorDanger" />
+    <!-- Light -->
+    <StaticResource x:Key="BadgeLightPrimaryBadgeForeground" ResourceKey="MissionAccentText" />
+    <StaticResource x:Key="BadgeLightPrimaryBadgeBackground" ResourceKey="SemiColorPrimaryLight" />
+    <StaticResource x:Key="BadgeLightSecondaryBadgeForeground" ResourceKey="SemiColorSecondary" />
+    <StaticResource x:Key="BadgeLightSecondaryBadgeBackground" ResourceKey="SemiColorSecondaryLight" />
+    <StaticResource x:Key="BadgeLightTertiaryBadgeForeground" ResourceKey="SemiColorTertiary" />
+    <StaticResource x:Key="BadgeLightTertiaryBadgeBackground" ResourceKey="SemiGrey0" />
+    <StaticResource x:Key="BadgeLightSuccessBadgeForeground" ResourceKey="SemiColorSuccess" />
+    <StaticResource x:Key="BadgeLightSuccessBadgeBackground" ResourceKey="SemiGreen0" />
+    <StaticResource x:Key="BadgeLightWarningBadgeForeground" ResourceKey="SemiColorWarning" />
+    <StaticResource x:Key="BadgeLightWarningBadgeBackground" ResourceKey="SemiOrange0" />
+    <StaticResource x:Key="BadgeLightDangerBadgeForeground" ResourceKey="SemiColorDanger" />
+    <StaticResource x:Key="BadgeLightDangerBadgeBackground" ResourceKey="SemiRed0" />
+    <!-- Inverted -->
+    <StaticResource x:Key="BadgeInvertedBadgeBackground" ResourceKey="SemiColorBackground1" />
+    <StaticResource x:Key="BadgeInvertedPrimaryBadgeForeground" ResourceKey="MissionAccentText" />
+    <StaticResource x:Key="BadgeInvertedSecondaryBadgeForeground" ResourceKey="SemiColorSecondary" />
+    <StaticResource x:Key="BadgeInvertedTertiaryBadgeForeground" ResourceKey="SemiColorTertiary" />
+    <StaticResource x:Key="BadgeInvertedSuccessBadgeForeground" ResourceKey="SemiColorSuccess" />
+    <StaticResource x:Key="BadgeInvertedWarningBadgeForeground" ResourceKey="SemiColorWarning" />
+    <StaticResource x:Key="BadgeInvertedDangerBadgeForeground" ResourceKey="SemiColorDanger" />
+</ResourceDictionary>

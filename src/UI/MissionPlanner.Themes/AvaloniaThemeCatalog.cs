@@ -1,24 +1,12 @@
-﻿using Avalonia.Styling;
-
-using Avalonia;
+﻿using Avalonia;
+using Avalonia.Styling;
 using Semi.Avalonia;
 
-namespace MissionPlanner.App.Views.Navigation;
+namespace MissionPlanner.Themes;
 
-/// <summary>Describes an Avalonia theme that can be selected by the user.</summary>
-public sealed class ThemeItem(string id, string name, ThemeVariant theme)
-{
-    /// <summary>Gets the stable identifier stored in Planner settings.</summary>
-    public string Id { get; } = id;
-
-    /// <summary>Gets the user-facing theme name.</summary>
-    public string Name { get; } = name;
-
-    /// <summary>Gets the Avalonia theme variant.</summary>
-    public ThemeVariant Theme { get; } = theme;
-}
-
-/// <summary>Maps persisted Planner theme identifiers to Avalonia and Semi theme variants.</summary>
+/// <summary>
+/// Maps persisted Planner theme identifiers to Avalonia and Semi theme variants.
+/// </summary>
 public static class AvaloniaThemeCatalog
 {
     private static readonly IReadOnlyList<ThemeItem> items =
@@ -26,6 +14,8 @@ public static class AvaloniaThemeCatalog
         new("system", "Default", ThemeVariant.Default),
         new("light", "Light", ThemeVariant.Light),
         new("dark", "Dark", ThemeVariant.Dark),
+        new("dark-orange", "Dark Orange", MissionPlannerThemeVariants.DarkOrange),
+        new("light-orange", "Light Orange", MissionPlannerThemeVariants.LightOrange),
         new("aquatic", "Aquatic", SemiTheme.Aquatic),
         new("desert", "Desert", SemiTheme.Desert),
         new("dusk", "Dusk", SemiTheme.Dusk),

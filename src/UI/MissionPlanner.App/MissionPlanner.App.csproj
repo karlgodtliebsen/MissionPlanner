@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<RootNamespace>MissionPlanner.App</RootNamespace>
         <TargetFramework>net10.0</TargetFramework>
@@ -301,6 +301,7 @@
       <ProjectReference Include="..\..\Core\MissionPlanner.Maps\MissionPlanner.Maps.csproj" />
       <ProjectReference Include="..\..\Tools\MissionPlanner.Simulator\MissionPlanner.Simulator.csproj" />
       <ProjectReference Include="..\MissionPlanner.Library.Linux\MissionPlanner.Library.Linux.csproj" />
+      <ProjectReference Include="..\MissionPlanner.Themes\MissionPlanner.Themes.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
