@@ -27,6 +27,7 @@
                             <Button x:Name="PART_ClearSearchButton"
                                     Grid.Column="1"
                                     ToolTip.Tip="Clear search filters"
+                                    AutomationProperties.Name="Clear search filters"
                                     Padding="8,2"
                                     VerticalAlignment="Center"  >
                                 <avalonia:MaterialIcon Kind="ClearCircleOutline" Width="30" Height="30" />

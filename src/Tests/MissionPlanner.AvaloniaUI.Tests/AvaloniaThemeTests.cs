@@ -19,6 +19,31 @@ public sealed class AvaloniaThemeTests
         Assert.Same(ThemeVariant.Dark, AvaloniaThemeCatalog.Resolve("dark").Theme);
     }
 
+    /// <summary>Verifies every additional color family is selectable in both appearances.</summary>
+    [Theory]
+    [InlineData("red", "Red")]
+    [InlineData("pink", "Pink")]
+    [InlineData("violet", "Violet")]
+    [InlineData("indigo", "Indigo")]
+    [InlineData("yellow", "Yellow")]
+    [InlineData("lime", "Lime")]
+    [InlineData("light-green", "Light Green")]
+    [InlineData("light-blue", "Light Blue")]
+    [InlineData("teal", "Teal")]
+    [InlineData("cyan", "Cyan")]
+    [InlineData("green", "Green")]
+    [InlineData("grey", "Grey")]
+    [InlineData("ai-purple", "AI Purple")]
+    public void AdditionalPalettesHaveBothAppearances(string id, string name)
+    {
+        var dark = AvaloniaThemeCatalog.Resolve($"dark-{id}");
+        var light = AvaloniaThemeCatalog.Resolve($"light-{id}");
+        Assert.Equal($"Dark {name}", dark.Name);
+        Assert.Equal($"Light {name}", light.Name);
+        Assert.Equal(ThemeVariant.Dark, dark.Theme.InheritVariant);
+        Assert.Equal(ThemeVariant.Light, light.Theme.InheritVariant);
+    }
+
     /// <summary>Verifies compatibility identifiers migrate to the current persisted values.</summary>
     [Theory]
     [InlineData("mission-light", "light")]

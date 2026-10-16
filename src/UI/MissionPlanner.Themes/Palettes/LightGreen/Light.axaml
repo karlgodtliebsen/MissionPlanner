@@ -1,0 +1,20 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Compile-time merging gives every static control alias this palette scope. -->
+    <ResourceDictionary.MergedDictionaries>
+        <MergeResourceInclude Source="../../Tokens/Base/Light.axaml" />
+        <MergeResourceInclude Source="../../Tokens/Accent.axaml" />
+        <MergeResourceInclude Source="../../Themes/Light/_index.axaml" />
+    </ResourceDictionary.MergedDictionaries>
+    <StaticResource x:Key="PaletteNormalColor" ResourceKey="SemiLightGreen7Color" />
+    <StaticResource x:Key="PaletteHoverColor" ResourceKey="SemiLightGreen8Color" />
+    <StaticResource x:Key="PalettePressedColor" ResourceKey="SemiLightGreen9Color" />
+    <StaticResource x:Key="PaletteDisabledColor" ResourceKey="SemiLightGreen2Color" />
+    <StaticResource x:Key="PaletteSubtleColor" ResourceKey="SemiLightGreen0Color" />
+    <StaticResource x:Key="PaletteSubtleHoverColor" ResourceKey="SemiLightGreen1Color" />
+    <StaticResource x:Key="PaletteSubtlePressedColor" ResourceKey="SemiLightGreen1Color" />
+    <StaticResource x:Key="PaletteTextColor" ResourceKey="SemiLightGreen8Color" />
+    <Color x:Key="PaletteOnAccentColor">#FFFFFF</Color>
+    <Color x:Key="PaletteOnAccentHoverColor">#FFFFFF</Color>
+    <Color x:Key="PaletteOnAccentPressedColor">#FFFFFF</Color>
+    <Color x:Key="PaletteSelectionTextColor">#16161A</Color>
+</ResourceDictionary>

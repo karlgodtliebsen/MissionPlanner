@@ -18,11 +18,39 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 [Collection("Document rendering")]
 public sealed class PaletteThemeRenderingTests
 {
-    private static readonly ThemeVariant[] paletteVariants =
-    [
-        MissionPlannerThemeVariants.DarkOrange, MissionPlannerThemeVariants.LightOrange,
-        MissionPlannerThemeVariants.DarkPurple, MissionPlannerThemeVariants.LightPurple
-    ];
+    private static readonly IReadOnlyDictionary<ThemeVariant, string> expectedColors = new Dictionary<ThemeVariant, string>
+    {
+        [MissionPlannerThemeVariants.DarkOrange] = "#D56F0F",
+        [MissionPlannerThemeVariants.LightOrange] = "#A84A00",
+        [MissionPlannerThemeVariants.DarkPurple] = "#CA78D1",
+        [MissionPlannerThemeVariants.LightPurple] = "#871E9E",
+        [MissionPlannerThemeVariants.DarkRed] = "#FC725A",
+        [MissionPlannerThemeVariants.LightRed] = "#D52515",
+        [MissionPlannerThemeVariants.DarkPink] = "#EF5686",
+        [MissionPlannerThemeVariants.LightPink] = "#C51356",
+        [MissionPlannerThemeVariants.DarkViolet] = "#A288DF",
+        [MissionPlannerThemeVariants.LightViolet] = "#6A3AC7",
+        [MissionPlannerThemeVariants.DarkIndigo] = "#8191D4",
+        [MissionPlannerThemeVariants.LightIndigo] = "#3F51B5",
+        [MissionPlannerThemeVariants.DarkYellow] = "#FDDE43",
+        [MissionPlannerThemeVariants.LightYellow] = "#7D6A00",
+        [MissionPlannerThemeVariants.DarkLime] = "#AEDC3A",
+        [MissionPlannerThemeVariants.LightLime] = "#486800",
+        [MissionPlannerThemeVariants.DarkLightGreen] = "#97C65F",
+        [MissionPlannerThemeVariants.LightLightGreen] = "#4E7926",
+        [MissionPlannerThemeVariants.DarkLightBlue] = "#40B4F3",
+        [MissionPlannerThemeVariants.LightLightBlue] = "#0063A7",
+        [MissionPlannerThemeVariants.DarkTeal] = "#33C2B0",
+        [MissionPlannerThemeVariants.LightTeal] = "#00776F",
+        [MissionPlannerThemeVariants.DarkCyan] = "#38BBC6",
+        [MissionPlannerThemeVariants.LightCyan] = "#016979",
+        [MissionPlannerThemeVariants.DarkGreen] = "#5DC264",
+        [MissionPlannerThemeVariants.LightGreen] = "#25772F",
+        [MissionPlannerThemeVariants.DarkGrey] = "#888D92",
+        [MissionPlannerThemeVariants.LightGrey] = "#6B7075",
+        [MissionPlannerThemeVariants.DarkAIPurple] = "#C375FF",
+        [MissionPlannerThemeVariants.LightAIPurple] = "#8636DB",
+    };
 
     /// <summary>Builds the real application styles without a vehicle or desktop lifetime.</summary>
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure(() =>
@@ -39,9 +67,11 @@ public sealed class PaletteThemeRenderingTests
             await session.Dispatch(() =>
             {
                 var app = Application.Current!;
+                Assert.All(expectedColors.Keys, variant =>
+                    Assert.Contains(AvaloniaThemeCatalog.Items, item => item.Theme == variant));
                 app.RequestedThemeVariant = ThemeVariant.Dark;
                 // Resolve inactive palettes first: this catches aliases binding to the active base theme.
-                foreach (var variant in paletteVariants.Reverse())
+                foreach (var variant in expectedColors.Keys.Reverse())
                 {
                     VerifyAliases(app, variant);
                     VerifyStatusAndContrast(app, variant);
@@ -67,7 +97,7 @@ public sealed class PaletteThemeRenderingTests
                         other.UpdateLayout();
                         Assert.Equal(MissionPlannerThemeVariants.DarkPurple, other.ActualThemeVariant);
                         VerifyRendered(otherPreview, MissionPlannerThemeVariants.DarkPurple);
-                        if (paletteVariants.Contains(item.Theme))
+                        if (expectedColors.ContainsKey(item.Theme))
                         {
                             Assert.Equal(item.Theme, window.ActualThemeVariant);
                             VerifyAliases(app, item.Theme);
@@ -126,12 +156,7 @@ public sealed class PaletteThemeRenderingTests
             Assert.Equal(Brush(app, key, variant.InheritVariant!).Color, Brush(app, key, variant).Color);
             Assert.Equal(Brush(app, key, variant.InheritVariant!).Opacity, Brush(app, key, variant).Opacity);
         }
-        var expected = variant.Key.ToString() switch
-        {
-            "DarkOrange" => "#D56F0F", "LightOrange" => "#A84A00",
-            "DarkPurple" => "#CA78D1", "LightPurple" => "#871E9E",
-            _ => throw new InvalidOperationException()
-        };
+        var expected = expectedColors[variant];
         foreach (var key in new[] { "SemiColorPrimary", "SemiColorSecondary", "SemiColorInformation" })
         {
             Assert.Equal(Color.Parse(expected), Brush(app, key, variant).Color);

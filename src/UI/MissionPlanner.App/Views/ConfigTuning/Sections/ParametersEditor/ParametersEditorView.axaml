@@ -14,23 +14,21 @@
              x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorView"
              x:DataType="parametersEditor:ParametersEditorViewModel"
              >
-    <ScrollViewer x:Name="EditorScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
     <Grid
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
         RowDefinitions="Auto,Auto"
         RowSpacing="10"
         Margin="25">
-
         <TextBlock Grid.Row="0"
                    Classes="H2" Text="Edit Parameters Values"
                    HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
 
         <Border Grid.Row="1" HorizontalAlignment="Stretch" MaxWidth="900"
                 VerticalAlignment="Stretch"
-                Classes="SectionCard">
+                >
 
-            <Grid RowDefinitions="Auto,Auto" RowSpacing="25" >
+            <Grid RowDefinitions="Auto,Auto" RowSpacing="20" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
@@ -48,16 +46,36 @@
                     </controls:InformationDocumentView.Document>
                 </controls:InformationDocumentView>
 
-                <Border Grid.Row="1" CornerRadius="10" Padding="25">
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="20" RowSpacing="25"
-                          RowDefinitions="Auto,Auto,Auto"
-                          >
-                        <Grid Grid.Row="0" Grid.Column="0" 
+                <Border Grid.Row="1" CornerRadius="10" >
+                    <Grid
+                        RowDefinitions="Auto,Auto,*"
+                        RowSpacing="5"
+                        >
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10"
+                                    Margin="0,0,0,20"
+                                    HorizontalAlignment="Center"  VerticalAlignment="Center">
+                            <Button Classes="ToolbarIconButton"
+                                    ToolTip.Tip="Clear Editor"
+                                    IsEnabled="{Binding !ApplyModifiedCommand.IsRunning}"
+                                    Command="{Binding ClearCommand}">
+                                <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon"  />
+                            </Button>
+                            <Button Classes="ToolbarIconButton"
+                                    ToolTip.Tip="Apply modified"
+                                    VerticalAlignment="Center"
+                                    Command="{Binding ApplyModifiedCommand}"  >
+                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon"  />
+                            </Button>
+                        </StackPanel>
+                        <Grid Grid.Row="1"
+                              Grid.Column="0"
                               ColumnSpacing="10"
                               ColumnDefinitions="Auto,*,Auto"
                               HorizontalAlignment="Stretch"
+
                               IsEnabled="{Binding !ApplyModifiedCommand.IsRunning}">
-                            <avalonia:MaterialIcon 
+                            <avalonia:MaterialIcon
                                 Grid.Column="0"
                                 Kind="Magnify"  Classes="ActionIcon" VerticalAlignment="Center" />
                             <AutoCompleteBox
@@ -68,70 +86,67 @@
                                 FilterMode="Contains" MinimumPrefixLength="1"
                                 PlaceholderText="Search vehicle parameters"
                                 AutomationProperties.Name="Search vehicle parameters" />
-                        </Grid>
 
-                        <Button Grid.Row="0"  Grid.Column="1" Classes="EmbeddedIconButton" Command="{Binding AddParameterCommand}"
-                                ToolTip.Tip="Add selected parameter with its current value"
-                                AutomationProperties.Name="Add selected parameter">
-                            <avalonia:MaterialIcon Kind="Plus" Classes="ActionIcon" />
-                        </Button>
-
-                        <StackPanel  Grid.Row="1" Grid.Column="1" Orientation="Vertical" Spacing="10"
-                                     HorizontalAlignment="Center"  VerticalAlignment="Center">
-                            <Button Classes="EmbeddedIconButton"
-                                    ToolTip.Tip="Clear"
-                                    IsEnabled="{Binding !ApplyModifiedCommand.IsRunning}"
-                                    Command="{Binding ClearCommand}">
-                                <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon" />
+                            <Button Grid.Row="0" Grid.Column="2"
+                                     Command="{Binding AddParameterCommand}"
+                                    ToolTip.Tip="Add selected parameter with its current value"
+                                    AutomationProperties.Name="Add selected parameter">
+                                <avalonia:MaterialIcon Kind="Plus" Classes="ActionIcon"  />
                             </Button>
-                            <Button Classes="EmbeddedIconButton"
-                                    ToolTip.Tip="Apply modified"
-                                    VerticalAlignment="Center"
-                                    Command="{Binding ApplyModifiedCommand}"  >
-                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
-                            </Button>
-                        </StackPanel>
-
-                        <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
-                            <TextBlock Text="Add vehicle values:" Classes="H4" />
-                            <TextBox  Grid.Row="1" Grid.Column="0"
-                                      x:Name="ParameterTextEditor"
-                                      AcceptsReturn="True"
-                                      Focusable="True"
-                                      Padding="10"
-                                      IsReadOnly="{Binding ApplyModifiedCommand.IsRunning}"
-                                      Text="{Binding Text, Mode=TwoWay}"
-                                      FontSize="11"
-                                      MaxLines="2000"
-                                      MinHeight="400"
-                                      MaxHeight="600"
-                                      VerticalContentAlignment="Top"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"
-                                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                      ScrollViewer.VerticalScrollBarVisibility="Auto" />
                         </Grid>
+                        
+                        <ScrollViewer  Grid.Row="2"
+                                       Grid.Column="0"
+                                       Margin="0,20"
+                                       x:Name="EditorScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 
-                        <Grid Grid.Row="2" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
-                            <TextBlock Text="Current vehicle values:" Classes="H4" />
-                            <TextBox x:Name="CurrentParameterValues" Grid.Row="1" Padding="10" FontSize="11"
-                                      MaxLines="2000"
-                                      MinHeight="200"
-                                      MaxHeight="600"
-                                      Text="{Binding UsedParametersText}"
-                                      IsReadOnly="True"
-                                      VerticalContentAlignment="Top"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalAlignment="Stretch"
-                                      AutomationProperties.Name="Current values of entered parameters"
-                                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                      />
-                        </Grid>
+                            <Grid RowSpacing="25" RowDefinitions="*,Auto">
+                                <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
+                                    <TextBlock Text="Add vehicle values:" Classes="H4" />
+                                    <TextBox  Grid.Row="1" Grid.Column="0"
+                                              x:Name="ParameterTextEditor"
+                                              AcceptsReturn="True"
+                                              Focusable="True"
+                                              Padding="10"
+                                              IsReadOnly="{Binding ApplyModifiedCommand.IsRunning}"
+                                              Text="{Binding Text, Mode=TwoWay}"
+                                              FontSize="11"
+                                              MaxLines="2000"
+                                              MinHeight="200"
+                                              VerticalContentAlignment="Top"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"
+                                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                              ScrollViewer.VerticalScrollBarVisibility="Auto" />
+                                </Grid>
+                                <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
+                                    <TextBlock Text="Current vehicle values:" Classes="H4" />
+                                    <TextBox x:Name="CurrentParameterValues" Grid.Row="1" Padding="10" FontSize="11"
+                                             MaxLines="2000"
+                                             MinHeight="100"
+                                             Text="{Binding UsedParametersText}"
+                                             IsReadOnly="True"
+                                             VerticalContentAlignment="Top"
+                                             HorizontalAlignment="Stretch"
+                                             VerticalAlignment="Stretch"
+                                             AutomationProperties.Name="Current values of entered parameters"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             />
+                                </Grid>
+                            </Grid>
+                        </ScrollViewer>
                     </Grid>
                 </Border>
             </Grid>
         </Border>
+
     </Grid>
-    </ScrollViewer>
+
 </UserControl>
+
+<!--
+<ScrollViewer x:Name="EditorScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+
+</ScrollViewer>
+-->

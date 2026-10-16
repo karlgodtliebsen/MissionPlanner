@@ -201,7 +201,7 @@
                                 <u:Form
                                     LabelPosition="Left">
                                     <ComboBox
-                                        Width="110"
+                                        Width="220"
                                         u:FormItem.Label="Theme"
                                         DisplayMemberBinding="{Binding Name}"
                                         ItemsSource="{Binding Themes}"

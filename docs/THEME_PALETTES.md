@@ -12,7 +12,7 @@ or copied control templates are needed.
 | `Tokens/Base/Dark.axaml`, `Light.axaml` | Raw Semi color scales, neutral surfaces, text, shadows, status colors | All palettes of that brightness |
 | `Tokens/Accent.axaml` | Maps palette inputs to Semi primary, secondary, information, link and focus roles | All palettes |
 | `Themes/Dark/`, `Themes/Light/` | Maps semantic roles to Semi and Ursa control states | All palettes of that brightness |
-| `Palettes/Orange/`, `Palettes/Purple/` | Selects accent shades and readable foreground colors; composes the shared layers | One palette, with Dark and Light files |
+| `Palettes/<Name>/` | Selects accent shades and readable foreground colors; composes the shared layers | One palette, with Dark and Light files |
 | `MissionPlannerTheme.axaml` | Registers the composed dictionaries under named Avalonia variants | Application |
 
 The former `Themes/DarkOrange` and `Themes/LightOrange` directories are now the shared
@@ -68,8 +68,16 @@ The inputs are `PaletteNormalColor`, `PaletteHoverColor`, `PalettePressedColor`,
 Dark and Light need independently chosen shades and foregrounds; equal scale indices
 do not imply equivalent contrast.
 
-Orange IDs remain `dark-orange` and `light-orange`. Purple provides a second working
-example using `dark-purple` and `light-purple`. Default, Light, Dark and the existing
+The selector offers Dark and Light appearances for Orange, Purple, Red, Pink, Violet,
+Indigo, Yellow, Lime, Light Green, Light Blue, Teal, Cyan, Green, Grey, and AI Purple.
+These are thirty palette variants, backed by the same shared control resources.
+Each family uses its corresponding `Semi<Name><Shade>Color` tokens; normal, hover,
+pressed and on-accent shades are chosen independently for readable text. In particular,
+Light Yellow and Light Lime use darker normal fills and a dark foreground when pressed.
+
+Orange IDs remain `dark-orange` and `light-orange`. All other palette IDs follow the
+same pattern, including `dark-light-green`, `light-light-blue`, and `dark-ai-purple`.
+Default, Light, Dark and the existing
 Semi high-contrast choices retain their original providers. Aquatic, Desert, Dusk and
 Night Sky are independent of this composition; adding normal palettes does not require
 any high-contrast dictionaries or changes to those choices.
@@ -81,7 +89,7 @@ control aliases for inactive palettes before switching, compares status/neutral 
 with their base appearances, checks accent text contrast, switches the complete catalog
 in both directions, and verifies real Semi buttons and Ursa banners in two windows.
 One window retains Purple while the other changes, including Orange at the same brightness.
-Set `MISSIONPLANNER_VISUAL_TEST_OUTPUT` to export the four control previews.
+Set `MISSIONPLANNER_VISUAL_TEST_OUTPUT` to export the thirty control previews.
 
 Run rendering fixtures in separate processes from fixtures using a different headless
 drawing configuration. For example, after building the UI test project:
@@ -94,7 +102,7 @@ These checks cover compiled resources and headless rendering, not native window 
 OS appearance notifications, assistive technology, or connected-vehicle behavior.
 Upstream resource licenses remain in `MissionPlanner.Themes/Licenses`.
 
-Verified on 16 October 2026: the theme library built with zero warnings/errors; the full
+Initial refactor verified on 16 October 2026: the theme library built with zero warnings/errors; the full
 UI test project built with zero errors and 56 existing warnings. Nine tests passed across
 the palette rendering, catalog, readiness rendering and compass information document
 fixtures. The palette fixture checks over 700 control aliases per variant, all eleven
@@ -104,3 +112,16 @@ Reviewed previews: [Dark Orange](images/theme-palettes/palette-dark-orange.png),
 [Light Orange](images/theme-palettes/palette-light-orange.png),
 [Dark Purple](images/theme-palettes/palette-dark-purple.png), and
 [Light Purple](images/theme-palettes/palette-light-purple.png).
+
+The expanded palette set was verified on 16 October 2026 with a successful full UI test
+project build (zero errors, 56 existing warnings) and 23 passing tests across the catalog,
+palette rendering, and diagnostic-menu/layout fixtures. All thirty palettes rendered,
+all thirty-seven selector choices switched in both directions, and palette foregrounds
+passed the existing 4.5:1 text contrast checks. The top-bar selector is wider to accommodate
+the longer family names. Its tests now account for the existing Parameters Editor action
+and skip menu separators when exercising actions.
+
+Additional reviewed previews: [Light Yellow](images/theme-palettes/palette-light-yellow.png),
+[Light Green](images/theme-palettes/palette-light-green.png),
+[Dark Grey](images/theme-palettes/palette-dark-grey.png), and
+[Dark AI Purple](images/theme-palettes/palette-dark-ai-purple.png).

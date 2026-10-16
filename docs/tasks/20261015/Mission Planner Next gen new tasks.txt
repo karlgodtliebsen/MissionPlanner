@@ -1,10 +1,7 @@
 Mission Planner Next gen new tasks
 
 ********************************************************
-
-
-
-New color scheme
+New color scheme -> Done
 ********************************************************
 
 Based on the very popular use of orange, like in this VLC style improvements, 
@@ -31,33 +28,27 @@ https://github.com/irihitech/Semi.Avalonia/blob/main/docs/Dark.png
 
 
 ********************************************************
-
-
 Motor test
+********************************************************
+During motor test, when pressing Test an additional popup appears, to warn the user about propellars
+This is good from a security standpoint, but bothers when testing many motors/same motor multiple times
+
+Please remove that, and add a Checkbox that warns and when Unchecked the buttons are disabled, and when checked the buttons are enabled.
+
+
 
 ********************************************************
-During motor test, when pressing 
-
-
-
-
-
-********************************************************
-
-
 Install Firmware
+********************************************************
+
 I just flashed a new Foxeer F405 V2+ FC
 After flashing, when I disconnect the FC to get it started up on Ardupilot mode, Mission Planner Next Gen waits. It takes some time, but the Windows Device Settings eventually registers the FC as an Ardupilot device.
 However Mission Planner Next Gen continues waiting.
 I chose to cancel, and apart from some messages about Cancelled DFU Bootloader, I could connect to the FC, parameters got loaded etc.
-
-
 ********************************************************
 
 
 ********************************************************
-
-
 Extending Parameters Editor functionality:
 ********************************************************
 
