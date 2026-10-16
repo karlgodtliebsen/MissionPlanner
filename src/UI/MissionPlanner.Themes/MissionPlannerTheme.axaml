@@ -6,9 +6,13 @@
         <ResourceDictionary>
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceInclude x:Key="{x:Static local:MissionPlannerThemeVariants.DarkOrange}"
-                                 Source="avares://MissionPlanner.Themes/Themes/DarkOrange/_index.axaml" />
+                                 Source="avares://MissionPlanner.Themes/Palettes/Orange/Dark.axaml" />
                 <ResourceInclude x:Key="{x:Static local:MissionPlannerThemeVariants.LightOrange}"
-                                 Source="avares://MissionPlanner.Themes/Themes/LightOrange/_index.axaml" />
+                                 Source="avares://MissionPlanner.Themes/Palettes/Orange/Light.axaml" />
+                <ResourceInclude x:Key="{x:Static local:MissionPlannerThemeVariants.DarkPurple}"
+                                 Source="avares://MissionPlanner.Themes/Palettes/Purple/Dark.axaml" />
+                <ResourceInclude x:Key="{x:Static local:MissionPlannerThemeVariants.LightPurple}"
+                                 Source="avares://MissionPlanner.Themes/Palettes/Purple/Light.axaml" />
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

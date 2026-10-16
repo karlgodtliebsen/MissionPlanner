@@ -16,6 +16,8 @@ public static class AvaloniaThemeCatalog
         new("dark", "Dark", ThemeVariant.Dark),
         new("dark-orange", "Dark Orange", MissionPlannerThemeVariants.DarkOrange),
         new("light-orange", "Light Orange", MissionPlannerThemeVariants.LightOrange),
+        new("dark-purple", "Dark Purple", MissionPlannerThemeVariants.DarkPurple),
+        new("light-purple", "Light Purple", MissionPlannerThemeVariants.LightPurple),
         new("aquatic", "Aquatic", SemiTheme.Aquatic),
         new("desert", "Desert", SemiTheme.Desert),
         new("dusk", "Dusk", SemiTheme.Dusk),

@@ -73,6 +73,9 @@ Saved settings raise one observable change event containing previous/current imm
 snapshots and the affected restart-bound sections.
 
 * Theme changes preview immediately and persist through the same settings service.
+  Orange and Purple variants use shared Dark/Light control resources with separate palette
+  mappings; stable theme IDs continue to round-trip through settings. See
+  [THEME_PALETTES.md](THEME_PALETTES.md) for composition and adding palettes.
 * Connection defaults update the shared connection UI only while disconnected; saving
   preferences never interrupts an active vehicle connection.
 * Map default zoom is used by point-centering actions. Provider/style is selected when a

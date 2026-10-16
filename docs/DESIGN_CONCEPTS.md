@@ -1025,6 +1025,12 @@ When adding new functionality:
 
 # UI Shell and Persistent Chrome
 
+Next Gen appearance resources live in `MissionPlanner.Themes`. Named palettes compose
+shared Dark/Light base tokens and control mappings at compile time; palette files only
+select accent and on-accent colors. Installed Semi/Ursa packages retain template ownership.
+Each variant resolves its own static aliases, supporting simultaneous differently themed
+windows without global brush mutation. See [THEME_PALETTES.md](THEME_PALETTES.md).
+
 The Avalonia app uses `MainShellView` as the navigation container, with persistent chrome
 that survives page navigation:
 

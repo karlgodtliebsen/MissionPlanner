@@ -1,0 +1,34 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Palette inputs are resolved in each composed variant, never in the base provider. -->
+    <SolidColorBrush x:Key="SemiColorPrimary" Color="{StaticResource PaletteNormalColor}" />
+    <SolidColorBrush x:Key="SemiColorPrimaryPointerover" Color="{StaticResource PaletteHoverColor}" />
+    <SolidColorBrush x:Key="SemiColorPrimaryActive" Color="{StaticResource PalettePressedColor}" />
+    <SolidColorBrush x:Key="SemiColorPrimaryDisabled" Color="{StaticResource PaletteDisabledColor}" />
+    <SolidColorBrush x:Key="SemiColorPrimaryLight" Color="{StaticResource PaletteSubtleColor}" />
+    <SolidColorBrush x:Key="SemiColorPrimaryLightPointerover" Color="{StaticResource PaletteSubtleHoverColor}" />
+    <SolidColorBrush x:Key="SemiColorPrimaryLightActive" Color="{StaticResource PaletteSubtlePressedColor}" />
+    <SolidColorBrush x:Key="SemiColorSecondary" Color="{StaticResource PaletteNormalColor}" />
+    <SolidColorBrush x:Key="SemiColorSecondaryPointerover" Color="{StaticResource PaletteHoverColor}" />
+    <SolidColorBrush x:Key="SemiColorSecondaryActive" Color="{StaticResource PalettePressedColor}" />
+    <SolidColorBrush x:Key="SemiColorSecondaryDisabled" Color="{StaticResource PaletteDisabledColor}" />
+    <SolidColorBrush x:Key="SemiColorSecondaryLight" Color="{StaticResource PaletteSubtleColor}" />
+    <SolidColorBrush x:Key="SemiColorSecondaryLightPointerover" Color="{StaticResource PaletteSubtleHoverColor}" />
+    <SolidColorBrush x:Key="SemiColorSecondaryLightActive" Color="{StaticResource PaletteSubtlePressedColor}" />
+    <SolidColorBrush x:Key="SemiColorInformation" Color="{StaticResource PaletteNormalColor}" />
+    <SolidColorBrush x:Key="SemiColorInformationPointerover" Color="{StaticResource PaletteHoverColor}" />
+    <SolidColorBrush x:Key="SemiColorInformationActive" Color="{StaticResource PalettePressedColor}" />
+    <SolidColorBrush x:Key="SemiColorInformationDisabled" Color="{StaticResource PaletteDisabledColor}" />
+    <SolidColorBrush x:Key="SemiColorInformationLight" Color="{StaticResource PaletteSubtleColor}" />
+    <SolidColorBrush x:Key="SemiColorInformationLightPointerover" Color="{StaticResource PaletteSubtleHoverColor}" />
+    <SolidColorBrush x:Key="SemiColorInformationLightActive" Color="{StaticResource PaletteSubtlePressedColor}" />
+    <SolidColorBrush x:Key="SemiColorLink" Color="{StaticResource PaletteTextColor}" />
+    <SolidColorBrush x:Key="SemiColorLinkPointerover" Color="{StaticResource PaletteTextColor}" />
+    <SolidColorBrush x:Key="SemiColorLinkActive" Color="{StaticResource PaletteTextColor}" />
+    <SolidColorBrush x:Key="SemiColorLinkVisited" Color="{StaticResource PaletteTextColor}" />
+    <SolidColorBrush x:Key="SemiColorFocusBorder" Color="{StaticResource PaletteTextColor}" />
+    <SolidColorBrush x:Key="MissionAccentText" Color="{StaticResource PaletteTextColor}" />
+    <SolidColorBrush x:Key="MissionOnPrimary" Color="{StaticResource PaletteOnAccentColor}" />
+    <SolidColorBrush x:Key="MissionOnPrimaryHover" Color="{StaticResource PaletteOnAccentHoverColor}" />
+    <SolidColorBrush x:Key="MissionOnPrimaryPressed" Color="{StaticResource PaletteOnAccentPressedColor}" />
+    <SolidColorBrush x:Key="MissionSelectionText" Color="{StaticResource PaletteSelectionTextColor}" />
+</ResourceDictionary>

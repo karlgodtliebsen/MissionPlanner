@@ -2,11 +2,11 @@
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Styling;
 using LiveMarkdown.Avalonia;
 using Markdig;
 using Markdig.Parsers.Inlines;
 using MissionPlanner.App.Presentation.Documents;
+using MissionPlanner.Themes;
 
 namespace MissionPlanner.App.Controls;
 
@@ -86,7 +86,7 @@ public partial class InformationDocumentView : UserControl
                 Renderer.Resources[target] = value;
             }
         }
-        Renderer.CodeBlockColorTheme = ActualThemeVariant == ThemeVariant.Dark
+        Renderer.CodeBlockColorTheme = MissionPlannerThemeVariants.IsDark(ActualThemeVariant)
             ? TextMateSharp.Grammars.ThemeName.DarkPlus : TextMateSharp.Grammars.ThemeName.LightPlus;
     }
 

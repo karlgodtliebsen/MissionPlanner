@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:u="https://irihi.tech/ursa"
+             x:Class="MissionPlanner.AvaloniaUI.Tests.PalettePreview">
+    <StackPanel Margin="24" Spacing="16">
+        <TextBlock Name="Title" Text="Palette controls" FontSize="28" />
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Name="Primary" Theme="{DynamicResource SolidButton}" Content="Primary" />
+            <Button Name="Secondary" Classes="Secondary" Theme="{DynamicResource SolidButton}" Content="Secondary" />
+            <Button Theme="{DynamicResource SolidButton}" IsEnabled="False" Content="Disabled" />
+            <Button Classes="Success" Theme="{DynamicResource SolidButton}" Content="Success" />
+            <Button Classes="Danger" Theme="{DynamicResource SolidButton}" Content="Danger" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="16">
+            <ToggleButton Name="Toggle" IsChecked="True" Content="Selected toggle" />
+            <CheckBox Name="Check" IsChecked="True" Content="Checked" />
+            <RadioButton IsChecked="True" Content="Selected" />
+            <ToggleSwitch IsChecked="True" />
+        </StackPanel>
+        <TextBox Name="Editor" Text="Selected text and input focus" SelectionStart="0" SelectionEnd="13" />
+        <Slider Value="60" />
+        <TabControl>
+            <TabItem Header="Selected tab"><TextBlock Text="Shared control resources, separate palette." /></TabItem>
+            <TabItem Header="Other tab" />
+        </TabControl>
+        <u:Banner Name="Information" Classes="Bordered" Type="Information" Header="Information" Content="Primary, secondary, and information follow the palette." />
+        <u:Banner Name="Success" Classes="Bordered" Type="Success" Header="Success" Content="Status colors retain their meaning." />
+        <u:Banner Name="Warning" Classes="Bordered" Type="Warning" Header="Warning" />
+        <u:Banner Name="Error" Classes="Bordered" Type="Error" Header="Error" />
+    </StackPanel>
+</UserControl>

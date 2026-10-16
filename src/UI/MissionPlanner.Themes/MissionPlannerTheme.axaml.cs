@@ -9,7 +9,7 @@ using Avalonia.Styling;
 
 namespace MissionPlanner.Themes;
 
-/// <summary>Installs named orange resources while retaining the installed Semi and Ursa templates.</summary>
+/// <summary>Composes palette variants with shared resources and installed Semi and Ursa templates.</summary>
 public partial class MissionPlannerTheme : Styles
 {
     private bool initialized;
@@ -28,7 +28,7 @@ public partial class MissionPlannerTheme : Styles
             return;
         }
         initialized = true;
-        foreach (var variant in new[] { MissionPlannerThemeVariants.DarkOrange, MissionPlannerThemeVariants.LightOrange })
+        foreach (var variant in Resources.ThemeDictionaries.Keys.ToArray())
         {
             var resources = new ResourceDictionary();
             resources.MergedDictionaries.Add(Resources.ThemeDictionaries[variant]);

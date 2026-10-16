@@ -749,6 +749,9 @@ while leaving Config warns before discarding them.
   replaces corrupt or invalid documents with validated safe defaults
 * Applies theme previews immediately and publishes all saved changes to observable runtime
   consumers; disconnected connection defaults and new-map defaults consume the live snapshot
+* Offers Orange and Purple palettes on shared Dark/Light control resources, preserving status
+  colors and the existing Semi themes; [palette composition](THEME_PALETTES.md) avoids copying
+  control resources for each new palette
 * Marks map tile-source/style, logging, and update-channel changes as restart-required
 * Resets individual sections or all settings and supports JSON import/export; unknown secret
   fields are ignored and exports contain only the typed non-secret model
