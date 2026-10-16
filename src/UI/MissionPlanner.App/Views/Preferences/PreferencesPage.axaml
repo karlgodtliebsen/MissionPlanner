@@ -24,7 +24,7 @@
                         <sections:ApplicationAppearanceTabView />
                     </StackPanel>
                 </TabItem>
-                <TabItem Header="Units and appearance">
+                <TabItem Header="Units">
                     <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
                         <sections:TopSectionView/>
                         <sections:UnitsAndAppearanceTabView />
