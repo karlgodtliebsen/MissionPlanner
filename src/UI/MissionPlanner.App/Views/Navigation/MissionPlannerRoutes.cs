@@ -15,9 +15,15 @@ public static class MissionPlannerRoutes
     public const string SetupOptionalHardware = "SetupOptionalHardware";
     public const string SetupArming = "SetupArming";
     public const string SetupAdvanced = "SetupAdvanced";
-    public const string Configuration = "ConfigurationPage";
-    public const string ConfigurationParametersEditor = Configuration + "#ParametersEditor";
-    public const string ConfigurationOnboardOsd = Configuration + "#OnboardOsd";
+
+    public const string ConfigurationGeoFence = "ConfigurationPageGeoFence";
+    public const string ConfigurationParametersEditor = "ConfigurationParametersEditor";
+    public const string ConfigurationBasicTuning = "ConfigurationBasicTuning";
+    public const string ConfigurationOnboardOsd = "ConfigurationOnboardOsd";
+    public const string ConfigurationExtendedTuning = "ConfigurationExtendedTuning";
+    public const string ConfigurationMavFtp = "ConfigurationMavFtp";
+    public const string ConfigurationCubeLan8PortSwitch = "ConfigurationCubeLan8PortSwitch";
+
     public const string Preferences = "Preferences";
     public const string Simulation = "Simulation";
     public const string Introduction = "IntroductionPage";

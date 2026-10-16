@@ -1,7 +1,7 @@
 ﻿namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 
 /// <summary>Displays the ParametersEditorTabView configuration workflow.</summary>
-public partial class ParametersEditorTabView : UserControlViewBase<ParametersEditorTabViewModel>
+public partial class ParametersEditorTabView : NavigationViewBase<ParametersEditorTabViewModel>
 {
     /// <summary>Initializes the ParametersEditorTabView.</summary>
     public ParametersEditorTabView()

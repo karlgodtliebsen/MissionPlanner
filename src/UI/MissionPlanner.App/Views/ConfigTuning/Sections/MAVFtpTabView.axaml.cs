@@ -4,7 +4,7 @@ using Avalonia.Input;
 namespace MissionPlanner.App.Views.ConfigTuning.Sections;
 
 /// <summary>Displays the MAVFtpTabView configuration workflow.</summary>
-public partial class MAVFtpTabView : UserControlViewBase<MavFtpTabViewModel>
+public partial class MAVFtpTabView : NavigationViewBase<MavFtpTabViewModel>
 {
     /// <summary>Initializes the MAVFtpTabView.</summary>
     public MAVFtpTabView()

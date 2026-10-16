@@ -1,16 +1,16 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:MavFtpTabViewModel"
-                               xmlns="https://github.com/avaloniaui"
-                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
-                               xmlns:models="clr-namespace:MissionPlanner.App.Models"
-                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
-                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                               x:Name="RootPage"
-                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.MAVFtpTabView"
-                               x:DataType="sections:MavFtpTabViewModel">
+<utilities:NavigationViewBase x:TypeArguments="sections:MavFtpTabViewModel"
+                              xmlns="https://github.com/avaloniaui"
+                              xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                              xmlns:models="clr-namespace:MissionPlanner.App.Models"
+                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                              xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              x:Name="RootPage"
+                              x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.MAVFtpTabView"
+                              x:DataType="sections:MavFtpTabViewModel">
     <ContentPage Header="Mav Ftp" >
 
         <Grid Margin="16" RowDefinitions="Auto,*,Auto" RowSpacing="12" HorizontalAlignment="Center">
@@ -87,4 +87,4 @@
             </StackPanel>
         </Grid>
     </ContentPage>
-</utilities:UserControlViewBase>
+</utilities:NavigationViewBase>

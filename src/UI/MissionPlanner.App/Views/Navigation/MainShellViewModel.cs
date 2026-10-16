@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -109,7 +109,11 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
         try
         {
             var route = navigationService.CurrentRoute;
-            if (route == MissionPlannerRoutes.Introduction) route = MissionPlannerRoutes.Help;
+            if (route == MissionPlannerRoutes.Introduction)
+            {
+                route = MissionPlannerRoutes.Help;
+            }
+
             SelectedMenuItem = FindMenuItem(MenuItems, route);
             Content = page;
             Inspector.SuggestContext(page.GetType().Name);
@@ -120,14 +124,25 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
     private static NavigationMenuItemViewModel? FindMenuItem(
         IEnumerable<NavigationMenuItemViewModel> items, string? route)
     {
-        if (route is null) return null;
+        if (route is null)
+        {
+            return null;
+        }
+
         foreach (var item in items)
         {
             var child = FindMenuItem(item.Children, route);
-            if (child is not null) return child;
+            if (child is not null)
+            {
+                return child;
+            }
+
             if (item.Route is { } target && (route == target ||
                 route.StartsWith(target + "#", StringComparison.Ordinal) ||
-                route.StartsWith(target + "/", StringComparison.Ordinal))) return item;
+                route.StartsWith(target + "/", StringComparison.Ordinal)))
+            {
+                return item;
+            }
         }
         return null;
     }
@@ -169,7 +184,19 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
                 new("Arming", MissionPlannerRoutes.SetupArming),
                 new("Advanced", MissionPlannerRoutes.SetupAdvanced)
             ]),
-            new("Configuration", MissionPlannerRoutes.Configuration, icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_tuningconfig_icon.png")),
+            //MissionPlannerRoutes.Configuration,
+            new("Configuration",  icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_tuningconfig_icon.png"), children:
+            [
+                new("GeoFence", MissionPlannerRoutes.ConfigurationGeoFence),
+                new("Basic Tuning", MissionPlannerRoutes.ConfigurationBasicTuning),
+                new("Extended Tuning", MissionPlannerRoutes.ConfigurationExtendedTuning),
+                new("Onboard OSD", MissionPlannerRoutes.ConfigurationOnboardOsd),
+                new("Mavlink Ftp", MissionPlannerRoutes.ConfigurationMavFtp),
+                new("Parameters Editor", MissionPlannerRoutes.ConfigurationParametersEditor),
+                new("CubeLan 8 Port Switch", MissionPlannerRoutes.ConfigurationCubeLan8PortSwitch)
+            ]),
+
+
             new("Logs", MissionPlannerRoutes.Logs),
             new("Preferences", MissionPlannerRoutes.Preferences),
             new("Simulation", MissionPlannerRoutes.Simulation, LoadImage("avares://MissionPlanner.App/Resources/Images/light_simulation_icon.png")),

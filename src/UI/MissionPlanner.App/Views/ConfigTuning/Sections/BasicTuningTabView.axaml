@@ -1,16 +1,16 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:BasicTuningTabViewModel"
-                               xmlns="https://github.com/avaloniaui"
-                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
-                               xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
-                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
-                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.BasicTuningTabView"
-                               x:DataType="sections:BasicTuningTabViewModel">
+﻿<utilities:NavigationViewBase x:TypeArguments="sections:BasicTuningTabViewModel"
+                              xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                              xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                              xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                              xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.BasicTuningTabView"
+                              x:DataType="sections:BasicTuningTabViewModel">
 
     <ContentPage Header="Basic Tuning"  >
 
@@ -155,4 +155,4 @@
             </ScrollViewer>
         </Grid>
     </ContentPage>
-</utilities:UserControlViewBase>
+</utilities:NavigationViewBase>

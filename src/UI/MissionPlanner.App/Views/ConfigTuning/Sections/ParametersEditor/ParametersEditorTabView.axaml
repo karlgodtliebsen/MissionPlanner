@@ -1,17 +1,17 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="parametersEditor:ParametersEditorTabViewModel"
-                               xmlns="https://github.com/avaloniaui"
-                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
-                               xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
-                               xmlns:parametersEditor="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
-                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                               xmlns:u="https://irihi.tech/ursa"
-                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabView"
-                               x:DataType="parametersEditor:ParametersEditorTabViewModel">
+﻿<utilities:NavigationViewBase x:TypeArguments="parametersEditor:ParametersEditorTabViewModel"
+                              xmlns="https://github.com/avaloniaui"
+                              xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                              xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                              xmlns:parametersEditor="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
+                              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                              xmlns:u="https://irihi.tech/ursa"
+                              x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabView"
+                              x:DataType="parametersEditor:ParametersEditorTabViewModel">
 
     <ContentPage Header="Parameters Editor"  >
 
@@ -459,4 +459,4 @@
             </TabControl>
         </Grid>
     </ContentPage>
-</utilities:UserControlViewBase>
+</utilities:NavigationViewBase>
