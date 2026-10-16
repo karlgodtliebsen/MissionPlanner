@@ -81,7 +81,9 @@ public sealed class ParameterNotificationThreadingTests
             Substitute.For<IParameterProfileService>(),
             Substitute.For<IVehicleParameterLoadStatusContext>(),
             NullLogger<ParametersEditorTabViewModel>.Instance,
-            Substitute.For<IVehicleConnectionService>());
+            Substitute.For<IVehicleConnectionService>(),
+            new MissionPlanner.Core.ConfigTuning.Comparison.ParameterComparisonService(ParameterValueEquivalence.Default),
+            Substitute.For<MissionPlanner.Library.DateTime.Domain.IDateTimeProvider>());
 
 
 

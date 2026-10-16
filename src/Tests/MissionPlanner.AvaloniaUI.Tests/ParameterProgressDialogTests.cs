@@ -24,6 +24,89 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 [Collection("Design preview")]
 public sealed class ParameterProgressDialogTests
 {
+    /// <summary>The embedded text editor uses the same confirmed, name-scoped write workflow as standalone editors.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task QuickEditorTabAppliesOnlyEnteredValuesAfterConfirmation(bool accepted)
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        fixture.ConfigureWrite(false);
+        fixture.Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(accepted);
+        fixture.Session.TrySetPending("TEST_PARAM", 2, out Arg.Any<string?>()).Returns(true);
+        fixture.Model.SelectedTabIndex = 1;
+        var editor = fixture.Model.QuickEditor;
+        editor.Text = "TEST_PARAM = 2";
+        Assert.False(editor.ShowToolbar);
+        Assert.Equal("TEST_PARAM = 1", editor.UsedParametersText);
+
+        fixture.Model.SelectedTabIndex = 0;
+        fixture.Model.SelectedTabIndex = 1;
+        Assert.Same(editor, fixture.Model.QuickEditor);
+        Assert.Equal("TEST_PARAM = 2", editor.Text);
+        await editor.ApplyModifiedCommand.ExecuteAsync(null);
+
+        fixture.Session.Received(1).CreateWritePlan(Arg.Is<IReadOnlyList<string>>(names => names.Count == 1 && names[0] == "TEST_PARAM"));
+        Assert.Equal(accepted ? 1 : 0, fixture.Session.ReceivedCalls().Count(call => call.GetMethodInfo().Name == "ApplyAsync"));
+        Assert.Contains(accepted ? "Confirmed" : "cancelled", editor.StatusMessage);
+    }
+
+    /// <summary>Changing tabs never writes; comparison Apply retains confirmation and the owning window's host.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ComparisonTabUsesCurrentSessionAndConfirmedApply(bool accepted)
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        fixture.ConfigureWrite(false);
+        fixture.Session.Fields.Returns(new[]
+        {
+            new ParameterEditField("TEST_PARAM", MavParamType.Real32, 1, 1, 2, ParameterFieldMetadata.Empty, null)
+        });
+        fixture.Model.DialogHostId = "parameters-window";
+        fixture.Dialogs.ConfirmAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string>(),
+            Arg.Any<CancellationToken>(), "parameters-window").Returns(accepted);
+
+        fixture.Model.SelectedTabIndex = 2;
+        Assert.Equal("TEST_PARAM", Assert.Single(fixture.Model.Items).Name);
+        Assert.DoesNotContain(fixture.Session.ReceivedCalls(), call => call.GetMethodInfo().Name == "ApplyAsync");
+        Assert.True(fixture.Model.ApplyModifiedCommand.CanExecute(null));
+        await fixture.Model.ApplyModifiedCommand.ExecuteAsync(null);
+
+        await fixture.Dialogs.Received(1).ConfirmAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(),
+            Arg.Any<string>(), Arg.Any<CancellationToken>(), "parameters-window");
+        Assert.Equal(accepted ? 1 : 0, fixture.Session.ReceivedCalls().Count(call => call.GetMethodInfo().Name == "ApplyAsync"));
+    }
+
+    /// <summary>Replacing the session discards text associated with the previous vehicle.</summary>
+    [Fact]
+    public async Task QuickEditorTabClearsTextWhenSessionChanges()
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        var editor = fixture.Model.QuickEditor;
+        editor.Text = "TEST_PARAM = 2";
+        var replacement = Substitute.For<IParameterEditSession>();
+        replacement.IsValid.Returns(true);
+        replacement.Fields.Returns(new[]
+        {
+            new ParameterEditField("OTHER_PARAM", MavParamType.Real32, 3, 3, 3, ParameterFieldMetadata.Empty, null)
+        });
+
+        typeof(ParametersViewModel).GetMethod("AttachSession", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(fixture.Model, [replacement]);
+
+        Assert.Empty(editor.Text);
+        Assert.Equal(new[] { "OTHER_PARAM" }, editor.ParameterNames);
+        Assert.False(editor.ApplyModifiedCommand.CanExecute(null));
+        Assert.DoesNotContain(replacement.ReceivedCalls(), call => call.GetMethodInfo().Name == "ApplyAsync");
+    }
+
     [Theory]
     [InlineData(true, false)]
     [InlineData(false, false)]
@@ -451,6 +534,8 @@ public sealed class ParameterProgressDialogTests
             var factory = Substitute.For<IParameterEditSessionFactory>();
             factory.Create(VehicleId).Returns(Session);
             Session.IsValid.Returns(true);
+            Session.Scope.Returns(new ParameterEditScope(VehicleId, null!));
+            DomainFactory.Create<ParametersEditorViewModel>().Returns(_ => new ParametersEditorViewModel(Dialogs));
             Session.Fields.Returns(new[]
             {
                 new ParameterEditField("TEST_PARAM", MavParamType.Real32, 1, 1, 1, ParameterFieldMetadata.Empty, null)
@@ -482,7 +567,9 @@ public sealed class ParameterProgressDialogTests
                     Substitute.For<IParameterProfileService>(),
                     statusContext,
                     NullLogger<ParametersEditorTabViewModel>.Instance,
-                    Connections);
+                    Connections,
+                    new MissionPlanner.Core.ConfigTuning.Comparison.ParameterComparisonService(ParameterValueEquivalence.Default),
+                    Substitute.For<MissionPlanner.Library.DateTime.Domain.IDateTimeProvider>());
 
 
         }

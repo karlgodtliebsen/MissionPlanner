@@ -43,16 +43,14 @@ public sealed class QuickEditorLayoutTests
                     Assert.True(inputTop >= searchTop + search.Bounds.Height);
                     Assert.True(currentTop >= inputTop + input.Bounds.Height);
                     Assert.InRange(input.Bounds.Width, 100, width);
-                    if (height < 900)
-                    {
-                        Assert.True(scroll.Extent.Height > scroll.Viewport.Height);
-                        scroll.ScrollToEnd();
-                        Dispatcher.UIThread.RunJobs();
-                        Assert.True(scroll.Offset.Y > 0);
-                        Assert.True(current.TranslatePoint(default, view)!.Value.Y + current.Bounds.Height <= height);
-                        scroll.ScrollToHome();
-                        Dispatcher.UIThread.RunJobs();
-                    }
+                    // The compact editor can fit without scrolling in a medium window.
+                    // Whether scrolling is needed or not, both the viewport and final field must be reachable.
+                    Assert.InRange(scroll.TranslatePoint(default, view)!.Value.Y + scroll.Bounds.Height, 0, height);
+                    scroll.ScrollToEnd();
+                    Dispatcher.UIThread.RunJobs();
+                    Assert.InRange(current.TranslatePoint(default, view)!.Value.Y + current.Bounds.Height, 0, height);
+                    scroll.ScrollToHome();
+                    Dispatcher.UIThread.RunJobs();
                     var output = Environment.GetEnvironmentVariable("MISSIONPLANNER_VISUAL_TEST_OUTPUT");
                     if (!string.IsNullOrEmpty(output))
                     {

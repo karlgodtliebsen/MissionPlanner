@@ -5,98 +5,17 @@
     xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:u="https://irihi.tech/ursa"
     xmlns:parametersEditor="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
     mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
     x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterComparisonView"
-    x:DataType="parametersEditor:ParameterComparisonViewModel"
-    Margin="50"
+    x:DataType="parametersEditor:ParametersEditorTabViewModel"
     >
-    <Grid
-
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch"
-        RowDefinitions="Auto,*"
-        RowSpacing="10"
-        Margin="12">
-
-        <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-
-            <ComboBox
-                Width="140"
-                ToolTip.Tip="Apply Filters"
-                ItemsSource="{Binding Filters}"
-                SelectedItem="{Binding Filter}" />
-
-            <u:IconDropDownButton  >
-                <DropDownButton.Flyout>
-                    <MenuFlyout Placement="Bottom">
-                        <MenuItem
-                            ToolTip.Tip="Select all safe differences"
-                            Command="{Binding SelectAllSafeDifferencesCommand}" AutomationProperties.Name="Select all safe differences"
-                            Header="Select all safe differences">
-                            <MenuItem.Icon>
-                                <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <MenuItem ToolTip.Tip="Stage selected"
-                                  Command="{Binding StageSelectedDifferencesCommand}" AutomationProperties.Name="Stage selected"
-                                  Header="Stage selected">
-                            <MenuItem.Icon>
-                                <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                    </MenuFlyout>
-                </DropDownButton.Flyout>
-                <avalonia:MaterialIcon Kind="SelectAll" Width="30" Height="30" />
-            </u:IconDropDownButton>
-
-            <u:IconDropDownButton  >
-                <DropDownButton.Flyout>
-                    <MenuFlyout Placement="Bottom">
-                        <MenuItem
-                            ToolTip.Tip="Save to CSV file"
-                            Command="{Binding ExportCsvCommand}" AutomationProperties.Name="Export CSV"
-                            Header="Save to CSV file">
-                            <MenuItem.Icon>
-                                <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                        <MenuItem ToolTip.Tip="Save to JSON file"
-                                  Command="{Binding ExportJsonCommand}" AutomationProperties.Name="Export JSON"
-                                  Header="Save to JSON file">
-                            <MenuItem.Icon>
-                                <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                            </MenuItem.Icon>
-                        </MenuItem>
-                    </MenuFlyout>
-                </DropDownButton.Flyout>
-                <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-            </u:IconDropDownButton>
-            
-            <Button Classes="ToolbarButton"  ToolTip.Tip="Copy all" Width="100"  Command="{Binding CopyAllCommand}" AutomationProperties.Name="Copy all">
-                <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
-            </Button>
-            <Button Classes="ToolbarButton"
-                    ToolTip.Tip="Apply modified"
-                    VerticalAlignment="Center"  Width="100"
-                    Command="{Binding ApplyModifiedCommand}"  >
-                <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
-            </Button>
-
-            <!--            
-            <Button Classes="ToolbarButton" HorizontalAlignment="Right"
-            ToolTip.Tip="Close" Width="100" Command="{Binding OKCommand}">
-            <avalonia:MaterialIcon Kind="Check" Classes="ActionIcon" />
-            </Button>-->
-        </WrapPanel>
 
         <controls:VirtualizedItemsGrid
-
-            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
             ItemsSource="{Binding Items}"
-            ColumnWidths="70,175,150,150,175,100,*"
+            ColumnWidths="60,150,100,100,150,90,*"
             ColumnSpacing="6"
             RowMinHeight="38"
             ShowHeader="True"
@@ -110,7 +29,7 @@
                             Spacing="8"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center">
-                    <TextBlock Text="No parameters found."
+                    <TextBlock Text="No modified parameters found."
                                Classes="H3"
                                TextAlignment="Center" />
                 </StackPanel>
@@ -118,13 +37,13 @@
             <controls:VirtualizedItemsGrid.HeaderTemplate>
                 <DataTemplate>
                     <controls:VirtualizedItemsGridRow>
-                        <TextBlock Grid.Column="0" Text="Stage" Classes="DataGridColumn" />
-                        <TextBlock Grid.Column="1" Text="Parameter" Classes="DataGridColumn" />
-                        <TextBlock Grid.Column="2" Text="Live" Classes="DataGridColumn" />
-                        <TextBlock Grid.Column="3" Text="Right" Classes="DataGridColumn" />
-                        <TextBlock Grid.Column="4" Text="Difference" Classes="DataGridColumn" />
-                        <TextBlock Grid.Column="5" Text="Status" Classes="DataGridColumn" />
-                        <TextBlock Grid.Column="6" Text="Message" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="0" Text="Stage" HorizontalAlignment="Center" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="1" Text="Parameter" HorizontalAlignment="Center" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="2" Text="Live" HorizontalAlignment="Center" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="3" Text="Right" HorizontalAlignment="Center" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="4" Text="Difference" HorizontalAlignment="Center" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="5" Text="Status" HorizontalAlignment="Center" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="6" Text="Message" HorizontalAlignment="Center" Classes="DataGridColumn" />
                     </controls:VirtualizedItemsGridRow>
                 </DataTemplate>
             </controls:VirtualizedItemsGrid.HeaderTemplate>
@@ -136,15 +55,15 @@
                                   IsEnabled="{Binding CanStage}"
                                   HorizontalAlignment="Center"
                                   Classes="DataGridRow" />
-                        <TextBlock Grid.Column="1" Text="{Binding Name}" Classes="DataGridRow" />
-                        <TextBlock Grid.Column="2" Text="{Binding LeftValueText}" HorizontalAlignment="Right" Classes="DataGridRow" />
-                        <TextBlock Grid.Column="3" Text="{Binding RightValueText}" HorizontalAlignment="Right" Classes="DataGridRow" />
-                        <TextBlock Grid.Column="4" Text="{Binding DifferenceText}" HorizontalAlignment="Right" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" HorizontalAlignment="Center" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="2" Text="{Binding LeftValueText}" HorizontalAlignment="Center" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="3" Text="{Binding RightValueText}" HorizontalAlignment="Center" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="4" Text="{Binding DifferenceText}" HorizontalAlignment="Center" Classes="DataGridRow" />
                         <TextBlock Grid.Column="5" Text="{Binding Status}" HorizontalAlignment="Center" Classes="DataGridRow" />
-                        <TextBlock Grid.Column="6" Text="{Binding Message}" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="6" Text="{Binding Message}" HorizontalAlignment="Center" Classes="DataGridRow" />
                     </controls:VirtualizedItemsGridRow>
                 </DataTemplate>
             </controls:VirtualizedItemsGrid.RowTemplate>
         </controls:VirtualizedItemsGrid>
-    </Grid>
+    
 </UserControl>

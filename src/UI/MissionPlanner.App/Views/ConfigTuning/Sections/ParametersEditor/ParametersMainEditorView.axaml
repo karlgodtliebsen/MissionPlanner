@@ -12,466 +12,312 @@
              x:DataType="parametersEditor:ParametersEditorTabViewModel"
              >
 
+    <controls:VirtualizedItemsGrid
+        
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
+        ItemsSource="{Binding Parameters}"
+        ColumnWidths="160,100,180,100,100,100,100,125,150,*"
+        ColumnSpacing="6"
+        RowMinHeight="38"
+        ShowHeader="True"
+        ShowSearchBar="True"
+        SearchWatermark="Search by name or description..."
+        SearchMemberPaths="Name,DisplayName,Description,Range,Units,MavNumericType,WriteStatus"
+        ShowPagination="False"
+        >
 
+        <!-- ================================================= -->
+        <!-- Empty view               -->
+        <!-- ================================================= -->
 
-            <Grid RowDefinitions="Auto,*"
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Stretch"
-              Margin="10,0"
-              >
-            <StackPanel Orientation="Vertical" Grid.Row="0"
-                        Margin="0,10,0,0"
-                        HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
-                <WrapPanel Orientation="Horizontal"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" >
-                    <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file" >
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="Bottom">
-                                <MenuItem
-                                    ToolTip.Tip="Load from CSV file"
-                                    Command="{Binding LoadFromFileCommand}"
-                                    Header="Load from CSV file">
-                                    <MenuItem.Icon>
-                                        <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
+        <controls:VirtualizedItemsGrid.EmptyView >
 
-                                <MenuItem ToolTip.Tip="Load from json file"
-                                          Command="{Binding LoadFromJsonFileCommand}"
-                                          Header="Load from json file">
-                                    <MenuItem.Icon>
-                                        <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
+            <StackPanel Orientation="Vertical"
+                        Margin="40"
+                        Spacing="8"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center">
+                <avalonia:MaterialIcon Kind="BinEmpty" Width="30" Height="30"  />
 
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                        <avalonia:MaterialIcon Kind="FolderOpenOutline" Width="30" Height="30" />
-                    </u:IconDropDownButton>
-
-                    <u:IconDropDownButton ToolTip.Tip="Save to CSV or Json file">
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="Bottom">
-                                <MenuItem
-                                    ToolTip.Tip="Save to CSV file"
-                                    Command="{Binding SaveToFileCommand}"
-                                    Header="Save to CSV file">
-                                    <MenuItem.Icon>
-                                        <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem ToolTip.Tip="Save to json file"
-                                          Command="{Binding SaveToJsonFileCommand}"
-                                          Header="Save to json file">
-                                    <MenuItem.Icon>
-                                        <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                        <avalonia:MaterialIcon Kind="ContentSaveOutline" Width="30" Height="30" />
-                    </u:IconDropDownButton>
-
-                    <u:IconDropDownButton ToolTip.Tip="Parameters">
-                        <DropDownButton.Flyout>
-                            <MenuFlyout Placement="Bottom">
-                                <MenuItem
-                                    ToolTip.Tip="Apply modified Parameters"
-                                    Command="{Binding WriteParametersCommand}"
-                                    Header="Apply modified Parameters">
-                                    <MenuItem.Icon>
-                                        <avalonia:MaterialIcon Kind="CheckCircleOutline" Width="30" Height="30" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem ToolTip.Tip="Compare parameters"
-                                          Command="{Binding CompareParametersCommand}"
-                                          Header="Compare parameters">
-                                    <MenuItem.Icon>
-                                        <avalonia:MaterialIcon Kind="CompareHorizontal" Width="30" Height="30" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem ToolTip.Tip="Reload parameters"
-                                          Command="{Binding RefreshParametersCommand}"
-                                          Header="Reload parameters">
-                                    <MenuItem.Icon>
-                                        <avalonia:MaterialIcon Kind="Refresh" Width="30" Height="30" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                                <MenuItem ToolTip.Tip="Clear parameters"
-                                          Command="{Binding ClearParametersCommand}"
-                                          Header="Clear parameters">
-                                    <MenuItem.Icon>
-                                        <avalonia:MaterialIcon Kind="Eraser" Width="30" Height="30" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-
-                                <MenuItem ToolTip.Tip="Parameter profiles"
-                                Command="{Binding LoadPreSavedCommand}"
-                                Header="Parameter profiles">
-                                    <MenuItem.Icon>
-                                        <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
-                                    </MenuItem.Icon>
-                                </MenuItem>
-                            </MenuFlyout>
-                        </DropDownButton.Flyout>
-                        <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
-                    </u:IconDropDownButton>
-
-                    <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Quick Editor"
-                            VerticalAlignment="Center"
-                            Width="80" Command="{Binding UseQuickEditorCommand}"  >
-                        <avalonia:MaterialIcon Kind="ApplicationEditOutline" Width="30" Height="30" />
-                    </Button>
-
-                    <Button Classes="ToolbarButton"  ToolTip.Tip="Revert Changes"
-                            VerticalAlignment="Center"
-                            Width="80" Command="{Binding RevertChangesCommand}" >
-                        <avalonia:MaterialIcon Kind="FileUndoOutline" Width="30" Height="30" />
-                    </Button>
-                    <Button Classes="ToolbarButton" ToolTip.Tip="Copy all" Width="80" Command="{Binding CopyAllCommand}" AutomationProperties.Name="Copy all">
-                        <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" Width="30" Height="30" />
-                    </Button>
-
-
-                    <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Retry"
-                            VerticalAlignment="Center"
-                            Width="80" Command="{Binding RetryFailedCommand}"   >
-                        <avalonia:MaterialIcon Kind="ReloadAlert" Width="30" Height="30" />
-                    </Button>
-                    <Button Classes="ToolbarButton"
-                            ToolTip.Tip="Cancel Parameters Load"
-                            VerticalAlignment="Center"
-                            Width="80" Command="{Binding CancelLoadCommand}">
-                        <avalonia:MaterialIcon Kind="CloseCircleOutline" Width="30" Height="30" />
-                    </Button>
-
-                </WrapPanel>
-                <SelectableTextBlock Text="{Binding ErrorMessage}"
-                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
-                                     Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
-                <TextBlock Text="Vehicle Reboot required after confirmed changes"
-                           IsVisible="{Binding RebootRequired}"
-                           Classes="Warning H3"
-                           VerticalAlignment="Center" />
+                <Label
+                    Content="No parameters match the current filter."
+                    Classes="H3"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center" />
+                <Label
+                    Content="Refresh parameters or clear the search text to display parameters."
+                    Classes="H3"
+                    Opacity="0.75"
+                    HorizontalAlignment="Center"
+                    HorizontalContentAlignment="Center" />
             </StackPanel>
-            <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <controls:VirtualizedItemsGrid
-                    Grid.Row="0"
-                    Margin="25,10"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    ItemsSource="{Binding Parameters}"
-                    ColumnWidths="160,100,180,100,100,100,100,125,150,*"
-                    ColumnSpacing="6"
-                    RowMinHeight="38"
-                    ShowHeader="True"
-                    ShowSearchBar="True"
-                    SearchWatermark="Search by name or description..."
-                    SearchMemberPaths="Name,DisplayName,Description,Range,Units,MavNumericType,WriteStatus"
-                    ShowPagination="False"
-                    >
+        </controls:VirtualizedItemsGrid.EmptyView>
+        <!-- Header                                                       -->
 
-                    <!-- ================================================= -->
-                    <!-- Empty view               -->
-                    <!-- ================================================= -->
+        <controls:VirtualizedItemsGrid.HeaderTemplate>
+            <DataTemplate>
 
-                    <controls:VirtualizedItemsGrid.EmptyView >
+                <controls:VirtualizedItemsGridRow>
 
-                        <StackPanel Orientation="Vertical"
-                                    Margin="40"
-                                    Spacing="8"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Center">
-                            <avalonia:MaterialIcon Kind="BinEmpty" Width="30" Height="30"  />
+                    <TextBlock
 
-                            <Label
-                                Content="No parameters match the current filter."
-                                Classes="H3"
-                                HorizontalAlignment="Center"
-                                HorizontalContentAlignment="Center" />
-                            <Label
-                                Content="Refresh parameters or clear the search text to display parameters."
-                                Classes="H3"
-                                Opacity="0.75"
-                                HorizontalAlignment="Center"
-                                HorizontalContentAlignment="Center" />
-                        </StackPanel>
-                    </controls:VirtualizedItemsGrid.EmptyView>
-                    <!-- Header                                                       -->
+                        Grid.Column="0"
+                        Text="Param"
+                        Classes="DataGridColumn"
+                        />
 
-                    <controls:VirtualizedItemsGrid.HeaderTemplate>
-                        <DataTemplate>
+                    <TextBlock
+                        Grid.Column="1"
+                        Text="Value"
+                        Classes="DataGridColumn"
+                        />
 
-                            <controls:VirtualizedItemsGridRow>
+                    <TextBlock
+                        Grid.Column="2"
+                        Text="Selections"
+                        Classes="DataGridColumn"/>
 
-                                <TextBlock
+                    <TextBlock
+                        Grid.Column="3"
+                        Text="Range"
+                        Classes="DataGridColumn"/>
 
-                                    Grid.Column="0"
-                                    Text="Param"
-                                    Classes="DataGridColumn"
-                                    />
+                    <TextBlock
+                        Grid.Column="4"
+                        Text="StepSize"
+                        Classes="DataGridColumn"
+                        />
 
-                                <TextBlock
-                                    Grid.Column="1"
-                                    Text="Value"
-                                    Classes="DataGridColumn"
-                                    />
+                    <TextBlock
+                        Grid.Column="5"
+                        Text="Type"
+                        Classes="DataGridColumn"
+                        />
 
-                                <TextBlock
-                                    Grid.Column="2"
-                                    Text="Selections"
-                                    Classes="DataGridColumn"/>
+                    <TextBlock
+                        Grid.Column="6"
+                        Text="Baseline"
+                        ToolTip.Tip="First value in this vehicle/firmware editing session, not a factory default. Hover a value for provenance."
+                        Classes="DataGridColumn"
+                        />
 
-                                <TextBlock
-                                    Grid.Column="3"
-                                    Text="Range"
-                                    Classes="DataGridColumn"/>
+                    <TextBlock
+                        Grid.Column="7"
+                        Text="Units"
+                        Classes="DataGridColumn"
+                        />
 
-                                <TextBlock
-                                    Grid.Column="4"
-                                    Text="StepSize"
-                                    Classes="DataGridColumn"
-                                    />
+                    <TextBlock
+                        Grid.Column="8"
+                        Text="Write status"
+                        Classes="DataGridColumn"
+                        HorizontalAlignment="Center"
+                        />
 
-                                <TextBlock
-                                    Grid.Column="5"
-                                    Text="Type"
-                                    Classes="DataGridColumn"
-                                    />
+                    <TextBlock
+                        Grid.Column="9"
+                        Text="Description"
+                        Classes="DataGridColumn"
+                        HorizontalAlignment="Center"
+                        x:Name="Column9"
+                        />
 
-                                <TextBlock
-                                    Grid.Column="6"
-                                    Text="Baseline"
-                                    ToolTip.Tip="First value in this vehicle/firmware editing session, not a factory default. Hover a value for provenance."
-                                    Classes="DataGridColumn"
-                                    />
+                </controls:VirtualizedItemsGridRow>
 
-                                <TextBlock
-                                    Grid.Column="7"
-                                    Text="Units"
-                                    Classes="DataGridColumn"
-                                    />
+            </DataTemplate>
+        </controls:VirtualizedItemsGrid.HeaderTemplate>
 
-                                <TextBlock
-                                    Grid.Column="8"
-                                    Text="Write status"
-                                    Classes="DataGridColumn"
-                                    HorizontalAlignment="Center"
-                                    />
 
-                                <TextBlock
-                                    Grid.Column="9"
-                                    Text="Description"
-                                    Classes="DataGridColumn"
-                                    HorizontalAlignment="Center"
-                                    x:Name="Column9"
-                                    />
+        <!-- ================================================= -->
+        <!-- Rows                                                         -->
+        <!-- ================================================= -->
 
-                            </controls:VirtualizedItemsGridRow>
+        <controls:VirtualizedItemsGrid.RowTemplate>
 
-                        </DataTemplate>
-                    </controls:VirtualizedItemsGrid.HeaderTemplate>
+            <DataTemplate x:DataType="models:ParameterItemViewModel">
+
+                <controls:VirtualizedItemsGridRow>
 
 
                     <!-- ================================================= -->
-                    <!-- Rows                                                         -->
+                    <!-- Parameter name                                    -->
                     <!-- ================================================= -->
 
-                    <controls:VirtualizedItemsGrid.RowTemplate>
-
-                        <DataTemplate x:DataType="models:ParameterItemViewModel">
-
-                            <controls:VirtualizedItemsGridRow>
-
-
-                                <!-- ================================================= -->
-                                <!-- Parameter name                                    -->
-                                <!-- ================================================= -->
-
-                                <SelectableTextBlock
-                                    Grid.Column="0"
-                                    Text="{Binding Name}"
-                                    Classes="DataGridRow"
-                                    />
+                    <SelectableTextBlock
+                        Grid.Column="0"
+                        Text="{Binding Name}"
+                        Classes="DataGridRow"
+                        />
 
 
-                                <!-- ================================================= -->
-                                <!-- Current value                                     -->
-                                <!-- ================================================= -->
+                    <!-- ================================================= -->
+                    <!-- Current value                                     -->
+                    <!-- ================================================= -->
 
-                                <NumericUpDown
-                                    ShowButtonSpinner="False"
-                                    Grid.Column="1"
-                                    Classes="DataGridRow"
-                                    Margin="4,2"
-                                    Minimum="{Binding Min}"
-                                    Maximum="{Binding Max}"
-                                    Increment="{Binding StepSize}"
-                                    Value="{Binding Value, Mode=TwoWay}" />
-
-
-                                <!-- ================================================= -->
-                                <!-- Selection / specialised editor                    -->
-                                <!-- ================================================= -->
-
-                                <Grid
-                                    Grid.Column="2"
-                                    Margin="4,2"
-                                    VerticalAlignment="Center">
-
-                                    <!-- ================================================= -->
-                                    <!-- Enumerated parameter   -->
-                                    <!-- ================================================= -->
-
-                                    <ComboBox
-                                        IsVisible="{Binding HasValuesData}"
-                                        ItemsSource="{Binding ValuesData}"
-                                        SelectedItem="{Binding SelectedValue, Mode=TwoWay}"
-                                        Classes="DataGridRow" />
+                    <NumericUpDown
+                        ShowButtonSpinner="False"
+                        Grid.Column="1"
+                        Classes="DataGridRow"
+                        Margin="4,2"
+                        Minimum="{Binding Min}"
+                        Maximum="{Binding Max}"
+                        Increment="{Binding StepSize}"
+                        Value="{Binding Value, Mode=TwoWay}" />
 
 
-                                    <!-- ================================================= -->
-                                    <!-- Bitmask parameter                              -->
-                                    <!-- ================================================= -->
+                    <!-- ================================================= -->
+                    <!-- Selection / specialised editor                    -->
+                    <!-- ================================================= -->
 
-                                    <u:MultiComboBox
-                                        IsVisible="{Binding HasBitmask}"
-                                        ItemsSource="{Binding BitmaskOptions}"
-                                        SelectedItems="{Binding SelectedBitmaskItems, Mode=TwoWay}"
-                                        Classes="DataGridRow">
-                                    </u:MultiComboBox>
+                    <Grid
+                        Grid.Column="2"
+                        Margin="4,2"
+                        VerticalAlignment="Center">
 
-                                    <!-- ================================================= -->
-                                    <!-- Numeric range parameter                        -->
-                                    <!-- ================================================= -->
+                        <!-- ================================================= -->
+                        <!-- Enumerated parameter   -->
+                        <!-- ================================================= -->
 
-                                    <NumericUpDown
-                                        IsVisible="{Binding HasNumericRangeData}"
-                                        Classes="DataGridRow"
-                                        Minimum="{Binding Min}"
-                                        Maximum="{Binding Max}"
-                                        Increment="{Binding StepSize}"
-                                        Value="{Binding Value, Mode=TwoWay}" />
-                                </Grid>
+                        <ComboBox
+                            IsVisible="{Binding HasValuesData}"
+                            ItemsSource="{Binding ValuesData}"
+                            SelectedItem="{Binding SelectedValue, Mode=TwoWay}"
+                            Classes="DataGridRow" />
 
 
-                                <!-- ================================================= -->
-                                <!-- Range                                             -->
-                                <!-- ================================================= -->
+                        <!-- ================================================= -->
+                        <!-- Bitmask parameter                              -->
+                        <!-- ================================================= -->
 
-                                <TextBlock
-                                    Grid.Column="3"
-                                    Text="{Binding Range}"
-                                    Classes="DataGridRow"  />
+                        <u:MultiComboBox
+                            IsVisible="{Binding HasBitmask}"
+                            ItemsSource="{Binding BitmaskOptions}"
+                            SelectedItems="{Binding SelectedBitmaskItems, Mode=TwoWay}"
+                            Classes="DataGridRow">
+                        </u:MultiComboBox>
 
+                        <!-- ================================================= -->
+                        <!-- Numeric range parameter                        -->
+                        <!-- ================================================= -->
 
-                                <!-- ================================================= -->
-                                <!-- Step size                                         -->
-                                <!-- ================================================= -->
-
-                                <TextBlock
-                                    Grid.Column="4"
-                                    Text="{Binding StepSize}"
-                                    Classes="DataGridRow"
-                                    />
-
-
-                                <!-- ================================================= -->
-                                <!-- MAV numeric type                                  -->
-                                <!-- ================================================= -->
-
-                                <TextBlock
-                                    Grid.Column="5"
-                                    Text="{Binding MavNumericType}"
-                                    Classes="DataGridRow"
-                                    />
+                        <NumericUpDown
+                            IsVisible="{Binding HasNumericRangeData}"
+                            Classes="DataGridRow"
+                            Minimum="{Binding Min}"
+                            Maximum="{Binding Max}"
+                            Increment="{Binding StepSize}"
+                            Value="{Binding Value, Mode=TwoWay}" />
+                    </Grid>
 
 
-                                <!-- ================================================= -->
-                                <!-- Default                                           -->
-                                <!-- ================================================= -->
+                    <!-- ================================================= -->
+                    <!-- Range                                             -->
+                    <!-- ================================================= -->
 
-                                <TextBlock
-                                    Grid.Column="6"
-                                    Text="{Binding OriginalValueText}"
-                                    ToolTip.Tip="{Binding ValueProvenance}"
-                                    Classes="DataGridRow"  />
-
-
-                                <!-- ================================================= -->
-                                <!-- Units                                             -->
-                                <!-- ================================================= -->
-
-                                <TextBlock
-                                    Grid.Column="7"
-                                    Text="{Binding Units}"
-                                    Classes="DataGridRow" />
+                    <TextBlock
+                        Grid.Column="3"
+                        Text="{Binding Range}"
+                        Classes="DataGridRow"  />
 
 
-                                <!-- ================================================= -->
-                                <!-- Write status                                      -->
-                                <!-- ================================================= -->
+                    <!-- ================================================= -->
+                    <!-- Step size                                         -->
+                    <!-- ================================================= -->
 
-                                <Grid
-                                    RowDefinitions="*,*"
-                                    Grid.Column="8"
-                                    RowSpacing="10"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center">
-
-                                    <TextBlock Grid.Row="0"
-                                               Text="{Binding WriteStatus}"
-                                               Classes="DataGridRow"
-                                               TextAlignment="Start" />
-
-                                    <TextBlock Grid.Row="1"
-                                               Text="{Binding WriteMessage}"
-                                               Classes="DataGridRow"
-                                               TextAlignment="Start" />
-
-                                </Grid>
+                    <TextBlock
+                        Grid.Column="4"
+                        Text="{Binding StepSize}"
+                        Classes="DataGridRow"
+                        />
 
 
-                                <!-- ================================================= -->
-                                <!-- Description           TextWrapping="Wrap"                            -->
-                                <!-- ================================================= -->
+                    <!-- ================================================= -->
+                    <!-- MAV numeric type                                  -->
+                    <!-- ================================================= -->
 
-                                <Grid
-                                    Grid.Column="9"
-                                    RowDefinitions="*,*"
-                                    RowSpacing="10"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Center">
-
-                                    <TextBlock Grid.Row="0"
-                                               Text="{Binding DisplayName}"
-                                               Classes="DataGridRow"
-                                               TextAlignment="Start"
-                                               />
-
-                                    <TextBlock Grid.Row="1"
-                                               Text="{Binding Description}"
-                                               Classes="DataGridRow"
-                                               TextAlignment="Start"
-                                               TextWrapping="Wrap"
-                                               />
-
-                                </Grid>
-
-                            </controls:VirtualizedItemsGridRow>
-
-                        </DataTemplate>
-
-                    </controls:VirtualizedItemsGrid.RowTemplate>
-
-                </controls:VirtualizedItemsGrid>
-            </Grid>
-
-        </Grid>
+                    <TextBlock
+                        Grid.Column="5"
+                        Text="{Binding MavNumericType}"
+                        Classes="DataGridRow"
+                        />
 
 
+                    <!-- ================================================= -->
+                    <!-- Default                                           -->
+                    <!-- ================================================= -->
 
+                    <TextBlock
+                        Grid.Column="6"
+                        Text="{Binding OriginalValueText}"
+                        ToolTip.Tip="{Binding ValueProvenance}"
+                        Classes="DataGridRow"  />
+
+
+                    <!-- ================================================= -->
+                    <!-- Units                                             -->
+                    <!-- ================================================= -->
+
+                    <TextBlock
+                        Grid.Column="7"
+                        Text="{Binding Units}"
+                        Classes="DataGridRow" />
+
+
+                    <!-- ================================================= -->
+                    <!-- Write status                                      -->
+                    <!-- ================================================= -->
+
+                    <Grid
+                        RowDefinitions="*,*"
+                        Grid.Column="8"
+                        RowSpacing="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding WriteStatus}"
+                                   Classes="DataGridRow"
+                                   TextAlignment="Start" />
+
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding WriteMessage}"
+                                   Classes="DataGridRow"
+                                   TextAlignment="Start" />
+
+                    </Grid>
+
+
+                    <!-- ================================================= -->
+                    <!-- Description           TextWrapping="Wrap"                            -->
+                    <!-- ================================================= -->
+
+                    <Grid
+                        Grid.Column="9"
+                        RowDefinitions="*,*"
+                        RowSpacing="10"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center">
+
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding DisplayName}"
+                                   Classes="DataGridRow"
+                                   TextAlignment="Start"
+                                   />
+
+                        <TextBlock Grid.Row="1"
+                                   Text="{Binding Description}"
+                                   Classes="DataGridRow"
+                                   TextAlignment="Start"
+                                   TextWrapping="Wrap"
+                                   />
+
+                    </Grid>
+
+                </controls:VirtualizedItemsGridRow>
+
+            </DataTemplate>
+
+        </controls:VirtualizedItemsGrid.RowTemplate>
+    </controls:VirtualizedItemsGrid>
 </UserControl>

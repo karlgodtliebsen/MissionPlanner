@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -7,9 +7,11 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
@@ -35,6 +37,83 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     private CancellationTokenSource? reconnectCancellation;
     private int sessionRefreshScheduled;
 
+    /// <summary>Gets or sets the selected Editor, Quick Editor, or comparison tab index.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMainEditorSelected))]
+    [NotifyPropertyChangedFor(nameof(IsQuickEditorSelected))]
+    [NotifyPropertyChangedFor(nameof(IsComparisonSelected))]
+    [NotifyPropertyChangedFor(nameof(IsProfileSelected))]
+    [NotifyPropertyChangedFor(nameof(IsEditorExpanded))]
+    [NotifyPropertyChangedFor(nameof(EditorColumnMaxWidth))]
+    [NotifyPropertyChangedFor(nameof(ToggleEditorWidthText))]
+    public partial int SelectedTabIndex
+    {
+        get; set;
+    }
+
+    /// <summary>Gets or sets whether the main editor uses the available page width.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsEditorExpanded))]
+    [NotifyPropertyChangedFor(nameof(EditorColumnMaxWidth))]
+    [NotifyPropertyChangedFor(nameof(ToggleEditorWidthText))]
+    public partial bool IsMainEditorExpanded
+    {
+        get; set;
+    }
+
+    /// <summary>Gets whether the selected tab is displaying the expanded main editor.</summary>
+    public bool IsEditorExpanded => IsMainEditorSelected && IsMainEditorExpanded;
+
+    /// <summary>Gets the column width limit, retaining the compact layout for other tabs.</summary>
+    public double EditorColumnMaxWidth => IsEditorExpanded ? double.PositiveInfinity : 900;
+
+    /// <summary>Gets the accessible label for the editor width toggle.</summary>
+    public string ToggleEditorWidthText => IsEditorExpanded ? "Restore compact editor width" : "Expand editor to full width";
+
+    [RelayCommand]
+    private void ToggleEditorWidth()
+    {
+        IsMainEditorExpanded = !IsMainEditorExpanded;
+    }
+
+    /// <summary>Gets whether the full parameter editor's toolbar actions are visible.</summary>
+    public bool IsMainEditorSelected => SelectedTabIndex == 0;
+
+    /// <summary>Gets whether the text editor's toolbar actions are visible.</summary>
+    public bool IsQuickEditorSelected => SelectedTabIndex == 1;
+
+    /// <summary>Gets whether the comparison toolbar actions are visible.</summary>
+    public bool IsComparisonSelected => SelectedTabIndex == 3;
+
+    public bool IsProfileSelected => SelectedTabIndex == 2;
+
+    partial void OnSelectedTabIndexChanged(int value)
+    {
+        if (IsQuickEditorSelected)
+        {
+            RefreshQuickEditor();
+        }
+        if (IsComparisonSelected)
+        {
+            RefreshComparison();
+        }
+        if (IsProfileSelected)
+        {
+            RefreshProfile();
+        }
+    }
+
+    [RelayCommand]
+    private void SelectQuickEditor()
+    {
+        SelectedTabIndex = 1;
+    }
+
+    [RelayCommand]
+    private void SelectMainEditor()
+    {
+        SelectedTabIndex = 0;
+    }
 
     /// <summary>Initializes the Full Parameters List tab.</summary>
     /// <param name="connectionSession">The current connection-scoped services.</param>
@@ -51,6 +130,8 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     /// <param name="domainEventHub"></param>
     /// <param name="connections">Captures and reconnects the current transport.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="comparisons">Compares the current session's live and pending values.</param>
+    /// <param name="dateTimeProvider">Supplies timestamps for comparison exports.</param>
     public ParametersEditorTabViewModel(
         IDialogService dialogService,
         IDomainFactory domainFactory,
@@ -65,7 +146,9 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         IParameterProfileService profileWorkflow,
         IVehicleParameterLoadStatusContext parameterLoadStatus,
         ILogger<ParametersEditorTabViewModel> logger,
-        IVehicleConnectionService connections)
+        IVehicleConnectionService connections,
+        IParameterComparisonService comparisons,
+        IDateTimeProvider dateTimeProvider)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.connections = connections;
@@ -77,6 +160,8 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         this.confirmation = confirmation;
         this.profiles = profiles;
         this.profileWorkflow = profileWorkflow;
+        this.comparisons = comparisons;
+        this.dateTimeProvider = dateTimeProvider;
     }
 
     /// <inheritdoc />
@@ -87,6 +172,11 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             return;
         }
         pageActive = true;
+        if (quickEditorLifetime.IsCancellationRequested)
+        {
+            quickEditorLifetime.Dispose();
+            quickEditorLifetime = new CancellationTokenSource();
+        }
         PropertyChanged += OnViewModelPropertyChanged;
         await base.ActivateAsync();
     }
@@ -99,6 +189,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             return;
         }
         pageActive = false;
+        quickEditorLifetime.Cancel();
         reconnectCancellation?.Cancel();
         PropertyChanged -= OnViewModelPropertyChanged;
         await base.DeactivateAsync();
@@ -116,11 +207,15 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             return;
         }
         pageActive = false;
+        quickEditorLifetime.Cancel();
+        quickEditorLifetime.Dispose();
+        quickEditor?.Dispose();
         reconnectCancellation?.Cancel();
         base.Dispose();
         disposed = true;
     }
 
+    /// <summary>Gets or sets whether the current parameter session has rows to display.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
@@ -208,43 +303,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             {
                 using var applyLifetime = CancellationTokenSource.CreateLinkedTokenSource(token, editorLifetime.Token);
                 applyLifetime.Token.ThrowIfCancellationRequested();
-                if (!ReferenceEquals(EditSession, editorSession) || !editorSession.IsValid || !HasConnection || IsBusy)
-                {
-                    throw new InvalidOperationException("The original vehicle connection is no longer available or is busy. Reopen the editor after refreshing parameters.");
-                }
-
-                var parameters = viewModel.UpdateParameters(editorSession.Fields.Select(ToVehicleParameter).ToList());
-                if (parameters.Count == 0)
-                {
-                    return "No valid parameter assignments were found. No values were written. See the feedback report.";
-                }
-
-                var errors = new List<string>();
-                var acceptedNames = new List<string>();
-                var previousValues = editorSession.Fields.ToDictionary(field => field.Name, field => field.PendingValue);
-                using (editorSession.DeferChangeNotifications())
-                {
-                    foreach (var parameter in parameters)
-                    {
-                        if (!editorSession.TrySetPending(parameter.Name, parameter.Value, out var error))
-                        {
-                            errors.Add($"Skipped {parameter.Name}: {error}");
-                            editorSession.TrySetPending(parameter.Name, previousValues[parameter.Name], out _);
-                        }
-                        else
-                        {
-                            acceptedNames.Add(parameter.Name);
-                        }
-                    }
-                }
-                viewModel.ReportSkippedParameters(errors);
-                if (acceptedNames.Count == 0)
-                {
-                    return "No valid parameter values could be staged. No values were written. See the feedback report.";
-                }
-
-                await ApplyParameterChangesAsync(applyLifetime.Token, acceptedNames);
-                return ErrorMessage ?? StatusMessage ?? "Parameter write finished.";
+                return await ApplyQuickEditorChangesAsync(viewModel, editorSession, applyLifetime.Token);
             });
             var options = dialogService.CreateOptions("", null, null);
             options.FullScreen = true;
@@ -514,21 +573,10 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanCompareParameters))]
-    private async Task CompareParametersAsync(CancellationToken cancellationToken)
+    private Task CompareParametersAsync(CancellationToken cancellationToken)
     {
-        if (EditSession is null)
-        {
-            return;
-        }
-
-        var viewModel = domainFactory.Create<ParameterComparisonViewModel, IParameterEditSession>(EditSession);
-
-        var options = dialogService.CreateOptions("Compare parameters", "Close", null);
-        options.FullScreen = true;
-        await dialogService.ShowCustomDialogAsync<ParameterComparisonView, ParameterComparisonViewModel>(
-            viewModel,
-            options,
-            cancellationToken: cancellationToken);
+        SelectedTabIndex = 2;
+        return Task.CompletedTask;
     }
 
     private void OnComparisonStaged(object? sender, int count)
@@ -623,11 +671,27 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (quickEditor?.ApplyModifiedCommand.IsRunning == true)
+        {
+            if (e.PropertyName == nameof(ProgressMessage))
+            {
+                quickEditor.WriteProgress = ProgressMessage;
+            }
+            if (e.PropertyName == nameof(StatusMessage))
+            {
+                quickEditor.StatusMessage = StatusMessage;
+            }
+        }
         if (e.PropertyName is not (nameof(IsBusy) or nameof(HasConnection) or nameof(HasParameters) or nameof(HasRows)))
         {
             return;
         }
         UpdateCommandState();
+        RefreshQuickEditor();
+        if (IsComparisonSelected)
+        {
+            RefreshComparison();
+        }
     }
 
     /// <inheritdoc />
@@ -635,6 +699,11 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     {
         base.OnEditSessionSynchronized();
         UpdateCommandState();
+        RefreshQuickEditor();
+        if (IsComparisonSelected)
+        {
+            RefreshComparison();
+        }
     }
 
     private void UpdateCommandState()
@@ -644,6 +713,9 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         RevertChangesCommand.NotifyCanExecuteChanged();
         SaveToFileCommand.NotifyCanExecuteChanged();
         SaveToJsonFileCommand.NotifyCanExecuteChanged();
+        ApplyModifiedCommand.NotifyCanExecuteChanged();
+        SelectAllSafeDifferencesCommand.NotifyCanExecuteChanged();
+        StageSelectedDifferencesCommand.NotifyCanExecuteChanged();
         HasRows = Parameters.Count > 0;
     }
 

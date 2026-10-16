@@ -16,6 +16,10 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
     /// <summary>The owning window's overlay host for apply errors.</summary>
     public string? DialogHostId { get; set; }
 
+    /// <summary>Gets or sets whether standalone editors show their local Clear and Apply buttons.</summary>
+    [ObservableProperty]
+    public partial bool ShowToolbar { get; set; } = true;
+
     private Func<CancellationToken, Task<string>>? applyModified;
     private readonly Dictionary<string, KeyValuePair<string, double>> currentParameters = new(StringComparer.OrdinalIgnoreCase);
 

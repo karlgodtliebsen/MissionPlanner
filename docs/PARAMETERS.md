@@ -227,6 +227,27 @@ but no increment, the increment/decrement controls use the rounded range divided
 Numeric stepping uses decimal arithmetic to avoid accumulated binary floating-point drift;
 an overshooting step lands on the advertised minimum or maximum instead of being ignored.
 
+### Parameter editor tabs and shared toolbar
+
+`ParametersEditorTabViewModel.SelectedTabIndex` controls the shared toolbar in
+`ParametersEditorTabView`. Editor shows file import/export, parameter actions,
+the Quick Editor shortcut, revert, copy, retry, and cancel-load controls. Quick
+Editor shows Clear and Apply. Apply modified parameters shows comparison filters,
+selection/staging, comparison export/copy, and Apply. Switching tabs does not write
+parameters; Quick Editor text is retained within the same editing session.
+
+The Editor tab's horizontal expand/collapse button toggles the layout column
+between its compact 900-unit width and the available page width. It resizes the
+existing view in place, retaining the model, pending edits, and search state.
+Other tabs remain compact; returning to Editor restores its selected width mode.
+
+The embedded Quick Editor and its toolbar share one `ParametersEditorViewModel`.
+Standalone Quick Editor windows retain their local toolbar. Comparison reads the
+parent's current editing session. Both Apply actions use the existing reviewed,
+confirmed write workflow and the owning window's dialog host; Quick Editor writes
+only recognized input names. Replacing the session clears the embedded editor's
+text so input for an earlier vehicle cannot carry over to a different session.
+
 ### Comparison and profiles
 
 `IParameterValueEquivalence` is the single numeric policy used by modified detection,

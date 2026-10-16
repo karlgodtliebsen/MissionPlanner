@@ -14,24 +14,10 @@
              x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorView"
              x:DataType="parametersEditor:ParametersEditorViewModel"
              >
-    <Grid
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Stretch"
-        RowDefinitions="Auto,Auto"
-        RowSpacing="10"
-        Margin="25">
-        <TextBlock Grid.Row="0"
-                   Classes="H2" Text="Edit Parameters Values"
-                   HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
 
-        <Border Grid.Row="1" HorizontalAlignment="Stretch" MaxWidth="900"
-                VerticalAlignment="Stretch"
-                >
+        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
 
-            <Grid RowDefinitions="Auto,Auto" RowSpacing="20" >
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+            <Grid RowDefinitions="Auto,*" RowSpacing="20" >
                 <controls:InformationDocumentView
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"
@@ -51,21 +37,22 @@
                         RowDefinitions="Auto,Auto,*"
                         RowSpacing="5"
                         >
-
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10"
-                                    Margin="0,0,0,20"
-                                    HorizontalAlignment="Center"  VerticalAlignment="Center">
+                        <StackPanel x:Name="StandaloneQuickEditorToolbar"
+                                    Grid.Row="0" Orientation="Horizontal" Spacing="10"
+                                    IsVisible="{Binding ShowToolbar}"
+                                    HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Button Classes="ToolbarIconButton"
                                     ToolTip.Tip="Clear Editor"
+                                    AutomationProperties.Name="Clear Quick Editor"
                                     IsEnabled="{Binding !ApplyModifiedCommand.IsRunning}"
                                     Command="{Binding ClearCommand}">
-                                <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon"  />
+                                <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon" />
                             </Button>
                             <Button Classes="ToolbarIconButton"
-                                    ToolTip.Tip="Apply modified"
-                                    VerticalAlignment="Center"
-                                    Command="{Binding ApplyModifiedCommand}"  >
-                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon"  />
+                                    ToolTip.Tip="Apply Quick Editor values"
+                                    AutomationProperties.Name="Apply Quick Editor values"
+                                    Command="{Binding ApplyModifiedCommand}">
+                                <avalonia:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
                             </Button>
                         </StackPanel>
                         <Grid Grid.Row="1"
@@ -73,11 +60,10 @@
                               ColumnSpacing="10"
                               ColumnDefinitions="Auto,*,Auto"
                               HorizontalAlignment="Stretch"
-
                               IsEnabled="{Binding !ApplyModifiedCommand.IsRunning}">
                             <avalonia:MaterialIcon
                                 Grid.Column="0"
-                                Kind="Magnify"  Classes="ActionIcon" VerticalAlignment="Center" />
+                                Kind="Magnify"  Classes="ActionIcon" />
                             <AutoCompleteBox
                                 Grid.Column="1"
                                 Classes="ClearButton "
@@ -88,7 +74,8 @@
                                 AutomationProperties.Name="Search vehicle parameters" />
 
                             <Button Grid.Row="0" Grid.Column="2"
-                                     Command="{Binding AddParameterCommand}"
+                                    Command="{Binding AddParameterCommand}"
+                                    Classes="EmbeddedIconButton"
                                     ToolTip.Tip="Add selected parameter with its current value"
                                     AutomationProperties.Name="Add selected parameter">
                                 <avalonia:MaterialIcon Kind="Plus" Classes="ActionIcon"  />
@@ -141,12 +128,7 @@
             </Grid>
         </Border>
 
-    </Grid>
 
 </UserControl>
 
-<!--
-<ScrollViewer x:Name="EditorScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 
-</ScrollViewer>
--->

@@ -8,16 +8,455 @@
                                xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                                xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                                xmlns:parametersEditor="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
+                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:u="https://irihi.tech/ursa"
                                x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParametersEditorTabView"
                                x:DataType="parametersEditor:ParametersEditorTabViewModel">
 
     <ContentPage Header="Parameters Editor"  >
 
-        <TabControl TabStripPlacement="Top" >
-            <TabItem Header="Editor"><parametersEditor:ParametersMainEditorView /></TabItem>
-            <TabItem Header="Quick Editor"><parametersEditor:ParametersEditorView /></TabItem>
-            <TabItem Header="Compare"><parametersEditor:ParameterComparisonView /></TabItem>
-        </TabControl>
+        <Grid x:Name="ParameterEditorLayout" RowDefinitions="Auto,Auto,*" VerticalAlignment="Stretch"
+              Classes.expanded="{Binding IsEditorExpanded}">
+            <Grid.Styles>
+                <Style Selector="Grid#ParameterEditorLayout">
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Grid#ParameterEditorLayout.expanded">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+            </Grid.Styles>
 
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="900" MaxWidth="{Binding EditorColumnMaxWidth}" />
+            </Grid.ColumnDefinitions>
+
+            <u:Banner Classes="Bordered" Header="Parameters Editor" HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Vertical" Grid.Row="0"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
+
+                    <SelectableTextBlock Text="{Binding ErrorMessage}"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                         Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <TextBlock Text="Vehicle Reboot required after confirmed changes"
+                               IsVisible="{Binding RebootRequired}"
+                               Classes="Warning H3"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </u:Banner>
+
+
+            <WrapPanel x:Name="EditorToolbar" Grid.Row="1" Orientation="Horizontal"
+                       IsVisible="{Binding IsMainEditorSelected}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" >
+                <Button x:Name="ToggleEditorWidthButton" Classes="ToolbarButton"
+                        ToolTip.Tip="{Binding ToggleEditorWidthText}"
+                        AutomationProperties.Name="{Binding ToggleEditorWidthText}"
+                        Command="{Binding ToggleEditorWidthCommand}"
+                        VerticalAlignment="Center">
+                    <Grid>
+                        <avalonia:MaterialIcon Kind="ArrowExpandHorizontal"  Classes="ActionIcon"
+                                               IsVisible="{Binding !IsEditorExpanded}" />
+                        <avalonia:MaterialIcon Kind="ArrowCollapseHorizontal"  Classes="ActionIcon"
+                                               IsVisible="{Binding IsEditorExpanded}" />
+                    </Grid>
+                </Button>
+                <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file"
+                                      AutomationProperties.Name="Load parameter file"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem
+                                ToolTip.Tip="Load from CSV file"
+                                Command="{Binding LoadFromFileCommand}"
+                                Header="Load from CSV file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="FolderOpenOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <MenuItem ToolTip.Tip="Load from json file"
+                                      Command="{Binding LoadFromJsonFileCommand}"
+                                      Header="Load from json file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="FolderOpenOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="FolderOpenOutline"  Classes="ActionIcon" />
+                </u:IconDropDownButton>
+
+                <u:IconDropDownButton ToolTip.Tip="Save to CSV or Json file"
+                                      AutomationProperties.Name="Save parameter file"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem
+                                ToolTip.Tip="Save to CSV file"
+                                Command="{Binding SaveToFileCommand}"
+                                Header="Save to CSV file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem ToolTip.Tip="Save to json file"
+                                      Command="{Binding SaveToJsonFileCommand}"
+                                      Header="Save to json file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                </u:IconDropDownButton>
+
+                <u:IconDropDownButton ToolTip.Tip="Parameters"
+                                      AutomationProperties.Name="Parameter actions"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem ToolTip.Tip="Reload parameters"
+                                      Command="{Binding RefreshParametersCommand}"
+                                      Header="Reload parameters">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="Refresh"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem ToolTip.Tip="Clear parameters"
+                                      Command="{Binding ClearParametersCommand}"
+                                      Header="Clear parameters">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="Eraser"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline"  Classes="ActionIcon" />
+                </u:IconDropDownButton>
+
+                <Button Classes="ToolbarButton"  ToolTip.Tip="Revert Changes"
+                        AutomationProperties.Name="Revert changes"
+                        VerticalAlignment="Center"
+                         Command="{Binding RevertChangesCommand}" >
+                    <avalonia:MaterialIcon Kind="FileUndoOutline"  Classes="ActionIcon" />
+                </Button>
+                <Button Classes="ToolbarButton" ToolTip.Tip="Copy all" 
+                         Command="{Binding CopyAllCommand}" 
+                        AutomationProperties.Name="Copy all"
+                        >
+                    <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
+                </Button>
+               
+                <Button Classes="ToolbarButton"
+                        ToolTip.Tip="Cancel Parameters Load"
+                        AutomationProperties.Name="Cancel parameter load"
+
+                        VerticalAlignment="Center"
+                        Command="{Binding CancelLoadCommand}">
+                    <avalonia:MaterialIcon Kind="CloseCircleOutline"  Classes="ActionIcon" />
+                </Button>
+
+                <u:IconDropDownButton ToolTip.Tip="Export parameter comparison"
+                                      AutomationProperties.Name="Export parameter comparison"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem ToolTip.Tip="Export comparison to CSV"
+                                      Command="{Binding ExportCsvCommand}"
+                                      AutomationProperties.Name="Export CSV"
+                                      Header="Export comparison to CSV">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem ToolTip.Tip="Export comparison to JSON"
+                                      Command="{Binding ExportJsonCommand}"
+                                      AutomationProperties.Name="Export JSON"
+                                      Header="Export comparison to JSON">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                </u:IconDropDownButton>
+            </WrapPanel>
+
+            <WrapPanel x:Name="QuickEditorToolbar" Grid.Row="1" Orientation="Horizontal"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" 
+                       IsVisible="{Binding IsQuickEditorSelected}"
+                       >
+                <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file"
+                                      AutomationProperties.Name="Load parameter file"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem
+                                ToolTip.Tip="Load from CSV file"
+                                Command="{Binding LoadFromFileCommand}"
+                                Header="Load from CSV file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="FolderOpenOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <MenuItem ToolTip.Tip="Load from json file"
+                                      Command="{Binding LoadFromJsonFileCommand}"
+                                      Header="Load from json file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="FolderOpenOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="FolderOpenOutline"  Classes="ActionIcon" />
+                </u:IconDropDownButton>
+
+                <u:IconDropDownButton ToolTip.Tip="Save to CSV or Json file"
+                                      AutomationProperties.Name="Save parameter file"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem
+                                ToolTip.Tip="Save to CSV file"
+                                Command="{Binding SaveToFileCommand}"
+                                Header="Save to CSV file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem ToolTip.Tip="Save to json file"
+                                      Command="{Binding SaveToJsonFileCommand}"
+                                      Header="Save to json file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                </u:IconDropDownButton>
+
+                <u:IconDropDownButton ToolTip.Tip="Parameters"
+                                      AutomationProperties.Name="Parameter actions"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem ToolTip.Tip="Reload parameters"
+                                      Command="{Binding RefreshParametersCommand}"
+                                      Header="Reload parameters">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="Refresh"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem ToolTip.Tip="Clear parameters"
+                                      Command="{Binding ClearParametersCommand}"
+                                      Header="Clear parameters">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="Eraser"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline"  Classes="ActionIcon" />
+                </u:IconDropDownButton>
+
+                <Button Classes="ToolbarButton"  ToolTip.Tip="Revert Changes"
+                        AutomationProperties.Name="Revert changes"
+                        VerticalAlignment="Center"
+                        Command="{Binding RevertChangesCommand}" >
+                    <avalonia:MaterialIcon Kind="FileUndoOutline"  Classes="ActionIcon" />
+                </Button>
+                <Button Classes="ToolbarButton" ToolTip.Tip="Copy all" Command="{Binding CopyAllCommand}" AutomationProperties.Name="Copy all"
+                        >
+                    <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
+                </Button>
+
+                <Button Classes="ToolbarButton"
+                        ToolTip.Tip="Cancel Parameters Load"
+                        AutomationProperties.Name="Cancel parameter load"
+                        VerticalAlignment="Center"
+                        Command="{Binding CancelLoadCommand}">
+                    <avalonia:MaterialIcon Kind="CloseCircleOutline"  Classes="ActionIcon" />
+                </Button>
+
+                <Button Classes="ToolbarIconButton"
+                        ToolTip.Tip="Clear Editor"
+                        AutomationProperties.Name="Clear Quick Editor"
+                        IsEnabled="{Binding !QuickEditor.ApplyModifiedCommand.IsRunning}"
+                        Command="{Binding QuickEditor.ClearCommand}">
+                    <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon"  />
+                </Button>
+            </WrapPanel>
+
+            <WrapPanel x:Name="ProfileEditorToolbar" Grid.Row="1" Orientation="Horizontal"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" 
+                       IsVisible="{Binding IsProfileSelected}"
+                       >
+                <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file"
+                                      AutomationProperties.Name="Load parameter file"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem
+                                ToolTip.Tip="Load from CSV file"
+                                Command="{Binding LoadFromFileCommand}"
+                                Header="Load from CSV file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="FolderOpenOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <MenuItem ToolTip.Tip="Load from json file"
+                                      Command="{Binding LoadFromJsonFileCommand}"
+                                      Header="Load from json file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="FolderOpenOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="FolderOpenOutline"  Classes="ActionIcon" />
+                </u:IconDropDownButton>
+
+                <u:IconDropDownButton ToolTip.Tip="Save to CSV or Json file"
+                                      AutomationProperties.Name="Save parameter file"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem
+                                ToolTip.Tip="Save to CSV file"
+                                Command="{Binding SaveToFileCommand}"
+                                Header="Save to CSV file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem ToolTip.Tip="Save to json file"
+                                      Command="{Binding SaveToJsonFileCommand}"
+                                      Header="Save to json file">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline"  Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
+                </u:IconDropDownButton>
+
+                
+            </WrapPanel>
+
+            <WrapPanel x:Name="CompareEditorToolbar" Grid.Row="1" Orientation="Horizontal"
+                       IsVisible="{Binding IsComparisonSelected}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" >
+                <ComboBox
+                    Width="140"
+                    ToolTip.Tip="Apply Filters"
+                    AutomationProperties.Name="Filter parameter differences"
+                    ItemsSource="{Binding Filters}"
+                    SelectedItem="{Binding Filter}" />
+
+                <u:IconDropDownButton ToolTip.Tip="Select and stage parameter differences"
+                                      AutomationProperties.Name="Select and stage parameter differences">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem
+                                ToolTip.Tip="Select all safe differences"
+                                Command="{Binding SelectAllSafeDifferencesCommand}" 
+                                AutomationProperties.Name="Select all safe differences"
+                                Header="Select all safe differences">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="SelectAll" Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem ToolTip.Tip="Stage selected"
+                                      Command="{Binding StageSelectedDifferencesCommand}" 
+                                      AutomationProperties.Name="Stage selected"
+                                      Header="Stage selected">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="SelectAll" Classes="ActionIcon"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="SelectAll" Classes="ActionIcon"/>
+                </u:IconDropDownButton>
+                <u:IconDropDownButton ToolTip.Tip="Export parameter comparison"
+                                      AutomationProperties.Name="Export parameter comparison"
+                                      >
+                    <DropDownButton.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuItem ToolTip.Tip="Export comparison to CSV"
+                                      Command="{Binding ExportCsvCommand}"
+                                      AutomationProperties.Name="Export CSV"
+                                      Header="Export comparison to CSV">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon"/>
+                                </MenuItem.Icon>
+                            </MenuItem>
+                            <MenuItem ToolTip.Tip="Export comparison to JSON"
+                                      Command="{Binding ExportJsonCommand}"
+                                      AutomationProperties.Name="Export JSON"
+                                      Header="Export comparison to JSON">
+                                <MenuItem.Icon>
+                                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </MenuFlyout>
+                    </DropDownButton.Flyout>
+                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon"/>
+                </u:IconDropDownButton>
+
+                <Button Classes="ToolbarButton" ToolTip.Tip="Copy comparison"
+                        Command="{Binding CopyComparisonCommand}" 
+                        AutomationProperties.Name="Copy comparison"
+                        >
+                    <avalonia:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
+                </Button>
+
+                <Button Classes="ToolbarButton"
+                        ToolTip.Tip="Retry"
+                        AutomationProperties.Name="Retry failed parameter writes"
+                        VerticalAlignment="Center"
+                         Command="{Binding RetryFailedCommand}"   >
+                    <avalonia:MaterialIcon Kind="ReloadAlert" Classes="ActionIcon" />
+                </Button>
+
+                <Button Classes="ToolbarButton"
+                        ToolTip.Tip="Write selected parameters"
+                        AutomationProperties.Name="Write modified parameters"
+                        VerticalAlignment="Center" 
+                        Command="{Binding ApplyModifiedCommand}">
+                    <avalonia:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                </Button>
+            </WrapPanel>
+
+            <TabControl x:Name="EditorTabs" Grid.Row="2" TabStripPlacement="Top" Margin="0,10,0,0"
+                        SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
+                <TabItem Header="Editor">
+                    <parametersEditor:ParametersMainEditorView />
+                </TabItem>
+                <TabItem Header="Text Editor">
+                    <parametersEditor:ParametersEditorView
+                        DataContext="{Binding QuickEditor}" />
+                </TabItem>
+                <TabItem Header="Profiles">
+                    <parametersEditor:ParameterProfilesView />
+                </TabItem>
+                <TabItem Header="Write modified parameters">
+                    <parametersEditor:ParameterComparisonView />
+                </TabItem>
+            </TabControl>
+        </Grid>
     </ContentPage>
 </utilities:UserControlViewBase>
