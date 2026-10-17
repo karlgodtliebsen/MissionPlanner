@@ -20,7 +20,7 @@ public partial class ParametersEditorTabViewModel
     /// <summary>
     /// Gets the currently selected comparison rows.
     /// </summary>
-    public ObservableCollection<ParameterComparisonItemViewModel> SelectedItems { get; set; } = [];
+    public ObservableCollection<ParameterComparisonItemViewModel> SelectedItems { get; } = [];
 
     /// <summary>Gets the available comparison status filters.</summary>
     public IReadOnlyList<string> Filters { get; } = ["Differences", "Missing", "Invalid", "Modified", "All"];
@@ -52,15 +52,16 @@ public partial class ParametersEditorTabViewModel
         }
         var now = dateTimeProvider.UtcNow;
         var firmware = editSession.Scope.FirmwareIdentity;
-        var live = editSession.Fields.ToDictionary(
+        var fields = editSession.Fields.ToDictionary(field => field.Name, StringComparer.Ordinal);
+        var live = fields.Values.ToDictionary(
             field => field.Name,
             field => new ParameterComparisonInput(field.Name, field.LiveValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
             StringComparer.Ordinal);
-        var pending = editSession.Fields.ToDictionary(
+        var pending = fields.Values.ToDictionary(
             field => field.Name,
             field => new ParameterComparisonInput(field.Name, field.PendingValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
             StringComparer.Ordinal);
-        var metadata = editSession.Fields.ToDictionary(field => field.Name, field => field.Metadata, StringComparer.Ordinal);
+        var metadata = fields.Values.ToDictionary(field => field.Name, field => field.Metadata, StringComparer.Ordinal);
 
         comparisonResult = comparisons.Compare(
             new ParameterComparisonSource("Live", editSession.VehicleId.ToString(), now, firmware),
@@ -69,10 +70,14 @@ public partial class ParametersEditorTabViewModel
             pending,
             metadata);
 
+        var previous = allRows.ToDictionary(row => row.Name, StringComparer.Ordinal);
         SelectedItems.Clear();
-        var rows = comparisonResult.Rows.Select(row => new ParameterComparisonItemViewModel(row)).ToArray();
+        var rows = comparisonResult.Rows.Select(row =>
+            new ParameterComparisonItemViewModel(row, fields[row.Name].ValidationError)).ToArray();
         foreach (var row in rows)
         {
+            row.IsSelected = row.CanWrite && (!previous.TryGetValue(row.Name, out var old) ||
+                old.RightValue != row.RightValue || old.IsSelected);
             row.TrackSelectionIn(SelectedItems);
         }
 
@@ -80,37 +85,37 @@ public partial class ParametersEditorTabViewModel
         FilterRows();
     }
     [RelayCommand(CanExecute = nameof(CanCompareParameters))]
-    private void SelectAllSafeDifferences()
+    private void SelectAllWritableDifferences()
+    {
+        foreach (var row in allRows)
+        {
+            row.IsSelected = row.CanWrite;
+        }
+    }
+
+    [RelayCommand]
+    private void ClearComparisonSelection()
     {
         foreach (var row in allRows)
         {
             row.IsSelected = false;
         }
-
-        foreach (var row in allRows)
-        {
-            row.IsSelected = row.CanStage;
-        }
     }
 
-    [RelayCommand(CanExecute = nameof(CanCompareParameters))]
-    private void StageSelectedDifferences()
+    private bool CanApplySelectedParameters()
     {
-        if (comparisonResult is null || EditSession is not { IsValid: true } editSession)
+        return CanWriteParameters() && SelectedItems.Any(row => row.CanWrite);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanApplySelectedParameters))]
+    private async Task ApplyModifiedAsync(CancellationToken cancellationToken)
+    {
+        if (!CanApplySelectedParameters())
         {
             return;
         }
-
-        var selected = SelectedItems.Select(row => row.Name).ToArray();
-        var staged = comparisons.Stage(comparisonResult, editSession, selected);
-        OnComparisonStaged(this, staged.Count);
-        Staged?.Invoke(this, staged.Count);
-    }
-
-    [RelayCommand(CanExecute = nameof(CanWriteParameters))]
-    private async Task ApplyModifiedAsync(CancellationToken cancellationToken)
-    {
-        await ApplyParameterChangesAsync(cancellationToken);
+        var names = SelectedItems.Where(row => row.CanWrite).Select(row => row.Name).ToArray();
+        await ApplyParameterChangesAsync(cancellationToken, names);
         RefreshComparison();
     }
 
@@ -141,9 +146,6 @@ public partial class ParametersEditorTabViewModel
         }
     }
 
-    /// <summary>Occurs after selected differences have been staged.</summary>
-    public event EventHandler<int>? Staged;
-
     private void FilterRows()
     {
         IEnumerable<ParameterComparisonItemViewModel> rows = allRows;
@@ -151,8 +153,8 @@ public partial class ParametersEditorTabViewModel
         {
             "Differences" => rows.Where(row => row.Status is not ParameterComparisonStatus.Equal),
             "Missing" => rows.Where(row => row.Status is ParameterComparisonStatus.OnlyOnLeft or ParameterComparisonStatus.OnlyOnRight or ParameterComparisonStatus.MetadataMissing),
-            "Invalid" => rows.Where(row => row.Status is ParameterComparisonStatus.InvalidRightValue or ParameterComparisonStatus.ReadOnly),
-            "Modified" => rows.Where(row => row.CanStage),
+            "Invalid" => rows.Where(row => row.Status is ParameterComparisonStatus.InvalidRightValue or ParameterComparisonStatus.ReadOnly || row.HasValidationError),
+            "Modified" => rows.Where(row => row.Status is not ParameterComparisonStatus.Equal),
             var _ => rows
         };
         Items.ReplaceRange(rows);

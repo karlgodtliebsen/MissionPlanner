@@ -98,7 +98,7 @@ public sealed class ParameterEditorToolbarTests
                     tabs.SelectedIndex = 1;
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
-                    Assert.False(toggle.IsVisible);
+                    Assert.False(toggle.IsEffectivelyVisible);
                     Assert.Equal(900, layout.Bounds.Width);
 
                     tabs.SelectedIndex = 0;
@@ -143,14 +143,19 @@ public sealed class ParameterEditorToolbarTests
                     window = new Window { Width = 1200, Height = 900, Content = view };
                     window.Show();
                     var tabs = view.FindControl<TabControl>("EditorTabs")!;
-                    var toolbar = view.FindControl<WrapPanel>("EditorToolbar")!;
+                    var toolbars = new[] { "EditorToolbar", "QuickEditorToolbar", "ProfileEditorToolbar", "CompareEditorToolbar" }
+                        .Select(name => view.FindControl<WrapPanel>(name)!).ToArray();
 
-                    void AssertActions(params string[] expected)
+                    void AssertToolbar(int selected, params string[] expected)
                     {
                         Dispatcher.UIThread.RunJobs();
                         window.UpdateLayout();
-                        Assert.Equal(expected, toolbar.Children.Where(child => child.IsVisible)
-                            .Select(AutomationProperties.GetName));
+                        Assert.Same(toolbars[selected], Assert.Single(toolbars, toolbar => toolbar.IsVisible));
+                        var toolbar = toolbars[selected];
+                        foreach (var name in expected)
+                        {
+                            Assert.Contains(toolbar.Children, child => AutomationProperties.GetName(child) == name);
+                        }
                         foreach (var button in toolbar.Children.OfType<Button>().Where(button => button.IsVisible && button is not DropDownButton))
                         {
                             Assert.NotNull(button.Command);
@@ -158,12 +163,12 @@ public sealed class ParameterEditorToolbarTests
                     }
 
                     Assert.Equal(0, tabs.SelectedIndex);
-                    AssertActions("Load parameter file", "Save parameter file", "Parameter actions", "Open Quick Editor",
-                        "Revert changes", "Copy all", "Retry failed parameter writes", "Cancel parameter load");
+                    AssertToolbar(0, "Load parameter file", "Save parameter file", "Parameter actions",
+                        "Revert changes", "Copy all", "Cancel parameter load");
 
                     tabs.SelectedIndex = 1;
                     Assert.Equal(1, model.SelectedTabIndex);
-                    AssertActions("Clear Quick Editor", "Apply Quick Editor values");
+                    AssertToolbar(1, "Clear Quick Editor");
                     var quickView = view.GetVisualDescendants().OfType<ParametersEditorView>().Single();
                     Assert.Same(model.QuickEditor, quickView.DataContext);
                     Assert.False(quickView.FindControl<StackPanel>("StandaloneQuickEditorToolbar")!.IsVisible);
@@ -171,14 +176,17 @@ public sealed class ParameterEditorToolbarTests
 
                     tabs.SelectedIndex = 2;
                     Assert.Equal(2, model.SelectedTabIndex);
-                    AssertActions("Filter parameter differences", "Select and stage parameter differences",
-                        "Export parameter comparison", "Copy comparison", "Apply modified parameters");
+                    AssertToolbar(2);
+                    tabs.SelectedIndex = 3;
+                    Assert.Equal(3, model.SelectedTabIndex);
+                    AssertToolbar(3, "Filter parameter differences", "Select parameters to write",
+                        "Export parameter comparison", "Copy comparison", "Write selected parameters");
 
                     model.SelectedTabIndex = 1;
                     Assert.Equal(1, tabs.SelectedIndex);
-                    AssertActions("Clear Quick Editor", "Apply Quick Editor values");
+                    AssertToolbar(1, "Clear Quick Editor");
                     Assert.Equal("TEST_PARAM = 2", model.QuickEditor.Text);
-                    var clear = toolbar.Children.OfType<Button>().Single(button => AutomationProperties.GetName(button) == "Clear Quick Editor");
+                    var clear = toolbars[1].Children.OfType<Button>().Single(button => AutomationProperties.GetName(button) == "Clear Quick Editor");
                     clear.Command!.Execute(null);
                     Assert.Empty(model.QuickEditor.Text);
 

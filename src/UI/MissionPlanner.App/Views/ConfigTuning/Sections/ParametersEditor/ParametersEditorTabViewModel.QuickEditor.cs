@@ -41,17 +41,9 @@ public partial class ParametersEditorTabViewModel
             return;
         }
 
-        // Text entered for a previous session must not be written to another vehicle.
-        if (!ReferenceEquals(quickEditorSession, EditSession))
-        {
-            quickEditorSession = EditSession;
-            quickEditor.ClearCommand.Execute(null);
-            quickEditor.SearchText = string.Empty;
-        }
+        quickEditorSession = EditSession;
         quickEditor.DialogHostId = DialogHostId;
-        quickEditor.SetCurrentParameters(EditSession is { IsValid: true } session && HasConnection
-            ? session.Fields.Select(field => new KeyValuePair<string, double>(field.Name, field.LiveValue))
-            : []);
+        quickEditor.SetEditSession(EditSession, pageActive && HasConnection && !IsBusy);
     }
 
     private async Task<string> ApplyQuickEditorChangesAsync(
@@ -64,34 +56,12 @@ public partial class ParametersEditorTabViewModel
             throw new InvalidOperationException("The original vehicle connection is no longer available or is busy. Reopen the editor after refreshing parameters.");
         }
 
-        var parameters = viewModel.UpdateParameters(editorSession.Fields.Select(ToVehicleParameter).ToList());
-        if (parameters.Count == 0)
+        var acceptedNames = viewModel.StageTextChanges()
+            .Where(name => editorSession.GetField(name) is { IsModified: true, IsValid: true })
+            .ToArray();
+        if (acceptedNames.Length == 0)
         {
-            return "No valid parameter assignments were found. No values were written. See the feedback report.";
-        }
-
-        var errors = new List<string>();
-        var acceptedNames = new List<string>();
-        var previousValues = editorSession.Fields.ToDictionary(field => field.Name, field => field.PendingValue);
-        using (editorSession.DeferChangeNotifications())
-        {
-            foreach (var parameter in parameters)
-            {
-                if (!editorSession.TrySetPending(parameter.Name, parameter.Value, out var error))
-                {
-                    errors.Add($"Skipped {parameter.Name}: {error}");
-                    editorSession.TrySetPending(parameter.Name, previousValues[parameter.Name], out _);
-                }
-                else
-                {
-                    acceptedNames.Add(parameter.Name);
-                }
-            }
-        }
-        viewModel.ReportSkippedParameters(errors);
-        if (acceptedNames.Count == 0)
-        {
-            return "No valid parameter values could be staged. No values were written. See the feedback report.";
+            return "No valid modified parameters were found in the text. No values were written. See the feedback report.";
         }
 
         await ApplyParameterChangesAsync(cancellationToken, acceptedNames);

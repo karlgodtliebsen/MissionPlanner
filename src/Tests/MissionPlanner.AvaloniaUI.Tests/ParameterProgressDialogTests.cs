@@ -2,6 +2,7 @@
 using Avalonia;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities.Dialogs;
@@ -35,7 +36,6 @@ public sealed class ParameterProgressDialogTests
         await fixture.Model.ActivateAsync();
         fixture.ConfigureWrite(false);
         fixture.Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(accepted);
-        fixture.Session.TrySetPending("TEST_PARAM", 2, out Arg.Any<string?>()).Returns(true);
         fixture.Model.SelectedTabIndex = 1;
         var editor = fixture.Model.QuickEditor;
         editor.Text = "TEST_PARAM = 2";
@@ -71,7 +71,7 @@ public sealed class ParameterProgressDialogTests
         fixture.Dialogs.ConfirmAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string>(),
             Arg.Any<CancellationToken>(), "parameters-window").Returns(accepted);
 
-        fixture.Model.SelectedTabIndex = 2;
+        fixture.Model.SelectedTabIndex = 3;
         Assert.Equal("TEST_PARAM", Assert.Single(fixture.Model.Items).Name);
         Assert.DoesNotContain(fixture.Session.ReceivedCalls(), call => call.GetMethodInfo().Name == "ApplyAsync");
         Assert.True(fixture.Model.ApplyModifiedCommand.CanExecute(null));
@@ -122,13 +122,14 @@ public sealed class ParameterProgressDialogTests
         fixture.Dialogs.ConfirmAsync(Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string>(),
             Arg.Any<CancellationToken>(), "quick-editor-window").Returns(accepted);
         fixture.Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(accepted);
-        fixture.Session.TrySetPending("TEST_PARAM", 2, out Arg.Any<string?>()).Returns(true);
-        var editor = new ParametersEditorViewModel(fixture.Dialogs) { Text = "//Pavo 20 Pro\nTEST_PARAM = 2 // test\nUNKNOWN = 3\nTEST_PARAM = invalid" };
+        const string text = "//Pavo 20 Pro\nTEST_PARAM = invalid\nTEST_PARAM = 2 // test\nUNKNOWN = 3";
+        var editor = new ParametersEditorViewModel(fixture.Dialogs);
         fixture.DomainFactory.Create<ParametersEditorViewModel>().Returns(editor);
         fixture.Dialogs.ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(editor,
             Arg.Any<Ursa.Controls.OverlayDialogOptions>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(async _ =>
             {
+                editor.Text = text;
                 Assert.True(editor.ApplyModifiedCommand.CanExecute(null));
                 await editor.ApplyModifiedCommand.ExecuteAsync(null);
                 return null;
@@ -140,6 +141,7 @@ public sealed class ParameterProgressDialogTests
             {
                 Assert.Same(editor, presentedEditor);
                 Assert.Equal("quick-editor-window", editor.DialogHostId);
+                editor.Text = text;
                 Assert.True(editor.ApplyModifiedCommand.CanExecute(null));
                 await editor.ApplyModifiedCommand.ExecuteAsync(null);
                 return null;
@@ -241,13 +243,15 @@ public sealed class ParameterProgressDialogTests
         await fixture.Model.ActivateAsync();
         var field = new ParameterEditField("TEST_PARAM", MavParamType.Real32, 1, 1, 99, ParameterFieldMetadata.Empty, null);
         fixture.Session.Fields.Returns(new[] { field });
-        using var editor = new ParametersEditorViewModel(fixture.Dialogs) { Text = "TEST_PARAM = 10" };
+        using var editor = new ParametersEditorViewModel(fixture.Dialogs);
         fixture.DomainFactory.Create<ParametersEditorViewModel>().Returns(editor);
 
         await fixture.Model.OpenQuickEditorAsync((presented, _) =>
         {
+            Assert.Contains("TEST_PARAM = 99", presented.Text);
+            presented.Text = "TEST_PARAM = 10";
             Assert.Equal("TEST_PARAM = 1", presented.UsedParametersText);
-            fixture.Session.Fields.Returns(new[] { field with { LiveValue = 2 } });
+            fixture.Session.Fields.Returns(new[] { field with { LiveValue = 2, PendingValue = 10 } });
             fixture.Session.Changed?.Invoke();
             Assert.Equal("TEST_PARAM = 2", presented.UsedParametersText);
             fixture.Session.IsValid.Returns(false);
@@ -275,6 +279,99 @@ public sealed class ParameterProgressDialogTests
         Assert.Contains("skipped 1 input line(s)", editor.FeedbackReport);
         Assert.Same(original, Assert.Single(source));
         Assert.Empty(fixture.Session.ReceivedCalls());
+    }
+
+    /// <summary>Text, table, imports and comparison share the real draft without sending writes.</summary>
+    [Fact]
+    public async Task EditorsSharePendingValuesAndPreserveUnfinishedText()
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        using var session = CreateRealSession(out var writer);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        typeof(ParametersViewModel).GetMethod("AttachSession", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(fixture.Model, [session]);
+        var tableRow = fixture.Model.Parameters.Single(row => row.Name == "GAIN");
+        var editor = fixture.Model.QuickEditor;
+        editor.Text = "// draft\r\nGAIN = 2 // gain\r\nCOUNT = 3\r\nUNFINISHED =";
+        Assert.Equal(2, tableRow.Value);
+        Assert.Equal(2, session.GetField("GAIN")!.PendingValue);
+        Assert.Equal(1, session.GetField("GAIN")!.LiveValue);
+        Assert.Contains("GAIN = 1", editor.UsedParametersText);
+
+        fixture.Model.SelectedTabIndex = 3;
+        Assert.Equal(2, fixture.Model.Items.Count);
+        Assert.Equal(2, fixture.Model.Items.Single(row => row.Name == "GAIN").RightValue);
+        fixture.Model.Items.Single(row => row.Name == "COUNT").IsSelected = false;
+        fixture.Model.SelectedTabIndex = 0;
+        tableRow.Value = 4;
+        fixture.Model.SelectedTabIndex = 1;
+        Assert.Contains("GAIN = 4 // gain", editor.Text);
+        Assert.Contains("UNFINISHED =", editor.Text);
+        Assert.Contains("// draft\r\n", editor.Text);
+        Assert.Same(tableRow, fixture.Model.Parameters.Single(row => row.Name == "GAIN"));
+
+        editor.Text = editor.Text.Replace("GAIN = 4", "GAIN =");
+        Assert.Equal(4, session.GetField("GAIN")!.PendingValue);
+        fixture.Model.SelectedTabIndex = 3;
+        Assert.False(fixture.Model.Items.Single(row => row.Name == "COUNT").IsSelected);
+        Assert.Equal(4, fixture.Model.Items.Single(row => row.Name == "GAIN").RightValue);
+
+        session.RevertAll();
+        Assert.Empty(fixture.Model.Items);
+        Assert.Contains("GAIN = 1 // gain", editor.Text);
+        Assert.Contains("COUNT = 1", editor.Text);
+        Assert.Empty(writer.ReceivedCalls());
+    }
+
+    /// <summary>Selection controls the reviewed write plan; validation failures cannot be selected.</summary>
+    [Fact]
+    public async Task ComparisonReviewsOnlySelectedValidPendingValues()
+    {
+        using var fixture = new Fixture();
+        fixture.SetCompleteCache();
+        await fixture.Model.ActivateAsync();
+        using var session = CreateRealSession(out var writer);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        typeof(ParametersViewModel).GetMethod("AttachSession", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .Invoke(fixture.Model, [session]);
+        fixture.Model.QuickEditor.Text = "GAIN = 2\nCOUNT = 300";
+        fixture.Model.SelectedTabIndex = 3;
+        Assert.False(fixture.Model.Items.Single(row => row.Name == "COUNT").CanWrite);
+        Assert.NotNull(fixture.Model.Items.Single(row => row.Name == "COUNT").Message);
+        fixture.Model.QuickEditor.Text = "GAIN = 2\nCOUNT = 3";
+        fixture.Model.Items.Single(row => row.Name == "COUNT").IsSelected = false;
+        fixture.Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(false);
+        await fixture.Model.ApplyModifiedCommand.ExecuteAsync(null);
+        await fixture.Confirmation.Received(1).ConfirmAsync(Arg.Any<string>(),
+            Arg.Is<string>(text => text != null && text.Contains("GAIN") && !text.Contains("COUNT")),
+            Arg.Any<string>(), Arg.Any<CancellationToken>());
+        Assert.Equal(3, session.GetField("COUNT")!.PendingValue);
+        fixture.Model.ClearComparisonSelectionCommand.Execute(null);
+        Assert.False(fixture.Model.ApplyModifiedCommand.CanExecute(null));
+        Assert.Empty(writer.ReceivedCalls());
+    }
+
+    private static ParameterEditSession CreateRealSession(out IVehicleParameterService writer)
+    {
+        var id = new VehicleId(1, 1);
+        var active = Substitute.For<IActiveVehicleContext>();
+        active.VehicleId.Returns(id);
+        active.IsOnline.Returns(true);
+        var registry = Substitute.For<IVehicleParameterRegistry>();
+        registry.GetAllParameters(id).Returns(new Dictionary<string, VehicleParameter>
+        {
+            ["GAIN"] = new("GAIN", 1, MavParamType.Real32, 0, 2),
+            ["COUNT"] = new("COUNT", 1, MavParamType.Int8, 1, 2)
+        });
+        var metadata = Substitute.For<IVehicleParameterMetadataService>();
+        metadata.GetAllMetadataAsync(id, Arg.Any<CancellationToken>())
+            .Returns(new Dictionary<string, ParameterMetadata>());
+        writer = Substitute.For<IVehicleParameterService>();
+        return new ParameterEditSession(new(id, null!), active, registry, writer, metadata,
+            Options.Create(new ParameterEditSessionOptions()), NullLogger<ParameterEditSession>.Instance);
     }
 
     /// <summary>Background progress updates one dialog and terminal states close it.</summary>
@@ -539,6 +636,17 @@ public sealed class ParameterProgressDialogTests
             Session.Fields.Returns(new[]
             {
                 new ParameterEditField("TEST_PARAM", MavParamType.Real32, 1, 1, 1, ParameterFieldMetadata.Empty, null)
+            });
+            Session.GetField(Arg.Any<string>()).Returns(call => Session.Fields.FirstOrDefault(field => field.Name == call.Arg<string>()));
+            Session.TrySetPending(Arg.Any<string>(), Arg.Any<double>(), out Arg.Any<string?>()).Returns(call =>
+            {
+                var name = call.ArgAt<string>(0);
+                var value = call.Arg<double>();
+                Session.Fields.Returns(Session.Fields.Select(field => field.Name == name ? field with { PendingValue = value } : field).ToArray());
+                call[2] = null;
+                Session.FieldChanged?.Invoke(name);
+                Session.Changed?.Invoke();
+                return true;
             });
             var dialogs = Dialogs;
             dialogs.CreateOptions(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>())

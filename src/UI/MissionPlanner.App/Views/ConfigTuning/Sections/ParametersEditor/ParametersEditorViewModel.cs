@@ -64,7 +64,7 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
 
     private static string FormatParameter(KeyValuePair<string, double> parameter)
     {
-        return $"{parameter.Key} = {parameter.Value.ToString(CultureInfo.InvariantCulture)}";
+        return $"{parameter.Key} = {FormatValue(parameter.Value)}";
     }
 
     private void RefreshUsedParameters()
@@ -87,6 +87,10 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
             return;
         }
         var parameter = currentParameters[SearchText.Trim()];
+        if (pendingValues.TryGetValue(parameter.Key, out var pending))
+        {
+            parameter = new(parameter.Key, pending);
+        }
         if (!ReadParameterNames(Text).Contains(parameter.Key, StringComparer.OrdinalIgnoreCase))
         {
             var separator = Text.Length == 0 || Text.EndsWith('\n') || Text.EndsWith('\r') ? string.Empty : Environment.NewLine;
@@ -133,11 +137,13 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
     {
         ApplyModifiedCommand.NotifyCanExecuteChanged();
         RefreshUsedParameters();
+        StageTextChanges();
     }
 
     private bool CanApplyModified()
     {
-        return applyModified is not null && !string.IsNullOrWhiteSpace(Text);
+        return applyModified is not null && !string.IsNullOrWhiteSpace(Text) &&
+            (editSession is null || canEditSession && editSession.IsValid);
     }
 
     [RelayCommand(CanExecute = nameof(CanApplyModified))]
@@ -209,16 +215,24 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
     /// Updates the parameters in the provided list based on the current Text property.
     /// </summary>
     /// <param name="fullParametersList">The list of vehicle parameters to update.</param>
-    /// <returns>The number of parameters that were updated.</returns>
+    /// <returns>The recognized parameter values, without modifying the supplied list.</returns>
     public List<VehicleParameter> UpdateParameters(List<VehicleParameter> fullParametersList)
     {
+        var parameters = fullParametersList.ToDictionary(parameter => parameter.Name, StringComparer.OrdinalIgnoreCase);
+        return ParseAssignments(parameters.Keys)
+            .Select(item => parameters[item.Key] with { Value = (float)item.Value }).ToList();
+    }
+
+    private Dictionary<string, double> ParseAssignments(IEnumerable<string> parameterNames)
+    {
+        var names = parameterNames.ToDictionary(name => name, StringComparer.OrdinalIgnoreCase);
         FeedbackReport = string.Empty;
         if (string.IsNullOrEmpty(Text))
         {
             return [];
         }
 
-        var result = new List<VehicleParameter>();
+        var result = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 
         //accepted format
         //FRAME_CLASS=1//Quad
@@ -243,29 +257,30 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
             }
 
             var parts = data.Split(['=', ',', ':', ';']);
+            var name = parts[0].Trim();
+            names.TryGetValue(name, out var canonicalName);
+            // The last assignment wins, including an unfinished or invalid last line.
+            if (canonicalName is not null)
+            {
+                result.Remove(canonicalName);
+            }
             if (parts.Length != 2)
             {
                 feedback.Add($"Line {lineNumber}: skipped invalid assignment: {line.Trim()}");
                 continue;
             }
 
-            var name = parts[0].Trim();
-            var parameter = fullParametersList.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
-            if (parameter is not null)
+            if (canonicalName is not null)
             {
                 var p = parts[1].Trim();
-                if (!float.TryParse(p, NumberStyles.Float, CultureInfo.InvariantCulture, out var v) || !float.IsFinite(v))
+                if (!double.TryParse(p, NumberStyles.Float, CultureInfo.InvariantCulture, out var v) ||
+                    !double.IsFinite(v) || v > float.MaxValue || v < -float.MaxValue)
                 {
                     feedback.Add($"Line {lineNumber}: skipped {name} — invalid numeric value: {p}");
                     continue;
                 }
 
-                var param = parameter with
-                {
-                    Value = v
-                };
-                result.RemoveAll(item => item.Name == parameter.Name);
-                result.Add(param);
+                result[canonicalName] = v;
             }
             else
             {

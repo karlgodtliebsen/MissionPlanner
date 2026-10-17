@@ -37,10 +37,10 @@
             <controls:VirtualizedItemsGrid.HeaderTemplate>
                 <DataTemplate>
                     <controls:VirtualizedItemsGridRow>
-                        <TextBlock Grid.Column="0" Text="Stage" HorizontalAlignment="Center" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="0" Text="Write" HorizontalAlignment="Center" Classes="DataGridColumn" />
                         <TextBlock Grid.Column="1" Text="Parameter" HorizontalAlignment="Center" Classes="DataGridColumn" />
                         <TextBlock Grid.Column="2" Text="Live" HorizontalAlignment="Center" Classes="DataGridColumn" />
-                        <TextBlock Grid.Column="3" Text="Right" HorizontalAlignment="Center" Classes="DataGridColumn" />
+                        <TextBlock Grid.Column="3" Text="Pending" HorizontalAlignment="Center" Classes="DataGridColumn" />
                         <TextBlock Grid.Column="4" Text="Difference" HorizontalAlignment="Center" Classes="DataGridColumn" />
                         <TextBlock Grid.Column="5" Text="Status" HorizontalAlignment="Center" Classes="DataGridColumn" />
                         <TextBlock Grid.Column="6" Text="Message" HorizontalAlignment="Center" Classes="DataGridColumn" />
@@ -52,7 +52,8 @@
                     <controls:VirtualizedItemsGridRow>
                         <CheckBox Grid.Column="0"
                                   IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                  IsEnabled="{Binding CanStage}"
+                                  IsEnabled="{Binding CanWrite}"
+                                  AutomationProperties.Name="{Binding Name, StringFormat='Select {0} for writing'}"
                                   HorizontalAlignment="Center"
                                   Classes="DataGridRow" />
                         <TextBlock Grid.Column="1" Text="{Binding Name}" HorizontalAlignment="Center" Classes="DataGridRow" />

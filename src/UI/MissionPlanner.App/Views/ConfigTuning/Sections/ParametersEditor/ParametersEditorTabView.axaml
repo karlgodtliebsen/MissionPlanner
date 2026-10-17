@@ -289,7 +289,7 @@
                 </Button>
 
                 <Button Classes="ToolbarIconButton"
-                        ToolTip.Tip="Clear Editor"
+                        ToolTip.Tip="Clear text; pending edits are retained"
                         AutomationProperties.Name="Clear Quick Editor"
                         IsEnabled="{Binding !QuickEditor.ApplyModifiedCommand.IsRunning}"
                         Command="{Binding QuickEditor.ClearCommand}">
@@ -367,23 +367,23 @@
                     ItemsSource="{Binding Filters}"
                     SelectedItem="{Binding Filter}" />
 
-                <u:IconDropDownButton ToolTip.Tip="Select and stage parameter differences"
-                                      AutomationProperties.Name="Select and stage parameter differences">
+                <u:IconDropDownButton ToolTip.Tip="Select parameters to write"
+                                      AutomationProperties.Name="Select parameters to write">
                     <DropDownButton.Flyout>
                         <MenuFlyout Placement="Bottom">
                             <MenuItem
-                                ToolTip.Tip="Select all safe differences"
-                                Command="{Binding SelectAllSafeDifferencesCommand}" 
-                                AutomationProperties.Name="Select all safe differences"
-                                Header="Select all safe differences">
+                                ToolTip.Tip="Select all writable differences"
+                                Command="{Binding SelectAllWritableDifferencesCommand}"
+                                AutomationProperties.Name="Select all writable differences"
+                                Header="Select all writable differences">
                                 <MenuItem.Icon>
                                     <avalonia:MaterialIcon Kind="SelectAll" Classes="ActionIcon" />
                                 </MenuItem.Icon>
                             </MenuItem>
-                            <MenuItem ToolTip.Tip="Stage selected"
-                                      Command="{Binding StageSelectedDifferencesCommand}" 
-                                      AutomationProperties.Name="Stage selected"
-                                      Header="Stage selected">
+                            <MenuItem ToolTip.Tip="Clear selection"
+                                      Command="{Binding ClearComparisonSelectionCommand}"
+                                      AutomationProperties.Name="Clear selection"
+                                      Header="Clear selection">
                                 <MenuItem.Icon>
                                     <avalonia:MaterialIcon Kind="SelectAll" Classes="ActionIcon"/>
                                 </MenuItem.Icon>
@@ -435,7 +435,7 @@
 
                 <Button Classes="ToolbarButton"
                         ToolTip.Tip="Write selected parameters"
-                        AutomationProperties.Name="Write modified parameters"
+                        AutomationProperties.Name="Write selected parameters"
                         VerticalAlignment="Center" 
                         Command="{Binding ApplyModifiedCommand}">
                     <avalonia:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />

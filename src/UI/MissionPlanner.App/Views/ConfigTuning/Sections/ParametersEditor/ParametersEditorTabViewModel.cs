@@ -162,6 +162,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         this.profileWorkflow = profileWorkflow;
         this.comparisons = comparisons;
         this.dateTimeProvider = dateTimeProvider;
+        SelectedItems.CollectionChanged += (_, _) => ApplyModifiedCommand.NotifyCanExecuteChanged();
     }
 
     /// <inheritdoc />
@@ -189,6 +190,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             return;
         }
         pageActive = false;
+        RefreshQuickEditor();
         quickEditorLifetime.Cancel();
         reconnectCancellation?.Cancel();
         PropertyChanged -= OnViewModelPropertyChanged;
@@ -282,7 +284,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         }
         try
         {
-            var viewModel = domainFactory.Create<ParametersEditorViewModel>();
+            using var viewModel = domainFactory.Create<ParametersEditorViewModel>();
             viewModel.DialogHostId = DialogHostId;
             var editorSession = EditSession;
             using var editorLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -292,9 +294,8 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
                 {
                     if (!editorLifetime.IsCancellationRequested)
                     {
-                        viewModel.SetCurrentParameters(ReferenceEquals(EditSession, editorSession) && editorSession.IsValid && HasConnection
-                            ? editorSession.Fields.Select(field => new KeyValuePair<string, double>(field.Name, field.LiveValue))
-                            : []);
+                        viewModel.SetEditSession(editorSession,
+                            ReferenceEquals(EditSession, editorSession) && HasConnection && !IsBusy);
                     }
                 });
             }
@@ -311,9 +312,12 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             options.CanResize = true;
             options.Buttons = DialogButton.OKCancel;
 
-            ParametersEditorViewModel? returnModel;
             PropertyChangedEventHandler reportProgress = (_, args) =>
             {
+                if (args.PropertyName is nameof(IsBusy) or nameof(HasConnection))
+                {
+                    RefreshEditorParameters();
+                }
                 if (!viewModel.ApplyModifiedCommand.IsRunning)
                 {
                     return;
@@ -333,7 +337,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             editorSession.Changed += RefreshEditorParameters;
             try
             {
-                returnModel = showEditor is null
+                _ = showEditor is null
                     ? await dialogService.ShowStandardAsync<ParametersEditorView, ParametersEditorViewModel>(viewModel, options, overLayHost: DialogHostId, cancellationToken: cancellationToken)
                     : await showEditor(viewModel, cancellationToken);
             }
@@ -342,10 +346,6 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
                 PropertyChanged -= reportProgress;
                 editorSession.Changed -= RefreshEditorParameters;
                 editorLifetime.Cancel();
-            }
-            if (returnModel is not null && !viewModel.ApplyModifiedCommand.IsRunning && ReferenceEquals(EditSession, editorSession) && editorSession.IsValid)
-            {
-                UpdateEditSession(returnModel);
             }
         }
         catch (Exception exception)
@@ -357,30 +357,6 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
 
         HasRows = Parameters.Count > 0;
     }
-
-    private void UpdateEditSession(ParametersEditorViewModel vm)
-    {
-        DomainException.ThrowIfNull(EditSession);
-        var fullList = EditSession.Fields.Select(ToVehicleParameter).ToList();
-        var parameters = vm.UpdateParameters(fullList);
-        if (parameters.Count == 0)
-        {
-            SetMessages($"No valid parameters where found.");
-            NotificationManager?.Show(StatusMessage ?? "");
-            return;
-        }
-
-        using var notifications = EditSession.DeferChangeNotifications();
-        foreach (var parameter in parameters)
-        {
-            EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
-        }
-
-        SetMessages($"Imported {parameters.Count} matching values as unapplied edits.");
-        NotificationManager?.Show(StatusMessage ?? "");
-        HasRows = Parameters.Count > 0;
-    }
-
 
     [RelayCommand]
     private async Task LoadFromFileAsync(CancellationToken cancellationToken)
@@ -575,13 +551,8 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     [RelayCommand(CanExecute = nameof(CanCompareParameters))]
     private Task CompareParametersAsync(CancellationToken cancellationToken)
     {
-        SelectedTabIndex = 2;
+        SelectedTabIndex = 3;
         return Task.CompletedTask;
-    }
-
-    private void OnComparisonStaged(object? sender, int count)
-    {
-        SetMessages($"Staged {count} safe differences as pending edits. No values were written.");
     }
 
     [RelayCommand]
@@ -714,8 +685,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         SaveToFileCommand.NotifyCanExecuteChanged();
         SaveToJsonFileCommand.NotifyCanExecuteChanged();
         ApplyModifiedCommand.NotifyCanExecuteChanged();
-        SelectAllSafeDifferencesCommand.NotifyCanExecuteChanged();
-        StageSelectedDifferencesCommand.NotifyCanExecuteChanged();
+        SelectAllWritableDifferencesCommand.NotifyCanExecuteChanged();
         HasRows = Parameters.Count > 0;
     }
 

@@ -42,7 +42,7 @@
                                     IsVisible="{Binding ShowToolbar}"
                                     HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Button Classes="ToolbarIconButton"
-                                    ToolTip.Tip="Clear Editor"
+                                    ToolTip.Tip="Clear text; pending edits are retained"
                                     AutomationProperties.Name="Clear Quick Editor"
                                     IsEnabled="{Binding !ApplyModifiedCommand.IsRunning}"
                                     Command="{Binding ClearCommand}">
@@ -76,7 +76,7 @@
                             <Button Grid.Row="0" Grid.Column="2"
                                     Command="{Binding AddParameterCommand}"
                                     Classes="EmbeddedIconButton"
-                                    ToolTip.Tip="Add selected parameter with its current value"
+                                    ToolTip.Tip="Add selected parameter with its pending value"
                                     AutomationProperties.Name="Add selected parameter">
                                 <avalonia:MaterialIcon Kind="Plus" Classes="ActionIcon"  />
                             </Button>
@@ -89,7 +89,7 @@
 
                             <Grid RowSpacing="25" RowDefinitions="*,Auto">
                                 <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
-                                    <TextBlock Text="Add vehicle values:" Classes="H4" />
+                                    <TextBlock Text="Pending parameter values:" Classes="H4" />
                                     <TextBox  Grid.Row="1" Grid.Column="0"
                                               x:Name="ParameterTextEditor"
                                               AcceptsReturn="True"

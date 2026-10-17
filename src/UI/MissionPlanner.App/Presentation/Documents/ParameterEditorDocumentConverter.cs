@@ -19,7 +19,8 @@ public sealed class ParameterEditorDocumentConverter : IMultiValueConverter
             .Paragraph("Line endings: CRLF or LF.")
             .Paragraph("Use a decimal point for numeric values.")
             .Paragraph("Lines starting with // and inline // comments are supported.")
-            .Paragraph("Unknown names and invalid values are skipped and reported.");
+            .Paragraph("Edits are shared across the parameter editor tabs. Review and write them in Write modified parameters.")
+            .Paragraph("Unknown names and incomplete values are skipped. Invalid pending values are reported and cannot be written.");
         var headings = new[] { "Write status", "Progress", "Errors", "Input report" };
         for (var index = 0; index < Math.Min(values.Count, headings.Length); index++)
         {

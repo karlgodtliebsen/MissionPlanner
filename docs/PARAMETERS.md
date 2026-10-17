@@ -232,27 +232,41 @@ an overshooting step lands on the advertised minimum or maximum instead of being
 `ParametersEditorTabViewModel.SelectedTabIndex` controls the shared toolbar in
 `ParametersEditorTabView`. Editor shows file import/export, parameter actions,
 the Quick Editor shortcut, revert, copy, retry, and cancel-load controls. Quick
-Editor shows Clear and Apply. Apply modified parameters shows comparison filters,
-selection/staging, comparison export/copy, and Apply. Switching tabs does not write
-parameters; Quick Editor text is retained within the same editing session.
+Editor shares file actions and has a Clear Text action. Write modified parameters shows
+comparison filters, write selection, comparison export/copy, and Write selected parameters.
+Switching tabs does not write parameters; text is retained within the same editing session.
 
 The Editor tab's horizontal expand/collapse button toggles the layout column
 between its compact 900-unit width and the available page width. It resizes the
 existing view in place, retaining the model, pending edits, and search state.
 Other tabs remain compact; returning to Editor restores its selected width mode.
 
-The embedded Quick Editor and its toolbar share one `ParametersEditorViewModel`.
-Standalone Quick Editor windows retain their local toolbar. Comparison reads the
-parent's current editing session. Both Apply actions use the existing reviewed,
-confirmed write workflow and the owning window's dialog host; Quick Editor writes
-only recognized input names. Replacing the session clears the embedded editor's
-text so input for an earlier vehicle cannot carry over to a different session.
+The embedded Text Editor, main table, standalone Quick Editor windows, and comparison
+use the same `IParameterEditSession`. Complete numeric assignments update pending values
+as text is entered or pasted; metadata-invalid values remain visible as invalid pending
+edits and cannot be selected for writing. Incomplete, unknown and non-finite input stays
+in the text buffer with feedback, without replacing the last pending value. The last
+assignment for a name takes precedence. Changes from the table, file/profile imports,
+revert, and confirmed readback update listed text values, preserving comments and unrelated
+incomplete lines; newly modified names are added to the text. The read-only preview always
+shows confirmed live values. Clear Text clears the buffer; Revert changes resets pending
+values. Replacing the session clears text associated with the previous vehicle.
+
+Standalone Quick Editor windows retain their local toolbar and write only recognized,
+valid modified input names. Comparison selects writable pending differences by default,
+preserves deselection across tab changes, and submits only the selected names to the
+existing review/confirmation/write workflow and owning dialog host. Staging is unnecessary
+for live-versus-pending comparison because those values are already in the shared draft;
+file/profile comparison continues to stage external values before any explicit write.
 
 ### Comparison and profiles
 
 `IParameterValueEquivalence` is the single numeric policy used by modified detection,
 comparison, imports, and matching readback. Metadata increment supplies precision when
-present; otherwise comparisons use absolute `1e-6` and relative `1e-5` tolerances. NaN and
+present; otherwise comparisons use absolute `1e-6` and relative `1e-5` tolerances. Finite
+values with identical REAL32 wire representations are equal before increment rounding,
+so decimal edits and readbacks do not create false differences at rounding boundaries.
+Equal comparison rows display a zero difference. NaN and
 infinity are handled explicitly and are never accepted as staged parameter values.
 
 `IParameterComparisonService` compares live, pending, original, file, or profile sources

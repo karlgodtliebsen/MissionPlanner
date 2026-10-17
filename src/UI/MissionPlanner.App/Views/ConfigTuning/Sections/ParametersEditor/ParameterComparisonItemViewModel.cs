@@ -6,14 +6,14 @@ using MissionPlanner.Library.Math;
 namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 
 /// <summary>Selectable presentation row for a parameter comparison result.</summary>
-public sealed partial class ParameterComparisonItemViewModel(ParameterComparisonRow row) : ObservableObject
+public sealed partial class ParameterComparisonItemViewModel(ParameterComparisonRow row, string? validationError = null) : ObservableObject
 {
     private ObservableCollection<ParameterComparisonItemViewModel>? selectedItems;
 
     /// <summary>Gets the underlying immutable comparison result.</summary>
     public ParameterComparisonRow Row { get; } = row;
 
-    /// <summary>Gets or sets whether the safe difference is selected for staging.</summary>
+    /// <summary>Gets or sets whether the difference is selected for the owner's next operation.</summary>
     [ObservableProperty]
     public partial bool IsSelected
     {
@@ -54,7 +54,7 @@ public sealed partial class ParameterComparisonItemViewModel(ParameterComparison
     public double? Difference => Row.Difference;
 
     /// <summary>Gets the difference formatted at the parameter's declared precision.</summary>
-    public string? DifferenceText => FormatValue(Row.Difference);
+    public string? DifferenceText => Row.Status == ParameterComparisonStatus.Equal ? "0" : FormatValue(Row.Difference);
 
     /// <summary>Gets the classification.</summary>
     public ParameterComparisonStatus Status => Row.Status;
@@ -65,8 +65,14 @@ public sealed partial class ParameterComparisonItemViewModel(ParameterComparison
     /// <summary>Gets whether the row is safe to stage.</summary>
     public bool CanStage => Row.CanStage;
 
+    /// <summary>Gets whether this pending difference passes session validation for selection.</summary>
+    public bool CanWrite => Row.CanStage && !HasValidationError;
+
+    /// <summary>Gets whether the shared session rejected the pending value.</summary>
+    public bool HasValidationError => validationError is not null;
+
     /// <summary>Gets the classification explanation.</summary>
-    public string? Message => Row.Message;
+    public string? Message => validationError ?? Row.Message;
 
     private void SynchronizeSelection()
     {
