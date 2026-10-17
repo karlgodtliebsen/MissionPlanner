@@ -88,6 +88,7 @@
         <Button Grid.Row="0"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
+                Foreground="Black"
                 Margin="8"
                 Padding="8,4"
                 MinWidth="100"

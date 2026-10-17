@@ -4,6 +4,7 @@ using MissionPlanner.Maps.Sources;
 namespace MissionPlanner.App.Maps;
 
 /// <summary>Atomically replaces the single Mapsui basemap slot while preserving operational layers.</summary>
+/// <remarks>Host views render attribution through their application overlay instead of the layer widget.</remarks>
 public sealed class MapBasemapController(Mapsui.Map map, IMapSourceResolver resolver, IMapsuiBasemapFactory factory, IMapUiDispatcher dispatcher) : IDisposable
 {
     private readonly object gate = new();
@@ -67,6 +68,13 @@ public sealed class MapBasemapController(Mapsui.Map map, IMapSourceResolver reso
                     if (disposed || generation != requestGeneration)
                     {
                         return;
+                    }
+
+                    // MissionMapView and GeoFenceMapView show the coordinator's theme-aware attribution.
+                    // Keep the layer's credit metadata, but do not draw a second attribution widget.
+                    if (replacement.Attribution is { } attribution)
+                    {
+                        attribution.Enabled = false;
                     }
 
                     previous = current ?? map.Layers.FirstOrDefault(layer => layer.Name == MapsuiBasemapFactory.BasemapLayerName);

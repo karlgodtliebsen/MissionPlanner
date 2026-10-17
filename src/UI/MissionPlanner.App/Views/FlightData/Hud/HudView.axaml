@@ -16,8 +16,12 @@
                             <RotateTransform Angle="{Binding ModelHeading}" />
                         </TextBlock.RenderTransform>
                     </TextBlock>
-                    <Button Content="Reset model heading" Command="{Binding ResetModelHeadingCommand}" />
-                    <Button Content="Restore heading" Command="{Binding RestoreModelHeadingCommand}" />
+                    <Button Content="Reset model heading" 
+                            Classes="ToolbarTextButton"
+                            Command="{Binding ResetModelHeadingCommand}" />
+                    <Button Content="Restore heading"
+                            Classes="ToolbarTextButton"
+                            Command="{Binding RestoreModelHeadingCommand}" />
                 </WrapPanel>
                 <TextBlock Text="{Binding HeadingReferenceStatus}" TextWrapping="Wrap" FontSize="11" />
                 <TextBlock Text="{Binding ArmingLabel}" Classes="H5" TextWrapping="Wrap" 

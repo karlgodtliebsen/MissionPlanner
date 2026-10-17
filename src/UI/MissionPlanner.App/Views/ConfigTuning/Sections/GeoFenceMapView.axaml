@@ -56,6 +56,7 @@
                 MaxWidth="520"
                 MinWidth="100"
                 FontSize="11"
+                Foreground="Black"
                 Content="{Binding AttributionText}"
                 ToolTip.Tip="{Binding AttributionText}"
                 IsVisible="{Binding IsAttributionVisible}"

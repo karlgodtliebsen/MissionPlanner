@@ -65,6 +65,10 @@
         <Setter Property="Width" Value="120" />
         <Setter Property="Theme" Value="{DynamicResource SolidIconButton}" />
     </Style>
+    <Style Selector="Button.ToolbarTextButton">
+        <Setter Property="Theme" Value="{DynamicResource SolidIconButton}" />
+    </Style>
+
     <Style Selector="Button.EmbeddedIconButton">
         <Setter Property="Width" Value="50" />
        <Setter Property="Theme" Value="{DynamicResource SolidIconButton}" />

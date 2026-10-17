@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dialogs;
-using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 
@@ -13,11 +12,7 @@ public partial class AIViewModel : ViewModelBase
     private readonly IDialogService dialogService;
 
     private readonly IDomainEventHub domainEventHub;
-    private readonly IMissionTransferService transferService;
-    private readonly IMissionProtocolMapper protocolMapper;
-    private readonly IMissionValidator validator;
     private readonly IVehicleRegistry vehicleRegistry;
-
     private readonly IList<IDisposable> disposables = [];
     private readonly bool isActive;
 
@@ -32,9 +27,6 @@ public partial class AIViewModel : ViewModelBase
     {
         this.dialogService = dialogService;
         this.domainEventHub = domainEventHub;
-        this.transferService = transferService;
-        this.protocolMapper = protocolMapper;
-        this.validator = validator;
         this.vehicleRegistry = vehicleRegistry;
     }
 }
