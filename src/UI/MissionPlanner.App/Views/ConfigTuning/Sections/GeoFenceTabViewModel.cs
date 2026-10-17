@@ -47,6 +47,23 @@ public sealed partial class GeoFenceTabViewModel : ViewModelBase
         this.confirmation = confirmation;
     }
 
+    /// <summary>Gets or sets whether the editor uses the available page width.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EditorColumnMaxWidth), nameof(ToggleEditorWidthText))]
+    public partial bool IsEditorExpanded { get; set; }
+
+    /// <summary>Gets the column width limit for the current layout mode.</summary>
+    public double EditorColumnMaxWidth => IsEditorExpanded ? double.PositiveInfinity : 900;
+
+    /// <summary>Gets the accessible label for the editor width toggle.</summary>
+    public string ToggleEditorWidthText => IsEditorExpanded ? "Restore compact editor width" : "Expand editor to full width";
+
+    [RelayCommand]
+    private void ToggleEditorWidth()
+    {
+        IsEditorExpanded = !IsEditorExpanded;
+    }
+
     /// <summary>Gets editable fence parameter rows resolved from live metadata.</summary>
     public ObservableRangeCollection<ParameterItemViewModel> Parameters { get; } = [];
     /// <summary>Gets the local fence areas.</summary>

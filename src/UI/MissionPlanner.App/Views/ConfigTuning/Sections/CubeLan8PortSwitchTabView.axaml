@@ -11,27 +11,59 @@
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.CubeLan8PortSwitchTabView"
                               x:DataType="sections:CubeLan8PortSwitchTabViewModel"
                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                              xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections">
+                              xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                              xmlns:u="https://irihi.tech/ursa">
     <ContentPage Header="CubeLAN 8 Port Switch"  >
 
-        <Grid Margin="20" RowDefinitions="Auto,Auto,*" RowSpacing="12" HorizontalAlignment="Stretch">
-            <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Center">
-                <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Left">
-                    <TextBlock Text="Discovery uses only the repository-documented MAVLink DEVICE_OP I²C path at address 0x50." />
-                    <TextBlock Text="The editor exposes COS, COS priority, EEE, VLAN tagging, and the 8×8 VLAN membership matrix." />
-                    <TextBlock Text="PoE, port enablement, VLAN IDs, modes, authentication, and editable labels are not exposed because no verified protocol definition exists for them." />
+        <Grid x:Name="CubeLanEditorLayout" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12"
+              Classes.expanded="{Binding IsEditorExpanded}">
+            <Grid.Styles>
+                <Style Selector="Grid#CubeLanEditorLayout">
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Grid#CubeLanEditorLayout.expanded">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+            </Grid.Styles>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="900" MaxWidth="{Binding EditorColumnMaxWidth}" />
+            </Grid.ColumnDefinitions>
+
+            <u:Banner Classes="Bordered" Header="CubeLAN 8 Port Switch" HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Vertical" Grid.Row="0"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
+
+                    <SelectableTextBlock Text="{Binding ErrorMessage}"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                         Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
+                    <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Left">
+                        <TextBlock Text="Discovery uses only the repository-documented MAVLink DEVICE_OP I²C path at address 0x50." />
+                        <TextBlock Text="The editor exposes COS, COS priority, EEE, VLAN tagging, and the 8×8 VLAN membership matrix." />
+                        <TextBlock Text="PoE, port enablement, VLAN IDs, modes, authentication, and editable labels are not exposed because no verified protocol definition exists for them." />
+                    </StackPanel>
+                    <TextBlock Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalAlignment="Center" />
                 </StackPanel>
-                <TextBlock Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalAlignment="Center" />
-                <SelectableTextBlock Text="{Binding ErrorMessage}"
-                                     IsVisible="{Binding HasError}"
-                                     TextWrapping="Wrap"
-                                     Classes="Danger"/>
+            </u:Banner>
+            
+            <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="10" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True"  Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" />
             </StackPanel>
 
-            <Border Grid.Row="1" Padding="12">
+            <Border Grid.Row="2" Padding="12">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <WrapPanel Orientation="Horizontal" ItemSpacing="10">
+                        <Button x:Name="ToggleEditorWidthButton" Classes="ToolbarButton"
+                                ToolTip.Tip="{Binding ToggleEditorWidthText}"
+                                AutomationProperties.Name="{Binding ToggleEditorWidthText}"
+                                Command="{Binding ToggleEditorWidthCommand}" VerticalAlignment="Center">
+                            <Grid>
+                                <mdi:MaterialIcon Kind="ArrowExpandHorizontal" Classes="ActionIcon"
+                                                  IsVisible="{Binding !IsEditorExpanded}" />
+                                <mdi:MaterialIcon Kind="ArrowCollapseHorizontal" Classes="ActionIcon"
+                                                  IsVisible="{Binding IsEditorExpanded}" />
+                            </Grid>
+                        </Button>
                         <Button Classes="ToolbarButton" ToolTip.Tip="Discover / read" Command="{Binding RefreshCommand}" VerticalAlignment="Center" AutomationProperties.Name="Discover / read">
                             <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                         </Button>
@@ -49,7 +81,7 @@
             </Border>
 
             <controls:VirtualizedItemsGrid
-                Grid.Row="2"
+                Grid.Row="3"
                 ItemsSource="{Binding Ports}"
                 ColumnWidths="*,*,*,*,2*"
                 ColumnSpacing="6"
@@ -58,7 +90,7 @@
                 ShowSearchBar="False"
                 ShowPagination="False"
                 SelectionMode="None"
-                HorizontalAlignment="Center"
+                HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch">
                 <controls:VirtualizedItemsGrid.EmptyView>
                     <StackPanel Margin="20" Spacing="8" HorizontalAlignment="Center">

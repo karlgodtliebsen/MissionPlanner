@@ -7,14 +7,31 @@
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                              xmlns:u="https://irihi.tech/ursa"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Name="RootPage"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.MAVFtpTabView"
                               x:DataType="sections:MavFtpTabViewModel">
-    <ContentPage Header="Mav Ftp" >
+    <ContentPage Header="Mavlink Ftp" >
 
-        <Grid Margin="16" RowDefinitions="Auto,*,Auto" RowSpacing="12" HorizontalAlignment="Center">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" 
+              RowSpacing="12" HorizontalAlignment="Center">
+           
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="900" MaxWidth="900" />
+            </Grid.ColumnDefinitions>
+            <u:Banner Classes="Bordered" Header="Mavlink Ftp" HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Vertical" Grid.Row="0"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
+
+                    <SelectableTextBlock Text="{Binding ErrorMessage}"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                         Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </StackPanel>
+            </u:Banner>
+            
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
                 
                 <Button Classes="ToolbarButton" ToolTip.Tip="Upload file to vehicle" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}"  >
                     <avalonia:MaterialIcon Kind="UploadOutline" Width="30" Height="30" />
@@ -31,7 +48,7 @@
                     <avalonia:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
             </Grid>
-            <Grid Grid.Row="1" RowDefinitions="Auto,*" MinWidth="640">
+            <Grid Grid.Row="2" RowDefinitions="Auto,*" MinWidth="640">
                 <Grid ColumnDefinitions="300,100,100,180" ColumnSpacing="6" Margin="12,0,12,6">
                     <TextBlock Grid.Column="0" Text="Name" Classes="DataGridColumn" />
                     <TextBlock Grid.Column="1" Text="Type" Classes="DataGridColumn" />
@@ -67,7 +84,7 @@
                            VerticalAlignment="Top"
                            IsHitTestVisible="False" />
             </Grid>
-            <StackPanel Orientation="Vertical" Grid.Row="2" Spacing="6">
+            <StackPanel Orientation="Vertical" Grid.Row="3" Spacing="6">
                 <ProgressBar Value="{Binding TransferProgress}" />
                 <TextBlock Text="{Binding TransferDetails}" FontSize="12" />
 

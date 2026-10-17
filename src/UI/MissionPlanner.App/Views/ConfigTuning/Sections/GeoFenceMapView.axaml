@@ -10,9 +10,8 @@
                                x:CompileBindings="False"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections">
-    <Grid RowDefinitions="*,Auto">
+    <Grid RowDefinitions="*,Auto" HorizontalAlignment="Stretch">
         <mapsui:MapControl x:Name="FenceMap" />
-
         <StackPanel Grid.Row="0"
                     Opacity="0.75"
                     HorizontalAlignment="Right"
@@ -44,7 +43,6 @@
                 <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
             </Button>
         </StackPanel>
-
         <Border Grid.Row="0" Margin="12" Padding="10,6" HorizontalAlignment="Left" VerticalAlignment="Top"
                 Background="{DynamicResource SemiColorBg2}" CornerRadius="6">
             <TextBlock Text="{Binding EditModeText}" />

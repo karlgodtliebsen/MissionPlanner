@@ -12,14 +12,49 @@
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.GeoFenceTabView"
                               x:DataType="sections:GeoFenceTabViewModel"
                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                              xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections">
+                              xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                              xmlns:u="https://irihi.tech/ursa">
 
-    <ContentPage Header="GeoFence Configuration"
-                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <ContentPage Header="GeoFence Configuration">
 
-        <Grid RowDefinitions="Auto,*" Margin="12" RowSpacing="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <StackPanel Orientation="Vertical" Margin="0,0">
+        <Grid x:Name="GeoFenceLayout" RowDefinitions="Auto,Auto,*" RowSpacing="10"
+              VerticalAlignment="Stretch" Classes.expanded="{Binding IsEditorExpanded}">
+            <Grid.Styles>
+                <Style Selector="Grid#GeoFenceLayout">
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Grid#GeoFenceLayout.expanded">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+            </Grid.Styles>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="600" MaxWidth="{Binding EditorColumnMaxWidth}" />
+            </Grid.ColumnDefinitions>
+
+            <u:Banner Classes="Bordered" Header="Geo Fence" HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Vertical" Grid.Row="0"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
+
+                    <SelectableTextBlock Text="{Binding ErrorMessage}"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                         Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </StackPanel>
+            </u:Banner>
+
+            <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,0" HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                    <Button x:Name="ToggleEditorWidthButton" Classes="ToolbarButton"
+                            ToolTip.Tip="{Binding ToggleEditorWidthText}"
+                            AutomationProperties.Name="{Binding ToggleEditorWidthText}"
+                            Command="{Binding ToggleEditorWidthCommand}" VerticalAlignment="Center">
+                        <Grid>
+                            <mdi:MaterialIcon Kind="ArrowExpandHorizontal" Classes="ActionIcon"
+                                              IsVisible="{Binding !IsEditorExpanded}" />
+                            <mdi:MaterialIcon Kind="ArrowCollapseHorizontal" Classes="ActionIcon"
+                                              IsVisible="{Binding IsEditorExpanded}" />
+                        </Grid>
+                    </Button>
                     <Button Classes="ToolbarButton" ToolTip.Tip="Download" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download">
                         <mdi:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
                     </Button>
@@ -40,13 +75,10 @@
                     </Button>
                 </StackPanel>
                 <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Stretch" Margin="0,10">
-
-                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}"  Theme="{DynamicResource ProgressRing}" />
-                <ProgressBar IsIndeterminate="True"  Value="{Binding TransferPercent}"  Theme="{DynamicResource ProgressRing}" />
+                    <ProgressBar IsIndeterminate="True" Value="{Binding TransferPercent}"  Theme="{DynamicResource ProgressRing}" />
+                </StackPanel>
             </StackPanel>
-            </StackPanel>
- 
-            <Grid Grid.Row="1" ColumnDefinitions="380,*" ColumnSpacing="12">
+            <Grid Grid.Row="2" ColumnDefinitions="380,*" ColumnSpacing="12" HorizontalAlignment="Stretch">
                 <ScrollViewer>
                     <StackPanel Orientation="Vertical" Spacing="10">
                         <Border Padding="10">

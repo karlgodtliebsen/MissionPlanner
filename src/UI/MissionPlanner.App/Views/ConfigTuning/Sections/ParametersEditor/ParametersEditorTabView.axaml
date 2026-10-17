@@ -14,8 +14,9 @@
                               x:DataType="parametersEditor:ParametersEditorTabViewModel">
 
     <ContentPage Header="Parameters Editor"  >
-
-        <Grid x:Name="ParameterEditorLayout" RowDefinitions="Auto,Auto,*" VerticalAlignment="Stretch"
+        <Grid x:Name="ParameterEditorLayout" 
+              RowDefinitions="Auto,Auto,*" 
+              VerticalAlignment="Stretch"
               Classes.expanded="{Binding IsEditorExpanded}">
             <Grid.Styles>
                 <Style Selector="Grid#ParameterEditorLayout">

@@ -10,19 +10,36 @@
                               xmlns:models="clr-namespace:MissionPlanner.App.Models"
                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                              xmlns:u="https://irihi.tech/ursa"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.OnboardOSDTabView"
                               x:DataType="sections:OnboardOsdTabViewModel">
 
     <ContentPage Header="Onboard OSD"   >
 
-        <Grid RowDefinitions="Auto,Auto,*"
-              HorizontalAlignment="Stretch"
+        <Grid RowDefinitions="Auto,Auto,Auto,*"
+              HorizontalAlignment="Center"
               VerticalAlignment="Stretch"
-              Margin="10,0"
               RowSpacing="10" >
 
-            <Grid ColumnDefinitions="Auto,220,*,Auto" ColumnSpacing="8"
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="900" MaxWidth="900" />
+            </Grid.ColumnDefinitions>
+
+            <u:Banner Classes="Bordered" Header="Onboard OSD" HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Vertical" Grid.Row="0"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
+                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                    <SelectableTextBlock Text="{Binding ErrorMessage}"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                         Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </StackPanel>
+            </u:Banner>
+
+            <Grid 
+                Grid.Row="1" ColumnDefinitions="Auto,220,*,Auto" ColumnSpacing="8"
                   Margin="0,20" IsVisible="{Binding IsUnsupported, Converter={StaticResource InvertedBoolConverter}}"
                   HorizontalAlignment="Center"
                   >
@@ -49,12 +66,8 @@
                              Theme="{DynamicResource ProgressRing}" />
             </Grid>
 
-            <Border Grid.Row="1" Padding="10" HorizontalAlignment="Center">
+            <Border Grid.Row="2" Padding="10" HorizontalAlignment="Center" Classes="SectionCard">
                 <StackPanel Orientation="Vertical" Spacing="3">
-                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                     <TextBlock Text="{Binding ValidationMessage}"
                                Classes="Warning"
                                IsVisible="{Binding HasValidationIssues}"
@@ -73,7 +86,7 @@
                 </StackPanel>
             </Border>
 
-            <Grid Grid.Row="2" ColumnDefinitions="3*,*" ColumnSpacing="12" 
+            <Grid Grid.Row="3" ColumnDefinitions="3*,*" ColumnSpacing="12" 
                   IsVisible="{Binding HasOsdConfiguration}"
                   HorizontalAlignment="Center"
                   >

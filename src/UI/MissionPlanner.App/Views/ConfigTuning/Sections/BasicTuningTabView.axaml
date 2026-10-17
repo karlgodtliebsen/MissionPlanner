@@ -8,6 +8,7 @@
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+                              xmlns:u="https://irihi.tech/ursa"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.BasicTuningTabView"
                               x:DataType="sections:BasicTuningTabViewModel">
@@ -16,9 +17,30 @@
 
         <Grid RowDefinitions="Auto,Auto,*" Margin="12"
               RowSpacing="10" HorizontalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="900" MaxWidth="900" />
+            </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Vertical">
-                <StackPanel Orientation="Horizontal" Spacing="8">
+            <u:Banner Classes="Bordered" Header="Basic Tuning" HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Vertical" Grid.Row="0"
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
+
+                    <TextBlock Classes="SectionTitle" Text="{Binding FirmwareFamilyText, StringFormat='Firmware profile: {0}'}" />
+                    <TextBlock Text="Basic Tuning intentionally hides expert control-loop fields. Use Extended Tuning or Parameters Editor only when you understand the stability risks."
+                               Classes="Warning"
+                               IsVisible="{Binding HasSupportedProfile}" />
+                    <TextBlock Text="This connected firmware has no supported Basic Tuning profile."
+                               Classes="Warning"
+                               IsVisible="{Binding IsUnsupported}" />
+                    <SelectableTextBlock Text="{Binding ErrorMessage}"
+                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                         Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
+                </StackPanel>
+            </u:Banner>
+
+            <StackPanel Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                     <Button Classes="ToolbarButton" ToolTip.Tip="Import presented fields" Command="{Binding ImportCommand}" Margin="4" >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
                     </Button>
@@ -28,20 +50,6 @@
                 </StackPanel>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
-
-
-            <Border Grid.Row="1" Padding="10" Classes="SectionCard">
-                <StackPanel Orientation="Vertical" Spacing="10">
-                    <TextBlock Classes="SectionTitle" Text="{Binding FirmwareFamilyText, StringFormat='Firmware profile: {0}'}" />
-                    <TextBlock Text="Basic Tuning intentionally hides expert control-loop fields. Use Extended Tuning or Parameters Editor only when you understand the stability risks."
-                               Classes="H3 Warning"
-                               IsVisible="{Binding HasSupportedProfile}" />
-                    <TextBlock Text="This connected firmware has no supported Basic Tuning profile."
-                               Classes="Warning"
-                               IsVisible="{Binding IsUnsupported}" />
-                </StackPanel>
-            </Border>
-
             <ScrollViewer Grid.Row="2" IsVisible="{Binding HasSupportedProfile}">
                 <ItemsControl ItemsSource="{Binding Groups}">
                     <ItemsControl.ItemsPanel>

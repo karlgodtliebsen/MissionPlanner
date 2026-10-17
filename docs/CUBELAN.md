@@ -1,5 +1,9 @@
 # CubeLAN 8-port switch configuration
 
+The toolbar includes the same expand/collapse width control as the Parameters Editor.
+It switches between the compact 900-unit column and the available page width, with the
+port table stretching to match. The existing ViewModel and pending edits are retained.
+
 ## Supported protocol
 
 The Config page uses the only CubeLAN mechanism documented in this repository: MAVLink

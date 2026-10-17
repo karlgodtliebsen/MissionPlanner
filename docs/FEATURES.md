@@ -650,6 +650,8 @@ while leaving Config warns before discarding them.
 
 ### Status
 
+* The toolbar can expand the editor column to the available page width and restore its
+  compact 900-unit maximum; the map, ViewModel, and pending edits stay in place
 * Resolves fence enable, type, action, altitude, radius, margin, return, auto-enable, and
   option parameters from live metadata through the shared Config editing session
 * Downloads, uploads, and clears dedicated `MAV_MISSION_TYPE_FENCE` geometry with
