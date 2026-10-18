@@ -33,15 +33,6 @@
                         <avalonia:MaterialIcon Kind="FileDocumentMultipleOutline" Width="30" Height="30" />
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem ToolTip.Tip="Open Parameters Quick Editor In Window"
-                          Command="{Binding OpenFullParametersCommand}"
-                          CommandParameter="QuickEditorInWindow"
-                          AutomationProperties.Name="Open Parameters Quick Editor In Window"
-                          Header="Open Parameters Quick Editor In Window">
-                    <MenuItem.Icon>
-                        <avalonia:MaterialIcon Kind="ApplicationEditOutline" Width="30" Height="30" />
-                    </MenuItem.Icon>
-                </MenuItem>
             </MenuFlyout>
         </DropDownButton.Flyout>
         <avalonia:MaterialIcon Kind="FormatListBulleted" Classes="ActionIcon" Width="30" Height="30"  />

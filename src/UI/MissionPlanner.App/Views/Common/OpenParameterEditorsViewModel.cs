@@ -42,40 +42,6 @@ public partial class OpenParameterEditorsViewModel(INavigationService navigation
             await ShowEditorWindowAsync(view, "Parameters Editor", () => model.IsBusy, model.DialogHostId);
             return;
         }
-
-        if (commandParameter == "QuickEditorInWindow")
-        {
-            if (!CanOpenWindow())
-            {
-                return;
-            }
-            using var model = services.GetRequiredService<ParametersEditorTabViewModel>();
-            try
-            {
-                await model.ActivateAsync();
-                model.NotificationManager = NotificationManager;
-                await model.OpenQuickEditorAsync(async (editor, _) =>
-                {
-                    using var editorLifetime = editor;
-                    model.DialogHostId = $"quick-parameters-editor-{Guid.NewGuid():N}";
-                    editor.DialogHostId = model.DialogHostId;
-                    var view = new ParametersEditorView { DataContext = editor };
-                    view.Loaded += (_, _) =>
-                    {
-                        Utilities.Dialogs.NotificationHelper.SetupManagers(view, editor);
-                        model.NotificationManager = editor.NotificationManager;
-                    };
-                    await ShowEditorWindowAsync(view, "Parameters Quick Editor", () => editor.ApplyModifiedCommand.IsRunning, model.DialogHostId);
-                    // Apply writes through the owning session; closing does not stage additional edits.
-                    return null;
-                }, CancellationToken.None);
-            }
-            finally
-            {
-                await model.DeactivateAsync();
-            }
-            return;
-        }
     }
 
     private bool CanOpenWindow()
