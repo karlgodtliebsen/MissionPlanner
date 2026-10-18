@@ -51,22 +51,33 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
         RefreshUsedParameters();
         AddParameterCommand.NotifyCanExecuteChanged();
     }
+    private static readonly char[] lineSeparators = new char[] { '=', ',', ':', ';' };
+    private static readonly char[] commentSeparators = new char[] { '/', '#' };
 
     private static IEnumerable<string> ReadParameterNames(string text)
     {
+        if (string.IsNullOrEmpty(text))
+        {
+            yield break;
+        }
+
         foreach (var line in text.Replace('\r', '\n').Split('\n'))
         {
-            var data = string.Empty;
-            if (line.Contains("//"))
+            if (string.IsNullOrEmpty(line) || line.IndexOfAny(commentSeparators) == 0)
             {
-                data = line.Split("//", 2, StringSplitOptions.None)[0];
+                continue;
             }
-            if (line.Contains("#"))
+            var data = string.Empty;
+            if (line.IndexOfAny(commentSeparators) > 0)
             {
-                data = line.Split("#", 2, StringSplitOptions.None)[0];
+                data = line.Split(commentSeparators, 2, StringSplitOptions.None)[0].Trim();
+            }
+            if (string.IsNullOrEmpty(data))
+            {
+                data = line;
             }
 
-            var name = data.Split(['=', ',', ':', ';'], 2)[0].Trim();
+            var name = data.Split(lineSeparators, 2)[0].Trim();
             if (name.Length > 0)
             {
                 yield return name;
@@ -246,29 +257,39 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
 
         var result = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
 
-        //accepted format
+        //accepted format samples
         //FRAME_CLASS=1//Quad
         //FRAME_CLASS,1//Quad
         //FRAME_CLASS:1//Quad
         //FRAME_CLASS;1//Quad
+        //FRAME_CLASS=1#Quad
+        //FRAME_CLASS,1 #Quad
+        //FRAME_CLASS:1#Quad
+        //FRAME_CLASS;1#Quad
 
         var lines = Text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var feedback = new List<string>();
         var lineNumber = 0;
         foreach (var line in lines)
         {
+            if (string.IsNullOrEmpty(line) || line.IndexOfAny(commentSeparators) == 0)
+            {
+                continue;
+            }
+
             lineNumber++;
             var data = line.Trim();
-            if (data.Contains("//"))
+
+            if (data.IndexOfAny(commentSeparators) > 0)
             {
-                data = data.Substring(0, data.IndexOf("//", StringComparison.Ordinal));
+                data = data.Substring(0, data.IndexOfAny(commentSeparators)).Trim();
             }
             if (string.IsNullOrWhiteSpace(data))
             {
                 continue;
             }
 
-            var parts = data.Split(['=', ',', ':', ';']);
+            var parts = data.Split(lineSeparators);
             var name = parts[0].Trim();
             names.TryGetValue(name, out var canonicalName);
             // The last assignment wins, including an unfinished or invalid last line.

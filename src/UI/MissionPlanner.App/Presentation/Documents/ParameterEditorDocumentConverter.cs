@@ -18,7 +18,8 @@ public sealed class ParameterEditorDocumentConverter : IMultiValueConverter
             .Paragraph("Accepted separators: = , : ;.")
             .Paragraph("Line endings: CRLF or LF.")
             .Paragraph("Use a decimal point for numeric values.")
-            .Paragraph("Lines starting with // of # and inline // or # comments are supported.")
+            .Paragraph("Comments: // or #")
+            .Paragraph("Lines starting with // or # and inline comments using // or # are supported.")
             .Paragraph("Edits are shared across the parameter editor tabs. Review and write them in Write modified parameters.")
             .Paragraph("Unknown names and incomplete values are skipped. Invalid pending values are reported and cannot be written.");
         var headings = new[] { "Write status", "Progress", "Errors", "Input report" };

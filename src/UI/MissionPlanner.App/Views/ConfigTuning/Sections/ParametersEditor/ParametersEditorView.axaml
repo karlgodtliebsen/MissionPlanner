@@ -15,8 +15,11 @@
              x:DataType="parametersEditor:ParametersEditorViewModel"
              >
 
-        <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-
+    <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <ScrollViewer  Margin="0,20"
+                       Padding="10"
+                       x:Name="EditorScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            
             <Grid RowDefinitions="Auto,*" RowSpacing="20" >
                 <controls:InformationDocumentView
                     HorizontalAlignment="Stretch"
@@ -81,52 +84,49 @@
                                 <avalonia:MaterialIcon Kind="Plus" Classes="ActionIcon"  />
                             </Button>
                         </Grid>
-                        
-                        <ScrollViewer  Grid.Row="2"
-                                       Grid.Column="0"
-                                       Margin="0,20"
-                                       x:Name="EditorScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 
-                            <Grid RowSpacing="25" RowDefinitions="*,Auto">
-                                <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
-                                    <TextBlock Text="Pending parameter values:" Classes="H4" />
-                                    <TextBox  Grid.Row="1" Grid.Column="0"
-                                              x:Name="ParameterTextEditor"
-                                              AcceptsReturn="True"
-                                              Focusable="True"
-                                              Padding="10"
-                                              IsReadOnly="{Binding ApplyModifiedCommand.IsRunning}"
-                                              Text="{Binding Text, Mode=TwoWay}"
-                                              FontSize="11"
-                                              MaxLines="2000"
-                                              MinHeight="200"
-                                              VerticalContentAlignment="Top"
-                                              HorizontalAlignment="Stretch"
-                                              VerticalAlignment="Stretch"
-                                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                              ScrollViewer.VerticalScrollBarVisibility="Auto" />
-                                </Grid>
-                                <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
-                                    <TextBlock Text="Current vehicle values:" Classes="H4" />
-                                    <TextBox x:Name="CurrentParameterValues" Grid.Row="1" Padding="10" FontSize="11"
-                                             MaxLines="2000"
-                                             MinHeight="100"
-                                             Text="{Binding UsedParametersText}"
-                                             IsReadOnly="True"
-                                             VerticalContentAlignment="Top"
-                                             HorizontalAlignment="Stretch"
-                                             VerticalAlignment="Stretch"
-                                             AutomationProperties.Name="Current values of entered parameters"
-                                             ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                             />
-                                </Grid>
+
+                        <Grid Grid.Row="2" RowSpacing="25" RowDefinitions="*,Auto">
+                            <Grid Grid.Row="0" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
+                                <TextBlock Text="Pending parameter values:" Classes="H4" />
+                                <TextBox  Grid.Row="1" Grid.Column="0"
+                                          x:Name="ParameterTextEditor"
+                                          AcceptsReturn="True"
+                                          Focusable="True"
+                                          Padding="10"
+                                          IsReadOnly="{Binding ApplyModifiedCommand.IsRunning}"
+                                          Text="{Binding Text, Mode=TwoWay}"
+                                          FontSize="11"
+                                          MaxLines="2000"
+                                          MinHeight="200"
+                                          VerticalContentAlignment="Top"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Stretch"
+                                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                          ScrollViewer.VerticalScrollBarVisibility="Auto" />
                             </Grid>
-                        </ScrollViewer>
+                            <Grid Grid.Row="1" Grid.Column="0" RowDefinitions="Auto,*" RowSpacing="10">
+                                <TextBlock Text="Current vehicle values:" Classes="H4" />
+                                <TextBox x:Name="CurrentParameterValues" Grid.Row="1" Padding="10" FontSize="11"
+                                         MaxLines="2000"
+                                         MinHeight="100"
+                                         Text="{Binding UsedParametersText}"
+                                         IsReadOnly="True"
+                                         VerticalContentAlignment="Top"
+                                         HorizontalAlignment="Stretch"
+                                         VerticalAlignment="Stretch"
+                                         AutomationProperties.Name="Current values of entered parameters"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                         />
+                            </Grid>
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>
-        </Border>
+        </ScrollViewer>
+
+    </Border>
 
 
 </UserControl>
