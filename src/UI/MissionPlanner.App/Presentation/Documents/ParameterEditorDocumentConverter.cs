@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Avalonia.Data.Converters;
 
 namespace MissionPlanner.App.Presentation.Documents;
@@ -18,16 +18,22 @@ public sealed class ParameterEditorDocumentConverter : IMultiValueConverter
             .Paragraph("Accepted separators: = , : ;.")
             .Paragraph("Line endings: CRLF or LF.")
             .Paragraph("Use a decimal point for numeric values.")
-            .Paragraph("Lines starting with // and inline // comments are supported.")
+            .Paragraph("Lines starting with // of # and inline // or # comments are supported.")
             .Paragraph("Edits are shared across the parameter editor tabs. Review and write them in Write modified parameters.")
             .Paragraph("Unknown names and incomplete values are skipped. Invalid pending values are reported and cannot be written.");
         var headings = new[] { "Write status", "Progress", "Errors", "Input report" };
         for (var index = 0; index < Math.Min(values.Count, headings.Length); index++)
         {
-            if (values[index] is not string text || string.IsNullOrWhiteSpace(text)) continue;
+            if (values[index] is not string text || string.IsNullOrWhiteSpace(text))
+            {
+                continue;
+            }
+
             builder.Heading(headings[index], 3);
             foreach (var line in text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
+            {
                 builder.Paragraph(line);
+            }
         }
         return builder.Build("Parameter editor");
     }

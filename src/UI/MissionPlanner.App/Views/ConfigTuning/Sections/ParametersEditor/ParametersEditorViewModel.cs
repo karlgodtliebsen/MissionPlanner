@@ -14,7 +14,10 @@ namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 public partial class ParametersEditorViewModel(IDialogService dialogService) : ViewModelBase
 {
     /// <summary>The owning window's overlay host for apply errors.</summary>
-    public string? DialogHostId { get; set; }
+    public string? DialogHostId
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets whether standalone editors show their local Clear and Apply buttons.</summary>
     [ObservableProperty]
@@ -53,7 +56,16 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
     {
         foreach (var line in text.Replace('\r', '\n').Split('\n'))
         {
-            var data = line.Split("//", 2, StringSplitOptions.None)[0];
+            var data = string.Empty;
+            if (line.Contains("//"))
+            {
+                data = line.Split("//", 2, StringSplitOptions.None)[0];
+            }
+            if (line.Contains("#"))
+            {
+                data = line.Split("#", 2, StringSplitOptions.None)[0];
+            }
+
             var name = data.Split(['=', ',', ':', ';'], 2)[0].Trim();
             if (name.Length > 0)
             {
@@ -143,7 +155,7 @@ public partial class ParametersEditorViewModel(IDialogService dialogService) : V
     private bool CanApplyModified()
     {
         return applyModified is not null && !string.IsNullOrWhiteSpace(Text) &&
-            (editSession is null || canEditSession && editSession.IsValid);
+            (editSession is null || (canEditSession && editSession.IsValid));
     }
 
     [RelayCommand(CanExecute = nameof(CanApplyModified))]
