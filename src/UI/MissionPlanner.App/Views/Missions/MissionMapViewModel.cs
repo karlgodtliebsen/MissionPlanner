@@ -38,18 +38,15 @@ namespace MissionPlanner.App.Views.Missions;
 public partial class MissionMapViewModel : DialogViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;
-    private readonly IMissionFileCodec fileCodec;
     private readonly IDomainEventHub domainEventHub;
     private readonly IMissionRowProjector rowProjector;
-    private readonly IFileOpenService fileOpenService;
-    private readonly IFileSaveService fileSaveService;
+    private readonly IMissionFileInteraction fileInteraction;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IMissionMapInteractionService interactionService;
     private readonly IAdvancedMissionItemService advancedMissionItems;
     private readonly IUserConfirmationService confirmationService;
     private readonly IPlanningPolygonService polygonService;
 
-    private readonly IGeospatialImportService geospatialImportService;
     private readonly IFenceConfigurationService fenceService;
     private readonly IFencePlanFileCodec fenceFileCodec;
     private readonly IRallyConfigurationService rallyService;
@@ -81,15 +78,12 @@ public partial class MissionMapViewModel : DialogViewModelBase
         dateTimeProvider = factory.Create<IDateTimeProvider>();
         dialogService = factory.Create<IDialogService>();
         activeVehicle = factory.Create<IActiveVehicleContext>();
-        fileCodec = factory.Create<IMissionFileCodec>();
         rowProjector = factory.Create<IMissionRowProjector>();
+        fileInteraction = factory.Create<IMissionFileInteraction>();
         interactionService = factory.Create<IMissionMapInteractionService>();
         advancedMissionItems = factory.Create<IAdvancedMissionItemService>();
         confirmationService = factory.Create<IUserConfirmationService>();
         polygonService = factory.Create<IPlanningPolygonService>();
-        fileOpenService = factory.Create<IFileOpenService>();
-        fileSaveService = factory.Create<IFileSaveService>();
-        geospatialImportService = factory.Create<IGeospatialImportService>();
         fenceService = factory.Create<IFenceConfigurationService>();
         fenceFileCodec = factory.Create<IFencePlanFileCodec>();
         rallyService = factory.Create<IRallyConfigurationService>();
@@ -887,23 +881,17 @@ public partial class MissionMapViewModel : DialogViewModelBase
             return;
         }
 
-        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(polygonService.Serialize(dateTimeProvider.UtcNow)));
-        var path = await fileSaveService.SaveAsync("planning-polygon.mppolygon", stream, cancellationToken);
+        var path = await fileInteraction.SaveTextAsync("planning-polygon.mppolygon", polygonService.Serialize(dateTimeProvider.UtcNow), cancellationToken);
         ShowStatus(path is null ? "Polygon save cancelled." : $"Polygon saved to {path}.");
     }
 
     [RelayCommand]
     private async Task LoadPolygonAsync(CancellationToken cancellationToken)
     {
-        using var file = await fileOpenService.OpenAsync("Open MissionPlanner polygon", cancellationToken: cancellationToken);
-        if (file is null)
+        if (await fileInteraction.OpenTextAsync("Open MissionPlanner polygon", cancellationToken) is { } file)
         {
-            return;
+            ShowStatus(polygonService.Deserialize(file.Text).Message);
         }
-
-        using var reader = new StreamReader(file.Content, Encoding.UTF8, true, leaveOpen: true);
-        var result = polygonService.Deserialize(await reader.ReadToEndAsync(cancellationToken));
-        ShowStatus(result.Message);
     }
 
     [RelayCommand]
@@ -1029,46 +1017,13 @@ public partial class MissionMapViewModel : DialogViewModelBase
 
     private async Task<GeospatialImportResult?> OpenGeospatialAsync(string title, bool includeCompanions, CancellationToken cancellationToken)
     {
-        using var file = await fileOpenService.OpenAsync(title, cancellationToken: cancellationToken);
-        if (file is null)
-        {
-            return null;
-        }
-
-        await using var memory = new MemoryStream();
-        await file.Content.CopyToAsync(memory, cancellationToken);
-        var companions = new Dictionary<string, ReadOnlyMemory<byte>>(StringComparer.OrdinalIgnoreCase);
-        if (includeCompanions && file.FullPath is { } fullPath)
-        {
-            foreach (var extension in new[] { ".prj", ".dbf" })
-            {
-                var path = Path.ChangeExtension(fullPath, extension);
-                if (File.Exists(path) && new FileInfo(path).Length <= 16 * 1024 * 1024)
-                {
-                    companions[extension] = await File.ReadAllBytesAsync(path, cancellationToken);
-                }
-            }
-        }
-
-        if (includeCompanions && !companions.ContainsKey(".prj"))
-        {
-            var assume = await confirmationService.ConfirmAsync("Missing coordinate system", "No .prj file was found. Treat plausible coordinates as WGS84?", "Use WGS84", cancellationToken);
-            if (!assume)
-            {
-                return null;
-            }
-
-            companions[".prj"] = Encoding.UTF8.GetBytes("GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\"]]");
-        }
-
-        var result = geospatialImportService.Import(new GeospatialSource(file.FileName, memory.ToArray(), companions));
-        if (!result.Succeeded)
+        var result = await fileInteraction.ImportGeospatialAsync(title, includeCompanions, cancellationToken);
+        if (result.Message is not null)
         {
             ShowStatus(result.Message);
-            return null;
         }
 
-        return result;
+        return result.Imported;
     }
 
     [RelayCommand]
@@ -1126,8 +1081,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
             return;
         }
 
-        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(fenceFileCodec.Serialize(fenceService.GetSnapshot(vehicleId).LocalPlan)));
-        var path = await fileSaveService.SaveAsync("mission-fence.mpfence", stream, cancellationToken);
+        var path = await fileInteraction.SaveTextAsync("mission-fence.mpfence", fenceFileCodec.Serialize(fenceService.GetSnapshot(vehicleId).LocalPlan), cancellationToken);
         ShowStatus(path is null ? "Fence save cancelled." : $"Fence saved to {path}.");
     }
 
@@ -1146,16 +1100,14 @@ public partial class MissionMapViewModel : DialogViewModelBase
             return;
         }
 
-        using var file = await fileOpenService.OpenAsync("Open MissionPlanner fence", cancellationToken: cancellationToken);
-        if (file is null)
+        if (await fileInteraction.OpenTextAsync("Open MissionPlanner fence", cancellationToken) is not { } file)
         {
             return;
         }
 
-        using var reader = new StreamReader(file.Content, Encoding.UTF8, true, leaveOpen: true);
         try
         {
-            fenceService.SetLocalPlan(vehicleId, fenceFileCodec.Deserialize(await reader.ReadToEndAsync(cancellationToken)));
+            fenceService.SetLocalPlan(vehicleId, fenceFileCodec.Deserialize(file.Text));
             ShowStatus("Fence loaded locally; upload to apply it.");
         }
         catch (InvalidDataException exception)
@@ -1321,8 +1273,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
             return;
         }
 
-        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rallyFileCodec.Serialize(rallyService.GetSnapshot(vehicleId).LocalPlan, dateTimeProvider.UtcNow)));
-        var path = await fileSaveService.SaveAsync("rally-points.mprally", stream, cancellationToken);
+        var path = await fileInteraction.SaveTextAsync("rally-points.mprally", rallyFileCodec.Serialize(rallyService.GetSnapshot(vehicleId).LocalPlan, dateTimeProvider.UtcNow), cancellationToken);
         ShowStatus(path is null ? "Rally save cancelled." : $"Rally points saved to {path}.");
     }
 
@@ -1335,16 +1286,14 @@ public partial class MissionMapViewModel : DialogViewModelBase
             return;
         }
 
-        using var file = await fileOpenService.OpenAsync("Open MissionPlanner rally plan", cancellationToken: cancellationToken);
-        if (file is null)
+        if (await fileInteraction.OpenTextAsync("Open MissionPlanner rally plan", cancellationToken) is not { } file)
         {
             return;
         }
 
-        using var reader = new StreamReader(file.Content, Encoding.UTF8, true, leaveOpen: true);
         try
         {
-            rallyService.SetLocalPlan(vehicleId, rallyFileCodec.Deserialize(await reader.ReadToEndAsync(cancellationToken)));
+            rallyService.SetLocalPlan(vehicleId, rallyFileCodec.Deserialize(file.Text));
             ShowStatus("Rally points loaded locally; upload to apply them.");
         }
         catch (InvalidDataException exception)
@@ -1934,57 +1883,28 @@ public partial class MissionMapViewModel : DialogViewModelBase
     [RelayCommand]
     private async Task SaveWpFileAsync(CancellationToken cancellationToken)
     {
-        if (Mission.Items.Count == 0)
+        var result = await fileInteraction.SaveMissionAsync(Mission, HomePosition, cancellationToken);
+        if (result.Message is not null)
         {
-            ShowStatus("Mission is empty.");
-            return;
+            ShowStatus(result.Message);
         }
 
-        try
+        if (result.ClearDirtyRows)
         {
-            var (format, extension) = await PickSaveFormatAsync();
-            if (format is null || extension is null)
-            {
-                return;
-            }
-
-            var content = fileCodec.Build(Mission, HomePosition, format.Value);
-            using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            var path = await fileSaveService.SaveAsync($"{Mission.Name}{extension}", stream, cancellationToken);
-            ShowStatus(path is not null ? $"Mission saved to {path}." : "Save cancelled.");
+            DirtyMissionItems.Clear();
         }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to save mission file");
-            ShowStatus($"Save failed: {ex.Message}");
-        }
-
-        DirtyMissionItems.Clear();
-    }
-
-    private async Task<(MissionFileFormat? Format, string? Extension)> PickSaveFormatAsync()
-    {
-        var options = dialogService.CreateOptions("Save mission as");
-        var choice = await dialogService.ChooseAsync(options, ["Waypoints (.waypoints)", "Text (.txt)", "Mission JSON (.mission)"]);
-        return choice switch
-        {
-            "Waypoints (.waypoints)" => (MissionFileFormat.QgcWpl, ".waypoints"),
-            "Text (.txt)" => (MissionFileFormat.QgcWpl, ".txt"),
-            "Mission JSON (.mission)" => (MissionFileFormat.MissionJson, ".mission"),
-            var _ => (null, null)
-        };
     }
 
     [RelayCommand]
-    private async Task LoadWpFileAsync()
+    private async Task LoadWpFileAsync(CancellationToken cancellationToken)
     {
-        await LoadMissionFileAsync(false);
+        await LoadMissionFileAsync(false, cancellationToken);
     }
 
     [RelayCommand]
-    private async Task LoadAndAppendAsync()
+    private async Task LoadAndAppendAsync(CancellationToken cancellationToken)
     {
-        await LoadMissionFileAsync(true);
+        await LoadMissionFileAsync(true, cancellationToken);
     }
 
     [RelayCommand]
@@ -1992,25 +1912,25 @@ public partial class MissionMapViewModel : DialogViewModelBase
     {
         await domainEventHub.PublishDomainEventAsync(new EditorDisplayEvent("EditorClose"), cancellationToken);
     }
-    private async Task LoadMissionFileAsync(bool append)
+    private async Task LoadMissionFileAsync(bool append, CancellationToken cancellationToken)
     {
+        var loaded = await fileInteraction.LoadMissionAsync(cancellationToken);
+        if (loaded.Message is not null)
+        {
+            ShowStatus(loaded.Message);
+            return;
+        }
+
+        if (loaded.Content is not { } parsed)
+        {
+            return;
+        }
+
         try
         {
-            using var file = await fileOpenService.OpenAsync(
-                "Select mission file (.waypoints, .txt, .mission)",
-                ["*.waypoints", "*.txt", "*.mission"]);
-            if (file is null)
-            {
-                return;
-            }
-
-            using var reader = new StreamReader(file.Content, leaveOpen: true);
-            var content = await reader.ReadToEndAsync();
-            var parsed = fileCodec.Parse(content);
-
             if (!append)
             {
-                Mission = new Mission(MissionId.New(), parsed.Name ?? Path.GetFileNameWithoutExtension(file.FileName));
+                Mission = new Mission(MissionId.New(), parsed.Name ?? Path.GetFileNameWithoutExtension(loaded.FileName));
                 if (parsed.Home is not null)
                 {
                     HomePosition = parsed.Home;
@@ -2022,10 +1942,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
                 Mission.Add(item);
             }
 
-            OnMissionChanged(parsed.SkippedItems == 0
-                ? $"Loaded {parsed.Items.Count} items from {file.FileName}."
-                : $"Loaded {parsed.Items.Count} items from {file.FileName}; skipped {parsed.SkippedItems} unsupported.");
-
+            OnMissionChanged(loaded.SuccessMessage);
             FitToMissionRequested?.Invoke();
         }
         catch (Exception ex)
