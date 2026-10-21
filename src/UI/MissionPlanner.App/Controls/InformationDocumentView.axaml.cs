@@ -90,16 +90,16 @@ public partial class InformationDocumentView : UserControl
             ? TextMateSharp.Grammars.ThemeName.DarkPlus : TextMateSharp.Grammars.ThemeName.LightPlus;
     }
 
-    private async void CopyAllClicked(object? sender, RoutedEventArgs args)
+    private void CopyAllClicked(object? sender, RoutedEventArgs args)
     {
         var text = string.Join(Environment.NewLine,
             Renderer.RenderedTextProjection?.Buffers.Select(buffer => buffer.Text.ToString()) ?? []);
-        await CopyAsync(text);
+        CopyAsync(text).SafeFireAndForget();
     }
 
-    private async void CopyMarkdownClicked(object? sender, RoutedEventArgs args)
+    private void CopyMarkdownClicked(object? sender, RoutedEventArgs args)
     {
-        await CopyAsync(Document?.Markdown ?? string.Empty);
+        CopyAsync(Document?.Markdown ?? string.Empty).SafeFireAndForget();
     }
 
     private async Task CopyAsync(string text)

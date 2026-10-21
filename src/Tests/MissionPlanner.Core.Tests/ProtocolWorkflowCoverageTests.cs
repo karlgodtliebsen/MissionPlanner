@@ -146,6 +146,52 @@ public sealed class ProtocolWorkflowCoverageTests
         Assert.Equal(3, sends);
     }
 
+    /// <summary>Verifies two transfers for the same vehicle never run at the same time.</summary>
+    [Fact]
+    public async Task MissionTransfersForOneVehicleAreSerialized()
+    {
+        var (session, registry) = CreateSession();
+        var connection = Substitute.For<IMavLinkConnection>();
+        var connectionSession = Substitute.For<IVehicleConnectionSession>();
+        connectionSession.Connection.Returns(connection);
+        var encoder = Substitute.For<IMavLinkMissionEncoder>();
+        encoder.EncodeMissionClearAll(1, 1, Arg.Any<MavMissionType>()).Returns([1]);
+        var eventHub = Substitute.For<IEventHub>();
+        var callbacks = new List<Func<MavLinkMessage, CancellationToken, Task>>();
+        eventHub.SubscribeAsync(MavLinkEventTopics.ReceivedMessage, Arg.Any<Func<MavLinkMessage, CancellationToken, Task>>()).Returns(call =>
+        {
+            lock (callbacks)
+            {
+                callbacks.Add(call.Arg<Func<MavLinkMessage, CancellationToken, Task>>()!);
+            }
+
+            return Substitute.For<IDisposable>();
+        });
+        var sends = 0;
+        connection.SendRawAsync(Arg.Any<ReadOnlyMemory<byte>>(), session.EndPoint, Arg.Any<CancellationToken>()).Returns(_ =>
+        {
+            Interlocked.Increment(ref sends);
+            return ValueTask.CompletedTask;
+        });
+        var service = new MissionTransferService(registry, connectionSession, encoder, Substitute.For<IMissionProtocolMapper>(), eventHub);
+        var ack = new MissionAckMessage(1, 1, EndPoint, 255, 190, 0, (byte)MissionPlanType.FlightMission, ObservedAt);
+
+        var first = service.ClearAsync(session.Id, cancellationToken: TestContext.Current.CancellationToken);
+        var second = service.ClearAsync(session.Id, cancellationToken: TestContext.Current.CancellationToken);
+        await Task.Delay(TimeSpan.FromMilliseconds(200), TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, Volatile.Read(ref sends));
+        Assert.Single(callbacks);
+        await callbacks[0](ack, TestContext.Current.CancellationToken);
+        Assert.True((await first.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken)).Success);
+
+        await Task.Delay(TimeSpan.FromMilliseconds(200), TestContext.Current.CancellationToken);
+        Assert.Equal(2, Volatile.Read(ref sends));
+        Assert.Equal(2, callbacks.Count);
+        await callbacks[1](ack, TestContext.Current.CancellationToken);
+        Assert.True((await second.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken)).Success);
+    }
+
     /// <summary>Verifies full parameter loading starts with the classic stream without waiting for MAVFTP detection.</summary>
     [Fact]
     public async Task ParameterLoadingDoesNotProbeMavFtp()

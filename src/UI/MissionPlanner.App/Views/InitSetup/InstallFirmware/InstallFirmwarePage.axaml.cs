@@ -13,10 +13,11 @@ public partial class InstallFirmwarePage : NavigationViewBase<InstallFirmwareVie
         InitializeComponent();
     }
 
-    private async void OpenFirmwareHelp(object? sender, RoutedEventArgs e)
+    private void OpenFirmwareHelp(object? sender, RoutedEventArgs e)
     {
-        await ServiceHelper.GetRequiredService<INavigationService>()
-            .NavigateAsync(MissionPlannerRoutes.HelpInstallFirmware);
+        ServiceHelper.GetRequiredService<INavigationService>()
+            .NavigateAsync(MissionPlannerRoutes.HelpInstallFirmware)
+            .SafeFireAndForget();
     }
 
 

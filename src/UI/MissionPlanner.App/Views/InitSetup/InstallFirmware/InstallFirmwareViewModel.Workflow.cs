@@ -74,7 +74,7 @@ public sealed partial class InstallFirmwareViewModel
     {
         if (HasOnlineArtifact && clipboard is not null)
         {
-            clipboard.SetTextAsync(SelectedArtifact.OnlineUrl!.AbsoluteUri);
+            clipboard.SetTextAsync(SelectedArtifact.OnlineUrl!.AbsoluteUri).SafeFireAndForget();
             NotificationManager?.Show(SelectedArtifact.OnlineUrl!.AbsoluteUri);
         }
         return Task.CompletedTask;

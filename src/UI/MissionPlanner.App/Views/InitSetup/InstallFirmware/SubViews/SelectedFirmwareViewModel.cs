@@ -43,7 +43,7 @@ public sealed partial class SelectedFirmwareViewModel : ViewModelBase
     {
         if (Selected is not null)
         {
-            clipboard.SetTextAsync(Selected.Entry.Artifact.DownloadUri.AbsoluteUri);
+            clipboard.SetTextAsync(Selected.Entry.Artifact.DownloadUri.AbsoluteUri).SafeFireAndForget();
             NotificationManager?.Show(Selected.Entry.Artifact.DownloadUri.AbsoluteUri);
         }
 

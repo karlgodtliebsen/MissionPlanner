@@ -16,6 +16,7 @@ using NSubstitute;
 
 namespace MissionPlanner.AvaloniaUI.Tests;
 
+[Collection("Document rendering")]
 public sealed class SetupInformationViewTests
 {
     public static AppBuilder BuildAvaloniaApp()

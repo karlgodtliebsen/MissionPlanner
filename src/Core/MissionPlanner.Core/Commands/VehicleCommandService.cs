@@ -27,7 +27,8 @@ public sealed class VehicleCommandService(
     IVehicleOperationGate? operationGate = null,
     ISimulationVehicleChannelRegistry? simulationChannels = null,
     IVehicleTelemetryEventHub? telemetry = null,
-    IVehicleParameterRegistry? parameters = null)
+    IVehicleParameterRegistry? parameters = null,
+    IVehicleMessageStore? messageStore = null)
     : IVehicleCommandService
 {
     private static readonly TimeSpan commandAckTimeout = TimeSpan.FromSeconds(5);
@@ -272,6 +273,7 @@ public sealed class VehicleCommandService(
             try
             {
                 ackLifetime.Token.ThrowIfCancellationRequested();
+                var sentAt = clock.UtcNow;
                 await targetConnection.SendRawAsync(packet, session.EndPoint, ackLifetime.Token).ConfigureAwait(false);
                 if (telemetry is not null)
                 {
@@ -287,8 +289,11 @@ public sealed class VehicleCommandService(
                         $"Command {commandId}: {MapResult(ack.Result)}; CommandAck={ack.Result}; VehicleReason={ack.ResultParameter2}", commandId == 400 && parameters[0] == 1)
                     { CommandAck = ack.Result, VehicleReason = ack.ResultParameter2 });
                 }
+                var detail = ack.Result is 0 or 5
+                    ? null
+                    : await CommandRejectionDetail.CollectAsync(messageStore, vehicleId, sentAt, ackLifetime.Token).ConfigureAwait(false);
                 var response = new VehicleCommandResponse(vehicleId, MapResult(ack.Result), ack.ReceivedAt,
-                    $"MAVLink ACK result {ack.Result}.");
+                    CommandRejectionDetail.Append($"MAVLink ACK result {ack.Result}.", detail));
                 if (response.Result == VehicleCommandResult.Accepted && onAccepted is not null)
                 {
                     await onAccepted(response, cancellationToken).ConfigureAwait(false);

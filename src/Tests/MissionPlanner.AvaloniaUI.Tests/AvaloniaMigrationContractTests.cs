@@ -105,7 +105,7 @@ public sealed class AvaloniaMigrationContractTests
 
     /// <summary>Verifies representative migrated pages contain complete current controls.</summary>
     [Theory]
-    [InlineData("Views/ConfigTuning/Tabs/ParametersEditorTabView.axaml", "VirtualizedItemsGrid")]
+    [InlineData("Views/ConfigTuning/Sections/ParametersEditor/ParametersMainEditorView.axaml", "VirtualizedItemsGrid")]
     [InlineData("Views/InitSetup/InstallFirmware/FirmwareCatalogueView.axaml", "VirtualizedItemsGrid")]
     [InlineData("Views/Navigation/MainShellView.axaml", "u:NavMenu")]
     [InlineData("Views/FlightData/FlightDataPage.axaml", "FlightDataMissionMapView")]
@@ -130,7 +130,7 @@ public sealed class AvaloniaMigrationContractTests
         System.Xml.Linq.XNamespace ui = "https://github.com/avaloniaui";
         var tabs = page.Descendants(ui + "TabControl").First();
         var top = tabs.Elements(ui + "TabItem").ToArray();
-        Assert.Equal(new[] { "Information", "Firmware", "Help & Support" }, top.Select(item => (string?)item.Attribute("Header")));
+        Assert.Equal(new[] { "Information", "Configuration" }, top.Select(item => (string?)item.Attribute("Header")));
         Assert.Single(page.Descendants(ui + "TabControl"));
         var landing = XDocument.Load(Path.Combine(path, "LandingView.axaml"));
         Assert.Empty(landing.Descendants(ui + "Button"));
@@ -150,7 +150,7 @@ public sealed class AvaloniaMigrationContractTests
     {
         var source = File.ReadAllText(RepositoryPath(
             "src", "UI", "MissionPlanner.App", "Views",
-            "ConfigTuning", "Tabs", "MAVFtpTabViewModel.cs"));
+            "ConfigTuning", "Sections", "MAVFtpTabViewModel.cs"));
         var handlerStart = source.IndexOf("private async Task OnVehicleConnected", StringComparison.Ordinal);
         var handlerEnd = source.IndexOf("private async Task Start", handlerStart, StringComparison.Ordinal);
         var handler = source[handlerStart..handlerEnd];

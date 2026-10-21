@@ -208,3 +208,32 @@ dotnet_diagnostic.ide0022.severity = silent
 
 # IDE0058: Expression value is never used
 dotnet_diagnostic.ide0058.severity = silent
+
+#### Async hygiene (Microsoft.VisualStudio.Threading.Analyzers) ####
+# The analyzer ships many rules; only the ones that catch real defects here are enabled.
+[*.cs]
+dotnet_diagnostic.VSTHRD100.severity = warning
+dotnet_diagnostic.VSTHRD110.severity = warning
+dotnet_diagnostic.VSTHRD002.severity = suggestion
+dotnet_diagnostic.VSTHRD001.severity = none
+dotnet_diagnostic.VSTHRD003.severity = none
+dotnet_diagnostic.VSTHRD004.severity = none
+dotnet_diagnostic.VSTHRD010.severity = none
+dotnet_diagnostic.VSTHRD011.severity = none
+dotnet_diagnostic.VSTHRD012.severity = none
+dotnet_diagnostic.VSTHRD101.severity = none
+dotnet_diagnostic.VSTHRD102.severity = none
+dotnet_diagnostic.VSTHRD103.severity = none
+dotnet_diagnostic.VSTHRD104.severity = none
+dotnet_diagnostic.VSTHRD105.severity = none
+dotnet_diagnostic.VSTHRD106.severity = none
+dotnet_diagnostic.VSTHRD107.severity = none
+dotnet_diagnostic.VSTHRD108.severity = none
+dotnet_diagnostic.VSTHRD109.severity = none
+dotnet_diagnostic.VSTHRD111.severity = none
+dotnet_diagnostic.VSTHRD112.severity = none
+dotnet_diagnostic.VSTHRD113.severity = none
+dotnet_diagnostic.VSTHRD114.severity = none
+dotnet_diagnostic.VSTHRD115.severity = none
+dotnet_diagnostic.VSTHRD200.severity = none
+dotnet_diagnostic.VSTHRD201.severity = none

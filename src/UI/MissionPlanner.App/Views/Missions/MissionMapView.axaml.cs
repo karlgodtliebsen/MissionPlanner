@@ -1,5 +1,6 @@
 using Mapsui;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Services;
 using MissionPlanner.App.Utilities;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -213,9 +214,16 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
         presenter?.ZoomToVehicle();
     }
 
-    private async void OnCenterOnMyLocationClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
+    private void OnCenterOnMyLocationClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
-        await CenterOnMyLocationAsync(operationCancellation?.Token ?? CancellationToken.None);
+        CenterOnMyLocationAsync(operationCancellation?.Token ?? CancellationToken.None)
+            .SafeFireAndForget(exception =>
+            {
+                if (exception is not OperationCanceledException)
+                {
+                    Logger.LogWarning(exception, "Could not center the mission map on the current location.");
+                }
+            });
     }
 
     private void OnToggleFollowVehicleClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)

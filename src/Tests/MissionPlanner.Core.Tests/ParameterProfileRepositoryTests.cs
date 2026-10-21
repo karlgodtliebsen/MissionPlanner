@@ -43,7 +43,7 @@ public sealed class ParameterProfileRepositoryTests
         review.Warnings.Should().NotBeEmpty();
         review.Comparison.Rows.Single(row => row.Name == "GAIN").CanStage.Should().BeTrue();
         review.Comparison.Rows.Single(row => row.Name == "UNKNOWN").Status.Should().Be(ParameterComparisonStatus.OnlyOnRight);
-        session.DidNotReceiveWithAnyArgs().ApplyAsync(
+        _ = session.DidNotReceiveWithAnyArgs().ApplyAsync(
             default,
             TestContext.Current.CancellationToken);
     }

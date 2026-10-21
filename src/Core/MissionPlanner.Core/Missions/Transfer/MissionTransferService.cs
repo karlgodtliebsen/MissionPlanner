@@ -1,4 +1,5 @@
-﻿using System.Threading.Channels;
+﻿using System.Collections.Concurrent;
+using System.Threading.Channels;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Simulation;
@@ -29,6 +30,9 @@ public sealed class MissionTransferService(
     private static readonly TimeSpan StepTimeout = TimeSpan.FromSeconds(3);
     private const int MaxAttempts = 4;
 
+    // Mission protocol exchanges share MISSION_* messages, so only one transfer may run per vehicle at a time.
+    private readonly ConcurrentDictionary<VehicleId, SemaphoreSlim> transferGates = new();
+
     /// <inheritdoc/>
     public async Task<MissionUploadResult> UploadAsync(VehicleId vehicleId, Mission mission, IProgress<MissionUploadProgress>? progress = null,
         CancellationToken cancellationToken = default)
@@ -56,6 +60,7 @@ public sealed class MissionTransferService(
             return new MissionUploadResult(false, null, "Plan items must be contiguous and match the requested mission type.");
         }
 
+        using var transferLease = await AcquireTransferAsync(vehicleId, cancellationToken).ConfigureAwait(false);
         var operationConnection = GetConnection(vehicleId);
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, operationConnection.Activity?.LifetimeToken ?? CancellationToken.None);
         cancellationToken = lifetime.Token;
@@ -131,6 +136,7 @@ public sealed class MissionTransferService(
         IProgress<MissionDownloadProgress>? progress,
         CancellationToken cancellationToken = default)
     {
+        using var transferLease = await AcquireTransferAsync(vehicleId, cancellationToken).ConfigureAwait(false);
         var operationConnection = GetConnection(vehicleId);
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, operationConnection.Activity?.LifetimeToken ?? CancellationToken.None);
         cancellationToken = lifetime.Token;
@@ -223,6 +229,7 @@ public sealed class MissionTransferService(
     /// <inheritdoc/>
     public async Task<MissionUploadResult> ClearAsync(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission, CancellationToken cancellationToken = default)
     {
+        using var transferLease = await AcquireTransferAsync(vehicleId, cancellationToken).ConfigureAwait(false);
         var operationConnection = GetConnection(vehicleId);
         using var lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, operationConnection.Activity?.LifetimeToken ?? CancellationToken.None);
         cancellationToken = lifetime.Token;
@@ -279,6 +286,20 @@ public sealed class MissionTransferService(
         {
             throw new TimeoutException();
         }
+    }
+
+    private async Task<TransferLease> AcquireTransferAsync(VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        var gate = transferGates.GetOrAdd(vehicleId, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        return new TransferLease(gate);
+    }
+
+    private sealed class TransferLease(SemaphoreSlim gate) : IDisposable
+    {
+        private SemaphoreSlim? gate = gate;
+
+        public void Dispose() => Interlocked.Exchange(ref gate, null)?.Release();
     }
 
     private IMavLinkConnection GetConnection(VehicleId vehicleId)

@@ -1,6 +1,8 @@
 using FluentAssertions;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.MavLink.Messages;
+using MissionPlanner.MavLink.Missions;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -65,17 +67,36 @@ public class MissionProtocolMapperTests
     }
 
     /// <summary>
-    /// Verifies that an unsupported protocol command is rejected instead of being silently mistranslated.
+    /// Verifies that a command without a typed model is preserved verbatim instead of being dropped or mistranslated.
     /// </summary>
     [Fact]
-    public void Should_Reject_Unsupported_Command()
+    public void Should_Preserve_Unsupported_Command_Losslessly()
     {
-        var waypoint = new WaypointMissionItem(MissionItemId.New(), 1, new GeoPosition(55, 10),
-            new MissionAltitude(100, MissionAltitudeReference.Home), TimeSpan.Zero);
-        var protocol = mapper.ToProtocol(waypoint, MissionPlanType.FlightMission) with { Command = 999 };
+        var original = new MavLinkMissionItem(3, 3, 999, false, true, 1.5f, 2.5f, 3.5f, float.NaN, 123456789, -987654321, 42f, MavMissionType.Mission);
 
-        var act = () => mapper.FromProtocol(protocol);
+        var item = mapper.FromProtocol(original);
+        var protocol = mapper.ToProtocol(item, MissionPlanType.FlightMission);
 
-        act.Should().Throw<NotSupportedException>();
+        item.Should().BeOfType<GenericMissionItem>();
+        item.Command.Should().Be((MissionCommand)999);
+        protocol.Should().BeEquivalentTo(original);
+    }
+
+    /// <summary>
+    /// Verifies that a preserved item follows mission resequencing.
+    /// </summary>
+    [Fact]
+    public void Should_Resequence_Preserved_Item_When_Mission_Changes()
+    {
+        var raw = new MavLinkMissionItem(5, 2, 999, false, true, 1, 2, 3, 4, 0, 0, 0, MavMissionType.Mission);
+        var mission = new Mission(MissionId.New(), "Preserve");
+        mission.Add(mapper.FromProtocol(raw));
+
+        var protocol = mapper.ToProtocol(mission.Items[0], mission.Type);
+
+        mission.Items[0].Sequence.Should().Be(0);
+        protocol.Sequence.Should().Be(0);
+        protocol.Command.Should().Be(999);
+        protocol.Param3.Should().Be(3);
     }
 }

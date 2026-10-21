@@ -161,7 +161,7 @@ public sealed partial class LiveTelemetryInspectorViewModel
         Refresh();
     }
 
-    private async void Configure(VehicleId vehicle, string key)
+    private async Task ConfigureAsync(VehicleId vehicle, string key)
     {
         if (vehicle != activeVehicle.VehicleId)
         {
@@ -278,7 +278,7 @@ public sealed partial class LiveTelemetryInspectorViewModel
                 {
                     if (HasEvidenceSession(id, session))
                     {
-                        Configure(id, key);
+                        ConfigureAsync(id, key).SafeFireAndForget();
                     }
                 }));
             }

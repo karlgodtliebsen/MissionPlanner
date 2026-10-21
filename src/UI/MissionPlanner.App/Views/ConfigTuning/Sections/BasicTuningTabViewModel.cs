@@ -125,7 +125,7 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
         activeVehicle.Changed += OnActiveVehicleChanged;
         parameterLoadSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(
             OnParameterLoadStatusChanged);
-        Dispatcher.Dispatch(() => _ = InitializeAsync());
+        Dispatcher.DispatchAsync(InitializeAsync).SafeFireAndForget();
         return Task.CompletedTask;
     }
 
@@ -353,7 +353,7 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
             return;
         }
 
-        Dispatcher.Dispatch(() => _ = InitializeAsync());
+        Dispatcher.DispatchAsync(InitializeAsync).SafeFireAndForget();
     }
 
     private Task OnParameterLoadStatusChanged(VehicleParameterLoadStatusChanged evt, CancellationToken cancellationToken)
@@ -366,7 +366,7 @@ public sealed partial class BasicTuningTabViewModel : ViewModelBase
             return Task.CompletedTask;
         }
 
-        Dispatcher.Dispatch(() => _ = InitializeAsync());
+        Dispatcher.DispatchAsync(InitializeAsync).SafeFireAndForget();
         return Task.CompletedTask;
     }
 

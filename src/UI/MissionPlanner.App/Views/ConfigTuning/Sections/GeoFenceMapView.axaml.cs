@@ -207,7 +207,12 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
         map.Navigator.ZoomOut();
     }
 
-    private async void OnCenterOnMyLocationClicked(object? sender, RoutedEventArgs e)
+    private void OnCenterOnMyLocationClicked(object? sender, RoutedEventArgs e)
+    {
+        CenterOnMyLocationAsync().SafeFireAndForget(exception => Logger.LogWarning(exception, "Could not center the GeoFence map on the current location."));
+    }
+
+    private async Task CenterOnMyLocationAsync()
     {
         var cancellationToken = mapLifecycleCancellation?.Token ?? CancellationToken.None;
         try

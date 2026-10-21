@@ -38,6 +38,7 @@ public sealed class ActuatorTestService : IActuatorTestService
     private bool disposed;
     private readonly IVehicleConnectionSession session;
     private readonly IVehicleTelemetryEventHub? telemetry;
+    private readonly IVehicleMessageStore? messageStore;
     private Guid motorCorrelation;
 
     /// <summary>Initializes the actuator-test service.</summary>
@@ -51,6 +52,7 @@ public sealed class ActuatorTestService : IActuatorTestService
     /// <param name="clock">The application clock.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="telemetry">Optional isolated diagnostic evidence.</param>
+    /// <param name="messageStore">Optional status-text history used to explain rejected tests.</param>
     public ActuatorTestService(
         IActiveVehicleContext activeVehicle,
         IVehicleRegistry vehicleRegistry,
@@ -60,7 +62,8 @@ public sealed class ActuatorTestService : IActuatorTestService
         IVehicleOperationGate operationGate,
         IVehicleParameterRegistry parameterRegistry,
         IDateTimeProvider clock,
-        ILogger<ActuatorTestService> logger, IVehicleTelemetryEventHub? telemetry = null)
+        ILogger<ActuatorTestService> logger, IVehicleTelemetryEventHub? telemetry = null,
+        IVehicleMessageStore? messageStore = null)
     {
         this.activeVehicle = activeVehicle;
         this.vehicleRegistry = vehicleRegistry;
@@ -72,6 +75,7 @@ public sealed class ActuatorTestService : IActuatorTestService
         this.clock = clock;
         this.logger = logger;
         this.telemetry = telemetry;
+        this.messageStore = messageStore;
         activeVehicle.Changed += OnActiveVehicleChanged;
     }
 
@@ -259,11 +263,13 @@ public sealed class ActuatorTestService : IActuatorTestService
         });
         try
         {
+            var sentAt = clock.UtcNow;
             await SendCommandAsync(vehicleId, MotorTestCommand, parameters, cancellationToken).ConfigureAwait(false);
             var result = await ackSignal.Task.WaitAsync(ackTimeout, cancellationToken).ConfigureAwait(false);
             if (result is not (MavResult.Accepted or MavResult.InProgress))
             {
-                return Reject(vehicleId, description, $"The vehicle rejected the motor test with MAV_RESULT {result}.");
+                var detail = await CommandRejectionDetail.CollectAsync(messageStore, vehicleId, sentAt, cancellationToken).ConfigureAwait(false);
+                return Reject(vehicleId, description, CommandRejectionDetail.Append($"The vehicle rejected the motor test with MAV_RESULT {result}.", detail));
             }
         }
         catch (TimeoutException)
@@ -332,6 +338,7 @@ public sealed class ActuatorTestService : IActuatorTestService
                     return Task.CompletedTask;
                 });
 
+                var sentAt = clock.UtcNow;
                 await SendCommandAsync(vehicleId, MotorTestCommand,
                     [testOrder, (float)MotorTestThrottleType.MotorTestThrottlePercent, normalizedThrottle * 100f,
                         (float)duration, 0, (float)MotorTestOrder.Default, 0],
@@ -339,7 +346,8 @@ public sealed class ActuatorTestService : IActuatorTestService
                 var result = await acknowledgementSignal.Task.WaitAsync(ackTimeout, cancellationToken).ConfigureAwait(false);
                 if (result is not (MavResult.Accepted or MavResult.InProgress))
                 {
-                    return Reject(vehicleId, description, $"The vehicle rejected motor {testOrder} with MAV_RESULT {result}.");
+                    var detail = await CommandRejectionDetail.CollectAsync(messageStore, vehicleId, sentAt, cancellationToken).ConfigureAwait(false);
+                    return Reject(vehicleId, description, CommandRejectionDetail.Append($"The vehicle rejected motor {testOrder} with MAV_RESULT {result}.", detail));
                 }
             }
         }

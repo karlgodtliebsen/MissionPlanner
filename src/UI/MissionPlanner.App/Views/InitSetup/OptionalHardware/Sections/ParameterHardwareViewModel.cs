@@ -145,9 +145,9 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         }
     }
 
-    private async void Changed(ActiveVehicleChangedEventArgs e)
+    private void Changed(ActiveVehicleChangedEventArgs e)
     {
-        await Dispatcher.DispatchAsync(Load);
+        Dispatcher.DispatchAsync(Load).SafeFireAndForget(exception => Logger.LogError(exception, "Could not reload hardware settings for the new active vehicle."));
     }
 
     /// <inheritdoc />

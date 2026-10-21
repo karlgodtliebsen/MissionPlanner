@@ -42,9 +42,25 @@ jobs:
       - name: Run unit tests
         shell: pwsh
         run: |
-          dotnet test src/Tests/MissionPlanner.Tests/MissionPlanner.Tests.csproj --configuration Release --verbosity normal
-          dotnet test src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --configuration Release --verbosity normal
-          dotnet test src/Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.Core.AvaloniaUI.csproj --configuration Release --verbosity normal
-          dotnet test src/Tests/MissionPlanner.BrowserBridge.Tests/MissionPlanner.BrowserBridge.Tests.csproj --configuration Release --verbosity normal
-          dotnet test src/Tests/MissionPlanner.Smoke.Simulator.Tests/MissionPlanner.Smoke.Simulator.Tests.csproj --configuration Release --verbosity normal
+          # A failing suite must fail the step even when a later suite passes.
+          $projects = @(
+            'MissionPlanner.Tests',
+            'MissionPlanner.Core.Tests',
+            'MissionPlanner.Analysis.Tests',
+            'MissionPlanner.Firmware.Tests',
+            'MissionPlanner.AvaloniaUI.Tests',
+            'MissionPlanner.BrowserBridge.Tests',
+            'MissionPlanner.Smoke.Simulator.Tests'
+          )
+          $failed = @()
+          foreach ($project in $projects) {
+            dotnet test "src/Tests/$project/$project.csproj" --configuration Release --verbosity normal
+            if ($LASTEXITCODE -ne 0) { $failed += $project }
+          }
+          if ($failed.Count -gt 0) {
+            Write-Error "Failed test projects: $($failed -join ', ')"
+            exit 1
+          }
 
+      - name: Run browser platform tests
+        run: node --test src/Tests/browser-platform.test.mjs

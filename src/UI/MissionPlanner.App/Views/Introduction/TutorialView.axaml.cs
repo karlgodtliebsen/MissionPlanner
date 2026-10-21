@@ -36,12 +36,18 @@ public partial class TutorialView : UserControlViewBase<IntroductionViewModel>
         Grid.SetColumnSpan(TopicHost, compact ? 2 : 1);
     }
 
-    private async void OnActionRequested(object? sender, IntroductionActionRequestedEventArgs args)
+    private void OnActionRequested(object? sender, IntroductionActionRequestedEventArgs args)
     {
         if (Design.IsDesignMode)
         {
             return;
         }
+
+        HandleActionAsync(args).SafeFireAndForget();
+    }
+
+    private async Task HandleActionAsync(IntroductionActionRequestedEventArgs args)
+    {
         try
         {
             switch (args.Action.Kind)

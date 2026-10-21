@@ -1,1 +1,2 @@
-﻿global using MissionPlanner.App.Utilities;
+﻿global using AsyncAwaitBestPractices;
+global using MissionPlanner.App.Utilities;

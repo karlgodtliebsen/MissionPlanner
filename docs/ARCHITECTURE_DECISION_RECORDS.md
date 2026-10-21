@@ -293,3 +293,12 @@ execution are prohibited.
 **Consequences:** The format is deliberately less expressive, but portable, reviewable,
 deterministic, and testable. New actions require an explicit registry and typed-service
 change. Out-of-process plugins and onboard Lua remain separate future decisions.
+
+## Standalone ADR files
+
+Longer decisions live in [`adr/`](adr/):
+
+- [ADR-0001 - Own MAVLink implementation](adr/0001-own-mavlink-implementation.md)
+- [ADR-0005 - Map source architecture](adr/ADR-0005-map-source-architecture.md)
+- [ADR-0006 - Defer vector PMTiles](adr/ADR-0006-defer-vector-pmtiles.md)
+- [ADR - DFU through the STM32CubeProgrammer CLI](adr/ADR-DFU-STM32CubeProgrammer-CLI.md)

@@ -111,7 +111,7 @@ public partial class VehicleConnectionViewModel : ViewModelBase
 
     private void VehicleChanged(ActiveVehicleChangedEventArgs e)
     {
-        OnActiveVehicleChanged(e);
+        OnActiveVehicleChanged(e).SafeFireAndForget();
     }
 
 

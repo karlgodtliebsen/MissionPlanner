@@ -71,12 +71,12 @@ public partial class ConnectPopupViewModel
     }
 
     /// <inheritdoc />
-    public override async void OK()
+    public override async Task OKAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             await SaveNetworkDraftsAsync();
-            base.OK();
+            await base.OKAsync(cancellationToken);
         }
         catch
         {

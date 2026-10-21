@@ -235,12 +235,9 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
     }
 
     /// <inheritdoc />
-    public override void OK()
+    public override Task OKAsync(CancellationToken cancellationToken = default)
     {
-        if (SelectedFirmwareModel is not null)
-        {
-            base.OK();
-        }
+        return SelectedFirmwareModel is not null ? base.OKAsync(cancellationToken) : Task.CompletedTask;
     }
 
     [RelayCommand]

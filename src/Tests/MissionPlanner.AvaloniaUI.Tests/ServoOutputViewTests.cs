@@ -38,6 +38,7 @@ public sealed class ServoOutputViewTests
             .AddSingleton(Substitute.For<ISetupReportService>())
             .AddSingleton<SetupReportDocumentFactory>()
             .AddSingleton<SetupInformationViewModel>()
+            .AddTransient<MissionPlanner.App.Views.Common.OpenParameterEditorsViewModel>()
             .AddSingleton<ServoOutputSetupViewModel>().BuildServiceProvider();
         return AppBuilder.Configure(() => new MissionPlanner.App.App(services))
             .UseHeadless(new AvaloniaHeadlessPlatformOptions());

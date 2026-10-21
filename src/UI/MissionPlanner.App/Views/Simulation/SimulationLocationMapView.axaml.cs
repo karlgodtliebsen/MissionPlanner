@@ -69,12 +69,17 @@ public partial class SimulationLocationMapView : UserControl, IDisposable
         LocationMap.Map = null;
     }
 
-    private async void OnLoaded(object? sender, RoutedEventArgs args)
+    private void OnLoaded(object? sender, RoutedEventArgs args)
     {
         LocationMap.MapTapped -= OnMapTapped;
         LocationMap.MapTapped += OnMapTapped;
         AttachViewModel();
         Redraw(center: true);
+        CenterOnLoadedLocationAsync().SafeFireAndForget();
+    }
+
+    private async Task CenterOnLoadedLocationAsync()
+    {
         try
         {
             await CenterOnMyLocationAsync();

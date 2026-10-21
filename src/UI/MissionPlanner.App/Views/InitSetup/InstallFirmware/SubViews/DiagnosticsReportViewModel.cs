@@ -34,7 +34,7 @@ public sealed partial class DiagnosticsReportViewModel : DialogViewModelBase
     {
         if (!string.IsNullOrWhiteSpace(LastDiagnosticReport))
         {
-            clipboard.SetTextAsync(LastDiagnosticReport);
+            clipboard.SetTextAsync(LastDiagnosticReport).SafeFireAndForget();
             NotificationManager?.Show(LastDiagnosticReport);
         }
         return Task.CompletedTask;

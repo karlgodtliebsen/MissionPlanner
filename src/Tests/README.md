@@ -13,7 +13,7 @@ The automated simulator tests create their own loopback UDP vehicle and connecti
 The following tests remain explicitly skipped because they need external equipment or perform manual maintenance:
 
 - Five serial integration tests require a connected physical vehicle.
-- Fourteen SITL tests require an external ArduPilot instance on UDP 14551.
+- Fourteen SITL tests (`SmokeTestsSitl`) require an external ArduPilot SITL that sends MAVLink to `udp:127.0.0.1:14550`. Set `MP_SITL=1` to run them; they are skipped otherwise.
 - Eight DroneBridge tests require configured external devices.
 - One firmware hardware theory requires a selected physical controller and operator procedure.
 - One legacy resource-renaming test changes source files and is a manual maintenance tool.

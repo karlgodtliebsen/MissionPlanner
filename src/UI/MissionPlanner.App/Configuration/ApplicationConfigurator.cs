@@ -127,9 +127,9 @@ public static class ApplicationConfigurator
         //services.TryAddSingleton(sp => sp.GetRequiredService<MapHttpOptionsProvider>().GetOptions());
         services.TryAddSingleton(new MapHttpOptionsProvider().GetOptions());
 
-        services.TryAddTransient<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
+        services.TryAddSingleton<ISimulatorProfileStore, JsonSimulatorProfileStore>();
         services.TryAddTransient<ISimulatorProfileService, SimulatorProfileService>();
-        services.TryAddTransient<ISimulationScenarioPresetStore, PreferencesSimulationScenarioPresetStore>();
+        services.TryAddSingleton<ISimulationScenarioPresetStore, JsonSimulationScenarioPresetStore>();
         services.TryAddTransient<ISitlCachePathProvider, DefaultSitlCachePathProvider>();
         services.TryAddTransient<ISitlPlatformService, LocalSitlPlatformService>();
         services.TryAddTransient<ISimulatorProcessHost, LocalSimulatorProcessHost>();

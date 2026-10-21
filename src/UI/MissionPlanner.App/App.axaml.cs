@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Views.Main;
 
@@ -47,6 +48,10 @@ public partial class App : Application
     /// <inheritdoc />
     public override void OnFrameworkInitializationCompleted()
     {
+        SafeFireAndForgetExtensions.SetDefaultExceptionHandling(exception =>
+            ServiceProvider.GetService<Microsoft.Extensions.Logging.ILoggerFactory>()?
+                .CreateLogger("SafeFireAndForget")
+                .LogError(exception, "A fire-and-forget operation failed."));
         if (Design.IsDesignMode)
         {
             base.OnFrameworkInitializationCompleted();

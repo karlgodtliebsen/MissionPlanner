@@ -145,18 +145,7 @@ public sealed class Mission
 
     private static MissionItem WithSequence(MissionItem item, ushort sequence)
     {
-        return item switch
-        {
-            WaypointMissionItem x => x with { Sequence = sequence },
-            TakeoffMissionItem x => x with { Sequence = sequence },
-            LandMissionItem x => x with { Sequence = sequence },
-            ReturnToLaunchMissionItem x => x with { Sequence = sequence },
-            ChangeSpeedMissionItem x => x with { Sequence = sequence },
-            LoiterMissionItem x => x with { Sequence = sequence },
-            SplineWaypointMissionItem x => x with { Sequence = sequence },
-            JumpMissionItem x => x with { Sequence = sequence },
-            RoiLocationMissionItem x => x with { Sequence = sequence },
-            var _ => throw new NotSupportedException(item.GetType().Name)
-        };
+        // Positional records clone their runtime type, so one non-destructive mutation covers every item type.
+        return item with { Sequence = sequence };
     }
 }

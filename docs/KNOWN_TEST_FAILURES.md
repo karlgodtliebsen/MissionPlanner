@@ -1,72 +1,39 @@
 # Known test failures
 
-This document records the 12 known failures observed on 2026-07-22 when running:
+Last verified: 2026-10-22 (Debug, Windows, .NET 10.0.402).
 
-```powershell
-dotnet test .\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --no-build --no-restore --verbosity minimal
-```
+A failure is considered known only when both the test name and the failure signature match an
+entry below. New failures, or the same test failing for a different reason, must be investigated.
 
-The run completed with 279 passing and 12 failing tests. These failures are not a general
-allow-list: a failure is considered known only when both the test name and failure signature
-match an entry below. New failure messages, additional failing tests, or failures in focused
-tests must still be investigated.
+## Resolved since the 2026-07-22 list
 
-## Serial hardware is not attached
+The twelve `MissionPlanner.Core.Tests` failures recorded on 2026-07-22 (serial-hardware tests,
+fixed UDP port contention, missing `IHeartbeatVehicleHandler` registration, and the exact
+floating-point HUD assertion) no longer fail. `MissionPlanner.Core.Tests` currently reports
+no failures; its skipped tests are the opt-in external-equipment tests listed in
+[../src/Tests/README.md](../src/Tests/README.md).
 
-These integration tests require a physical ArduPilot vehicle on an available serial port.
-On a machine without that hardware they fail with `Connect a ArduPilot Vehicle` and report
-`Found 0 serial ports`.
+Seventeen `AvaloniaUI.Tests` failures caused by stale file paths, the renamed firmware tabs, the
+unregistered `OpenParameterEditorsViewModel` in test hosts, and two rendering classes missing from
+the `Document rendering` collection were fixed on 2026-10-22.
 
-1. `MissionPlanner.Core.Tests.IntegrationTests.VehicleSerialCommunicationTests.Should_Start_Complete_Domain_Vehicle_Service_Setup`
-2. `MissionPlanner.Core.Tests.IntegrationTests.VehicleSerialCommunicationTests.Should_Handle_Connected_And_Registered`
-3. `MissionPlanner.Core.Tests.IntegrationTests.VehicleSerialCommunicationTests.Should_Establish_LowLevel_Serial_Communication_With_Vehicle`
-4. `MissionPlanner.Core.Tests.IntegrationTests.VehicleSerialCommunicationTests.Should_Retrieve_Parameters_Using_Streaming`
-5. `MissionPlanner.Core.Tests.IntegrationTests.VehicleSerialCommunicationTests.Should_Retrieve_Parameters`
+## Headless UI tests that pass alone but fail in a full run
 
-Run these tests only when the expected flight controller is attached and no other process owns
-its COM port. Their current dependence on ordinary test discovery should eventually be replaced
-with an explicit hardware-test trait or opt-in configuration.
+Two tests pass when run on their own and fail when the whole `MissionPlanner.AvaloniaUI.Tests`
+project runs. Avalonia's platform registry is process-global, and test classes configure it
+differently (`UseSkia()` with real drawing versus headless drawing), so the first class to start
+decides what the others get. Run them with `--filter` to verify a change that touches them.
 
-## Fixed UDP port contention
+| Test | Signature |
+|---|---|
+| `PaletteThemeRenderingTests.PalettesResolveAndRenderIndependentlyAcrossWindows` | `InvalidCastException: Unable to cast object of type 'HeadlessGlyphRunStub' to type 'Avalonia.Skia.GlyphRunImpl'` |
+| `FftAnalysisViewTests.CompiledViewRendersSourceControlsAndBothPlotModes` | `The calling thread cannot access this object because a different thread owns it` |
 
-These simulator tests currently contend for the same fixed local UDP endpoint. When another test
-or process owns the endpoint, construction of `FakeMavLinkVehicle2` fails with
-`SocketException: Only one usage of each socket address (protocol/network address/port) is normally permitted.`
+The durable correction is to build one shared `AppBuilder` for every rendering test class (all of
+them are already in the `Document rendering` collection), or to move the rendering tests that need
+Skia into their own test project.
 
-6. `MissionPlanner.Core.Tests.MavLinkMessageDecoderHandlerTests.Should_Decode_Heartbeat_Message_From_Fake_Vehicle`
-7. `MissionPlanner.Core.Tests.MavLinkTests.Should_Parse_Heartbeat_Frame_From_Fake_Vehicle`
-8. `MissionPlanner.Core.Tests.VehicleTests.Should_Register_Vehicle_When_Message_Pump_Receives_Heartbeat`
-9. `MissionPlanner.Core.Tests.VehicleTests.Should_Receive_CommandAck_When_Arm_Command_Is_Sent`
+## Hardware and external-tool tests
 
-The durable correction is to allocate isolated ephemeral ports per test, or to serialize only the
-tests that must share a fixed endpoint. A different socket error is not covered by this entry.
-
-## Incomplete test dependency registration
-
-These tests build a service provider that does not register
-`MissionPlanner.Core.Vehicles.Handlers.Abstractions.IHeartbeatVehicleHandler`. They fail with
-`InvalidOperationException: No service for type ... IHeartbeatVehicleHandler has been registered.`
-
-10. `MissionPlanner.Core.Tests.VehicleTests.Should_Register_Vehicle_From_Received_Heartbeat_MessageAsync`
-11. `MissionPlanner.Core.Tests.VehicleTests.Should_Update_Armed_State_From_Heartbeat_BaseModeAsync`
-
-The test host should use the current vehicle-domain registration path or explicitly register the
-handler required by the test.
-
-## Overly strict HUD numeric assertion
-
-The following integration test compares a decoded floating-point pitch value using exact equality.
-The observed expected value was `-177.6`, while the decoded value was
-`-177.6169164905552`.
-
-12. `MissionPlanner.Core.Tests.IntegrationTests.VehicleHudDataIntegrationTests.Should_Get_Current_HudData_From_RegistryAsync`
-
-The assertion should use a documented tolerance that reflects MAVLink quantization and conversion
-precision. Other value differences are not automatically considered the same known failure.
-
-## Verification guidance
-
-For ordinary changes, run the focused tests for the affected subsystem first. A focused test failure
-is actionable even if a full test run also contains entries from this document. When reporting the
-full suite, state the number of passed and failed tests and identify which failures exactly matched
-this snapshot.
+Tests that need a physical vehicle, an external SITL, or DroneBridge devices are skipped with an
+explicit reason rather than failing. See [../src/Tests/README.md](../src/Tests/README.md).

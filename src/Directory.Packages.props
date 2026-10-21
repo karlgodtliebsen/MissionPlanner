@@ -37,6 +37,7 @@
     <PackageVersion Include="Spectre.Console" Version="0.57.0" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <!--Other-->
+    <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" />
     <PackageVersion Include="System.IO.Ports" Version="10.0.10" />
     <PackageVersion Include="System.Reactive" Version="7.0.0" />
     <PackageVersion Include="Polly" Version="8.7.0" />

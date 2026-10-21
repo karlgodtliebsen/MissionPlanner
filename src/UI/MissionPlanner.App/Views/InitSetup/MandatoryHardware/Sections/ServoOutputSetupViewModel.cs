@@ -226,7 +226,12 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
         return operationCancellation.Token;
     }
 
-    private async void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
+    {
+        ReloadForActiveVehicleAsync(args).SafeFireAndForget(exception => Logger.LogError(exception, "Could not reload servo outputs for the new active vehicle."));
+    }
+
+    private async Task ReloadForActiveVehicleAsync(ActiveVehicleChangedEventArgs args)
     {
         await Dispatcher.DispatchAsync(() => Outputs.Clear());
         observedServoAt = args.Current.State?.Radio.ServoObservedAt;

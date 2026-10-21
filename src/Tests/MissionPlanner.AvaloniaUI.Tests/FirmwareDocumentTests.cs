@@ -9,6 +9,7 @@ using MissionPlanner.App.Presentation.Documents;
 
 namespace MissionPlanner.AvaloniaUI.Tests;
 
+[Collection("Document rendering")]
 public sealed class FirmwareDocumentTests
 {
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<Application>()

@@ -12,7 +12,7 @@ public partial class MAVFtpTabView : NavigationViewBase<MavFtpTabViewModel>
         InitializeComponent();
     }
 
-    private async void OnEntriesDoubleTapped(object? sender, TappedEventArgs e)
+    private void OnEntriesDoubleTapped(object? sender, TappedEventArgs e)
     {
         if (e.Source is not Control { DataContext: Models.VehicleFileSystemEntryViewModel { IsDirectory: true } entry })
         {
@@ -25,7 +25,8 @@ public partial class MAVFtpTabView : NavigationViewBase<MavFtpTabViewModel>
             return;
         }
 
-        await ViewModel.OpenSelectedCommand.ExecuteAsync(null);
+        // The command is asynchronous; mark the gesture handled before it yields.
         e.Handled = true;
+        ViewModel.OpenSelectedCommand.Execute(null);
     }
 }

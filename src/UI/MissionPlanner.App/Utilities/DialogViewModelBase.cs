@@ -69,11 +69,13 @@ public partial class DialogViewModelBase : ViewModelBase, IDialogContext
     /// <summary>
     /// Confirms the dialog.
     /// </summary>
+    /// <param name="cancellationToken">Cancels a derived implementation's confirmation work.</param>
     [RelayCommand]
-    public virtual void OK()
+    public virtual Task OKAsync(CancellationToken cancellationToken = default)
     {
         Confirmation = true;
         RequestClose?.Invoke(this, true);
+        return Task.CompletedTask;
     }
 
     /// <summary>

@@ -105,7 +105,6 @@ public partial class ViewModelBase : ObservableObject, IDisposable
         DispatchIfAlive(() =>
         {
             IsBusy = true;
-            Task.Yield();
         });
     }
 
@@ -117,7 +116,6 @@ public partial class ViewModelBase : ObservableObject, IDisposable
         DispatchIfAlive(() =>
         {
             IsBusy = false;
-            Task.Yield();
         });
     }
 
@@ -134,7 +132,7 @@ public partial class ViewModelBase : ObservableObject, IDisposable
 
     partial void OnStatusMessageChanged(string? value)
     {
-        eventHub.PublishDomainEventAsync<StatusMessageReceived>(new StatusMessageReceived(value));
+        eventHub.PublishDomainEventAsync<StatusMessageReceived>(new StatusMessageReceived(value)).SafeFireAndForget();
     }
 
 
@@ -171,8 +169,6 @@ public partial class ViewModelBase : ObservableObject, IDisposable
             StatusMessage = statusMessage;
             ErrorMessage = errorMessage;
         });
-
-        Task.Yield();
     }
 
     /// <summary>
@@ -186,7 +182,6 @@ public partial class ViewModelBase : ObservableObject, IDisposable
             StatusMessage = null;
             ErrorMessage = ex?.Message;
         });
-        Task.Yield();
     }
 
 

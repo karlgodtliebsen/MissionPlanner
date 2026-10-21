@@ -86,10 +86,10 @@ public class MissionFileCodecTests
     }
 
     /// <summary>
-    /// JSON items with unsupported commands are skipped, not fatal.
+    /// JSON items with commands the domain does not model are preserved, not dropped.
     /// </summary>
     [Fact]
-    public void Should_Skip_Unsupported_Commands_In_Json()
+    public void Should_Preserve_Unsupported_Commands_In_Json()
     {
         const string json = """
         {
@@ -108,7 +108,8 @@ public class MissionFileCodecTests
 
         var parsed = codec.Parse(json);
 
-        parsed.Items.Should().HaveCount(1);
-        parsed.SkippedItems.Should().Be(1);
+        parsed.Items.Should().HaveCount(2);
+        parsed.Items[1].Should().BeOfType<GenericMissionItem>();
+        parsed.SkippedItems.Should().Be(0);
     }
 }

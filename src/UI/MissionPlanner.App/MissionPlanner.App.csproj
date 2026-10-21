@@ -299,8 +299,6 @@
       <ProjectReference Include="..\..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
       <ProjectReference Include="..\..\Core\MissionPlanner.Core\MissionPlanner.Core.csproj" />
       <ProjectReference Include="..\..\Core\MissionPlanner.Maps\MissionPlanner.Maps.csproj" />
-      <ProjectReference Include="..\..\Tools\MissionPlanner.Simulator\MissionPlanner.Simulator.csproj" />
-      <ProjectReference Include="..\MissionPlanner.Library.Linux\MissionPlanner.Library.Linux.csproj" />
       <ProjectReference Include="..\MissionPlanner.Themes\MissionPlanner.Themes.csproj" />
 	</ItemGroup>
 

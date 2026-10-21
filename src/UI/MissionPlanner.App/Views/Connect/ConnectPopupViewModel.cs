@@ -332,7 +332,6 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
             IsConnecting = false;
 
         });
-        Task.Yield();
     }
 
     /// <summary>
@@ -612,7 +611,6 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
                 Logger.LogInformation("Successfully connected to vehicle {VehicleId} ({VehicleName})", vehicleId, VehicleName);
             }
         );
-        Task.Yield();
     }
 
     private void Disconnected()

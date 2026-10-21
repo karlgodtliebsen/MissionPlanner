@@ -313,7 +313,7 @@ public sealed partial class FrameSetupViewModel : ViewModelBase
                 Cancel();
                 CloseProgressDialog();
                 await LoadAsync();
-            });
+            }).SafeFireAndForget();
         }
     }
 

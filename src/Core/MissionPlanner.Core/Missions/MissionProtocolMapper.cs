@@ -34,6 +34,12 @@ public sealed class MissionProtocolMapper : IMissionProtocolMapper
                 x.Position, (float)x.Altitude.Meters, missionType),
             JumpMissionItem x => New(x, x.TargetSequence, x.RepeatCount, 0, 0,
                 new GeoPosition(0, 0), 0, missionType),
+            GenericMissionItem x => x.Raw with
+            {
+                Sequence = x.Sequence,
+                Current = x.Sequence == 0,
+                MissionType = (MavMissionType)(byte)missionType
+            },
             RoiLocationMissionItem x => New(x, x.UseLegacyCommand ? 3 : 0, 0, 0, 0,
                 x.Position, (float)x.Altitude.Meters, missionType),
             var _ => throw new NotSupportedException(item.GetType().Name)
@@ -42,6 +48,19 @@ public sealed class MissionProtocolMapper : IMissionProtocolMapper
 
     /// <inheritdoc />
     public MissionItem FromProtocol(MavLinkMissionItem item)
+    {
+        try
+        {
+            return FromTypedProtocol(item);
+        }
+        catch (Exception ex) when (ex is NotSupportedException or OverflowException or ArgumentOutOfRangeException)
+        {
+            // No typed model for this command/frame (or its parameters do not fit one): keep it verbatim.
+            return new GenericMissionItem(MissionItemId.New(), item.Sequence, item);
+        }
+    }
+
+    private static MissionItem FromTypedProtocol(MavLinkMissionItem item)
     {
         var id = MissionItemId.New();
         var position = new GeoPosition(item.X / 1e7, item.Y / 1e7);

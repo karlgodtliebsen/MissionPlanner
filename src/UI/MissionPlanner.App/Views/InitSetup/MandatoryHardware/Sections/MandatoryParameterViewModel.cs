@@ -36,13 +36,18 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
     /// <summary>Persists a changed favorite preference when supported by the page.</summary>
     protected virtual Task SaveFavoriteAsync(string name, bool favorite) => Task.CompletedTask;
 
-    private async void OnSettingChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+    private void OnSettingChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
     {
         if (sender is not PeripheralSettingViewModel row || args.PropertyName != nameof(PeripheralSettingViewModel.IsFavorite))
         {
             return;
         }
         OnPropertyChanged(nameof(VisibleSettings));
+        PersistFavoriteAsync(row).SafeFireAndForget();
+    }
+
+    private async Task PersistFavoriteAsync(PeripheralSettingViewModel row)
+    {
         try
         {
             await SaveFavoriteAsync(row.Name, row.IsFavorite);
@@ -322,7 +327,7 @@ public abstract partial class MandatoryParameterViewModel : ViewModelBase
 
     private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
-        Dispatcher.DispatchAsync(LoadAsync);
+        Dispatcher.DispatchAsync(LoadAsync).SafeFireAndForget();
     }
 }
 

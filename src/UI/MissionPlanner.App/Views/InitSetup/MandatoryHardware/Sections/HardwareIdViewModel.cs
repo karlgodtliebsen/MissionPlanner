@@ -122,14 +122,13 @@ public sealed partial class HardwareIdViewModel : ViewModelBase
             Board = snapshot.Board;
             Firmware = snapshot.Firmware;
             Items.ReplaceRange(snapshot.Items);
-        }
-    );
+        }).SafeFireAndForget();
         SetMessages(Items.Count == 0 ? "No peripheral hardware identifiers were reported." : $"{Items.Count} hardware identifier(s) reported.");
     }
 
     private void OnVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
-        Dispatcher.DispatchAsync(RefreshAsync);
+        Dispatcher.DispatchAsync(RefreshAsync).SafeFireAndForget();
     }
 }
 

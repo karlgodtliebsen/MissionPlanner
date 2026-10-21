@@ -246,6 +246,9 @@ public sealed class FirmwarePanelViewModelTests
         services.AddSingleton(Substitute.For<MissionPlanner.Library.Factory.Domain.Abstractions.IDomainFactory>());
         services.AddSingleton(Substitute.For<MissionPlanner.Library.Factory.Domain.Abstractions.IServiceFactory>());
         services.AddSingleton<FirmwareDialogCoordinator>();
+        // Setup pages embed OpenParameterEditorsView, which resolves this view model through the locator.
+        if (!services.Any(d => d.ServiceType == typeof(MissionPlanner.App.Views.Navigation.INavigationService))) { services.AddSingleton(Substitute.For<MissionPlanner.App.Views.Navigation.INavigationService>()); }
+        services.AddTransient<MissionPlanner.App.Views.Common.OpenParameterEditorsViewModel>();
         services.AddSingleton<FirmwareCatalogueViewModel>();
         services.AddSingleton<DetectedDeviceViewModel>();
         services.AddSingleton<CustomFirmwareViewModel>();

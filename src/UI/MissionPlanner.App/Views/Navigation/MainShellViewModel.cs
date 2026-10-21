@@ -94,7 +94,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
     {
         if (!synchronizingSelection && value?.Route is not null)
         {
-            NavigateToSelectionAsync(value.Route);
+            NavigateToSelectionAsync(value.Route).SafeFireAndForget();
         }
     }
 
@@ -158,7 +158,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
         windowProvider.ActiveWindow?.Close();
     }
 
-    private async void NavigateToSelectionAsync(string route)
+    private async Task NavigateToSelectionAsync(string route)
     {
         await navigationService.NavigateAsync(route);
         IsNavigationOpen = false;

@@ -26,6 +26,9 @@ public class SmokeTestsSitl : IAsyncLifetime
     private readonly ITestOutputHelper output;
     private readonly IServiceProvider serviceProvider;
 
+    /// <summary>Gets whether the opt-in simulator tests may run against a local ArduPilot SITL.</summary>
+    public static bool SitlEnabled => Environment.GetEnvironmentVariable("MP_SITL") == "1";
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SmokeTestsSitl"/> class.
     /// </summary>
@@ -152,7 +155,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Sends a TCP  probe to the SITL without expecting any response.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Send_Tcp_Probe_To_SITL_Without_Error()
     {
         using var tcpClient = new TcpClient();
@@ -165,7 +168,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Receives a MAVLink heartbeat message through the SITL.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Receive_Heartbeat_From_SITL()
     {
         var eventHub = serviceProvider.GetRequiredService<IEventHub>();
@@ -196,7 +199,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Register_Vehicle_From_SITL_Heartbeat()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -224,7 +227,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Register_Vehicle_From_SITL_Heartbeat_And_Verify_Telemetry()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -261,7 +264,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message and sends an arm command.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Register_Vehicle_From_SITL_Heartbeat_And_Send_Arm()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -281,7 +284,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message and sends an arm command.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Register_Vehicle_From_SITL_Heartbeat_And_Send_DisArm()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -308,7 +311,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message and sends a set mode command to guided.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Set_Guided_Mode_Through_SITL()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -336,7 +339,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message and sends a set mode command to guided.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Set_Guided_Mode_Through_SITL_Extended()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -477,7 +480,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message and sends a set mode command to stabilize.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Set_Stabilize_Mode_Through_SITL()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -503,7 +506,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message and sends a set mode command to RTL.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Set_Rtl_Mode_Through_SITL()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -530,7 +533,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message and verifies that attitude updates are received and processed.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Update_Attitude_From_SITL()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -552,7 +555,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message and verifies that position updates are received and processed.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Update_Position_From_SITL()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -574,7 +577,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     /// Registers a vehicle from the SITL heartbeat message and verifies that battery updates are received and processed.
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Update_Battery_From_SITL()
     {
         var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
@@ -595,7 +598,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <summary>
     ///  
     /// </summary>
-    [Fact(Skip = "Requires an external ArduPilot SITL instance on UDP port 14551.")]
+    [Fact(Skip = "Set MP_SITL=1 with an ArduPilot SITL sending MAVLink to udp:127.0.0.1:14550.", SkipUnless = nameof(SitlEnabled))]
     public async Task Should_Receive_StatusText_From_SITL()
     {
         var eventHub = serviceProvider.GetRequiredService<IEventHub>();
