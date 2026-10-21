@@ -11,6 +11,7 @@ using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
@@ -356,39 +357,11 @@ public partial class MissionMapViewModel : DialogViewModelBase
         UpdatePointerCoordinateText();
     }
 
-    /// <summary>
-    /// Commands selectable in the waypoint editor. Names follow v1.38's mavcmd.xml; the set is
-    /// limited to the commands the mission domain supports.
-    /// </summary>
-    private static readonly (string Name, ushort Id)[] commandDefinitions =
-    [
-        ("WAYPOINT", 16),
-        ("LOITER_UNLIM", 17),
-        ("LOITER_TURNS", 18),
-        ("LOITER_TIME", 19),
-        ("RETURN_TO_LAUNCH", 20),
-        ("LAND", 21),
-        ("TAKEOFF", 22),
-        ("SPLINE_WAYPOINT", 82),
-        ("DO_JUMP", 177),
-        ("DO_CHANGE_SPEED", 178),
-        ("DO_SET_ROI_LOCATION", 195)
-    ];
-
-    /// <summary>Altitude frames selectable in the waypoint editor (v1.38 altmode naming).</summary>
-    private static readonly (string Name, byte Id)[] frameDefinitions =
-    [
-        ("Absolute", 0),
-        ("Mission", 2),
-        ("Relative", 3),
-        ("Terrain", 10)
-    ];
-
     /// <summary>The command names offered by the editor's Command select.</summary>
-    public IReadOnlyList<string> CommandOptions { get; } = commandDefinitions.Select(x => x.Name).ToArray();
+    public IReadOnlyList<string> CommandOptions { get; } = MissionCommandCatalog.CommandNames;
 
     /// <summary>The frame names offered by the editor's Frame select.</summary>
-    public IReadOnlyList<string> FrameOptions { get; } = frameDefinitions.Select(x => x.Name).ToArray();
+    public IReadOnlyList<string> FrameOptions { get; } = MissionCommandCatalog.FrameNames;
 
     /// <summary>
     /// Display rows for the mission items, kept in sync with <see cref="Mission"/>.
@@ -413,7 +386,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
     public bool HasPlanningPolygon => polygonService.Snapshot.Polygon is not null;
 
     /// <summary>Gets whether a route-dependent command has at least two geographic mission items.</summary>
-    public bool HasMissionRoute => Mission.Items.Select(PositionOf).Count(position => position is not null) >= 2;
+    public bool HasMissionRoute => Mission.Items.Select(MissionItemGeometry.PositionOf).Count(position => position is not null) >= 2;
 
     /// <summary>Gets whether an imported overlay can be cleared.</summary>
     public bool HasImportedOverlay => importedOverlays.Count > 0;
@@ -1594,7 +1567,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
     [RelayCommand]
     private async Task PrefetchWaypointPathAsync(CancellationToken cancellationToken)
     {
-        var positions = Mission.Items.Select(PositionOf).OfType<GeoPosition>().ToArray();
+        var positions = Mission.Items.Select(MissionItemGeometry.PositionOf).OfType<GeoPosition>().ToArray();
         if (positions.Length == 0)
         {
             ShowStatus("The mission has no positioned route to prefetch.");
@@ -2135,40 +2108,11 @@ public partial class MissionMapViewModel : DialogViewModelBase
         return position is not { } target
             ? null
             : Mission.Items
-                .Select(item => (Item: item, Position: PositionOf(item)))
+                .Select(item => (Item: item, Position: MissionItemGeometry.PositionOf(item)))
                 .Where(x => x.Position is not null)
                 .OrderBy(x => DistanceSquared(x.Position!.Value, target))
                 .Select(x => x.Item)
                 .FirstOrDefault();
-    }
-
-    /// <summary>Extracts the map position of a mission item, if it has one.</summary>
-    public static GeoPosition? PositionOf(MissionItem item)
-    {
-        return item switch
-        {
-            WaypointMissionItem x => x.Position,
-            LandMissionItem x => x.Position,
-            LoiterMissionItem x => x.Position,
-            TakeoffMissionItem x => x.Position,
-            SplineWaypointMissionItem x => x.Position,
-            RoiLocationMissionItem x => x.Position,
-            var _ => null
-        };
-    }
-
-    private static MissionAltitude? AltitudeOf(MissionItem item)
-    {
-        return item switch
-        {
-            WaypointMissionItem x => x.Altitude,
-            LandMissionItem x => x.Altitude,
-            LoiterMissionItem x => x.Altitude,
-            TakeoffMissionItem x => x.Altitude,
-            SplineWaypointMissionItem x => x.Altitude,
-            RoiLocationMissionItem x => x.Altitude,
-            var _ => null
-        };
     }
 
     private static double DistanceSquared(GeoPosition a, GeoPosition b)
@@ -2218,8 +2162,8 @@ public partial class MissionMapViewModel : DialogViewModelBase
 
         foreach (var item in Mission.Items)
         {
-            var position = PositionOf(item);
-            var altitude = AltitudeOf(item);
+            var position = MissionItemGeometry.PositionOf(item);
+            var altitude = MissionItemGeometry.AltitudeOf(item);
             var protocol = protocolMapper.ToProtocol(item, Mission.Type);
 
             double? distance = null, azimuth = null, gradient = null;
@@ -2262,8 +2206,8 @@ public partial class MissionMapViewModel : DialogViewModelBase
                 Azimuth = azimuth,
                 Gradient = gradient,
                 // Set the initial selections before attaching the callback so building rows never applies edits.
-                SelectedCommand = CommandNameFor(protocol.Command),
-                SelectedFrame = FrameNameFor(protocol.Frame)
+                SelectedCommand = MissionCommandCatalog.CommandNameFor(protocol.Command),
+                SelectedFrame = MissionCommandCatalog.FrameNameFor(protocol.Frame)
             };
             row.AttachNotifications(ApplyRowEdit, EditStateChanged);
             MissionItems.Add(row);
@@ -2345,8 +2289,8 @@ public partial class MissionMapViewModel : DialogViewModelBase
 
         try
         {
-            var commandId = CommandIdFor(row.SelectedCommand) ?? row.CommandId;
-            var frameId = FrameIdFor(row.SelectedFrame) ?? row.Frame;
+            var commandId = MissionCommandCatalog.CommandIdFor(row.SelectedCommand) ?? row.CommandId;
+            var frameId = MissionCommandCatalog.FrameIdFor(row.SelectedFrame) ?? row.Frame;
 
             var protocolItem = new MavLinkMissionItem(
                 (ushort)index,
@@ -2388,58 +2332,6 @@ public partial class MissionMapViewModel : DialogViewModelBase
     private static double ParseCoordinate(string text)
     {
         return double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) ? value : 0.0;
-    }
-
-    private static string CommandNameFor(ushort commandId)
-    {
-        foreach (var (name, id) in commandDefinitions)
-        {
-            if (id == commandId)
-            {
-                return name;
-            }
-        }
-
-        return $"ID {commandId}";
-    }
-
-    private static ushort? CommandIdFor(string? commandName)
-    {
-        foreach (var (name, id) in commandDefinitions)
-        {
-            if (name == commandName)
-            {
-                return id;
-            }
-        }
-
-        return null;
-    }
-
-    private static string FrameNameFor(byte frame)
-    {
-        foreach (var (name, id) in frameDefinitions)
-        {
-            if (id == frame)
-            {
-                return name;
-            }
-        }
-
-        return frame.ToString(CultureInfo.InvariantCulture);
-    }
-
-    private static byte? FrameIdFor(string? frameName)
-    {
-        foreach (var (name, id) in frameDefinitions)
-        {
-            if (name == frameName)
-            {
-                return id;
-            }
-        }
-
-        return null;
     }
 
     private static double BearingDegrees(GeoPosition from, GeoPosition to)

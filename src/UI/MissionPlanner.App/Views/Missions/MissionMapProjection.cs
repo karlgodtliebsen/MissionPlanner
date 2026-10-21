@@ -1,4 +1,5 @@
-﻿using MissionPlanner.Core.Missions.Models;
+﻿using MissionPlanner.Core.Missions;
+using MissionPlanner.Core.Missions.Models;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -20,7 +21,7 @@ public static class MissionMapProjection
 
         foreach (var item in mission.Items)
         {
-            if (MissionMapViewModel.PositionOf(item) is not { IsValid: true } position)
+            if (MissionItemGeometry.PositionOf(item) is not { IsValid: true } position)
             {
                 continue;
             }
