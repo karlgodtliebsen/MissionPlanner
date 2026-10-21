@@ -45,6 +45,7 @@ using MissionPlanner.App.Views.Introduction.Services;
 using MissionPlanner.App.Views.Logs;
 using MissionPlanner.App.Views.Main;
 using MissionPlanner.App.Views.Missions;
+using MissionPlanner.App.Views.Missions.Workflows;
 using MissionPlanner.App.Views.Navigation;
 using MissionPlanner.App.Views.Preferences;
 using MissionPlanner.App.Views.Samples;
@@ -141,6 +142,16 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ParametersFileHandler>();
         services.TryAddTransient<MissionItemListViewPage>();
         services.TryAddTransient<MissionMapPresenter>();
+        services.TryAddTransient<IMissionRowProjector, MissionRowProjector>();
+        services.TryAddTransient<IMissionFileInteraction, MissionFileInteraction>();
+        services.TryAddTransient<IMissionMapInteractionCoordinator, MissionMapInteractionCoordinator>();
+        services.TryAddTransient<IMissionEditingWorkflow, MissionEditingWorkflow>();
+        services.TryAddTransient<IMissionRowEditor, MissionRowEditor>();
+        services.TryAddTransient<IMissionFileWorkflow, MissionFileWorkflow>();
+        services.TryAddTransient<IVehiclePlanWorkflow, VehiclePlanWorkflow>();
+        services.TryAddTransient<IPolygonPlanningWorkflow, PolygonPlanningWorkflow>();
+        services.TryAddTransient<IGeneratedMissionWorkflow, GeneratedMissionWorkflow>();
+        services.TryAddTransient<IMapToolsWorkflow, MapToolsWorkflow>();
 
         services.TryAddTransient<IUserNotificationService, UserNotificationService>();
         services.TryAddTransient<IUserConfirmationService, UserConfirmationService>();

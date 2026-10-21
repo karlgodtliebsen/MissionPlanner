@@ -119,6 +119,28 @@ The map currently supports:
 New waypoints use the editor's default altitude and waypoint acceptance radius. New loiter
 items use the editor's loiter radius.
 
+### Editor structure
+
+`MissionMapViewModel` is a thin coordinator: it owns the observable state the XAML binds to
+(mission, home, pointer, status, overlay snapshot) and one `[RelayCommand]` entry point per menu
+action. The work lives in collaborators that the view model resolves through `IServiceFactory` and
+attaches to itself as an `IMissionEditorHost` (the only surface workflows may use):
+
+| Collaborator | Owns |
+| --- | --- |
+| `MissionCommandCatalog` (`Core.Missions`) | Editor command and frame names and numeric ids, mapped to `MissionCommand` / `MissionFrame`. `MissionItemGeometry` reads position and altitude of items. |
+| `IMissionRowProjector` | Mission to `MissionItemRow` projection, derived distance/azimuth/gradient, and row to item conversion. |
+| `IMissionRowEditor` | The row collections, pending (dirty) row edits, apply and cancel. |
+| `IMissionFileInteraction` | File pickers, save-format prompt, shapefile companions and the WGS84 confirmation. Returns messages; never touches the view model. |
+| `IMissionMapInteractionCoordinator` | Active planning interaction, planning polygon, pending rally altitude, click routing, overlay composition and planning-state change notification. |
+| `IMissionEditingWorkflow`, `IMissionFileWorkflow` | Item add/remove/move/bulk edit and mission file save/load. |
+| `IVehiclePlanWorkflow`, `IPolygonPlanningWorkflow`, `IGeneratedMissionWorkflow`, `IMapToolsWorkflow` | Fence and rally, polygon and geospatial import, generated circle/text/survey missions, and tile prefetch, POI, tracker home, UTM entry and map rotation. |
+
+Stateful collaborators (the coordinator, which owns the per-editor polygon, and every workflow)
+are registered transient and created once per editor instance, so an editor's interaction state
+never leaks into another editor. New menu features should add a workflow method and a one-line
+command wrapper rather than growing the view model.
+
 ## Complete waypoint editor
 
 The complete editor projects each typed item through `IMissionProtocolMapper` to expose:
@@ -276,7 +298,8 @@ Mission tests should cover:
 - WPL and JSON file round trips.
 - Upload retries, repeated requests, invalid sequence requests, and rejected ACKs.
 - Download retries, out-of-order messages, duplicate items, and cancellation.
-- UI-independent editing services once `MissionMapViewModel` is decomposed.
+- Workflow behavior through `IMissionEditorHost` fakes (see `FakeMissionEditorHost` in the
+  AvaloniaUI tests) without constructing the view model.
 
 Use SITL or the simulator for end-to-end upload, download, and execution tests before
 relying on physical flight hardware.
@@ -467,4 +490,5 @@ See `FEATURES.md` for the complete inventory. High-value next steps are:
 7. Rally aggregate separated from the flight mission.
 8. Survey/grid generation retaining its source definition.
 9. Transfer serialization and stronger mission-type correlation.
-10. Decomposition of `MissionMapViewModel` into editing, file, interaction, and presentation services.
+10. Incremental row updates instead of rebuilding every `MissionItemRow` on each edit
+    (`CODE_REVIEW_20260717.md` item 13); `IMissionRowEditor.Rebuild` is the single place to change.
