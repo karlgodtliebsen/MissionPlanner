@@ -1,4 +1,4 @@
-using MissionPlanner.Core.ConfigTuning.Fences;
+﻿using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Core.Missions.Rally;
@@ -26,6 +26,9 @@ public interface IMissionMapInteractionCoordinator
     /// <summary>Raised when the interaction state or its temporary overlay changed.</summary>
     event EventHandler? Changed;
 
+    /// <summary>Raised when the polygon, fence, rally, point-of-interest or tracker-home state changed.</summary>
+    event EventHandler? PlanningStateChanged;
+
     /// <summary>Gets the planning polygon of this editor.</summary>
     IPlanningPolygonService Polygons { get; }
 
@@ -34,6 +37,12 @@ public interface IMissionMapInteractionCoordinator
 
     /// <summary>Gets or sets the altitude applied to the next rally point placed on the map.</summary>
     MissionAltitude PendingRallyAltitude { get; set; }
+
+    /// <summary>Starts listening for planning-state changes and loads the points of interest.</summary>
+    Task ActivateAsync();
+
+    /// <summary>Stops listening for planning-state changes.</summary>
+    void Deactivate();
 
     /// <summary>Starts an interaction in the given mode.</summary>
     void Begin(MissionMapInteractionMode mode, string prompt);
@@ -93,6 +102,9 @@ public sealed class MissionMapInteractionCoordinator : IMissionMapInteractionCoo
     }
 
     /// <inheritdoc />
+    public event EventHandler? PlanningStateChanged;
+
+    /// <inheritdoc />
     public IPlanningPolygonService Polygons { get; }
 
     /// <inheritdoc />
@@ -100,6 +112,27 @@ public sealed class MissionMapInteractionCoordinator : IMissionMapInteractionCoo
 
     /// <inheritdoc />
     public MissionAltitude PendingRallyAltitude { get; set; }
+
+    /// <inheritdoc />
+    public async Task ActivateAsync()
+    {
+        Polygons.Changed += OnPolygonsChanged;
+        fenceService.Changed += OnPlanningStateChanged;
+        rallyService.Changed += OnPlanningStateChanged;
+        poiService.Changed += OnPlanningStateChanged;
+        trackerHomeService.Changed += OnPlanningStateChanged;
+        await poiService.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public void Deactivate()
+    {
+        Polygons.Changed -= OnPolygonsChanged;
+        fenceService.Changed -= OnPlanningStateChanged;
+        rallyService.Changed -= OnPlanningStateChanged;
+        poiService.Changed -= OnPlanningStateChanged;
+        trackerHomeService.Changed -= OnPlanningStateChanged;
+    }
 
     /// <inheritdoc />
     public void Begin(MissionMapInteractionMode mode, string prompt)
@@ -187,6 +220,16 @@ public sealed class MissionMapInteractionCoordinator : IMissionMapInteractionCoo
             SurveyPreview = surveyPreview,
             TrackerHome = trackerHomeService.Snapshot?.Position
         };
+    }
+
+    private void OnPolygonsChanged(object? sender, EventArgs args)
+    {
+        PlanningStateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnPlanningStateChanged()
+    {
+        PlanningStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>Builds the outline drawn for the first local fence area, or the return point when there is none.</summary>

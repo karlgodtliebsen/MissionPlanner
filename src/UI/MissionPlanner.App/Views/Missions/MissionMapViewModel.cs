@@ -1,22 +1,13 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Globalization;
-using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Utilities;
-using MissionPlanner.App.Utilities.Dialogs;
-using MissionPlanner.Core.ConfigTuning.Fences;
+using MissionPlanner.App.Views.Missions.Workflows;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Missions;
-using MissionPlanner.Core.Missions.Abstractions;
-using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Planning;
-using MissionPlanner.Core.Missions.Rally;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -24,8 +15,6 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
-using MissionPlanner.Maps.Coordinates;
-using MissionPlanner.Maps.Prefetch;
 using MissionPlanner.Maps.Terrain;
 
 namespace MissionPlanner.App.Views.Missions;
@@ -35,38 +24,26 @@ namespace MissionPlanner.App.Views.Missions;
 /// edited, and exposes the commands behind the map's right-click context menu. It is registered as a
 /// Keyed singleton so the FlightData map and the FlightPlanner screen does not edit the same mission.
 /// </summary>
-public partial class MissionMapViewModel : DialogViewModelBase
+public partial class MissionMapViewModel : DialogViewModelBase, IMissionEditorHost
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IDomainEventHub domainEventHub;
-    private readonly IMissionRowProjector rowProjector;
-    private readonly IMissionFileInteraction fileInteraction;
+    private readonly IMissionRowEditor rowEditor;
+    private readonly IMissionFileWorkflow missionFiles;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IMissionMapInteractionCoordinator interaction;
-    private readonly IAdvancedMissionItemService advancedMissionItems;
-    private readonly IUserConfirmationService confirmationService;
-    private readonly IPlanningPolygonService polygonService;
-
-    private readonly IFenceConfigurationService fenceService;
-    private readonly IFencePlanFileCodec fenceFileCodec;
-    private readonly IRallyConfigurationService rallyService;
-    private readonly IRallyPlanFileCodec rallyFileCodec;
-    private readonly IAutoWaypointGenerator autoWaypointGenerator;
-    private readonly ISurveyMissionGenerator surveyMissionGenerator;
-    private readonly IMapTilePrefetchService mapTilePrefetchService;
+    private readonly IMissionEditingWorkflow editing;
+    private readonly IVehiclePlanWorkflow vehiclePlan;
+    private readonly IPolygonPlanningWorkflow polygonPlanning;
+    private readonly IGeneratedMissionWorkflow generatedMissions;
+    private readonly IMapToolsWorkflow mapTools;
     private readonly IMissionElevationProfileService elevationProfileService;
-    private readonly IPoiService poiService;
-    private readonly ITrackerHomeService trackerHomeService;
-    private readonly IGeodeticCoordinateConverter geodeticConverter;
     private readonly IReplaySessionManager replaySession;
-    private readonly IDialogService dialogService;
+    private readonly IPlannerSettingsService settingsService;
 
-    private IReadOnlyList<GeoPosition> generatedPreview = [];
-    private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
     private IDisposable? stateSubscription;
     private bool disposed;
     private bool isActive;
-    private readonly IPlannerSettingsService settingsService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
@@ -75,27 +52,26 @@ public partial class MissionMapViewModel : DialogViewModelBase
     {
         domainEventHub = factory.Create<IDomainEventHub>();
         dateTimeProvider = factory.Create<IDateTimeProvider>();
-        dialogService = factory.Create<IDialogService>();
         activeVehicle = factory.Create<IActiveVehicleContext>();
-        rowProjector = factory.Create<IMissionRowProjector>();
-        fileInteraction = factory.Create<IMissionFileInteraction>();
+        rowEditor = AttachWorkflow(factory.Create<IMissionRowEditor>());
+        rowEditor.SummaryChanged += summary => MissionSummary = summary;
+        rowEditor.DirtyStateChanged += OnRowDirtyStateChanged;
+        missionFiles = AttachWorkflow(factory.Create<IMissionFileWorkflow>());
         interaction = factory.Create<IMissionMapInteractionCoordinator>();
-        advancedMissionItems = factory.Create<IAdvancedMissionItemService>();
-        confirmationService = factory.Create<IUserConfirmationService>();
-        polygonService = interaction.Polygons;
-        fenceService = factory.Create<IFenceConfigurationService>();
-        fenceFileCodec = factory.Create<IFencePlanFileCodec>();
-        rallyService = factory.Create<IRallyConfigurationService>();
-        rallyFileCodec = factory.Create<IRallyPlanFileCodec>();
-        autoWaypointGenerator = factory.Create<IAutoWaypointGenerator>();
-        surveyMissionGenerator = factory.Create<ISurveyMissionGenerator>();
-        mapTilePrefetchService = factory.Create<IMapTilePrefetchService>();
+        editing = AttachWorkflow(factory.Create<IMissionEditingWorkflow>());
+        vehiclePlan = AttachWorkflow(factory.Create<IVehiclePlanWorkflow>());
+        polygonPlanning = AttachWorkflow(factory.Create<IPolygonPlanningWorkflow>());
+        generatedMissions = AttachWorkflow(factory.Create<IGeneratedMissionWorkflow>());
+        mapTools = AttachWorkflow(factory.Create<IMapToolsWorkflow>());
         elevationProfileService = factory.Create<IMissionElevationProfileService>();
         settingsService = factory.Create<IPlannerSettingsService>();
-        poiService = factory.Create<IPoiService>();
-        trackerHomeService = factory.Create<ITrackerHomeService>();
-        geodeticConverter = factory.Create<IGeodeticCoordinateConverter>();
         replaySession = factory.Create<IReplaySessionManager>();
+    }
+
+    private TWorkflow AttachWorkflow<TWorkflow>(TWorkflow workflow) where TWorkflow : IMissionWorkflow
+    {
+        workflow.Attach(this);
+        return workflow;
     }
 
     /// <summary>
@@ -113,15 +89,11 @@ public partial class MissionMapViewModel : DialogViewModelBase
         }
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         interaction.PendingRallyAltitude = DefaultAltitude();
-        polygonService.Changed += OnPolygonChanged;
         interaction.Changed += OnInteractionChanged;
-        fenceService.Changed += OnFenceChanged;
-        rallyService.Changed += OnRallyChanged;
-        poiService.Changed += OnPoiChanged;
-        trackerHomeService.Changed += OnTrackerHomeChanged;
+        interaction.PlanningStateChanged += OnPlanningStateChanged;
         replaySession.Changed += OnReplaySessionChanged;
 
-        await poiService.ActivateAsync();
+        await interaction.ActivateAsync();
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
         SelectedMapStyle = "GEO";
 
@@ -148,11 +120,8 @@ public partial class MissionMapViewModel : DialogViewModelBase
         isActive = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         interaction.Changed -= OnInteractionChanged;
-        polygonService.Changed -= OnPolygonChanged;
-        fenceService.Changed -= OnFenceChanged;
-        rallyService.Changed -= OnRallyChanged;
-        poiService.Changed -= OnPoiChanged;
-        trackerHomeService.Changed -= OnTrackerHomeChanged;
+        interaction.PlanningStateChanged -= OnPlanningStateChanged;
+        interaction.Deactivate();
         replaySession.Changed -= OnReplaySessionChanged;
         stateSubscription?.Dispose();
         stateSubscription = null;
@@ -175,10 +144,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
         Deactivate();
         disposed = true;
         interaction.Cancel();
-        foreach (var row in MissionItems)
-        {
-            row.Dispose();
-        }
+        rowEditor.Dispose();
         base.Dispose();
     }
 
@@ -358,12 +324,12 @@ public partial class MissionMapViewModel : DialogViewModelBase
     /// <summary>
     /// Display rows for the mission items, kept in sync with <see cref="Mission"/>.
     /// </summary>
-    public ObservableCollection<MissionItemRow> MissionItems { get; } = [];
+    public ObservableCollection<MissionItemRow> MissionItems => rowEditor.Rows;
 
     /// <summary>
     /// Display rows for the mission items that have been edited but not yet applied.
     /// </summary>
-    public ObservableCollection<MissionItemRow> DirtyMissionItems { get; } = [];
+    public ObservableCollection<MissionItemRow> DirtyMissionItems => rowEditor.DirtyRows;
 
     /// <summary>
     /// The map position the context menu actions operate on (where the user right-clicked/tapped).
@@ -375,13 +341,13 @@ public partial class MissionMapViewModel : DialogViewModelBase
     public bool HasMissionItems => Mission.Items.Count > 0;
 
     /// <summary>Gets whether a polygon-dependent command has valid local input.</summary>
-    public bool HasPlanningPolygon => polygonService.Snapshot.Polygon is not null;
+    public bool HasPlanningPolygon => interaction.Polygons.Snapshot.Polygon is not null;
 
     /// <summary>Gets whether a route-dependent command has at least two geographic mission items.</summary>
     public bool HasMissionRoute => Mission.Items.Select(MissionItemGeometry.PositionOf).Count(position => position is not null) >= 2;
 
     /// <summary>Gets whether an imported overlay can be cleared.</summary>
-    public bool HasImportedOverlay => importedOverlays.Count > 0;
+    public bool HasImportedOverlay => polygonPlanning.ImportedOverlays.Count > 0;
 
     /// <summary>Gets whether outbound fence and rally commands are safe to offer.</summary>
     public bool CanUseVehicleCommands => activeVehicle.Current.IsOnline && !replaySession.Snapshot.IsTransmissionProhibited;
@@ -580,7 +546,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
         });
     }
 
-    private void OnPolygonChanged(object? sender, EventArgs args)
+    private void OnPlanningStateChanged(object? sender, EventArgs args)
     {
         Dispatcher.Dispatch(() =>
         {
@@ -589,32 +555,13 @@ public partial class MissionMapViewModel : DialogViewModelBase
         });
     }
 
-    private void OnFenceChanged()
-    {
-        Dispatcher.Dispatch(UpdatePlanningOverlay);
-    }
-
-    private void OnRallyChanged()
-    {
-        Dispatcher.Dispatch(UpdatePlanningOverlay);
-    }
-
-    private void OnPoiChanged()
-    {
-        Dispatcher.Dispatch(UpdatePlanningOverlay);
-    }
-
-    private void OnTrackerHomeChanged()
-    {
-        Dispatcher.Dispatch(UpdatePlanningOverlay);
-    }
-
     private void UpdatePlanningOverlay()
     {
-        PlanningOverlaySnapshot = interaction.ComposeOverlay(importedOverlays, generatedPreview);
+        PlanningOverlaySnapshot = interaction.ComposeOverlay(polygonPlanning.ImportedOverlays, generatedMissions.SurveyPreview);
+        OnPropertyChanged(nameof(HasImportedOverlay));
     }
 
-    /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
+    /// <inheritdoc />
     public void ReplaceMission(Mission mission, string message)
     {
         Mission = mission;
@@ -634,838 +581,181 @@ public partial class MissionMapViewModel : DialogViewModelBase
 
 
     [RelayCommand]
-    private void InsertWaypoint()
-    {
-        if (TargetPosition() is not { } position)
-        {
-            ShowStatus("No map position selected.");
-            return;
-        }
-
-        AddWaypoint(position, $"Waypoint {Mission.Items.Count + 1} added.");
-    }
+    private void InsertWaypoint() => editing.InsertWaypoint();
 
     [RelayCommand]
-    private void InsertSplineWaypoint()
-    {
-        if (TargetPosition() is not { } position)
-        {
-            ShowStatus("No map position selected.");
-            return;
-        }
-
-        ApplyAdvancedResult(advancedMissionItems.AddSplineWaypoint(Mission, position, DefaultAltitude()), "Spline waypoint added.");
-    }
+    private void InsertSplineWaypoint() => editing.InsertSplineWaypoint();
 
     [RelayCommand]
-    private async Task JumpToStartAsync(CancellationToken cancellationToken)
-    {
-        var repeat = await PromptRepeatCountAsync(cancellationToken);
-        if (repeat is not null)
-        {
-            ApplyAdvancedResult(advancedMissionItems.AddJumpToStart(Mission, repeat.Value), "DO_JUMP to mission start added.");
-        }
-    }
+    private Task JumpToStartAsync(CancellationToken cancellationToken) => editing.JumpToStartAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task JumpToWaypointAsync(CancellationToken cancellationToken)
-    {
-        var options = AvaloniaDialogService.CreateDialogOptions("Jump to waypoint", "Ok", null);
-        var targetText = await dialogService.PromptAsync(options, "Target mission row (1-based)", "1", cancellationToken: cancellationToken);
-
-
-        if (!ushort.TryParse(targetText, NumberStyles.Integer, CultureInfo.CurrentCulture, out var displayTarget) || displayTarget == 0)
-        {
-            if (targetText is not null)
-            {
-                ShowStatus("Enter an existing mission row number.");
-            }
-
-            return;
-        }
-
-        var repeat = await PromptRepeatCountAsync(cancellationToken);
-        if (repeat is not null)
-        {
-            ApplyAdvancedResult(advancedMissionItems.AddJump(Mission, (ushort)(displayTarget - 1), repeat.Value), $"DO_JUMP to row {displayTarget} added.");
-        }
-    }
+    private Task JumpToWaypointAsync(CancellationToken cancellationToken) => editing.JumpToWaypointAsync(cancellationToken);
 
     [RelayCommand]
-    private void SetRoiHere()
-    {
-        if (TargetPosition() is not { } position)
-        {
-            ShowStatus("No map position selected.");
-            return;
-        }
-
-        ApplyAdvancedResult(advancedMissionItems.AddRoiLocation(Mission, position, DefaultAltitude()), "ROI location added.");
-    }
-
-    private async Task<int?> PromptRepeatCountAsync(CancellationToken cancellationToken)
-    {
-        var text = await dialogService.PromptAsync("DO_JUMP", "Repeat count (use -1 for infinite)", "1");
-        if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var repeat) || repeat < -1)
-        {
-            if (text is not null)
-            {
-                ShowStatus("Repeat count must be -1, zero, or positive.");
-            }
-
-            return null;
-        }
-
-        return repeat == -1 && !await confirmationService.ConfirmAsync("Infinite DO_JUMP", "This jump repeats indefinitely until the flight mode changes. Add it?", "Add", cancellationToken)
-            ? null
-            : repeat;
-    }
-
-    private void ApplyAdvancedResult(MissionMapCommandAvailability result, string successMessage)
-    {
-        if (!result.IsEnabled)
-        {
-            ShowStatus(result.Reason ?? "The mission item could not be added.");
-            return;
-        }
-
-        OnMissionChanged(successMessage);
-    }
+    private void SetRoiHere() => editing.SetRoiHere();
 
     [RelayCommand]
-    private void DrawPolygon()
-    {
-        BeginInteraction(MissionMapInteractionMode.DrawPolygon, "Click at least three polygon vertices, then choose Finish Polygon.");
-    }
+    private void InsertWaypointAtVehicle() => editing.InsertWaypointAtVehicle();
 
     [RelayCommand]
-    private void FinishPolygon()
-    {
-        if (interaction.State.Mode != MissionMapInteractionMode.DrawPolygon)
-        {
-            ShowStatus("Polygon drawing is not active.");
-            return;
-        }
-
-        var result = polygonService.Set("Planning polygon", interaction.State.Positions);
-        if (!result.Succeeded)
-        {
-            ShowStatus(result.Message);
-            return;
-        }
-
-        interaction.Complete();
-        ShowStatus(result.Message);
-    }
+    private void DeleteWaypoint() => editing.DeleteWaypoint();
 
     [RelayCommand]
-    private void CancelPolygon()
-    {
-        interaction.Cancel();
-        ShowStatus("Polygon drawing cancelled.");
-    }
+    private void RemoveItem(MissionItemRow row) => editing.RemoveItem(row);
 
     [RelayCommand]
-    private void ClearPolygon()
-    {
-        polygonService.Clear();
-        interaction.Cancel();
-        ShowStatus("Planning polygon cleared.");
-    }
+    private void MoveItemUp(MissionItemRow row) => editing.MoveItemUp(row);
 
     [RelayCommand]
-    private void PolygonFromWaypoints()
-    {
-        var result = polygonService.FromMission(Mission);
-        ShowStatus(result.Message);
-    }
+    private void MoveItemDown(MissionItemRow row) => editing.MoveItemDown(row);
 
     [RelayCommand]
-    private async Task OffsetPolygonAsync(CancellationToken cancellationToken)
-    {
-        var text = await dialogService.PromptAsync("Offset polygon", "Signed offset distance in metres (positive outward)", "10");
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var metres))
-        {
-            if (text is not null)
-            {
-                ShowStatus("Enter a valid offset distance.");
-            }
-
-            return;
-        }
-
-        var result = polygonService.PreviewOffset(metres);
-        if (!result.Succeeded || result.Preview is null)
-        {
-            ShowStatus(result.Message);
-            return;
-        }
-
-        if (await confirmationService.ConfirmAsync("Apply polygon offset", $"Replace the polygon with the {metres:F1} m offset preview?", "Apply", cancellationToken))
-        {
-            ShowStatus(polygonService.ApplyPreview(result.Preview).Message);
-        }
-    }
+    private void LoiterForever() => editing.LoiterForever();
 
     [RelayCommand]
-    private void ShowPolygonArea()
-    {
-        var area = polygonService.CalculateArea();
-        ShowStatus(area is null ? "Create a polygon first." : $"Area: {area.SquareMeters:F1} m² • {area.Hectares:F3} ha • {area.SquareKilometers:F4} km² • {area.Acres:F3} acres • {area.SquareFeet:F0} ft²");
-    }
+    private Task LoiterTimeAsync(CancellationToken cancellationToken) => editing.LoiterTimeAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task SavePolygonAsync(CancellationToken cancellationToken)
-    {
-        if (polygonService.Snapshot.Polygon is null)
-        {
-            ShowStatus("Create a polygon first.");
-            return;
-        }
-
-        var path = await fileInteraction.SaveTextAsync("planning-polygon.mppolygon", polygonService.Serialize(dateTimeProvider.UtcNow), cancellationToken);
-        ShowStatus(path is null ? "Polygon save cancelled." : $"Polygon saved to {path}.");
-    }
+    private Task LoiterCirclesAsync() => editing.LoiterCirclesAsync();
 
     [RelayCommand]
-    private async Task LoadPolygonAsync(CancellationToken cancellationToken)
-    {
-        if (await fileInteraction.OpenTextAsync("Open MissionPlanner polygon", cancellationToken) is { } file)
-        {
-            ShowStatus(polygonService.Deserialize(file.Text).Message);
-        }
-    }
+    private void AddReturnToLaunch() => editing.AddReturnToLaunch();
 
     [RelayCommand]
-    private async Task KmlOverlayAsync(CancellationToken cancellationToken)
-    {
-        var imported = await OpenGeospatialAsync("Open KML overlay", false, cancellationToken);
-        if (imported is null)
-        {
-            return;
-        }
-
-        importedOverlays = imported.Features.Where(feature => feature.Positions.Count > 0)
-            .Select(feature => new ImportedPlanningOverlay(feature.Name, feature.Positions, feature.Kind == GeospatialGeometryKind.Polygon)).ToArray();
-        UpdatePlanningOverlay();
-        OnPropertyChanged(nameof(HasImportedOverlay));
-        ShowStatus($"Overlay replaced with {importedOverlays.Count} imported features.");
-    }
+    private void AddLand() => editing.AddLand();
 
     [RelayCommand]
-    private void ClearImportedOverlay()
-    {
-        importedOverlays = [];
-        UpdatePlanningOverlay();
-        OnPropertyChanged(nameof(HasImportedOverlay));
-        ShowStatus("Imported overlay cleared.");
-    }
+    private Task AddTakeoffAsync() => editing.AddTakeoffAsync();
 
     [RelayCommand]
-    private async Task LoadKmlFileAsync(CancellationToken cancellationToken)
-    {
-        await ImportMissionGeometryAsync(false, cancellationToken);
-    }
+    private void ReverseWaypoints() => editing.ReverseWaypoints();
 
     [RelayCommand]
-    private async Task LoadShapefileAsync(CancellationToken cancellationToken)
-    {
-        await ImportMissionGeometryAsync(true, cancellationToken);
-    }
+    private Task ModifyAltitudeAsync() => editing.ModifyAltitudeAsync();
 
     [RelayCommand]
-    private async Task PolygonFromShapefileAsync(CancellationToken cancellationToken)
-    {
-        var imported = await OpenGeospatialAsync("Open polygon shapefile", true, cancellationToken);
-        if (imported is null)
-        {
-            return;
-        }
-
-        var polygons = imported.Features.Where(feature => feature.Kind == GeospatialGeometryKind.Polygon).ToArray();
-        if (polygons.Length == 0)
-        {
-            ShowStatus("The shapefile contains no polygon geometry.");
-            return;
-        }
-        var options = dialogService.CreateOptions("Choose planning polygon");
-
-        var selectedName = polygons.Length == 1
-            ? polygons[0].Name
-            : await dialogService.ChooseAsync(options, polygons.Select(feature => feature.Name).ToArray(), cancellationToken);
-        var selected = polygons.FirstOrDefault(feature => feature.Name == selectedName);
-        if (selected is not null)
-        {
-            ShowStatus(polygonService.Set(selected.Name, selected.Positions).Message);
-        }
-    }
-
-    private async Task ImportMissionGeometryAsync(bool shapefile, CancellationToken cancellationToken)
-    {
-        var imported = await OpenGeospatialAsync(shapefile ? "Open shapefile" : "Open KML/KMZ file", shapefile, cancellationToken);
-        if (imported is null)
-        {
-            return;
-        }
-
-        var preview = imported.Preview;
-        var message = $"{preview.Points} points, {preview.LineStrings} lines, " +
-                      $"{preview.Polygons} polygons, " +
-                      $"{preview.MissionCandidates} waypoint candidates, " +
-                      $"{preview.Unsupported} unsupported";
-
-        var options = dialogService.CreateOptions("Choose planning polygon");
-        options.Title = message;
-        var choice = await dialogService.ChooseAsync(
-            options,
-            ["Append waypoints", "Replace mission", "Use first polygon as planning polygon"], cancellationToken);
-
-        if (choice == "Use first polygon as planning polygon")
-        {
-            var polygon = imported.Features.FirstOrDefault(feature => feature.Kind == GeospatialGeometryKind.Polygon);
-            ShowStatus(polygon is null ? "No polygon geometry was found." : polygonService.Set(polygon.Name, polygon.Positions).Message);
-            return;
-        }
-
-        if (choice is not ("Append waypoints" or "Replace mission"))
-        {
-            return;
-        }
-
-        var candidates = imported.Features.Where(feature => feature.Kind is GeospatialGeometryKind.Point or GeospatialGeometryKind.LineString)
-            .SelectMany(feature => feature.Positions.Select(position => (Position: position, feature.AltitudeMeters))).ToArray();
-        if (candidates.Length == 0)
-        {
-            ShowStatus("No point or line geometry can be imported as waypoints.");
-            return;
-        }
-
-        var target = choice == "Replace mission" ? new Mission(MissionId.New(), "Imported mission") : Mission;
-        foreach (var candidate in candidates)
-        {
-            target.Add(new WaypointMissionItem(MissionItemId.New(), 0, candidate.Position,
-                new MissionAltitude(candidate.AltitudeMeters ?? DefaultAltitudeMeters, MissionAltitudeReference.Home), TimeSpan.Zero, WaypointRadiusMeters));
-        }
-
-        if (!ReferenceEquals(target, Mission))
-        {
-            ReplaceMission(target, $"Mission replaced with {candidates.Length} imported waypoints.");
-        }
-        else
-        {
-            OnMissionChanged($"Appended {candidates.Length} imported waypoints.");
-        }
-    }
-
-    private async Task<GeospatialImportResult?> OpenGeospatialAsync(string title, bool includeCompanions, CancellationToken cancellationToken)
-    {
-        var result = await fileInteraction.ImportGeospatialAsync(title, includeCompanions, cancellationToken);
-        if (result.Message is not null)
-        {
-            ShowStatus(result.Message);
-        }
-
-        return result.Imported;
-    }
+    private void DrawPolygon() => BeginInteraction(MissionMapInteractionMode.DrawPolygon, "Click at least three polygon vertices, then choose Finish Polygon.");
 
     [RelayCommand]
-    private async Task DownloadFenceAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Connect a vehicle first.");
-            return;
-        }
-
-        var snapshot = fenceService.GetSnapshot(vehicleId);
-        if (snapshot.IsDirty && !await confirmationService.ConfirmAsync("Replace local fence", "Downloading replaces local fence edits and retains a backup.", "Download", cancellationToken))
-        {
-            return;
-        }
-
-        var report = await fenceService.DownloadAsync(vehicleId, true, FenceProgress(), cancellationToken);
-        ShowFenceReport(report);
-    }
+    private void FinishPolygon() => polygonPlanning.FinishPolygon();
 
     [RelayCommand]
-    private async Task UploadFenceAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Connect a vehicle first.");
-            return;
-        }
-
-        var plan = fenceService.GetSnapshot(vehicleId).LocalPlan;
-        var inclusions = plan.Areas.Count(area => area.Kind is FenceAreaKind.PolygonInclusion or FenceAreaKind.CircleInclusion);
-        var exclusions = plan.Areas.Count - inclusions;
-        if (!await confirmationService.ConfirmAsync("Replace vehicle fence", $"Upload {inclusions} inclusion and {exclusions} exclusion areas{(plan.ReturnPoint is null ? string.Empty : " with a return point")}?", "Validate and upload", cancellationToken))
-        {
-            return;
-        }
-
-        var session = await fenceService.OpenParameterSessionAsync(vehicleId, cancellationToken);
-        ShowFenceReport(await fenceService.ApplyAsync(vehicleId, session, FenceProgress(), cancellationToken));
-    }
+    private void CancelPolygon() => polygonPlanning.CancelPolygon();
 
     [RelayCommand]
-    private void SetFenceReturnLocation()
-    {
-        BeginInteraction(MissionMapInteractionMode.SetFenceReturnLocation, "Click the map to set the local fence return location.");
-    }
+    private void ClearPolygon() => polygonPlanning.ClearPolygon();
 
     [RelayCommand]
-    private async Task SaveFenceAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Select a vehicle workspace first.");
-            return;
-        }
-
-        var path = await fileInteraction.SaveTextAsync("mission-fence.mpfence", fenceFileCodec.Serialize(fenceService.GetSnapshot(vehicleId).LocalPlan), cancellationToken);
-        ShowStatus(path is null ? "Fence save cancelled." : $"Fence saved to {path}.");
-    }
+    private void PolygonFromWaypoints() => polygonPlanning.PolygonFromWaypoints();
 
     [RelayCommand]
-    private async Task LoadFenceAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Select a vehicle workspace first.");
-            return;
-        }
-
-        var current = fenceService.GetSnapshot(vehicleId);
-        if (current.IsDirty && !await confirmationService.ConfirmAsync("Replace local fence", "Loading replaces current local edits.", "Load", cancellationToken))
-        {
-            return;
-        }
-
-        if (await fileInteraction.OpenTextAsync("Open MissionPlanner fence", cancellationToken) is not { } file)
-        {
-            return;
-        }
-
-        try
-        {
-            fenceService.SetLocalPlan(vehicleId, fenceFileCodec.Deserialize(file.Text));
-            ShowStatus("Fence loaded locally; upload to apply it.");
-        }
-        catch (InvalidDataException exception)
-        {
-            ShowStatus(exception.Message);
-        }
-    }
+    private Task OffsetPolygonAsync(CancellationToken cancellationToken) => polygonPlanning.OffsetPolygonAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task ClearFenceAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Select a vehicle workspace first.");
-            return;
-        }
-        var options = dialogService.CreateOptions("Clear Geo-Fence");
-        var choice = await dialogService.ChooseAsync(options, ["Clear local plan only", "Clear vehicle fence"], cancellationToken);
-        if (choice == "Clear local plan only")
-        {
-            fenceService.SetLocalPlan(vehicleId, FencePlan.Empty);
-            ShowStatus("Local fence cleared; vehicle unchanged.");
-        }
-        else if (choice == "Clear vehicle fence" && await confirmationService.ConfirmAsync("Clear vehicle fence", "This removes all fence geometry from the vehicle after retaining a backup.", "Clear vehicle", cancellationToken))
-        {
-            ShowFenceReport(await fenceService.ClearAsync(vehicleId, cancellationToken));
-        }
-    }
-
-    private IProgress<FenceTransferProgress> FenceProgress()
-    {
-        return new Progress<FenceTransferProgress>(progress =>
-            ShowStatus($"{progress.Stage}: {progress.Completed}/{progress.Total}"));
-    }
-
-    private void ShowFenceReport(FenceOperationReport report)
-    {
-        ShowStatus(report.Validation.IsValid
-            ? report.Message
-            : string.Join(Environment.NewLine, report.Validation.Issues.Select(issue => issue.Message)));
-    }
+    private void ShowPolygonArea() => polygonPlanning.ShowPolygonArea();
 
     [RelayCommand]
-    private async Task SetRallyPointAsync(CancellationToken cancellationToken)
-    {
-        var altitudeText = await dialogService.PromptAsync("Set rally point", "Altitude in metres", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture));
-        if (!double.TryParse(altitudeText, NumberStyles.Float, CultureInfo.CurrentCulture, out var altitude))
-        {
-            if (altitudeText is not null)
-            {
-                ShowStatus("Enter a valid rally altitude.");
-            }
-
-            return;
-        }
-        var options = dialogService.CreateOptions("Rally altitude reference");
-
-        var reference = await dialogService.ChooseAsync(options, ["Relative to home", "Mean sea level", "Terrain"], cancellationToken);
-        if (reference is null)
-        {
-            return;
-        }
-
-        interaction.PendingRallyAltitude = new MissionAltitude(altitude, reference switch
-        {
-            "Mean sea level" => MissionAltitudeReference.MeanSeaLevel,
-            "Terrain" => MissionAltitudeReference.Terrain,
-            var _ => MissionAltitudeReference.Home
-        });
-        BeginInteraction(MissionMapInteractionMode.SetRallyPoint, "Click the map to add the local rally point.");
-    }
+    private Task SavePolygonAsync(CancellationToken cancellationToken) => polygonPlanning.SavePolygonAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task DownloadRallyAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Connect a vehicle first.");
-            return;
-        }
-
-        var snapshot = rallyService.GetSnapshot(vehicleId);
-        if (snapshot.IsDirty && !await confirmationService.ConfirmAsync("Replace local rally points", "Downloading replaces local rally edits.", "Download", cancellationToken))
-        {
-            return;
-        }
-
-        ShowStatus((await rallyService.DownloadAsync(vehicleId, true, cancellationToken)).Message);
-    }
+    private Task LoadPolygonAsync(CancellationToken cancellationToken) => polygonPlanning.LoadPolygonAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task UploadRallyAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Connect a vehicle first.");
-            return;
-        }
-
-        var count = rallyService.GetSnapshot(vehicleId).LocalPlan.Points.Count;
-        if (await confirmationService.ConfirmAsync("Replace vehicle rally points", $"Upload {count} local rally points as a separate MAVLink rally plan?", "Upload", cancellationToken))
-        {
-            ShowStatus((await rallyService.UploadAsync(vehicleId, cancellationToken)).Message);
-        }
-    }
+    private Task KmlOverlayAsync(CancellationToken cancellationToken) => polygonPlanning.KmlOverlayAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task ClearRallyAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Select a vehicle workspace first.");
-            return;
-        }
-        var options = dialogService.CreateOptions("Clear rally points");
-
-        var choice = await dialogService.ChooseAsync(options, ["Clear local plan only", "Clear vehicle rally points"], cancellationToken);
-        if (choice == "Clear local plan only")
-        {
-            rallyService.SetLocalPlan(vehicleId, RallyPlan.Empty);
-            ShowStatus("Local rally points cleared; vehicle unchanged.");
-        }
-        else if (choice == "Clear vehicle rally points" && await confirmationService.ConfirmAsync("Clear vehicle rally points", "This removes all rally points from the vehicle.", "Clear vehicle", cancellationToken))
-        {
-            ShowStatus((await rallyService.ClearVehicleAsync(vehicleId, cancellationToken)).Message);
-        }
-    }
+    private void ClearImportedOverlay() => polygonPlanning.ClearImportedOverlay();
 
     [RelayCommand]
-    private async Task SaveRallyAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Select a vehicle workspace first.");
-            return;
-        }
-
-        var path = await fileInteraction.SaveTextAsync("rally-points.mprally", rallyFileCodec.Serialize(rallyService.GetSnapshot(vehicleId).LocalPlan, dateTimeProvider.UtcNow), cancellationToken);
-        ShowStatus(path is null ? "Rally save cancelled." : $"Rally points saved to {path}.");
-    }
+    private Task LoadKmlFileAsync(CancellationToken cancellationToken) => polygonPlanning.LoadKmlFileAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task LoadRallyAsync(CancellationToken cancellationToken)
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            ShowStatus("Select a vehicle workspace first.");
-            return;
-        }
-
-        if (await fileInteraction.OpenTextAsync("Open MissionPlanner rally plan", cancellationToken) is not { } file)
-        {
-            return;
-        }
-
-        try
-        {
-            rallyService.SetLocalPlan(vehicleId, rallyFileCodec.Deserialize(file.Text));
-            ShowStatus("Rally points loaded locally; upload to apply them.");
-        }
-        catch (InvalidDataException exception)
-        {
-            ShowStatus(exception.Message);
-        }
-    }
+    private Task LoadShapefileAsync(CancellationToken cancellationToken) => polygonPlanning.LoadShapefileAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task CreateWaypointCircleAsync(CancellationToken cancellationToken)
-    {
-        await CreateCircleAsync(false, cancellationToken);
-    }
+    private Task PolygonFromShapefileAsync(CancellationToken cancellationToken) => polygonPlanning.PolygonFromShapefileAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task CreateSplineCircleAsync(CancellationToken cancellationToken)
-    {
-        await CreateCircleAsync(true, cancellationToken);
-    }
-
-    private async Task CreateCircleAsync(bool spline, CancellationToken cancellationToken)
-    {
-        if (TargetPosition() is not { } center)
-        {
-            ShowStatus("Select a map position for the circle center.");
-            return;
-        }
-
-        var radiusText = await dialogService.PromptAsync("Generate circle", "Radius in metres", "100");
-        var countText = await dialogService.PromptAsync("Generate circle", "Number of points (3-1000)", "12");
-        if (!double.TryParse(radiusText, NumberStyles.Float, CultureInfo.CurrentCulture, out var radius)
-            || !int.TryParse(countText, NumberStyles.Integer, CultureInfo.CurrentCulture, out var count))
-        {
-            ShowStatus("Enter a valid radius and point count.");
-            return;
-        }
-        var options = dialogService.CreateOptions("Circle direction");
-        var direction = await dialogService.ChooseAsync(options, ["Clockwise", "Counter-clockwise"], cancellationToken);
-        if (direction is null)
-        {
-            return;
-        }
-
-        double? endAltitude = null;
-        if (spline)
-        {
-            var endText = await dialogService.PromptAsync("Spline circle", "End altitude in metres (for deterministic helical climb)", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture));
-            if (!double.TryParse(endText, NumberStyles.Float, CultureInfo.CurrentCulture, out var parsed))
-            {
-                return;
-            }
-
-            endAltitude = parsed;
-        }
-
-        await PreviewAndApplyGeneratedAsync(autoWaypointGenerator.GenerateCircle(new CircleWaypointRequest(center, radius, count, direction == "Clockwise", 0,
-            DefaultAltitude(), endAltitude, spline, false)), cancellationToken);
-    }
+    private Task DownloadFenceAsync(CancellationToken cancellationToken) => vehiclePlan.DownloadFenceAsync(cancellationToken);
 
     [RelayCommand]
-    private void AutoWaypointArea()
-    {
-        ShowPolygonArea();
-    }
+    private Task UploadFenceAsync(CancellationToken cancellationToken) => vehiclePlan.UploadFenceAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task AutoWaypointTextAsync(CancellationToken cancellationToken)
-    {
-        if (TargetPosition() is not { } origin)
-        {
-            ShowStatus("Select a map position for the text origin.");
-            return;
-        }
-
-        var text = await dialogService.PromptAsync("Waypoint text", "Text (supported stroke-font letters/digits, maximum 32)", "HOME");
-        var heightText = await dialogService.PromptAsync("Waypoint text", "Character height in metres", "50");
-        if (text is null || !double.TryParse(heightText, NumberStyles.Float, CultureInfo.CurrentCulture, out var height))
-        {
-            return;
-        }
-
-        await PreviewAndApplyGeneratedAsync(autoWaypointGenerator.GenerateText(new TextWaypointRequest(text, origin, height, 0, .3, DefaultAltitude())), cancellationToken);
-    }
-
-    private async Task PreviewAndApplyGeneratedAsync(AutoWaypointGenerationResult result, CancellationToken cancellationToken)
-    {
-        if (!result.Succeeded)
-        {
-            ShowStatus(result.Message);
-            return;
-        }
-
-        generatedPreview = result.PreviewPositions;
-        UpdatePlanningOverlay();
-        var options = dialogService.CreateOptions($"Preview: {result.Items.Count} generated mission items");
-
-        var choice = await dialogService.ChooseAsync(options, ["Append to mission", "Replace mission"], cancellationToken);
-        if (choice is not ("Append to mission" or "Replace mission"))
-        {
-            generatedPreview = [];
-            UpdatePlanningOverlay();
-            return;
-        }
-
-        var target = choice == "Replace mission" ? new Mission(MissionId.New(), "Generated mission") : Mission;
-        foreach (var item in result.Items)
-        {
-            target.Add(item);
-        }
-
-        generatedPreview = [];
-        UpdatePlanningOverlay();
-        if (ReferenceEquals(target, Mission))
-        {
-            OnMissionChanged($"Appended {result.Items.Count} generated mission items.");
-        }
-        else
-        {
-            ReplaceMission(target, $"Mission replaced with {result.Items.Count} generated mission items.");
-        }
-    }
+    private Task SaveFenceAsync(CancellationToken cancellationToken) => vehiclePlan.SaveFenceAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task CreateCircleSurveyAsync(CancellationToken cancellationToken)
-    {
-        if (TargetPosition() is not { } center)
-        {
-            ShowStatus("Select a circle-survey center.");
-            return;
-        }
-
-        var outerText = await dialogService.PromptAsync("Circle survey", "Outer radius in metres", "200");
-        var spacingText = await dialogService.PromptAsync("Circle survey", "Radial spacing in metres", "50");
-        if (!double.TryParse(outerText, NumberStyles.Float, CultureInfo.CurrentCulture, out var outer)
-            || !double.TryParse(spacingText, NumberStyles.Float, CultureInfo.CurrentCulture, out var spacing))
-        {
-            return;
-        }
-
-        var result = surveyMissionGenerator.GenerateCircle(new CircleSurveyRequest(center, spacing, outer, spacing, 24, true, DefaultAltitude()));
-        await PreviewAndApplySurveyAsync(result, cancellationToken);
-    }
+    private Task LoadFenceAsync(CancellationToken cancellationToken) => vehiclePlan.LoadFenceAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task CreateGridSurveyAsync(CancellationToken cancellationToken)
-    {
-        if (polygonService.Snapshot.Polygon is not { } polygon)
-        {
-            ShowStatus("Create or load a planning polygon first.");
-            return;
-        }
-
-        var spacingText = await dialogService.PromptAsync("Grid survey", "Flight-line spacing in metres", "30");
-        var angleText = await dialogService.PromptAsync("Grid survey", "Flight-line angle in degrees", "0");
-        if (!double.TryParse(spacingText, NumberStyles.Float, CultureInfo.CurrentCulture, out var spacing)
-            || !double.TryParse(angleText, NumberStyles.Float, CultureInfo.CurrentCulture, out var angle))
-        {
-            return;
-        }
-
-        var cross = await confirmationService.ConfirmAsync("Cross-grid", "Add a perpendicular second grid?", "Cross-grid", cancellationToken);
-        await PreviewAndApplySurveyAsync(surveyMissionGenerator.GenerateGrid(new GridSurveyRequest(polygon, angle, spacing, 0, DefaultAltitude(), cross)), cancellationToken);
-    }
-
-    private async Task PreviewAndApplySurveyAsync(SurveyMissionResult result, CancellationToken cancellationToken)
-    {
-        if (!result.Succeeded)
-        {
-            ShowStatus(result.Message);
-            return;
-        }
-
-        if (result.Statistics is { } statistics)
-        {
-            ShowStatus($"Preview: {statistics.LineCount} legs, {statistics.PointCount} points, {statistics.DistanceMeters:F0} m, {statistics.AreaSquareMeters:F0} m².");
-        }
-
-        await PreviewAndApplyGeneratedAsync(new AutoWaypointGenerationResult(true, result.Message, result.Items, result.Preview), cancellationToken);
-    }
+    private Task ClearFenceAsync(CancellationToken cancellationToken) => vehiclePlan.ClearFenceAsync(cancellationToken);
 
     [RelayCommand]
-    private void MeasureDistance()
-    {
-        BeginInteraction(MissionMapInteractionMode.MeasureDistance, "Click two map points to measure geodesic distance and initial bearing.");
-    }
+    private Task DownloadRallyAsync(CancellationToken cancellationToken) => vehiclePlan.DownloadRallyAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task RotateMapAsync(CancellationToken cancellationToken)
-    {
-        var text = await dialogService.PromptAsync("Rotate map", "Bearing degrees (0-359; 0 resets north)", "0");
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var angle) || !double.IsFinite(angle))
-        {
-            if (text is not null)
-            {
-                ShowStatus("Enter a valid bearing.");
-            }
-
-            return;
-        }
-
-        angle = ((angle % 360) + 360) % 360;
-        MapRotationRequested?.Invoke(angle);
-        ShowStatus($"Map rotation set to {angle:F0}° for this session.");
-    }
+    private Task UploadRallyAsync(CancellationToken cancellationToken) => vehiclePlan.UploadRallyAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task PrefetchVisibleAsync(CancellationToken cancellationToken)
-    {
-        var center = TargetPosition() ?? HomePosition;
-        if (center is null)
-        {
-            ShowStatus("Select a map position before visible-area prefetch.");
-            return;
-        }
-
-        await RunPrefetchAsync([new MapPrefetchBounds(center.Value.LatitudeDegrees - .02, center.Value.LongitudeDegrees - .03, center.Value.LatitudeDegrees + .02, center.Value.LongitudeDegrees + .03)], cancellationToken);
-    }
+    private Task ClearRallyAsync(CancellationToken cancellationToken) => vehiclePlan.ClearRallyAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task PrefetchWaypointPathAsync(CancellationToken cancellationToken)
-    {
-        var positions = Mission.Items.Select(MissionItemGeometry.PositionOf).OfType<GeoPosition>().ToArray();
-        if (positions.Length == 0)
-        {
-            ShowStatus("The mission has no positioned route to prefetch.");
-            return;
-        }
+    private Task SaveRallyAsync(CancellationToken cancellationToken) => vehiclePlan.SaveRallyAsync(cancellationToken);
 
-        const double corridor = .005;
-        var areas = positions.Zip(positions.Skip(1), (a, b) => new MapPrefetchBounds(Math.Min(a.LatitudeDegrees, b.LatitudeDegrees) - corridor,
-            Math.Min(a.LongitudeDegrees, b.LongitudeDegrees) - corridor, Math.Max(a.LatitudeDegrees, b.LatitudeDegrees) + corridor,
-            Math.Max(a.LongitudeDegrees, b.LongitudeDegrees) + corridor)).ToArray();
-        if (areas.Length == 0)
-        {
-            areas = [new MapPrefetchBounds(positions[0].LatitudeDegrees - corridor, positions[0].LongitudeDegrees - corridor, positions[0].LatitudeDegrees + corridor, positions[0].LongitudeDegrees + corridor)];
-        }
+    [RelayCommand]
+    private Task LoadRallyAsync(CancellationToken cancellationToken) => vehiclePlan.LoadRallyAsync(cancellationToken);
 
-        await RunPrefetchAsync(areas, cancellationToken);
-    }
+    [RelayCommand]
+    private Task SetRallyPointAsync(CancellationToken cancellationToken) => vehiclePlan.SetRallyPointAsync(cancellationToken);
 
-    private async Task RunPrefetchAsync(IReadOnlyList<MapPrefetchBounds> areas, CancellationToken cancellationToken)
-    {
-        var request = new MapPrefetchRequest(SelectedSourceId, areas, 12, 15);
-        var estimate = await mapTilePrefetchService.EstimateAsync(request, cancellationToken);
-        if (!estimate.IsAllowed)
-        {
-            ShowStatus(estimate.Message);
-            return;
-        }
+    [RelayCommand]
+    private void SetFenceReturnLocation() => BeginInteraction(MissionMapInteractionMode.SetFenceReturnLocation, "Click the map to set the local fence return location.");
 
-        if (!await confirmationService.ConfirmAsync("Warm online map cache", $"Fetch {estimate.TileCount} tiles at zoom {estimate.MinimumZoom}-{estimate.MaximumZoom}? This does not create an offline pack.", "Start", cancellationToken))
-        {
-            return;
-        }
+    [RelayCommand]
+    private Task CreateWaypointCircleAsync(CancellationToken cancellationToken) => generatedMissions.CreateWaypointCircleAsync(cancellationToken);
 
-        var progress = new Progress<(int Completed, int Total)>(value => ShowStatus($"Prefetch: {value.Completed}/{value.Total}"));
-        ShowStatus((await mapTilePrefetchService.PrefetchAsync(request, progress, cancellationToken)).Message);
-    }
+    [RelayCommand]
+    private Task CreateSplineCircleAsync(CancellationToken cancellationToken) => generatedMissions.CreateSplineCircleAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task AutoWaypointTextAsync(CancellationToken cancellationToken) => generatedMissions.AutoWaypointTextAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task CreateCircleSurveyAsync(CancellationToken cancellationToken) => generatedMissions.CreateCircleSurveyAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task CreateGridSurveyAsync(CancellationToken cancellationToken) => generatedMissions.CreateGridSurveyAsync(cancellationToken);
+
+    [RelayCommand]
+    private void AutoWaypointArea() => polygonPlanning.ShowPolygonArea();
+
+    [RelayCommand]
+    private void MeasureDistance() => BeginInteraction(MissionMapInteractionMode.MeasureDistance, "Click two map points to measure geodesic distance and initial bearing.");
+
+    [RelayCommand]
+    private Task PrefetchVisibleAsync(CancellationToken cancellationToken) => mapTools.PrefetchVisibleAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task PrefetchWaypointPathAsync(CancellationToken cancellationToken) => mapTools.PrefetchWaypointPathAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task AddPoiAsync(CancellationToken cancellationToken) => mapTools.AddPoiAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task EditPoiAsync(CancellationToken cancellationToken) => mapTools.EditPoiAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task DeletePoiAsync(CancellationToken cancellationToken) => mapTools.DeletePoiAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task SetTrackerHomeAsync(CancellationToken cancellationToken) => mapTools.SetTrackerHomeAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task EnterUtmCoordinateAsync(CancellationToken cancellationToken) => mapTools.EnterUtmCoordinateAsync(cancellationToken);
+
+    [RelayCommand]
+    private Task RotateMapAsync(CancellationToken cancellationToken) => mapTools.RotateMapAsync(cancellationToken);
 
     [RelayCommand]
     private async Task ShowElevationGraphAsync(CancellationToken cancellationToken)
@@ -1479,276 +769,10 @@ public partial class MissionMapViewModel : DialogViewModelBase
     }
 
     [RelayCommand]
-    private void CloseElevationGraph()
-    {
-        IsElevationProfileVisible = false;
-    }
+    private void CloseElevationGraph() => IsElevationProfileVisible = false;
 
     [RelayCommand]
-    private async Task AddPoiAsync(CancellationToken cancellationToken)
-    {
-        if (TargetPosition() is not { } position)
-        {
-            ShowStatus("Select a map position for the POI.");
-            return;
-        }
-        var options = AvaloniaDialogService.CreateDialogOptions("Add point of interest", "Ok", null);
-        var name = await dialogService.PromptAsync(options, $"POI {poiService.Snapshot.Items.Count + 1}", cancellationToken: cancellationToken);
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return;
-        }
-
-        var description = await dialogService.PromptAsync(options, "Optional description", string.Empty, cancellationToken);
-        await poiService.AddAsync(name, position, PointerAltitude, description, null, cancellationToken);
-        ShowStatus($"Local POI '{name}' saved.");
-    }
-
-    [RelayCommand]
-    private async Task EditPoiAsync(CancellationToken cancellationToken)
-    {
-        if (TargetPosition() is not { } position || poiService.FindNearest(position) is not { } item)
-        {
-            ShowStatus("No POI is available to edit.");
-            return;
-        }
-        var options = AvaloniaDialogService.CreateDialogOptions("Edit nearest POI", "Ok", null);
-        var name = await dialogService.PromptAsync(options, $"Name ({item.Name})", item.Name, cancellationToken: cancellationToken);
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return;
-        }
-        var description = await dialogService.PromptAsync(options, "Description", item.Description ?? string.Empty, cancellationToken: cancellationToken);
-        await poiService.UpdateAsync(item with
-        {
-            Name = name,
-            Description = description
-        }, cancellationToken);
-        ShowStatus($"Local POI '{name}' updated.");
-    }
-
-    [RelayCommand]
-    private async Task DeletePoiAsync(CancellationToken cancellationToken)
-    {
-        if (TargetPosition() is not { } position || poiService.FindNearest(position) is not { } item)
-        {
-            ShowStatus("No POI is available to delete.");
-            return;
-        }
-
-        if (!await confirmationService.ConfirmAsync("Delete nearest POI", $"Delete local POI '{item.Name}'?", "Delete", cancellationToken))
-        {
-            return;
-        }
-
-        await poiService.DeleteAsync(item.Id, cancellationToken);
-        ShowStatus($"Local POI '{item.Name}' deleted.");
-    }
-
-    [RelayCommand]
-    private async Task SetTrackerHomeAsync(CancellationToken cancellationToken)
-    {
-        if (TargetPosition() is not { } position)
-        {
-            ShowStatus("Select a map position for tracker home.");
-            return;
-        }
-
-        var options = AvaloniaDialogService.CreateDialogOptions("Tracker home", "Ok", null);
-        var text = await dialogService.PromptAsync(options, "Optional altitude in metres", PointerAltitude?.ToString("F1", CultureInfo.CurrentCulture) ?? string.Empty, cancellationToken: cancellationToken);
-        double? altitude = null;
-        if (!string.IsNullOrWhiteSpace(text))
-        {
-            if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var parsed))
-            {
-                ShowStatus("Enter a valid altitude or leave it empty.");
-                return;
-            }
-
-            altitude = parsed;
-        }
-
-        trackerHomeService.Set(position, altitude, dateTimeProvider.UtcNow, "Mission map context");
-        ShowStatus("Local tracker home updated. No antenna-tracker hardware command was sent.");
-    }
-
-    [RelayCommand]
-    private async Task EnterUtmCoordinateAsync(CancellationToken cancellationToken)
-    {
-        var options = dialogService.CreateOptions("Enter UTM coordinate");
-        var text = await dialogService.PromptAsync(options, "Format: zone+hemisphere easting northing (example: 32N 500000 6170000)", "32N 500000 6170000", cancellationToken: cancellationToken);
-        if (text is null)
-        {
-            return;
-        }
-
-        GeographicCoordinate geographic;
-        try
-        {
-            geographic = geodeticConverter.ToGeographic(geodeticConverter.ParseUtm(text));
-        }
-        catch (Exception exception) when (exception is FormatException or ArgumentOutOfRangeException)
-        {
-            ShowStatus(exception.Message);
-            return;
-        }
-
-        var position = new GeoPosition(geographic.Latitude, geographic.Longitude);
-        MapContext = new MissionMapContext(position, MissionMapContextSource.CoordinateEntry, dateTimeProvider.UtcNow);
-
-        options = dialogService.CreateOptions($"Converted to {geographic.Latitude:F7}, {geographic.Longitude:F7}");
-
-        var choice = await dialogService.ChooseAsync(options, ["Add waypoint here", "Center map here"], cancellationToken);
-        if (choice == "Add waypoint here")
-        {
-            AddWaypoint(position, "Waypoint added from UTM coordinate.");
-        }
-        else if (choice == "Center map here")
-        {
-            MapCenterRequested?.Invoke(position);
-            ShowStatus("Map centered on converted UTM coordinate.");
-        }
-    }
-
-    [RelayCommand]
-    private void InsertWaypointAtVehicle()
-    {
-        var position = new GeoPosition(VehicleLatitude, VehicleLongitude);
-        if (!position.IsValid || (VehicleLatitude == 0 && VehicleLongitude == 0))
-        {
-            ShowStatus("Vehicle position is not available.");
-            return;
-        }
-
-        AddWaypoint(position, $"Waypoint {Mission.Items.Count + 1} added at vehicle.");
-    }
-
-    [RelayCommand]
-    private void DeleteWaypoint()
-    {
-        var item = NearestItem(ContextPosition) ?? Mission.Items.LastOrDefault();
-        if (item is null)
-        {
-            ShowStatus("Mission is empty.");
-            return;
-        }
-
-        Mission.Remove(item.Id);
-        OnMissionChanged($"Removed item {item.Sequence + 1} ({item.Command}).");
-    }
-
-    [RelayCommand]
-    private void RemoveItem(MissionItemRow row)
-    {
-        if (Mission.Remove(row.Id))
-        {
-            OnMissionChanged($"Removed item {row.Number} ({row.SelectedCommand}).");
-        }
-    }
-
-    [RelayCommand]
-    private void MoveItemUp(MissionItemRow row)
-    {
-        MoveItem(row, -1);
-        OnMissionChanged($"MoveItemUp");
-    }
-
-    [RelayCommand]
-    private void MoveItemDown(MissionItemRow row)
-    {
-        MoveItem(row, +1);
-        OnMissionChanged($"MoveItemDown");
-    }
-
-    [RelayCommand]
-    private void LoiterForever()
-    {
-        AddLoiter(null, null);
-    }
-
-    [RelayCommand]
-    private async Task LoiterTimeAsync(CancellationToken cancellationToken)
-    {
-        var options = dialogService.CreateOptions("Loiter Time", "Ok", null);
-
-        var input = await dialogService.PromptAsync(options, "Time to loiter (seconds)", 30, 0, 24 * 60, cancellationToken: cancellationToken);
-        if (input is null)
-        {
-            return;
-        }
-
-        AddLoiter(TimeSpan.FromSeconds(input.Value), null);
-    }
-
-    [RelayCommand]
-    private async Task LoiterCirclesAsync()
-    {
-        var turns = await dialogService.PromptAsync("Loiter Circles", "Number of circles", 3, 0, 100);
-        if (turns is null)
-        {
-            return;
-        }
-
-        AddLoiter(null, turns.Value);
-    }
-
-    [RelayCommand]
-    private void AddReturnToLaunch()
-    {
-        Mission.Add(new ReturnToLaunchMissionItem(MissionItemId.New(), 0));
-        OnMissionChanged("RTL added.");
-    }
-
-    [RelayCommand]
-    private void AddLand()
-    {
-        if (TargetPosition() is not { } position)
-        {
-            ShowStatus("No map position selected.");
-            return;
-        }
-
-        Mission.Add(new LandMissionItem(MissionItemId.New(), 0, position, new MissionAltitude(0, MissionAltitudeReference.Home)));
-        OnMissionChanged("Land added.");
-    }
-
-    [RelayCommand]
-    private async Task AddTakeoffAsync()
-    {
-        var altitude = await dialogService.PromptAsync("Takeoff", "Takeoff altitude (meters)", DefaultAltitudeMeters);
-        if (altitude is null)
-        {
-            return;
-        }
-
-        Mission.Add(new TakeoffMissionItem(MissionItemId.New(), 0, null, new MissionAltitude(altitude.Value, MissionAltitudeReference.Home)));
-        OnMissionChanged("Takeoff added.");
-    }
-
-    [RelayCommand]
-    private void ClearMission()
-    {
-        ClearMissionData();
-    }
-
-    [RelayCommand]
-    private void ReverseWaypoints()
-    {
-        if (Mission.Items.Count < 2)
-        {
-            ShowStatus("Nothing to reverse.");
-            return;
-        }
-
-        var reversed = new Mission(Mission.Id, Mission.Name, Mission.Type);
-        foreach (var item in Mission.Items.Reverse())
-        {
-            reversed.Add(item);
-        }
-
-        Mission = reversed;
-        OnMissionChanged("Waypoints reversed.");
-    }
+    private void ClearMission() => ClearMissionData();
 
     [RelayCommand]
     private void SetHomeHere()
@@ -1764,134 +788,21 @@ public partial class MissionMapViewModel : DialogViewModelBase
     }
 
     [RelayCommand]
-    private async Task ModifyAltitudeAsync()
-    {
-        var altitude = await dialogService.PromptAsync("Modify Alt", "New altitude for all mission items (meters)", DefaultAltitudeMeters);
-        if (altitude is null)
-        {
-            return;
-        }
-
-        DefaultAltitudeMeters = altitude.Value;
-        var newAltitude = new MissionAltitude(altitude.Value, MissionAltitudeReference.Home);
-        foreach (var item in Mission.Items.ToList())
-        {
-            MissionItem? replacement = item switch
-            {
-                WaypointMissionItem x => x with { Altitude = newAltitude },
-                TakeoffMissionItem x => x with { Altitude = newAltitude },
-                LoiterMissionItem x => x with { Altitude = newAltitude },
-                SplineWaypointMissionItem x => x with { Altitude = newAltitude },
-                RoiLocationMissionItem x => x with { Altitude = newAltitude },
-                var _ => null
-            };
-            if (replacement is not null)
-            {
-                Mission.Replace(item.Id, replacement);
-            }
-        }
-
-        OnMissionChanged($"Altitude set to {altitude.Value:F0} m.");
-    }
+    private Task SaveWpFileAsync(CancellationToken cancellationToken) => missionFiles.SaveWpFileAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task SaveWpFileAsync(CancellationToken cancellationToken)
-    {
-        var result = await fileInteraction.SaveMissionAsync(Mission, HomePosition, cancellationToken);
-        if (result.Message is not null)
-        {
-            ShowStatus(result.Message);
-        }
-
-        if (result.ClearDirtyRows)
-        {
-            DirtyMissionItems.Clear();
-        }
-    }
+    private Task LoadWpFileAsync(CancellationToken cancellationToken) => missionFiles.LoadWpFileAsync(cancellationToken);
 
     [RelayCommand]
-    private async Task LoadWpFileAsync(CancellationToken cancellationToken)
-    {
-        await LoadMissionFileAsync(false, cancellationToken);
-    }
-
-    [RelayCommand]
-    private async Task LoadAndAppendAsync(CancellationToken cancellationToken)
-    {
-        await LoadMissionFileAsync(true, cancellationToken);
-    }
+    private Task LoadAndAppendAsync(CancellationToken cancellationToken) => missionFiles.LoadAndAppendAsync(cancellationToken);
 
     [RelayCommand]
     private async Task CloseAsync(CancellationToken cancellationToken)
     {
         await domainEventHub.PublishDomainEventAsync(new EditorDisplayEvent("EditorClose"), cancellationToken);
     }
-    private async Task LoadMissionFileAsync(bool append, CancellationToken cancellationToken)
-    {
-        var loaded = await fileInteraction.LoadMissionAsync(cancellationToken);
-        if (loaded.Message is not null)
-        {
-            ShowStatus(loaded.Message);
-            return;
-        }
-
-        if (loaded.Content is not { } parsed)
-        {
-            return;
-        }
-
-        try
-        {
-            if (!append)
-            {
-                Mission = new Mission(MissionId.New(), parsed.Name ?? Path.GetFileNameWithoutExtension(loaded.FileName));
-                if (parsed.Home is not null)
-                {
-                    HomePosition = parsed.Home;
-                }
-            }
-
-            foreach (var item in parsed.Items)
-            {
-                Mission.Add(item);
-            }
-
-            OnMissionChanged(loaded.SuccessMessage);
-            FitToMissionRequested?.Invoke();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to load mission file");
-            ShowStatus($"Load failed: {ex.Message}");
-        }
-    }
-
-    private void MoveItem(MissionItemRow row, int offset)
-    {
-        var index = Mission.Items.ToList().FindIndex(x => x.Id == row.Id);
-        var destination = index + offset;
-        if (index < 0 || destination < 0 || destination >= Mission.Items.Count)
-        {
-            return;
-        }
-
-        Mission.Move(row.Id, destination);
-        OnMissionChanged($"Moved item {row.Number} {(offset < 0 ? "up" : "down")}.");
-    }
-
-    private void AddLoiter(TimeSpan? time, double? turns)
-    {
-        if (TargetPosition() is not { } position)
-        {
-            ShowStatus("No map position selected.");
-            return;
-        }
-
-        Mission.Add(new LoiterMissionItem(MissionItemId.New(), 0, position, DefaultAltitude(), time, turns, LoiterRadiusMeters));
-        OnMissionChanged("Loiter added.");
-    }
-
-    private void AddWaypoint(GeoPosition position, string message)
+    /// <inheritdoc />
+    public void AddWaypoint(GeoPosition position, string message)
     {
         if (!position.IsValid)
         {
@@ -1903,44 +814,56 @@ public partial class MissionMapViewModel : DialogViewModelBase
         OnMissionChanged(message);
     }
 
-    private GeoPosition? TargetPosition()
+    /// <inheritdoc />
+    public GeoPosition? TargetPosition()
     {
-        if (ContextPosition is { IsValid: true } context)
-        {
-            return context;
-        }
-
-        var vehicle = new GeoPosition(VehicleLatitude, VehicleLongitude);
-        return vehicle.IsValid && (VehicleLatitude != 0 || VehicleLongitude != 0) ? vehicle : null;
+        return ContextPosition is { IsValid: true } context ? context : VehiclePosition;
     }
 
-    private MissionAltitude DefaultAltitude()
+    /// <inheritdoc />
+    public MissionAltitude DefaultAltitude()
     {
         return new MissionAltitude(DefaultAltitudeMeters, MissionAltitudeReference.Home);
     }
 
-    private MissionItem? NearestItem(GeoPosition? position)
+    /// <inheritdoc />
+    public GeoPosition? VehiclePosition
     {
-        return position is not { } target
-            ? null
-            : Mission.Items
-                .Select(item => (Item: item, Position: MissionItemGeometry.PositionOf(item)))
-                .Where(x => x.Position is not null)
-                .OrderBy(x => DistanceSquared(x.Position!.Value, target))
-                .Select(x => x.Item)
-                .FirstOrDefault();
+        get
+        {
+            var vehicle = new GeoPosition(VehicleLatitude, VehicleLongitude);
+            return vehicle.IsValid && (VehicleLatitude != 0 || VehicleLongitude != 0) ? vehicle : null;
+        }
     }
 
-    private static double DistanceSquared(GeoPosition a, GeoPosition b)
+    IMissionMapInteractionCoordinator IMissionEditorHost.Interaction => interaction;
+
+    void IMissionEditorHost.NotifyMissionChanged(string message) => OnMissionChanged(message);
+
+    void IMissionEditorHost.SetMission(Mission mission, string message)
     {
-        var dLat = a.LatitudeDegrees - b.LatitudeDegrees;
-        var dLon = (a.LongitudeDegrees - b.LongitudeDegrees) * Math.Cos(b.LatitudeDegrees * Math.PI / 180);
-        return (dLat * dLat) + (dLon * dLon);
+        Mission = mission;
+        OnMissionChanged(message);
     }
+
+    void IMissionEditorHost.ClearPendingRowEdits() => rowEditor.ClearDirty();
+
+    void IMissionEditorHost.RequestFitToMission() => FitToMissionRequested?.Invoke();
+
+    void IMissionEditorHost.RefreshPlanningOverlay() => UpdatePlanningOverlay();
+
+    void IMissionEditorHost.SetMapContext(GeoPosition position, MissionMapContextSource source)
+    {
+        MapContext = new MissionMapContext(position, source, dateTimeProvider.UtcNow);
+    }
+
+    void IMissionEditorHost.RequestMapCenter(GeoPosition position) => MapCenterRequested?.Invoke(position);
+
+    void IMissionEditorHost.RequestMapRotation(double degrees) => MapRotationRequested?.Invoke(degrees);
 
     private void OnMissionChanged(string message)
     {
-        RebuildRows();
+        rowEditor.Rebuild();
         UpdateMapSnapshot();
         MissionChanged?.Invoke(new MissionEventArgs(message));
         ShowStatus(message);
@@ -1962,108 +885,29 @@ public partial class MissionMapViewModel : DialogViewModelBase
         UpdateMapSnapshot();
     }
 
-    private void RebuildRows()
-    {
-        foreach (var row in MissionItems)
-        {
-            row.Dispose();
-        }
-
-        DirtyMissionItems.Clear();
-        MissionItems.Clear();
-
-        var projection = rowProjector.Project(Mission, HomePosition);
-        foreach (var row in projection.Rows)
-        {
-            row.AttachNotifications(ApplyRowEdit, EditStateChanged);
-            MissionItems.Add(row);
-        }
-
-        MissionSummary = projection.Summary;
-
-        var dirtyItems = DirtyMissionItems.Any();
-        Debug.Assert(dirtyItems == false);
-        CancelRowEditsCommand.NotifyCanExecuteChanged();
-        ApplyRowEditsCommand.NotifyCanExecuteChanged();
-    }
-
     /// <summary>
     /// Applies the edited values of a row (params, lat/lon, altitude) back to the mission item.
     /// </summary>
-    [RelayCommand(CanExecute = "HasDirtyRows")]
-    public void ApplyRowEdits()
-    {
-        if (HasDirtyRows() == false)
-        {
-            return;
-        }
+    [RelayCommand(CanExecute = nameof(HasDirtyRows))]
+    public void ApplyRowEdits() => rowEditor.ApplyAll();
 
-        var allItems = DirtyMissionItems.ToList();
-        foreach (var row in allItems)
-        {
-            ApplyRowEdit(row);
-        }
-
-        CancelRowEditsCommand.NotifyCanExecuteChanged();
-        ApplyRowEditsCommand.NotifyCanExecuteChanged();
-    }
-
-    /// <summary>
-    ///  
-    /// </summary>
-    /// <returns></returns>
-    public bool HasDirtyRows()
-    {
-        var hasDirtyRows = DirtyMissionItems.Any();
-        Debug.Print($"HasDirtyRows {hasDirtyRows}");
-        return hasDirtyRows;
-    }
-
-    private void EditStateChanged(MissionItemRow row)
-    {
-        if (!DirtyMissionItems.Any(r => r.Equals(row)))
-        {
-            DirtyMissionItems.Add(row);
-        }
-
-        CancelRowEditsCommand.NotifyCanExecuteChanged();
-        ApplyRowEditsCommand.NotifyCanExecuteChanged();
-        MissionSummary = "EditStateChanged IsDirty: " + HasDirtyRows();
-    }
+    /// <summary>Returns whether any mission list row has pending edits.</summary>
+    public bool HasDirtyRows() => rowEditor.HasDirtyRows();
 
     /// <summary>
     /// Cancels any edits made to the mission items and rebuilds the rows to their original state.
     /// </summary>
-    [RelayCommand(CanExecute = "HasDirtyRows")]
-    public void CancelRowEdits()
+    [RelayCommand(CanExecute = nameof(HasDirtyRows))]
+    public void CancelRowEdits() => rowEditor.Rebuild();
+
+    private void OnRowDirtyStateChanged(object? sender, EventArgs args)
     {
-        RebuildRows();
         CancelRowEditsCommand.NotifyCanExecuteChanged();
         ApplyRowEditsCommand.NotifyCanExecuteChanged();
     }
 
-    private void ApplyRowEdit(MissionItemRow row)
-    {
-        row.Dispose();
-        var index = Mission.Items.ToList().FindIndex(x => x.Id == row.Id);
-        if (index < 0)
-        {
-            return;
-        }
-
-        try
-        {
-            Mission.Replace(row.Id, rowProjector.ToMissionItem(row, index));
-            OnMissionChanged($"Item {row.Number} updated.");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "Failed to apply row edit for item {Number}", row.Number);
-            ShowStatus($"Edit failed: {ex.Message}");
-        }
-    }
-
-    private void ShowStatus(string message)
+    /// <inheritdoc />
+    public void ShowStatus(string message)
     {
         Dispatcher.Dispatch(() => StatusMessage = message);
     }
