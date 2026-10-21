@@ -27,7 +27,6 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Maps.Coordinates;
 using MissionPlanner.Maps.Prefetch;
 using MissionPlanner.Maps.Terrain;
-using MissionPlanner.MavLink.Missions;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -41,7 +40,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IMissionFileCodec fileCodec;
     private readonly IDomainEventHub domainEventHub;
-    private readonly IMissionProtocolMapper protocolMapper;
+    private readonly IMissionRowProjector rowProjector;
     private readonly IFileOpenService fileOpenService;
     private readonly IFileSaveService fileSaveService;
     private readonly IDateTimeProvider dateTimeProvider;
@@ -83,7 +82,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
         dialogService = factory.Create<IDialogService>();
         activeVehicle = factory.Create<IActiveVehicleContext>();
         fileCodec = factory.Create<IMissionFileCodec>();
-        protocolMapper = factory.Create<IMissionProtocolMapper>();
+        rowProjector = factory.Create<IMissionRowProjector>();
         interactionService = factory.Create<IMissionMapInteractionService>();
         advancedMissionItems = factory.Create<IAdvancedMissionItemService>();
         confirmationService = factory.Create<IUserConfirmationService>();
@@ -584,7 +583,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
             {
                 var first = interactionService.State.Positions[0];
                 var second = interactionService.State.Positions[1];
-                var (distance, bearing) = CalculateDistanceAndBearing(first, second);
+                var (distance, bearing) = GeographicCalculations.CalculateDistanceAndBearing(first, second);
                 interactionService.Complete();
                 ShowStatus($"Distance {distance:F1} m • initial bearing {bearing:F1}°.");
             }
@@ -1748,20 +1747,6 @@ public partial class MissionMapViewModel : DialogViewModelBase
         }
     }
 
-    /// <summary>Calculates great-circle distance and initial bearing between two WGS84 positions.</summary>
-    public static (double Distance, double Bearing) CalculateDistanceAndBearing(GeoPosition first, GeoPosition second)
-    {
-        const double radius = 6371008.8;
-        var lat1 = first.LatitudeDegrees * Math.PI / 180d;
-        var lat2 = second.LatitudeDegrees * Math.PI / 180d;
-        var deltaLat = lat2 - lat1;
-        var deltaLon = (second.LongitudeDegrees - first.LongitudeDegrees) * Math.PI / 180d;
-        var a = (Math.Sin(deltaLat / 2) * Math.Sin(deltaLat / 2)) + (Math.Cos(lat1) * Math.Cos(lat2) * Math.Sin(deltaLon / 2) * Math.Sin(deltaLon / 2));
-        var distance = radius * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        var bearing = ((Math.Atan2(Math.Sin(deltaLon) * Math.Cos(lat2), (Math.Cos(lat1) * Math.Sin(lat2)) - (Math.Sin(lat1) * Math.Cos(lat2) * Math.Cos(deltaLon))) * 180d / Math.PI) + 360d) % 360d;
-        return (distance, bearing);
-    }
-
     [RelayCommand]
     private void InsertWaypointAtVehicle()
     {
@@ -2156,66 +2141,14 @@ public partial class MissionMapViewModel : DialogViewModelBase
         DirtyMissionItems.Clear();
         MissionItems.Clear();
 
-        var previousPosition = HomePosition;
-        var previousAltitude = 0.0;
-        var totalDistance = 0.0;
-
-        foreach (var item in Mission.Items)
+        var projection = rowProjector.Project(Mission, HomePosition);
+        foreach (var row in projection.Rows)
         {
-            var position = MissionItemGeometry.PositionOf(item);
-            var altitude = MissionItemGeometry.AltitudeOf(item);
-            var protocol = protocolMapper.ToProtocol(item, Mission.Type);
-
-            double? distance = null, azimuth = null, gradient = null;
-            if (position is { } current && previousPosition is { } previous)
-            {
-                var legMeters = GeoMath.ApproximateDistanceMeters(
-                    previous.LatitudeDegrees, previous.LongitudeDegrees,
-                    current.LatitudeDegrees, current.LongitudeDegrees);
-                totalDistance += legMeters;
-                distance = legMeters;
-                azimuth = BearingDegrees(previous, current);
-
-                if (altitude is { } alt && legMeters > 0.5)
-                {
-                    gradient = (alt.Meters - previousAltitude) / legMeters * 100.0;
-                }
-            }
-
-            if (position is not null)
-            {
-                previousPosition = position;
-                previousAltitude = altitude?.Meters ?? previousAltitude;
-            }
-
-            var row = new MissionItemRow
-            {
-                Id = item.Id,
-                Number = item.Sequence + 1,
-                CommandId = protocol.Command,
-                Frame = protocol.Frame,
-                AutoContinue = protocol.AutoContinue,
-                Param1 = FormatParam(protocol.Param1),
-                Param2 = FormatParam(protocol.Param2),
-                Param3 = FormatParam(protocol.Param3),
-                Param4 = FormatParam(protocol.Param4),
-                Latitude = position?.LatitudeDegrees,
-                Longitude = position?.LongitudeDegrees,
-                Altitude = altitude?.Meters,
-                Distance = distance,
-                Azimuth = azimuth,
-                Gradient = gradient,
-                // Set the initial selections before attaching the callback so building rows never applies edits.
-                SelectedCommand = MissionCommandCatalog.CommandNameFor(protocol.Command),
-                SelectedFrame = MissionCommandCatalog.FrameNameFor(protocol.Frame)
-            };
             row.AttachNotifications(ApplyRowEdit, EditStateChanged);
             MissionItems.Add(row);
         }
 
-        MissionSummary = Mission.Items.Count == 0
-            ? "0 items"
-            : $"{Mission.Items.Count} items • {totalDistance:F0} m total";
+        MissionSummary = projection.Summary;
 
         var dirtyItems = DirtyMissionItems.Any();
         Debug.Assert(dirtyItems == false);
@@ -2289,27 +2222,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
 
         try
         {
-            var commandId = MissionCommandCatalog.CommandIdFor(row.SelectedCommand) ?? row.CommandId;
-            var frameId = MissionCommandCatalog.FrameIdFor(row.SelectedFrame) ?? row.Frame;
-
-            var protocolItem = new MavLinkMissionItem(
-                (ushort)index,
-                frameId,
-                commandId,
-                false,
-                row.AutoContinue,
-                ParseParam(row.Param1),
-                ParseParam(row.Param2),
-                ParseParam(row.Param3),
-                // Param4 is yaw/heading where NaN means "not set"; keep an empty cell as NaN.
-                ParseParam(row.Param4, float.NaN),
-                (int)Math.Round(row.Latitude.HasValue ? row.Latitude.Value * 1e7 : 0.0),
-                (int)Math.Round(row.Longitude.HasValue ? row.Longitude.Value * 1e7 : 0.0),
-                row.Altitude.HasValue ? (float)row.Altitude.Value : 0.0f,
-                MavMissionType.Mission);
-
-            var replacement = protocolMapper.FromProtocol(protocolItem);
-            Mission.Replace(row.Id, replacement);
+            Mission.Replace(row.Id, rowProjector.ToMissionItem(row, index));
             OnMissionChanged($"Item {row.Number} updated.");
         }
         catch (Exception ex)
@@ -2317,29 +2230,6 @@ public partial class MissionMapViewModel : DialogViewModelBase
             Logger.LogWarning(ex, "Failed to apply row edit for item {Number}", row.Number);
             ShowStatus($"Edit failed: {ex.Message}");
         }
-    }
-
-    private static string FormatParam(float value)
-    {
-        return float.IsNaN(value) ? string.Empty : value.ToString("0.###", CultureInfo.CurrentCulture);
-    }
-
-    private static float ParseParam(string text, float emptyValue = 0f)
-    {
-        return float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) ? value : emptyValue;
-    }
-
-    private static double ParseCoordinate(string text)
-    {
-        return double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) ? value : 0.0;
-    }
-
-    private static double BearingDegrees(GeoPosition from, GeoPosition to)
-    {
-        var deltaY = to.LatitudeDegrees - from.LatitudeDegrees;
-        var deltaX = (to.LongitudeDegrees - from.LongitudeDegrees) * Math.Cos(from.LatitudeDegrees * Math.PI / 180.0);
-        var degrees = Math.Atan2(deltaX, deltaY) * 180.0 / Math.PI;
-        return degrees < 0 ? degrees + 360.0 : degrees;
     }
 
     private void ShowStatus(string message)

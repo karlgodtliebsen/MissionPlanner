@@ -141,6 +141,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ParametersFileHandler>();
         services.TryAddTransient<MissionItemListViewPage>();
         services.TryAddTransient<MissionMapPresenter>();
+        services.TryAddTransient<IMissionRowProjector, MissionRowProjector>();
 
         services.TryAddTransient<IUserNotificationService, UserNotificationService>();
         services.TryAddTransient<IUserConfirmationService, UserConfirmationService>();
