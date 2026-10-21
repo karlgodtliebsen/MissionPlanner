@@ -9,7 +9,7 @@ public sealed record PlannerAppearanceSettings
     /// <summary>Gets the stable persisted theme or selection-policy identifier.</summary>
     public string ThemeId { get; init; } = DefaultThemeId;
 
-    /// <summary>Gets or sets whether the legacy MAUI flyout is shown at startup.</summary>
+    /// <summary>Gets or sets whether the legacy navigation flyout is shown at startup.</summary>
     public bool IsFlyoutVisibleAtStartup { get; set; }
 
     /// <summary>
@@ -20,7 +20,7 @@ public sealed record PlannerAppearanceSettings
         get; set;
     }
 
-    /// <summary>Gets or sets whether the legacy MAUI flyout remains locked open.</summary>
+    /// <summary>Gets or sets whether the legacy navigation flyout remains locked open.</summary>
     public bool IsFlyoutLocked { get; set; }
 
 }

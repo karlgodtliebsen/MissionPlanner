@@ -6,7 +6,7 @@ using MissionPlanner.Simulation.Abstractions;
 namespace MissionPlanner.App.Services;
 
 /// <summary>Supplies a dedicated SITL directory beneath the platform cache.</summary>
-public sealed class MauiSitlCachePathProvider : ISitlCachePathProvider
+public sealed class DefaultSitlCachePathProvider : ISitlCachePathProvider
 {
     /// <inheritdoc />
     public string CacheRoot => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.InternetCache), "sitl");

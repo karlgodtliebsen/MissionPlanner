@@ -130,7 +130,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
         services.TryAddTransient<ISimulatorProfileService, SimulatorProfileService>();
         services.TryAddTransient<ISimulationScenarioPresetStore, PreferencesSimulationScenarioPresetStore>();
-        services.TryAddTransient<ISitlCachePathProvider, MauiSitlCachePathProvider>();
+        services.TryAddTransient<ISitlCachePathProvider, DefaultSitlCachePathProvider>();
         services.TryAddTransient<ISitlPlatformService, LocalSitlPlatformService>();
         services.TryAddTransient<ISimulatorProcessHost, LocalSimulatorProcessHost>();
 

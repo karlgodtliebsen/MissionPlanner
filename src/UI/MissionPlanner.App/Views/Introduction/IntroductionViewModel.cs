@@ -99,7 +99,7 @@ public partial class IntroductionViewModel(IIntroductionContentLoader contentLoa
             Logger.LogError(ex, "Could not initialize the MissionPlanner Introduction page.");
             SetMessages(null,
                 "MissionPlanner could not load the Introduction content. " +
-                "Check that the Introduction Content files are packaged as MauiAsset items.");
+                "Check that the Introduction Content files are packaged as AvaloniaResource items.");
         }
         finally
         {

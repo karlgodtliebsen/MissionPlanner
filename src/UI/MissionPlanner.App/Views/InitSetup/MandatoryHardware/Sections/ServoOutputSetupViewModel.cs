@@ -126,7 +126,7 @@ public sealed partial class ServoOutputSetupViewModel : ViewModelBase
         observedServoAt = activeVehicle.State?.Radio.ServoObservedAt;
         vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         // Complete one asynchronous boundary before starting the potentially expensive load.
-        // This lets MAUI commit the selected tab and render the activity indicator.
+        // This lets Avalonia commit the selected tab and render the activity indicator.
         await Task.Yield();
         await LoadAsync();
         await base.ActivateAsync();

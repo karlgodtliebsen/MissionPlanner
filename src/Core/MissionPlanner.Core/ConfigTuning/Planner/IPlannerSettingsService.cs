@@ -52,7 +52,7 @@ public interface IPlannerSettingsService
     /// <returns></returns>
     ValueTask<PlannerSettingsSaveResult> SaveStartup(PlannerSettings settings, bool isTutorialVisibleAtStartup, CancellationToken cancellationToken = default);
 
-    /// <summary>Persists the legacy MAUI flyout and shared startup settings.</summary>
+    /// <summary>Persists the legacy navigation flyout and shared startup settings.</summary>
     ValueTask<PlannerSettingsSaveResult> SaveFlyout(
         PlannerSettings settings,
         bool isFlyoutVisibleAtStartup,

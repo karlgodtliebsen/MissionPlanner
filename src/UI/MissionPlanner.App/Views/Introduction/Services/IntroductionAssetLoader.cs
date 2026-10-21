@@ -5,7 +5,7 @@ using Avalonia.Platform;
 namespace MissionPlanner.App.Views.Introduction.Services;
 
 /// <summary>
-/// Reads Introduction files that are packaged as MauiAsset items.
+/// Reads Introduction files that are packaged as AvaloniaResource items.
 /// The project file gives them logical names rooted at "Introduction/".
 /// </summary>
 public static class IntroductionAssetLoader
