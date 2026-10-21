@@ -42,7 +42,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
     private readonly IMissionRowProjector rowProjector;
     private readonly IMissionFileInteraction fileInteraction;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly IMissionMapInteractionService interactionService;
+    private readonly IMissionMapInteractionCoordinator interaction;
     private readonly IAdvancedMissionItemService advancedMissionItems;
     private readonly IUserConfirmationService confirmationService;
     private readonly IPlanningPolygonService polygonService;
@@ -62,7 +62,6 @@ public partial class MissionMapViewModel : DialogViewModelBase
     private readonly IDialogService dialogService;
 
     private IReadOnlyList<GeoPosition> generatedPreview = [];
-    private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
     private IDisposable? stateSubscription;
     private bool disposed;
@@ -80,10 +79,10 @@ public partial class MissionMapViewModel : DialogViewModelBase
         activeVehicle = factory.Create<IActiveVehicleContext>();
         rowProjector = factory.Create<IMissionRowProjector>();
         fileInteraction = factory.Create<IMissionFileInteraction>();
-        interactionService = factory.Create<IMissionMapInteractionService>();
+        interaction = factory.Create<IMissionMapInteractionCoordinator>();
         advancedMissionItems = factory.Create<IAdvancedMissionItemService>();
         confirmationService = factory.Create<IUserConfirmationService>();
-        polygonService = factory.Create<IPlanningPolygonService>();
+        polygonService = interaction.Polygons;
         fenceService = factory.Create<IFenceConfigurationService>();
         fenceFileCodec = factory.Create<IFencePlanFileCodec>();
         rallyService = factory.Create<IRallyConfigurationService>();
@@ -113,9 +112,9 @@ public partial class MissionMapViewModel : DialogViewModelBase
             return;
         }
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
-        pendingRallyAltitude = DefaultAltitude();
+        interaction.PendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
-        interactionService.Changed += OnInteractionChanged;
+        interaction.Changed += OnInteractionChanged;
         fenceService.Changed += OnFenceChanged;
         rallyService.Changed += OnRallyChanged;
         poiService.Changed += OnPoiChanged;
@@ -148,7 +147,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
         }
         isActive = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        interactionService.Changed -= OnInteractionChanged;
+        interaction.Changed -= OnInteractionChanged;
         polygonService.Changed -= OnPolygonChanged;
         fenceService.Changed -= OnFenceChanged;
         rallyService.Changed -= OnRallyChanged;
@@ -175,7 +174,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
         }
         Deactivate();
         disposed = true;
-        interactionService.Cancel();
+        interaction.Cancel();
         foreach (var row in MissionItems)
         {
             row.Dispose();
@@ -199,7 +198,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
 
     /// <summary>Gets the pointer coordinate formatted in the selected coordinate style.</summary>
     [ObservableProperty]
-    public partial string PointerCoordinateText { get; private set; } = "Position unavailable";
+    public partial string PointerCoordinateText { get; private set; } = MapPointerPresentation.PositionUnavailable;
 
     /// <summary>
     /// Gets the freshness of the latest map-position observation.
@@ -460,9 +459,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
 
     private void UpdatePointerCoordinateText()
     {
-        PointerCoordinateText = PointerLatitude is { } latitude && PointerLongitude is { } longitude
-            ? MapCoordinateFormatter.Format(SelectedMapStyle, latitude, longitude)
-            : "Position unavailable";
+        PointerCoordinateText = MapPointerPresentation.CoordinateText(SelectedMapStyle, PointerLatitude, PointerLongitude);
     }
 
     /// <summary>Updates the typed terrain status while a pointer lookup is in progress.</summary>
@@ -482,20 +479,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
     private void ApplyPointerElevationStatus(TerrainElevationStatus status, string? message)
     {
         PointerAltitudeStatus = status;
-        PointerAltitudeStatusText = status switch
-        {
-            TerrainElevationStatus.Loading => "Terrain: loading",
-            TerrainElevationStatus.Available => "Terrain: available",
-            TerrainElevationStatus.OutsideCoverage => "Terrain: outside coverage",
-            TerrainElevationStatus.NetworkUnavailable => "Terrain: network unavailable",
-            TerrainElevationStatus.InvalidData => "Terrain: invalid data",
-            var _ => string.Empty
-        };
-        if (!string.IsNullOrWhiteSpace(message) && status is not TerrainElevationStatus.Available)
-        {
-            PointerAltitudeStatusText += $" ({message})";
-        }
-
+        PointerAltitudeStatusText = MapPointerPresentation.TerrainStatusText(status, message);
         HasPointerAltitudeStatus = status != TerrainElevationStatus.Idle;
     }
 
@@ -552,63 +536,39 @@ public partial class MissionMapViewModel : DialogViewModelBase
         var position = new GeoPosition(latitude, longitude);
         MapContext = new MissionMapContext(position, MissionMapContextSource.Tap, dateTimeProvider.UtcNow);
 
-        var interactionMode = interactionService.State.Mode;
-        if (interactionService.AcceptClick(position))
+        var outcome = interaction.HandleClick(position);
+        if (outcome.Consumed)
         {
-            if (interactionMode == MissionMapInteractionMode.SetFenceReturnLocation && activeVehicle.VehicleId is { } vehicleId)
+            if (outcome.Message is not null)
             {
-                var snapshot = fenceService.GetSnapshot(vehicleId);
-                fenceService.SetLocalPlan(vehicleId, snapshot.LocalPlan with
-                {
-                    ReturnPoint = position
-                });
-                interactionService.Complete();
-                ShowStatus("Fence return location updated locally; upload to apply it.");
-            }
-            else if (interactionMode == MissionMapInteractionMode.SetRallyPoint && activeVehicle.VehicleId is { } rallyVehicleId)
-            {
-                var snapshot = rallyService.GetSnapshot(rallyVehicleId);
-                var point = new RallyPoint(RallyPointId.New(), position, pendingRallyAltitude);
-                rallyService.SetLocalPlan(rallyVehicleId, new RallyPlan(snapshot.LocalPlan.Points.Append(point).ToArray()));
-                interactionService.Complete();
-                ShowStatus("Rally point added locally; upload to apply it.");
-            }
-            else if (interactionMode == MissionMapInteractionMode.MeasureDistance && interactionService.State.Positions.Count >= 2)
-            {
-                var first = interactionService.State.Positions[0];
-                var second = interactionService.State.Positions[1];
-                var (distance, bearing) = GeographicCalculations.CalculateDistanceAndBearing(first, second);
-                interactionService.Complete();
-                ShowStatus($"Distance {distance:F1} m • initial bearing {bearing:F1}°.");
+                ShowStatus(outcome.Message);
             }
 
             return;
         }
 
-        if (!AddWaypointOnMapClick)
+        if (AddWaypointOnMapClick)
         {
-            return;
+            AddWaypoint(position, "Waypoint added from map click.");
         }
-
-        AddWaypoint(position, "Waypoint added from map click.");
     }
 
     /// <summary>Routes map pointer movement to the active planning interaction.</summary>
     public void HandleMapPointerMove(double latitude, double longitude)
     {
-        interactionService.MovePointer(new GeoPosition(latitude, longitude));
+        interaction.MovePointer(new GeoPosition(latitude, longitude));
     }
 
     /// <summary>Starts a renderer-independent planning interaction.</summary>
     public void BeginInteraction(MissionMapInteractionMode mode, string prompt)
     {
-        interactionService.Enter(mode, prompt);
+        interaction.Begin(mode, prompt);
     }
 
     /// <summary>Cancels the current planning interaction.</summary>
     public void CancelInteraction()
     {
-        interactionService.Cancel();
+        interaction.Cancel();
     }
 
     private void OnInteractionChanged(object? sender, EventArgs args)
@@ -616,7 +576,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
         Dispatcher.Dispatch(() =>
         {
             UpdatePlanningOverlay();
-            PlanningInteractionPrompt = interactionService.State.Prompt;
+            PlanningInteractionPrompt = interaction.State.Prompt;
         });
     }
 
@@ -651,25 +611,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
 
     private void UpdatePlanningOverlay()
     {
-        var overlay = interactionService.Overlay;
-        var vertices = interactionService.State.Mode == MissionMapInteractionMode.DrawPolygon
-            ? overlay.DrawnPolygon
-            : polygonService.Snapshot.Polygon?.Vertices ?? [];
-        var fence = activeVehicle.VehicleId is { } vehicleId ? FenceOutline(fenceService.GetSnapshot(vehicleId).LocalPlan) : [];
-        var rally = activeVehicle.VehicleId is { } rallyVehicleId
-            ? rallyService.GetSnapshot(rallyVehicleId).LocalPlan.Points.Select(point => point.Position).ToArray()
-            : [];
-        var pois = poiService.Snapshot.Items.Select(item => item.Position).ToArray();
-        PlanningOverlaySnapshot = overlay with
-        {
-            DrawnPolygon = vertices,
-            FencePreview = fence,
-            RallyPoints = rally,
-            PoiItems = pois,
-            ImportedOverlays = importedOverlays,
-            SurveyPreview = generatedPreview,
-            TrackerHome = trackerHomeService.Snapshot?.Position
-        };
+        PlanningOverlaySnapshot = interaction.ComposeOverlay(importedOverlays, generatedPreview);
     }
 
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
@@ -799,27 +741,27 @@ public partial class MissionMapViewModel : DialogViewModelBase
     [RelayCommand]
     private void FinishPolygon()
     {
-        if (interactionService.State.Mode != MissionMapInteractionMode.DrawPolygon)
+        if (interaction.State.Mode != MissionMapInteractionMode.DrawPolygon)
         {
             ShowStatus("Polygon drawing is not active.");
             return;
         }
 
-        var result = polygonService.Set("Planning polygon", interactionService.State.Positions);
+        var result = polygonService.Set("Planning polygon", interaction.State.Positions);
         if (!result.Succeeded)
         {
             ShowStatus(result.Message);
             return;
         }
 
-        interactionService.Complete();
+        interaction.Complete();
         ShowStatus(result.Message);
     }
 
     [RelayCommand]
     private void CancelPolygon()
     {
-        interactionService.Cancel();
+        interaction.Cancel();
         ShowStatus("Polygon drawing cancelled.");
     }
 
@@ -827,7 +769,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
     private void ClearPolygon()
     {
         polygonService.Clear();
-        interactionService.Cancel();
+        interaction.Cancel();
         ShowStatus("Planning polygon cleared.");
     }
 
@@ -1150,34 +1092,6 @@ public partial class MissionMapViewModel : DialogViewModelBase
             : string.Join(Environment.NewLine, report.Validation.Issues.Select(issue => issue.Message)));
     }
 
-    private static IReadOnlyList<GeoPosition> FenceOutline(FencePlan plan)
-    {
-        var area = plan.Areas.FirstOrDefault();
-        if (area is null)
-        {
-            return plan.ReturnPoint is { } point ? [point] : [];
-        }
-
-        if (area.Vertices.Count > 0)
-        {
-            return area.Vertices;
-        }
-
-        if (area.Center is not { } center || area.RadiusMeters <= 0)
-        {
-            return [];
-        }
-
-        const double earthRadius = 6378137d;
-        return Enumerable.Range(0, 36).Select(index =>
-        {
-            var angle = index * Math.PI * 2d / 36d;
-            var latitude = center.LatitudeDegrees + (area.RadiusMeters * Math.Cos(angle) / earthRadius * 180d / Math.PI);
-            var longitude = center.LongitudeDegrees + (area.RadiusMeters * Math.Sin(angle) / (earthRadius * Math.Cos(center.LatitudeDegrees * Math.PI / 180d)) * 180d / Math.PI);
-            return new GeoPosition(latitude, longitude);
-        }).ToArray();
-    }
-
     [RelayCommand]
     private async Task SetRallyPointAsync(CancellationToken cancellationToken)
     {
@@ -1199,7 +1113,7 @@ public partial class MissionMapViewModel : DialogViewModelBase
             return;
         }
 
-        pendingRallyAltitude = new MissionAltitude(altitude, reference switch
+        interaction.PendingRallyAltitude = new MissionAltitude(altitude, reference switch
         {
             "Mean sea level" => MissionAltitudeReference.MeanSeaLevel,
             "Terrain" => MissionAltitudeReference.Terrain,
