@@ -1,8 +1,9 @@
 ﻿<utilities:UserControlViewBase
     xmlns="https://github.com/avaloniaui"
-    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
     xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:appSetup="clr-namespace:MissionPlanner.App.Views.Common"
     xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:models="clr-namespace:MissionPlanner.App.Models"
@@ -75,7 +76,7 @@
                             <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Grid.Row="1"  Topic="SerialPorts"
+                    <appSetup:SetupInformationView Grid.Row="1"  Topic="SerialPorts"
                                                    WorkflowStatus="{Binding StatusMessage}"
                                                    WorkflowError="{Binding ErrorMessage}" />
                 </Grid>

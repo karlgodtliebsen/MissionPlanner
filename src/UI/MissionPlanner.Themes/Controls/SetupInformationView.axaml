@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls"
+             xmlns:converters="clr-namespace:Avalonia.Data.Converters;assembly=Avalonia.Base"
+             x:Class="MissionPlanner.Themes.Controls.SetupInformationView"
+             x:Name="Root">
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="8">
+            <controls:InformationDocumentView Document="{Binding Overview, ElementName=Root}" />
+            <controls:InformationDocumentView Document="{Binding AdditionalDocument, ElementName=Root}"
+                IsVisible="{Binding AdditionalDocument, ElementName=Root, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
+            <controls:InformationDocumentView Document="{Binding Parameters, ElementName=Root}"
+                IsVisible="{Binding Parameters, ElementName=Root, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

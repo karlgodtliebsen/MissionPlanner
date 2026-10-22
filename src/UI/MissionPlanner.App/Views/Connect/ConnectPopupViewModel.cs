@@ -183,8 +183,8 @@ public partial class ConnectPopupViewModel : DialogViewModelBase
     } = true;
 
     private readonly List<string> configuredChannels;
-    private const string ConnectImage = "avares://MissionPlanner.App/Resources/Images/light_disconnect_icon.png";
-    private const string DisConnectImage = "avares://MissionPlanner.App/Resources/Images/light_connect_icon.png";
+    private const string ConnectImage = "avares://MissionPlanner.Themes/Resources/Images/light_disconnect_icon.png";
+    private const string DisConnectImage = "avares://MissionPlanner.Themes/Resources/Images/light_connect_icon.png";
     private readonly string defaultChannel;
 
     /// <summary>

@@ -37,7 +37,7 @@
                 <DockPanel Margin="8,16,8,8" HorizontalAlignment="Center" VerticalSpacing="15">
                     <Panel DockPanel.Dock="Top" Width="52" Height="52"
                            Background="Transparent" u:NavMenu.CanToggle="True">
-                        <Image Source="/Resources/AppIcon/mpdesktop.png" />
+                        <Image Source="avares://MissionPlanner.Themes/Resources/AppIcon/mpdesktop.png" />
                     </Panel>
 
                     <TextBlock DockPanel.Dock="Top" Margin="16,0,0,0" VerticalAlignment="Center"

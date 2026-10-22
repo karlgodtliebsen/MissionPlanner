@@ -4,7 +4,7 @@
                           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                           xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
-                          xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                          xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
                           xmlns:view="clr-namespace:MissionPlanner.App.Utilities"
                           xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                           xmlns:u="https://irihi.tech/ursa"

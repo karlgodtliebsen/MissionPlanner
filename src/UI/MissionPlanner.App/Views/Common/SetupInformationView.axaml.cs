@@ -1,9 +1,10 @@
-﻿using Avalonia;
+﻿using MissionPlanner.Themes.Documents;
+using Avalonia;
 using Avalonia.Controls;
 using MissionPlanner.App.Presentation.Documents;
 using MissionPlanner.Core.Setup.Reporting;
 
-namespace MissionPlanner.App.Controls;
+namespace MissionPlanner.App.Views.Common;
 
 /// <summary>Displays a subsystem's reporting documents with an independent visible-tab lifecycle.</summary>
 public partial class SetupInformationView : UserControlViewBase<SetupInformationViewModel>

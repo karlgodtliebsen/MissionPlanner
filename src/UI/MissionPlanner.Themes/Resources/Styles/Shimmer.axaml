@@ -2,7 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:u="https://irihi.tech/ursa"
-    xmlns:controls="clr-namespace:Ursa.Controls">
+    xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes">
     <ControlTheme x:Key="{x:Type controls:ShimmerText}" TargetType="controls:ShimmerText">
         <Setter Property="BaseColor" Value="{DynamicResource ShimmerBaseColor}" />
         <Setter Property="HighlightColor" Value="{DynamicResource ShimmerHighlightColor}" />

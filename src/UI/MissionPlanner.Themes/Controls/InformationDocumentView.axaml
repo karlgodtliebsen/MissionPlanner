@@ -2,9 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:md="clr-namespace:LiveMarkdown.Avalonia;assembly=LiveMarkdown.Avalonia"
              xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             x:Class="MissionPlanner.App.Controls.InformationDocumentView">
+             x:Class="MissionPlanner.Themes.Controls.InformationDocumentView">
     <UserControl.Styles>
-        <StyleInclude Source="/Resources/Styles/InformationDocumentStyles.axaml" />
+        <StyleInclude Source="avares://MissionPlanner.Themes/Resources/Styles/InformationDocumentStyles.axaml" />
     </UserControl.Styles>
     <StackPanel Spacing="8" Background="Transparent">
         <TextBlock x:Name="CopyFeedback"

@@ -1,8 +1,9 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:FftSetupViewModel"
                                xmlns="https://github.com/avaloniaui"
-                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                               xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
                                xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:appSetup="clr-namespace:MissionPlanner.App.Views.Common"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                xmlns:analysis="clr-namespace:MissionPlanner.App.Views.Analysis"
@@ -38,7 +39,7 @@
                             <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Grid.Row="1" Topic="Fft" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
+                    <appSetup:SetupInformationView Grid.Row="1" Topic="Fft" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
 
                 </Grid>
             </TabItem>

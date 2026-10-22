@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Avalonia.Data.Converters;
 
-namespace MissionPlanner.App.Converters;
+namespace MissionPlanner.Themes.Converters;
 
 /// <summary>
 /// Converts between integer and double values.

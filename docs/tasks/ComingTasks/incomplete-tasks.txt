@@ -12,7 +12,7 @@ That one line can save a surprising amount of debugging later.
 Add information to HUD
 *********************************************************************************************
 
-Make layout uniform
+Make layout uniform	: done
 
 
 *********************************************************************************************
@@ -41,17 +41,17 @@ Accelerometer page is not working: must be verified
 *********************************************************************************************
 
 
-In the background, Look for newer version of installed Ardupilot and prompt the user for upgrade
+In the background, Look for newer version of installed Ardupilot and prompt the user for upgrade	: done
 
 *********************************************************************************************
-Continously monitor connection and react when disconnected
+Continously monitor connection and react when disconnected	: done
 
 *********************************************************************************************
 
 
-Is there a way to set a vehicle Id (flash it to the device)
+Is there a way to set a vehicle Id (flash it to the device)	: done
 
-yes, technical done, but we should build a UI view for it
+yes, technical done, but we should build a UI view for it	: done
 *********************************************************************************************
 
 In Optional Hardware, PX4Flow is missing

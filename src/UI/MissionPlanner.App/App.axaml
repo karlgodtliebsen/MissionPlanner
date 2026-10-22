@@ -6,13 +6,13 @@
              xmlns:themes="using:MissionPlanner.Themes"
              xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-             xmlns:converters="clr-namespace:MissionPlanner.App.Converters"
+             xmlns:converters="clr-namespace:MissionPlanner.Themes.Converters;assembly=MissionPlanner.Themes"
              RequestedThemeVariant="Default">
 
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="/Resources/Styles/VirtualizedItemsGrid.axaml" />
+                <ResourceInclude Source="avares://MissionPlanner.Themes/Resources/Styles/VirtualizedItemsGrid.axaml" />
                 <ResourceInclude Source="avares://LiveMarkdown.Avalonia/Defaults.axaml"/>
                 <ResourceInclude Source="avares://MissionPlanner.Themes/Controls/ExpandBanner.axaml" />
             </ResourceDictionary.MergedDictionaries>
@@ -34,8 +34,8 @@
         <themes:MissionPlannerTheme />
         <semi:SemiPopupAnimations />
         <materialIcons:MaterialIconStyles />
-        <StyleInclude Source="/Resources/Styles/SharedStyles.axaml" />
-        <StyleInclude Source="/Resources/Styles/VirtualizedItemsGridStyles.axaml" />
+        <StyleInclude Source="avares://MissionPlanner.Themes/Resources/Styles/SharedStyles.axaml" />
+        <StyleInclude Source="avares://MissionPlanner.Themes/Resources/Styles/VirtualizedItemsGridStyles.axaml" />
         <StyleInclude Source="avares://LiveMarkdown.Avalonia/Styles.axaml"/>
     </Application.Styles>
 </Application>

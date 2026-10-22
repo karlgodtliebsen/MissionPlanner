@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Controls;
+﻿namespace MissionPlanner.Themes.Controls;
 
 public enum VirtualizedItemsGridSelectionMode
 {

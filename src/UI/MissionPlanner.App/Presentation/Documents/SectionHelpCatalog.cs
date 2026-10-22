@@ -1,3 +1,4 @@
+using MissionPlanner.Themes.Documents;
 namespace MissionPlanner.App.Presentation.Documents;
 
 /// <summary>Offline, task-oriented help for every visible hardware and configuration section.</summary>

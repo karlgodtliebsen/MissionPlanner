@@ -43,8 +43,8 @@ public partial class TopBarViewModel : ViewModelBase
     private readonly IServiceFactory serviceFactory;
     private readonly IDialogService dialogService;
     private readonly IDomainEventHub domainEventHub;
-    private const string ConnectImage = "avares://MissionPlanner.App/Resources/Images/light_disconnect_icon.png";
-    private const string DisConnectImage = "avares://MissionPlanner.App/Resources/Images/light_connect_icon.png";
+    private const string ConnectImage = "avares://MissionPlanner.Themes/Resources/Images/light_disconnect_icon.png";
+    private const string DisConnectImage = "avares://MissionPlanner.Themes/Resources/Images/light_connect_icon.png";
     private readonly IList<IDisposable> disposables = [];
     private readonly IReplaySessionManager replaySessionManager;
     private readonly INavigationService navigationService;

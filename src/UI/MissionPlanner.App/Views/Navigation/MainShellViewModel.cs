@@ -174,9 +174,9 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
     {
         return
         [
-            new("Flight Data", MissionPlannerRoutes.FlightData, LoadImage("avares://MissionPlanner.App/Resources/Images/light_flightdata_icon.png")),
-            new("Flight Planner", MissionPlannerRoutes.FlightPlanner, LoadImage("avares://MissionPlanner.App/Resources/Images/light_flightplan_icon.png")),
-            new("Setup", icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_initialsetup_icon.png"), children:
+            new("Flight Data", MissionPlannerRoutes.FlightData, LoadImage("avares://MissionPlanner.Themes/Resources/Images/light_flightdata_icon.png")),
+            new("Flight Planner", MissionPlannerRoutes.FlightPlanner, LoadImage("avares://MissionPlanner.Themes/Resources/Images/light_flightplan_icon.png")),
+            new("Setup", icon: LoadImage("avares://MissionPlanner.Themes/Resources/Images/light_initialsetup_icon.png"), children:
             [
                 new("Install Firmware", MissionPlannerRoutes.SetupInstallFirmware),
                 new("Mandatory Hardware", MissionPlannerRoutes.SetupMandatoryHardware),
@@ -185,7 +185,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
                 new("Advanced", MissionPlannerRoutes.SetupAdvanced)
             ]),
             //MissionPlannerRoutes.Configuration,
-            new("Configuration",  icon: LoadImage("avares://MissionPlanner.App/Resources/Images/light_tuningconfig_icon.png"), children:
+            new("Configuration",  icon: LoadImage("avares://MissionPlanner.Themes/Resources/Images/light_tuningconfig_icon.png"), children:
             [
                 new("GeoFence", MissionPlannerRoutes.ConfigurationGeoFence),
                 new("Basic Tuning", MissionPlannerRoutes.ConfigurationBasicTuning),
@@ -199,8 +199,8 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
 
             new("Logs", MissionPlannerRoutes.Logs),
             new("Preferences", MissionPlannerRoutes.Preferences),
-            new("Simulation", MissionPlannerRoutes.Simulation, LoadImage("avares://MissionPlanner.App/Resources/Images/light_simulation_icon.png")),
-            new("Help", MissionPlannerRoutes.Help, LoadImage("avares://MissionPlanner.App/Resources/Images/light_help_icon.png"))
+            new("Simulation", MissionPlannerRoutes.Simulation, LoadImage("avares://MissionPlanner.Themes/Resources/Images/light_simulation_icon.png")),
+            new("Help", MissionPlannerRoutes.Help, LoadImage("avares://MissionPlanner.Themes/Resources/Images/light_help_icon.png"))
         ];
     }
 }

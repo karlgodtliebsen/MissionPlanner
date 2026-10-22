@@ -81,7 +81,7 @@ public sealed class FftAnalysisViewTests
                         model.SelectedTab = 0;
                         Dispatcher.UIThread.RunJobs();
                         window.UpdateLayout();
-                        var report = Assert.Single(view.GetVisualDescendants().OfType<MissionPlanner.App.Controls.InformationDocumentView>());
+                        var report = Assert.Single(view.GetVisualDescendants().OfType<MissionPlanner.Themes.Controls.InformationDocumentView>());
                         Assert.Equal(model.Report, report.Document!.Markdown);
                         Assert.Contains("### Measured peaks", report.Document.Markdown);
                         Assert.True(report.Bounds.Height > 0);

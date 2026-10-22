@@ -20,7 +20,7 @@
                         VerticalAlignment="Stretch" >
                 <!-- App Title/Logo -->
                 <Image
-                    Source="/Resources/Images/ardupilot.png"
+                    Source="avares://MissionPlanner.Themes/Resources/Images/ardupilot.png"
                     Width="120"
                     Height="30"
                     VerticalAlignment="Center"

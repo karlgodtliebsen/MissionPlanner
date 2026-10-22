@@ -5,7 +5,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Microsoft.Extensions.DependencyInjection;
-using MissionPlanner.App.Controls;
+using MissionPlanner.Themes.Controls;
 using MissionPlanner.App.Views.InitSetup.Arming;
 
 namespace MissionPlanner.AvaloniaUI.Tests;

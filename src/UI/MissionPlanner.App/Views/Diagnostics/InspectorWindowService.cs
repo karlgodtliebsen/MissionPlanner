@@ -42,7 +42,7 @@ public sealed class InspectorWindowService : IInspectorWindowService
             return;
         }
         using var iconStream = Avalonia.Platform.AssetLoader.Open(
-            new Uri("avares://MissionPlanner.App/Resources/AppIcon/mpdesktop.ico"));
+            new Uri("avares://MissionPlanner.Themes/Resources/AppIcon/mpdesktop.ico"));
         window = new UrsaWindow
         {
             Title = "Diagnostics",

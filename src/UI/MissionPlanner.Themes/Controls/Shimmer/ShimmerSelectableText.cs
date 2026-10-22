@@ -1,8 +1,8 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 
-namespace Ursa.Controls;
+namespace MissionPlanner.Themes.Controls;
 
 /// <summary>
 ///     A <see cref="SelectableTextBlock" /> whose text sweeps with a shimmering

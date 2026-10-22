@@ -1,8 +1,9 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:AccelerometerSetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                               xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:appSetup="clr-namespace:MissionPlanner.App.Views.Common"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -35,15 +36,15 @@
                             <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Grid.Row="1" Topic="Accelerometer" WorkflowError="{Binding ErrorMessage}" >
-                        <controls:SetupInformationView.WorkflowStatus>
+                    <appSetup:SetupInformationView Grid.Row="1" Topic="Accelerometer" WorkflowError="{Binding ErrorMessage}" >
+                        <appSetup:SetupInformationView.WorkflowStatus>
                             <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
                                 <Binding Path="StatusMessage" />
                                 <Binding Path="Instruction" />
                                 <Binding Path="CalibrationState" />
                             </MultiBinding>
-                        </controls:SetupInformationView.WorkflowStatus>
-                    </controls:SetupInformationView>
+                        </appSetup:SetupInformationView.WorkflowStatus>
+                    </appSetup:SetupInformationView>
                 </Grid>
             </TabItem>
             <TabItem Header="Configuration">

@@ -13,7 +13,7 @@ using Avalonia.Layout;
 using Avalonia.Threading;
 using Ursa.Controls;
 
-namespace MissionPlanner.App.Controls;
+namespace MissionPlanner.Themes.Controls;
 
 /// <summary>
 /// A lightweight, table-shaped shell around Avalonia ItemsRepeater.

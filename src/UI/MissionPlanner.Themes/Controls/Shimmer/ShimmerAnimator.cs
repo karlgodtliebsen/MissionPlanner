@@ -1,11 +1,11 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Styling;
 
-namespace Ursa.Controls;
+namespace MissionPlanner.Themes.Controls;
 
 /// <summary>
 ///     Shared implementation for shimmer-animated visuals: takes over one of the

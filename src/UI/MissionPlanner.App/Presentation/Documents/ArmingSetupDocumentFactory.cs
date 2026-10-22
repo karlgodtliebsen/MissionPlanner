@@ -1,4 +1,5 @@
-﻿using MissionPlanner.Core.Diagnostics;
+﻿using MissionPlanner.Themes.Documents;
+using MissionPlanner.Core.Diagnostics;
 using MissionPlanner.Core.Setup.Arming;
 
 namespace MissionPlanner.App.Presentation.Documents;

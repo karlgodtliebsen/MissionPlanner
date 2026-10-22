@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -7,7 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <AvaloniaResource Include="Resources\**" Exclude="Resources\**\*.axaml" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Controls.ItemsRepeater" />
+        <PackageReference Include="Material.Icons.Avalonia" />
+        <PackageReference Include="LiveMarkdown.Avalonia" />
+        <PackageReference Include="AsyncAwaitBestPractices.MVVM" />
         <PackageReference Include="Irihi.Ursa" />
         <PackageReference Include="Irihi.Ursa.Themes.Semi" />
         <PackageReference Include="Semi.Avalonia" />

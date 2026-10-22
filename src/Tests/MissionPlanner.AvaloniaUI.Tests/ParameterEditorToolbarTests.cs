@@ -7,7 +7,7 @@ using MissionPlanner.Themes.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Microsoft.Extensions.DependencyInjection;
-using MissionPlanner.App.Controls;
+using MissionPlanner.Themes.Controls;
 using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities;

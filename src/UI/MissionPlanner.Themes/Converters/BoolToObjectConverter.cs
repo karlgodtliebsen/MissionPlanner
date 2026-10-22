@@ -2,7 +2,7 @@
 using Avalonia;
 using Avalonia.Data.Converters;
 
-namespace MissionPlanner.App.Converters;
+namespace MissionPlanner.Themes.Converters;
 
 public sealed class BoolToObjectConverter : IValueConverter
 {

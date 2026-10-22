@@ -5,7 +5,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
-    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+    xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
     xmlns:documents="clr-namespace:MissionPlanner.App.Presentation.Documents"
     x:TypeArguments="local:FirmwareLandingViewModel"
     x:DataType="local:FirmwareLandingViewModel"

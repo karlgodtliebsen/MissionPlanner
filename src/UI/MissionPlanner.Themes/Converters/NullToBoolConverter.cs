@@ -2,7 +2,7 @@
 using Avalonia.Data;
 using Avalonia.Data.Converters;
 
-namespace MissionPlanner.App.Converters;
+namespace MissionPlanner.Themes.Converters;
 
 public sealed class NullToBoolConverter : IMultiValueConverter
 {

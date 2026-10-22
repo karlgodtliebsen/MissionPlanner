@@ -5,7 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.VisualTree;
 
-namespace MissionPlanner.App.Controls;
+namespace MissionPlanner.Themes.Controls;
 
 /// <summary>
 /// Grid used as the root of VirtualizedItemsGrid header and row templates.

@@ -5,7 +5,7 @@ param()
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
-$assetDirectory = Join-Path $PSScriptRoot '../src/UI/MissionPlanner.App/Resources/AppIcon'
+$assetDirectory = Join-Path $PSScriptRoot '../src/UI/MissionPlanner.Themes/Resources/AppIcon'
 $source = [System.Drawing.Image]::FromFile((Join-Path $assetDirectory 'mpdesktop.png'))
 $frames = @()
 $sizes = @(16, 24, 32, 48, 64, 128, 256)

@@ -65,7 +65,7 @@ public sealed class AvaloniaThemeTests
         Assert.Contains("<semi:SemiTheme", appAxaml, StringComparison.Ordinal);
         Assert.Contains("<semi:UrsaSemiTheme", appAxaml, StringComparison.Ordinal);
         Assert.Contains("<themes:MissionPlannerTheme", appAxaml, StringComparison.Ordinal);
-        Assert.Contains("/Resources/Styles/SharedStyles.axaml", appAxaml, StringComparison.Ordinal);
+        Assert.Contains("avares://MissionPlanner.Themes/Resources/Styles/SharedStyles.axaml", appAxaml, StringComparison.Ordinal);
         Assert.DoesNotContain("AppThemeBinding", appAxaml, StringComparison.Ordinal);
     }
 

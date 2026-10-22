@@ -1,10 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 
-namespace Ursa.Controls;
+namespace MissionPlanner.Themes.Controls;
 
 
 /// <summary>

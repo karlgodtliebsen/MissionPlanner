@@ -3,7 +3,7 @@ using Avalonia;
 using Avalonia.Media;
 using Irihi.Avalonia.Shared.Converters;
 
-namespace MissionPlanner.App.Converters;
+namespace MissionPlanner.Themes.Converters;
 
 /// <summary>
 /// Converts an icon name or index to a corresponding path geometry.

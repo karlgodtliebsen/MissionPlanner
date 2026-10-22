@@ -1,4 +1,5 @@
-﻿using System.Collections.Immutable;
+﻿using MissionPlanner.Themes.Documents;
+using System.Collections.Immutable;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -106,7 +107,7 @@ public sealed partial class FftAnalysisViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(ReportDocument))]
     public partial string Report { get; set; } = "Select a source and interval, then Analyze.";
     /// <summary>Selectable Markdown report rendered with the shared application document styling.</summary>
-    public MissionPlanner.App.Presentation.Documents.UserDocument ReportDocument => new(Report, "Vibration analysis");
+    public UserDocument ReportDocument => new(Report, "Vibration analysis");
     /// <summary>Retained baseline provenance.</summary>
     [ObservableProperty] public partial string BaselineDescription { get; set; } = "No baseline captured.";
     /// <summary>Parameter values with metadata-backed explanations.</summary>

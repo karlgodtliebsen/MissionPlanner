@@ -1,0 +1,14 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                              xmlns:documents="clr-namespace:MissionPlanner.App.Presentation.Documents"
+                              xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
+                              xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                              x:TypeArguments="documents:SetupInformationViewModel"
+                              x:Class="MissionPlanner.App.Views.Common.SetupInformationView"
+                              x:DataType="documents:SetupInformationViewModel">
+    <controls:SetupInformationView x:Name="ReportContent"
+                                   Overview="{Binding Overview}"
+                                   AdditionalDocument="{Binding AdditionalDocument}"
+                                   Parameters="{Binding Parameters}" />
+</utilities:UserControlViewBase>

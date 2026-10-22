@@ -1,3 +1,4 @@
+using MissionPlanner.Themes.Documents;
 using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
@@ -8,7 +9,7 @@ using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using MissionPlanner.App.Controls;
+using MissionPlanner.Themes.Controls;
 using MissionPlanner.App.Presentation.Documents;
 
 namespace MissionPlanner.AvaloniaUI.Tests;

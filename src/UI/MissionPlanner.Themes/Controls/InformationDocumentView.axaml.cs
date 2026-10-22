@@ -1,14 +1,15 @@
-﻿using Avalonia;
+﻿using MissionPlanner.Themes.Documents;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using LiveMarkdown.Avalonia;
 using Markdig;
 using Markdig.Parsers.Inlines;
-using MissionPlanner.App.Presentation.Documents;
+using AsyncAwaitBestPractices;
 using MissionPlanner.Themes;
 
-namespace MissionPlanner.App.Controls;
+namespace MissionPlanner.Themes.Controls;
 
 /// <summary>Selectable, read-only application documents with no executable links or images.</summary>
 public partial class InformationDocumentView : UserControl

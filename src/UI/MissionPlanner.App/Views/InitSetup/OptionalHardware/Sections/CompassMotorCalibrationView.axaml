@@ -1,9 +1,10 @@
 ﻿<utilities:UserControlViewBase x:TypeArguments="sections:CompassMotorCalibrationViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                               xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                               xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
                                xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:appSetup="clr-namespace:MissionPlanner.App.Views.Common"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                xmlns:optionalHardware="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware;assembly=MissionPlanner.Core"
@@ -36,15 +37,15 @@
                             <common:OpenParameterEditorsView/>
                         </WrapPanel>
                     </Border>
-                    <controls:SetupInformationView Grid.Row="1" Topic="CompassMotor" WorkflowError="{Binding ErrorMessage}" >
-                        <controls:SetupInformationView.WorkflowStatus>
+                    <appSetup:SetupInformationView Grid.Row="1" Topic="CompassMotor" WorkflowError="{Binding ErrorMessage}" >
+                        <appSetup:SetupInformationView.WorkflowStatus>
                             <MultiBinding StringFormat="{}{0}&#10;{1}&#10;{2}">
                                 <Binding Path="StatusMessage" />
                                 <Binding Path="Instruction" />
                                 <Binding Path="Compensation" />
                             </MultiBinding>
-                        </controls:SetupInformationView.WorkflowStatus>
-                    </controls:SetupInformationView>
+                        </appSetup:SetupInformationView.WorkflowStatus>
+                    </appSetup:SetupInformationView>
                 </Grid>
             </TabItem>
             <TabItem Header="Configuration">

@@ -1,3 +1,4 @@
+using SetupInformationView = MissionPlanner.App.Views.Common.SetupInformationView;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
@@ -6,7 +7,7 @@ using Avalonia.Threading;
 using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.DependencyInjection;
-using MissionPlanner.App.Controls;
+using MissionPlanner.Themes.Controls;
 using MissionPlanner.App.Presentation.Documents;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.Core.Setup.Reporting;

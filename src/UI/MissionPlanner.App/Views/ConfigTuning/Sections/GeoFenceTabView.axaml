@@ -7,7 +7,7 @@
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                               xmlns:models="clr-namespace:MissionPlanner.App.Models"
-                              xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                              xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.GeoFenceTabView"
                               x:DataType="sections:GeoFenceTabViewModel"
