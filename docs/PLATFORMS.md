@@ -10,7 +10,7 @@ an application head.
 | Linux | `Platforms/MissionPlanner.Linux` | `UI/MissionPlanner.Library.Linux` | Builds in CI; started and run for 25 s under WSLg (Debian 13); 1,492 of the 1,493 portable unit tests that ran pass there; not yet used with a vehicle |
 | macOS | `Platforms/MissionPlanner.MacOs` | `UI/MissionPlanner.Library.MacOs` | Builds and publishes; **never run** (no Mac available) |
 | Browser | `Platforms/MissionPlanner.Browser` | `UI/MissionPlanner.Library.Browser` | UDP through the local bridge only |
-| Android, iOS | `Platforms/MissionPlanner.Android`, `.iOS` | none | Template heads that compile; **not functional** (see below) |
+| Android, iOS | `Platforms/MissionPlanner.Android`, `.iOS` | none | Not supported; template folders only, **not in the solution** (see below) |
 
 `UI/MissionPlanner.Library.Desktop` holds what every desktop platform shares: serial/network output,
 warning-rule storage and offline MBTiles map support. A platform library only adds what differs:
@@ -65,12 +65,18 @@ Any platform's head can be built from any host with `dotnet build`; only the bun
 | Device location for the map | Not available; the map keeps its default position |
 | Secret storage | Linux: keyring via `secret-tool`, else session only. macOS: keychain |
 
-## Mobile heads
+## Mobile (Android and iOS)
 
-`MissionPlanner.Android` and `MissionPlanner.iOS` are the Avalonia templates. They compile (the namespace
-clash with `MissionPlanner.App` was fixed), but they do not register any platform services, do not call
-`MissionPlannerProgram.BuildAvaloniaApp`, and Android and iOS have no `System.IO.Ports`. They need a design
-of their own (network/Bluetooth transports, file access, location) before they can run the application.
+MissionPlanner Next Gen is a desktop application, so Android and iOS are not supported. The two template
+folders `Platforms/MissionPlanner.Android` and `Platforms/MissionPlanner.iOS` are still in the repository but
+were removed from `MissionPlanner.slnx`, so `dotnet build` of the solution no longer needs the Android or iOS
+workloads (iOS can only be built on macOS) and the CI jobs never build them.
+
+The folders are Avalonia templates and are not functional: they register no platform services, do not call
+`MissionPlannerProgram.BuildAvaloniaApp`, and neither platform has `System.IO.Ports`. Before they can run the
+application they need a design of their own (network or Bluetooth transports, file access, location). The
+namespace clash with `MissionPlanner.App` that stopped them compiling was fixed, and they can be added back to
+the solution when that work starts. Delete the folders if mobile is not planned.
 
 ## Running the tests on Linux
 

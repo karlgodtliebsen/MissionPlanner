@@ -13,7 +13,7 @@ Implemented: `MissionPlanner.Library.Desktop` (shared), `MissionPlanner.Library.
 - Run the platform-neutral test suites on Linux and make the CI job blocking.
 - Optional: location through GeoClue (Linux) and CoreLocation (macOS), DFU through the Linux
   `STM32_Programmer_CLI`, a Linux/macOS `IUsbTopologyProvider`.
-- Decide what the Android and iOS heads are for; they compile but are not functional.
+- Decide whether to delete the unused `Platforms/MissionPlanner.Android` and `.iOS` folders; they were removed from the solution and are not functional.
 
 ## Localization (postponed)
 
