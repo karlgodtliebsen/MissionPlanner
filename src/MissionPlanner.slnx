@@ -42,11 +42,9 @@
     <File Path="../docs/VEHICLE_SCRIPTS.md" />
   </Folder>
   <Folder Name="/Platforms/">
-    <Project Path="Platforms/MissionPlanner.Android/MissionPlanner.Android.csproj" />
     <Project Path="Platforms/MissionPlanner.Browser/MissionPlanner.Browser.csproj" />
     <Project Path="Platforms/MissionPlanner.BrowserBridge/MissionPlanner.BrowserBridge.csproj" />
     <Project Path="Platforms/MissionPlanner.Desktop/MissionPlanner.Desktop.csproj" />
-    <Project Path="Platforms/MissionPlanner.iOS/MissionPlanner.iOS.csproj" />
     <Project Path="Platforms/MissionPlanner.Linux/MissionPlanner.Linux.csproj" />
     <Project Path="Platforms/MissionPlanner.MacOs/MissionPlanner.MacOs.csproj" />
   </Folder>
