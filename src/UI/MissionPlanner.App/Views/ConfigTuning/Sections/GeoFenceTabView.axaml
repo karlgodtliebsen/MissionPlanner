@@ -36,9 +36,11 @@
             </Grid.ColumnDefinitions>
 
             <controls1:ExpandBanner Grid.Row="0" Grid.Column="1" Classes="Bordered"
+                                   
                                     CanExpand="True"
                                     IsExpanded="{Binding IsEditorExpanded, Mode=TwoWay}"
-                                    Header="Geo Fence" HorizontalAlignment="Stretch">
+                                    Header="Geo Fence" 
+                                    HorizontalAlignment="Stretch">
 
                 <StackPanel Orientation="Vertical" Grid.Row="0"
                             Margin="0,10,0,0"

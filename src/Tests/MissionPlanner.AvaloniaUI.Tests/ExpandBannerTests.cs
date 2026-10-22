@@ -26,35 +26,34 @@ public sealed class ExpandBannerTests
                     window.Show();
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
-                    var buttons = banner.GetVisualDescendants().OfType<Button>().ToArray();
-                    var expand = buttons.Single(button => button.Name == ExpandBanner.PART_ToggleExpandButton);
-                    var shrink = buttons.Single(button => button.Name == ExpandBanner.PART_ToggleShrinkButton);
-                    Assert.NotNull(expand.Theme);
-                    Assert.NotNull(shrink.Theme);
-                    Assert.NotNull(expand.Content);
-                    Assert.NotNull(shrink.Content);
-                    Assert.True(expand.IsVisible);
-                    Assert.False(shrink.IsVisible);
-                    expand.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    var toggle = banner.GetVisualDescendants().OfType<Button>()
+                        .Single(button => button.Name == ExpandBanner.PART_ToggleExpandButton);
+                    var expandTheme = banner.FindResource("OverlayExpandButton");
+                    var shrinkTheme = banner.FindResource("OverlayShrinkButton");
+                    Assert.Same(expandTheme, toggle.Theme);
+                    Assert.NotNull(toggle.Content);
+                    Assert.True(toggle.IsVisible);
+                    toggle.Focus();
+                    toggle.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    window.UpdateLayout();
                     Assert.True(banner.IsExpanded);
-                    Assert.False(expand.IsVisible);
-                    Assert.True(shrink.IsVisible);
-                    shrink.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    Assert.Same(shrinkTheme, toggle.Theme);
+                    Assert.True(toggle.IsFocused);
+                    Assert.Same(toggle, banner.GetVisualDescendants().OfType<Button>()
+                        .Single(button => button.Name == ExpandBanner.PART_ToggleExpandButton));
+                    toggle.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     Assert.False(banner.IsExpanded);
-                    Assert.True(expand.IsVisible);
-                    Assert.False(shrink.IsVisible);
+                    Assert.Same(expandTheme, toggle.Theme);
 
-                    // View-model changes must update the buttons without a click.
+                    // View-model changes must update the same button without a click.
                     banner.IsExpanded = true;
-                    Assert.False(expand.IsVisible);
-                    Assert.True(shrink.IsVisible);
+                    Assert.Same(shrinkTheme, toggle.Theme);
                     banner.CanExpand = false;
-                    Assert.False(expand.IsEffectivelyVisible);
-                    Assert.False(shrink.IsEffectivelyVisible);
+                    Assert.False(toggle.IsEffectivelyVisible);
                     Assert.True(banner.IsExpanded);
                     banner.CanExpand = true;
-                    Assert.True(shrink.IsEffectivelyVisible);
-                    shrink.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    Assert.True(toggle.IsEffectivelyVisible);
+                    toggle.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     Assert.False(banner.IsExpanded);
                 }
                 finally

@@ -2,7 +2,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:m="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
-    >
+    xmlns:u="https://irihi.tech/ursa">
     <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://MissionPlanner.Themes/Controls/ExpandBannerResource.axaml" />
     </ResourceDictionary.MergedDictionaries>
@@ -17,7 +17,7 @@
                 />
         </HeaderedContentControl>
     </Design.PreviewWith>
-    
+
     <ControlTheme x:Key="{x:Type m:ExpandBanner}" TargetType="m:ExpandBanner">
         <Setter Property="Padding" Value="{DynamicResource BannerBorderPadding}" />
         <Setter Property="BorderThickness" Value="{DynamicResource BannerBorderThickness}" />
@@ -25,64 +25,63 @@
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="Template">
             <ControlTemplate TargetType="m:ExpandBanner">
-                <Border
-                    Name="PART_Container"
-                    Padding="{TemplateBinding Padding}"
-                    CornerRadius="{TemplateBinding CornerRadius}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}">
-                    <Grid ColumnDefinitions="Auto,*, Auto">
-                        <Grid Grid.Column="0" IsVisible="{TemplateBinding CanExpand}">
-                            <Button
-                                Name="{x:Static m:ExpandBanner.PART_ToggleExpandButton}"
+
+                <Grid
+                    ColumnSpacing="0"
+                    ColumnDefinitions="15,*">
+                    <Button
+                        Name="{x:Static m:ExpandBanner.PART_ToggleExpandButton}"
+                        Grid.Column="0"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        IsVisible="{TemplateBinding CanExpand}"
+                        Classes.expanded="{Binding IsExpanded, RelativeSource={RelativeSource TemplatedParent}}">
+                        <Button.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="Theme" Value="{DynamicResource OverlayExpandButton}" />
+                            </Style>
+                            <Style Selector="Button.expanded">
+                                <Setter Property="Theme" Value="{DynamicResource OverlayShrinkButton}" />
+                            </Style>
+                        </Button.Styles>
+                    </Button>
+
+                    <Border Grid.Column="1"
+                            Name="PART_Container"
+                            Padding="{TemplateBinding Padding}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Grid
                                 Grid.Column="0"
-                                Margin="0,0,0,0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Theme="{DynamicResource OverlayExpandButton}"
-                                ToolTip.Tip="Expand editor to full width"
-                                AutomationProperties.Name="Expand editor to full width"
-                                IsVisible="{Binding !IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" />
-                        
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                ColumnDefinitions=" *">
+                                <StackPanel Grid.Column="0" Spacing="2">
+                                    <ContentPresenter
+                                        Content="{TemplateBinding Header}"
+                                        ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextElement.FontSize="{DynamicResource BannerTitleFontSize}"
+                                        TextElement.FontWeight="{DynamicResource TextBlockTitleFontWeight}" />
+                                    <ContentPresenter
+                                        Content="{TemplateBinding Content}"
+                                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                                        TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Grid>
                             <Button
-                                Name="{x:Static m:ExpandBanner.PART_ToggleShrinkButton}"
-                                Grid.Column="0"
-                                Margin="0,0,0,0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Theme="{DynamicResource OverlayShrinkButton}"
-                                ToolTip.Tip="Restore compact editor width"
-                                AutomationProperties.Name="Restore compact editor width"
-                                IsVisible="{TemplateBinding IsExpanded}" />
-                        
+                                Name="{x:Static m:ExpandBanner.PART_CloseButton}"
+                                Grid.Column="1"
+                                Margin="{DynamicResource BannerCloseButtonMargin}"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Theme="{DynamicResource OverlayCloseButton}"
+                                IsVisible="{TemplateBinding CanClose}" />
                         </Grid>
-                        <Grid
-                            Grid.Column="1"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            ColumnDefinitions=" *">
-                            <StackPanel Grid.Column="0" Spacing="2">
-                                <ContentPresenter
-                                    Content="{TemplateBinding Header}"
-                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                    TextTrimming="CharacterEllipsis"
-                                    TextElement.FontSize="{DynamicResource BannerTitleFontSize}"
-                                    TextElement.FontWeight="{DynamicResource TextBlockTitleFontWeight}" />
-                                <ContentPresenter
-                                    Content="{TemplateBinding Content}"
-                                    ContentTemplate="{TemplateBinding ContentTemplate}"
-                                    TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Grid>
-                        <Button
-                            Name="{x:Static m:ExpandBanner.PART_CloseButton}"
-                            Grid.Column="2"
-                            Margin="{DynamicResource BannerCloseButtonMargin}"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            Theme="{DynamicResource OverlayCloseButton}"
-                            IsVisible="{TemplateBinding CanClose}" />
-                    </Grid>
-                </Border>
+                    </Border>
+                </Grid>
+
             </ControlTemplate>
         </Setter>
         <Style Selector="^.Bordered">
