@@ -2,6 +2,8 @@
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Interactivity;
+using MissionPlanner.Themes.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,6 +60,7 @@ public sealed class ParameterEditorToolbarTests
                 var designMode = typeof(Design).GetProperty(nameof(Design.IsDesignMode))!;
                 var previous = Design.IsDesignMode;
                 using var model = ServiceHelper.GetRequiredService<ParametersEditorTabViewModel>();
+                model.IsMainEditorExpanded = false;
                 Window? window = null;
                 try
                 {
@@ -69,18 +72,19 @@ public sealed class ParameterEditorToolbarTests
                     window.UpdateLayout();
                     var layout = view.FindControl<Grid>("ParameterEditorLayout")!;
                     var tabs = view.FindControl<TabControl>("EditorTabs")!;
-                    var toggle = view.FindControl<Button>("ToggleEditorWidthButton")!;
-                    Assert.DoesNotContain(toggle.GetVisualAncestors(), ancestor => ancestor is Ursa.Controls.Banner);
-                    Assert.Equal(0, Grid.GetColumn(toggle));
-                    Assert.Contains("Expander", toggle.Classes);
+                    var banner = view.GetVisualDescendants().OfType<ExpandBanner>().Single();
+                    var expand = banner.GetVisualDescendants().OfType<Button>()
+                        .Single(button => button.Name == ExpandBanner.PART_ToggleExpandButton);
+                    var shrink = banner.GetVisualDescendants().OfType<Button>()
+                        .Single(button => button.Name == ExpandBanner.PART_ToggleShrinkButton);
                     var editor = view.GetVisualDescendants().OfType<ParametersMainEditorView>().Single();
                     var grid = editor.GetVisualDescendants().OfType<VirtualizedItemsGrid>().Single();
                     grid.SearchText = "ACRO";
                     var parameters = model.Parameters;
-                    Assert.Equal(900, layout.ColumnDefinitions[1].ActualWidth);
-                    Assert.Equal("Expand editor to full width", AutomationProperties.GetName(toggle));
+                    Assert.Equal(900, layout.ColumnDefinitions[0].ActualWidth);
+                    Assert.Equal("Expand editor to full width", AutomationProperties.GetName(expand));
 
-                    toggle.Command!.Execute(null);
+                    expand.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
                     Assert.True(layout.Bounds.Width > 1200);
@@ -89,25 +93,25 @@ public sealed class ParameterEditorToolbarTests
                     Assert.Same(model, editor.DataContext);
                     Assert.Same(parameters, model.Parameters);
                     Assert.Equal("ACRO", grid.SearchText);
-                    Assert.Equal("Restore compact editor width", AutomationProperties.GetName(toggle));
+                    Assert.Equal("Restore compact editor width", AutomationProperties.GetName(shrink));
 
-                    toggle.Command.Execute(null);
+                    shrink.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
-                    Assert.Equal(900, layout.ColumnDefinitions[1].ActualWidth);
+                    Assert.Equal(900, layout.ColumnDefinitions[0].ActualWidth);
                     Assert.Equal("ACRO", grid.SearchText);
 
-                    toggle.Command.Execute(null);
+                    expand.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                     tabs.SelectedIndex = 1;
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
-                    Assert.True(toggle.IsEffectivelyVisible);
+                    Assert.True(shrink.IsEffectivelyVisible);
                     Assert.True(layout.Bounds.Width > 1200);
 
                     tabs.SelectedIndex = 0;
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
-                    Assert.True(toggle.IsVisible);
+                    Assert.True(shrink.IsVisible);
                     Assert.True(layout.Bounds.Width > 1200);
                     Assert.Same(editor, view.GetVisualDescendants().OfType<ParametersMainEditorView>().Single());
                     Assert.Same(model, editor.DataContext);

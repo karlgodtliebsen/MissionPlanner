@@ -9,6 +9,7 @@
                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
                               xmlns:u="https://irihi.tech/ursa"
+                              xmlns:themeControls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.BasicTuningTabView"
                               x:DataType="sections:BasicTuningTabViewModel">
@@ -26,26 +27,11 @@
                 </Style>
             </Grid.Styles>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" MinWidth="900" MaxWidth="{Binding EditorColumnMaxWidth}" />
             </Grid.ColumnDefinitions>
 
-            <Button x:Name="ToggleEditorWidthButton"
-                Grid.Column="0" Grid.Row="0"
-                Classes="Expander"
-                Margin="0,0,4,0"
-                ToolTip.Tip="{Binding ToggleEditorWidthText}"
-                AutomationProperties.Name="{Binding ToggleEditorWidthText}"
-                Command="{Binding ToggleEditorWidthCommand}">
-                <Grid>
-                    <avalonia:MaterialIcon Kind="ChevronLeft" Width="22" Height="22"
-                                      IsVisible="{Binding !IsEditorExpanded}" />
-                    <avalonia:MaterialIcon Kind="ChevronRight" Width="22" Height="22"
-                                      IsVisible="{Binding IsEditorExpanded}" />
-                </Grid>
-            </Button>
-
-            <u:Banner ShowIcon="False" Grid.Column="1" Classes="Bordered" Header="Basic Tuning" HorizontalAlignment="Stretch">
+            <themeControls:ExpandBanner CanExpand="True"
+                                        IsExpanded="{Binding IsEditorExpanded, Mode=TwoWay}" Grid.Column="0" Classes="Bordered" Header="Basic Tuning" HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Vertical" Grid.Row="0"
                             Margin="0,10,0,0"
                             HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
@@ -61,9 +47,9 @@
                                          IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
                                          Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
                 </StackPanel>
-            </u:Banner>
+            </themeControls:ExpandBanner>
 
-            <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Stretch">
+            <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
                     <Button Classes="ToolbarButton" ToolTip.Tip="Import presented fields" Command="{Binding ImportCommand}" Margin="4" >
                         <avalonia:MaterialIcon Kind="FileImportOutline" Width="30" Height="30" />
@@ -74,7 +60,7 @@
                 </StackPanel>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
-            <ScrollViewer Grid.Column="1" Grid.Row="2" IsVisible="{Binding HasSupportedProfile}">
+            <ScrollViewer Grid.Column="0" Grid.Row="2" IsVisible="{Binding HasSupportedProfile}">
                 <ItemsControl ItemsSource="{Binding Groups}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>

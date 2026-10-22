@@ -12,7 +12,8 @@
                               x:DataType="sections:CubeLan8PortSwitchTabViewModel"
                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
-                              xmlns:u="https://irihi.tech/ursa">
+                              xmlns:u="https://irihi.tech/ursa"
+                              xmlns:themeControls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes">
     <ContentPage Header="CubeLAN 8 Port Switch"  >
 
         <Grid x:Name="CubeLanEditorLayout" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12"
@@ -26,26 +27,11 @@
                 </Style>
             </Grid.Styles>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" MinWidth="900" MaxWidth="{Binding EditorColumnMaxWidth}" />
             </Grid.ColumnDefinitions>
 
-            <Button x:Name="ToggleEditorWidthButton"
-                Grid.Column="0" Grid.Row="0"
-                Classes="Expander"
-                Margin="0,0,4,0"
-                ToolTip.Tip="{Binding ToggleEditorWidthText}"
-                AutomationProperties.Name="{Binding ToggleEditorWidthText}"
-                Command="{Binding ToggleEditorWidthCommand}">
-                <Grid>
-                    <mdi:MaterialIcon Kind="ChevronLeft" Width="22" Height="22"
-                                      IsVisible="{Binding !IsEditorExpanded}" />
-                    <mdi:MaterialIcon Kind="ChevronRight" Width="22" Height="22"
-                                      IsVisible="{Binding IsEditorExpanded}" />
-                </Grid>
-            </Button>
-
-            <u:Banner ShowIcon="False"  Grid.Row="0" Grid.Column="1" Classes="Bordered" Header="CubeLAN 8 Port Switch" HorizontalAlignment="Stretch">
+            <themeControls:ExpandBanner CanExpand="True"
+                                        IsExpanded="{Binding IsEditorExpanded, Mode=TwoWay}"  Grid.Row="0" Grid.Column="0" Classes="Bordered" Header="CubeLAN 8 Port Switch" HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Vertical" Grid.Row="0"
                             Margin="0,10,0,0"
                             HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
@@ -60,13 +46,13 @@
                     </StackPanel>
                     <TextBlock Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalAlignment="Center" />
                 </StackPanel>
-            </u:Banner>
+            </themeControls:ExpandBanner>
             
-            <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" Spacing="10" HorizontalAlignment="Center">
+            <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" Spacing="10" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True"  Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" />
             </StackPanel>
 
-            <Border Grid.Column="1" Grid.Row="2" Padding="12">
+            <Border Grid.Column="0" Grid.Row="2" Padding="12">
                 <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                     <WrapPanel Orientation="Horizontal" ItemSpacing="10">
                         <Button Classes="ToolbarButton" ToolTip.Tip="Discover / read" Command="{Binding RefreshCommand}" VerticalAlignment="Center" AutomationProperties.Name="Discover / read">
@@ -85,7 +71,7 @@
                 </StackPanel>
             </Border>
 
-            <controls:VirtualizedItemsGrid Grid.Column="1"
+            <controls:VirtualizedItemsGrid Grid.Column="0"
                 Grid.Row="3"
                 ItemsSource="{Binding Ports}"
                 ColumnWidths="*,*,*,*,2*"

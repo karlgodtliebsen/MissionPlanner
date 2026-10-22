@@ -40,6 +40,8 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Theme="{DynamicResource OverlayExpandButton}"
+                                ToolTip.Tip="Expand editor to full width"
+                                AutomationProperties.Name="Expand editor to full width"
                                 IsVisible="{Binding !IsExpanded, RelativeSource={RelativeSource TemplatedParent}}" />
                         
                             <Button
@@ -49,6 +51,8 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Theme="{DynamicResource OverlayShrinkButton}"
+                                ToolTip.Tip="Restore compact editor width"
+                                AutomationProperties.Name="Restore compact editor width"
                                 IsVisible="{TemplateBinding IsExpanded}" />
                         
                         </Grid>
