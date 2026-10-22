@@ -4,6 +4,7 @@
              xmlns:local="using:AvaloniaApplication2"
              xmlns:semi="https://irihi.tech/semi"
              xmlns:themes="using:MissionPlanner.Themes"
+             xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
              xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:converters="clr-namespace:MissionPlanner.App.Converters"
              RequestedThemeVariant="Default">
@@ -13,6 +14,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="/Resources/Styles/VirtualizedItemsGrid.axaml" />
                 <ResourceInclude Source="avares://LiveMarkdown.Avalonia/Defaults.axaml"/>
+                <ResourceInclude Source="avares://MissionPlanner.Themes/Controls/ExpandBanner.axaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <converters:BoolToObjectConverter x:Key="BoolToYesNoConverter" TrueObject="Yes" FalseObject="No" />

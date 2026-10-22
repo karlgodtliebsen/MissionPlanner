@@ -16,7 +16,9 @@ using ParameterItemViewModel = MissionPlanner.App.Models.ParameterItemViewModel;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Sections;
 
-/// <summary>Coordinates the shared fence parameter session, local geometry editor, and confirmed transfers.</summary>
+/// <summary>
+/// Coordinates the shared fence parameter session, local geometry editor, and confirmed transfers.
+/// </summary>
 public sealed partial class GeoFenceTabViewModel : ViewModelBase
 {
     private readonly IActiveVehicleContext activeVehicle;

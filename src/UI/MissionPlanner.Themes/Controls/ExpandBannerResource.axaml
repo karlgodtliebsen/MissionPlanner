@@ -1,0 +1,62 @@
+<ResourceDictionary
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.PreviewWith>
+        <StackPanel Orientation="Horizontal" Margin="20">
+            <Button Theme="{DynamicResource ExpandButton}" />
+            <Button Theme="{DynamicResource OverlayExpandButton}" />
+            <Button Theme="{DynamicResource ShrinkButton}" />
+            <Button Theme="{DynamicResource OverlayShrinkButton}" />
+        </StackPanel>
+    </Design.PreviewWith>
+
+    <ControlTheme
+        x:Key="OverlayExpandButton"
+        BasedOn="{StaticResource CaptionButton}"
+        TargetType="Button">
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Content" Value="{StaticResource SemiIconExpand}" />
+    </ControlTheme>
+    <ControlTheme
+        x:Key="ExpandButton"
+        BasedOn="{StaticResource OverlayExpandButton}"
+        TargetType="Button">
+        
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource CaptionButtonCloseForeground}" />
+            <Setter Property="Background" Value="{DynamicResource CaptionButtonClosePointeroverBackground}" />
+        </Style>
+
+        <Style Selector="^:pressed">
+            <Setter Property="Foreground" Value="{DynamicResource CaptionButtonCloseForeground}" />
+            <Setter Property="Background" Value="{DynamicResource CaptionButtonClosePressedBackground}" />
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme
+        x:Key="OverlayShrinkButton"
+        BasedOn="{StaticResource CaptionButton}"
+        TargetType="Button">
+        <Setter Property="Height" Value="24" />
+        <Setter Property="Width" Value="24" />
+        <Setter Property="Content" Value="{StaticResource SemiIconShrink}" />
+    </ControlTheme>
+
+    <ControlTheme
+        x:Key="ShrinkButton"
+        BasedOn="{StaticResource OverlayShrinkButton}"
+        TargetType="Button">
+        <Style Selector="^:pointerover">
+            <Setter Property="Foreground" Value="{DynamicResource CaptionButtonCloseForeground}" />
+            <Setter Property="Background" Value="{DynamicResource CaptionButtonClosePointeroverBackground}" />
+        </Style>
+
+        <Style Selector="^:pressed">
+            <Setter Property="Foreground" Value="{DynamicResource CaptionButtonCloseForeground}" />
+            <Setter Property="Background" Value="{DynamicResource CaptionButtonClosePressedBackground}" />
+        </Style>
+    </ControlTheme>
+
+
+</ResourceDictionary>
