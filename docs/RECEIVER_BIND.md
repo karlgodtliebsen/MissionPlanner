@@ -30,6 +30,13 @@ are emitted only when evidence changes, not for each packet.
 No parameter changes, FC reboot, receiver/transmitter firmware writes or automatic retry
 are part of this workflow. Software tests do not establish receiver hardware support.
 
+## ExpressLRS version note
+
+ELRS major versions must match between the TX module and the RX; different major
+versions are not supported together. The flight controller's ArduPilot firmware version is unrelated to the
+receiver's ELRS firmware version: updating one never requires or implies updating the other.
+Check both ELRS versions before debugging a failed bind or a missing link.
+
 References:
 - [MAVLink START_RX_PAIR](https://mavlink.io/en/messages/common.html#MAV_CMD_START_RX_PAIR)
 - ArduPilot `GCS_MAVLINK::handle_START_RX_PAIR` dispatches `AP::RC().start_bind()`.

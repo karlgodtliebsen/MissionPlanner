@@ -636,11 +636,15 @@ while leaving Config warns before discarding them.
   editable page size, limiting the number of Avalonia editor rows rendered at once
 * Loads and saves `.param`/JSON files using invariant numeric formatting
 * Retains the packed MAVFTP download with automatic classic-stream fallback
+* The **Write modified parameters** tab compares live values with pending edits, with the filters
+  Differences, Missing, Invalid, Modified and All. Imported `.param`/JSON files and profiles become
+  pending edits first, so they are reviewed there the same way (modified-only view)
+* The Profiles tab creates, duplicates, imports, exports, reviews and stages parameter profiles
 
 ### Missing
 
-* Parameter file compare/diff
-* Favorites and modified-only views (v1.38 raw params features)
+* Comparing two parameter files directly; the comparison always uses the connected vehicle's live values
+* Favorites in the Parameters Editor (favorites exist on the Setup pages only)
 
 ### Issues
 

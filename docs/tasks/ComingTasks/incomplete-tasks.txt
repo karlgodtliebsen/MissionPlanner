@@ -4,7 +4,7 @@ It may also be worth adding a small note to your MissionPlanner/bench documentat
 ELRS major versions must match between TX module and RX.
 FC firmware version is unrelated to ELRS receiver firmware version.
 
-That one line can save a surprising amount of debugging later.
+That one line can save a surprising amount of debugging later.	: done (docs/RECEIVER_BIND.md, "ExpressLRS version note")
 
 *********************************************************************************************
 
@@ -36,8 +36,12 @@ RC calibration failed:
   Roll: RC1_MIN=1426, expected <=1300
   Yaw:  RC4_MAX=1598, expected >=1700
 
+Done 2026-10-22: a rejected command or motor test now appends the vehicle's STATUSTEXT warnings and errors
+(CommandRejectionDetail; VehicleCommandService and ActuatorTestService).
+
 *********************************************************************************************
 Accelerometer page is not working: must be verified
+(The workflow, its tests and docs/ACCELEROMETER_CALIBRATION.md exist; it still needs a check on hardware.)
 *********************************************************************************************
 
 
@@ -54,7 +58,7 @@ Is there a way to set a vehicle Id (flash it to the device)	: done
 yes, technical done, but we should build a UI view for it	: done
 *********************************************************************************************
 
-In Optional Hardware, PX4Flow is missing
+In Optional Hardware, PX4Flow is missing	: still missing
 
 
 
@@ -66,7 +70,7 @@ disabled; parameter presence never makes an unknown or hazardous action safe to 
 
 - Parameter loading into the Full Parameters List UI is slow (see FEATURES.md) — the
   merge of ~1000 values with metadata needs profiling.
-- Delete the unused `VehicleParameterStreamService` V1–V3 classes.
+- Delete the unused `VehicleParameterStreamService` V1–V3 classes.	: done (only the single, used class remains)
 - The comparison engine and exports are implemented; the Avalonia workflow currently exposes
   live-versus-pending review while richer file/profile source selection is being expanded.
 
@@ -104,6 +108,10 @@ UART1
 
 Then the correct port becomes obvious instead of making the user reason from parameters.
 
+Status 2026-10-22: the Serial Ports page already warns about several RCIN ports and checks the RC_OPTIONS
+multiple-receiver option (SerialPortConfiguration.Diagnose). Still open: the detected RC protocol, whether
+frames arrive, and the link quality per port.
+
 For this Pavo, assuming you're using its ELRS/CRSF receiver, I would therefore make the next change:
 
 SERIAL1_PROTOCOL = None
@@ -138,8 +146,15 @@ MAVLink .tlog recording.
 
 The test hardware is already proving quite useful.
 
+Status 2026-10-22:
+  proper RC calibration that ignores unused channels	: done
+  arming readiness + rejection reason on the HUD	: done
+  onboard logger health versus PC telemetry logging	: done (VehicleOnboardLoggingStatus, LoggingHealthService)
+  compass configured/detected/required distinction	: done (CompassDiagnostics)
+  MAVLink .tlog recording	: done (TelemetryRecordingService)
 
-And this is another strong Next Gen feature opportunity: Motor Test could offer a “Determine motor dead-zone” workflow that records the start threshold for each motor and proposes MOT_SPIN_ARM / MOT_SPIN_MIN automatically.
+
+And this is another strong Next Gen feature opportunity: Motor Test could offer a “Determine motor dead-zone” workflow that records the start threshold for each motor and proposes MOT_SPIN_ARM / MOT_SPIN_MIN automatically.	: done (guided assistant, docs/MOTOR_START_THRESHOLDS.md)
 
 
 
@@ -153,13 +168,15 @@ It is not inherent in MAVLink itself. If this test was with Next Gen, that may c
 Dataflash Logs
 Log system
 
+Status 2026-10-22: .tlog recording (TelemetryRecordingService) and a Dataflash logs view exist.
 
 
 
 
 
 
-Task HUD:
+
+Task HUD:	: done (arming state, retained PreArm reason and last arm failure are shown on the HUD)
 
 Using the old MissionPlanner I also get this HUD information
 
@@ -251,6 +268,8 @@ For the immediate Omnibus work, we are now in a much cleaner position: **RC and 
 
 
 Compass task.
+Status 2026-10-22: configured / detected / required is shown (CompassDiagnostics). Still open: decoding
+COMPASS_DEV_ID into chip type, bus and address.
 
 
 
