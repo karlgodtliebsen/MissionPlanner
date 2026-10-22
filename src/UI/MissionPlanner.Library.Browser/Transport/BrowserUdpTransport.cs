@@ -11,6 +11,7 @@ public sealed class BrowserUdpTransport : IUdpMavLinkTransport
 {
     private readonly ClientWebSocket socket;
     private readonly Uri bridgeUri;
+    /// <summary>Creates a transport that connects to the local UDP bridge at the given address.</summary>
     public BrowserUdpTransport(Uri bridgeUri) : this(bridgeUri, new ClientWebSocket()) { }
     internal BrowserUdpTransport(Uri bridgeUri, ClientWebSocket socket)
     {
@@ -23,8 +24,10 @@ public sealed class BrowserUdpTransport : IUdpMavLinkTransport
     private int remaining;
     private TransportEndPoint? peer;
 
+    /// <summary>Gets whether the bridge connection is open.</summary>
     public bool IsConnected => socket.State == WebSocketState.Open;
 
+    /// <summary>Connects to the local UDP bridge.</summary>
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
         if (IsConnected) return;
@@ -39,6 +42,7 @@ public sealed class BrowserUdpTransport : IUdpMavLinkTransport
         }
     }
 
+    /// <summary>Reads the next datagram from the bridge into the buffer.</summary>
     public async ValueTask<TransportReceiveResult> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
     {
         if (buffer.IsEmpty) throw new ArgumentException("A receive buffer is required.", nameof(buffer));
@@ -70,6 +74,7 @@ public sealed class BrowserUdpTransport : IUdpMavLinkTransport
         return new TransportReceiveResult(copied, peer);
     }
 
+    /// <summary>Sends a datagram through the bridge.</summary>
     public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken)
     {
         if (data.IsEmpty || data.Length > 65507) throw new ArgumentOutOfRangeException(nameof(data));
@@ -80,6 +85,7 @@ public sealed class BrowserUdpTransport : IUdpMavLinkTransport
         finally { sendLock.Release(); }
     }
 
+    /// <summary>Closes the bridge connection.</summary>
     public Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
         socket.Abort(); // Also releases a pending read without waiting for a peer.
@@ -87,6 +93,7 @@ public sealed class BrowserUdpTransport : IUdpMavLinkTransport
         return Task.CompletedTask;
     }
 
+    /// <summary>Closes the bridge connection and releases resources.</summary>
     public ValueTask DisposeAsync()
     {
         socket.Abort();

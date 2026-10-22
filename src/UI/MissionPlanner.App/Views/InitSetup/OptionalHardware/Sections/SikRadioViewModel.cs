@@ -8,6 +8,7 @@ using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
+/// <summary>Configures a SiK telemetry radio.</summary>
 public sealed partial class SikRadioViewModel(IFirmwareSerialDeviceCatalog devices, ISikRadioConfigurator configurator, ILogger<SikRadioViewModel> logger, INavigationService navigation)
     : ExternalSerialToolViewModel(devices, logger, navigation)
 {

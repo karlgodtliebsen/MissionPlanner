@@ -9,6 +9,7 @@ using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Library.Browser.Transport;
 
+/// <summary>Creates MAVLink connections for the browser app, which can only listen for UDP through the local browser bridge.</summary>
 public sealed class BrowserConnectionSessionFactory(IDomainFactory factory) : IMavLinkConnectionSessionFactory
 {
     /// <inheritdoc />
@@ -28,16 +29,19 @@ public sealed class BrowserConnectionSessionFactory(IDomainFactory factory) : IM
             "Use the desktop app for UDP Client or direct WebSocket connections.");
     }
 
+    /// <summary>Always throws because serial connections need the desktop app.</summary>
     public Task<IMavLinkConnectionSession> CreateSerialConnection(IOptions<TransportEndpoint> options, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException("Serial connections require the desktop app. Select UDP for the local browser bridge.");
     }
 
+    /// <summary>Always throws because direct TCP connections need the desktop app.</summary>
     public Task<IMavLinkConnectionSession> CreateTcpConnection(IOptions<TransportEndpoint> options, CancellationToken cancellationToken = default)
     {
         throw new NotSupportedException("Direct TCP connections require the desktop app. Select UDP for the local browser bridge.");
     }
 
+    /// <summary>Creates a UDP listen connection through the local browser bridge.</summary>
     public async Task<IMavLinkConnectionSession> CreateUdpConnection(IOptions<TransportEndpoint> options, CancellationToken cancellationToken = default)
     {
         var uri = new Uri(BrowserInterop.GetBridgeUrl() + "?port=" + options.Value.LocalPort);

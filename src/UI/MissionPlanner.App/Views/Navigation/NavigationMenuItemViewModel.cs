@@ -24,18 +24,22 @@ public sealed class NavigationMenuItemViewModel
         Children = children is null ? [] : new ObservableCollection<NavigationMenuItemViewModel>(children);
     }
 
+    /// <summary>Gets the menu text.</summary>
     public string Header
     {
         get;
     }
+    /// <summary>Gets the route the item navigates to, or null for a group.</summary>
     public string? Route
     {
         get;
     }
+    /// <summary>Gets the menu icon.</summary>
     public Bitmap? Icon
     {
         get;
     }
+    /// <summary>Gets the child items of a group.</summary>
     public ObservableCollection<NavigationMenuItemViewModel> Children
     {
         get;

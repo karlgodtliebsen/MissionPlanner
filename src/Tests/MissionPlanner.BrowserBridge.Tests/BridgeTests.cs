@@ -12,8 +12,10 @@ using MissionPlanner.Transport;
 
 namespace MissionPlanner.BrowserBridge.Tests;
 
+/// <summary>Tests the browser UDP bridge.</summary>
 public sealed class BridgeTests
 {
+    /// <summary>Verifies that the relay preserves packets, pins the first peer, rejects other clients and releases the port.</summary>
     [Fact]
     public async Task RelayPreservesPacketsPinsPeerRejectsOtherClientsAndReleasesPort()
     {

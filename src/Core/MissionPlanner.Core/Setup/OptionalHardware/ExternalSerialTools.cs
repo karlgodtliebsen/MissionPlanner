@@ -8,15 +8,20 @@ namespace MissionPlanner.Core.Setup.OptionalHardware;
 /// <summary>Owns one direct, exclusive serial conversation.</summary>
 public interface IDirectSerialSession : IAsyncDisposable
 {
+    /// <summary>Gets the serial port name.</summary>
     string PortName { get; }
+    /// <summary>Writes text to the port.</summary>
     Task WriteAsync(string value, CancellationToken cancellationToken = default);
+    /// <summary>Reads bytes into the buffer and returns the number read.</summary>
     Task<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default);
+    /// <summary>Reads one line, failing with a timeout when none arrives.</summary>
     Task<string> ReadLineAsync(TimeSpan timeout, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Opens direct serial sessions while protecting the active MAVLink transport.</summary>
 public interface IDirectSerialSessionFactory
 {
+    /// <summary>Opens the port exclusively.</summary>
     Task<IDirectSerialSession> OpenAsync(string portName, int baudRate, CancellationToken cancellationToken = default);
 }
 
@@ -26,6 +31,7 @@ public sealed class DirectSerialSessionFactory(
     IVehicleConnectionSession vehicleSession,
     IFirmwareSerialPortFactory ports) : IDirectSerialSessionFactory
 {
+    /// <summary>Opens the port exclusively, refusing ports in use by the active MAVLink connection.</summary>
     public async Task<IDirectSerialSession> OpenAsync(string portName, int baudRate, CancellationToken cancellationToken = default)
     {
         if (activeVehicle.IsOnline && vehicleSession.Transport is ISerialMavLinkTransport serial &&
@@ -76,11 +82,18 @@ public sealed class DirectSerialSessionFactory(
     }
 }
 
+/// <summary>A snapshot of a SiK radio's settings.</summary>
+/// <param name="Identity">The radio identity text.</param>
+/// <param name="LocalSettings">The settings of the local radio.</param>
+/// <param name="RemoteSettings">The settings of the remote radio.</param>
 public sealed record SikRadioSnapshot(string Identity, IReadOnlyDictionary<string, string> LocalSettings, IReadOnlyDictionary<string, string> RemoteSettings);
 
+/// <summary>Reads and writes the settings of a SiK telemetry radio.</summary>
 public interface ISikRadioConfigurator
 {
+    /// <summary>Reads the settings of the radio.</summary>
     Task<SikRadioSnapshot> ReadAsync(string portName, int baudRate, CancellationToken cancellationToken = default);
+    /// <summary>Writes settings to the radio.</summary>
     Task ApplyAsync(string portName, int baudRate, IReadOnlyDictionary<string, string> settings, CancellationToken cancellationToken = default);
 }
 
@@ -89,6 +102,7 @@ public sealed class SikRadioConfigurator(IDirectSerialSessionFactory sessions) :
 {
     private static readonly TimeSpan timeout = TimeSpan.FromSeconds(2);
 
+    /// <summary>Reads the settings of the radio.</summary>
     public async Task<SikRadioSnapshot> ReadAsync(string portName, int baudRate, CancellationToken cancellationToken = default)
     {
         await using var session = await sessions.OpenAsync(portName, baudRate, cancellationToken).ConfigureAwait(false);
@@ -102,6 +116,7 @@ public sealed class SikRadioConfigurator(IDirectSerialSessionFactory sessions) :
         return new SikRadioSnapshot(identity, local, remote);
     }
 
+    /// <summary>Writes settings to the radio.</summary>
     public async Task ApplyAsync(string portName, int baudRate, IReadOnlyDictionary<string, string> settings, CancellationToken cancellationToken = default)
     {
         await using var session = await sessions.OpenAsync(portName, baudRate, cancellationToken).ConfigureAwait(false);
@@ -138,13 +153,33 @@ public sealed class SikRadioConfigurator(IDirectSerialSessionFactory sessions) :
     }
 }
 
-public enum BluetoothAtDialect { Unknown, Hc05, Hc06 }
+/// <summary>The AT command dialect of a Bluetooth module.</summary>
+public enum BluetoothAtDialect
+{
+    /// <summary>The dialect could not be determined.</summary>
+    Unknown,
+    /// <summary>HC-05 style commands.</summary>
+    Hc05,
+    /// <summary>HC-06 style commands.</summary>
+    Hc06,
+}
+/// <summary>A snapshot of a Bluetooth module.</summary>
+/// <param name="Dialect">The detected AT dialect.</param>
+/// <param name="BaudRate">The module baud rate.</param>
+/// <param name="Identity">The module identity text.</param>
 public sealed record BluetoothModuleSnapshot(BluetoothAtDialect Dialect, int BaudRate, string Identity);
+/// <summary>New settings for a Bluetooth module.</summary>
+/// <param name="Name">The new device name, or null to keep it.</param>
+/// <param name="BaudRate">The new baud rate, or null to keep it.</param>
+/// <param name="Pin">The new pairing PIN, or null to keep it.</param>
 public sealed record BluetoothModuleSettings(string? Name, int? BaudRate, string? Pin);
 
+/// <summary>Reads and writes the settings of a serial Bluetooth module.</summary>
 public interface IBluetoothSerialConfigurator
 {
+    /// <summary>Detects the module and reads its settings.</summary>
     Task<BluetoothModuleSnapshot> ProbeAsync(string portName, CancellationToken cancellationToken = default);
+    /// <summary>Writes settings to the module.</summary>
     Task ApplyAsync(string portName, BluetoothModuleSnapshot module, BluetoothModuleSettings settings, CancellationToken cancellationToken = default);
 }
 
@@ -154,6 +189,7 @@ public sealed class BluetoothSerialConfigurator(IDirectSerialSessionFactory sess
     private static readonly int[] probeBauds = [9600, 38400, 57600, 115200];
     private static readonly TimeSpan timeout = TimeSpan.FromMilliseconds(700);
 
+    /// <summary>Detects the module and reads its settings.</summary>
     public async Task<BluetoothModuleSnapshot> ProbeAsync(string portName, CancellationToken cancellationToken = default)
     {
         foreach (var baud in probeBauds)
@@ -174,6 +210,7 @@ public sealed class BluetoothSerialConfigurator(IDirectSerialSessionFactory sess
         throw new InvalidOperationException("No supported classic serial Bluetooth AT module responded.");
     }
 
+    /// <summary>Writes settings to the module.</summary>
     public async Task ApplyAsync(string portName, BluetoothModuleSnapshot module, BluetoothModuleSettings settings, CancellationToken cancellationToken = default)
     {
         await using var session = await sessions.OpenAsync(portName, module.BaudRate, cancellationToken).ConfigureAwait(false);

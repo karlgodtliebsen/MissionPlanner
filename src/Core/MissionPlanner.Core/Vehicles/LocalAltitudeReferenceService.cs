@@ -13,6 +13,7 @@ public sealed class LocalAltitudeReferenceService : ILocalAltitudeReferenceServi
     private readonly IDisposable registeredSubscription;
     private readonly IDisposable disconnectedSubscription;
 
+    /// <summary>Creates the service and clears references when a vehicle registers again or disconnects.</summary>
     public LocalAltitudeReferenceService(IDomainEventHub eventHub)
     {
         registeredSubscription = eventHub.SubscribeDomainEventAsync<VehicleRegistered>((evt, _) =>
@@ -27,10 +28,14 @@ public sealed class LocalAltitudeReferenceService : ILocalAltitudeReferenceServi
         });
     }
 
+    /// <summary>Occurs when the local altitude reference of a vehicle changes.</summary>
     public event EventHandler<LocalAltitudeReferenceChangedEventArgs>? Changed;
+    /// <summary>Gets whether a local altitude reference exists for the vehicle.</summary>
     public bool HasReference(VehicleId vehicleId) => references.ContainsKey(vehicleId);
+    /// <summary>Gets the local altitude reference of the vehicle.</summary>
     public bool TryGetReference(VehicleId vehicleId, out double referenceMeters) => references.TryGetValue(vehicleId, out referenceMeters);
 
+    /// <summary>Sets the local reference so the current relative altitude reads as zero.</summary>
     public bool TryZero(VehicleId vehicleId, double relativeAltitudeMeters)
     {
         if (!double.IsFinite(relativeAltitudeMeters))
@@ -42,6 +47,7 @@ public sealed class LocalAltitudeReferenceService : ILocalAltitudeReferenceServi
         return true;
     }
 
+    /// <summary>Removes the local altitude reference.</summary>
     public void Reset(VehicleId vehicleId)
     {
         if (references.TryRemove(vehicleId, out _))
@@ -50,6 +56,7 @@ public sealed class LocalAltitudeReferenceService : ILocalAltitudeReferenceServi
         }
     }
 
+    /// <summary>Releases the event subscriptions.</summary>
     public void Dispose()
     {
         registeredSubscription.Dispose();

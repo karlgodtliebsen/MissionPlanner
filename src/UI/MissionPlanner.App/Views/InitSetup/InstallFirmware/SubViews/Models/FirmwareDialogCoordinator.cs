@@ -7,6 +7,9 @@ public sealed class FirmwareDialogCoordinator(IUiDispatcher dispatcher)
 {
     private Session? current;
 
+    /// <summary>
+    /// Begins a firmware dialog session that shows progress, optionally waiting until the operator has confirmed. Only one session can be active.
+    /// </summary>
     public Task<IDisposable> BeginAsync(Func<Task<IDisposable>> showProgress, bool deferUntilConfirmed, CancellationToken token)
     {
         return dispatcher.DispatchAsync<IDisposable>(async () =>
@@ -36,6 +39,7 @@ public sealed class FirmwareDialogCoordinator(IUiDispatcher dispatcher)
         });
     }
 
+    /// <summary>Closes the progress dialog, asks the operator to confirm, and shows progress again when the operator accepts.</summary>
     public Task<bool> ConfirmAsync(Func<Task<bool>> confirm, CancellationToken token)
     {
         return dispatcher.DispatchAsync(async () =>

@@ -8,9 +8,11 @@ using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.Library.Windows.Configuration;
 
+/// <summary>Registers the services that are specific to the Windows app.</summary>
 public static class WindowsAppConfigurator
 {
 
+    /// <summary>Registers the Windows implementations of the platform services.</summary>
     public static IServiceCollection AddWindowsOnlyServices(this IServiceCollection services)
     {
         services.Replace(ServiceDescriptor.Singleton<MissionPlanner.Firmware.Betaflight.IUsbTopologyProvider, Firmware.WindowsUsbTopologyProvider>());

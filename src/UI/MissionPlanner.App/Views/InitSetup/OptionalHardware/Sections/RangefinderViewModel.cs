@@ -6,5 +6,6 @@ using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
+/// <summary>Configures the rangefinders.</summary>
 public sealed class RangefinderViewModel(IActiveVehicleContext v, IOptionalHardwareService s, ILogger<RangefinderViewModel> logger, INavigationService navigation) : ParameterHardwareViewModel("rangefinder", v, s, logger, navigation);
 

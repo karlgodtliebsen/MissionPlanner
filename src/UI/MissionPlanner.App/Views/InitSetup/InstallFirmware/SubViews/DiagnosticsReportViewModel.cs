@@ -27,6 +27,7 @@ public sealed partial class DiagnosticsReportViewModel : DialogViewModelBase
 
     /// <summary>Gets whether a terminal diagnostic report can be copied.</summary>
     public bool HasDiagnosticReport => !string.IsNullOrWhiteSpace(LastDiagnosticReport);
+    /// <summary>Gets whether a status message is available.</summary>
     public new bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
 
     [RelayCommand]

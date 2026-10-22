@@ -6,6 +6,7 @@ using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
+/// <summary>Configures the order of CAN GPS receivers.</summary>
 public sealed class CanGpsOrderViewModel(IActiveVehicleContext v, IOptionalHardwareService s, ILogger<CanGpsOrderViewModel> logger, INavigationService navigation) : ParameterHardwareViewModel("can-gps-order", v, s, logger, navigation);
 
 

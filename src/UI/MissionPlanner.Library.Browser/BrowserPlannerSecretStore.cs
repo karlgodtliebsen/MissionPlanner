@@ -11,6 +11,7 @@ public sealed class BrowserPlannerSecretStore : IPlannerSecretStore
 {
     private readonly ConcurrentDictionary<string, string> secrets = new(StringComparer.Ordinal);
 
+    /// <summary>Gets the secret stored under the key, or null when there is none.</summary>
     public ValueTask<string?> GetAsync(string key, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -18,6 +19,7 @@ public sealed class BrowserPlannerSecretStore : IPlannerSecretStore
         return ValueTask.FromResult(secrets.TryGetValue(key, out var value) ? value : null);
     }
 
+    /// <summary>Stores a secret under the key.</summary>
     public ValueTask SetAsync(string key, string value, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
@@ -27,6 +29,7 @@ public sealed class BrowserPlannerSecretStore : IPlannerSecretStore
         return ValueTask.CompletedTask;
     }
 
+    /// <summary>Removes the secret stored under the key.</summary>
     public ValueTask RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);

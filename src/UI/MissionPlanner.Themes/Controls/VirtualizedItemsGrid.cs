@@ -84,6 +84,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         }
     }
 
+    /// <summary>Creates the grid and its search debounce timer.</summary>
     public VirtualizedItemsGrid()
     {
         _readonlySelectedItems = new ReadOnlyObservableCollection<object>(_selectedItems);
@@ -119,36 +120,44 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     #region Styled properties
 
+    /// <summary>Identifies the <see cref="ItemsSource"/> styled property.</summary>
     public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, IEnumerable?>(nameof(ItemsSource));
 
+    /// <summary>Gets or sets the items shown in the grid.</summary>
     public IEnumerable? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="HeaderTemplate"/> styled property.</summary>
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, IDataTemplate?>(nameof(HeaderTemplate));
 
+    /// <summary>Gets or sets the template of the header row.</summary>
     public IDataTemplate? HeaderTemplate
     {
         get => GetValue(HeaderTemplateProperty);
         set => SetValue(HeaderTemplateProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="RowTemplate"/> styled property.</summary>
     public static readonly StyledProperty<IDataTemplate?> RowTemplateProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, IDataTemplate?>(nameof(RowTemplate));
 
+    /// <summary>Gets or sets the template of each data row.</summary>
     public IDataTemplate? RowTemplate
     {
         get => GetValue(RowTemplateProperty);
         set => SetValue(RowTemplateProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="EmptyView"/> styled property.</summary>
     public static readonly StyledProperty<object?> EmptyViewProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, object?>(nameof(EmptyView));
 
+    /// <summary>Gets or sets the content shown when there are no items.</summary>
     public object? EmptyView
     {
         get => GetValue(EmptyViewProperty);
@@ -163,15 +172,18 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     public static readonly StyledProperty<string> ColumnWidthsProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, string>(nameof(ColumnWidths), string.Empty);
 
+    /// <summary>Gets or sets the comma-separated column widths shared by the header and the rows.</summary>
     public string ColumnWidths
     {
         get => GetValue(ColumnWidthsProperty);
         set => SetValue(ColumnWidthsProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ColumnSpacing"/> styled property.</summary>
     public static readonly StyledProperty<double> ColumnSpacingProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, double>(nameof(ColumnSpacing), 5d);
 
+    /// <summary>Gets or sets the space between columns.</summary>
     public double ColumnSpacing
     {
         get => GetValue(ColumnSpacingProperty);
@@ -188,42 +200,51 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
             240d,
             coerce: (_, value) => Math.Max(0d, value));
 
+    /// <summary>Gets or sets the minimum width of one star-weight unit.</summary>
     public double MinimumStarColumnWidth
     {
         get => GetValue(MinimumStarColumnWidthProperty);
         set => SetValue(MinimumStarColumnWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="RowMinHeight"/> styled property.</summary>
     public static readonly StyledProperty<double> RowMinHeightProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, double>(nameof(RowMinHeight), 32d);
 
+    /// <summary>Gets or sets the minimum height of a data row.</summary>
     public double RowMinHeight
     {
         get => GetValue(RowMinHeightProperty);
         set => SetValue(RowMinHeightProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ShowHeader"/> styled property.</summary>
     public static readonly StyledProperty<bool> ShowHeaderProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, bool>(nameof(ShowHeader), true);
 
+    /// <summary>Gets or sets whether the header row is shown.</summary>
     public bool ShowHeader
     {
         get => GetValue(ShowHeaderProperty);
         set => SetValue(ShowHeaderProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ShowSearchBar"/> styled property.</summary>
     public static readonly StyledProperty<bool> ShowSearchBarProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, bool>(nameof(ShowSearchBar), false);
 
+    /// <summary>Gets or sets whether the search box is shown.</summary>
     public bool ShowSearchBar
     {
         get => GetValue(ShowSearchBarProperty);
         set => SetValue(ShowSearchBarProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="SearchText"/> styled property.</summary>
     public static readonly StyledProperty<string?> SearchTextProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, string?>(nameof(SearchText));
 
+    /// <summary>Gets or sets the text the items are filtered by.</summary>
     public string? SearchText
     {
         get => GetValue(SearchTextProperty);
@@ -240,15 +261,18 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
             300,
             coerce: (_, value) => Math.Max(0, value));
 
+    /// <summary>Gets or sets the delay in milliseconds between the last search text change and filtering.</summary>
     public int SearchDelayMilliseconds
     {
         get => GetValue(SearchDelayMillisecondsProperty);
         set => SetValue(SearchDelayMillisecondsProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="SearchWatermark"/> styled property.</summary>
     public static readonly StyledProperty<string> SearchWatermarkProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, string>(nameof(SearchWatermark), "Search…");
 
+    /// <summary>Gets or sets the placeholder text of the search box.</summary>
     public string SearchWatermark
     {
         get => GetValue(SearchWatermarkProperty);
@@ -263,24 +287,29 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     public static readonly StyledProperty<string> SearchMemberPathsProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, string>(nameof(SearchMemberPaths), string.Empty);
 
+    /// <summary>Gets or sets the comma-separated property paths that are searched.</summary>
     public string SearchMemberPaths
     {
         get => GetValue(SearchMemberPathsProperty);
         set => SetValue(SearchMemberPathsProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ShowPagination"/> styled property.</summary>
     public static readonly StyledProperty<bool> ShowPaginationProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, bool>(nameof(ShowPagination), false);
 
+    /// <summary>Gets or sets whether the items are split into pages.</summary>
     public bool ShowPagination
     {
         get => GetValue(ShowPaginationProperty);
         set => SetValue(ShowPaginationProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="PageSize"/> styled property.</summary>
     public static readonly StyledProperty<int> PageSizeProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, int>(nameof(PageSize), 100, coerce: (_, value) => Math.Max(1, value));
 
+    /// <summary>Gets or sets the number of items per page.</summary>
     public int PageSize
     {
         get => GetValue(PageSizeProperty);
@@ -291,35 +320,42 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     public static readonly StyledProperty<int> CurrentPageProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, int>(nameof(CurrentPage), 1, coerce: (_, value) => Math.Max(1, value));
 
+    /// <summary>Gets or sets the one-based current page.</summary>
     public int CurrentPage
     {
         get => GetValue(CurrentPageProperty);
         set => SetValue(CurrentPageProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="SelectionMode"/> styled property.</summary>
     public static readonly StyledProperty<VirtualizedItemsGridSelectionMode> SelectionModeProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, VirtualizedItemsGridSelectionMode>(
             nameof(SelectionMode), VirtualizedItemsGridSelectionMode.None);
 
+    /// <summary>Gets or sets whether the grid allows no selection, one item or several items.</summary>
     public VirtualizedItemsGridSelectionMode SelectionMode
     {
         get => GetValue(SelectionModeProperty);
         set => SetValue(SelectionModeProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="SelectAllScope"/> styled property.</summary>
     public static readonly StyledProperty<VirtualizedItemsGridSelectAllScope> SelectAllScopeProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, VirtualizedItemsGridSelectAllScope>(
             nameof(SelectAllScope), VirtualizedItemsGridSelectAllScope.CurrentPage);
 
+    /// <summary>Gets or sets which items the select-all action selects.</summary>
     public VirtualizedItemsGridSelectAllScope SelectAllScope
     {
         get => GetValue(SelectAllScopeProperty);
         set => SetValue(SelectAllScopeProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="SelectionColumnWidth"/> styled property.</summary>
     public static readonly StyledProperty<double> SelectionColumnWidthProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, double>(nameof(SelectionColumnWidth), 36d);
 
+    /// <summary>Gets or sets the width of the selection column.</summary>
     public double SelectionColumnWidth
     {
         get => GetValue(SelectionColumnWidthProperty);
@@ -330,54 +366,66 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
 
     #region Read-only direct properties
 
+    /// <summary>Identifies the <see cref="TotalItemCount"/> property.</summary>
     public static readonly DirectProperty<VirtualizedItemsGrid, int> TotalItemCountProperty =
         AvaloniaProperty.RegisterDirect<VirtualizedItemsGrid, int>(nameof(TotalItemCount), grid => grid.TotalItemCount);
 
+    /// <summary>Gets the number of items before filtering.</summary>
     public int TotalItemCount
     {
         get => _totalItemCount;
         private set => SetAndRaise(TotalItemCountProperty, ref _totalItemCount, value);
     }
 
+    /// <summary>Identifies the <see cref="FilteredItemCount"/> property.</summary>
     public static readonly DirectProperty<VirtualizedItemsGrid, int> FilteredItemCountProperty =
         AvaloniaProperty.RegisterDirect<VirtualizedItemsGrid, int>(nameof(FilteredItemCount), grid => grid.FilteredItemCount);
 
+    /// <summary>Gets the number of items that match the search.</summary>
     public int FilteredItemCount
     {
         get => _filteredItemCount;
         private set => SetAndRaise(FilteredItemCountProperty, ref _filteredItemCount, value);
     }
 
+    /// <summary>Identifies the <see cref="PageCount"/> property.</summary>
     public static readonly DirectProperty<VirtualizedItemsGrid, int> PageCountProperty =
         AvaloniaProperty.RegisterDirect<VirtualizedItemsGrid, int>(nameof(PageCount), grid => grid.PageCount);
 
+    /// <summary>Gets the number of pages.</summary>
     public int PageCount
     {
         get => _pageCount;
         private set => SetAndRaise(PageCountProperty, ref _pageCount, value);
     }
 
+    /// <summary>Identifies the <see cref="IsEmpty"/> property.</summary>
     public static readonly DirectProperty<VirtualizedItemsGrid, bool> IsEmptyProperty =
         AvaloniaProperty.RegisterDirect<VirtualizedItemsGrid, bool>(nameof(IsEmpty), grid => grid.IsEmpty);
 
+    /// <summary>Gets whether no items are shown.</summary>
     public bool IsEmpty
     {
         get => _isEmpty;
         private set => SetAndRaise(IsEmptyProperty, ref _isEmpty, value);
     }
 
+    /// <summary>Identifies the <see cref="IsSelectionEnabled"/> property.</summary>
     public static readonly DirectProperty<VirtualizedItemsGrid, bool> IsSelectionEnabledProperty =
         AvaloniaProperty.RegisterDirect<VirtualizedItemsGrid, bool>(nameof(IsSelectionEnabled), grid => grid.IsSelectionEnabled);
 
+    /// <summary>Gets whether items can be selected.</summary>
     public bool IsSelectionEnabled
     {
         get => _isSelectionEnabled;
         private set => SetAndRaise(IsSelectionEnabledProperty, ref _isSelectionEnabled, value);
     }
 
+    /// <summary>Identifies the <see cref="IsMultiSelectionEnabled"/> property.</summary>
     public static readonly DirectProperty<VirtualizedItemsGrid, bool> IsMultiSelectionEnabledProperty =
         AvaloniaProperty.RegisterDirect<VirtualizedItemsGrid, bool>(nameof(IsMultiSelectionEnabled), grid => grid.IsMultiSelectionEnabled);
 
+    /// <summary>Gets whether several items can be selected.</summary>
     public bool IsMultiSelectionEnabled
     {
         get => _isMultiSelectionEnabled;
@@ -394,6 +442,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
             nameof(ResolvedColumnsWidth),
             grid => grid.ResolvedColumnsWidth);
 
+    /// <summary>Gets the resolved width shared by the header and the rows.</summary>
     public double ResolvedColumnsWidth
     {
         get => _resolvedColumnsWidth;
@@ -405,9 +454,11 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
     /// </summary>
     public ReadOnlyObservableCollection<object> SelectedItems => _readonlySelectedItems;
 
+    /// <summary>Identifies the <see cref="SelectedItem"/> property.</summary>
     public static readonly DirectProperty<VirtualizedItemsGrid, object?> SelectedItemProperty =
         AvaloniaProperty.RegisterDirect<VirtualizedItemsGrid, object?>(nameof(SelectedItem), grid => grid.SelectedItem);
 
+    /// <summary>Gets the selected item, or the first selected item when several are selected.</summary>
     public object? SelectedItem
     {
         get => _selectedItem;
@@ -425,6 +476,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         get; set;
     }
 
+    /// <summary>Connects the template parts when the template is applied.</summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         DetachTemplatePartHandlers();
@@ -454,12 +506,14 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         _bodyScrollViewer?.ScrollToEnd();
     }
 
+    /// <summary>Re-applies the search and paging to the items.</summary>
     public void Refresh()
     {
         _searchDebounceTimer.Stop();
         RefreshView(resetPage: false);
     }
 
+    /// <summary>Clears the selection.</summary>
     public void ClearSelection()
     {
         if (_selectedItems.Count == 0)
@@ -472,11 +526,13 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         UpdateSelectionUi();
     }
 
+    /// <summary>Gets whether the item is selected.</summary>
     public bool IsSelected(object item)
     {
         return _selectedItems.Contains(item);
     }
 
+    /// <summary>Selects the item, replacing the selection in single selection mode.</summary>
     public void Select(object item)
     {
         if (SelectionMode == VirtualizedItemsGridSelectionMode.None)
@@ -503,6 +559,7 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         UpdateSelectionUi();
     }
 
+    /// <summary>Removes the item from the selection.</summary>
     public void Deselect(object item)
     {
         if (_selectedItems.Remove(item))

@@ -7,6 +7,7 @@ using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
+/// <summary>Configures a joystick for manual control.</summary>
 public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoystickVehicleOutput output, ILogger<JoystickViewModel> logger, INavigationService navigation) : OptionalHardwareBaseViewModel(logger)
 {
     /// <summary>

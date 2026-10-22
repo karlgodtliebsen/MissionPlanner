@@ -30,18 +30,21 @@ public partial class PromptDoubleDialogViewModel : DialogViewModelBase
         set;
     }
 
+    /// <summary>Gets or sets the lowest accepted value.</summary>
     public double Min
     {
         get;
         set;
     }
 
+    /// <summary>Gets or sets the highest accepted value.</summary>
     public double Max
     {
         get;
         set;
     }
 
+    /// <summary>Gets or sets the message shown above the input.</summary>
     public string? Message
     {
         get;

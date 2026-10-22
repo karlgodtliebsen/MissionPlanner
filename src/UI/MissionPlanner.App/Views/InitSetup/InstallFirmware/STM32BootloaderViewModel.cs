@@ -265,6 +265,7 @@ public sealed partial class STM32BootloaderViewModel : ViewModelBase
     }
     partial void OnLocalDfuPlatformChanged(string? value) => PlatformChanged?.Invoke(value);
 
+    /// <summary>Resets the view model to its initial state.</summary>
     public void Reset()
     {
         CanInstallDfu = false;

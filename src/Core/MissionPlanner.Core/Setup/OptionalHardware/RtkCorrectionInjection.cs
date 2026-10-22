@@ -8,10 +8,12 @@ using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Setup.OptionalHardware;
 
+/// <summary>Splits a byte stream into complete RTCM3 frames and checks their CRC.</summary>
 public sealed class Rtcm3Framer
 {
     private readonly List<byte> buffer = [];
 
+    /// <summary>Adds bytes to the stream and returns every complete, CRC-valid frame found so far.</summary>
     public IReadOnlyList<byte[]> Push(ReadOnlySpan<byte> bytes)
     {
         buffer.AddRange(bytes.ToArray());
@@ -33,8 +35,10 @@ public sealed class Rtcm3Framer
         return frames;
     }
 
+    /// <summary>Gets the RTCM3 message type of a frame.</summary>
     public static int MessageType(ReadOnlySpan<byte> frame) => frame.Length >= 5 ? (frame[3] << 4) | (frame[4] >> 4) : 0;
 
+    /// <summary>Computes the CRC-24Q of the data.</summary>
     public static int Crc24Q(ReadOnlySpan<byte> data)
     {
         var crc = 0;
@@ -47,11 +51,17 @@ public sealed class Rtcm3Framer
     }
 }
 
+/// <summary>One fragment of an RTCM frame in a GPS_RTCM_DATA message.</summary>
+/// <param name="Flags">The fragmentation flags, sequence and fragment number.</param>
+/// <param name="Data">The fragment payload.</param>
 public sealed record RtcmFragment(byte Flags, byte[] Data);
 
+/// <summary>Splits RTCM frames into GPS_RTCM_DATA fragments.</summary>
 public static class GpsRtcmFragmenter
 {
+    /// <summary>The maximum payload size of one fragment in bytes.</summary>
     public const int PayloadSize = 180;
+    /// <summary>Splits a frame into fragments tagged with the sequence number.</summary>
     public static IReadOnlyList<RtcmFragment> Fragment(ReadOnlySpan<byte> frame, byte sequence)
     {
         if (frame.Length > PayloadSize * 4) throw new ArgumentOutOfRangeException(nameof(frame), "GPS_RTCM_DATA supports at most four fragments.");
@@ -68,21 +78,42 @@ public static class GpsRtcmFragmenter
     }
 }
 
-public enum RtkSourceKind { Serial, Ntrip }
+/// <summary>Where RTK corrections come from.</summary>
+public enum RtkSourceKind
+{
+    /// <summary>A serial port connected to a base station.</summary>
+    Serial,
+    /// <summary>An NTRIP caster over the network.</summary>
+    Ntrip,
+}
+/// <summary>Options for opening an RTK correction source.</summary>
+/// <param name="Kind">The source type.</param>
+/// <param name="Endpoint">The serial port name or NTRIP host.</param>
+/// <param name="PortOrBaud">The NTRIP port or the serial baud rate.</param>
+/// <param name="MountPoint">The NTRIP mount point.</param>
+/// <param name="Username">The NTRIP user name.</param>
+/// <param name="Password">The NTRIP password.</param>
+/// <param name="UseTls">Whether to use TLS for NTRIP.</param>
 public sealed record RtkSourceOptions(RtkSourceKind Kind, string Endpoint, int PortOrBaud, string? MountPoint = null, string? Username = null, string? Password = null, bool UseTls = false);
 
+/// <summary>A source of RTK correction bytes.</summary>
 public interface IRtkCorrectionSource : IAsyncDisposable
 {
+    /// <summary>Reads correction bytes into the buffer and returns the number of bytes read.</summary>
     Task<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken);
 }
 
+/// <summary>Opens RTK correction sources.</summary>
 public interface IRtkCorrectionSourceFactory
 {
+    /// <summary>Opens the source described by the options.</summary>
     Task<IRtkCorrectionSource> OpenAsync(RtkSourceOptions options, CancellationToken cancellationToken);
 }
 
+/// <summary>Opens serial and NTRIP correction sources.</summary>
 public sealed class RtkCorrectionSourceFactory(IDirectSerialSessionFactory serial, IHttpClientFactory clients) : IRtkCorrectionSourceFactory
 {
+    /// <summary>Opens the source described by the options.</summary>
     public async Task<IRtkCorrectionSource> OpenAsync(RtkSourceOptions options, CancellationToken cancellationToken)
     {
         if (options.Kind == RtkSourceKind.Serial)
@@ -113,19 +144,34 @@ public sealed class RtkCorrectionSourceFactory(IDirectSerialSessionFactory seria
     }
 }
 
+/// <summary>A snapshot of the RTK correction injection state.</summary>
+/// <param name="IsRunning">Whether injection is running.</param>
+/// <param name="SourceStatus">The correction source status text.</param>
+/// <param name="TargetStatus">The target vehicle status text.</param>
+/// <param name="FramesSeen">The number of RTCM frames read.</param>
+/// <param name="PacketsSent">The number of MAVLink packets sent.</param>
+/// <param name="LastCorrection">When the last correction was seen.</param>
+/// <param name="MessageTypes">The count of frames per RTCM message type.</param>
 public sealed record RtkInjectionSnapshot(bool IsRunning, string SourceStatus, string TargetStatus, long FramesSeen, long PacketsSent, DateTimeOffset? LastCorrection, IReadOnlyDictionary<int, long> MessageTypes)
 {
+    /// <summary>Gets the snapshot used before injection has started.</summary>
     public static RtkInjectionSnapshot Idle { get; } = new(false, "Source disconnected", "No active vehicle target", 0, 0, null, new Dictionary<int, long>());
 }
 
+/// <summary>Reads RTK corrections and forwards them to the active vehicle.</summary>
 public interface IRtkInjectionService : IDisposable
 {
+    /// <summary>Gets the latest injection snapshot.</summary>
     RtkInjectionSnapshot Current { get; }
+    /// <summary>Occurs when the snapshot changes.</summary>
     event EventHandler<RtkInjectionSnapshot>? Changed;
+    /// <summary>Starts reading corrections and injecting them into the vehicle.</summary>
     Task StartAsync(RtkSourceOptions options, CancellationToken cancellationToken = default);
+    /// <summary>Stops injection.</summary>
     Task StopAsync();
 }
 
+/// <summary>Reads RTCM corrections from a source and injects them into the active vehicle as GPS_RTCM_DATA messages.</summary>
 public sealed class RtkInjectionService(
     IRtkCorrectionSourceFactory sources,
     IActiveVehicleContext active,
@@ -136,9 +182,12 @@ public sealed class RtkInjectionService(
     private CancellationTokenSource? lifetime;
     private Task? worker;
     private byte sequence;
+    /// <summary>Gets the latest injection snapshot.</summary>
     public RtkInjectionSnapshot Current { get; private set; } = RtkInjectionSnapshot.Idle;
+    /// <summary>Occurs when the snapshot changes.</summary>
     public event EventHandler<RtkInjectionSnapshot>? Changed;
 
+    /// <summary>Starts reading corrections and injecting them into the vehicle.</summary>
     public Task StartAsync(RtkSourceOptions options, CancellationToken cancellationToken = default)
     {
         if (worker is not null) throw new InvalidOperationException("An RTK correction source is already active.");
@@ -147,6 +196,7 @@ public sealed class RtkInjectionService(
         return Task.CompletedTask;
     }
 
+    /// <summary>Stops injection and releases the source.</summary>
     public async Task StopAsync()
     {
         lifetime?.Cancel();
@@ -192,5 +242,6 @@ public sealed class RtkInjectionService(
     }
 
     private void Publish(RtkInjectionSnapshot snapshot) { Current = snapshot; Changed?.Invoke(this, snapshot); }
+    /// <summary>Stops injection and releases resources.</summary>
     public void Dispose() { lifetime?.Cancel(); lifetime?.Dispose(); }
 }

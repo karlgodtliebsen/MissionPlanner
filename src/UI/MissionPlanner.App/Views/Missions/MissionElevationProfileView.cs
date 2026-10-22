@@ -8,12 +8,15 @@ namespace MissionPlanner.App.Views.Missions;
 /// <summary>Renders terrain and planned-altitude profiles with Avalonia drawing primitives.</summary>
 public sealed class MissionElevationProfileView : Control
 {
+    /// <summary>Gets or sets the elevation profile to draw.</summary>
     public MissionElevationProfile? Profile { get => GetValue(ProfileProperty); set => SetValue(ProfileProperty, value); }
+    /// <summary>Identifies the <see cref="Profile"/> styled property.</summary>
     public static readonly StyledProperty<MissionElevationProfile?> ProfileProperty =
         AvaloniaProperty.Register<MissionElevationProfileView, MissionElevationProfile?>(nameof(Profile));
 
     static MissionElevationProfileView() => AffectsRender<MissionElevationProfileView>(ProfileProperty);
 
+    /// <summary>Draws the terrain and the planned altitude.</summary>
     public override void Render(DrawingContext context)
     {
         base.Render(context);

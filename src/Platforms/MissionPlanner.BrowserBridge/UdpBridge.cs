@@ -9,8 +9,10 @@ namespace MissionPlanner.BrowserBridge;
 public sealed class UdpBridge(int port = 14550)
 {
     private readonly SemaphoreSlim connection = new(1, 1);
+    /// <summary>Gets the loopback UDP port the bridge relays.</summary>
     public int Port { get; } = port is > 0 and <= 65535 ? port : throw new ArgumentOutOfRangeException(nameof(port));
 
+    /// <summary>Accepts a loopback WebSocket client and relays its datagrams to and from the UDP port.</summary>
     public async Task HandleAsync(HttpContext context)
     {
         // Check both Host and Origin to prevent another website (or DNS rebinding)

@@ -21,6 +21,7 @@ namespace MissionPlanner.App.Views.Navigation;
 /// </summary>
 public sealed class NavigationPageFactory(IServiceProvider services) : INavigationPageFactory
 {
+    /// <summary>Creates the page of the route, resolving it from the service container.</summary>
     public Page Create(string route)
     {
         var page = route switch

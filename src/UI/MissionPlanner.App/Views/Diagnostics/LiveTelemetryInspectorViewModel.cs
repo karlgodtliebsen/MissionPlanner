@@ -263,6 +263,7 @@ public sealed partial class LiveTelemetryInspectorViewModel : ViewModelBase
         windows.Close();
         IsDetached = false;
     }
+    /// <summary>Opens the inspector when it is closed and closes it when it is open.</summary>
     public void Toggle()
     {
         if (IsOpen)

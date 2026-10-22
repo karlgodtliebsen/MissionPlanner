@@ -6,5 +6,6 @@ using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
+/// <summary>Configures the parachute.</summary>
 public sealed class ParachuteViewModel(IActiveVehicleContext v, IOptionalHardwareService s, ILogger<ParachuteViewModel> logger, INavigationService navigation) : ParameterHardwareViewModel("parachute", v, s, logger, navigation);
 

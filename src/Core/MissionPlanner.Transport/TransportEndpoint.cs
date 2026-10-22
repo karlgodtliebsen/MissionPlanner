@@ -135,7 +135,9 @@ public class TransportEndpoint
     /// <summary>Restricts UDP reception and transmission to the resolved remote peer.</summary>
     public bool IsUdpClient { get; set; }
 
+    /// <summary>The configuration section name.</summary>
     public const string SectionName = "TransportEndpoint";
+    /// <summary>The name of the endpoint template.</summary>
     public const string Template = "TransportEndpoint template";
     /// <summary>
     /// The name of the transport endpoint.
@@ -215,6 +217,7 @@ public class TransportEndpoint
         get;
     }
 
+    /// <summary>Creates an endpoint with default values.</summary>
     public TransportEndpoint()
     {
     }

@@ -3,8 +3,10 @@ using Avalonia.Interactivity;
 
 namespace MissionPlanner.App.Views.FlightData.Hud;
 
+/// <summary>The heads-up display of the Flight Data page.</summary>
 public partial class HudView : UserControlViewBase<HudViewModel>
 {
+    /// <summary>Creates the view.</summary>
     public HudView()
     {
         InitializeComponent();

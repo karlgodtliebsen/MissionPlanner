@@ -33,6 +33,7 @@ public sealed class MissionInterventionService(
     private static readonly TimeSpan AckTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan TelemetryTimeout = TimeSpan.FromSeconds(3);
 
+    /// <summary>Evaluates whether a mission action is currently allowed.</summary>
     public VehicleCommandDecision Evaluate(VehicleState state, VehicleAction action, ushort? sequence = null)
     {
         if (state.ConnectionState != VehicleConnectionState.Online)
@@ -55,6 +56,7 @@ public sealed class MissionInterventionService(
         };
     }
 
+    /// <summary>Makes the given mission item the current one.</summary>
     public Task<MissionInterventionResult> SetCurrentMissionItemAsync(VehicleId vehicleId, ushort sequence, CancellationToken cancellationToken)
     {
         var state = registry.GetRequired(vehicleId)?.State;
@@ -69,6 +71,7 @@ public sealed class MissionInterventionService(
         return ExecuteMissionCurrentCommandAsync(vehicleId, "set current mission item", sequence, false, allowLegacyFallback: true, cancellationToken);
     }
 
+    /// <summary>Restarts the mission from its first item.</summary>
     public Task<MissionInterventionResult> RestartMissionAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
         var state = registry.GetRequired(vehicleId)?.State;
@@ -79,6 +82,7 @@ public sealed class MissionInterventionService(
         return ExecuteMissionCurrentCommandAsync(vehicleId, "restart mission", 0, true, allowLegacyFallback: false, cancellationToken);
     }
 
+    /// <summary>Resumes a suspended mission.</summary>
     public Task<MissionInterventionResult> ResumeMissionAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
         var state = registry.GetRequired(vehicleId)?.State;
@@ -95,6 +99,7 @@ public sealed class MissionInterventionService(
             acceptedWithoutTelemetryIsValid: true, cancellationToken);
     }
 
+    /// <summary>Aborts a landing in progress.</summary>
     public Task<MissionInterventionResult> AbortLandingAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
         var state = registry.GetRequired(vehicleId)?.State;

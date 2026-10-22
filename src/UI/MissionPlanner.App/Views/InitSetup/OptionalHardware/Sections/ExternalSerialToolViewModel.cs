@@ -8,6 +8,7 @@ using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
+/// <summary>Base class for tools that talk to a device on a serial port outside the MAVLink connection.</summary>
 public abstract partial class ExternalSerialToolViewModel(IFirmwareSerialDeviceCatalog devices, ILogger<ExternalSerialToolViewModel> logger, INavigationService navigation) : OptionalHardwareBaseViewModel(logger)
 {
     /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
@@ -18,6 +19,7 @@ public abstract partial class ExternalSerialToolViewModel(IFirmwareSerialDeviceC
     }
 
     private CancellationTokenSource lifetime = new();
+    /// <summary>Gets the available serial ports.</summary>
     public ObservableRangeCollection<string> Ports { get; } = [];
     [ObservableProperty]
     public partial string? SelectedPort

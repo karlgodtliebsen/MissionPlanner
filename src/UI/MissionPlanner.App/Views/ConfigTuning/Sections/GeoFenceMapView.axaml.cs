@@ -21,6 +21,7 @@ using NetTopologySuite.Geometries;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Sections;
 
+/// <summary>Shows and edits the geofence on a map.</summary>
 public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>, IDisposable
 {
     private const double WebMercatorInitialResolution = 156543.03392804097;
@@ -38,6 +39,7 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
     private bool mapActive;
     private bool disposed;
 
+    /// <summary>Creates the view.</summary>
     public GeoFenceMapView()
     {
         InitializeComponent();
@@ -61,6 +63,7 @@ public partial class GeoFenceMapView : UserControlViewBase<GeoFenceTabViewModel>
         FenceMap.Map = map;
     }
 
+    /// <summary>Releases the map and its subscriptions.</summary>
     public void Dispose()
     {
         if (Design.IsDesignMode || disposed)

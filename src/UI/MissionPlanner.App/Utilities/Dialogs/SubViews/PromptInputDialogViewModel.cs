@@ -28,6 +28,7 @@ public partial class PromptInputDialogViewModel : DialogViewModelBase
     }
 
 
+    /// <summary>Gets or sets the message shown above the input.</summary>
     public string? Message
     {
         get;

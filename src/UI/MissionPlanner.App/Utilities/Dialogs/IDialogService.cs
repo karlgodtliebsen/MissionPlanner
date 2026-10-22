@@ -65,16 +65,22 @@ public interface IDialogService
         where TView : UserControl, new()
         where TViewModel : DialogViewModelBase;
 
+    /// <summary>
+    /// Shows a dialog hosted in the overlay with the given view and view model, and returns the view model when the dialog completes.
+    /// </summary>
     Task<TViewModel?> ShowStandardAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null, CancellationToken cancellationToken = default)
         where TView : UserControl, new()
         where TViewModel : ViewModelBase;
 
+    /// <summary>Shows a dialog with the given view and view model, and returns the view model when the dialog completes.</summary>
     Task<TViewModel?> ShowStandardAsync<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, CancellationToken cancellationToken = default)
         where TView : UserControl, new()
         where TViewModel : ViewModelBase;
 
+    /// <summary>Shows a control as a non-blocking overlay dialog.</summary>
     void ShowStandard(Control control, object? model, string? hostId = null, OverlayDialogOptions? options = null);
 
+    /// <summary>Shows a dialog with the given view and view model without waiting for it to close, and returns the view model.</summary>
     TViewModel ShowStandard<TView, TViewModel>(TViewModel model, OverlayDialogOptions options, string? overLayHost = null)
         where TView : UserControl, new()
         where TViewModel : ViewModelBase;

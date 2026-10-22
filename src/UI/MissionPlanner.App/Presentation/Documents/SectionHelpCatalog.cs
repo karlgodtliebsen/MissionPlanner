@@ -10,6 +10,7 @@ public static class SectionHelpCatalog
     private const string SetupDocs = "https://ardupilot.org/copter/docs/configuring-hardware.html";
     private const string PeripheralDocs = "https://ardupilot.org/copter/docs/common-optional-hardware.html";
 
+    /// <summary>Gets the help topics for every setup and configuration section.</summary>
     public static IReadOnlyList<SectionHelp> Sections { get; } =
     [
         T("Application", "Flight Data",
@@ -286,6 +287,7 @@ public static class SectionHelpCatalog
                 ? "https://ardupilot.org/planner/docs/mission-planner-configuration-and-tuning.html"
                 : PeripheralDocs)));
 
+    /// <summary>Builds the help document for a section.</summary>
     public static UserDocument CreateDocument(SectionHelp topic)
     {
         var builder = new UserDocumentBuilder().Heading(topic.Title)
@@ -303,5 +305,13 @@ public static class SectionHelpCatalog
     }
 }
 
+/// <summary>Describes the help content of one section.</summary>
+/// <param name="Group">The setup group the section belongs to.</param>
+/// <param name="Title">The section title.</param>
+/// <param name="Purpose">What the section is for.</param>
+/// <param name="Steps">The steps the operator follows.</param>
+/// <param name="Verification">How the operator can confirm the result.</param>
+/// <param name="Note">A caution or additional note.</param>
+/// <param name="Documentation">The ArduPilot documentation page for the section.</param>
 public sealed record SectionHelp(string Group, string Title, string Purpose, string[] Steps,
     string Verification, string Note, Uri Documentation);

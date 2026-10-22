@@ -209,6 +209,7 @@ public sealed partial class FirmwareCatalogueViewModel : DialogViewModelBase
         SelectedBuildVariant = SelectedFirmware.BuildVariant;
     }
 
+    /// <summary>Clears the filters and the selected firmware, and returns to the stable channel.</summary>
     public void Reset()
     {
         Clear();

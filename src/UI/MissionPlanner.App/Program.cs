@@ -12,6 +12,7 @@ using MissionPlanner.Library;
 namespace MissionPlanner.App;
 
 
+/// <summary>Starts the MissionPlanner application and builds its Avalonia host.</summary>
 [SupportedOSPlatform("windows")]
 [SupportedOSPlatform("linux")]
 [SupportedOSPlatform("macos")]
@@ -25,6 +26,7 @@ public static class MissionPlannerProgram
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     //[STAThread]
+    /// <summary>Prepares the process for startup: sets the culture and installs the unhandled exception handling.</summary>
     public static void Start(string[] args)
     {
         var ci = new CultureInfo("en-US");
@@ -39,11 +41,13 @@ public static class MissionPlannerProgram
 
 
     // Avalonia configuration, don't remove; also used by visual designer.
+    /// <summary>Builds the Avalonia application with the supplied service registrations.</summary>
     public static AppBuilder BuildAvaloniaApp(Action<IServiceCollection> serviceAction)
     {
         return BuildAvaloniaAppAsync(serviceAction).GetAwaiter().GetResult();
     }
 
+    /// <summary>Builds the Avalonia application asynchronously with the supplied service registrations and configuration.</summary>
     public static async Task<AppBuilder> BuildAvaloniaAppAsync(
         Action<IServiceCollection> serviceAction, IConfiguration? configuration = null)
     {
@@ -76,11 +80,13 @@ public static class MissionPlannerProgram
 
 // Shared resource-only builder used by the Desktop preview host. This project is
 // a library: the previewer discovers BuildAvaloniaApp on the Desktop entry point.
+/// <summary>Entry point used by the Avalonia previewer.</summary>
 public class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
+    /// <summary>Starts the application with the classic desktop lifetime.</summary>
     [STAThread]
     public static void Main(string[] args)
     {
@@ -100,6 +106,7 @@ public class Program
 
 
     // Avalonia configuration, don't remove; also used by visual designer.
+    /// <summary>Builds the Avalonia application used by the previewer.</summary>
     public static AppBuilder BuildAvaloniaApp()
     {
         return AppBuilder

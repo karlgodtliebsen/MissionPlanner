@@ -84,6 +84,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     /// <summary>Gets whether the comparison toolbar actions are visible.</summary>
     public bool IsComparisonSelected => SelectedTabIndex == 3;
 
+    /// <summary>Gets whether the parameter profiles tab is selected.</summary>
     public bool IsProfileSelected => SelectedTabIndex == 2;
 
     partial void OnSelectedTabIndexChanged(int value)

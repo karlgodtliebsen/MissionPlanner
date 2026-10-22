@@ -7,6 +7,7 @@ namespace MissionPlanner.App.Utilities.Dialogs.SubViews;
 /// </summary>
 public partial class ErrorView : UserControl
 {
+    /// <summary>Creates the error dialog view.</summary>
     public ErrorView()
     {
         InitializeComponent();

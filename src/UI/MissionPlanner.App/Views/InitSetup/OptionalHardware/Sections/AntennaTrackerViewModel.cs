@@ -24,7 +24,9 @@ public sealed partial class AntennaTrackerViewModel(IActiveVehicleContext vehicl
         SetMessages(TargetStatus);
     }
 
+    /// <summary>Gets the text that tells whether a tracker vehicle is connected.</summary>
     public string TargetStatus => vehicle.IsOnline ? "Tracker vehicle connected. Settings are shown only when reported by its parameter metadata." : "Connect an AntennaTracker vehicle.";
+    /// <summary>Gets the text that explains why the actuator test is unavailable.</summary>
     public string SafetyStatus => "Actuator test is unavailable until a bounded tracker-specific output adapter and operation gate are present.";
 
 }

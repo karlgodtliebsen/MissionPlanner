@@ -8,6 +8,7 @@ using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
+/// <summary>Configures a serial Bluetooth module.</summary>
 public sealed partial class BluetoothSetupViewModel(IFirmwareSerialDeviceCatalog devices, IBluetoothSerialConfigurator configurator, ILogger<BluetoothSetupViewModel> logger, INavigationService navigation)
     : ExternalSerialToolViewModel(devices, logger, navigation)
 {

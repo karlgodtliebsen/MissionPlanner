@@ -73,6 +73,7 @@ public sealed partial class DetectedDeviceViewModel : ViewModelBase
         return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Install, cancellationToken);
     }
 
+    /// <summary>Marks the detected device as not installable.</summary>
     public void Reset()
     {
         CanInstall = false;

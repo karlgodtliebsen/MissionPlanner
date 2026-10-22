@@ -17,6 +17,7 @@ public sealed partial class ValidatedPackageViewModel : ViewModelBase
     {
     }
 
+    /// <summary>Resets the view model to its initial state.</summary>
     public void Reset()
     {
         PreparedFirmware = null;

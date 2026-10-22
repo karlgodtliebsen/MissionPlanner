@@ -1,7 +1,9 @@
 ﻿namespace MissionPlanner.App.Views.AI.Sections;
 
+/// <summary>Edits vehicle configuration in the vehicle DSL.</summary>
 public partial class VehicleDslView : UserControlViewBase<VehicleDslViewModel>
 {
+    /// <summary>Creates the view.</summary>
     public VehicleDslView()
     {
         InitializeComponent();

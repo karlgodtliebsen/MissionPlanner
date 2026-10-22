@@ -7,6 +7,7 @@ using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
+/// <summary>Updates the firmware of a CubeID.</summary>
 public sealed partial class CubeIdUpdateViewModel(ILogger<CubeIdUpdateViewModel> logger, INavigationService navigation) : OptionalHardwareBaseViewModel(logger)
 {
     /// <summary>Refreshes the current page state without starting a hardware operation.</summary>

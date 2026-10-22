@@ -8,6 +8,7 @@ namespace MissionPlanner.Library.Browser;
 /// <summary>Persists non-secret settings in the current browser origin's local storage.</summary>
 public sealed class BrowserPlannerSettingsStore(ILogger<BrowserPlannerSettingsStore> logger) : IPlannerSettingsStore
 {
+    /// <summary>Reads the stored planner settings document, or null when there is none.</summary>
     public ValueTask<string?> ReadAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -23,6 +24,7 @@ public sealed class BrowserPlannerSettingsStore(ILogger<BrowserPlannerSettingsSt
         }
     }
 
+    /// <summary>Replaces the stored planner settings document.</summary>
     public ValueTask WriteAsync(string document, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(document);
@@ -31,6 +33,7 @@ public sealed class BrowserPlannerSettingsStore(ILogger<BrowserPlannerSettingsSt
         return ValueTask.CompletedTask;
     }
 
+    /// <summary>Removes the stored planner settings document.</summary>
     public ValueTask ClearAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

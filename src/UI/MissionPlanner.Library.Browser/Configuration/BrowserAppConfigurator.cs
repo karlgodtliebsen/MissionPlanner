@@ -15,8 +15,10 @@ using MissionPlanner.Shared.Models.Services.Abstractions;
 
 namespace MissionPlanner.Library.Browser.Configuration;
 
+/// <summary>Registers the services that are specific to the browser app.</summary>
 public static class BrowserAppConfigurator
 {
+    /// <summary>Registers the browser implementations of the platform services and restricts the connection channels to UDP.</summary>
     public static IServiceCollection AddBrowserOnlyServices(this IServiceCollection services)
     {
         MissionPlanner.Library.Configuration.LogStorageConfiguration.AddLogStorage(services, browser: true);

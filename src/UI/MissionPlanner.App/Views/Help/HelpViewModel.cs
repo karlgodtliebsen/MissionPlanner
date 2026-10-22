@@ -37,6 +37,7 @@ public partial class HelpViewModel : ViewModelBase
     [NotifyPropertyChangedFor(nameof(VisibleTopics))]
     public partial string SearchText { get; set; } = string.Empty;
 
+    /// <summary>Gets the topics that match the search text.</summary>
     public IEnumerable<HelpTopic> VisibleTopics => Topics.Where(topic =>
         string.IsNullOrWhiteSpace(SearchText) ||
         (topic.Category + " " + topic.Title + " " + topic.Article?.Document.Markdown.Replace("\\", string.Empty))
@@ -57,5 +58,6 @@ public partial class HelpViewModel : ViewModelBase
 /// <summary>A Help topic containing either the interactive tutorial or a Markdown article.</summary>
 public sealed record HelpTopic(string Title, HelpArticleViewModel? Article = null, string Category = "Getting started")
 {
+    /// <summary>Gets whether the topic is the tutorial rather than an article.</summary>
     public bool IsTutorial => Article is null;
 }

@@ -10,15 +10,19 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 /// <summary>Bounded UI-sampled receiver history. No controller writes or telemetry subscriptions.</summary>
 public sealed class RadioChannelHistoryPlot : Control
 {
+    /// <summary>Identifies the <see cref="Channels"/> styled property.</summary>
     public static readonly StyledProperty<IEnumerable<RadioChannelDisplayViewModel>?> ChannelsProperty =
         AvaloniaProperty.Register<RadioChannelHistoryPlot, IEnumerable<RadioChannelDisplayViewModel>?>(nameof(Channels));
+    /// <summary>Identifies the <see cref="SessionKey"/> styled property.</summary>
     public static readonly StyledProperty<string?> SessionKeyProperty =
         AvaloniaProperty.Register<RadioChannelHistoryPlot, string?>(nameof(SessionKey));
+    /// <summary>Gets or sets the channels whose history is drawn.</summary>
     public IEnumerable<RadioChannelDisplayViewModel>? Channels
     {
         get => GetValue(ChannelsProperty);
         set => SetValue(ChannelsProperty, value);
     }
+    /// <summary>Gets or sets a key that identifies the setup session; changing it clears the history.</summary>
     public string? SessionKey { get => GetValue(SessionKeyProperty); set => SetValue(SessionKeyProperty, value); }
 
     private readonly Queue<Sample> samples = new();
@@ -30,12 +34,14 @@ public sealed class RadioChannelHistoryPlot : Control
     private static readonly IBrush GridBrush = new SolidColorBrush(Color.Parse("#454B55"));
     private static readonly IBrush LabelBrush = new SolidColorBrush(Color.Parse("#CDD3DD"));
 
+    /// <summary>Creates the plot and starts its sampling timer.</summary>
     public RadioChannelHistoryPlot()
     {
         timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
         timer.Tick += (_, _) => Capture();
     }
 
+    /// <summary>Starts sampling when the plot is attached to the visual tree.</summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -43,6 +49,7 @@ public sealed class RadioChannelHistoryPlot : Control
         timer.Start();
     }
 
+    /// <summary>Stops sampling when the plot is detached from the visual tree.</summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         timer.Stop();
@@ -50,12 +57,14 @@ public sealed class RadioChannelHistoryPlot : Control
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>Clears the history when the channels or the session key change.</summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property == SessionKeyProperty || change.Property == ChannelsProperty) Clear();
     }
 
+    /// <summary>Clears the recorded history.</summary>
     public void Clear()
     {
         samples.Clear();
@@ -80,6 +89,7 @@ public sealed class RadioChannelHistoryPlot : Control
         InvalidateVisual();
     }
 
+    /// <summary>Draws the recorded history of every channel.</summary>
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -137,6 +147,7 @@ public sealed class RadioChannelHistoryPlot : Control
         }
     }
 
+    /// <summary>Measures the plot to use all available width and a fixed minimum height.</summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         var width = double.IsFinite(availableSize.Width) ? availableSize.Width : 600;

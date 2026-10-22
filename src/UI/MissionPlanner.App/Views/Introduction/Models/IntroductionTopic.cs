@@ -19,14 +19,19 @@ public sealed partial class IntroductionTopic : ObservableObject
 
     [ObservableProperty] public partial string MarkdownFile { get; set; } = string.Empty;
 
+    /// <summary>Gets or sets the images of the topic.</summary>
     public ObservableRangeCollection<IntroductionImage> Images { get; set; } = [];
 
+    /// <summary>Gets or sets the callouts that explain the images.</summary>
     public ObservableRangeCollection<IntroductionCallout> Callouts { get; set; } = [];
 
+    /// <summary>Gets or sets the actions the topic offers.</summary>
     public ObservableRangeCollection<IntroductionAction> Actions { get; set; } = [];
 
+    /// <summary>Gets or sets the Markdown text loaded from the topic file.</summary>
     [JsonIgnore] public string Markdown { get; set; } = string.Empty;
 
+    /// <summary>Gets the title shown in the topic list: the short title when there is one, otherwise the title.</summary>
     [JsonIgnore] public string DisplayTitle => string.IsNullOrWhiteSpace(ShortTitle) ? Title : ShortTitle!;
 }
 

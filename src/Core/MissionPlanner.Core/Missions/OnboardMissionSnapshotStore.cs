@@ -16,6 +16,7 @@ public sealed class OnboardMissionSnapshotStore : IOnboardMissionSnapshotStore, 
     private readonly IDisposable registeredSubscription;
     private readonly IDisposable disconnectedSubscription;
 
+    /// <summary>Creates the store and clears snapshots when a vehicle registers again or disconnects.</summary>
     public OnboardMissionSnapshotStore(IDomainEventHub eventHub)
     {
         registeredSubscription = eventHub.SubscribeDomainEventAsync<VehicleRegistered>((evt, _) =>
@@ -30,11 +31,14 @@ public sealed class OnboardMissionSnapshotStore : IOnboardMissionSnapshotStore, 
         });
     }
 
+    /// <summary>Occurs when a snapshot is recorded or invalidated.</summary>
     public event EventHandler? Changed;
 
+    /// <summary>Gets the last mission snapshot taken from the vehicle, if any.</summary>
     public OnboardMissionSnapshot? Get(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission) =>
         snapshots.TryGetValue((vehicleId, missionType), out var snapshot) ? snapshot : null;
 
+    /// <summary>Records a mission snapshot taken from the vehicle.</summary>
     public void Record(OnboardMissionSnapshot snapshot)
     {
         var copy = snapshot with
@@ -46,6 +50,7 @@ public sealed class OnboardMissionSnapshotStore : IOnboardMissionSnapshotStore, 
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>Discards the snapshot for a vehicle and mission type.</summary>
     public void Invalidate(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission)
     {
         if (snapshots.TryRemove((vehicleId, missionType), out _))
@@ -54,6 +59,7 @@ public sealed class OnboardMissionSnapshotStore : IOnboardMissionSnapshotStore, 
         }
     }
 
+    /// <summary>Determines whether the snapshot is known to match the mission onboard the vehicle.</summary>
     public MissionSnapshotFreshness GetFreshness(VehicleState vehicleState, MissionPlanType missionType = MissionPlanType.FlightMission)
     {
         var snapshot = Get(vehicleState.VehicleId, missionType);
@@ -72,6 +78,7 @@ public sealed class OnboardMissionSnapshotStore : IOnboardMissionSnapshotStore, 
         return snapshotId == streamedId ? MissionSnapshotFreshness.VerifiedCurrent : MissionSnapshotFreshness.Stale;
     }
 
+    /// <summary>Gets the mission item the vehicle currently executes when it matches the snapshot.</summary>
     public bool TryGetCurrentItem(VehicleState vehicleState, out MavLinkMissionItem? item)
     {
         item = null;
@@ -99,6 +106,7 @@ public sealed class OnboardMissionSnapshotStore : IOnboardMissionSnapshotStore, 
         }
     }
 
+    /// <summary>Releases the event subscriptions.</summary>
     public void Dispose()
     {
         registeredSubscription.Dispose();

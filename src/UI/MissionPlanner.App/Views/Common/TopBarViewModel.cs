@@ -34,6 +34,7 @@ public partial class TopBarViewModel : ViewModelBase
     {
         get;
     }
+    /// <summary>Gets or sets the notification manager of the top bar's window.</summary>
     public new WindowNotificationManager? NotificationManager
     {
         get; set;
@@ -399,6 +400,7 @@ public partial class TopBarViewModel : ViewModelBase
                 : "LIVE";
     }
 }
+/// <summary>Asks the application to show the telemetry inspector.</summary>
 public sealed class ShowTelemetryEvent : DomainEvent
 {
     /// <inheritdoc />

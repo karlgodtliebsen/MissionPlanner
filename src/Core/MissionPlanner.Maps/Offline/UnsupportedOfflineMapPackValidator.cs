@@ -3,6 +3,7 @@ namespace MissionPlanner.Maps.Offline;
 /// <summary>Rejects offline packs until a platform registers an archive validator.</summary>
 public sealed class UnsupportedOfflineMapPackValidator : IOfflineMapPackValidator
 {
+    /// <summary>Always throws because offline map packs are not available on this platform.</summary>
     public ValueTask ValidateAsync(OfflineMapPackManifest manifest, string archivePath, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

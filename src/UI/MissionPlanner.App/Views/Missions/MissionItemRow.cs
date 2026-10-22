@@ -150,10 +150,13 @@ public sealed partial class MissionItemRow : ObservableObject, IDisposable
         LongitudeChanged?.Invoke(value, Id);
     }
 
+    /// <summary>Occurs when the latitude is edited, with the new value and the item identifier.</summary>
     public event Action<double?, MissionItemId>? LatitudeChanged;
 
+    /// <summary>Occurs when the longitude is edited, with the new value and the item identifier.</summary>
     public event Action<double?, MissionItemId>? LongitudeChanged;
 
+    /// <summary>Occurs when the altitude is edited, with the new value and the item identifier.</summary>
     public event Action<double?, MissionItemId>? AltitudeChanged;
 
 

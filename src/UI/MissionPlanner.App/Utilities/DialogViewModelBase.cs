@@ -11,18 +11,21 @@ namespace MissionPlanner.App.Utilities;
 /// </summary>
 public partial class DialogViewModelBase : ViewModelBase, IDialogContext
 {
+    /// <summary>Gets or sets the dialog title.</summary>
     public string? Title
     {
         get;
         set;
     }
 
+    /// <summary>Gets or sets the text of the OK button.</summary>
     public string? OkText
     {
         get;
         set;
     }
 
+    /// <summary>Gets or sets the text of the Cancel button.</summary>
     public string? CancelText
     {
         get;
@@ -35,11 +38,13 @@ public partial class DialogViewModelBase : ViewModelBase, IDialogContext
     {
         get; set;
     }
+    /// <summary>Gets or sets whether the dialog was closed.</summary>
     public bool Closed
     {
         get; set;
     }
 
+    /// <summary>Creates the dialog view model with explicit services.</summary>
     protected DialogViewModelBase(ILogger logger, IUiDispatcher dispatcher, IDomainEventHub eventHub) : base(logger, dispatcher, eventHub)
     {
     }

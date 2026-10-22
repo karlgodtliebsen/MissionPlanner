@@ -5,8 +5,10 @@
 /// </summary>
 public sealed class IntroductionAction
 {
+    /// <summary>Gets or sets the button label.</summary>
     public string Label { get; set; } = string.Empty;
 
+    /// <summary>Gets or sets what the action does.</summary>
     public IntroductionActionKind Kind { get; set; } = IntroductionActionKind.Topic;
 
     /// <summary>

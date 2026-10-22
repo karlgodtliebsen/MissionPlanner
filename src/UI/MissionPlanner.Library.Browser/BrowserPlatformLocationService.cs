@@ -10,6 +10,7 @@ namespace MissionPlanner.Library.Browser;
 public sealed class BrowserPlatformLocationService(ILogger<BrowserPlatformLocationService> logger)
     : IPlatformLocationService
 {
+    /// <summary>Gets the device location from the browser, or null when it is unavailable or permission is denied.</summary>
     public async ValueTask<GeoPosition?> GetLocationAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

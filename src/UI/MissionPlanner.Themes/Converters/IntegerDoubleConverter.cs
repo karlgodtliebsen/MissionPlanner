@@ -41,8 +41,10 @@ public sealed class StringDoubleConverter : IValueConverter
     }
 }
 
+/// <summary>Formats numeric values as text for editing.</summary>
 public static class Converter
 {
+    /// <summary>Converts a numeric value to text using the culture, or to an empty string for null.</summary>
     public static string ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         if (value is null)

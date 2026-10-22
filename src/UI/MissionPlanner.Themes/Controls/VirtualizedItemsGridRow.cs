@@ -17,12 +17,14 @@ public sealed class VirtualizedItemsGridRow : Grid
 {
     private VirtualizedItemsGrid? _owner;
 
+    /// <summary>Connects the row to its grid when it is attached to the visual tree.</summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         AttachOwner();
     }
 
+    /// <summary>Disconnects the row from its grid when it is detached from the visual tree.</summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         DetachOwner();

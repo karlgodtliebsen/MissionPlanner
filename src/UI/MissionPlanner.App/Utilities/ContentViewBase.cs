@@ -6,8 +6,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace MissionPlanner.App.Utilities;
 
+/// <summary>Base class for content pages that resolve their view model from the service container.</summary>
 public partial class ContentViewBase<TViewModel> : ContentPage where TViewModel : ViewModelBase
 {
+    /// <summary>The logger of the page.</summary>
     protected ILogger Logger = NullLogger.Instance;
 
     /// <summary>The view model associated with this View.</summary>
@@ -29,6 +31,7 @@ public partial class ContentViewBase<TViewModel> : ContentPage where TViewModel 
         DataContext = ViewModel;
     }
 
+    /// <summary>Activates the view model when the page is loaded.</summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);

@@ -8,6 +8,7 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 /// <summary>Displays the radio calibration workflow and compact receiver channels.</summary>
 public partial class RadioSetupView : UserControlViewBase<RadioSetupViewModel>
 {
+    /// <summary>Creates the view.</summary>
     public RadioSetupView() => InitializeComponent();
 
     private void ShowChannelDetails(object? sender, RoutedEventArgs e)

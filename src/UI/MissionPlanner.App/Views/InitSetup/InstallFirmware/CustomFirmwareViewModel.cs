@@ -134,13 +134,16 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
         previous?.Dispose();
         base.Dispose();
     }
+    /// <summary>Occurs when the view model asks the firmware panel to start an operation.</summary>
     public event Action<FirmwarePanelRequest>? OperationRequested;
 
+    /// <summary>Installs the loaded custom firmware.</summary>
     public Task InstallAsync(CancellationToken cancellationToken)
     {
         return FirmwarePanelRequest.SendAsync(OperationRequested, FirmwarePanelAction.Install, cancellationToken);
     }
 
+    /// <summary>Loads a custom firmware file, asking the user to pick one when no selection is given.</summary>
     public async Task LoadCustomFirmwareAsync(CancellationToken cancellationToken, FirmwareFileSelection? selection = null)
     {
         using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, viewLifetime?.Token ?? CancellationToken.None);
@@ -195,6 +198,7 @@ public sealed partial class CustomFirmwareViewModel : DialogViewModelBase
         }
     }
 
+    /// <summary>Clears the loaded custom firmware.</summary>
     public void Reset()
     {
         HasCustomFirmware = false;

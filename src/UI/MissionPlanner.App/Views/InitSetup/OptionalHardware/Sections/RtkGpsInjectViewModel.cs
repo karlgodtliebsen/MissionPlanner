@@ -27,6 +27,7 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
     private CancellationTokenSource lifetime = new();
     private bool active;
 
+    /// <summary>Creates the view model with the RTK injection service and the serial device catalog.</summary>
     public RtkGpsInjectViewModel(IRtkInjectionService injection, IFirmwareSerialDeviceCatalog devices, ILogger<RtkGpsInjectViewModel> logger, INavigationService navigation)
         : base(logger)
     {
@@ -35,6 +36,7 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
         this.devices = devices;
     }
 
+    /// <summary>Gets the available serial ports.</summary>
     public ObservableRangeCollection<string> Ports { get; } = [];
     /// <summary>
     /// 

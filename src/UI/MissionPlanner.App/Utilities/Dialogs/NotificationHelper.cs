@@ -6,8 +6,10 @@ using Ursa.Controls;
 
 namespace MissionPlanner.App.Utilities.Dialogs;
 
+/// <summary>Attaches the notification and toast managers of a window to its view model.</summary>
 public static class NotificationHelper
 {
+    /// <summary>Finds or creates the notification and toast managers of the window and assigns them to the view model.</summary>
     public static void SetupManagers(Control window, ViewModelBase? viewModel)
     {
         DomainException.ThrowIfNull(viewModel);

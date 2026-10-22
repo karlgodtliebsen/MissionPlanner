@@ -16,6 +16,7 @@ public partial class IntroductionViewModel(IIntroductionContentLoader contentLoa
     private bool isInitialized;
     private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
+    /// <summary>Gets the topics of the Introduction.</summary>
     public ObservableRangeCollection<IntroductionTopic> Topics
     {
         get;

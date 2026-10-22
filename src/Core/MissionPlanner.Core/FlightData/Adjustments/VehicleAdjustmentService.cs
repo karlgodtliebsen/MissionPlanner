@@ -15,6 +15,7 @@ using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.Core.FlightData.Adjustments;
 
+/// <summary>Applies in-flight speed, altitude and loiter radius adjustments through acknowledged vehicle commands.</summary>
 public sealed class VehicleAdjustmentService(
     IVehicleRegistry registry,
     IVehicleConnectionSession connectionSession,
@@ -31,6 +32,7 @@ public sealed class VehicleAdjustmentService(
     private static readonly TimeSpan ConfirmationTimeout = TimeSpan.FromSeconds(5);
     private const double AltitudeToleranceMeters = 0.75;
 
+    /// <summary>Evaluates whether a speed change is currently allowed.</summary>
     public VehicleCommandDecision EvaluateSpeed(VehicleState state, VehicleSpeedTargetType targetType)
     {
         if (state.ConnectionState != VehicleConnectionState.Online) return VehicleCommandDecision.Deny("Vehicle is not online.");
@@ -44,6 +46,7 @@ public sealed class VehicleAdjustmentService(
             : VehicleCommandDecision.Deny("The current mode does not accept an external speed target.");
     }
 
+    /// <summary>Evaluates whether a guided altitude change is currently allowed.</summary>
     public VehicleCommandDecision EvaluateAltitude(VehicleState state)
     {
         if (state.ConnectionState != VehicleConnectionState.Online) return VehicleCommandDecision.Deny("Vehicle is not online.");
@@ -55,6 +58,7 @@ public sealed class VehicleAdjustmentService(
             : VehicleCommandDecision.Deny("A current vehicle position is required.");
     }
 
+    /// <summary>Evaluates whether a loiter radius change is currently allowed.</summary>
     public VehicleCommandDecision EvaluateLoiterRadius(VehicleState state)
     {
         if (state.ConnectionState != VehicleConnectionState.Online) return VehicleCommandDecision.Deny("Vehicle is not online.");
@@ -63,6 +67,7 @@ public sealed class VehicleAdjustmentService(
             : VehicleCommandDecision.Allow(true, "This writes a persistent vehicle parameter.");
     }
 
+    /// <summary>Sends a new speed target and reports how far it was confirmed.</summary>
     public async Task<VehicleAdjustmentResult> ChangeSpeedAsync(VehicleId vehicleId, VehicleSpeedTargetType targetType, double metersPerSecond, CancellationToken cancellationToken)
     {
         var session = registry.GetRequired(vehicleId);
@@ -96,6 +101,7 @@ public sealed class VehicleAdjustmentService(
         }
     }
 
+    /// <summary>Sends a new guided altitude relative to home and reports how far it was confirmed.</summary>
     public async Task<VehicleAdjustmentResult> SetGuidedAltitudeAsync(VehicleId vehicleId, double homeRelativeMeters, CancellationToken cancellationToken)
     {
         var session = registry.GetRequired(vehicleId);
@@ -136,6 +142,7 @@ public sealed class VehicleAdjustmentService(
         }
     }
 
+    /// <summary>Sets the loiter radius and reports how far it was confirmed.</summary>
     public async Task<VehicleAdjustmentResult> SetLoiterRadiusAsync(VehicleId vehicleId, double magnitudeMeters, CancellationToken cancellationToken)
     {
         var state = registry.GetRequired(vehicleId)?.State;

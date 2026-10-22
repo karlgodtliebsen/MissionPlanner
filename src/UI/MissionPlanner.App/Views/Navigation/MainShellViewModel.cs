@@ -56,6 +56,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
         get;
     }
 
+    /// <summary>Gets the navigation menu items.</summary>
     public ObservableCollection<NavigationMenuItemViewModel> MenuItems
     {
         get;
@@ -98,6 +99,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
         }
     }
 
+    /// <summary>Opens the Flight Data page as the start page.</summary>
     public Task InitializeAsync()
     {
         return navigationService.NavigateAsync(MissionPlannerRoutes.FlightData);

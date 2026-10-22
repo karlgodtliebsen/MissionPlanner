@@ -25,9 +25,12 @@ public sealed class AvaloniaNavigationService : INavigationService
         this.dispatcher = dispatcher;
     }
 
+    /// <summary>Occurs when the page shown by the shell changes.</summary>
     public event Action<Page>? CurrentPageChanged;
+    /// <summary>Gets the route of the current page.</summary>
     public string? CurrentRoute => currentRoute;
 
+    /// <summary>Navigates to the page of the route.</summary>
     public async Task NavigateAsync(string route)
     {
         await navigationGate.WaitAsync();
@@ -67,6 +70,7 @@ public sealed class AvaloniaNavigationService : INavigationService
         }
     }
 
+    /// <summary>Pushes a page onto the navigation stack.</summary>
     public async Task PushAsync(Page page)
     {
         await navigationGate.WaitAsync();
@@ -86,6 +90,7 @@ public sealed class AvaloniaNavigationService : INavigationService
         }
     }
 
+    /// <summary>Goes back to the previous page.</summary>
     public async Task GoBackAsync()
     {
         await navigationGate.WaitAsync();

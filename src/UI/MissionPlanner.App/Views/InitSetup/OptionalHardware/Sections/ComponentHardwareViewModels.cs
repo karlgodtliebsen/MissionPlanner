@@ -7,9 +7,12 @@ using MissionPlanner.App.Views.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
+/// <summary>Discovers and configures DroneCAN nodes.</summary>
 public sealed partial class DroneCanUavCanViewModel(IDroneCanService service, ILogger<DroneCanUavCanViewModel> logger, INavigationService navigation) : OptionalHardwareBaseViewModel(logger)
 {
+    /// <summary>Gets the transport kinds that can be selected.</summary>
     public IReadOnlyList<DroneCanTransportKind> TransportKinds { get; } = Enum.GetValues<DroneCanTransportKind>();
+    /// <summary>Gets the discovered nodes.</summary>
     public ObservableCollection<DroneCanNode> Nodes { get; } = [];
     [ObservableProperty]
     public partial DroneCanTransportKind TransportKind
@@ -46,6 +49,7 @@ public sealed partial class DroneCanUavCanViewModel(IDroneCanService service, IL
         }
         catch (Exception ex) { ErrorMessage = ex.Message; }
     }
+    /// <summary>Disconnects the DroneCAN service and releases resources.</summary>
     public override void Dispose()
     {
         _ = service.DisposeAsync();

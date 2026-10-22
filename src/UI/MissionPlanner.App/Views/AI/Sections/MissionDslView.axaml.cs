@@ -1,7 +1,9 @@
 ﻿namespace MissionPlanner.App.Views.AI.Sections;
 
+/// <summary>Edits missions in the mission DSL.</summary>
 public partial class MissionDslView : UserControlViewBase<MissionDslViewModel>
 {
+    /// <summary>Creates the view.</summary>
     public MissionDslView()
     {
         InitializeComponent();

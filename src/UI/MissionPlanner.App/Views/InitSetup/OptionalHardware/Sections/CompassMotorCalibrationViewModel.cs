@@ -46,6 +46,7 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
         Show(service.Current);
     }
 
+    /// <summary>Gets the measurements collected during the calibration.</summary>
     public ObservableCollection<CompassMotorCalibrationSample> Samples { get; } = [];
     [ObservableProperty] public partial string Instruction { get; private set; } = string.Empty;
     [ObservableProperty] public partial string Compensation { get; private set; } = string.Empty;

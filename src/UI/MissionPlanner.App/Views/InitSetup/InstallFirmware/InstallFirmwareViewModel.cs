@@ -216,6 +216,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     [ObservableProperty]
     public partial string VehicleHeading { get; private set; } = "No vehicle connected";
 
+    /// <summary>Loads a firmware file chosen by the user.</summary>
     [RelayCommand]
     public async Task LoadLocalFirmwareAsync(CancellationToken cancellationToken)
     {
@@ -246,6 +247,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
 
 
+    /// <summary>Installs the loaded local firmware file.</summary>
     [RelayCommand(CanExecute = nameof(CanInstallLocalFirmware))]
     public Task InstallLocalFirmwareAsync(CancellationToken cancellationToken)
     {
@@ -253,6 +255,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
     }
 
 
+    /// <summary>Shows the dialog for selecting firmware from the online catalogue.</summary>
     [RelayCommand]
     public async Task ShowOnlineFirmwareSelectorAsync(CancellationToken cancellationToken)
     {
@@ -276,6 +279,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Shows the dialog for selecting a local firmware file.</summary>
     [RelayCommand]
     public async Task ShowLocalFirmwareSelectorAsync(CancellationToken cancellationToken)
     {

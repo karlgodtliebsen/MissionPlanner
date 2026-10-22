@@ -47,6 +47,7 @@ public sealed record FirmwareBoardTarget
         get;
     }
 
+    /// <summary>Gets the MAVLink vehicle type of the board target.</summary>
     public FirmwareVehicleType MavType
     {
         get;
