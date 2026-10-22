@@ -3,11 +3,9 @@ using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Interactivity;
-using MissionPlanner.Themes.Controls;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Microsoft.Extensions.DependencyInjection;
-using MissionPlanner.Themes.Controls;
 using MissionPlanner.App.Models;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Utilities;
@@ -19,6 +17,7 @@ using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Themes.Controls;
 using NSubstitute;
 
 namespace MissionPlanner.AvaloniaUI.Tests;
@@ -28,7 +27,9 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 public sealed class ParameterEditorToolbarTests
 {
     /// <summary>Creates an offline application with the production control themes.</summary>
-    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure(() =>
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        return AppBuilder.Configure(() =>
         new MissionPlanner.App.App(FirmwarePanelViewModelTests.CreateServices(services =>
         {
             services.AddSingleton(Substitute.For<IVehicleConnectionSession>());
@@ -47,6 +48,7 @@ public sealed class ParameterEditorToolbarTests
         })))
         .UseSkia()
         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
+    }
 
     /// <summary>Width changes reuse the editor and its search state, across all parameter tabs.</summary>
     [Fact]

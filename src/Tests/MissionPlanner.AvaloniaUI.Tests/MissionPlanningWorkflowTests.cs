@@ -524,7 +524,7 @@ public sealed class MissionPlanningWorkflowTests
         await workflow.PrefetchVisibleAsync(CancellationToken.None);
 
         host.LastStatus.Should().Be("Select a map position before visible-area prefetch.");
-        await prefetch.DidNotReceiveWithAnyArgs().EstimateAsync(default!, default);
+        await prefetch.DidNotReceiveWithAnyArgs().EstimateAsync(default!, TestContext.Current.CancellationToken);
     }
 
     [Fact]
