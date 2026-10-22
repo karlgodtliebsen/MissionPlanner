@@ -8,7 +8,7 @@ using MissionPlanner.Maps.Sources;
 
 using MissionPlanner.App.Maps;
 
-namespace MissionPlanner.Library.Windows.Maps;
+namespace MissionPlanner.Library.Desktop.Maps;
 
 /// <summary>Creates read-only Mapsui layers for validated raster MBTiles packs.</summary>
 public sealed class MapsuiMbTilesSourceFactory : IMapsuiMbTilesSourceFactory

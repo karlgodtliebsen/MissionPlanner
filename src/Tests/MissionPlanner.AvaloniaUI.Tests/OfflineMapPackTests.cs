@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 using MissionPlanner.Maps.Offline;
 using NSubstitute;
 
-using MissionPlanner.Library.Windows.Maps;
+using MissionPlanner.Library.Desktop.Maps;
 
 namespace MissionPlanner.AvaloniaUI.Tests.Maps;
 

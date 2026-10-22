@@ -2,22 +2,18 @@
 
 Decided during the 2026-10-22 improvement review. None of these are started.
 
-## Linux and macOS versions
+## Linux and macOS versions (started 2026-10-22)
 
-`MissionPlanner.Library.Linux` and `MissionPlanner.Library.MacOs` are empty placeholder projects.
-Only `MissionPlanner.Library.Windows` has platform code, and the Desktop head references only that.
-The App no longer references `MissionPlanner.Library.Linux` or the `Tools/MissionPlanner.Simulator`
-project (neither was used by the App at build or run time).
+Implemented: `MissionPlanner.Library.Desktop` (shared), `MissionPlanner.Library.Linux`,
+`MissionPlanner.Library.MacOs`, the `MissionPlanner.Linux` and `MissionPlanner.MacOs` heads, CI jobs and
+`docs/PLATFORMS.md`. Still open:
 
-Creating the Linux and macOS versions needs:
-
-- Platform implementations in `MissionPlanner.Library.Linux` / `.MacOs` for what `Library.Windows` provides
-  (serial/USB discovery, DFU tooling location, clipboard/file pickers where Avalonia does not cover them,
-  SITL cache paths and process hosting).
-- A Desktop head per platform (or runtime-identifier conditions in `MissionPlanner.Desktop`) that references
-  the matching library.
-- CI jobs on `ubuntu-latest` and `macos-latest`, build first and tests second.
-- Updating `MAPS_PLATFORM_VERIFICATION.md`, which currently covers only the Windows desktop target.
+- Run the macOS build on a Mac and verify the keychain store and the app bundle.
+- Run the Linux build with a real flight controller (serial permissions, ModemManager, USB hot-plug).
+- Run the platform-neutral test suites on Linux and make the CI job blocking.
+- Optional: location through GeoClue (Linux) and CoreLocation (macOS), DFU through the Linux
+  `STM32_Programmer_CLI`, a Linux/macOS `IUsbTopologyProvider`.
+- Decide what the Android and iOS heads are for; they compile but are not functional.
 
 ## Localization (postponed)
 

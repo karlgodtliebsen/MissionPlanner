@@ -5,10 +5,10 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Transport.Abstractions;
 
-namespace MissionPlanner.Library.Windows;
+namespace MissionPlanner.Library.Desktop;
 
 /// <summary>Owns native output-only handles. No socket listener or receive-to-vehicle path is created.</summary>
-public sealed class WindowsOutputSinkFactory(IFirmwareSerialPortFactory serialPorts,
+public sealed class DesktopOutputSinkFactory(IFirmwareSerialPortFactory serialPorts,
     IActiveVehicleContext active, IVehicleConnectionSession connection, IVehicleRegistry vehicles) : IOutputSinkFactory
 {
     /// <inheritdoc />

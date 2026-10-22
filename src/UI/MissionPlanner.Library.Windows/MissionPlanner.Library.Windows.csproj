@@ -7,13 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MissionPlanner.App\MissionPlanner.App.csproj" />
+    <ProjectReference Include="..\MissionPlanner.Library.Desktop\MissionPlanner.Library.Desktop.csproj" />
   </ItemGroup>
 
-<ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
-  </ItemGroup>
 <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport">

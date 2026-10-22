@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>MissionPlanner</RootNamespace>
+    <AssemblyName>MissionPlanner</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <!-- Publish with: dotnet publish -c Release -r osx-arm64 (or osx-x64), then run scripts/create-macos-bundle.sh -->
+    <RuntimeIdentifiers>osx-arm64;osx-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\UI\MissionPlanner.App\MissionPlanner.App.csproj" />
+    <ProjectReference Include="..\..\UI\MissionPlanner.Library.MacOs\MissionPlanner.Library.MacOs.csproj" />
+  </ItemGroup>
+</Project>

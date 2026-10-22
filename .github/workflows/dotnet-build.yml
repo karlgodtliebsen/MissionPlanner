@@ -64,3 +64,69 @@ jobs:
 
       - name: Run browser platform tests
         run: node --test src/Tests/browser-platform.test.mjs
+
+  build-linux:
+    name: Build and test Linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish Linux application
+        run: >-
+          dotnet publish
+          src/Platforms/MissionPlanner.Linux/MissionPlanner.Linux.csproj
+          --configuration Release
+          --runtime linux-x64
+          --self-contained
+
+      # The platform-neutral suites also guard path separators and case-sensitive file names.
+      # They are reported but do not block until they have been green on Linux for a while.
+      - name: Run portable unit tests
+        continue-on-error: true
+        run: |
+          dotnet test src/Tests/MissionPlanner.Tests/MissionPlanner.Tests.csproj --configuration Release
+          dotnet test src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --configuration Release
+          dotnet test src/Tests/MissionPlanner.Analysis.Tests/MissionPlanner.Analysis.Tests.csproj --configuration Release
+          dotnet test src/Tests/MissionPlanner.Firmware.Tests/MissionPlanner.Firmware.Tests.csproj --configuration Release
+
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish macOS application
+        run: >-
+          dotnet publish
+          src/Platforms/MissionPlanner.MacOs/MissionPlanner.MacOs.csproj
+          --configuration Release
+          --runtime osx-arm64
+          --self-contained
+          --output out/osx-arm64
+
+      - name: Create the app bundle
+        run: scripts/create-macos-bundle.sh out/osx-arm64 out 2.0.0

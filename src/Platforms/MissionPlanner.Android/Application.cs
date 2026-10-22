@@ -5,7 +5,7 @@ using Avalonia.Android;
 namespace MissionPlanner
 {
     [Application]
-    public class Application : AvaloniaAndroidApplication<MissionPlanner.App>
+    public class Application : AvaloniaAndroidApplication<global::MissionPlanner.App.App>
     {
         protected Application(nint javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {

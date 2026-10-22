@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MissionPlanner Next Gen
+Comment=Ground control station for ArduPilot vehicles
+Exec=MissionPlanner
+Icon=missionplanner
+Terminal=false
+Categories=Utility;Education;

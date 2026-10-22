@@ -1,9 +1,9 @@
 using MissionPlanner.Core.Setup.Advanced.Warnings;
 
-namespace MissionPlanner.Library.Windows;
+namespace MissionPlanner.Library.Desktop;
 
-/// <summary>Persists warnings with atomic replacement in the current Windows user's application data.</summary>
-public sealed class WindowsWarningRuleStore : IWarningRuleStore
+/// <summary>Persists warnings with atomic replacement in the current user's application data.</summary>
+public sealed class DesktopWarningRuleStore : IWarningRuleStore
 {
     private readonly string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "MissionPlanner Next Gen", "advanced-warnings.json");

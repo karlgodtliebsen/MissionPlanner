@@ -32,6 +32,7 @@
   </ItemGroup>
 <ItemGroup>
     <ProjectReference Include="..\..\UI\MissionPlanner.Library.Windows\MissionPlanner.Library.Windows.csproj" />
+    <ProjectReference Include="..\..\UI\MissionPlanner.Library.Desktop\MissionPlanner.Library.Desktop.csproj" />
     <Compile Include="..\..\UI\MissionPlanner.Library.Browser\Maps\BrowserOfflineMaps.cs" Link="Browser\BrowserOfflineMaps.cs" />
   </ItemGroup>
 </Project>

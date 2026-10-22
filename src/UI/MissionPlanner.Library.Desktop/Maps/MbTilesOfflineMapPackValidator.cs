@@ -3,7 +3,7 @@ using Microsoft.Data.Sqlite;
 
 using MissionPlanner.Maps.Offline;
 
-namespace MissionPlanner.Library.Windows.Maps;
+namespace MissionPlanner.Library.Desktop.Maps;
 
 /// <summary>
 /// Validates raster MBTiles pack integrity, metadata, schema, and payload.

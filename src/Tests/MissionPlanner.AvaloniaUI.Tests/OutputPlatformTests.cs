@@ -4,7 +4,7 @@ using MissionPlanner.Core.Setup.Advanced.Output;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Library.Browser;
-using MissionPlanner.Library.Windows;
+using MissionPlanner.Library.Desktop;
 using MissionPlanner.Transport.Abstractions;
 using NSubstitute;
 
@@ -28,7 +28,7 @@ public sealed class OutputPlatformTests
         deadline.CancelAfter(TimeSpan.FromSeconds(5));
         using var listener = new UdpClient(new IPEndPoint(IPAddress.Loopback, 0));
         var port = ((IPEndPoint)listener.Client.LocalEndPoint!).Port;
-        var factory = new WindowsOutputSinkFactory(Substitute.For<IFirmwareSerialPortFactory>(),
+        var factory = new DesktopOutputSinkFactory(Substitute.For<IFirmwareSerialPortFactory>(),
             Substitute.For<IActiveVehicleContext>(), Substitute.For<IVehicleConnectionSession>(), Substitute.For<IVehicleRegistry>());
         await using var sink = await factory.OpenAsync(new(OutputEndpointKind.Udp, "127.0.0.1", port), deadline.Token);
         await sink.WriteAsync(new byte[] { 0xfe, 0, 1, 2, 3, 0xff }, deadline.Token);
@@ -48,7 +48,7 @@ public sealed class OutputPlatformTests
         serial.PortName.Returns("COM11");
         var connection = Substitute.For<IVehicleConnectionSession>();
         connection.Transport.Returns(serial);
-        var factory = new WindowsOutputSinkFactory(ports, active, connection, Substitute.For<IVehicleRegistry>());
+        var factory = new DesktopOutputSinkFactory(ports, active, connection, Substitute.For<IVehicleRegistry>());
         await Assert.ThrowsAsync<InvalidOperationException>(() => factory.OpenAsync(new(OutputEndpointKind.Serial, "com11"), TestContext.Current.CancellationToken));
         Assert.Empty(ports.ReceivedCalls());
     }
