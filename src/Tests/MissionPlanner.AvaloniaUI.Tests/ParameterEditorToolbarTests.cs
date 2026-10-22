@@ -46,7 +46,7 @@ public sealed class ParameterEditorToolbarTests
         .UseSkia()
         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 
-    /// <summary>Width changes reuse the editor and its search state, while other tabs remain compact.</summary>
+    /// <summary>Width changes reuse the editor and its search state, across all parameter tabs.</summary>
     [Fact]
     public async Task EditorWidthTogglePreservesViewAndModel()
     {
@@ -70,11 +70,14 @@ public sealed class ParameterEditorToolbarTests
                     var layout = view.FindControl<Grid>("ParameterEditorLayout")!;
                     var tabs = view.FindControl<TabControl>("EditorTabs")!;
                     var toggle = view.FindControl<Button>("ToggleEditorWidthButton")!;
+                    Assert.DoesNotContain(toggle.GetVisualAncestors(), ancestor => ancestor is Ursa.Controls.Banner);
+                    Assert.Equal(0, Grid.GetColumn(toggle));
+                    Assert.Contains("Expander", toggle.Classes);
                     var editor = view.GetVisualDescendants().OfType<ParametersMainEditorView>().Single();
                     var grid = editor.GetVisualDescendants().OfType<VirtualizedItemsGrid>().Single();
                     grid.SearchText = "ACRO";
                     var parameters = model.Parameters;
-                    Assert.Equal(900, layout.Bounds.Width);
+                    Assert.Equal(900, layout.ColumnDefinitions[1].ActualWidth);
                     Assert.Equal("Expand editor to full width", AutomationProperties.GetName(toggle));
 
                     toggle.Command!.Execute(null);
@@ -91,15 +94,15 @@ public sealed class ParameterEditorToolbarTests
                     toggle.Command.Execute(null);
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
-                    Assert.Equal(900, layout.Bounds.Width);
+                    Assert.Equal(900, layout.ColumnDefinitions[1].ActualWidth);
                     Assert.Equal("ACRO", grid.SearchText);
 
                     toggle.Command.Execute(null);
                     tabs.SelectedIndex = 1;
                     Dispatcher.UIThread.RunJobs();
                     window.UpdateLayout();
-                    Assert.False(toggle.IsEffectivelyVisible);
-                    Assert.Equal(900, layout.Bounds.Width);
+                    Assert.True(toggle.IsEffectivelyVisible);
+                    Assert.True(layout.Bounds.Width > 1200);
 
                     tabs.SelectedIndex = 0;
                     Dispatcher.UIThread.RunJobs();

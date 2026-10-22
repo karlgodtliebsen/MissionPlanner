@@ -17,7 +17,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="Supported frame configuration" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Supported frame configuration" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
                 <TextBlock Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}"  TextWrapping="Wrap" />

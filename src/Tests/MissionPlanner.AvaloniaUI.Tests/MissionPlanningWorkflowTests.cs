@@ -49,7 +49,7 @@ public sealed class MissionPlanningWorkflowTests
         IFencePlanFileCodec FenceCodec) CreateVehiclePlan(bool online = true)
     {
         var vehicle = Substitute.For<IActiveVehicleContext>();
-        vehicle.VehicleId.Returns(online ? Vehicle : (VehicleId?)null);
+        vehicle.VehicleId.Returns(online ? Vehicle : null);
         var fence = Substitute.For<IFenceConfigurationService>();
         fence.GetSnapshot(Vehicle).Returns(new FenceConfigurationSnapshot(Vehicle, FencePlan.Empty, null, null, 0, null, false));
         var rally = Substitute.For<IRallyConfigurationService>();
@@ -69,7 +69,7 @@ public sealed class MissionPlanningWorkflowTests
         await workflow.DownloadFenceAsync(CancellationToken.None);
 
         host.LastStatus.Should().Be("Connect a vehicle first.");
-        await fence.DidNotReceiveWithAnyArgs().DownloadAsync(default, default, default, default);
+        await fence.DidNotReceiveWithAnyArgs().DownloadAsync(default, default, default, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public sealed class MissionPlanningWorkflowTests
 
         await workflow.DownloadFenceAsync(CancellationToken.None);
 
-        await fence.DidNotReceiveWithAnyArgs().DownloadAsync(default, default, default, default);
+        await fence.DidNotReceiveWithAnyArgs().DownloadAsync(default, default, default, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public sealed class MissionPlanningWorkflowTests
 
         await workflow.UploadFenceAsync(CancellationToken.None);
 
-        await fence.DidNotReceiveWithAnyArgs().OpenParameterSessionAsync(default, default);
+        await fence.DidNotReceiveWithAnyArgs().OpenParameterSessionAsync(default, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -168,7 +168,7 @@ public sealed class MissionPlanningWorkflowTests
 
         rally.Received(1).SetLocalPlan(Vehicle, RallyPlan.Empty);
         host.LastStatus.Should().Be("Local rally points cleared; vehicle unchanged.");
-        await rally.DidNotReceiveWithAnyArgs().ClearVehicleAsync(default, default);
+        await rally.DidNotReceiveWithAnyArgs().ClearVehicleAsync(default, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -180,7 +180,7 @@ public sealed class MissionPlanningWorkflowTests
 
         await workflow.ClearRallyAsync(CancellationToken.None);
 
-        await rally.DidNotReceiveWithAnyArgs().ClearVehicleAsync(default, default);
+        await rally.DidNotReceiveWithAnyArgs().ClearVehicleAsync(default, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -277,7 +277,7 @@ public sealed class MissionPlanningWorkflowTests
         await CreatePolygonWorkflow().SavePolygonAsync(CancellationToken.None);
 
         host.LastStatus.Should().Be("Create a polygon first.");
-        await files.DidNotReceiveWithAnyArgs().SaveTextAsync(default!, default!, default);
+        await files.DidNotReceiveWithAnyArgs().SaveTextAsync(default!, default!, TestContext.Current.CancellationToken);
     }
 
     [Fact]

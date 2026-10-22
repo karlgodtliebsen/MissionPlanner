@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -45,12 +44,16 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ViewModelBase
         this.adapter = adapter;
         this.fileHandler = fileHandler;
         this.confirmation = confirmation;
+        IsEditorExpanded = true;
     }
 
     /// <summary>Gets or sets whether the editor uses the available page width.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(EditorColumnMaxWidth), nameof(ToggleEditorWidthText))]
-    public partial bool IsEditorExpanded { get; set; }
+    public partial bool IsEditorExpanded
+    {
+        get; set;
+    }
 
     /// <summary>Gets the column width limit for the current layout mode.</summary>
     public double EditorColumnMaxWidth => IsEditorExpanded ? double.PositiveInfinity : 900;

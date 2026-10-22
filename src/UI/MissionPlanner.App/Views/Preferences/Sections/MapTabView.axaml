@@ -25,7 +25,7 @@
         </StackPanel>
         -->
 
-        <u:Banner Classes="Bordered" Header="Information" HorizontalAlignment="Stretch" >
+        <u:Banner ShowIcon="False" Classes="Bordered" Header="Information" HorizontalAlignment="Stretch" >
             <StackPanel Orientation="Vertical" Spacing="10" HorizontalAlignment="Stretch" Margin="0,0,0,20">
                 <TextBlock Text="Choose by source purpose."  TextWrapping="Wrap" />
                 <TextBlock Text="Protocol details remain in the source definition."  TextWrapping="Wrap" />

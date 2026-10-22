@@ -11,7 +11,7 @@
     x:CompileBindings="True">
     <ContentPage Header="Logs">
         <Grid Margin="16" RowDefinitions="Auto,*" HorizontalAlignment="Stretch">
-            <u:Banner  Classes="Bordered" Header="Logs" HorizontalAlignment="Stretch">
+            <u:Banner ShowIcon="False"  Classes="Bordered" Header="Logs" HorizontalAlignment="Stretch">
                 <StackPanel Spacing="6" HorizontalAlignment="Center">
                 </StackPanel>
             </u:Banner>

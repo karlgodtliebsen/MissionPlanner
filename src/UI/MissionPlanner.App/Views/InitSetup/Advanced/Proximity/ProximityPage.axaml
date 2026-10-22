@@ -10,7 +10,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="Proximity observations" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Proximity observations" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <SelectableTextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
                 <TextBlock Text="Display only. Unknown, stale and unsupported readings never indicate clear space. Uses existing telemetry streams." TextWrapping="Wrap" Classes="Warning" />

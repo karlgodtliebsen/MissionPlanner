@@ -1,5 +1,6 @@
 ﻿using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
@@ -18,6 +19,23 @@ namespace MissionPlanner.App.Views.ConfigTuning.Sections;
 /// <summary>Coordinates the active-vehicle Extended Tuning workspace.</summary>
 public sealed partial class ExtendedTuningTabViewModel : ViewModelBase
 {
+    /// <summary>Gets or sets whether the editor uses the available page width.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EditorColumnMaxWidth), nameof(ToggleEditorWidthText))]
+    public partial bool IsEditorExpanded { get; set; }
+
+    /// <summary>Gets the column width limit for the current layout mode.</summary>
+    public double EditorColumnMaxWidth => IsEditorExpanded ? double.PositiveInfinity : 900;
+
+    /// <summary>Gets the accessible label for the editor width toggle.</summary>
+    public string ToggleEditorWidthText => IsEditorExpanded ? "Restore compact editor width" : "Expand editor to full width";
+
+    [RelayCommand]
+    private void ToggleEditorWidth()
+    {
+        IsEditorExpanded = !IsEditorExpanded;
+    }
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IExtendedTuningService tuningService;
     private readonly IControlResponseMetricsService metricsService;

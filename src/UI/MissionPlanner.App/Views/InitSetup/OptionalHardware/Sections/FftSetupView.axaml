@@ -18,7 +18,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="FFT Setup and Analysis" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False"  Classes="Bordered" Header="FFT Setup and Analysis" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="FFT/log settings are available only when INS_LOG_BAT or FFT parameters are reported. Log acquisition remains owned by DataFlash Logs." />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />

@@ -14,7 +14,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="Parachute" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Parachute" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="Vehicle Reboot required" Classes="Warning" IsVisible="{Binding RebootRequired}" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />

@@ -35,9 +35,9 @@
             <TabItem Header="Selected tab"><TextBlock Text="Shared control resources, separate palette." /></TabItem>
             <TabItem Header="Other tab" />
         </TabControl>
-        <u:Banner Name="Information" Classes="Bordered" Type="Information" Header="Information" Content="Primary, secondary, and information follow the palette." />
-        <u:Banner Name="Success" Classes="Bordered" Type="Success" Header="Success" Content="Status colors retain their meaning." />
-        <u:Banner Name="Warning" Classes="Bordered" Type="Warning" Header="Warning" />
-        <u:Banner Name="Error" Classes="Bordered" Type="Error" Header="Error" />
+        <u:Banner ShowIcon="False" Name="Information" Classes="Bordered" Type="Information" Header="Information" Content="Primary, secondary, and information follow the palette." />
+        <u:Banner ShowIcon="False" Name="Success" Classes="Bordered" Type="Success" Header="Success" Content="Status colors retain their meaning." />
+        <u:Banner ShowIcon="False" Name="Warning" Classes="Bordered" Type="Warning" Header="Warning" />
+        <u:Banner ShowIcon="False" Name="Error" Classes="Bordered" Type="Error" Header="Error" />
     </StackPanel>
 </UserControl>

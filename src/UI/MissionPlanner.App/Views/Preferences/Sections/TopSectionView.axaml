@@ -10,7 +10,7 @@
              x:Class="MissionPlanner.App.Views.Preferences.Sections.TopSectionView">
 
     <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
-        <u:Banner Grid.Row="0"  Classes="Bordered" Header="MissionPlanner Preferences" HorizontalAlignment="Center">
+        <u:Banner ShowIcon="False" Grid.Row="0"  Classes="Bordered" Header="MissionPlanner Preferences" HorizontalAlignment="Center">
             <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Center" >
                 <TextBlock Text="These settings belong to MissionPlanner on this device." TextWrapping="Wrap" />
                 <TextBlock Text="They never write flight-controller parameters. Credentials and tokens are stored separately in platform secure storage and are never exported." TextWrapping="Wrap" />

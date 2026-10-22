@@ -85,6 +85,22 @@
         <Setter Property="MinWidth" Value="20" />
     </Style>
 
+    <Style Selector="Button.Expander">
+        <Setter Property="Theme" Value="{DynamicResource BorderlessButton}" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Width" Value="24" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Foreground" Value="{DynamicResource SemiColorPrimary}" />
+        <Setter Property="Background" Value="Transparent" />
+    </Style>
+
+
     <!-- Preserve unclassified dropdowns on existing pages without styling embedded actions. -->
     <Style Selector="u|IconDropDownButton:not(.ToolbarIconDropDownButton):not(.EmbeddedIconDropDownButton):not(.EmbeddedTextDropDownButton)">
         <Setter Property="Width" Value="100" />

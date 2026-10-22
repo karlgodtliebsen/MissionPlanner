@@ -1,5 +1,4 @@
-﻿using AsyncAwaitBestPractices;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -45,12 +44,16 @@ public sealed partial class GeoFenceTabViewModel : ViewModelBase
         this.activeVehicle = activeVehicle;
         this.fenceService = fenceService;
         this.confirmation = confirmation;
+        IsEditorExpanded = true;
     }
 
     /// <summary>Gets or sets whether the editor uses the available page width.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(EditorColumnMaxWidth), nameof(ToggleEditorWidthText))]
-    public partial bool IsEditorExpanded { get; set; }
+    public partial bool IsEditorExpanded
+    {
+        get; set;
+    }
 
     /// <summary>Gets the column width limit for the current layout mode.</summary>
     public double EditorColumnMaxWidth => IsEditorExpanded ? double.PositiveInfinity : 900;
@@ -286,8 +289,6 @@ public sealed partial class GeoFenceTabViewModel : ViewModelBase
 
     /// <summary>Occurs when map geometry must be redrawn.</summary>
     public event EventHandler? GeometryChanged;
-
-
 
 
 

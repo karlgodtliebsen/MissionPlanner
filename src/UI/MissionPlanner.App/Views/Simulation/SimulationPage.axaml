@@ -14,7 +14,7 @@
     xmlns:u="https://irihi.tech/ursa">
     <ContentPage Header="Simulation"  >
         <Grid Margin="18" RowDefinitions="Auto,*" RowSpacing="12">
-            <u:Banner  Classes="Bordered" Header="Simulation workspace" HorizontalAlignment="Stretch">
+            <u:Banner ShowIcon="False"  Classes="Bordered" Header="Simulation workspace" HorizontalAlignment="Stretch">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                     <StackPanel Orientation="Vertical" Spacing="3">
                         <TextBlock Text="" Classes="H2" />

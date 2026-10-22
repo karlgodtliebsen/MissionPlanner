@@ -21,17 +21,11 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="Motor Test" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False" Classes="Bordered" Header="Motor Test" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <TextBlock Text="{Binding FrameDisplay}" Classes="H4"   HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding FrameDisplay}" Classes="H4" HorizontalAlignment="Center" />
                 <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
                     <TextBlock Text="ArduPilot motor order diagrams" VerticalAlignment="Center" />
-                    <Button Classes="EmbeddedIconButton" Padding="8,2" VerticalAlignment="Center"
-                            Command="{Binding OpenMotorOrderDiagramsCommand}"
-                            ToolTip.Tip="Open frame and motor diagrams in your default browser"
-                            AutomationProperties.Name="Open ArduPilot motor order diagrams in default browser">
-                        <mdi:MaterialIcon Kind="OpenInNew" Width="30" Height="30" Classes="ActionIcon" />
-                    </Button>
                 </StackPanel>
                 <TextBlock Text="Remove ALL propellers. Motors will spin." Classes="Warning H4"    HorizontalAlignment="Center" />
                 <CheckBox x:Name="MotorTestSafetyCheckBox"
@@ -53,6 +47,12 @@
                                 <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
                             </Button>
                             <common:OpenParameterEditorsView/>
+                            <Button Classes="ToolbarIconButton" VerticalAlignment="Center"
+                                    Command="{Binding OpenMotorOrderDiagramsCommand}"
+                                    ToolTip.Tip="Open frame and motor diagrams in your default browser"
+                                    AutomationProperties.Name="Open ArduPilot motor order diagrams in default browser">
+                                <mdi:MaterialIcon Kind="OpenInNew" Width="30" Height="30" Classes="ActionIcon" />
+                            </Button>
                         </WrapPanel>
                     </Border>
                     <controls:SetupInformationView Grid.Row="1" Topic="MotorTest" WorkflowError="{Binding ErrorMessage}"

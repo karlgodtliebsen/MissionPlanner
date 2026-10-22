@@ -10,7 +10,6 @@ using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -51,7 +50,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         get; set;
     }
 
-    /// <summary>Gets or sets whether the main editor uses the available page width.</summary>
+    /// <summary>Gets or sets whether the configuration page uses the available page width.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsEditorExpanded))]
     [NotifyPropertyChangedFor(nameof(EditorColumnMaxWidth))]
@@ -61,10 +60,10 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         get; set;
     }
 
-    /// <summary>Gets whether the selected tab is displaying the expanded main editor.</summary>
-    public bool IsEditorExpanded => IsMainEditorSelected && IsMainEditorExpanded;
+    /// <summary>Gets whether the configuration page is expanded.</summary>
+    public bool IsEditorExpanded => IsMainEditorExpanded;
 
-    /// <summary>Gets the column width limit, retaining the compact layout for other tabs.</summary>
+    /// <summary>Gets the column width limit for the current layout mode.</summary>
     public double EditorColumnMaxWidth => IsEditorExpanded ? double.PositiveInfinity : 900;
 
     /// <summary>Gets the accessible label for the editor width toggle.</summary>
@@ -162,6 +161,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         this.profileWorkflow = profileWorkflow;
         this.comparisons = comparisons;
         this.dateTimeProvider = dateTimeProvider;
+        IsMainEditorExpanded = true;
         SelectedItems.CollectionChanged += (_, _) => ApplyModifiedCommand.NotifyCanExecuteChanged();
     }
 

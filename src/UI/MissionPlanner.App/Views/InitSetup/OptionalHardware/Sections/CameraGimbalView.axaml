@@ -16,7 +16,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="Camera / Gimbal Configuration" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Camera / Gimbal Configuration" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="Changes are explicit and confirmed by parameter readback. Live movement and capture commands remain in Payload Control." Opacity="0.75" />
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />

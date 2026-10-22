@@ -44,7 +44,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="Serial Ports" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Serial Ports" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="Configure the flight controller's serial parameters. SERIAL indexes do not establish physical UART wiring. Unreported settings remain blank."
                            TextWrapping="Wrap" />

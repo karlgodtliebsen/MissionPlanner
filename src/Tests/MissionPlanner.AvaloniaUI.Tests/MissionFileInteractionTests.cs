@@ -49,7 +49,7 @@ public sealed class MissionFileInteractionTests
 
         result.Message.Should().Be("Mission is empty.");
         result.ClearDirtyRows.Should().BeFalse();
-        await dialogService.DidNotReceiveWithAnyArgs().ChooseAsync(default!, default!, default);
+        await dialogService.DidNotReceiveWithAnyArgs().ChooseAsync(default!, default!, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class MissionFileInteractionTests
         var result = await interaction.SaveMissionAsync(MissionWithOneWaypoint(), null, CancellationToken.None);
 
         result.Should().Be(new MissionSaveResult(null, false));
-        await saveService.DidNotReceiveWithAnyArgs().SaveAsync(default!, default!, default);
+        await saveService.DidNotReceiveWithAnyArgs().SaveAsync(default!, default!, TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -206,7 +206,7 @@ public sealed class MissionFileInteractionTests
         var result = await interaction.ImportGeospatialAsync("Open KML", false, CancellationToken.None);
 
         result.Imported.Should().BeSameAs(imported);
-        await confirmation.DidNotReceiveWithAnyArgs().ConfirmAsync(default!, default!, default!, default);
+        await confirmation.DidNotReceiveWithAnyArgs().ConfirmAsync(default!, default!, default!, TestContext.Current.CancellationToken);
     }
 
     [Fact]

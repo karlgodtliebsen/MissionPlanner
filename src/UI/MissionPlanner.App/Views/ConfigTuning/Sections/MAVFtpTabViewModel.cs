@@ -21,6 +21,23 @@ namespace MissionPlanner.App.Views.ConfigTuning.Sections;
 /// </summary>
 public partial class MavFtpTabViewModel : ViewModelBase
 {
+    /// <summary>Gets or sets whether the editor uses the available page width.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(EditorColumnMaxWidth), nameof(ToggleEditorWidthText))]
+    public partial bool IsEditorExpanded { get; set; }
+
+    /// <summary>Gets the column width limit for the current layout mode.</summary>
+    public double EditorColumnMaxWidth => IsEditorExpanded ? double.PositiveInfinity : 900;
+
+    /// <summary>Gets the accessible label for the editor width toggle.</summary>
+    public string ToggleEditorWidthText => IsEditorExpanded ? "Restore compact editor width" : "Expand editor to full width";
+
+    [RelayCommand]
+    private void ToggleEditorWidth()
+    {
+        IsEditorExpanded = !IsEditorExpanded;
+    }
+
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IVehicleConnectionSession connectionSession;
     private readonly ApplicationStateService stateService;

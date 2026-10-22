@@ -12,7 +12,7 @@
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
        
-        <u:Banner  Classes="Bordered" Header="Warnings" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Warnings" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="Visual warnings run while this page is open. Sources use native telemetry units. Values older than three seconds are unavailable. No speech or system notifications are enabled."
                            TextWrapping="Wrap" Classes="Warning" />

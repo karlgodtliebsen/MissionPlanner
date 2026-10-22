@@ -14,13 +14,37 @@
                               x:DataType="sections:MavFtpTabViewModel">
     <ContentPage Header="Mavlink Ftp" >
 
-        <Grid RowDefinitions="Auto,Auto,*,Auto" 
-              RowSpacing="12" HorizontalAlignment="Center">
+        <Grid x:Name="MAVFtpTabViewLayout" RowDefinitions="Auto,Auto,*,Auto"
+              RowSpacing="12" Classes.expanded="{Binding IsEditorExpanded}">
+            <Grid.Styles>
+                <Style Selector="Grid#MAVFtpTabViewLayout">
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Grid#MAVFtpTabViewLayout.expanded">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+            </Grid.Styles>
            
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MinWidth="900" MaxWidth="900" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="900" MaxWidth="{Binding EditorColumnMaxWidth}" />
             </Grid.ColumnDefinitions>
-            <u:Banner Classes="Bordered" Header="Mavlink Ftp" HorizontalAlignment="Stretch">
+            <Button x:Name="ToggleEditorWidthButton"
+                Grid.Column="0" Grid.Row="0"
+                Classes="Expander"
+                Margin="0,0,4,0"
+                ToolTip.Tip="{Binding ToggleEditorWidthText}"
+                AutomationProperties.Name="{Binding ToggleEditorWidthText}"
+                Command="{Binding ToggleEditorWidthCommand}">
+                <Grid>
+                    <avalonia:MaterialIcon Kind="ChevronLeft" Width="22" Height="22"
+                                      IsVisible="{Binding !IsEditorExpanded}" />
+                    <avalonia:MaterialIcon Kind="ChevronRight" Width="22" Height="22"
+                                      IsVisible="{Binding IsEditorExpanded}" />
+                </Grid>
+            </Button>
+
+            <u:Banner ShowIcon="False" Grid.Column="1" Classes="Bordered" Header="Mavlink Ftp" HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Vertical" Grid.Row="0"
                             Margin="0,10,0,0"
                             HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
@@ -31,7 +55,7 @@
                 </StackPanel>
             </u:Banner>
             
-            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+            <Grid Grid.Column="1" Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
                 
                 <Button Classes="ToolbarButton" ToolTip.Tip="Upload file to vehicle" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}"  >
                     <avalonia:MaterialIcon Kind="UploadOutline" Width="30" Height="30" />
@@ -48,7 +72,7 @@
                     <avalonia:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
             </Grid>
-            <Grid Grid.Row="2" RowDefinitions="Auto,*" MinWidth="640">
+            <Grid Grid.Column="1" Grid.Row="2" RowDefinitions="Auto,*" MinWidth="640">
                 <Grid ColumnDefinitions="300,100,100,180" ColumnSpacing="6" Margin="12,0,12,6">
                     <TextBlock Grid.Column="0" Text="Name" Classes="DataGridColumn" />
                     <TextBlock Grid.Column="1" Text="Type" Classes="DataGridColumn" />
@@ -84,7 +108,7 @@
                            VerticalAlignment="Top"
                            IsHitTestVisible="False" />
             </Grid>
-            <StackPanel Orientation="Vertical" Grid.Row="3" Spacing="6">
+            <StackPanel Grid.Column="1" Orientation="Vertical" Grid.Row="3" Spacing="6">
                 <ProgressBar Value="{Binding TransferProgress}" />
                 <TextBlock Text="{Binding TransferDetails}" FontSize="12" />
 

@@ -18,7 +18,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner  Classes="Bordered" Header="Onboard OSD" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Onboard OSD" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <TextBlock Text="Configure screens, elements, positions, units and supported options in the existing Onboard OSD workspace." />
                 <TextBlock Text="This entry uses the same OSD configuration service and editing session as Config; it does not create a second configuration engine." Opacity="0.75" />

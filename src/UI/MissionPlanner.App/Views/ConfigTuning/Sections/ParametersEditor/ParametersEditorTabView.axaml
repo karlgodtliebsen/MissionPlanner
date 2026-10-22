@@ -28,10 +28,26 @@
             </Grid.Styles>
 
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" MinWidth="900" MaxWidth="{Binding EditorColumnMaxWidth}" />
             </Grid.ColumnDefinitions>
 
-            <u:Banner Classes="Bordered" Header="Parameters Editor" HorizontalAlignment="Stretch">
+            <Button x:Name="ToggleEditorWidthButton"
+                Grid.Column="0" Grid.Row="0"
+                Classes="Expander"
+                Margin="0,0,4,0"
+                ToolTip.Tip="{Binding ToggleEditorWidthText}"
+                AutomationProperties.Name="{Binding ToggleEditorWidthText}"
+                Command="{Binding ToggleEditorWidthCommand}">
+                <Grid>
+                    <avalonia:MaterialIcon Kind="ChevronLeft" Width="22" Height="22"
+                                      IsVisible="{Binding !IsEditorExpanded}" />
+                    <avalonia:MaterialIcon Kind="ChevronRight" Width="22" Height="22"
+                                      IsVisible="{Binding IsEditorExpanded}" />
+                </Grid>
+            </Button>
+
+            <u:Banner ShowIcon="False" Grid.Column="1" Classes="Bordered" Header="Parameters Editor" HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Vertical" Grid.Row="0"
                             Margin="0,10,0,0"
                             HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
@@ -47,21 +63,9 @@
             </u:Banner>
 
 
-            <WrapPanel x:Name="EditorToolbar" Grid.Row="1" Orientation="Horizontal"
+            <WrapPanel Grid.Column="1" x:Name="EditorToolbar" Grid.Row="1" Orientation="Horizontal"
                        IsVisible="{Binding IsMainEditorSelected}"
                        HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" >
-                <Button x:Name="ToggleEditorWidthButton" Classes="ToolbarButton"
-                        ToolTip.Tip="{Binding ToggleEditorWidthText}"
-                        AutomationProperties.Name="{Binding ToggleEditorWidthText}"
-                        Command="{Binding ToggleEditorWidthCommand}"
-                        VerticalAlignment="Center">
-                    <Grid>
-                        <avalonia:MaterialIcon Kind="ArrowExpandHorizontal"  Classes="ActionIcon"
-                                               IsVisible="{Binding !IsEditorExpanded}" />
-                        <avalonia:MaterialIcon Kind="ArrowCollapseHorizontal"  Classes="ActionIcon"
-                                               IsVisible="{Binding IsEditorExpanded}" />
-                    </Grid>
-                </Button>
                 <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file"
                                       AutomationProperties.Name="Load parameter file"
                                       >
@@ -188,7 +192,7 @@
                 </u:IconDropDownButton>
             </WrapPanel>
 
-            <WrapPanel x:Name="QuickEditorToolbar" Grid.Row="1" Orientation="Horizontal"
+            <WrapPanel Grid.Column="1" x:Name="QuickEditorToolbar" Grid.Row="1" Orientation="Horizontal"
                        HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" 
                        IsVisible="{Binding IsQuickEditorSelected}"
                        >
@@ -297,7 +301,7 @@
                 </Button>
             </WrapPanel>
 
-            <WrapPanel x:Name="ProfileEditorToolbar" Grid.Row="1" Orientation="Horizontal"
+            <WrapPanel Grid.Column="1" x:Name="ProfileEditorToolbar" Grid.Row="1" Orientation="Horizontal"
                        HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" 
                        IsVisible="{Binding IsProfileSelected}"
                        >
@@ -357,7 +361,7 @@
                 
             </WrapPanel>
 
-            <WrapPanel x:Name="CompareEditorToolbar" Grid.Row="1" Orientation="Horizontal"
+            <WrapPanel Grid.Column="1" x:Name="CompareEditorToolbar" Grid.Row="1" Orientation="Horizontal"
                        IsVisible="{Binding IsComparisonSelected}"
                        HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" >
                 <ComboBox
@@ -442,7 +446,7 @@
                 </Button>
             </WrapPanel>
 
-            <TabControl x:Name="EditorTabs" Grid.Row="2" TabStripPlacement="Top" Margin="0,10,0,0"
+            <TabControl Grid.Column="1" x:Name="EditorTabs" Grid.Row="2" TabStripPlacement="Top" Margin="0,10,0,0"
                         SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}">
                 <TabItem Header="Editor">
                     <parametersEditor:ParametersMainEditorView />

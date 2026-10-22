@@ -17,7 +17,9 @@
 
     <ContentPage Header="GeoFence Configuration">
 
-        <Grid x:Name="GeoFenceLayout" RowDefinitions="Auto,Auto,*" RowSpacing="10"
+        <Grid x:Name="GeoFenceLayout" RowDefinitions="Auto,Auto,*"
+              RowSpacing="10"
+              Margin="20"
               VerticalAlignment="Stretch" Classes.expanded="{Binding IsEditorExpanded}">
             <Grid.Styles>
                 <Style Selector="Grid#GeoFenceLayout">
@@ -28,33 +30,39 @@
                 </Style>
             </Grid.Styles>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*" MinWidth="600" MaxWidth="{Binding EditorColumnMaxWidth}" />
             </Grid.ColumnDefinitions>
 
-            <u:Banner Classes="Bordered" Header="Geo Fence" HorizontalAlignment="Stretch">
+            <Button x:Name="ToggleEditorWidthButton"
+                Grid.Column="0" Grid.Row="0"
+                Classes="Expander"
+                Margin="0,0,4,0"
+                ToolTip.Tip="{Binding ToggleEditorWidthText}"
+                AutomationProperties.Name="{Binding ToggleEditorWidthText}"
+                Command="{Binding ToggleEditorWidthCommand}">
+                <Grid>
+                    <mdi:MaterialIcon Kind="ChevronLeft" Width="22" Height="22"
+                                      IsVisible="{Binding !IsEditorExpanded}" />
+                    <mdi:MaterialIcon Kind="ChevronRight" Width="22" Height="22"
+                                      IsVisible="{Binding IsEditorExpanded}" />
+                </Grid>
+            </Button>
+
+
+            <u:Banner ShowIcon="False"  Grid.Row="0" Grid.Column="1" Classes="Bordered"
+                       Header="Geo Fence" HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Vertical" Grid.Row="0"
                             Margin="0,10,0,0"
                             HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
-
                     <SelectableTextBlock Text="{Binding ErrorMessage}"
                                          IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
                                          Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
                 </StackPanel>
             </u:Banner>
 
-            <StackPanel Grid.Row="1" Orientation="Vertical" Margin="0,0" HorizontalAlignment="Stretch">
+            <StackPanel Grid.Column="1"  Grid.Row="1" Orientation="Vertical" Margin="0,0" HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-                    <Button x:Name="ToggleEditorWidthButton" Classes="ToolbarButton"
-                            ToolTip.Tip="{Binding ToggleEditorWidthText}"
-                            AutomationProperties.Name="{Binding ToggleEditorWidthText}"
-                            Command="{Binding ToggleEditorWidthCommand}" VerticalAlignment="Center">
-                        <Grid>
-                            <mdi:MaterialIcon Kind="ArrowExpandHorizontal" Classes="ActionIcon"
-                                              IsVisible="{Binding !IsEditorExpanded}" />
-                            <mdi:MaterialIcon Kind="ArrowCollapseHorizontal" Classes="ActionIcon"
-                                              IsVisible="{Binding IsEditorExpanded}" />
-                        </Grid>
-                    </Button>
                     <Button Classes="ToolbarButton" ToolTip.Tip="Download" Command="{Binding DownloadCommand}" AutomationProperties.Name="Download">
                         <mdi:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
                     </Button>
@@ -74,11 +82,13 @@
                         <mdi:MaterialIcon Kind="FileUndoOutline" Classes="ActionIcon" />
                     </Button>
                 </StackPanel>
-                <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Stretch" Margin="0,10">
+                <StackPanel Orientation="Vertical" Spacing="8" HorizontalAlignment="Stretch" Margin="0,10"
+                            IsVisible="{Binding IsBusy}">
                     <ProgressBar IsIndeterminate="True" Value="{Binding TransferPercent}"  Theme="{DynamicResource ProgressRing}" />
                 </StackPanel>
             </StackPanel>
-            <Grid Grid.Row="2" ColumnDefinitions="380,*" ColumnSpacing="12" HorizontalAlignment="Stretch">
+            <Grid Grid.Column="1" Grid.Row="2" ColumnDefinitions="380,*" ColumnSpacing="12"
+                  HorizontalAlignment="Stretch">
                 <ScrollViewer>
                     <StackPanel Orientation="Vertical" Spacing="10">
                         <Border Padding="10">

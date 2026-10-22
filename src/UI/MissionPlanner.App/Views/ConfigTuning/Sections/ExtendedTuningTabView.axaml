@@ -15,13 +15,39 @@
                               x:DataType="sections:ExtendedTuningTabViewModel">
     <ContentPage Header="Extended Tuning"  >
 
-        <Grid RowDefinitions="Auto,Auto,Auto,*"  
-              RowSpacing="10" HorizontalAlignment="Center">
+        <Grid x:Name="ExtendedTuningTabViewLayout" RowDefinitions="Auto,Auto,Auto,*"
+              RowSpacing="10" Classes.expanded="{Binding IsEditorExpanded}">
+            <Grid.Styles>
+                <Style Selector="Grid#ExtendedTuningTabViewLayout">
+                    <Setter Property="HorizontalAlignment" Value="Center" />
+                </Style>
+                <Style Selector="Grid#ExtendedTuningTabViewLayout.expanded">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+            </Grid.Styles>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MinWidth="900" MaxWidth="900" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" MinWidth="900" MaxWidth="{Binding EditorColumnMaxWidth}" />
             </Grid.ColumnDefinitions>
 
-            <u:Banner Classes="Bordered" Header="Extended Tuning" HorizontalAlignment="Stretch">
+            <Button x:Name="ToggleEditorWidthButton"
+                Grid.Column="0" Grid.Row="0"
+                Classes="Expander"
+                Margin="0,0,4,0"
+                ToolTip.Tip="{Binding ToggleEditorWidthText}"
+                AutomationProperties.Name="{Binding ToggleEditorWidthText}"
+                Command="{Binding ToggleEditorWidthCommand}">
+                <Grid>
+                    <avalonia:MaterialIcon Kind="ChevronLeft" Width="22" Height="22"
+                                      IsVisible="{Binding !IsEditorExpanded}" />
+                    <avalonia:MaterialIcon Kind="ChevronRight" Width="22" Height="22"
+                                      IsVisible="{Binding IsEditorExpanded}" />
+                </Grid>
+            </Button>
+
+            <u:Banner Grid.Column="1" Classes="Bordered" Header="Extended Tuning"
+                      ShowIcon="False"
+                      HorizontalAlignment="Stretch">
                 <StackPanel Orientation="Vertical" Grid.Row="0"
                             Margin="0,10,0,0"
                             HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
@@ -38,13 +64,13 @@
                 </StackPanel>
             </u:Banner>
             
-            <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="10" HorizontalAlignment="Stretch">
+            <StackPanel Grid.Column="1" Grid.Row="1" Orientation="Vertical" Spacing="10" HorizontalAlignment="Stretch">
                 <TextBox HorizontalAlignment="Right" PlaceholderText="Search curated advanced parameters"
                          Text="{Binding SearchText, Mode=TwoWay}"
                          IsVisible="{Binding IsConnected}"/>
                 <ProgressBar IsIndeterminate="True"  Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
-            <Grid Grid.Row="2" ColumnDefinitions="2*,3*" ColumnSpacing="10" IsVisible="{Binding HasSupportedProfile}">
+            <Grid Grid.Column="1" Grid.Row="2" ColumnDefinitions="2*,3*" ColumnSpacing="10" IsVisible="{Binding HasSupportedProfile}">
             
                 <u:UrsaGroupBox >
                     <u:UrsaGroupBox.Header >
@@ -106,8 +132,8 @@
                     </StackPanel>
                 </u:UrsaGroupBox>
             </Grid>
-            <Border Grid.Row="3"  Classes="SectionCard">
-            <ListBox 
+            <Border Grid.Column="1" Grid.Row="3"  Classes="SectionCard">
+            <ListBox Grid.Column="1"
                      ItemsSource="{Binding VisibleGroups}"
                      IsVisible="{Binding HasSupportedProfile}">
 
