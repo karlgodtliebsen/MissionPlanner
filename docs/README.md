@@ -7,7 +7,7 @@ The original Mission Planner source is on
 has been deleted. See [LEGACY_SOURCE.md](LEGACY_SOURCE.md) for how to resolve
 legacy paths in older tasks and preserve historical audit provenance.
 
-Documentation lives in `docs/` and is organized into three categories: core documents, subsystem references, and point-in-time reviews.
+Documentation lives in `docs/` and is organized into core documents, subsystem references, analysis and open work, and an archive.
 
 
 ## Core documents (keep these current)
@@ -44,10 +44,17 @@ Historical point-in-time analysis and fix logs (HUD integration analysis, parame
 streaming debugging iterations, connection fix reports, etc.) were consolidated into the
 documents above in July 2026 and deleted; recover them from git history if needed.
 
-## Point-in-time reviews
+## Analysis and open work
 
 | Document | Purpose |
 |---|---|
-| [CODE_REVIEW_20260717.md](reviews/CODE_REVIEW_20260717.md) | Review findings and recommended mission-planner refactors for the 2026-07-17 source snapshot |
+| [ANALYSIS.md](ANALYSIS.md) | Summary analysis of MissionPlanner Next Generation: structure, architecture, coverage, quality, risks |
+| [MISSING_FEATURES.md](MISSING_FEATURES.md) | Current list of missing and partial features, with impact and evidence |
+| [KNOWN_TEST_FAILURES.md](KNOWN_TEST_FAILURES.md) | Known test failures and their causes |
+| [tasks/](tasks/) | Open task notes and backlogs (incomplete tasks, postponed work, deferred firmware backlog) |
 
-- [MAVFTP implementation review (2026-07-19)](reviews/MAVFTP_REVIEW_20260719.md)
+## Archive
+
+[Archived/](Archived/) holds finished task sets, point-in-time reviews, audits and superseded guides. They are
+kept for provenance and may describe code that has since changed. `review-20261023/` holds the
+page-by-page screenshots of the original Mission Planner used for the 2026-10-23 comparison.

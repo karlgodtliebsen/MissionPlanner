@@ -168,7 +168,8 @@ It is not inherent in MAVLink itself. If this test was with Next Gen, that may c
 Dataflash Logs
 Log system
 
-Status 2026-10-22: .tlog recording (TelemetryRecordingService) and a Dataflash logs view exist.
+Status 2026-10-23: .tlog recording (TelemetryRecordingService) exists. The Dataflash logs view is only a
+placeholder for offline FFT analysis (it has no log download, browser or graphing), so Dataflash logging is still open.
 
 
 

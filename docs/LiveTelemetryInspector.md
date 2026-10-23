@@ -153,7 +153,7 @@ uncommitted for review.
 
 Raw entries retain immutable complete frame bytes and payload bytes, wire payload/frame lengths, CRC verification, signature presence and verification status, direction, wire version, dialect base/full lengths and the associated decoded message ID. The existing full hexadecimal Payload export remains available. Details identify the complete wire payload rather than a preview.
 
-MAVLink 2 may legitimately carry only 3–4 bytes for messages with zero-valued trailing fields. This is wire zero trimming, not necessarily a capture defect. Short payloads are labelled with their dialect length; exports preserve exact wire bytes and do not synthesize missing zeros. Some custom decoders retain these through the lossless raw fallback. No recorder or .tlog format changes are involved. See [capture investigation and tests](tasks/receiver-bind-and-follow-up/EXECUTION_RESULTS.md).
+MAVLink 2 may legitimately carry only 3–4 bytes for messages with zero-valued trailing fields. This is wire zero trimming, not necessarily a capture defect. Short payloads are labelled with their dialect length; exports preserve exact wire bytes and do not synthesize missing zeros. Some custom decoders retain these through the lossless raw fallback. No recorder or .tlog format changes are involved. See [capture investigation and tests](Archived/tasks/receiver-bind-and-follow-up/EXECUTION_RESULTS.md).
 
 Receiver binding request, command ACK and bounded input recovery observations share a correlation ID. An accepted bind command does not prove physical pairing; continuous existing traffic is not interpreted as a successful rebind. See [receiver binding](RECEIVER_BIND.md).
 
@@ -208,4 +208,4 @@ AHRS2, HUD and raw GPS may supply their existing fallback fields after that wind
 AHRS2 still updates the estimator slice and HUD still supplies airspeed while primary
 sources are fresh. Raw capture remains byte-for-byte unchanged.
 
-See [task results](tasks/telemetry-arming/EXECUTION_RESULTS.md) for verification.
+See [task results](Archived/tasks/telemetry-arming/EXECUTION_RESULTS.md) for verification.

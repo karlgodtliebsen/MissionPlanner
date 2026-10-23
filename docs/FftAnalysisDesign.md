@@ -2,7 +2,7 @@
 
 Status: Tasks 1–6 reviewed and approved by the user; Tasks 7–15 implemented as the
 initial offline integration (2026-09-29). See the integration contracts and verification
-below and [the task set](tasks/fft/fft-tasks.md). The numerical domain has no Avalonia, MAVLink,
+below and [the task set](Archived/tasks/fft/fft-tasks.md). The numerical domain has no Avalonia, MAVLink,
 DataFlash, vehicle-parameter, filesystem or third-party DSP dependency.
 
 ## Audit provenance

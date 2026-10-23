@@ -58,7 +58,7 @@ Any platform's head can be built from any host with `dotnet build`; only the bun
 | Feature | Linux / macOS |
 |---|---|
 | Serial connection, parameters, missions, MAVFTP, calibration, SITL | Same code as Windows |
-| ArduPilot firmware installation over the serial bootloader | Same code as Windows |
+| ArduPilot firmware installation (Install Firmware page) | **Disabled**: the page shows an unsupported-platform notice because it is gated by `OperatingSystem.IsWindows()`. The serial bootloader client is platform-neutral but has not been tested on Linux or macOS |
 | STM32 DFU installation (STM32CubeProgrammer) | Not available: the tool discovery and device catalog are Windows-only |
 | Betaflight identity probing and DFU hand-off | Not available |
 | USB topology matching (`IUsbTopologyProvider`) | Not available |

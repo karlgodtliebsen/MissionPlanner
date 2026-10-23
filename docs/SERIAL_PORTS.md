@@ -55,7 +55,7 @@ numeric enum labels as labels rather than raw values.
 
 Automated coverage includes grouping, metadata labels, baud round trips, unknown values/bits, read-only
 validation, duplicate receiver diagnostics, unchanged writes, rejected/unconfirmed writes, reconnects and
-late metadata/parameter arrivals. See [implementation results](tasks/SerialPorts/IMPLEMENTATION_STATUS.md).
+late metadata/parameter arrivals. See [implementation results](Archived/tasks/SerialPorts/IMPLEMENTATION_STATUS.md).
 
 The physical Pavo20 Pro procedure in the task specification has not been run. Reboot persistence and
 receiver operation on its actual UART3 therefore remain hardware acceptance checks.

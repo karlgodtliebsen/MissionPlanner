@@ -93,5 +93,5 @@ conflicting bootloaders, confirmation and transition cancellation, local APJ pro
 unknown/ambiguous identity, MCU family descriptions, exact variants, startup text,
 UI recovery visibility/invalidation, fresh post-flash target verification and COM changes.
 
-See [execution results](tasks/firmware-identity/EXECUTION_RESULTS.md) for builds, test totals
+See [execution results](Archived/tasks/firmware-identity/EXECUTION_RESULTS.md) for builds, test totals
 and the separately authorized COM12 bootloader inspection.

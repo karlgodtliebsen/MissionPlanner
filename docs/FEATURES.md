@@ -599,7 +599,7 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
 
 ### Missing (v1.38 feature inventory)
 
-* **Install Firmware**: runtime identification and serial APJ/DFU installation are implemented. Discovery reuses a matching vehicle session, then probes MAVLink before MSP with a per-device deadline. Verified ArduPilot applications can start automatic bootloader handoff from Install; authoritative bootloader/APJ compatibility remains mandatory before erase/write. Passive COM10 runtime identification was verified on 2026-09-11. See [runtime correction report](tasks/ArduPilot-Runtime/06-correction-report.md). The guided first-time setup wizard remains missing.
+* **Install Firmware**: runtime identification and serial APJ/DFU installation are implemented. Discovery reuses a matching vehicle session, then probes MAVLink before MSP with a per-device deadline. Verified ArduPilot applications can start automatic bootloader handoff from Install; authoritative bootloader/APJ compatibility remains mandatory before erase/write. Passive COM10 runtime identification was verified on 2026-09-11. See [runtime correction report](Archived/tasks/ArduPilot-Runtime/06-correction-report.md). The guided first-time setup wizard remains missing.
 * **Optional Hardware**: Battery Monitor (analog/smart), CompassMot, Range Finder/Sonar, Airspeed sensor, Optical Flow / PX4Flow, OSD, Camera Gimbal (Mount), Motor Test, Bluetooth, SiK Radio configuration, Antenna Tracker, Parachute, ADSB, DroneCAN/UAVCAN, Serial port mapping, GPS ordering, ESP8266, CubeID, Joystick
 
 Note: accelerometer/level, compass, and radio calibration plus flight-mode assignment are
@@ -1065,7 +1065,7 @@ The initial MSP protocol foundation is implemented in the firmware library. Iden
 conversion UI and physical acceptance are tracked in [Betaflight conversion](BETAFLIGHT_DFU_AND_ARDUPILOT_CONVERSION.md).
 Betaflight firmware downloading/flashing is deferred.
 
-Install Firmware uses one operational page and deterministic installation plan for serial APJ and STM32 DFU combined HEX. Preparation works without a controller or alongside unrelated network telemetry. USB identifiers are hints; protocol identity and strict source-independent compatibility gate installation. See [workflow ownership](INSTALL_FIRMWARE_VIEWMODELS.md).
+Install Firmware uses one operational page and deterministic installation plan for serial APJ and STM32 DFU combined HEX. Preparation works without a controller or alongside unrelated network telemetry. USB identifiers are hints; protocol identity and strict source-independent compatibility gate installation. See [workflow ownership](Archived/INSTALL_FIRMWARE_VIEWMODELS.md).
 
 ## Bench arming feedback
 
@@ -1127,7 +1127,7 @@ Radio Setup also provides guarded Arm/Disarm auxiliary-switch assignment and obs
 switch movement diagnostics. Inspector arming explanations distinguish explicit ACK
 rejection, inferred RC/stick requests and healthy checks with no observed request.
 Telemetry catalog and full exports derive size, duration, identity and firmware from
-the indexed recording. See [telemetry/arming follow-up](tasks/telemetry-arming/EXECUTION_RESULTS.md).
+the indexed recording. See [telemetry/arming follow-up](Archived/tasks/telemetry-arming/EXECUTION_RESULTS.md).
 
 ## Semantic Compass setup
 
@@ -1136,7 +1136,7 @@ Advanced diagnostics. Friendly settings stage local edits, show dependency chang
 metadata defaults, and use confirmed readback on Apply. Connection/current-value conflicts
 block stale reviews; partial failures retain pending edits. Reboot is explicit and
 calibration continues through the existing service. See [Setup UX pattern](SetupUxPattern.md)
-and [execution results](tasks/Compass-UX/EXECUTION_RESULTS.md).
+and [execution results](Archived/tasks/Compass-UX/EXECUTION_RESULTS.md).
 
 
 ## Selectable Compass information documents

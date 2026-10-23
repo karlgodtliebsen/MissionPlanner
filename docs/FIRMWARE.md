@@ -10,7 +10,7 @@ Only an owned serial resource blocks access to that COM port. Embedded bootloade
 maintenance remains a separate, confirmed action for a connected, disarmed vehicle.
 Direct hardware operations currently require Windows; preparation is independent.
 
-See [ViewModel ownership and the A–G workflow matrix](INSTALL_FIRMWARE_VIEWMODELS.md).
+See [ViewModel ownership and the A–G workflow matrix](Archived/INSTALL_FIRMWARE_VIEWMODELS.md).
 ## Architecture and dependency rules
 
 ```mermaid
@@ -140,7 +140,7 @@ After successful verification the workflow uses only a documented detach capabil
 - Catalogue upgrade reconnect/identity verification failed: upload may have verified, but the upgrade is not reported complete. Inspect the diagnostic report and verify the running controller. Legacy/custom APJ installs without selected release metadata retain their reconnect suggestion.
 - Embedded update denied/unsupported: preserve the reported ACK outcome and verify the vehicle family, disarmed state, firmware support, and permissions.
 
-Run the [Firmware Download user protocol](tasks/firmware/Step-2/02-Firmware-Download-User-Test-Protocol.md) first to validate catalogue, target, package, cache, offline, and cancellation behavior without hardware. The separate operator procedure and evidence record for required physical F4/H7 validation is maintained in [Hardware smoke test](tasks/firmware/Hardware%20smoke%20test.md). Pending entries are not release evidence.
+Run the [Firmware Download user protocol](Archived/tasks/firmware/Step-2/02-Firmware-Download-User-Test-Protocol.md) first to validate catalogue, target, package, cache, offline, and cancellation behavior without hardware. The separate operator procedure and evidence record for required physical F4/H7 validation is maintained in [Hardware smoke test](Archived/tasks/firmware/Hardware%20smoke%20test.md). Pending entries are not release evidence.
 
 ## Diagnostics and attribution
 
@@ -165,8 +165,8 @@ Target review is invalidated when the artifact or endpoint changes. Same-version
 APJ reinstall remains available after compatibility succeeds.
 
 Progress belongs to the page, with confirmation sequencing and distinct Cancelled,
-Failed and Completed diagnostics. See [workflow details](INSTALL_FIRMWARE_VIEWMODELS.md)
-and [execution results](tasks/InstallFirmware-take-3/EXECUTION_RESULTS.md).
+Failed and Completed diagnostics. See [workflow details](Archived/INSTALL_FIRMWARE_VIEWMODELS.md)
+and [execution results](Archived/tasks/InstallFirmware-take-3/EXECUTION_RESULTS.md).
 
 ## Connected ArduPilot catalogue upgrades
 
@@ -181,7 +181,7 @@ Bounded reconnect retries tolerate USB enumeration before MAVLink startup. Compl
 the selected running version/family and available board, UID and Git identity checks.
 Local APJs must supply sufficient embedded target, vehicle/variant and release metadata for verified installation; missing identity blocks installation.
 
-See [execution and hardware evidence](tasks/ardupilot-bootloader-upgrade/EXECUTION_RESULTS.md).
+See [execution and hardware evidence](Archived/tasks/ardupilot-bootloader-upgrade/EXECUTION_RESULTS.md).
 ## Identity-aware target recovery
 
 See [Firmware identity and recovery](FirmwareIdentityAndRecovery.md) for source attribution, strict normal upgrades, explicit recovery confirmation, local APJ metadata, and bootloader conflict handling.
