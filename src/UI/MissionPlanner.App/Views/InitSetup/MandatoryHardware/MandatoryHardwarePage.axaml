@@ -12,7 +12,7 @@
     x:DataType="mandatory:MandatoryHardwareViewModel">
     <ContentPage Header="Mandatory Hardware"  >
         <TabControl Margin="20" TabStripPlacement="Left" >
-            <TabItem Header="Frame"><sections:FrameSetupView /></TabItem>
+            <TabItem Header="Frame Type"><sections:FrameSetupView /></TabItem>
             <TabItem Header="Accel Calibration"><sections:AccelerometerSetupView /></TabItem>
             <TabItem Header="Compass"><sections:CompassSetupView /></TabItem>
             <TabItem Header="Radio Calibration"><sections:RadioSetupView /></TabItem>

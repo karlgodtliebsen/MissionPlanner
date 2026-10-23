@@ -12,7 +12,7 @@ public sealed class OptionalHardwareTabCatalogTests
         var catalog = new OptionalHardwareTabCatalog();
         catalog.Tabs.Select(item => item.Key).Should().OnlyHaveUniqueItems();
         catalog.Tabs.Select(item => item.Order).Should().BeInAscendingOrder();
-        catalog.Tabs.Should().HaveCount(20);
+        catalog.Tabs.Should().HaveCount(21);
     }
 
     [Fact]
@@ -23,7 +23,7 @@ public sealed class OptionalHardwareTabCatalogTests
             OptionalHardwareTabKey.DroneCan, OptionalHardwareTabKey.Joystick,
             OptionalHardwareTabKey.BatteryMonitors, OptionalHardwareTabKey.CanGpsOrder,
             OptionalHardwareTabKey.CompassMotorCalibration, OptionalHardwareTabKey.Rangefinder,
-            OptionalHardwareTabKey.Airspeed, OptionalHardwareTabKey.OpticalFlow,
+            OptionalHardwareTabKey.Airspeed, OptionalHardwareTabKey.PX4Flow, OptionalHardwareTabKey.OpticalFlow,
             OptionalHardwareTabKey.OnboardOsd, OptionalHardwareTabKey.CameraGimbal,
             OptionalHardwareTabKey.MotorTest, OptionalHardwareTabKey.BluetoothSetup,
             OptionalHardwareTabKey.Parachute, OptionalHardwareTabKey.Esp8266Setup,

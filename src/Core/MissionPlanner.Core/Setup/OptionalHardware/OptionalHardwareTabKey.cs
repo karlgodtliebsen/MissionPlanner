@@ -42,5 +42,7 @@ public enum OptionalHardwareTabKey
     /// <summary>FFT setup.</summary>
     FftSetup,
     /// <summary>Vehicle SERIAL parameter configuration.</summary>
-    SerialPorts
+    SerialPorts,
+    /// <summary>PX4Flow image stream and lens focusing.</summary>
+    PX4Flow
 }

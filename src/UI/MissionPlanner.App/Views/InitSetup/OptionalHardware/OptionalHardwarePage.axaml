@@ -24,7 +24,7 @@
             <TabItem Header="Compass/Motor Calibration"><sections:CompassMotorCalibrationView /></TabItem>
             <TabItem Header="Rangefinder"><sections:RangefinderView /></TabItem>
             <TabItem Header="Airspeed"><sections:AirspeedView /></TabItem>
-            <TabItem Header="PX4Flow"><sections:AirspeedView /></TabItem>
+            <TabItem x:Name="PX4FlowSection" Header="PX4Flow"><sections:PX4FlowView /></TabItem>
             <TabItem Header="Optical Flow"><sections:OpticalFlowView /></TabItem>
             <TabItem Header="OSD"><sections:OnboardOsdBridgeView /></TabItem>
             <TabItem Header="Camera Gimbal"><sections:CameraGimbalView /></TabItem>

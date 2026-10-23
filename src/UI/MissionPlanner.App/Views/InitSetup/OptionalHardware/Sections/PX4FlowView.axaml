@@ -1,0 +1,45 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+    xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    x:TypeArguments="sections:PX4FlowViewModel"
+    x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.PX4FlowView"
+    x:DataType="sections:PX4FlowViewModel">
+    <Grid RowDefinitions="Auto,Auto,*" Classes="PX4FlowLayout" Classes.expanded="{Binding IsExpanded}">
+        <Grid.Styles>
+            <Style Selector="Grid.PX4FlowLayout">
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="MaxWidth" Value="900" />
+            </Style>
+            <Style Selector="Grid.PX4FlowLayout.expanded">
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="MaxWidth" Value="Infinity" />
+            </Style>
+        </Grid.Styles>
+        <controls:ExpandBanner Header="PX4Flow" Classes="Bordered" IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
+            <StackPanel Spacing="6">
+                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                <SelectableTextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Classes="Danger" TextWrapping="Wrap" />
+                <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+            </StackPanel>
+        </controls:ExpandBanner>
+        <StackPanel Grid.Row="1" Spacing="8" Margin="12">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="12">
+                <Button Classes="ToolbarIconButton" Command="{Binding ToggleFocusCommand}" IsEnabled="{Binding CanFocus}"
+                        ToolTip.Tip="Toggle PX4Flow lens focus mode (VIDEO_ONLY)" AutomationProperties.Name="Toggle PX4Flow lens focus mode">
+                    <mdi:MaterialIcon Kind="Camera" Classes="ActionIcon" />
+                </Button>
+                <TextBlock Text="Focus mode active" IsVisible="{Binding IsFocusMode}" VerticalAlignment="Center" />
+                <TextBlock Text="Normal optical-flow mode" IsVisible="{Binding !IsFocusMode}" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Text="Use focus mode to adjust the lens. Return to normal mode when finished. Configure vehicle FLOW parameters on the Optical Flow page."
+                       TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ImageStatus}" HorizontalAlignment="Center" />
+        </StackPanel>
+        <Border Grid.Row="2" Classes="SectionCard" Padding="12" MinHeight="240">
+            <Image Source="{Binding Image}" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="None" />
+        </Border>
+    </Grid>
+</utilities:UserControlViewBase>

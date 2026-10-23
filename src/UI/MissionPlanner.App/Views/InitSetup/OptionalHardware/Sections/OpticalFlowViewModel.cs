@@ -18,6 +18,6 @@ public sealed class OpticalFlowViewModel(IActiveVehicleContext v, IOptionalHardw
     ParameterHardwareViewModel("optical-flow", v, s, logger, navigation)
 {
     /// <summary>Gets the focus/image capability status.</summary>
-    public string FocusCapabilityStatus => "PX4Flow focus imagery requires a compatible image handshake stream. Focus mode remains unavailable until that stream is detected; parameter configuration is independent.";
+    public string FocusCapabilityStatus => "Use the PX4Flow page for live sensor imagery and lens focus mode. This page configures the vehicle optical-flow parameters.";
 }
 

@@ -426,6 +426,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<RangefinderViewModel>();
         services.TryAddTransient<AirspeedViewModel>();
         services.TryAddTransient<OpticalFlowViewModel>();
+        services.TryAddTransient<PX4FlowViewModel>();
         services.TryAddTransient<OnboardOsdBridgeViewModel>();
         services.TryAddTransient<CameraGimbalViewModel>();
         services.TryAddTransient<SikRadioViewModel>();

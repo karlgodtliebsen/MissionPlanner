@@ -26,7 +26,7 @@
                 <TextBlock IsVisible="{Binding RebootRequired}"
                            Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration."
                            TextWrapping="Wrap"
-                           Classes="Warning" FontWeight="Bold" />
+                           Classes="Warning"  />
             </StackPanel>
         </u:Banner>
         <TabControl Grid.Row="1">

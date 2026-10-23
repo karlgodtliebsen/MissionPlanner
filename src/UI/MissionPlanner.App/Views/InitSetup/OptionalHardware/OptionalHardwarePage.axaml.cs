@@ -14,6 +14,11 @@ public partial class OptionalHardwarePage : NavigationViewBase<OptionalHardwareV
     /// <summary>Selects an explicitly addressed hardware section without applying settings.</summary>
     public void SelectSection(string section)
     {
+        if (section == "PX4Flow")
+        {
+            HardwareSections.SelectedItem = PX4FlowSection;
+            return;
+        }
         if (section != "BatteryMonitors")
         {
             throw new ArgumentException($"Unknown optional hardware section: {section}", nameof(section));
