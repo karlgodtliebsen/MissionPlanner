@@ -116,14 +116,14 @@ establish that UDP follows the same route.
 
 Deterministic tests use loopback fixtures, with no SITL or hardware dependency:
 
-    dotnet test src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --no-restore --filter FullyQualifiedName~NetworkTransportTests
-    dotnet test src/Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.AvaloniaUI.Tests.csproj --no-restore --filter FullyQualifiedName~ConnectPopupTests
+    dotnet test --project src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --no-restore --filter-class "*NetworkTransportTests"
+    dotnet test --project src/Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.AvaloniaUI.Tests.csproj --no-restore --filter-class "*ConnectPopupTests"
 
 Opt-in SITL tests require the two isolated endpoints above. In PowerShell:
 
     $env:MP_NETWORK_SITL = '1'
     $env:MP_NETWORK_SITL_HOST = '127.0.0.1'
-    dotnet test src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --no-restore --filter FullyQualifiedName~NetworkSitlTests
+    dotnet test --project src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --no-restore --filter-class "*NetworkSitlTests"
 
 These are read-only against simulated vehicle configuration: heartbeat, attitude,
 complete parameter download, REQUEST_MESSAGE(AUTOPILOT_VERSION) acknowledgement, and

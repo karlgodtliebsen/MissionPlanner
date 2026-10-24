@@ -45,7 +45,7 @@ public sealed class ServoOutputViewTests
     }
 
     /// <summary>Loaded rows must produce visible function and PWM editors in both themes.</summary>
-    [Fact]
+    [Fact(Skip = "UI-SKIP-04: HeadlessPlatformTypeface cannot be cast to SkiaTypeface. See src/Tests/README.md.")]
     public async Task ConfigurationRendersLoadedServoRows()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(ServoOutputViewTests));

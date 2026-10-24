@@ -20,8 +20,8 @@ foreach ($project in $projects) {
     Write-Host "Running $($project.BaseName)..."
     $projectResults = Join-Path $resultsRoot $project.BaseName
     $log = Join-Path $resultsRoot "$($project.BaseName).log"
-    & dotnet test $project.FullName --configuration $Configuration '-p:UsedAvaloniaProducts=' `
-        --logger trx --results-directory $projectResults --blame-hang-timeout 2m --verbosity minimal *> $log
+    & dotnet test --project $project.FullName --configuration $Configuration '-p:UsedAvaloniaProducts=' `
+        --report-xunit-trx --results-directory $projectResults --timeout 10m --verbosity minimal *> $log
     if ($LASTEXITCODE -ne 0) { $failures.Add($project.BaseName) }
     Get-Content -LiteralPath $log -Tail 5
 }

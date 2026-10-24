@@ -54,7 +54,7 @@ jobs:
           )
           $failed = @()
           foreach ($project in $projects) {
-            dotnet test "src/Tests/$project/$project.csproj" --configuration Release --verbosity normal
+            dotnet test --project "src/Tests/$project/$project.csproj" --configuration Release --verbosity normal
             if ($LASTEXITCODE -ne 0) { $failed += $project }
           }
           if ($failed.Count -gt 0) {
@@ -96,10 +96,10 @@ jobs:
       - name: Run portable unit tests
         continue-on-error: true
         run: |
-          dotnet test src/Tests/MissionPlanner.Tests/MissionPlanner.Tests.csproj --configuration Release
-          dotnet test src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --configuration Release
-          dotnet test src/Tests/MissionPlanner.Analysis.Tests/MissionPlanner.Analysis.Tests.csproj --configuration Release
-          dotnet test src/Tests/MissionPlanner.Firmware.Tests/MissionPlanner.Firmware.Tests.csproj --configuration Release
+          dotnet test --project src/Tests/MissionPlanner.Tests/MissionPlanner.Tests.csproj --configuration Release
+          dotnet test --project src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj --configuration Release
+          dotnet test --project src/Tests/MissionPlanner.Analysis.Tests/MissionPlanner.Analysis.Tests.csproj --configuration Release
+          dotnet test --project src/Tests/MissionPlanner.Firmware.Tests/MissionPlanner.Firmware.Tests.csproj --configuration Release
 
   build-macos:
     name: Build macOS

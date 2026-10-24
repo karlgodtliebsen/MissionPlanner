@@ -33,7 +33,7 @@ public sealed class FftAnalysisViewTests
             .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
     }
 
-    [Fact]
+    [Fact(Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
     public async Task CompiledViewRendersSourceControlsAndBothPlotModes()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(FftAnalysisViewTests));

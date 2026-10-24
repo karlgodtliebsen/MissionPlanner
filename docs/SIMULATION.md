@@ -313,15 +313,15 @@ Simulation tests carry an explicit `TestTier` where environment requirements dif
 The ordinary deterministic Simulation CI command selects the environment-free tiers only:
 
 ```powershell
-dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter "TestTier=Unit|TestTier=FakeRuntime"
+dotnet test --project .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter-trait "TestTier=Unit" "TestTier=FakeRuntime"
 ```
 
 Focused tiers can be run independently:
 
 ```powershell
-dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter "TestTier=Unit"
-dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter "TestTier=FakeRuntime"
-dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter "TestTier=RealSITL"
+dotnet test --project .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter-trait "TestTier=Unit"
+dotnet test --project .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter-trait "TestTier=FakeRuntime"
+dotnet test --project .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter-trait "TestTier=RealSITL"
 ```
 
 Real-SITL cases have a 20-second outer startup bound, bounded scenario waits (the idle/step
@@ -363,5 +363,5 @@ wait-for-GPS, arm, Guided-mode, takeoff, altitude, land, and landed-state scenar
 the production runner inside the same total timeout.
 
 ```powershell
-dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter FullyQualifiedName~ArduPilotSitlSmokeTests
+dotnet test --project .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter-class "*ArduPilotSitlSmokeTests"
 ```

@@ -156,7 +156,7 @@ samples/rates/sizes, zero data, STFT timing/range/tail handling and cancellation
 Run:
 
 ```powershell
-dotnet test C:\Projects\MissionPlanner\src\Tests\MissionPlanner.Analysis.Tests\MissionPlanner.Analysis.Tests.csproj
+dotnet test --project C:\Projects\MissionPlanner\src\Tests\MissionPlanner.Analysis.Tests\MissionPlanner.Analysis.Tests.csproj
 ```
 
 ## DataFlash integration (Task 7)

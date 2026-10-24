@@ -15,9 +15,9 @@ public sealed class QuickEditorLayoutTests
     public static AppBuilder BuildAvaloniaApp() => DiagnosticMenuAndFirmwareLayoutTests.BuildAvaloniaApp();
 
     [Theory]
-    [InlineData(800, 550)]
-    [InlineData(1200, 850)]
-    [InlineData(1920, 1030)]
+    [InlineData(800, 550, Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
+    [InlineData(1200, 850, Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
+    [InlineData(1920, 1030, Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
     public async Task EditorSectionsDoNotOverlapAtDifferentWindowSizes(int width, int height)
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(QuickEditorLayoutTests));

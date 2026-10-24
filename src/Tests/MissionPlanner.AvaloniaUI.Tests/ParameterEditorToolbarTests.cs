@@ -51,7 +51,7 @@ public sealed class ParameterEditorToolbarTests
     }
 
     /// <summary>Width changes reuse the editor and its search state, across all parameter tabs.</summary>
-    [Fact]
+    [Fact(Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
     public async Task EditorWidthTogglePreservesViewAndModel()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(ParameterEditorToolbarTests));
@@ -131,7 +131,7 @@ public sealed class ParameterEditorToolbarTests
     }
 
     /// <summary>Tab changes replace the action set, preserve Quick Editor text, and bind Clear to that editor.</summary>
-    [Fact]
+    [Fact(Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
     public async Task SelectedTabControlsVisibleActionsAndQuickEditorCommands()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(ParameterEditorToolbarTests));

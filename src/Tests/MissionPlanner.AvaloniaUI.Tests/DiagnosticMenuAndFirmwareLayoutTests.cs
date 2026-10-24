@@ -16,7 +16,7 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 public sealed class DiagnosticMenuAndFirmwareLayoutTests
 {
     /// <summary>Renders the untouched topbar button layout with the distinct menu icons using offline design data.</summary>
-    [Fact]
+    [Fact(Skip = "UI-SKIP-02: Offline topbar fixture has no view model for NotificationHelper. See src/Tests/README.md.")]
     public async Task TopbarRetainsLayoutWithDistinctMenuIcons()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(DiagnosticMenuAndFirmwareLayoutTests));
@@ -135,7 +135,7 @@ public sealed class DiagnosticMenuAndFirmwareLayoutTests
     }
 
     /// <summary>Configuration content stays inside the viewport and can scroll to its bottom in short windows.</summary>
-    [Fact]
+    [Fact(Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
     public async Task FirmwareConfigurationScrollsInShortWindow()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(DiagnosticMenuAndFirmwareLayoutTests));

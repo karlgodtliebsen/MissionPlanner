@@ -44,4 +44,4 @@ VehicleState arming/diagnostic records used for UI projections; these tests do n
 
 Run the focused suite:
 
-    dotnet test src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj -p:UsedAvaloniaProducts= --filter "FullyQualifiedName~BenchTelemetryReplayTests|FullyQualifiedName~SimulationPlaybackDiagnosticsTests"
+    dotnet test --project src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj -p:UsedAvaloniaProducts= --filter-class "*BenchTelemetryReplayTests" "*SimulationPlaybackDiagnosticsTests"

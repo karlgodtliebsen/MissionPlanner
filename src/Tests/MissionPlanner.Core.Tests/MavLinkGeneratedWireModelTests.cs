@@ -377,7 +377,7 @@ public sealed class MavLinkGeneratedWireModelTests
     private static string FindRepositoryRoot()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null && !Directory.Exists(Path.Combine(directory.FullName, "docs", "tasks", "mavlink-codex-tasks")))
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "src", "Core", "MissionPlanner.MavLink", "Dialects", "mavlink-generation.json")))
         {
             directory = directory.Parent;
         }

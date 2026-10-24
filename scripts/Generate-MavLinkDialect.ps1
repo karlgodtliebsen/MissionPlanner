@@ -132,8 +132,15 @@ finally {
 }
 
 if (-not $SkipTests) {
-    $testFilter = 'FullyQualifiedName~MavLinkMessageDefinitionRegistryTests|FullyQualifiedName~MavLinkGenerated|FullyQualifiedName~MavLinkDecoderCatalogTests|FullyQualifiedName~MavLinkRawFallbackTests|FullyQualifiedName~MavLinkConformanceFixtureTests|FullyQualifiedName~MavLinkPromotionCatalogTests'
-    Invoke-DotNet @('test', $testProject, '--no-restore', '--filter', $testFilter, '--verbosity', 'minimal')
+    $testClasses = @(
+        '*MavLinkMessageDefinitionRegistryTests',
+        '*MavLinkGenerated*',
+        '*MavLinkDecoderCatalogTests',
+        '*MavLinkRawFallbackTests',
+        '*MavLinkConformanceFixtureTests',
+        '*MavLinkPromotionCatalogTests'
+    )
+    Invoke-DotNet (@('test', '--project', $testProject, '--no-restore', '--verbosity', 'minimal', '--filter-class') + $testClasses)
 }
 
 Write-Host "MAVLink generation $Mode completed successfully."

@@ -59,7 +59,7 @@ From `src/`, prefer:
 ```powershell
 dotnet restore .\MissionPlanner.slnx
 dotnet build .\MissionPlanner.slnx --no-restore
-dotnet test .\MissionPlanner.slnx --no-build
+dotnet test --solution .\MissionPlanner.slnx --no-build
 ```
 
 When the full Avalonia solution cannot build on the current platform, build and test the

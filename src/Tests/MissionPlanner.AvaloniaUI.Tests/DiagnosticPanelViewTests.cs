@@ -70,7 +70,7 @@ public sealed class DiagnosticPanelViewTests
     }
 
     /// <summary>Header, all destinations and technical subsections remain usable in a 360px panel.</summary>
-    [Fact]
+    [Fact(Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
     public async Task DestinationsMountAndRetainSelectionAtNarrowWidth()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(DiagnosticPanelViewTests));

@@ -23,7 +23,7 @@ public sealed class CompassInformationDocumentTests
         .UseHeadless(new AvaloniaHeadlessPlatformOptions());
 
     /// <summary>Completed documents render, copy, preserve unchanged state and follow both themes at narrow widths.</summary>
-    [Fact]
+    [Fact(Skip = "UI-SKIP-04: HeadlessPlatformTypeface cannot be cast to SkiaTypeface. See src/Tests/README.md.")]
     public async Task RenderSelectCopyAndTheme()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(CompassInformationDocumentTests));

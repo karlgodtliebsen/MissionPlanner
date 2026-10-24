@@ -179,8 +179,8 @@ The same report is available as `window.missionPlannerStartupFailure` in DevTool
 
 ```powershell
 node --test src/Tests/browser-platform.test.mjs
-dotnet test src/Tests/MissionPlanner.BrowserBridge.Tests
-dotnet test src/Tests/MissionPlanner.AvaloniaUI.Tests --filter FullyQualifiedName~BrowserPlannerSecretStoreTests
+dotnet test --project src/Tests/MissionPlanner.BrowserBridge.Tests/MissionPlanner.BrowserBridge.Tests.csproj
+dotnet test --project src/Tests/MissionPlanner.AvaloniaUI.Tests/MissionPlanner.AvaloniaUI.Tests.csproj --filter-class "*BrowserPlannerSecretStoreTests"
 ```
 
 The tests cover geolocation success/unavailability/denial/timeout, settings
