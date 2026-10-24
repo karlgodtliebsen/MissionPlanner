@@ -13,6 +13,7 @@
     <ContentPage Header="Mandatory Hardware"  >
         <TabControl Margin="20" TabStripPlacement="Left" >
             <TabItem Header="Frame Type"><sections:FrameSetupView /></TabItem>
+            <TabItem Header="Traditional Helicopter" IsVisible="{Binding SupportsTraditionalHelicopter}"><sections:TraditionalHelicopterView /></TabItem>
             <TabItem Header="Accel Calibration"><sections:AccelerometerSetupView /></TabItem>
             <TabItem Header="Compass"><sections:CompassSetupView /></TabItem>
             <TabItem Header="Radio Calibration"><sections:RadioSetupView /></TabItem>
@@ -24,8 +25,8 @@
             <TabItem Header="Initial Tune Params"><sections:InitTuneParametersView /></TabItem>
             <TabItem Header="Hardware ID"><sections:HardwareIdView /></TabItem>
             <TabItem Header="ADS-B"><sections:AdsbView /></TabItem>
-            <TabItem Header="Safety"><sections:SafetySetupView /></TabItem>
+<!--            <TabItem Header="Safety"><sections:SafetySetupView /></TabItem>
             <TabItem Header="Summary"><sections:SetupSummaryView /></TabItem>
-        </TabControl>
+-->        </TabControl>
     </ContentPage>
 </utilities:NavigationViewBase>

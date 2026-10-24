@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Setup.MandatoryHardware;
+namespace MissionPlanner.Core.Setup.MandatoryHardware;
 
 /// <summary>Identifies an editable battery-monitor setting independent of its parameter name.</summary>
 public enum BatterySetting
@@ -34,5 +34,11 @@ public enum BatterySetting
     LowAction,
 
     /// <summary>The critical-battery failsafe action (BATT_FS_CRT_ACT).</summary>
-    CriticalAction
+    CriticalAction,
+
+    /// <summary>The analog voltage input pin, including firmware-specific disabled values.</summary>
+    VoltagePin,
+
+    /// <summary>The analog current input pin, including firmware-specific disabled values.</summary>
+    CurrentPin
 }

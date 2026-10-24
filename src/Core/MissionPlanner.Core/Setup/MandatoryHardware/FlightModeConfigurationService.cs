@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -13,6 +13,7 @@ namespace MissionPlanner.Core.Setup.MandatoryHardware;
 /// <summary>Projects firmware flight-mode slot configuration and applies guarded, readback-confirmed writes.</summary>
 public sealed class FlightModeConfigurationService : IFlightModeConfigurationService
 {
+    private readonly SemaphoreSlim simpleWrites = new(1, 1);
     private static readonly TimeSpan staleWindow = TimeSpan.FromSeconds(1.5);
     private static readonly TimeSpan readbackTimeout = TimeSpan.FromSeconds(4);
 
@@ -78,7 +79,18 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
             float? modeNumber = parameters.TryGetValue($"{slotPrefix}{slot}", out var slotParameter) ? slotParameter.Value : null;
             var option = options.FirstOrDefault(item => item.CustomMode == modeNumber);
             slots.Add(new FlightModeSlot(slot, band.Low, band.High, modeNumber,
-                option?.Name ?? (modeNumber is null ? "Parameter not loaded" : FormattableString.Invariant($"Unknown mode ({modeNumber})")), activeSlot == slot));
+                option?.Name ?? (modeNumber is null ? "Parameter not loaded" : FormattableString.Invariant($"Unknown mode ({modeNumber})")), activeSlot == slot)
+            {
+                Simple = ReadSimpleFlag("SIMPLE", slot),
+                SuperSimple = ReadSimpleFlag("SUPER_SIMPLE", slot)
+            });
+        }
+
+        bool? ReadSimpleFlag(string name, int slot)
+        {
+            return family == FirmwareFamily.ArduCopter && parameters.TryGetValue(name, out var mask) &&
+                float.IsFinite(mask.Value) && mask.Value is >= 0 and <= ushort.MaxValue && mask.Value == MathF.Truncate(mask.Value)
+                ? (((int)mask.Value & (1 << (slot - 1))) != 0) : null;
         }
 
         return new FlightModeConfiguration(vehicleId, family, true, modeChannel, slots, options, activeSlot)
@@ -128,6 +140,50 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
     }
 
     /// <inheritdoc />
+    public async Task<FlightModeApplyResult> SetSimpleOptionsAsync(VehicleId vehicleId, int slot, bool? simple, bool? superSimple, CancellationToken cancellationToken = default)
+    {
+        if (slot is < 1 or > 6)
+        {
+            return new(false, "Choose a flight-mode slot from 1 to 6.");
+        }
+        await simpleWrites.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var count = 0;
+            foreach (var (name, enabled) in new[] { ("SIMPLE", simple), ("SUPER_SIMPLE", superSimple) })
+            {
+                if (enabled is null)
+                {
+                    continue;
+                }
+                var state = RequireActiveVehicle(vehicleId);
+                if (state.IsArmed || state.Identity.Firmware.Family != FirmwareFamily.ArduCopter)
+                {
+                    return new(false, "Simple-mode options require a disarmed Copter.");
+                }
+                var parameter = parameterRegistry.GetParameter(vehicleId, name);
+                if (parameter is null || !float.IsFinite(parameter.Value) || parameter.Value is < 0 or > ushort.MaxValue || parameter.Value != MathF.Truncate(parameter.Value))
+                {
+                    return new(false, $"{name} has not reported a valid supported mask. Confirmed {count} prior changes.");
+                }
+                var bit = 1 << (slot - 1);
+                var mask = (int)parameter.Value;
+                var updated = enabled.Value ? mask | bit : mask & ~bit;
+                if (updated != mask && !await WriteAndConfirmAsync(vehicleId, name, updated, cancellationToken).ConfigureAwait(false))
+                {
+                    return new(false, $"Could not confirm {name}. Confirmed {count} prior changes; refresh before retrying.");
+                }
+                count++;
+            }
+            return new(true, $"Confirmed simple-mode options for slot {slot}; other slot bits retained.");
+        }
+        finally
+        {
+            simpleWrites.Release();
+        }
+    }
+
+    /// <inheritdoc />
     public async Task RefreshAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
         var state = RequireActiveVehicle(vehicleId);
@@ -136,7 +192,7 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
             return;
         }
 
-        foreach (var name in Enumerable.Range(1, pwmBands.Length).Select(slot => $"{slotPrefix}{slot}").Prepend(channelName))
+        foreach (var name in Enumerable.Range(1, pwmBands.Length).Select(slot => $"{slotPrefix}{slot}").Prepend(channelName).Concat(new[] { "SIMPLE", "SUPER_SIMPLE" }))
         {
             if (parameterRegistry.GetParameter(vehicleId, name) is not null)
             {

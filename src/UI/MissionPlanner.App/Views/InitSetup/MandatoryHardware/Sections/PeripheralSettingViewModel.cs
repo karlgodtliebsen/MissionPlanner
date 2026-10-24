@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 
@@ -22,8 +22,13 @@ public sealed partial class PeripheralSettingViewModel : ObservableObject
         confirmedValue = setting.CurrentValue;
         Bits = setting.Bits.Where(bit => bit.Key is >= 0 and < 32)
             .Select(bit => new PeripheralBitViewModel(bit.Key, bit.Value, ToggleBit)).ToArray();
+        Options = setting.Options;
+        if (Options.Count > 0 && !Options.Any(option => Math.Abs(option.Value - setting.CurrentValue) <= 0.0005))
+        {
+            Options = [.. Options, new PeripheralSettingOption(setting.CurrentValue, $"Unknown ({setting.CurrentValue})")];
+        }
         NumericValue = setting.CurrentValue;
-        SelectedOption = setting.Options.FirstOrDefault(option => Math.Abs(option.Value - setting.CurrentValue) <= 0.0005);
+        SelectedOption = Options.FirstOrDefault(option => Math.Abs(option.Value - setting.CurrentValue) <= 0.0005);
     }
 
     /// <summary>Gets the parameter display name.</summary>
@@ -33,7 +38,7 @@ public sealed partial class PeripheralSettingViewModel : ObservableObject
     public string Name => setting.Name;
 
     /// <summary>Gets the metadata options.</summary>
-    public IReadOnlyList<PeripheralSettingOption> Options => setting.Options;
+    public IReadOnlyList<PeripheralSettingOption> Options { get; }
 
     /// <summary>Gets whether the setting exposes discrete options.</summary>
     public bool HasOptions => setting.Options.Count > 0 && !HasBits;
@@ -104,6 +109,9 @@ public sealed partial class PeripheralSettingViewModel : ObservableObject
     private static decimal ToDecimal(double value) => !double.IsFinite(value) ? 0
         : value >= (double)decimal.MaxValue ? decimal.MaxValue
         : value <= (double)decimal.MinValue ? decimal.MinValue : (decimal)value;
+
+    /// <summary>Gets whether firmware metadata permits writes.</summary>
+    public bool CanEdit => !setting.ReadOnly;
 
     /// <summary>Gets whether the setting is sensitive.</summary>
     public bool IsSecret => setting.IsSecret;

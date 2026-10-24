@@ -12,6 +12,9 @@ public interface IDirectSerialSession : IAsyncDisposable
     string PortName { get; }
     /// <summary>Writes text to the port.</summary>
     Task WriteAsync(string value, CancellationToken cancellationToken = default);
+    /// <summary>Writes a binary protocol frame without text encoding.</summary>
+    Task WriteBytesAsync(ReadOnlyMemory<byte> value, CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("This serial adapter does not support binary writes.");
     /// <summary>Reads bytes into the buffer and returns the number read.</summary>
     Task<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default);
     /// <summary>Reads one line, failing with a timeout when none arrives.</summary>
@@ -56,6 +59,12 @@ public sealed class DirectSerialSessionFactory(
             await port.Stream.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task WriteBytesAsync(ReadOnlyMemory<byte> value, CancellationToken cancellationToken = default)
+        {
+            await port.Stream.WriteAsync(value, cancellationToken).ConfigureAwait(false);
+            await port.Stream.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
             await port.Stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
@@ -86,71 +95,29 @@ public sealed class DirectSerialSessionFactory(
 /// <param name="Identity">The radio identity text.</param>
 /// <param name="LocalSettings">The settings of the local radio.</param>
 /// <param name="RemoteSettings">The settings of the remote radio.</param>
-public sealed record SikRadioSnapshot(string Identity, IReadOnlyDictionary<string, string> LocalSettings, IReadOnlyDictionary<string, string> RemoteSettings);
+public sealed record SikRadioSnapshot(string Identity, IReadOnlyDictionary<string, string> LocalSettings, IReadOnlyDictionary<string, string> RemoteSettings)
+{
+    /// <summary>Gets firmware-provided register names from ATI5/RTI5.</summary>
+    public IReadOnlyDictionary<string, string> Names { get; init; } = new Dictionary<string, string>();
+    /// <summary>Gets independent remote register meanings, which may differ across radio firmware versions.</summary>
+    public IReadOnlyDictionary<string, string> RemoteNames { get; init; } = new Dictionary<string, string>();
+}
 
 /// <summary>Reads and writes the settings of a SiK telemetry radio.</summary>
 public interface ISikRadioConfigurator
 {
+    /// <summary>Rechecks identity, values and register meanings before applying reviewed paired edits.</summary>
+    Task ApplyReviewedAsync(string portName, int baudRate, SikRadioSnapshot expected, IReadOnlyDictionary<string, string> local,
+        IReadOnlyDictionary<string, string> remote, CancellationToken cancellationToken = default) => throw new NotSupportedException("Reviewed radio editing is unavailable.");
+    /// <summary>Writes and verifies explicit local/remote edits, saves each changed radio, then requests reboot.</summary>
+    Task ApplyPairedAsync(string portName, int baudRate, IReadOnlyDictionary<string, string> local,
+        IReadOnlyDictionary<string, string> remote, CancellationToken cancellationToken = default);
+    /// <summary>Restores one radio's firmware defaults, saves and requests reboot.</summary>
+    Task RestoreDefaultsAsync(string portName, int baudRate, bool remote, CancellationToken cancellationToken = default);
     /// <summary>Reads the settings of the radio.</summary>
     Task<SikRadioSnapshot> ReadAsync(string portName, int baudRate, CancellationToken cancellationToken = default);
     /// <summary>Writes settings to the radio.</summary>
     Task ApplyAsync(string portName, int baudRate, IReadOnlyDictionary<string, string> settings, CancellationToken cancellationToken = default);
-}
-
-/// <summary>Implements bounded SiK AT configuration conversations.</summary>
-public sealed class SikRadioConfigurator(IDirectSerialSessionFactory sessions) : ISikRadioConfigurator
-{
-    private static readonly TimeSpan timeout = TimeSpan.FromSeconds(2);
-
-    /// <summary>Reads the settings of the radio.</summary>
-    public async Task<SikRadioSnapshot> ReadAsync(string portName, int baudRate, CancellationToken cancellationToken = default)
-    {
-        await using var session = await sessions.OpenAsync(portName, baudRate, cancellationToken).ConfigureAwait(false);
-        await EnterCommandModeAsync(session, cancellationToken).ConfigureAwait(false);
-        await session.WriteAsync("ATI\r\n", cancellationToken).ConfigureAwait(false);
-        var identity = await session.ReadLineAsync(timeout, cancellationToken).ConfigureAwait(false);
-        var local = await ReadSettingsAsync(session, "ATI5\r\n", cancellationToken).ConfigureAwait(false);
-        IReadOnlyDictionary<string, string> remote;
-        try { remote = await ReadSettingsAsync(session, "RTI5\r\n", cancellationToken).ConfigureAwait(false); }
-        catch (Exception exception) when (exception is TimeoutException or OperationCanceledException) { remote = new Dictionary<string, string>(); }
-        return new SikRadioSnapshot(identity, local, remote);
-    }
-
-    /// <summary>Writes settings to the radio.</summary>
-    public async Task ApplyAsync(string portName, int baudRate, IReadOnlyDictionary<string, string> settings, CancellationToken cancellationToken = default)
-    {
-        await using var session = await sessions.OpenAsync(portName, baudRate, cancellationToken).ConfigureAwait(false);
-        await EnterCommandModeAsync(session, cancellationToken).ConfigureAwait(false);
-        foreach (var setting in settings)
-        {
-            if (!setting.Key.StartsWith('S') || setting.Key.Any(ch => !(char.IsLetterOrDigit(ch) || ch == '_')) || setting.Value.ContainsAny('\r', '\n'))
-                throw new ArgumentException($"Invalid SiK setting {setting.Key}.");
-            await session.WriteAsync($"AT{setting.Key}={setting.Value}\r\n", cancellationToken).ConfigureAwait(false);
-            _ = await session.ReadLineAsync(timeout, cancellationToken).ConfigureAwait(false);
-        }
-        await session.WriteAsync("AT&W\r\nATZ\r\n", cancellationToken).ConfigureAwait(false);
-    }
-
-    private static async Task EnterCommandModeAsync(IDirectSerialSession session, CancellationToken token)
-    {
-        await session.WriteAsync("+++", token).ConfigureAwait(false);
-        var response = await session.ReadLineAsync(timeout, token).ConfigureAwait(false);
-        if (!response.Contains("OK", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("The device did not enter SiK command mode.");
-    }
-
-    private static async Task<IReadOnlyDictionary<string, string>> ReadSettingsAsync(IDirectSerialSession session, string command, CancellationToken token)
-    {
-        await session.WriteAsync(command, token).ConfigureAwait(false);
-        var result = new Dictionary<string, string>(StringComparer.Ordinal);
-        while (true)
-        {
-            var line = await session.ReadLineAsync(timeout, token).ConfigureAwait(false);
-            if (line.Equals("OK", StringComparison.OrdinalIgnoreCase)) break;
-            var separator = line.IndexOf(':');
-            if (separator > 0) result[line[..separator].Trim()] = line[(separator + 1)..].Trim();
-        }
-        return result;
-    }
 }
 
 /// <summary>The AT command dialect of a Bluetooth module.</summary>

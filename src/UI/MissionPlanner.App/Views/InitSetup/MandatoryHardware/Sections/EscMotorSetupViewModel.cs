@@ -1,3 +1,4 @@
+using MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -14,7 +15,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects ESC calibration guidance and bounded, safety-gated motor testing into Setup controls.</summary>
-public sealed partial class EscMotorSetupViewModel : ViewModelBase
+public sealed partial class EscMotorSetupViewModel : ParameterHardwareViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IActuatorTestService actuatorService;
@@ -26,14 +27,16 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
     /// <param name="actuatorService">The actuator-test service.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
     /// <param name="navigation">The navigation service.</param>
+    /// <param name="hardware">Reported protocol and endpoint configuration.</param>
     /// <param name="logger">The logger.</param>
     public EscMotorSetupViewModel(
         IActiveVehicleContext activeVehicle,
         IActuatorTestService actuatorService,
         IUserConfirmationService confirmation,
         INavigationService navigation,
+        IOptionalHardwareService hardware,
         ILogger<EscMotorSetupViewModel> logger)
-        : base(logger)
+        : base("esc-motor", activeVehicle, hardware, logger, navigation)
     {
         this.activeVehicle = activeVehicle;
         this.actuatorService = actuatorService;
@@ -151,6 +154,8 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
     /// <inheritdoc />
     public override async Task DeactivateAsync()
     {
+        PrepareEscCalibrationCommand.Cancel();
+        ClearEscCalibrationCommand.Cancel();
         actuatorService.StateChanged -= OnStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         await actuatorService.EmergencyStopAsync();
@@ -160,6 +165,8 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
     /// <inheritdoc />
     public override void Dispose()
     {
+        PrepareEscCalibrationCommand.Cancel();
+        ClearEscCalibrationCommand.Cancel();
         actuatorService.Dispose();
         base.Dispose();
     }
@@ -200,11 +207,11 @@ public sealed partial class EscMotorSetupViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private Task RefreshAsync()
+    private async Task RefreshSetupAsync()
     {
         Load();
         Show(actuatorService.Current);
-        return Task.CompletedTask;
+        await base.RefreshCommand.ExecuteAsync(null);
     }
 
     [RelayCommand(CanExecute = nameof(CanTest))]

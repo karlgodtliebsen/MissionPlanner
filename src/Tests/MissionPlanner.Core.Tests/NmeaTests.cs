@@ -22,6 +22,36 @@ public sealed class NmeaTests
 {
     private static readonly DateTimeOffset now = DateTimeOffset.Parse("1994-03-23T13:35:19+01:00");
 
+    [Fact]
+    public void LegacyHomeUsesExplicitTrackerHomeAndNeverFabricatesAltitude()
+    {
+        var home = new MissionPlanner.Core.Missions.Planning.TrackerHomeSnapshot(new(55.5, -12.25), null, now.AddMinutes(-30), "manual");
+        var options = new NmeaOptions(false, false, LegacyHom: true);
+        var batch = NmeaFormatter.Format(State(), now, options, home);
+        Assert.Equal(1, batch.SentenceCount);
+        Assert.Contains("GPHOM,123519.000,5550.00000,N,1225.00000,W,,M,", batch.Text);
+        Assert.DoesNotContain("5550", NmeaFormatter.Format(State(), now, options).Text);
+        Assert.DoesNotContain("5550", NmeaFormatter.Format(State(), now, options, home with { UpdatedAt = now.AddSeconds(1) }).Text);
+    }
+
+    [Fact]
+    public void ExtraSentencesKeepPositionAndAttitudeFreshnessIndependent()
+    {
+        var state = State();
+        state = state with { Motion = state.Motion with { RollRadians = Math.PI / 6, PitchRadians = 0, YawRadians = -Math.PI / 2, AttitudeObservedAt = now } };
+        var options = new NmeaOptions(false, false, Gll: true, Vtg: true, Hdt: true, LegacyRpy: true);
+        var batch = NmeaFormatter.Format(state, now, options);
+        Assert.Equal(4, batch.SentenceCount);
+        Assert.Contains("GPGLL,4807.0380,N,01131.0000,E,123519.00,A,A", batch.Text);
+        Assert.Contains("GPVTG,84.40,T,,M,22.40,N,41.48,K,A", batch.Text);
+        Assert.Contains("GPHDT,270.00000,T", batch.Text);
+        Assert.Contains("GPRPY,30.00000,0.00000,270.00000,", batch.Text);
+        var stale = NmeaFormatter.Format(state, now.AddSeconds(4), options);
+        Assert.DoesNotContain("4807", stale.Text);
+        Assert.Contains("GPHDT,,T", stale.Text);
+        Assert.Contains("GPRPY,,,,", stale.Text);
+    }
+
     [Theory]
     [InlineData(1, 1, "N", "E", "69", "3F")]
     [InlineData(-1, 1, "S", "E", "74", "22")]

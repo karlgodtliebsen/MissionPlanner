@@ -50,16 +50,38 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Validate settings">
                                 <mdi:MaterialIcon Kind="FileCheckOutline" Classes="ActionIcon" />
                             </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Apply and save" Command="{Binding ApplyCommand}" AutomationProperties.Name="Apply and save">
+                                <mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Reboot bridge" Command="{Binding RebootCommand}" AutomationProperties.Name="Reboot bridge">
+                                <mdi:MaterialIcon Kind="Restart" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Restore bridge defaults" Command="{Binding RestoreDefaultsCommand}" AutomationProperties.Name="Restore bridge defaults">
+                                <mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" />
+                            </Button>
                         </WrapPanel>
                     </Border>
                     <Border Grid.Row="1" HorizontalAlignment="Stretch" Padding="12"
                             Classes="SectionCard"  >
-                        <StackPanel Spacing="10">
+                        <ScrollViewer><StackPanel Spacing="10">
+                            <TextBlock Text="Read the bridge before editing. Network names use up to 15 UTF-8 bytes; passwords use 8–15 bytes (empty means an open network). Apply saves; Reboot is separate." TextWrapping="Wrap" />
                             <TextBox PlaceholderText="Access-point SSID" Text="{Binding Ssid}" />
                             <TextBox PlaceholderText="Access-point password" Text="{Binding Password}" PasswordChar="●" />
                             <TextBox PlaceholderText="Station SSID" Text="{Binding StationSsid}" />
                             <TextBox PlaceholderText="Station password" Text="{Binding StationPassword}" PasswordChar="●" />
-                        </StackPanel>
+                            <ItemsControl ItemsSource="{Binding Fields}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="sections:EspBridgeField">
+                                        <Grid ColumnDefinitions="*,*" Margin="0,4">
+                                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                            <TextBox Grid.Column="1" Text="{Binding Value}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
+                        </StackPanel></ScrollViewer>
                     </Border>
                 </Grid>
             </TabItem>

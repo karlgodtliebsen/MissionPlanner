@@ -10,17 +10,26 @@
     xmlns:output="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
     xmlns:nmea="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Nmea"
     xmlns:inspector="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Inspector"
+    xmlns:scripting="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Scripting"
+    xmlns:privacy="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Privacy"
+    xmlns:position="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Position"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.AdvancedPage"
     x:DataType="local:AdvancedViewModel"
     x:CompileBindings="True">
     <ContentPage Header="Advanced Tools"  >
-        <TabControl Margin="20" TabStripPlacement="Left" >
-            <TabItem Header="Warnings"><warnings:WarningManagerPage /></TabItem>
-            <TabItem Header="MAVLink signing"><signing:SigningPage /></TabItem>
-            <TabItem Header="Proximity observations"><proximity:ProximityPage /></TabItem>
-            <TabItem Header="MAVLink mirror"><output:MirrorPage /></TabItem>
-            <TabItem Header="NMEA navigation output"><nmea:NmeaPage /></TabItem>
-            <TabItem Header="Traffic inspection"><inspector:MavLinkInspectorPage /></TabItem>
+        <TabControl Margin="20" TabStripPlacement="Left"  HorizontalAlignment="Stretch">
+            <TabItem Header="Warning Manager" ToolTip.Tip="Enable custom warnings based on a set of conditions"><warnings:WarningManagerPage /></TabItem>
+            <TabItem Header="Proximity observations"  ToolTip.Tip="View the data from a 360 lidar"><proximity:ProximityPage /></TabItem>
+            <TabItem Header="MAVLink Inspector"  ToolTip.Tip="View decode MAVLink data being sent and received"><inspector:MavLinkInspectorPage /></TabItem>
+            <TabItem Header="MAVLink Signing"  ToolTip.Tip="Enable MAVLink signing to secure communication with the MAV"><signing:SigningPage /></TabItem>
+            <TabItem Header="MAVLink Mirror"  ToolTip.Tip="MAVLink mirror to an external location. For Monitoring or control"><output:MirrorPage /></TabItem>
+            <TabItem Header="NMEA"  ToolTip.Tip="Output the MAV locations as a NMEA string"><nmea:NmeaPage /></TabItem>
+
+            <TabItem Header="Follow Me ++"  ToolTip.Tip="Use an external NMEA gps and send guided mode waypoints to the MAV based on that location"><position:OperatorPositionPage /></TabItem>
+           
+            <TabItem Header="Anon Log"  ToolTip.Tip="Scramble lat/lng in bin or log"><privacy:PrivacyExportPage /></TabItem>
+            <TabItem Header="Terminal"  ToolTip.Tip="To Be Done"><scripting:ScriptingConsolePage /></TabItem>
+            <TabItem Header="Scripting console"  ToolTip.Tip="Execute custom scripts to interact with the MAV"><scripting:ScriptingConsolePage /></TabItem>
         </TabControl>
     </ContentPage>
 </utilities:NavigationViewBase>

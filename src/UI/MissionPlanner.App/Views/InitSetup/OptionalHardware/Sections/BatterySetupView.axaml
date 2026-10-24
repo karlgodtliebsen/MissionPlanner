@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:BatterySetupViewModel"
+<utilities:UserControlViewBase x:TypeArguments="sections:BatterySetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
@@ -68,6 +68,13 @@
                                                     <TextBlock Text="{Binding LiveReadings}" />
                                                     <TextBlock Text="Remaining percentage is an estimate, not a measured capacity truth." Opacity="0.7" FontSize="12" />
 
+                                                    <ItemsControl ItemsSource="{Binding ConfigurationSettings}">
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate x:DataType="sections:ParameterSettingViewModel">
+                                                                <sections:ParameterSettingEditor />
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+                                                    </ItemsControl>
                                                     <Grid ColumnDefinitions="140,*,Auto" RowSpacing="6" ColumnSpacing="10" IsVisible="{Binding SupportsCapacity}">
                                                         <TextBlock Text="Capacity (mAh)" VerticalAlignment="Center" />
                                                         <NumericUpDown Grid.Column="1"  HorizontalContentAlignment="Right" Value="{Binding Capacity, Mode=TwoWay}" FormatString="F1" HorizontalAlignment="Stretch" />

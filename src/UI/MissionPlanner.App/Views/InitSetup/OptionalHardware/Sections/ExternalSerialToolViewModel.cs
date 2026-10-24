@@ -1,3 +1,4 @@
+using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -19,6 +20,7 @@ public abstract partial class ExternalSerialToolViewModel(IFirmwareSerialDeviceC
     }
 
     private CancellationTokenSource lifetime = new();
+    private bool disposed;
     /// <summary>Gets the available serial ports.</summary>
     public ObservableRangeCollection<string> Ports { get; } = [];
     [ObservableProperty]
@@ -51,25 +53,35 @@ public abstract partial class ExternalSerialToolViewModel(IFirmwareSerialDeviceC
         }
     }
 
-    /// <summary>
-    ///
-    /// </summary>
+    /// <summary>Gets the current page lifetime, cancelled before outstanding operations are drained.</summary>
     protected CancellationToken Token => lifetime.Token;
 
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
-        lifetime = new CancellationTokenSource();
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (lifetime.IsCancellationRequested) { lifetime.Dispose(); lifetime = new(); }
         return base.ActivateAsync();
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
         lifetime.Cancel();
-        lifetime.Dispose();
-        lifetime = new CancellationTokenSource();
-        return base.DeactivateAsync();
+        await Task.WhenAll(new[] { RefreshCommand.ExecutionTask, RefreshPortsCommand.ExecutionTask, StopOperationsAsync() }.OfType<Task>());
+        await base.DeactivateAsync();
+    }
+
+    /// <summary>Waits for derived serial operations after their page token has been cancelled.</summary>
+    protected virtual Task StopOperationsAsync() => Task.CompletedTask;
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        if (disposed) return;
+        disposed = true;
+        DeactivateAsync().SafeFireAndForget(exception => Logger.LogWarning(exception, "Serial tool cleanup failed."));
+        base.Dispose();
     }
 
 }

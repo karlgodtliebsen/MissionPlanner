@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Setup.MandatoryHardware;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Firmware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
@@ -38,6 +38,14 @@ public interface IActuatorTestService : IDisposable
     /// <param name="vehicleId">The active target vehicle.</param>
     /// <returns>The ESC calibration guidance.</returns>
     EscCalibrationGuidance GetEscCalibrationGuidance(VehicleId vehicleId);
+
+    /// <summary>Schedules supported analog ESC calibration on the next power cycle after explicit confirmation, or clears a pending request.</summary>
+    /// <param name="vehicleId">The selected, disarmed Copter.</param>
+    /// <param name="prepare">True schedules calibration; false restores normal startup.</param>
+    /// <param name="safetyConfirmed">Whether propeller removal and power-cycle precautions were explicitly confirmed.</param>
+    /// <param name="cancellationToken">Cancels the write/readback transaction.</param>
+    /// <returns>The confirmed parameter result; physical calibration requires the documented power cycle.</returns>
+    Task<MotorTestResult> SetEscCalibrationPendingAsync(VehicleId vehicleId, bool prepare, bool safetyConfirmed, CancellationToken cancellationToken = default);
 
     /// <summary>Starts a single bounded motor test after validating safety and bounds.</summary>
     /// <param name="vehicleId">The active target vehicle.</param>

@@ -96,6 +96,22 @@
                                     </Button>
                                 </StackPanel>
                             </Border>
+                            <Expander Header="Large-vehicle / known-heading calibration" HorizontalAlignment="Stretch">
+                                <StackPanel Spacing="10" Margin="12">
+                                    <TextBlock Text="Keep the vehicle level and stationary, away from magnetic interference. Enter an independently measured heading from true north; do not copy the uncalibrated compass heading." TextWrapping="Wrap" />
+                                    <TextBlock Text="True heading (degrees)" />
+                                    <NumericUpDown Value="{Binding FixedYawDegrees}" Minimum="0" Maximum="360" AutomationProperties.Name="Known true heading" />
+                                    <CheckBox Content="Use the current vehicle GPS fix" IsChecked="{Binding FixedYawUseGps}" />
+                                    <StackPanel Spacing="6" IsEnabled="{Binding !FixedYawUseGps}">
+                                        <TextBlock Text="Known latitude / longitude (degrees)" />
+                                        <NumericUpDown Value="{Binding FixedYawLatitude}" Minimum="-90" Maximum="90" AutomationProperties.Name="Calibration latitude" />
+                                        <NumericUpDown Value="{Binding FixedYawLongitude}" Minimum="-180" Maximum="180" AutomationProperties.Name="Calibration longitude" />
+                                    </StackPanel>
+                                    <Button Command="{Binding CalibrateFixedYawCommand}" ToolTip.Tip="Calibrate using known heading" AutomationProperties.Name="Calibrate compass using known heading" HorizontalAlignment="Left">
+                                        <mdi:MaterialIcon Kind="CompassOutline" Classes="ActionIcon" />
+                                    </Button>
+                                </StackPanel>
+                            </Expander>
                             <Border Classes="SectionCard"  IsVisible="{Binding HasPendingChanges}" HorizontalAlignment="Stretch" >
                                 <StackPanel Spacing="8">
                                     <TextBlock Text="{Binding PendingSummary}" Classes="H3" TextWrapping="Wrap" />
@@ -183,6 +199,7 @@
                     </ScrollViewer>
                 </Grid>
             </TabItem>
+            <TabItem Header="Priorities and advanced"><sections:CompassPriorityView /></TabItem>
         </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

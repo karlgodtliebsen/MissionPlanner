@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Setup.MandatoryHardware;
+namespace MissionPlanner.Core.Setup.MandatoryHardware;
 
 /// <summary>Describes one of the six firmware flight-mode PWM slots.</summary>
 /// <param name="Slot">The one-based slot number.</param>
@@ -13,4 +13,10 @@ public sealed record FlightModeSlot(
     int PwmHigh,
     float? SelectedModeNumber,
     string SelectedModeName,
-    bool IsActive);
+    bool IsActive)
+{
+    /// <summary>Gets the SIMPLE flag, or null when this firmware does not report the mask.</summary>
+    public bool? Simple { get; init; }
+    /// <summary>Gets the SUPER_SIMPLE flag, or null when this firmware does not report the mask.</summary>
+    public bool? SuperSimple { get; init; }
+}

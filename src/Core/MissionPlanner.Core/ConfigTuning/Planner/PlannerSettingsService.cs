@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 
@@ -109,6 +109,44 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     {
         ArgumentNullException.ThrowIfNull(settings);
         var errors = new List<PlannerSettingsValidationError>();
+        try
+        {
+            MissionPlanner.Core.Setup.OptionalHardware.DroneCan.DroneCanAllocationStore.Validate(settings.DroneCanAllocations);
+            if (settings.RtkBasePositions is null || settings.RtkBasePositions.Count > 32 || settings.RtkBasePositions.Any(position => position is null) ||
+                settings.RtkBasePositions.Select(position => position.Name).Distinct(StringComparer.OrdinalIgnoreCase).Count() != settings.RtkBasePositions.Count)
+                throw new ArgumentException("Use up to 32 uniquely named RTK base positions.");
+            foreach (var position in settings.RtkBasePositions) position.Validate();
+        }
+        catch (ArgumentException exception) { errors.Add(new(PlannerSettingsSection.Telemetry, nameof(PlannerSettings.RtkBasePositions), exception.Message)); }
+
+        try
+        {
+            if (settings.SerialTracker is null) throw new ArgumentException("Tracker calibration is missing.");
+            settings.SerialTracker.Validate();
+        }
+        catch (ArgumentException exception)
+        {
+            errors.Add(new(PlannerSettingsSection.Telemetry, nameof(PlannerSettings.SerialTracker), exception.Message));
+        }
+        try
+        {
+            if (settings.Joystick is null) throw new ArgumentException("Joystick settings are missing.");
+            settings.Joystick.Validate(new("validation", "Profile", 64, 128));
+        }
+        catch (ArgumentException exception)
+        {
+            errors.Add(new PlannerSettingsValidationError(PlannerSettingsSection.Telemetry, nameof(PlannerSettings.Joystick), exception.Message));
+        }
+
+
+        if (settings.ParameterCollections is null || settings.ParameterCollections.Count > 32 ||
+            settings.ParameterCollections.Any(pair => string.IsNullOrWhiteSpace(pair.Key) || pair.Key.Length > 80 ||
+                pair.Value is null || pair.Value.Length > 256 || pair.Value.Any(name => string.IsNullOrWhiteSpace(name) ||
+                    name.Length > 16 || name.Any(character => !char.IsAsciiLetterOrDigit(character) && character != '_'))))
+        {
+            errors.Add(new(PlannerSettingsSection.ParameterCache, nameof(settings.ParameterCollections),
+                "Use at most 32 named collections, with 256 valid parameter names each."));
+        }
 
         ValidateEnum(settings.Units.System, PlannerSettingsSection.Units, nameof(settings.Units.System), errors);
         ValidateEnum(settings.Map.Provider, PlannerSettingsSection.Map, nameof(settings.Map.Provider), errors);

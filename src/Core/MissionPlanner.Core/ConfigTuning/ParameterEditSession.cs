@@ -202,6 +202,43 @@ public sealed class ParameterEditSession : IParameterEditSession
     }
 
     /// <inheritdoc />
+    public bool TryStageReviewed(IReadOnlyList<ReviewedParameterEdit> proposals, out string? error)
+    {
+        ArgumentNullException.ThrowIfNull(proposals);
+        lock (sync)
+        {
+            EnsureValidUnderLock();
+            if (proposals.Count == 0 || proposals.Select(proposal => proposal.Name).Distinct(StringComparer.Ordinal).Count() != proposals.Count)
+            {
+                error = "Review a nonempty set of unique parameter names.";
+                return false;
+            }
+            foreach (var proposal in proposals)
+            {
+                if (!fields.TryGetValue(proposal.Name, out var field) || field.LiveValue != proposal.ExpectedLive || field.PendingValue != proposal.ExpectedPending)
+                {
+                    error = $"{proposal.Name} changed since preview. Review again; no values were staged.";
+                    return false;
+                }
+                if (Validate(field, proposal.Value) is { } validation)
+                {
+                    error = $"{proposal.Name}: {validation} No values were staged.";
+                    return false;
+                }
+            }
+            foreach (var proposal in proposals)
+            {
+                var field = fields[proposal.Name];
+                fields[proposal.Name] = field with { PendingValue = proposal.Value, ValidationError = null, WriteMessage = null,
+                    WriteStatus = Equivalent(proposal.Value, field.LiveValue, field.Metadata) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending };
+            }
+        }
+        error = null;
+        NotifyChanged(null);
+        return true;
+    }
+
+    /// <inheritdoc />
     public ParameterWritePlan CreateWritePlan(IReadOnlyList<string>? names = null)
     {
         EnsureValid();

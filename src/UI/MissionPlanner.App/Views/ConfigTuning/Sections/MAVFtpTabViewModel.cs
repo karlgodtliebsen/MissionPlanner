@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -44,6 +44,9 @@ public partial class MavFtpTabViewModel : ViewModelBase
     private readonly IDomainEventHub domainEventHub;
     private readonly IDialogService dialogService;
     private readonly IFileSaveService fileSaver;
+    private readonly IFileOpenService fileOpener;
+    private readonly IUserConfirmationService confirmations;
+    private readonly IActiveVehicleContext activeContext;
     private readonly Lock lifecycleSync = new();
     private readonly Lock operationSync = new();
     private readonly SemaphoreSlim operationGate = new(1, 1);
@@ -144,11 +147,15 @@ public partial class MavFtpTabViewModel : ViewModelBase
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="dialogService">The dialog service.</param>
     /// <param name="fileSaver">The file saver.</param>
+    /// <param name="fileOpener">Selects a local upload source.</param>
+    /// <param name="confirmations">Confirms remote file changes.</param>
+    /// <param name="activeContext">Pins management operations to the selected connection.</param>
     /// <param name="logger"></param>
     public MavFtpTabViewModel(IVehicleRegistry vehicleRegistry, IVehicleConnectionSession connectionSession, ApplicationStateService stateService,
         IDomainEventHub domainEventHub,
         IDialogService dialogService,
-        IFileSaveService fileSaver, ILogger<MavFtpTabViewModel> logger) : base(logger)
+        IFileSaveService fileSaver, IFileOpenService fileOpener, IUserConfirmationService confirmations,
+        IActiveVehicleContext activeContext, ILogger<MavFtpTabViewModel> logger) : base(logger)
     {
         this.vehicleRegistry = vehicleRegistry;
         this.connectionSession = connectionSession;
@@ -156,6 +163,9 @@ public partial class MavFtpTabViewModel : ViewModelBase
         this.domainEventHub = domainEventHub;
         this.dialogService = dialogService;
         this.fileSaver = fileSaver;
+        this.fileOpener = fileOpener;
+        this.confirmations = confirmations;
+        this.activeContext = activeContext;
     }
 
     private async Task ResetFilesystemService(VehicleId vehicleId, CancellationToken ct)
@@ -356,7 +366,7 @@ public partial class MavFtpTabViewModel : ViewModelBase
             return;
         }
 
-        await DownloadSelectedAsync(operationCancellation.Token);
+        await DownloadSelectedAsync(CancellationToken.None);
     }
 
     [RelayCommand]
@@ -557,7 +567,7 @@ public partial class MavFtpTabViewModel : ViewModelBase
         try
         {
             operationCancellation ??= new CancellationTokenSource();
-            await operationGate.WaitAsync(operationCancellation.Token);
+            await operationGate.WaitAsync(operationSource.Token);
             enteredGate = true;
             if (disposed)
             {
@@ -578,7 +588,7 @@ public partial class MavFtpTabViewModel : ViewModelBase
 
             await operation(operationSource.Token);
         }
-        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
+        catch (OperationCanceledException) when (disposed)
         {
             // Navigation disposed this transient ViewModel. Do not update its detached view.
         }
@@ -605,6 +615,10 @@ public partial class MavFtpTabViewModel : ViewModelBase
         {
             Dispatcher.Dispatch(() => SetMessages(null, "The vehicle returned an invalid MAVFTP response: " + ex.Message));
             Logger.LogError(ex, "Invalid MAVFTP protocol response.");
+        }
+        catch (IOException ex)
+        {
+            Dispatcher.Dispatch(() => SetMessages(null, ex.Message));
         }
         catch (InvalidOperationException ex)
         {
@@ -694,6 +708,7 @@ public partial class MavFtpTabViewModel : ViewModelBase
         {
             return;
         }
+        CancelActiveOperation();
         Deactivate();
         IVehicleFileSystemService? ownedFileSystem;
         lock (lifecycleSync)

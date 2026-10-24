@@ -9,13 +9,33 @@
              x:CompileBindings="True">
     <ScrollViewer  VerticalScrollBarVisibility="Auto">
         <Grid RowDefinitions="Auto,Auto,*"  RowSpacing="12">
-            <TextBlock Text="{Binding Feedback}" TextWrapping="Wrap" />
+            <StackPanel Spacing="8">
+                <TextBlock Text="{Binding Feedback}" TextWrapping="Wrap" />
+                <WrapPanel ItemSpacing="8">
+                    <Button Command="{Binding BrowseLibraryCancelCommand}" IsVisible="{Binding BrowseLibraryCommand.IsRunning}" Classes="EmbeddedIconButton" ToolTip.Tip="Cancel preset browsing" AutomationProperties.Name="Cancel preset browsing"><mdi:MaterialIcon Kind="Cancel" /></Button>
+                    <Button Command="{Binding ImportPresetCancelCommand}" IsVisible="{Binding ImportPresetCommand.IsRunning}" Classes="EmbeddedIconButton" ToolTip.Tip="Cancel preset import" AutomationProperties.Name="Cancel preset import"><mdi:MaterialIcon Kind="Cancel" /></Button>
+                </WrapPanel>
+            </StackPanel>
             <Grid Grid.Row="1" RowDefinitions="Auto,Auto,*" RowSpacing="15" IsEnabled="{Binding !Working}">
                 <u:UrsaGroupBox >
                     <u:UrsaGroupBox.Header >
                         <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource SemiColorSecondary}" Text="Saved parameter profiles" />
                     </u:UrsaGroupBox.Header>
                     <StackPanel Margin="12" Spacing="12">
+                        <Expander Header="Official ArduPilot preset library" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="{Binding LibraryPath}" TextWrapping="Wrap" />
+                                <TextBlock Text="Downloaded presets become local profiles. Hardware and firmware compatibility must be reviewed; nothing is applied automatically." TextWrapping="Wrap" />
+                                <ComboBox ItemsSource="{Binding LibraryEntries}" SelectedItem="{Binding LibraryEntry}" HorizontalAlignment="Stretch">
+                                    <ComboBox.ItemTemplate><DataTemplate x:DataType="profiles:ParameterPresetEntry"><StackPanel Orientation="Horizontal" Spacing="8"><TextBlock Text="📁" IsVisible="{Binding IsDirectory}" /><TextBlock Text="{Binding Name}" /></StackPanel></DataTemplate></ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <WrapPanel ItemSpacing="8">
+                                    <Button Command="{Binding BrowseLibraryCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Browse selected folder or refresh directory" AutomationProperties.Name="Browse official presets"><mdi:MaterialIcon Kind="FolderOpenOutline" /></Button>
+                                    <Button Command="{Binding LibraryParentCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Parent directory" AutomationProperties.Name="Preset parent directory"><mdi:MaterialIcon Kind="ArrowUp" /></Button>
+                                    <Button Command="{Binding ImportPresetCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Import selected preset for review" AutomationProperties.Name="Import official preset"><mdi:MaterialIcon Kind="CloudDownloadOutline" /></Button>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Expander>
                         <ComboBox ItemsSource="{Binding Profiles}" SelectedItem="{Binding SelectedProfile}" HorizontalAlignment="Stretch"
                                   PlaceholderText="Select a profile" AutomationProperties.Name="Saved parameter profiles">
                             <ComboBox.ItemTemplate>

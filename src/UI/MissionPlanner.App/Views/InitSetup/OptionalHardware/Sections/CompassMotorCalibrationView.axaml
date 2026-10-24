@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:CompassMotorCalibrationViewModel"
+<utilities:UserControlViewBase x:TypeArguments="sections:CompassMotorCalibrationViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
@@ -68,6 +68,8 @@
                                   Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
                         <Border Classes="SectionCard" Padding="12">
                             <StackPanel Spacing="10">
+                                <common:TelemetryLinePlot Height="200" Samples="{Binding InterferencePlot}" Caption="Throttle (%) → magnetic interference (%)" />
+                                <common:TelemetryLinePlot Height="200" Samples="{Binding CurrentPlot}" Caption="Throttle (%) → battery current (A)" />
                                 <ItemsControl ItemsSource="{Binding Samples}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="optionalHardware:CompassMotorCalibrationSample">

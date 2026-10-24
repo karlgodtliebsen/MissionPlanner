@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -20,6 +20,8 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
     private static readonly IReadOnlyDictionary<BatterySetting, string> suffixes = new Dictionary<BatterySetting, string>
     {
         [BatterySetting.Monitor] = "MONITOR",
+        [BatterySetting.VoltagePin] = "VOLT_PIN",
+        [BatterySetting.CurrentPin] = "CURR_PIN",
         [BatterySetting.Capacity] = "CAPACITY",
         [BatterySetting.LowVoltage] = "LOW_VOLT",
         [BatterySetting.CriticalVoltage] = "CRT_VOLT",
@@ -94,7 +96,13 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
                 monitorType,
                 monitorLookup.TryGetValue(monitorType, out var name) ? name : $"Monitor {monitorType}",
                 settings,
-                ReadLive(state, index)));
+                ReadLive(state, index))
+            {
+                Settings = suffixes.Keys
+                    .Select(setting => (Kind: setting, Field: PeripheralSettingFactory.TryBuild(Name(index, setting), values, metadata)))
+                    .Where(item => item.Field is not null)
+                    .ToDictionary(item => item.Kind, item => item.Field!)
+            });
         }
 
         var issues = instances.SelectMany(Validate).ToArray();
@@ -123,7 +131,13 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
             return new BatteryApplyResult(false, rejection);
         }
 
-        var reboot = (await GetMetadataAsync(vehicleId, name, cancellationToken).ConfigureAwait(false))?.RebootRequired ?? false;
+        var definition = await GetMetadataAsync(vehicleId, name, cancellationToken).ConfigureAwait(false);
+        if (!double.IsFinite(value) || value < -float.MaxValue || value > float.MaxValue || definition?.ReadOnly == true || definition?.GetValidationError((float)value) is not null)
+        {
+            return new BatteryApplyResult(false, "The proposed value is invalid or this setting is read-only.");
+        }
+        _ = RequireActiveVehicle(vehicleId);
+        var reboot = definition?.RebootRequired ?? setting == BatterySetting.Monitor;
         logger.LogInformation("Applying battery setting {Setting} on instance {Instance} for {VehicleId}.", setting, instance, vehicleId);
         return await WriteAndConfirmAsync(vehicleId, name, (float)value, parameter.Type, cancellationToken).ConfigureAwait(false)
             ? new BatteryApplyResult(true, $"Confirmed {name} by vehicle readback.", reboot)

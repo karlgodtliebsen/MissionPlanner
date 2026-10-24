@@ -202,6 +202,50 @@ public sealed class SigningTests
         await transport.DidNotReceive().DisposeAsync();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DisableIsSentBeforeLocalSigningStopsAndFailurePreservesIt(bool failSend)
+    {
+        var clock = new Clock();
+        var active = Substitute.For<IActiveVehicleContext>();
+        var id = new VehicleId(1, 1);
+        var state = new VehicleState(id, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online,
+            clock.GetUtcNow(), VehicleMode.Unknown, false, null, null, null, null, null, null, null, null);
+        active.VehicleId.Returns(id); active.IsOnline.Returns(true); active.State.Returns(state);
+        var registry = Substitute.For<IVehicleRegistry>();
+        registry.GetRequired(id).Returns(new VehicleSession(state, new TransportEndPoint("test"), Substitute.For<IDateTimeProvider>()));
+        using var signing = new MavLinkSigningSession(crc, clock);
+        _ = signing.BeginSetup(key, 7, 1, 1, timestamp);
+        signing.Verify(MavLinkSigningCodec.Sign(packet, key, 50, 7, timestamp));
+        await signing.CommitSetupAsync((_, _) => Task.CompletedTask, TestContext.Current.CancellationToken);
+        var transport = Substitute.For<IMavLinkConnection>(); transport.Signing.Returns(signing);
+        var connection = Substitute.For<IVehicleConnectionSession>(); connection.Connection.Returns(transport);
+        var encoder = Substitute.For<IMavLinkWireMessageEncoder>();
+        encoder.Encode(Arg.Any<GeneratedMavLinkMessage>()).Returns(call =>
+        {
+            var command = Assert.IsType<SetupSigningMessage>(call.Arg<GeneratedMavLinkMessage>());
+            Assert.All(command.SecretKey.ToArray(), value => Assert.Equal(0, value));
+            Assert.Equal(0UL, command.InitialTimestamp);
+            Assert.Equal(1, command.TargetSystem); Assert.Equal(1, command.TargetComponent);
+            return packet;
+        });
+        transport.SendRawAsync(Arg.Any<ReadOnlyMemory<byte>>(), Arg.Any<TransportEndPoint>(), Arg.Any<CancellationToken>()).Returns(_ =>
+        {
+            Assert.Equal("Active", signing.Snapshot().State);
+            if (failSend) throw new IOException("simulated send failure");
+            return ValueTask.CompletedTask;
+        });
+        var operations = new VehicleOperationGate();
+        var service = new SigningSetupService(connection, active, registry, operations, encoder, new SigningKeyRepository(new Store()), clock, new());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.DisableAsync(false, TestContext.Current.CancellationToken));
+        Assert.DoesNotContain(transport.ReceivedCalls(), call => call.GetMethodInfo().Name == "SendRawAsync");
+        if (failSend) await Assert.ThrowsAsync<IOException>(() => service.DisableAsync(true, TestContext.Current.CancellationToken));
+        else await service.DisableAsync(true, TestContext.Current.CancellationToken);
+        Assert.Equal(failSend ? "Active" : "Disabled", signing.Snapshot().State);
+        Assert.Null(operations.GetCurrentOperation(id));
+    }
+
     [Fact]
     public async Task PipelineLabelsRejectedSignaturesAndOnlyPublishesVerifiedOrUnsignedTraffic()
     {

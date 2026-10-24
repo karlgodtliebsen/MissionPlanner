@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using System.Net.Http.Headers;
 using System.Text;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -24,6 +26,7 @@ public sealed class Rtcm3Framer
             if (preamble < 0) { buffer.Clear(); break; }
             if (preamble > 0) buffer.RemoveRange(0, preamble);
             if (buffer.Count < 6) break;
+            if ((buffer[1] & 0xFC) != 0) { buffer.RemoveAt(0); continue; }
             var payloadLength = ((buffer[1] & 0x03) << 8) | buffer[2];
             var frameLength = payloadLength + 6;
             if (frameLength > 1029) { buffer.RemoveAt(0); continue; }
@@ -45,7 +48,7 @@ public sealed class Rtcm3Framer
         foreach (var value in data)
         {
             crc ^= value << 16;
-            for (var bit = 0; bit < 8; bit++) crc = (crc << 1) ^ ((crc & 0x1000000) != 0 ? 0x1864CFB : 0);
+            for (var bit = 0; bit < 8; bit++) crc = (crc << 1) ^ ((crc & 0x800000) != 0 ? 0x1864CFB : 0);
         }
         return crc & 0xFFFFFF;
     }
@@ -74,6 +77,10 @@ public static class GpsRtcmFragmenter
             var flags = (byte)(1 | (index << 1) | ((sequence & 0x1F) << 3));
             fragments.Add(new RtcmFragment(flags, frame.Slice(index * PayloadSize, length).ToArray()));
         }
+        if (frame.Length % PayloadSize == 0 && count < 4)
+        {
+            fragments.Add(new RtcmFragment((byte)(1 | (count << 1) | ((sequence & 0x1F) << 3)), []));
+        }
         return fragments;
     }
 }
@@ -85,6 +92,10 @@ public enum RtkSourceKind
     Serial,
     /// <summary>An NTRIP caster over the network.</summary>
     Ntrip,
+    /// <summary>A TCP client connected to a correction stream.</summary>
+    Tcp,
+    /// <summary>A UDP listener bound to an explicitly selected local address.</summary>
+    Udp,
 }
 /// <summary>Options for opening an RTK correction source.</summary>
 /// <param name="Kind">The source type.</param>
@@ -93,8 +104,9 @@ public enum RtkSourceKind
 /// <param name="MountPoint">The NTRIP mount point.</param>
 /// <param name="Username">The NTRIP user name.</param>
 /// <param name="Password">The NTRIP password.</param>
+/// <param name="AllConnectedVehicles">Whether to capture all currently connected target endpoints at start.</param>
 /// <param name="UseTls">Whether to use TLS for NTRIP.</param>
-public sealed record RtkSourceOptions(RtkSourceKind Kind, string Endpoint, int PortOrBaud, string? MountPoint = null, string? Username = null, string? Password = null, bool UseTls = false);
+public sealed record RtkSourceOptions(RtkSourceKind Kind, string Endpoint, int PortOrBaud, string? MountPoint = null, string? Username = null, string? Password = null, bool UseTls = false, bool AllConnectedVehicles = false);
 
 /// <summary>A source of RTK correction bytes.</summary>
 public interface IRtkCorrectionSource : IAsyncDisposable
@@ -116,19 +128,96 @@ public sealed class RtkCorrectionSourceFactory(IDirectSerialSessionFactory seria
     /// <summary>Opens the source described by the options.</summary>
     public async Task<IRtkCorrectionSource> OpenAsync(RtkSourceOptions options, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(options.Endpoint) || options.PortOrBaud <= 0 || !Enum.IsDefined(options.Kind))
+        {
+            throw new ArgumentException("Select a source address and positive port or baud rate.");
+        }
+        if (options.Kind != RtkSourceKind.Serial && options.PortOrBaud > 65535)
+        {
+            throw new ArgumentOutOfRangeException(nameof(options), "Network ports must be between 1 and 65535.");
+        }
+        if (options.Kind == RtkSourceKind.Tcp)
+        {
+            var client = new TcpClient();
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(10));
+                await client.ConnectAsync(options.Endpoint, options.PortOrBaud, timeout.Token).ConfigureAwait(false);
+                return new TcpSource(client);
+            }
+            catch
+            {
+                client.Dispose();
+                throw;
+            }
+        }
+        if (options.Kind == RtkSourceKind.Udp)
+        {
+            if (!IPAddress.TryParse(options.Endpoint, out var address))
+            {
+                throw new ArgumentException("UDP requires a local bind address, for example 127.0.0.1 or 0.0.0.0.");
+            }
+            return new UdpSource(new UdpClient(new IPEndPoint(address, options.PortOrBaud)));
+        }
         if (options.Kind == RtkSourceKind.Serial)
             return new SerialSource(await serial.OpenAsync(options.Endpoint, options.PortOrBaud, cancellationToken).ConfigureAwait(false));
 
         var scheme = options.UseTls ? "https" : "http";
         var mount = (options.MountPoint ?? string.Empty).TrimStart('/');
-        var request = new HttpRequestMessage(HttpMethod.Get, $"{scheme}://{options.Endpoint}:{options.PortOrBaud}/{mount}");
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{scheme}://{options.Endpoint}:{options.PortOrBaud}/{mount}");
         request.Headers.UserAgent.ParseAdd("MissionPlanner-NextGen/1.0");
         request.Headers.TryAddWithoutValidation("Ntrip-Version", "Ntrip/2.0");
         if (!string.IsNullOrEmpty(options.Username))
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.UTF8.GetBytes($"{options.Username}:{options.Password ?? string.Empty}")));
         var response = await clients.CreateClient("RTK").SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-        return new HttpSource(response, await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false));
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            return new HttpSource(response, await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false));
+        }
+        catch
+        {
+            response.Dispose();
+            throw;
+        }
+    }
+
+    private sealed class TcpSource(TcpClient client) : IRtkCorrectionSource
+    {
+        public async Task<int> ReadAsync(Memory<byte> buffer, CancellationToken token) =>
+            await client.GetStream().ReadAsync(buffer, token).ConfigureAwait(false);
+        public ValueTask DisposeAsync()
+        {
+            client.Dispose();
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class UdpSource(UdpClient client) : IRtkCorrectionSource
+    {
+        private ReadOnlyMemory<byte> remaining;
+        public async Task<int> ReadAsync(Memory<byte> buffer, CancellationToken token)
+        {
+            if (buffer.IsEmpty)
+            {
+                return 0;
+            }
+            while (remaining.IsEmpty)
+            {
+                remaining = (await client.ReceiveAsync(token).ConfigureAwait(false)).Buffer;
+            }
+            var count = Math.Min(buffer.Length, remaining.Length);
+            remaining[..count].CopyTo(buffer);
+            remaining = remaining[count..];
+            return count;
+        }
+        public ValueTask DisposeAsync()
+        {
+            client.Dispose();
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class SerialSource(IDirectSerialSession session) : IRtkCorrectionSource
@@ -169,79 +258,4 @@ public interface IRtkInjectionService : IDisposable
     Task StartAsync(RtkSourceOptions options, CancellationToken cancellationToken = default);
     /// <summary>Stops injection.</summary>
     Task StopAsync();
-}
-
-/// <summary>Reads RTCM corrections from a source and injects them into the active vehicle as GPS_RTCM_DATA messages.</summary>
-public sealed class RtkInjectionService(
-    IRtkCorrectionSourceFactory sources,
-    IActiveVehicleContext active,
-    IVehicleRegistry registry,
-    IMavLinkConnection connection,
-    IMavLinkWireMessageEncoder encoder) : IRtkInjectionService
-{
-    private CancellationTokenSource? lifetime;
-    private Task? worker;
-    private byte sequence;
-    /// <summary>Gets the latest injection snapshot.</summary>
-    public RtkInjectionSnapshot Current { get; private set; } = RtkInjectionSnapshot.Idle;
-    /// <summary>Occurs when the snapshot changes.</summary>
-    public event EventHandler<RtkInjectionSnapshot>? Changed;
-
-    /// <summary>Starts reading corrections and injecting them into the vehicle.</summary>
-    public Task StartAsync(RtkSourceOptions options, CancellationToken cancellationToken = default)
-    {
-        if (worker is not null) throw new InvalidOperationException("An RTK correction source is already active.");
-        lifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        worker = RunAsync(options, lifetime.Token);
-        return Task.CompletedTask;
-    }
-
-    /// <summary>Stops injection and releases the source.</summary>
-    public async Task StopAsync()
-    {
-        lifetime?.Cancel();
-        if (worker is not null) try { await worker.ConfigureAwait(false); } catch (OperationCanceledException) { }
-        lifetime?.Dispose(); lifetime = null; worker = null;
-        Publish(Current with { IsRunning = false, SourceStatus = "Source disconnected" });
-    }
-
-    private async Task RunAsync(RtkSourceOptions options, CancellationToken token)
-    {
-        await using var source = await sources.OpenAsync(options, token).ConfigureAwait(false);
-        var framer = new Rtcm3Framer();
-        var buffer = new byte[4096];
-        Publish(Current with { IsRunning = true, SourceStatus = "Correction source connected" });
-        while (!token.IsCancellationRequested)
-        {
-            var read = await source.ReadAsync(buffer, token).ConfigureAwait(false);
-            if (read == 0) break;
-            foreach (var frame in framer.Push(buffer.AsSpan(0, read))) await ForwardAsync(frame, token).ConfigureAwait(false);
-        }
-    }
-
-    private async Task ForwardAsync(byte[] frame, CancellationToken token)
-    {
-        var types = Current.MessageTypes.ToDictionary();
-        var type = Rtcm3Framer.MessageType(frame);
-        types[type] = types.GetValueOrDefault(type) + 1;
-        var snapshot = Current with { FramesSeen = Current.FramesSeen + 1, LastCorrection = DateTimeOffset.UtcNow, MessageTypes = types };
-        if (!active.IsOnline || active.VehicleId is not { } id || registry.GetRequired(id) is not { } target)
-        {
-            Publish(snapshot with { TargetStatus = "No active vehicle target" });
-            return; // never queue stale corrections
-        }
-        var sent = 0;
-        foreach (var fragment in GpsRtcmFragmenter.Fragment(frame, sequence++))
-        {
-            var data = new byte[180]; fragment.Data.CopyTo(data, 0);
-            var message = new GpsRtcmDataMessage(255, 190, new TransportEndPoint("internal", "rtk"), fragment.Flags, checked((byte)fragment.Data.Length), data, DateTimeOffset.UtcNow);
-            await connection.SendRawAsync(encoder.Encode(message), target.EndPoint, token).ConfigureAwait(false);
-            sent++;
-        }
-        Publish(snapshot with { TargetStatus = $"Injecting to {id}", PacketsSent = Current.PacketsSent + sent });
-    }
-
-    private void Publish(RtkInjectionSnapshot snapshot) { Current = snapshot; Changed?.Invoke(this, snapshot); }
-    /// <summary>Stops injection and releases resources.</summary>
-    public void Dispose() { lifetime?.Cancel(); lifetime?.Dispose(); }
 }

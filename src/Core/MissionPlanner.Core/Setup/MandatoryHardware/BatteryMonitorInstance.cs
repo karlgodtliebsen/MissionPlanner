@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Setup.MandatoryHardware;
+namespace MissionPlanner.Core.Setup.MandatoryHardware;
 
 /// <summary>Describes one discovered battery monitor instance built from parameters and telemetry.</summary>
 /// <param name="Index">The one-based battery instance index.</param>
@@ -13,6 +13,9 @@ public sealed record BatteryMonitorInstance(
     IReadOnlyDictionary<BatterySetting, double> Values,
     BatteryLiveReading Live)
 {
+    /// <summary>Gets reported per-instance metadata for explicit configuration editors.</summary>
+    public IReadOnlyDictionary<BatterySetting, PeripheralSetting> Settings { get; init; } = new Dictionary<BatterySetting, PeripheralSetting>();
+
     /// <summary>Gets the stored value for a setting, when present.</summary>
     /// <param name="setting">The setting kind.</param>
     /// <returns>The stored value, or null when the parameter is absent.</returns>

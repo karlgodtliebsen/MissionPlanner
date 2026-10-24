@@ -16,6 +16,8 @@ public static class DesktopAppConfigurator
     /// <returns>The service collection.</returns>
     public static IServiceCollection AddDesktopServices(this IServiceCollection services)
     {
+        services.Replace(ServiceDescriptor.Singleton<MissionPlanner.Core.Notifications.ISpeechService, DesktopSpeechService>());
+        services.Replace(ServiceDescriptor.Singleton<MissionPlanner.Core.Setup.OptionalHardware.IJoystickProvider, SdlJoystickProvider>());
         services.TryAddSingleton<IOutputSinkFactory, DesktopOutputSinkFactory>();
         services.TryAddSingleton<IWarningRuleStore, DesktopWarningRuleStore>();
         services.TryAddTransient<IMapsuiMbTilesSourceFactory, MapsuiMbTilesSourceFactory>();

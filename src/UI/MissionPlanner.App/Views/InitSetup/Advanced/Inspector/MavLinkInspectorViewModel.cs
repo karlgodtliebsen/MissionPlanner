@@ -1,4 +1,6 @@
 using System.Text;
+using AsyncAwaitBestPractices;
+using Avalonia;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -21,6 +23,22 @@ public sealed partial class MavLinkInspectorViewModel(InspectorListViewModel lis
     private InspectorKey? selected;
     private Task export = Task.CompletedTask;
     private InspectorSnapshot? frozen;
+    private readonly InspectorFieldHistory history = new();
+    /// <summary>Gets available finite numeric fields for the selected message.</summary>
+    [ObservableProperty] public partial IReadOnlyList<string> NumericFields { get; private set; } = [];
+    /// <summary>Gets or sets the scalar field plotted at up to four samples per second.</summary>
+    [ObservableProperty] public partial string? SelectedField { get; set; }
+    /// <summary>Gets the bounded graph with elapsed seconds on the horizontal axis.</summary>
+    [ObservableProperty] public partial IReadOnlyList<Point> Graph { get; private set; } = [];
+    /// <summary>Gets the selected field and graph sampling policy.</summary>
+    public string GraphCaption => $"{SelectedField ?? "Select a numeric field"} · {InspectorFieldHistory.Units(selected, SelectedField)} · {selected?.Direction} {selected?.SystemId}/{selected?.ComponentId} message {selected?.MessageId} · elapsed seconds · ≤4 Hz";
+
+    partial void OnSelectedFieldChanged(string? value)
+    {
+        history.Clear();
+        Graph = [];
+        OnPropertyChanged(nameof(GraphCaption));
+    }
 
     /// <summary>Gets the aggregate-list child.</summary>
     public InspectorListViewModel List => list;
@@ -58,6 +76,9 @@ public sealed partial class MavLinkInspectorViewModel(InspectorListViewModel lis
                     detail.Text = string.Empty;
                     selected = null;
                     frozen = null;
+                    history.Clear();
+                    Graph = [];
+                    NumericFields = [];
                 });
             });
             session.Start(activation.Token);
@@ -137,7 +158,14 @@ public sealed partial class MavLinkInspectorViewModel(InspectorListViewModel lis
 
     private void Select(InspectorKey? key)
     {
+        if (selected != key)
+        {
+            history.Clear();
+            Graph = [];
+            SelectedField = null;
+        }
         selected = key;
+        OnPropertyChanged(nameof(GraphCaption));
         ShowDetails();
     }
 
@@ -146,11 +174,34 @@ public sealed partial class MavLinkInspectorViewModel(InspectorListViewModel lis
         var snapshot = selected is null ? null : frozen is not null
             ? frozen.Messages.FirstOrDefault(item => item.Row.Key == selected) : session.Details(selected);
         detail.Text = snapshot is null ? string.Empty : JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });
+        if (snapshot is null)
+        {
+            NumericFields = [];
+            return;
+        }
+        var fields = InspectorFieldHistory.NumericFields(snapshot);
+        if (!NumericFields.SequenceEqual(fields))
+        {
+            NumericFields = fields;
+        }
+        if (SelectedField is null || !NumericFields.Contains(SelectedField))
+        {
+            SelectedField = NumericFields.FirstOrDefault();
+        }
+        if (!list.Frozen && SelectedField is { } field && history.Observe(snapshot, field))
+        {
+            var values = history.Samples;
+            var start = values[0].ObservedAt;
+            Graph = values.Select(sample => new Point((sample.ObservedAt - start).TotalSeconds, sample.Value)).ToArray();
+        }
     }
 
     private void Clear(bool _)
     {
         session.Clear();
+        history.Clear();
+        Graph = [];
+        NumericFields = [];
         list.Rows = [];
         detail.Text = string.Empty;
         selected = null;
@@ -173,7 +224,7 @@ public sealed partial class MavLinkInspectorViewModel(InspectorListViewModel lis
     public override void Dispose()
     {
         lifetime?.Cancel();
-        _ = CloseAfterDisposalAsync();
+        CloseAfterDisposalAsync().SafeFireAndForget();
         base.Dispose();
     }
 
@@ -187,6 +238,30 @@ public sealed partial class MavLinkInspectorViewModel(InspectorListViewModel lis
         {
             Logger.LogWarning("Inspector cleanup failed ({FailureType}).", exception.GetType().Name);
         }
+    }
+
+    [RelayCommand(IncludeCancelCommand = true)]
+    private Task ExportGraphAsync(CancellationToken cancellationToken)
+    {
+        if (lifetime is null || lifetime.Token.IsCancellationRequested || !export.IsCompleted || history.Samples.Count == 0)
+            return Task.CompletedTask;
+        var bytes = history.ExportCsv();
+        export = ExportGraphCoreAsync(bytes, lifetime.Token, cancellationToken);
+        return export;
+    }
+
+    private async Task ExportGraphCoreAsync(byte[] bytes, CancellationToken pageToken, CancellationToken commandToken)
+    {
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(pageToken, commandToken);
+        try
+        {
+            using var content = new MemoryStream(bytes);
+            var saved = await files.SaveNewAsync("mavlink-field.csv", content, linked.Token);
+            linked.Token.ThrowIfCancellationRequested();
+            StatusMessage = saved is null ? "Graph export cancelled." : "Graph samples exported with source identity and receive times. Review telemetry before sharing.";
+        }
+        catch (OperationCanceledException) when (linked.IsCancellationRequested) { }
+        catch (Exception exception) { Logger.LogWarning(exception, "Inspector graph export failed."); StatusMessage = "Graph export failed. Choose a new file and try again."; }
     }
 
     [RelayCommand]

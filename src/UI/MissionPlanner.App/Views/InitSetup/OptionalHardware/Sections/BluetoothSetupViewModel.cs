@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
@@ -34,7 +34,8 @@ public sealed partial class BluetoothSetupViewModel(IFirmwareSerialDeviceCatalog
             BaudRate = module.BaudRate;
             Status = "Classic serial Bluetooth module detected.";
         }
-        catch (Exception exception) when (exception is not OperationCanceledException) { Status = exception.Message; }
+        catch (OperationCanceledException) { Status = "Bluetooth discovery cancelled."; }
+        catch (Exception exception) { Status = exception.Message; }
         finally { ResetBusy(); }
     }
 
@@ -46,9 +47,25 @@ public sealed partial class BluetoothSetupViewModel(IFirmwareSerialDeviceCatalog
             return;
         }
 
-        await configurator.ApplyAsync(SelectedPort, module, new BluetoothModuleSettings(Name, BaudRate, Pin), Token);
-        Pin = string.Empty;
-        Status = "Supported Bluetooth settings applied. Reconnect at the selected baud if it changed.";
+        if (IsBusy) return;
+        SetBusy();
+        try
+        {
+            await configurator.ApplyAsync(SelectedPort, module, new BluetoothModuleSettings(Name, BaudRate, Pin), Token);
+            Pin = string.Empty;
+            Status = "Supported Bluetooth settings applied. Reconnect at the selected baud if it changed.";
+        }
+        catch (OperationCanceledException) { Status = "Bluetooth update cancelled; read settings before retrying."; }
+        catch (Exception exception) { Status = exception.Message; }
+        finally { ResetBusy(); }
     }
+    /// <inheritdoc />
+    protected override async Task StopOperationsAsync()
+    {
+        await Task.WhenAll(new[] { ProbeCommand.ExecutionTask, ApplyCommand.ExecutionTask }.OfType<Task>());
+        module = null;
+        Pin = string.Empty;
+    }
+
 }
 

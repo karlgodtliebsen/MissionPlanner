@@ -1,0 +1,33 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:SikFirmwareViewModel"
+    xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+    xmlns:radio="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware;assembly=MissionPlanner.Core"
+    x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SikFirmwareView"
+    x:DataType="sections:SikFirmwareViewModel">
+    <ScrollViewer Margin="16">
+        <StackPanel Spacing="12">
+            <TextBlock Text="Direct radio firmware update" FontSize="18" FontWeight="SemiBold" />
+            <TextBlock Text="Classic SiK uses Intel HEX and verified flash readback. RFD X-series uses its separate bootloader and acknowledged XMODEM-CRC transfer. The detected bootloader must match the selected hardware before programming. Remote radio flashing is not performed." TextWrapping="Wrap" />
+            <StackPanel Spacing="8" IsEnabled="{Binding !IsBusy}">
+                <WrapPanel ItemSpacing="10" LineSpacing="8">
+                    <StackPanel><TextBlock Text="Direct radio serial port" /><ComboBox Width="200" ItemsSource="{Binding Ports}" SelectedItem="{Binding Port}" /></StackPanel>
+                    <Button Content="Refresh ports" Command="{Binding RefreshPortsCommand}" VerticalAlignment="Bottom" />
+                    <StackPanel><TextBlock Text="Application baud" /><NumericUpDown Width="150" Value="{Binding Baud}" Minimum="9600" Maximum="2000000" FormatString="0" /></StackPanel>
+                </WrapPanel>
+                <TextBlock Text="Exact radio board and hardware revision" />
+                <ComboBox ItemsSource="{Binding Boards}" SelectedItem="{Binding Board}" HorizontalAlignment="Stretch">
+                    <ComboBox.ItemTemplate><DataTemplate x:DataType="radio:SikFirmwareBoard"><TextBlock Text="{Binding Name}" /></DataTemplate></ComboBox.ItemTemplate>
+                </ComboBox>
+                <CheckBox Content="Radio is already in bootloader / recovery mode" IsChecked="{Binding AlreadyInBootloader}" />
+                <Button Content="Select local matching firmware…" Command="{Binding BrowseCommand}" />
+            </StackPanel>
+            <TextBlock Text="{Binding ImageSummary}" TextWrapping="Wrap" />
+            <WrapPanel ItemSpacing="10"><Button Content="Review and program radio…" Command="{Binding UploadCommand}" /><Button Content="Cancel update" Command="{Binding UploadCancelCommand}" /></WrapPanel>
+            <ProgressBar Value="{Binding TransferProgress}" Minimum="0" Maximum="100" Height="10" />
+            <TextBlock Text="No firmware is downloaded or selected automatically. Classic SiK stores its validity signature only after application readback succeeds. RFD completion confirms block acknowledgements, not successful boot. Afterward, reconnect and verify firmware version, configuration and radio link." TextWrapping="Wrap" />
+            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="ErrorText" />
+        </StackPanel>
+    </ScrollViewer>
+</utilities:UserControlViewBase>

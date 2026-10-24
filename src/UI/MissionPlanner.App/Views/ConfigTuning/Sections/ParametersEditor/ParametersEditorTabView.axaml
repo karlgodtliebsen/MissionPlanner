@@ -1,4 +1,4 @@
-﻿<utilities:NavigationViewBase x:TypeArguments="parametersEditor:ParametersEditorTabViewModel"
+<utilities:NavigationViewBase x:TypeArguments="parametersEditor:ParametersEditorTabViewModel"
                               xmlns="https://github.com/avaloniaui"
                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -53,6 +53,12 @@
             <WrapPanel Grid.Column="0" x:Name="EditorToolbar" Grid.Row="1" Orientation="Horizontal"
                        IsVisible="{Binding IsMainEditorSelected}"
                        HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" >
+                <Button Classes="ToolbarButton" Command="{Binding RefreshMetadataCommand}" ToolTip.Tip="Refresh firmware parameter metadata" AutomationProperties.Name="Refresh parameter metadata">
+                    <avalonia:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
+                </Button>
+                <Button Classes="ToolbarButton" Command="{Binding RefreshMetadataCancelCommand}" ToolTip.Tip="Cancel metadata refresh" AutomationProperties.Name="Cancel metadata refresh" IsVisible="{Binding RefreshMetadataCommand.IsRunning}">
+                    <avalonia:MaterialIcon Kind="Cancel" Classes="ActionIcon" />
+                </Button>
                 <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file"
                                       AutomationProperties.Name="Load parameter file"
                                       >
@@ -183,6 +189,12 @@
                        HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" 
                        IsVisible="{Binding IsQuickEditorSelected}"
                        >
+                <Button Classes="ToolbarButton" Command="{Binding RefreshMetadataCommand}" ToolTip.Tip="Refresh firmware parameter metadata" AutomationProperties.Name="Refresh parameter metadata">
+                    <avalonia:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
+                </Button>
+                <Button Classes="ToolbarButton" Command="{Binding RefreshMetadataCancelCommand}" ToolTip.Tip="Cancel metadata refresh" AutomationProperties.Name="Cancel metadata refresh" IsVisible="{Binding RefreshMetadataCommand.IsRunning}">
+                    <avalonia:MaterialIcon Kind="Cancel" Classes="ActionIcon" />
+                </Button>
                 <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file"
                                       AutomationProperties.Name="Load parameter file"
                                       >
@@ -292,6 +304,12 @@
                        HorizontalAlignment="Center" VerticalAlignment="Center" ItemSpacing="5" 
                        IsVisible="{Binding IsProfileSelected}"
                        >
+                <Button Classes="ToolbarButton" Command="{Binding RefreshMetadataCommand}" ToolTip.Tip="Refresh firmware parameter metadata" AutomationProperties.Name="Refresh parameter metadata">
+                    <avalonia:MaterialIcon Kind="CloudDownloadOutline" Classes="ActionIcon" />
+                </Button>
+                <Button Classes="ToolbarButton" Command="{Binding RefreshMetadataCancelCommand}" ToolTip.Tip="Cancel metadata refresh" AutomationProperties.Name="Cancel metadata refresh" IsVisible="{Binding RefreshMetadataCommand.IsRunning}">
+                    <avalonia:MaterialIcon Kind="Cancel" Classes="ActionIcon" />
+                </Button>
                 <u:IconDropDownButton ToolTip.Tip="Load from CSV or Json file"
                                       AutomationProperties.Name="Load parameter file"
                                       >
@@ -447,6 +465,9 @@
                 </TabItem>
                 <TabItem Header="Write modified parameters">
                     <parametersEditor:ParameterComparisonView />
+                </TabItem>
+                <TabItem Header="Maintenance">
+                    <parametersEditor:ParameterMaintenanceView />
                 </TabItem>
             </TabControl>
         </Grid>

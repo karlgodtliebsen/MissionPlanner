@@ -1,46 +1,61 @@
 ﻿<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
-    xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Warnings;assembly=MissionPlanner.Core"
-    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleListView"
-    x:TypeArguments="local:WarningRuleListViewModel" x:DataType="local:WarningRuleListViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Border Classes="SectionCard" Padding="16">
-        <StackPanel Spacing="10">
-            <TextBlock Text="Saved rules" Classes="H4" />
-            <ComboBox ItemsSource="{Binding Rules}" SelectedItem="{Binding Selected}" HorizontalAlignment="Stretch"
-                      AutomationProperties.Name="Saved warning rules">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate x:DataType="model:WarningRule">
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="{Binding Name}" />
-                            <TextBlock Text="{Binding Severity}" />
-                            <TextBlock Text="{Binding Source}" />
-                            <TextBlock Text="{Binding Comparison}" />
-                            <TextBlock Text="{Binding Threshold}" />
-                            <TextBlock Text="{Binding Enabled, StringFormat='Enabled: {0}'}" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
-            <WrapPanel>
-                <Button Classes="ToolbarButton" ToolTip.Tip="New" Command="{Binding NewCommand}" Margin="0,0,8,8" AutomationProperties.Name="New">
-                    <mdi:MaterialIcon Kind="PlusBoxOutline" Classes="ActionIcon" />
-                </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Duplicate" Command="{Binding DuplicateCommand}" Margin="0,0,8,8" AutomationProperties.Name="Duplicate">
-                    <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
-                </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Enable / disable" Command="{Binding ToggleCommand}" Margin="0,0,8,8" AutomationProperties.Name="Enable / disable">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <mdi:MaterialIcon Kind="ToggleSwitchOutline" Classes="ActionIcon" Width="20" Height="20" />
-                        <TextBlock Text="Enable / disable" VerticalAlignment="Center" />
-                    </StackPanel>
-                </Button>
-                <Button Classes="ToolbarButton" ToolTip.Tip="Delete" Command="{Binding DeleteCommand}" Margin="0,0,8,8" AutomationProperties.Name="Delete">
-                    <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
-                </Button>
-            </WrapPanel>
-        </StackPanel>
-    </Border>
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
+                               xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Warnings;assembly=MissionPlanner.Core"
+                               x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleListView"
+                               x:TypeArguments="local:WarningRuleListViewModel" x:DataType="local:WarningRuleListViewModel"
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" RowSpacing="10">
+        <WrapPanel HorizontalAlignment="Center" ItemSpacing="10">
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="New rule"
+                    Command="{Binding NewCommand}"
+                    AutomationProperties.Name="New rule">
+                <mdi:MaterialIcon Kind="PlusBoxOutline" Classes="ActionIcon" />
+            </Button>
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="Duplicate rule"
+                    Command="{Binding DuplicateCommand}"
+                    AutomationProperties.Name="Duplicate rule">
+                <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
+            </Button>
+            <Button Classes="EmbeddedTextIconButton"
+                    ToolTip.Tip="Enable / disable rule" Command="{Binding ToggleCommand}"
+
+                    AutomationProperties.Name="Enable / disable rule">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <mdi:MaterialIcon Kind="ToggleSwitchOutline"
+                                      Classes="ActionIcon" Width="20" Height="20" />
+                    <TextBlock Text="Enable / disable" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="Delete rule"
+                    Command="{Binding DeleteCommand}"
+                    AutomationProperties.Name="Delete rule">
+                <mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
+            </Button>
+        </WrapPanel>
+
+        <Border Grid.Row="1" Classes="SectionCard" Padding="16">
+            <StackPanel Spacing="10" HorizontalAlignment="Stretch">
+                <TextBlock Text="Saved rules" Classes="H4" />
+                <ComboBox ItemsSource="{Binding Rules}" SelectedItem="{Binding Selected}" HorizontalAlignment="Stretch"
+                          AutomationProperties.Name="Saved warning rules">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="model:WarningRule">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text="{Binding Severity}" />
+                                <TextBlock Text="{Binding Source}" />
+                                <TextBlock Text="{Binding Comparison}" />
+                                <TextBlock Text="{Binding Threshold}" />
+                                <TextBlock Text="{Binding Enabled, StringFormat='Enabled: {0}'}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+        </Border>
+
+    </Grid>
 </utilities:UserControlViewBase>

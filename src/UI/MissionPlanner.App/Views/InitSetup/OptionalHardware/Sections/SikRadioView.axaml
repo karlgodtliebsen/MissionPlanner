@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:SikRadioViewModel"
+<utilities:UserControlViewBase x:TypeArguments="sections:SikRadioViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
@@ -91,12 +91,35 @@
 
                             <TextBlock Text="{Binding Identity}" FontWeight="Bold" />
 
-                            <TextBlock Text="Editor" />
-                            <TextBox AcceptsReturn="True" Text="{Binding SettingsText}" Height="260" PlaceholderText="S0=value, one setting per line" />
+                            <Grid ColumnDefinitions="80,*,140,140" ColumnSpacing="8">
+                                <TextBlock Text="Register" /><TextBlock Grid.Column="1" Text="Setting" />
+                                <TextBlock Grid.Column="2" Text="Local" /><TextBlock Grid.Column="3" Text="Remote" />
+                            </Grid>
+                            <ScrollViewer MaxHeight="400">
+                                <ItemsControl ItemsSource="{Binding Settings}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="sections:SikSettingViewModel">
+                                            <Grid ColumnDefinitions="80,*,140,140" ColumnSpacing="8" Margin="0,3">
+                                                <TextBlock Text="{Binding Register}" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Name}" />
+                                                <TextBox Grid.Column="2" Text="{Binding Local}" IsReadOnly="{Binding !HasLocal}" PlaceholderText="Not reported" />
+                                                <TextBox Grid.Column="3" Text="{Binding Remote}" IsReadOnly="{Binding !HasRemote}" PlaceholderText="Not reported" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                            <WrapPanel ItemSpacing="12">
+                                <Button Classes="ToolbarIconButton" Command="{Binding CopyLocalToRemoteCommand}" ToolTip.Tip="Copy local values into remote draft" AutomationProperties.Name="Copy local to remote draft"><mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" /></Button>
+                                <CheckBox Content="Restore remote radio" IsChecked="{Binding RestoreRemote}" />
+                                <Button Classes="ToolbarIconButton" Command="{Binding RestoreDefaultsCommand}" ToolTip.Tip="Restore radio defaults" AutomationProperties.Name="Restore radio defaults"><mdi:MaterialIcon Kind="Restore" Classes="ActionIcon" /></Button>
+                            </WrapPanel>
+                            <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
                 </Grid>
             </TabItem>
+            <TabItem Header="Firmware"><sections:SikFirmwareView /></TabItem>
         </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

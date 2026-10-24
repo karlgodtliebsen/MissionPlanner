@@ -10,14 +10,16 @@ public sealed class AdvancedAvailabilityTests
     private static readonly AdvancedSessionState connected = new(true, true, true);
 
     [Fact]
-    public void CatalogueHasExactlyThirteenStableUniqueEntries()
+    public void CatalogueRetainsStableEntriesAndAddsScriptingConsole()
     {
         var all = AdvancedFeatureCatalog.All;
-        Assert.Equal(13, all.Count);
-        Assert.Equal(Enumerable.Range(1, 13), all.Select(item => item.SortOrder));
-        Assert.Equal(13, all.Select(item => item.Title).Distinct().Count());
-        Assert.Equal(13, all.Select(item => item.Route).Distinct().Count());
+        Assert.Equal(14, all.Count);
+        Assert.Equal(Enumerable.Range(1, 14), all.Select(item => item.SortOrder));
+        Assert.Equal(14, all.Select(item => item.Title).Distinct().Count());
+        Assert.Equal(14, all.Select(item => item.Route).Distinct().Count());
         Assert.All(all, item => Assert.False(string.IsNullOrWhiteSpace(item.Help)));
+        Assert.Equal(13, (int)AdvancedFeatureId.SupportProxy);
+        Assert.Equal("SetupAdvanced/ScriptingConsole", all.Single(item => item.Id == AdvancedFeatureId.ScriptingConsole).Route);
     }
 
     [Theory]

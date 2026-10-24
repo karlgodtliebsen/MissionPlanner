@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.Setup.OptionalHardware;
 
@@ -45,10 +46,11 @@ public sealed class OptionalHardwareService : IOptionalHardwareService
     /// <inheritdoc />
     public async Task<IReadOnlyList<OptionalHardwareModuleView>> GetModulesAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
-        _ = RequireActiveVehicle(vehicleId);
+        var state = RequireActiveVehicle(vehicleId);
         var parameters = parameterRegistry.GetAllParameters(vehicleId);
         var metadata = await metadataService.GetAllMetadataAsync(vehicleId, cancellationToken).ConfigureAwait(false);
-        return catalog.GetAvailable(parameters).Select(module => module.Build(parameters, metadata)).ToArray();
+        return catalog.GetAvailable(parameters).Where(module => module.Key != "antenna-tracker" || state.Identity.Firmware.Family == MissionPlanner.Firmware.FirmwareFamily.AntennaTracker)
+            .Select(module => module.Build(parameters, metadata)).ToArray();
     }
 
     /// <inheritdoc />
@@ -60,6 +62,50 @@ public sealed class OptionalHardwareService : IOptionalHardwareService
         if (setting is null)
         {
             return new OptionalHardwareApplyResult(false, $"{parameterName} is not an editable setting of an available module.");
+        }
+
+        var state = RequireActiveVehicle(vehicleId);
+        if (state.Identity.Firmware.Family == MissionPlanner.Firmware.FirmwareFamily.AntennaTracker && AntennaTrackerModule.IsSetting(parameterName) &&
+            (state.IsArmed || state.CustomMode != 1)) return new(false, "Select Stop mode and disarm tracker servos before changing configuration.");
+        if (parameterName is "GPS1_CAN_OVRIDE" or "GPS2_CAN_OVRIDE")
+        {
+            var otherName = parameterName == "GPS1_CAN_OVRIDE" ? "GPS2_CAN_OVRIDE" : "GPS1_CAN_OVRIDE";
+            if (state.IsArmed || value != 0 && parameterRegistry.GetParameter(vehicleId, otherName)?.Value == value)
+            {
+                return new(false, "Disarm and clear a conflicting override before assigning the same CAN GPS node to another instance.");
+            }
+            if (value != setting.CurrentValue && value != 0 && !setting.Options.Any(option => option.Value == value))
+            {
+                return new(false, "Select a CAN GPS node currently reported by the controller, or automatic assignment.");
+            }
+        }
+        if (state.IsArmed && (parameterName.StartsWith("H_", StringComparison.Ordinal) || parameterName.StartsWith("H2_", StringComparison.Ordinal) ||
+            parameterName.StartsWith("IM_STB_COL_", StringComparison.Ordinal) || parameterName.StartsWith("COMPASS_", StringComparison.Ordinal) || parameterName.StartsWith("MOT_", StringComparison.Ordinal) || parameterName.StartsWith("SERVO", StringComparison.Ordinal)))
+        {
+            return new OptionalHardwareApplyResult(false, "Disarm before changing rotor, motor or output configuration.");
+        }
+        if (setting.ReadOnly || !double.IsFinite(value) || value < -float.MaxValue || value > float.MaxValue)
+        {
+            return new OptionalHardwareApplyResult(false, "The setting is read-only or the proposed value is not a finite supported number.");
+        }
+        if (setting.ParameterType != MavParamType.Real32 && value != Math.Truncate(value))
+        {
+            return new OptionalHardwareApplyResult(false, "This setting requires a whole number.");
+        }
+        var typeRangeValid = setting.ParameterType switch
+        {
+            MavParamType.Uint8 => value is >= byte.MinValue and <= byte.MaxValue,
+            MavParamType.Int8 => value is >= sbyte.MinValue and <= sbyte.MaxValue,
+            MavParamType.Uint16 => value is >= ushort.MinValue and <= ushort.MaxValue,
+            MavParamType.Int16 => value is >= short.MinValue and <= short.MaxValue,
+            MavParamType.Uint32 => value is >= uint.MinValue and <= uint.MaxValue,
+            MavParamType.Int32 => value is >= int.MinValue and <= int.MaxValue,
+            MavParamType.Real32 => true,
+            _ => false
+        };
+        if (!typeRangeValid || setting.Minimum is { } minimum && value < minimum || setting.Maximum is { } maximum && value > maximum)
+        {
+            return new OptionalHardwareApplyResult(false, "The proposed value is outside the firmware type or metadata range.");
         }
 
         // Never log the value of a secret setting.

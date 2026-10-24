@@ -1,5 +1,7 @@
 # Optional Hardware
 
+Updated 2026-10-24. The [feature implementation ledger](review-20261023/IMPLEMENTATION.md) records the complete OH-01–OH-16 changes, selected defaults, protocol evidence and remaining hardware qualification.
+
 The NextGen Optional Hardware page is a stable, capability-driven tab workspace. The tab order is fixed by `OptionalHardwareTabCatalog`; headers become visible only when their connection, firmware-family, and parameter-presence rules are satisfied. A vehicle change recomputes the catalog and invalidates the previous connection cancellation boundary.
 
 ## Architecture and policies
@@ -18,13 +20,13 @@ Offline tools are RTK source setup, SiK radio, DroneCAN direct-adapter selection
 
 | Classic capability | NextGen location | Availability rule / intentional change | Automated coverage | Hardware verification still required |
 |---|---|---|---|---|
-| RTK/GPS Inject | RTK / GPS Inject | Offline source; forwards only to active vehicle | RTCM framing, CRC, fragmentation | NTRIP caster and serial receiver |
-| CubeID Update | CubeID Update | Connected target component; local image inspection and typed codec boundary | CRC/chunk offsets | CubeID bootloader/update acknowledgements |
-| SiK Radio | SiK Radio | Offline exclusive serial | AT parsing and session ownership | Representative SiK firmware |
-| CAN GPS Order | CAN GPS Order | Reported GPS CAN parameters | Catalog/parameter tests | Dual CAN GPS |
+| RTK/GPS Inject | RTK / GPS Inject | Serial/NTRIP/TCP/UDP source; explicitly selected active or all-current endpoints | RTCM framing, independent CRC vectors, fragmentation, cancellation and endpoint distribution | NTRIP caster and serial receiver |
+| CubeID Update | CubeID Update | Fresh component 236; confirmed local image and bounded transfer | CRC, chunk offsets, retry/cancellation and target ownership | CubeID bootloader/update acknowledgements |
+| SiK Radio | SiK Radio | Offline exclusive serial | Paired settings, baseline conflicts, AT commands, classic SiK/RFD firmware simulation | Representative SiK firmware |
+| CAN GPS Order | CAN GPS Order | Reported GPS CAN parameters | Legacy/current detected-node aliases and assignment tests | Dual CAN GPS |
 | Battery Monitor 1/2 | Battery Monitors | Merged instances from BATT/BATT2 metadata | Read/write service tests | Analog and CAN battery monitors |
-| DroneCAN/UAVCAN | DroneCAN / UAVCAN | Explicit MAVLink tunnel or direct SLCAN adapter; v0 only | Transport isolation and node identity | Install/validate platform adapters and real bus |
-| Joystick | Joystick | Local setup offline; vehicle output session-disabled until MANUAL_CONTROL adapter exists | Calibration/dead-zone/platform state | Platform input and flight-safe output adapter |
+| DroneCAN/UAVCAN | DroneCAN / UAVCAN | Explicit MAVLink tunnel or direct SLCAN adapter; v0 only | V0 framing/reassembly, both adapters, typed parameters, allocation, firmware server and localhost bridges | Real SLCAN adapter and MAVLink-forwarded bus, node configuration and recovery |
+| Joystick | Joystick | SDL desktop input; explicit deadman-controlled MANUAL_CONTROL or RC override | Calibration, mapping, input loss, output release and connection ownership | Physical gamepads, native runtimes and vehicle behavior |
 | Compass/Motor Calib | Compass / Motor Calibration | Supported vehicle families only | State/cancellation tests | Props-off vehicle test |
 | Range Finder | Rangefinder | Reported RNGFND parameters | Parameter module tests | Representative sensor buses |
 | Airspeed | Airspeed | Reported ARSPD parameters | Parameter module tests | Analog and digital sensors |
@@ -34,8 +36,8 @@ Offline tools are RTK source setup, SiK radio, DroneCAN direct-adapter selection
 | Motor Test | Motor Test | Frame-aware, gated, explicit stop | Layout and command tests | Props-off each vehicle family |
 | Bluetooth Setup | Bluetooth Setup | Offline classic serial AT modules, not BLE | Dialect/redaction tests | HC-05/HC-06 variants |
 | Parachute | Parachute | Reported CHUTE parameters | Parameter module tests | Safe bench verification |
-| ESP8266 Setup | ESP8266 Setup | Explicit MAV_COMP_ID_UDP_BRIDGE target; packed strings isolated | Packed string/redaction tests | Component discovery and read/write adapter |
-| Antenna Tracker | Antenna Tracker | AntennaTracker firmware plus reported servo/PID settings; operation is separate | Capability catalog tests | Tracker actuator adapter and operation gate |
+| ESP8266 Setup | ESP8266 Setup | Explicit MAV_COMP_ID_UDP_BRIDGE target; packed strings isolated | Byte-wise strings, inventory, verified writes and save/reset/reboot acknowledgements | Physical component discovery, configuration persistence and reconnect |
+| Antenna Tracker | Antenna Tracker | Firmware tracker configuration/ServoTest; separate Maestro, ArduTracker and DegreeTracker serial workflows | Capability, bounded actuation, Stop cleanup and serial protocol tests | Physical tracker limits, directions and stop behavior |
 | FFT Setup | FFT Setup; also Logs → FFT / Vibration | Offline binary/text DataFlash import, uniform IMU/batch segments, spectrum/spectrogram, baseline and read-only notch analysis | Synthetic DSP, DataFlash integrity, parameter snapshots, UI lifetime/export/rendering tests | Representative real flight logs, interactive plots and connected parameter capture |
 
 ## Test strategy

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -389,6 +389,18 @@ public sealed partial class OnboardOsdTabViewModel : ViewModelBase
     private bool CanMove()
     {
         return CanUseScreen() && SelectedItem is not null;
+    }
+
+    /// <summary>Stages an exact character-grid position from pointer interaction; Apply remains explicit.</summary>
+    public void PlaceSelected(int column, int row)
+    {
+        if (!CanMove() || SelectedItem is null)
+        {
+            return;
+        }
+        var error = MoveItem(SelectedItem, column, row);
+        SetWarning(error);
+        RefreshAll();
     }
 
     private void MoveSelected(int deltaColumn, int deltaRow)

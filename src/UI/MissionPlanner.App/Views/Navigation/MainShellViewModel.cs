@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+using MissionPlanner.Core.Setup.Advanced.Warnings;
+using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -16,6 +17,7 @@ namespace MissionPlanner.App.Views.Navigation;
 public partial class MainShellViewModel : ObservableObject, IDisposable
 {
     private readonly INavigationService navigationService;
+    private readonly WarningMonitor warnings;
     private readonly IWindowProvider windowProvider;
     private IDisposable? eventHubDisposable;
     private bool synchronizingSelection;
@@ -28,9 +30,11 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
     /// <param name="windowProvider"></param>
     /// <param name="domainEventHub"></param>
     /// <param name="inspector"></param>
-    public MainShellViewModel(INavigationService navigationService, IWindowProvider windowProvider, IDomainEventHub domainEventHub, Diagnostics.LiveTelemetryInspectorViewModel inspector)
+    /// <param name="warnings">Application-owned warning evaluation.</param>
+    public MainShellViewModel(INavigationService navigationService, IWindowProvider windowProvider, IDomainEventHub domainEventHub, Diagnostics.LiveTelemetryInspectorViewModel inspector, WarningMonitor warnings)
     {
         Inspector = inspector;
+        this.warnings = warnings;
         this.navigationService = navigationService;
         this.windowProvider = windowProvider;
         navigationService.CurrentPageChanged += OnCurrentPageChanged;
@@ -44,6 +48,7 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        warnings.Dispose();
         navigationService.CurrentPageChanged -= OnCurrentPageChanged;
         eventHubDisposable?.Dispose();
         eventHubDisposable = null;
@@ -100,9 +105,10 @@ public partial class MainShellViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>Opens the Flight Data page as the start page.</summary>
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
-        return navigationService.NavigateAsync(MissionPlannerRoutes.FlightData);
+        await warnings.StartAsync();
+        await navigationService.NavigateAsync(MissionPlannerRoutes.FlightData);
     }
 
     private void OnCurrentPageChanged(Page page)

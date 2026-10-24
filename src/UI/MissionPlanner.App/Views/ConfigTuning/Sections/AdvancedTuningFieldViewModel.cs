@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Tuning;
 using ParameterItemViewModel = MissionPlanner.App.Models.ParameterItemViewModel;
@@ -50,7 +50,7 @@ public sealed partial class AdvancedTuningFieldViewModel : ObservableObject
 
     /// <summary>Gets metadata units with a descriptor fallback.</summary>
     public string Units => string.IsNullOrWhiteSpace(Editor.Units)
-        ? Definition.Component.FallbackUnits
+        ? TuningParameterCompatibility.Units(ParameterName, Definition.Component.FallbackUnits)
         : Editor.Units;
 
     /// <summary>Gets the normalized pending magnitude for axis comparisons.</summary>

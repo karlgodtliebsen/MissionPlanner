@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
@@ -50,7 +50,7 @@ public sealed class ExtendedTuningProfileCatalog : IExtendedTuningProfileCatalog
                         axis,
                         instance,
                         component,
-                        ParameterFieldDefinition.Exact(parameterName)));
+                        new ParameterFieldDefinition(parameterName, TuningParameterCompatibility.Names(parameterName))));
                 }
             }
         }
@@ -90,6 +90,18 @@ public sealed class ExtendedTuningProfileCatalog : IExtendedTuningProfileCatalog
                         C("AGGR", "Aggressiveness", "Target autotune aggressiveness.", "ratio"),
                         C("MIN_D", "Minimum D", "Minimum derivative gain considered by autotune.", "gain")
                     ]),
+                Descriptor("horizontal-position", "Position", "Horizontal position gain", "Position-error proportional response.",
+                    "PSC_POSXY", [""], [0], [C("P", "Proportional", "Horizontal position gain.", "gain")]),
+                Descriptor("vertical-position", "Position", "Vertical position gain", "Height-error proportional response.",
+                    "PSC_POSZ", [""], [0], [C("P", "Proportional", "Vertical position gain.", "gain")]),
+                Descriptor("vertical-velocity", "Position", "Vertical velocity controller", "Vertical velocity gains and filters.",
+                    "PSC_VELZ", [""], [0], PidComponents(true)),
+                Descriptor("rc-tuning", "Pilot tuning", "RC tuning assignment", "Explicit in-flight tuning function and limits; this editor never starts tuning.",
+                    "TUNE", [""], [0], [C("", "Function", "Firmware tuning function.", "enum"), C("MIN", "Minimum", "Lower tuning limit.", ""), C("MAX", "Maximum", "Upper tuning limit.", "")]),
+                Descriptor("auxiliary", "Pilot tuning", "Auxiliary channel functions", "Firmware-supported RC switch functions.",
+                    "RC{instance}", [""], Enumerable.Range(5, 12).ToArray(), [C("OPTION", "Function", "Auxiliary channel function.", "enum")]),
+                Descriptor("motor-settings", "Motors", "Motor configuration", "Reported protocol, output range and spin settings. Review changes with propellers removed.",
+                    "MOT", [""], [0], [C("PWM_TYPE", "Protocol", "Output protocol.", "enum"), C("PWM_MIN", "Minimum PWM", "Minimum output.", "us"), C("PWM_MAX", "Maximum PWM", "Maximum output.", "us"), C("SPIN_ARM", "Armed spin", "Armed spin fraction.", "ratio"), C("SPIN_MIN", "Minimum spin", "Minimum active spin fraction.", "ratio"), C("SPIN_MAX", "Maximum spin", "Maximum spin fraction.", "ratio")]),
                 EstimatorDescriptor()
             ]);
     }
@@ -99,7 +111,34 @@ public sealed class ExtendedTuningProfileCatalog : IExtendedTuningProfileCatalog
         return new ExtendedTuningProfile(
             FirmwareFamily.ArduPlane,
             [
-                RateDescriptor(["RLL", "PIT", "YAW"]),
+                Descriptor("plane-rate", "Controllers", "Fixed-wing rate controllers", "Native fixed-wing roll and pitch rate controllers.",
+                    "{axis}_RATE", ["RLL", "PTCH", "YAW"], [0], PidComponents(true)),
+                Descriptor("plane-legacy", "Controllers", "Legacy fixed-wing controllers", "Older controller gains in their reported units; no automatic gain conversion.",
+                    "{axis}2SRV", ["RLL", "PTCH"], [0], PidComponents(true)),
+                Descriptor("quadplane-rate", "QuadPlane", "VTOL rate controllers", "Shown only for reported QuadPlane controller parameters.",
+                    "Q_A_RAT_{axis}", ["RLL", "PIT", "YAW"], [0], PidComponents(true)),
+                Descriptor("quadplane-attitude", "QuadPlane", "VTOL attitude controllers", "QuadPlane attitude-angle proportional gains.",
+                    "Q_A_ANG_{axis}", ["RLL", "PIT", "YAW"], [0], [C("P", "Proportional", "Attitude proportional gain.", "gain")]),
+                Descriptor("quadplane-position", "QuadPlane", "VTOL horizontal velocity", "QuadPlane position-control velocity gains.",
+                    "Q_P_VELXY", [""], [0], PidComponents(true)),
+                Descriptor("quadplane-vertical", "QuadPlane", "VTOL vertical acceleration", "QuadPlane vertical acceleration gains.",
+                    "Q_P_ACCZ", [""], [0], PidComponents(true)),
+                Descriptor("quadplane-horizontal-position", "QuadPlane", "VTOL horizontal position", "Reported QuadPlane position gain.",
+                    "Q_P_POSXY", [""], [0], [C("P", "Proportional", "Horizontal position gain.", "gain")]),
+                Descriptor("quadplane-height", "QuadPlane", "VTOL height position", "Reported QuadPlane height gain.",
+                    "Q_P_POSZ", [""], [0], [C("P", "Proportional", "Height position gain.", "gain")]),
+                Descriptor("quadplane-climb", "QuadPlane", "VTOL vertical velocity", "Reported vertical velocity controller.",
+                    "Q_P_VELZ", [""], [0], PidComponents(true)),
+                Descriptor("quadplane-navigation", "QuadPlane", "VTOL waypoint navigation", "Current and historical names retain their native values and units.",
+                    "Q_WP", [""], [0], [C("SPEED", "Horizontal speed", "Waypoint horizontal speed.", "cm/s"), C("SPEED_UP", "Climb speed", "Waypoint ascent speed.", "cm/s"), C("SPEED_DN", "Descent speed", "Waypoint descent speed.", "cm/s"), C("RADIUS", "Waypoint radius", "Waypoint arrival radius.", "cm"), C("ACCEL", "Horizontal acceleration", "Waypoint acceleration.", "cm/s²"), C("ACCEL_Z", "Vertical acceleration", "Waypoint climb acceleration.", "cm/s²"), C("JERK", "Jerk", "Waypoint jerk.", "m/s³")]),
+                Descriptor("quadplane-loiter", "QuadPlane", "VTOL loiter", "Reported loiter speed and acceleration.",
+                    "Q_LOIT", [""], [0], [C("SPEED", "Speed", "Loiter maximum speed.", "cm/s"), C("ACC_MAX", "Acceleration", "Loiter acceleration limit.", "cm/s²")]),
+                Descriptor("plane-yaw", "Controllers", "Yaw coordination", "Reported fixed-wing yaw damping and coordination.",
+                    "YAW2SRV", [""], [0], [C("DAMP", "Damping", "Yaw damping gain.", "gain"), C("INT", "Integrator", "Yaw integrator gain.", "gain"), C("RLL", "Roll coupling", "Roll coordination gain.", "gain"), C("IMAX", "Integrator limit", "Reported native integrator limit.", "native output units")]),
+                Descriptor("plane-legacy-energy", "Legacy controllers", "Legacy energy/height/airspeed controllers", "Only shown when reported by older firmware. These are independent of TECS gains.",
+                    "{axis}", ["ENRGY2THR", "ALT2PTCH", "ARSP2PTCH"], [0], PidComponents(false)),
+                Descriptor("plane-mixing", "Controllers", "Fixed-wing feed-forward mixing", "Independent pitch/throttle and rudder mixing controls.",
+                    "KFF", [""], [0], [C("THR2PTCH", "Throttle to pitch", "Throttle feed-forward into pitch.", "gain"), C("PTCH2THR", "Pitch to throttle", "Pitch feed-forward into throttle.", "gain"), C("RDDRMIX", "Rudder mixing", "Rudder mixing ratio.", "ratio")]),
                 Descriptor("tecs", "Navigation", "TECS energy controller", "Advanced airspeed, pitch, throttle, and energy-controller response.",
                     "TECS", [""], [0],
                     [
@@ -133,6 +172,20 @@ public sealed class ExtendedTuningProfileCatalog : IExtendedTuningProfileCatalog
         return new ExtendedTuningProfile(
             FirmwareFamily.Rover,
             [
+                Descriptor("legacy-rover-speed", "Legacy controllers", "Legacy speed controller", "Historical native gains; no automatic conversion to the ATC controller.",
+                    "SPEED2THR", [""], [0], PidComponents(false)),
+                Descriptor("legacy-rover-steering", "Legacy controllers", "Legacy steering controller", "Historical native steering gains and limits.",
+                    "STEER2SRV", [""], [0], PidComponents(false)),
+                Descriptor("rover-output", "Outputs", "Motor and throttle outputs", "Firmware-supported output protocol, limits and slew rate.",
+                    "MOT", [""], [0], [C("PWM_TYPE", "Protocol", "Output protocol.", "enum"), C("THR_MIN", "Minimum throttle", "Minimum throttle.", "%"), C("THR_MAX", "Maximum throttle", "Maximum throttle.", "%"), C("SLEWRATE", "Slew rate", "Throttle change limit.", "%/s")]),
+                Descriptor("rover-legacy-output", "Outputs", "Legacy throttle limits", "Reported legacy throttle limits.",
+                    "THR", [""], [0], [C("MIN", "Minimum throttle", "Minimum throttle.", "%"), C("MAX", "Maximum throttle", "Maximum throttle.", "%")]),
+                Descriptor("rover-obstacles", "Navigation", "Rangefinder obstacle response", "Reported response threshold and turning behavior.",
+                    "RNGFND", [""], [0], [C("TRIGGR_CM", "Trigger distance", "Obstacle response distance.", "cm"), C("TURN_ANGL", "Turn angle", "Obstacle turn angle.", "deg"), C("TURN_TIME", "Turn duration", "Obstacle turn duration.", "s"), C("DEBOUNCE", "Debounce", "Consecutive readings required.", "samples")]),
+                Descriptor("rover-legacy-obstacles", "Navigation", "Legacy sonar response", "Independent legacy names shown only when reported.",
+                    "SONAR", [""], [0], [C("TRIGGER_CM", "Trigger distance", "Obstacle response distance.", "cm"), C("TURN_ANGLE", "Turn angle", "Obstacle turn angle.", "deg"), C("TURN_TIME", "Turn duration", "Obstacle turn duration.", "s"), C("DEBOUNCE", "Debounce", "Consecutive readings required.", "samples")]),
+                Descriptor("rover-auxiliary", "Pilot tuning", "Auxiliary channel functions", "Reported RC switch assignments.",
+                    "RC{instance}", [""], Enumerable.Range(5, 12).ToArray(), [C("OPTION", "Function", "Auxiliary channel function.", "enum")]),
                 Descriptor("speed-controller", "Controllers", "Speed controller", "Forward-speed PID and feed-forward controller.",
                     "ATC_SPEED", [""], [0], PidComponents(true),
                     [PositiveCompanion("I", "IMAX", "A positive speed I gain requires a positive integrator limit.")]),
@@ -198,6 +251,9 @@ public sealed class ExtendedTuningProfileCatalog : IExtendedTuningProfileCatalog
             "Harmonic sensor-noise notch center, bandwidth, attenuation, and tracking mode.",
             prefix, [""], [0],
             [
+                C("ENABLE", "Enabled", "Enable this harmonic notch when supported.", "enum"),
+                C("REF", "Reference", "Tracking reference; interpretation depends on the tracking mode.", "ratio"),
+                C("OPTS", "Options", "Firmware-supported notch options.", "bitmask"),
                 C("FREQ", "Center frequency", "Notch center frequency.", "Hz"),
                 C("BW", "Bandwidth", "Notch bandwidth.", "Hz"),
                 C("ATT", "Attenuation", "Notch attenuation.", "dB"),

@@ -1,3 +1,4 @@
+using MissionPlanner.Core.Notifications;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.App.Views.InitSetup.Advanced.Warnings;
@@ -16,7 +17,7 @@ public sealed class WarningPageTests
     [Fact]
     public async Task RepeatedNavigationDoesNotDuplicateSaveHandlersAndDetachedEditorCannotPersist()
     {
-        var store = new Store();
+        using var store = new Store();
         var (page, editor) = Create(store);
         using (page)
         {
@@ -39,7 +40,7 @@ public sealed class WarningPageTests
     [Fact]
     public async Task DeactivationCancelsPendingLoadWithoutLateSubscriptions()
     {
-        var store = new Store { BlockReads = true };
+        using var store = new Store { BlockReads = true };
         var (page, editor) = Create(store);
         using (page)
         {
@@ -61,7 +62,7 @@ public sealed class WarningPageTests
     [Fact]
     public async Task PreviewAndInvalidEditsNeverSaveOrChangeLiveRules()
     {
-        var store = new Store();
+        using var store = new Store();
         var (page, editor) = Create(store);
         using (page)
         {
@@ -80,7 +81,7 @@ public sealed class WarningPageTests
     [Fact]
     public async Task ExportAndImportUseExistingFileServicesAndRejectInvalidDocuments()
     {
-        var store = new Store();
+        using var store = new Store();
         var open = Substitute.For<IFileOpenService>();
         var save = Substitute.For<IFileSaveService>();
         string? exported = null;
@@ -119,13 +120,18 @@ public sealed class WarningPageTests
         var editor = new WarningRuleEditorViewModel(sources, NullLogger<WarningRuleEditorViewModel>.Instance, dispatcher, events);
         var rules = new WarningRuleListViewModel(NullLogger<WarningRuleListViewModel>.Instance, dispatcher, events);
         var status = new WarningStatusViewModel(NullLogger<WarningStatusViewModel>.Instance, dispatcher, events);
-        return (new(rules, editor, status, new(store, sources), sources, Substitute.For<IActiveVehicleContext>(),
-            TimeProvider.System, new(sources, TimeProvider.System), NullLogger<WarningManagerViewModel>.Instance, dispatcher, events,
+        var repository = new WarningRuleRepository(store, sources);
+        var vehicle = Substitute.For<IActiveVehicleContext>();
+        store.Monitor = new(repository, sources, vehicle, TimeProvider.System, Substitute.For<IUserNotificationService>(), NullLogger<WarningMonitor>.Instance);
+        return (new(rules, editor, status, repository, sources, vehicle,
+            TimeProvider.System, store.Monitor, NullLogger<WarningManagerViewModel>.Instance, dispatcher, events,
             open ?? Substitute.For<IFileOpenService>(), save ?? Substitute.For<IFileSaveService>()), editor);
     }
 
-    private sealed class Store : IWarningRuleStore
+    private sealed class Store : IWarningRuleStore, IDisposable
     {
+        internal WarningMonitor? Monitor;
+        public void Dispose() => Monitor?.Dispose();
         internal int Writes;
         internal bool BlockReads;
         private string? document;

@@ -186,6 +186,70 @@ public sealed class CompassConfigurationTests
         Assert.Empty(clean.Changes);
     }
 
+    /// <summary>Reordering is confirmed and absent stored IDs can be cleared without inventing identities.</summary>
+    [Fact]
+    public async Task PriorityReorderAndMissingCleanupAreReadBack()
+    {
+        var f = PriorityFixture();
+        var expected = PriorityBaseline(f);
+        var result = await f.Service.SetPrioritiesAsync(f.Id, expected, [222222, 123456], true, TestContext.Current.CancellationToken);
+        Assert.True(result.Success);
+        Assert.Equal(222222, f.Registry.GetParameter(f.Id, "COMPASS_PRIO1_ID")!.Value);
+        Assert.Equal(123456, f.Registry.GetParameter(f.Id, "COMPASS_PRIO2_ID")!.Value);
+        Assert.Equal(0, f.Registry.GetParameter(f.Id, "COMPASS_PRIO3_ID")!.Value);
+        Assert.Equal(3, f.Writes.Count);
+        Assert.Contains("Reboot", result.Message);
+    }
+
+    /// <summary>Stale state, unseen IDs, duplicate IDs, missing confirmation and changed inventory cannot write priorities.</summary>
+    [Theory]
+    [InlineData("stale")]
+    [InlineData("changed")]
+    [InlineData("unknown")]
+    [InlineData("duplicate")]
+    [InlineData("unconfirmed")]
+    [InlineData("armed")]
+    public async Task PriorityGuardsRejectBeforeWriting(string condition)
+    {
+        var f = PriorityFixture();
+        var expected = PriorityBaseline(f);
+        uint[] order = [222222, 123456];
+        if (condition == "stale") f.Active.State.Returns(f.Active.State! with { Connection = f.Active.State!.Connection with { LastHeartbeatAt = DateTimeOffset.UtcNow.AddSeconds(-10) } });
+        if (condition == "armed") f.Active.State.Returns(f.Active.State! with { Flight = f.Active.State!.Flight with { IsArmed = true } });
+        if (condition == "changed") f.Store("COMPASS_DEV_ID2", 444444);
+        if (condition == "unknown") order = [444444];
+        if (condition == "duplicate") order = [123456, 123456];
+        Assert.False((await f.Service.SetPrioritiesAsync(f.Id, expected, order, condition != "unconfirmed", TestContext.Current.CancellationToken)).Success);
+        Assert.Empty(f.Writes);
+    }
+
+    /// <summary>A failed priority write stops subsequent writes and reports a partial order.</summary>
+    [Fact]
+    public async Task PriorityPartialFailureDoesNotContinue()
+    {
+        var f = PriorityFixture();
+        f.FailName = "COMPASS_PRIO2_ID";
+        var result = await f.Service.SetPrioritiesAsync(f.Id, PriorityBaseline(f), [222222, 123456], true, TestContext.Current.CancellationToken);
+        Assert.False(result.Success);
+        Assert.Equal(new[] { "COMPASS_PRIO1_ID", "COMPASS_PRIO2_ID" }, f.Writes);
+        Assert.Contains("partial", result.Message);
+    }
+
+    private static Fixture PriorityFixture()
+    {
+        var f = new Fixture();
+        f.Active.State.Returns(f.Active.State! with { Connection = f.Active.State!.Connection with { LastHeartbeatAt = DateTimeOffset.UtcNow } });
+        f.Store("COMPASS_DEV_ID2", 222222);
+        f.Store("COMPASS_PRIO1_ID", 123456);
+        f.Store("COMPASS_PRIO2_ID", 333333);
+        f.Store("COMPASS_PRIO3_ID", 222222);
+        return f;
+    }
+
+    private static Dictionary<string, float> PriorityBaseline(Fixture f) => f.Registry.GetAllParameters(f.Id)
+        .Where(pair => pair.Key.StartsWith("COMPASS_DEV_ID", StringComparison.Ordinal) || pair.Key.StartsWith("COMPASS_PRIO", StringComparison.Ordinal))
+        .ToDictionary(pair => pair.Key, pair => pair.Value.Value);
+
     internal sealed class Fixture
     {
         internal readonly VehicleId Id = new(1, 1);

@@ -4,32 +4,38 @@
                                xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Nmea"
                                xmlns:output="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
                                x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Nmea.NmeaPage"
-                               x:TypeArguments="local:NmeaViewModel" 
+                               x:TypeArguments="local:NmeaViewModel"
                                x:DataType="local:NmeaViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa">
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <u:Banner ShowIcon="False"  Classes="Bordered" Header="NMEA navigation output" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False" Classes="Bordered" Header="NMEA navigation output" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
-                <WrapPanel Grid.Row="1">
-                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Start NMEA" Command="{Binding StartCommand}" IsEnabled="{Binding !Running}" Margin="0,0,12,8" AutomationProperties.Name="Start NMEA">
-                        <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
-                    </Button>
-                    <Button Classes="EmbeddedIconButton" ToolTip.Tip="Stop NMEA" Command="{Binding StopCommand}" IsEnabled="{Binding Running}" Margin="0,0,12,8" AutomationProperties.Name="Stop NMEA">
-                        <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
-                    </Button>
-                </WrapPanel>
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
         </u:Banner>
-        <TabControl Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-            <TabItem Header="Sentences"><local:NmeaOptionsView DataContext="{Binding Settings}" /></TabItem>
-            <TabItem Header="Live preview"><local:NmeaPreviewView DataContext="{Binding Preview}" /></TabItem>
-            <TabItem Header="Output endpoint"><output:OutputEndpointView DataContext="{Binding Endpoint}" /></TabItem>
-            <TabItem Header="Output status"><output:OutputStatusView DataContext="{Binding Status}" /></TabItem>
+        <WrapPanel Grid.Row="1" HorizontalAlignment="Center" ItemSpacing="10">
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="Start NMEA" Command="{Binding StartCommand}" 
+                    IsEnabled="{Binding !Running}" AutomationProperties.Name="Start NMEA">
+                <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
+            </Button>
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="Stop NMEA" Command="{Binding StopCommand}" 
+                    IsEnabled="{Binding Running}"  AutomationProperties.Name="Stop NMEA">
+                <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
+            </Button>
+        </WrapPanel>
+        <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+            <TabItem Header="Sentences" Margin="0,20"><local:NmeaOptionsView DataContext="{Binding Settings}" /></TabItem>
+            <TabItem Header="Live preview" Margin="0,20"><local:NmeaPreviewView DataContext="{Binding Preview}" /></TabItem>
+            <TabItem Header="Output endpoint" Margin="0,20"><output:OutputEndpointView DataContext="{Binding Endpoint}" /></TabItem>
+            <TabItem Header="Output status" Margin="0,20"><output:OutputStatusView DataContext="{Binding Status}" /></TabItem>
         </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

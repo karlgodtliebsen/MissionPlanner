@@ -657,6 +657,7 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     /// <inheritdoc />
     public override async Task DeactivateAsync()
     {
+        CalibrateFixedYawCommand.Cancel();
         active = false;
         loadVersion++;
         editVersion++;
@@ -681,6 +682,7 @@ public sealed partial class CompassSetupViewModel : ViewModelBase
     /// <inheritdoc />
     public override void Dispose()
     {
+        CalibrateFixedYawCommand.Cancel();
         active = false;
         loadVersion++;
         editVersion++;

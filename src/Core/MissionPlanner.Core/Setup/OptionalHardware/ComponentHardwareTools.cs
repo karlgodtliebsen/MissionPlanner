@@ -1,4 +1,5 @@
 using System.Text;
+using MissionPlanner.Core.Setup.OptionalHardware.DroneCan;
 
 namespace MissionPlanner.Core.Setup.OptionalHardware;
 
@@ -46,13 +47,29 @@ public enum DroneCanNodeMode
 /// <param name="Version">The node software version text.</param>
 /// <param name="RxFrames">The number of frames received from the node.</param>
 /// <param name="TxFrames">The number of frames sent to the node.</param>
-public sealed record DroneCanNode(byte NodeId, string Name, DroneCanNodeHealth Health, DroneCanNodeMode Mode, string Version, long RxFrames, long TxFrames);
+public sealed record DroneCanNode(byte NodeId, string Name, DroneCanNodeHealth Health, DroneCanNodeMode Mode, string Version, long RxFrames, long TxFrames)
+{
+    /// <summary>Gets the hardware unique ID established by GetNodeInfo.</summary>
+    public string UniqueId { get; init; } = "";
+    /// <summary>Gets the last received uptime, in seconds.</summary>
+    public uint Uptime { get; init; }
+    /// <summary>Gets when a valid status was received.</summary>
+    public DateTimeOffset LastSeen { get; init; }
+}
 /// <summary>A parameter read from a DroneCAN node.</summary>
 /// <param name="NodeId">The node the parameter belongs to.</param>
 /// <param name="Name">The parameter name.</param>
 /// <param name="Value">The current parameter value.</param>
 /// <param name="IsWritable">Whether the parameter can be changed.</param>
-public sealed record DroneCanParameter(byte NodeId, string Name, object Value, bool IsWritable);
+public sealed record DroneCanParameter(byte NodeId, string Name, object Value, bool IsWritable)
+{
+    /// <summary>Gets the node-reported default value, when provided.</summary>
+    public object? DefaultValue { get; init; }
+    /// <summary>Gets the node-reported minimum numeric value.</summary>
+    public object? Minimum { get; init; }
+    /// <summary>Gets the node-reported maximum numeric value.</summary>
+    public object? Maximum { get; init; }
+}
 
 /// <summary>A transport that talks to DroneCAN nodes.</summary>
 public interface IDroneCanTransport : IAsyncDisposable
@@ -80,11 +97,27 @@ public interface IDroneCanTransportFactory
 {
     /// <summary>Creates a transport of the requested kind.</summary>
     IDroneCanTransport Create(DroneCanTransportKind kind);
+    /// <summary>Creates a transport with explicitly reviewed port, bus and maintenance ID.</summary>
+    IDroneCanTransport Create(DroneCanTransportKind kind, DroneCanConnectionOptions options) => Create(kind);
 }
 
 /// <summary>Manages the DroneCAN connection and node operations.</summary>
 public interface IDroneCanService : IAsyncDisposable
 {
+    /// <summary>Runs one confirmed localhost bridge until cancellation.</summary>
+    Task RunPassthroughAsync(byte node, DroneCanPassthroughOptions settings, bool confirmed, IProgress<string>? status, CancellationToken token) => throw new NotSupportedException();
+    /// <summary>Gets a bounded snapshot of captured raw frames.</summary>
+    IReadOnlyList<DroneCanTrace> Trace => [];
+    /// <summary>Gets whether the explicitly enabled allocation server is running.</summary>
+    bool AllocatorEnabled => false;
+    /// <summary>Connects with explicitly reviewed settings.</summary>
+    Task ConnectAsync(DroneCanTransportKind kind, DroneCanConnectionOptions options, CancellationToken token) => ConnectAsync(kind, token);
+    /// <summary>Persists changed node parameters using ExecuteOpcode SAVE.</summary>
+    Task SaveParametersAsync(byte node, CancellationToken token) => throw new NotSupportedException();
+    /// <summary>Serves a confirmed matching firmware image to one reviewed node.</summary>
+    Task<string> UpdateFirmwareAsync(byte node, string name, byte[] image, bool confirmed, IProgress<double>? progress, CancellationToken token) => throw new NotSupportedException();
+    /// <summary>Enables allocation only on an explicitly confirmed isolated direct bus.</summary>
+    Task SetAllocatorAsync(bool enabled, bool isolatedBusConfirmed, CancellationToken token) => throw new NotSupportedException();
     /// <summary>Gets whether a transport is connected.</summary>
     bool IsConnected { get; }
     /// <summary>Gets the connected transport kind, or null when disconnected.</summary>
@@ -108,18 +141,39 @@ public interface IDroneCanService : IAsyncDisposable
 public sealed class DroneCanService(IDroneCanTransportFactory factory) : IDroneCanService
 {
     private IDroneCanTransport? transport;
+    private readonly SemaphoreSlim lifecycle = new(1, 1);
+    /// <inheritdoc />
+    public Task RunPassthroughAsync(byte node, DroneCanPassthroughOptions settings, bool confirmed, IProgress<string>? status, CancellationToken token) => Management().RunPassthroughAsync(node, settings, confirmed, status, token);
+    /// <inheritdoc />
+    public IReadOnlyList<DroneCanTrace> Trace => (transport as IDroneCanManagementTransport)?.Trace ?? [];
+    /// <inheritdoc />
+    public bool AllocatorEnabled => (transport as IDroneCanManagementTransport)?.AllocatorEnabled == true;
+    /// <inheritdoc />
+    public Task SaveParametersAsync(byte node, CancellationToken token) => Management().SaveParametersAsync(node, token);
+    /// <inheritdoc />
+    public Task<string> UpdateFirmwareAsync(byte node, string name, byte[] image, bool confirmed, IProgress<double>? progress, CancellationToken token) => Management().UpdateFirmwareAsync(node, name, image, confirmed, progress, token);
+    /// <inheritdoc />
+    public Task SetAllocatorAsync(bool enabled, bool isolatedBusConfirmed, CancellationToken token) => Management().SetAllocatorAsync(enabled, isolatedBusConfirmed, token);
+    private IDroneCanManagementTransport Management() => Required() as IDroneCanManagementTransport ?? throw new NotSupportedException("Management adapter unavailable.");
     /// <summary>Gets whether a transport is connected.</summary>
     public bool IsConnected => transport?.IsConnected == true;
     /// <summary>Gets the connected transport kind, or null when disconnected.</summary>
     public DroneCanTransportKind? TransportKind => transport?.Kind;
 
     /// <summary>Connects through the requested transport kind, replacing any existing transport.</summary>
-    public async Task ConnectAsync(DroneCanTransportKind kind, CancellationToken cancellationToken)
+    public Task ConnectAsync(DroneCanTransportKind kind, CancellationToken cancellationToken) => ConnectAsync(kind, new(), cancellationToken);
+    /// <inheritdoc />
+    public async Task ConnectAsync(DroneCanTransportKind kind, DroneCanConnectionOptions options, CancellationToken cancellationToken)
     {
-        await DisconnectAsync(cancellationToken).ConfigureAwait(false);
-        transport = factory.Create(kind);
-        try { await transport.ConnectAsync(cancellationToken).ConfigureAwait(false); }
-        catch { await transport.DisposeAsync().ConfigureAwait(false); transport = null; throw; }
+        await lifecycle.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await CloseCurrentAsync(cancellationToken).ConfigureAwait(false);
+            transport = factory.Create(kind, options);
+            try { await transport.ConnectAsync(cancellationToken).ConfigureAwait(false); }
+            catch { await transport.DisposeAsync().ConfigureAwait(false); transport = null; throw; }
+        }
+        finally { lifecycle.Release(); }
     }
 
     /// <summary>Discovers the nodes on the bus.</summary>
@@ -132,6 +186,12 @@ public sealed class DroneCanService(IDroneCanTransportFactory factory) : IDroneC
     public Task RestartNodeAsync(byte nodeId, CancellationToken ct) => Required().RestartNodeAsync(nodeId, ct);
     /// <summary>Disconnects and releases the current transport.</summary>
     public async Task DisconnectAsync(CancellationToken ct)
+    {
+        await lifecycle.WaitAsync(ct).ConfigureAwait(false);
+        try { await CloseCurrentAsync(ct).ConfigureAwait(false); }
+        finally { lifecycle.Release(); }
+    }
+    private async Task CloseCurrentAsync(CancellationToken ct)
     {
         var current = Interlocked.Exchange(ref transport, null);
         if (current is null) return;
@@ -187,7 +247,7 @@ public sealed record CubeFirmwareChunk(uint Offset, byte[] Data);
 public static class CubeFirmwareCodec
 {
     /// <summary>The maximum number of data bytes in one chunk.</summary>
-    public const int ChunkSize = 253;
+    public const int ChunkSize = 252;
     /// <summary>Computes the CRC-32 of the data.</summary>
     public static uint Crc32(ReadOnlySpan<byte> data)
     {

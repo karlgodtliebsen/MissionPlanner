@@ -167,6 +167,38 @@ public sealed class FlightModeSetupTests
         registry.GetParameter(vehicleId, "FLTMODE1")!.Value.Should().Be(5);
     }
 
+    [Fact]
+    public async Task SimpleModeWritesPreserveAllOtherBitsAndSlots()
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "FLTMODE_CH", 5);
+        Store(registry, "SIMPLE", 0x8001);
+        Store(registry, "SUPER_SIMPLE", 0x4003);
+        var now = DateTimeOffset.UtcNow;
+        var service = CreateService(new TestActiveVehicleContext(State(FirmwareFamily.ArduCopter, [], now)), registry, now);
+        var result = await service.SetSimpleOptionsAsync(vehicleId, 2, true, false, TestContext.Current.CancellationToken);
+        result.Success.Should().BeTrue();
+        registry.GetParameter(vehicleId, "SIMPLE")!.Value.Should().Be(0x8003);
+        registry.GetParameter(vehicleId, "SUPER_SIMPLE")!.Value.Should().Be(0x4001);
+        service.GetConfiguration(vehicleId).Slots[0].Simple.Should().BeTrue();
+        service.GetConfiguration(vehicleId).Slots[1].SuperSimple.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task SimpleModeDoesNotInventUnsupportedParametersOrRunOnPlane()
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "FLTMODE_CH", 5);
+        var now = DateTimeOffset.UtcNow;
+        var service = CreateService(new TestActiveVehicleContext(State(FirmwareFamily.ArduCopter, [], now)), registry, now);
+        (await service.SetSimpleOptionsAsync(vehicleId, 1, true, null, TestContext.Current.CancellationToken)).Success.Should().BeFalse();
+        registry.GetParameter(vehicleId, "SIMPLE").Should().BeNull();
+        Store(registry, "SIMPLE", 0);
+        service = CreateService(new TestActiveVehicleContext(State(FirmwareFamily.ArduPlane, [], now)), registry, now);
+        (await service.SetSimpleOptionsAsync(vehicleId, 1, true, null, TestContext.Current.CancellationToken)).Success.Should().BeFalse();
+        registry.GetParameter(vehicleId, "SIMPLE")!.Value.Should().Be(0);
+    }
+
     private static FlightModeConfigurationService CreateService(TestActiveVehicleContext context, VehicleParameterRegistry registry, DateTimeOffset now)
     {
         var clock = Substitute.For<IDateTimeProvider>();

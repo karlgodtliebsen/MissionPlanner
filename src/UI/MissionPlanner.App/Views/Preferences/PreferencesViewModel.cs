@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -12,6 +12,7 @@ using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Offline;
 using MissionPlanner.Maps.Settings;
 using MissionPlanner.Themes;
+using MissionPlanner.Core.Notifications;
 
 namespace MissionPlanner.App.Views.Preferences;
 
@@ -20,6 +21,30 @@ namespace MissionPlanner.App.Views.Preferences;
 /// </summary>
 public sealed partial class PreferencesViewModel : ViewModelBase
 {
+    private readonly ISpeechService speech;
+    /// <summary>Gets the installed speech engine or its availability explanation.</summary>
+    public string SpeechStatus => speech.Status;
+    /// <summary>Gets whether the host provides local speech output.</summary>
+    public bool SpeechAvailable => speech.IsAvailable;
+
+    [RelayCommand(IncludeCancelCommand = true)]
+    private async Task TestSpeechAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await speech.TestAsync(cancellationToken);
+            SetMessages("Speech test completed. Enable speech and save Preferences to speak notifications.");
+        }
+        catch (OperationCanceledException)
+        {
+            SetMessages("Speech test cancelled.");
+        }
+        catch (Exception exception)
+        {
+            SetMessages(exception);
+        }
+    }
+
     private readonly IPlannerSettingsService settingsService;
     private readonly ParametersFileHandler fileHandler;
     private readonly IFileOpenService fileOpenService;
@@ -51,6 +76,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     /// <param name="offlinePackManager">The active-source-aware offline-pack manager.</param>
     /// <param name="offlinePackValidator">The offline-pack validator.</param>
     /// <param name="mapCache">The bounded map HTTP cache.</param>
+    /// <param name="speech">Optional local speech adapter.</param>
     public PreferencesViewModel(
         IPlannerSettingsService settingsService,
         ParametersFileHandler fileHandler,
@@ -61,9 +87,11 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         IOfflineMapPackManager offlinePackManager,
         IOfflineMapPackValidator offlinePackValidator,
         MapHttpDiskCache mapCache,
-        ILogger<PreferencesViewModel> logger
+        ILogger<PreferencesViewModel> logger,
+        ISpeechService? speech = null
     ) : base(logger)
     {
+        this.speech = speech ?? new UnavailableSpeechService();
         this.settingsService = settingsService;
         this.fileHandler = fileHandler;
         this.fileOpenService = fileOpenService;
@@ -1201,7 +1229,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
 
     private PlannerSettings CreateSettings()
     {
-        return new PlannerSettings
+        return settingsService.Current with
         {
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings { DefaultZoom = DefaultMapZoom, SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard", HttpCacheEnabled = MapHttpCacheEnabled, HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L },

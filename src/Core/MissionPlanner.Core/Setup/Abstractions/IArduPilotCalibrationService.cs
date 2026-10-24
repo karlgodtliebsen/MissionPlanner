@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Setup.MandatoryHardware;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup.Abstractions;
@@ -26,6 +26,12 @@ public interface IArduPilotCalibrationService : IDisposable
     /// <param name="cancellationToken">A connection-scoped cancellation token.</param>
     /// <returns>A task that completes after terminal command acknowledgement.</returns>
     Task StartLevelAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
+
+    /// <summary>Starts stationary simple accelerometer calibration; unsupported firmware returns its command rejection.</summary>
+    /// <param name="vehicleId">The active disarmed vehicle.</param>
+    /// <param name="cancellationToken">Cancels the bounded acknowledgement wait.</param>
+    /// <returns>A task completing after terminal command acknowledgement.</returns>
+    Task StartSimpleAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
 
     /// <summary>Confirms that the requested physical orientation is stable and ready to sample.</summary>
     /// <param name="cancellationToken">A token that cancels transmission.</param>

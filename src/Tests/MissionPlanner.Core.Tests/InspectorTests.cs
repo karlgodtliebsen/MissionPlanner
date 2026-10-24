@@ -49,6 +49,23 @@ public sealed class InspectorTests
     }
 
     [Fact]
+    public void TypedNumericArraysExposeIndexedGraphFieldsWithinDetailBudget()
+    {
+        var aggregate = new InspectorAggregator(definitions, new Clock());
+        aggregate.Observe(Observation() with { Message = new ArrayMessage([1.25, double.NaN, -2.5]) });
+        var details = Assert.Single(aggregate.Export(0).Messages);
+        var fields = InspectorFieldHistory.NumericFields(details);
+        Assert.Contains("Values[0]", fields);
+        Assert.DoesNotContain("Values[1]", fields);
+        Assert.Contains("Values[2]", fields);
+        var history = new InspectorFieldHistory();
+        Assert.True(history.Observe(details, "Values[2]"));
+        Assert.Equal(-2.5, Assert.Single(history.Samples).Value);
+    }
+
+    private sealed record ArrayMessage(double[] Values) : MavLinkMessage(1, 1, 0, endpoint, DateTimeOffset.UtcNow);
+
+    [Fact]
     public void HighRateAndUnknownKeyFloodRetainBoundedLatestState()
     {
         var aggregate = new InspectorAggregator(definitions, new Clock());

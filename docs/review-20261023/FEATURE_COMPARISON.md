@@ -2,6 +2,8 @@
 
 Review date: **24 October 2026**. Scope: **Mandatory Hardware, Optional Hardware, Config, and Advanced**.
 
+> Historical baseline: this review describes the source before implementation. See [IMPLEMENTATION.md](IMPLEMENTATION.md) for the 44 implemented groups, three explicit scope decisions, verification results and remaining hardware qualification.
+
 Next Gen has substantial working infrastructure and many completed workflows, but several visible pages still lack the operation their names imply. The largest gaps are operational DroneCAN, joystick, CubeID, ESP8266 and antenna-tracker support; complete tuning workflows; MAVFTP file management; and several Advanced tools. There are also integration defects in existing features, particularly Extended Tuning expansion and optional-hardware parameter editors.
 
 This review compares user capabilities, not the appearance of the old application. The current Next Gen design can be retained while closing these gaps. A parameter accessible in the full editor is not described as entirely unavailable merely because its dedicated setup workflow is incomplete.

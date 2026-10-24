@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -33,6 +33,37 @@ public sealed class VehicleCommandService(
 {
     private static readonly TimeSpan commandAckTimeout = TimeSpan.FromSeconds(5);
     private readonly IVehicleOperationGate operationGate = operationGate ?? new VehicleOperationGate();
+
+    /// <inheritdoc />
+    public Task<VehicleCommandResponse> CalibrateCompassFixedYawAsync(VehicleId vehicleId, double yawDegrees,
+        double latitudeDegrees, double longitudeDegrees, bool safetyConfirmed, CancellationToken cancellationToken)
+    {
+        var state = registry.GetRequired(vehicleId)?.State;
+        if (state is null)
+        {
+            return Task.FromResult(NotFound(vehicleId));
+        }
+        if (!safetyConfirmed || state.IsArmed || state.ConnectionState != VehicleConnectionState.Online || state.Autopilot != 3)
+        {
+            return Task.FromResult(Denied(vehicleId, "Fixed-yaw calibration requires a connected, disarmed ArduPilot vehicle and explicit confirmation."));
+        }
+        if (!double.IsFinite(yawDegrees) || yawDegrees is < 0 or > 360 ||
+            !double.IsFinite(latitudeDegrees) || latitudeDegrees is < -90 or > 90 ||
+            !double.IsFinite(longitudeDegrees) || longitudeDegrees is < -180 or > 180)
+        {
+            return Task.FromResult(Denied(vehicleId, "Enter a valid true heading and geographic coordinates."));
+        }
+        if (latitudeDegrees == 0 && longitudeDegrees == 0 &&
+            (state.Gps.ObservedAt is not { } observed || clock.UtcNow < observed || clock.UtcNow - observed > TimeSpan.FromSeconds(3) ||
+             (int)state.Gps.FixType is < 3 or > 6 ||
+             state.Gps.LatitudeDegrees is not { } latitude || !double.IsFinite(latitude) || latitude is < -90 or > 90 ||
+             state.Gps.LongitudeDegrees is not { } longitude || !double.IsFinite(longitude) || longitude is < -180 or > 180))
+        {
+            return Task.FromResult(Denied(vehicleId, "A current 3D GPS fix or explicitly entered location is required."));
+        }
+        return ExecuteAsync(vehicleId, VehicleAction.ExpertCommand, (ushort)MissionPlanner.MavLink.Generated.MavCmd.FixedMagCalYaw,
+            [(float)(yawDegrees % 360), 0, (float)latitudeDegrees, (float)longitudeDegrees, 0, 0, 0], true, cancellationToken);
+    }
 
     /// <inheritdoc />
     public ReceiverBindAvailability GetReceiverBindAvailability(VehicleId vehicleId)

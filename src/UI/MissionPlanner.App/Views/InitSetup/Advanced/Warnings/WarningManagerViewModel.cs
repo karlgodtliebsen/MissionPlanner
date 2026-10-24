@@ -17,7 +17,7 @@ public sealed partial class WarningManagerViewModel : ViewModelBase
 {
     private readonly WarningRuleRepository repository;
     private readonly WarningSources sources;
-    private readonly WarningEngine engine;
+    private readonly WarningMonitor monitor;
     private readonly IActiveVehicleContext vehicle;
     private readonly TimeProvider clock;
     private readonly IFileOpenService fileOpen;
@@ -25,12 +25,11 @@ public sealed partial class WarningManagerViewModel : ViewModelBase
     private readonly SemaphoreSlim lifecycleGate = new(1, 1);
     private AdvancedToolLifetime? lifetime;
     private Task mutation = Task.CompletedTask;
-    private VehicleId? evaluatedVehicle;
 
     /// <summary>Initializes the coordinator with independently owned child panels.</summary>
     public WarningManagerViewModel(WarningRuleListViewModel rules, WarningRuleEditorViewModel editor,
         WarningStatusViewModel status, WarningRuleRepository repository, WarningSources sources,
-        IActiveVehicleContext vehicle, TimeProvider clock, WarningEngine engine, ILogger<WarningManagerViewModel> logger,
+        IActiveVehicleContext vehicle, TimeProvider clock, WarningMonitor monitor, ILogger<WarningManagerViewModel> logger,
         IUiDispatcher dispatcher, IDomainEventHub events, IFileOpenService fileOpen, IFileSaveService fileSave) : base(logger, dispatcher, events)
     {
         Rules = rules;
@@ -40,7 +39,7 @@ public sealed partial class WarningManagerViewModel : ViewModelBase
         this.sources = sources;
         this.vehicle = vehicle;
         this.clock = clock;
-        this.engine = engine;
+        this.monitor = monitor;
         this.fileOpen = fileOpen;
         this.fileSave = fileSave;
     }
@@ -85,6 +84,7 @@ public sealed partial class WarningManagerViewModel : ViewModelBase
             var activation = new AdvancedToolLifetime();
             lifetime = activation;
             IsBusy = true;
+            await monitor.StartAsync(activation.Token);
             var loaded = await repository.LoadAsync(activation.Token);
             activation.Token.ThrowIfCancellationRequested();
             await Dispatcher.DispatchAsync(() =>
@@ -95,9 +95,6 @@ public sealed partial class WarningManagerViewModel : ViewModelBase
                 {
                     Rules.Rules.Add(rule);
                 }
-                engine.SetRules([]);
-                engine.SetRules(loaded.Rules);
-                evaluatedVehicle = null;
                 Editor.Edit(null);
                 StatusMessage = loaded.Diagnostic;
                 IsBusy = false;
@@ -168,15 +165,8 @@ public sealed partial class WarningManagerViewModel : ViewModelBase
                     {
                         return;
                     }
-                    var state = vehicle.IsOnline ? vehicle.State : null;
-                    if (evaluatedVehicle != state?.VehicleId)
-                    {
-                        evaluatedVehicle = state?.VehicleId;
-                        engine.SetRules([]);
-                        engine.SetRules(Rules.Rules.ToArray());
-                    }
                     var selected = Status.Selected?.RuleId;
-                    Status.Warnings = engine.Evaluate(key => sources.Read(key, state));
+                    Status.Warnings = monitor.Snapshots;
                     Status.Selected = Status.Warnings.FirstOrDefault(item => item.RuleId == selected);
                 });
             }
@@ -191,7 +181,7 @@ public sealed partial class WarningManagerViewModel : ViewModelBase
         }
     }
 
-    private void Acknowledge(Guid id) => engine.Acknowledge(id);
+    private void Acknowledge(Guid id) => monitor.Acknowledge(id);
 
     [RelayCommand]
     private Task ImportAsync() => StartFileOperationAsync(true);
@@ -302,7 +292,6 @@ public sealed partial class WarningManagerViewModel : ViewModelBase
                 {
                     Rules.Rules.Add(rule);
                 }
-                engine.SetRules(next);
                 StatusMessage = "Warning rules saved.";
             });
         }

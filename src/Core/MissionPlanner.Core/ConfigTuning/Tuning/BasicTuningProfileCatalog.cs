@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
 
@@ -91,11 +91,16 @@ public sealed class BasicTuningProfileCatalog : IBasicTuningProfileCatalog
                     "Set cruise airspeed and the normal throttle envelope.",
                     [
                         Field("cruise-airspeed", "Cruise airspeed", "Target airspeed used by automatic flight modes.", "m/s", "AIRSPEED_CRUISE"),
+                        Field("airspeed-min", "Minimum airspeed", "Minimum configured airspeed.", "m/s", "AIRSPEED_MIN"),
+                        Field("airspeed-max", "Maximum airspeed", "Maximum configured airspeed.", "m/s", "AIRSPEED_MAX"),
+                        Field("throttle-slew", "Throttle slew rate", "Limit throttle changes per second.", "%/s", "THR_SLEWRATE"),
                         Field("throttle-min", "Minimum throttle", "Minimum automatic throttle output.", "%", "THR_MIN"),
                         Field("throttle-cruise", "Cruise throttle", "Nominal throttle required for level cruise.", "%", "TRIM_THROTTLE"),
                         Field("throttle-max", "Maximum throttle", "Maximum automatic throttle output.", "%", "THR_MAX")
                     ],
                     [
+                        LessOrEqual("airspeed-min", "cruise-airspeed", "Minimum airspeed must not exceed cruise airspeed."),
+                        LessOrEqual("cruise-airspeed", "airspeed-max", "Cruise airspeed must not exceed maximum airspeed."),
                         LessOrEqual("throttle-min", "throttle-cruise", "Minimum throttle must not exceed cruise throttle."),
                         LessOrEqual("throttle-cruise", "throttle-max", "Cruise throttle must not exceed maximum throttle.")
                     ]),
@@ -117,6 +122,8 @@ public sealed class BasicTuningProfileCatalog : IBasicTuningProfileCatalog
                         Field("l1-period", "Navigation period", "L1 navigation period; lower values command tighter path tracking.", "s", "NAVL1_PERIOD"),
                         Field("l1-damping", "Navigation damping", "Damping applied to L1 navigation corrections.", "ratio", "NAVL1_DAMPING"),
                         Field("loiter-radius", "Loiter radius", "Nominal radius used by loiter commands.", "m", "WP_LOITER_RAD"),
+                        Field("pitch-min", "Minimum pitch", "Minimum automatic pitch angle.", "cdeg", "LIM_PITCH_MIN"),
+                        Field("pitch-max", "Maximum pitch", "Maximum automatic pitch angle.", "cdeg", "LIM_PITCH_MAX"),
                         Field("roll-limit", "Roll limit", "Maximum automatic bank angle.", "cdeg", "LIM_ROLL_CD",
                             "Increasing the roll limit raises stall and structural-load risk.")
                     ])
@@ -133,7 +140,8 @@ public sealed class BasicTuningProfileCatalog : IBasicTuningProfileCatalog
                     "Cruise and navigation speed",
                     "Set manual cruise references and automatic waypoint speed.",
                     [
-                        AliasField("wp-speed", "Waypoint speed", "Target speed in automatic waypoint navigation.", "m/s", ["WP_SPEED", "CRUISE_SPEED"]),
+                        Field("wp-speed", "Waypoint speed", "Target speed in automatic waypoint navigation.", "m/s", "WP_SPEED"),
+                        Field("cruise-speed", "Cruise speed", "Cruise speed corresponding to cruise throttle.", "m/s", "CRUISE_SPEED"),
                         Field("pilot-speed", "Pilot speed", "Maximum speed commanded in pilot-assisted modes.", "m/s", "PILOT_SPEED"),
                         Field("cruise-throttle", "Cruise throttle", "Throttle normally required to maintain cruise speed.", "%", "CRUISE_THROTTLE")
                     ]),
@@ -143,6 +151,7 @@ public sealed class BasicTuningProfileCatalog : IBasicTuningProfileCatalog
                     "Set how quickly the vehicle changes speed.",
                     [
                         Field("accel-max", "Maximum acceleration", "Maximum forward acceleration used by the speed controller.", "m/s²", "ATC_ACCEL_MAX"),
+                        Field("braking", "Active braking", "Enable braking when supported by the motor controller.", "enum", "ATC_BRAKE"),
                         Field("decel-max", "Maximum deceleration", "Maximum commanded braking deceleration.", "m/s²", "ATC_DECEL_MAX")
                     ],
                     warning: "High acceleration or braking can cause wheel slip, rollover, or loss of steering authority."),
@@ -151,9 +160,12 @@ public sealed class BasicTuningProfileCatalog : IBasicTuningProfileCatalog
                     "Turn behavior",
                     "Set path-following and steering-rate limits.",
                     [
-                        Field("turn-g", "Maximum turn acceleration", "Maximum lateral acceleration requested in a turn.", "m/s²", "TURN_MAX_G"),
+                        Field("turn-g", "Maximum turn acceleration", "Maximum lateral acceleration requested in a turn.", "g", "TURN_MAX_G"),
                         Field("steer-rate", "Maximum steering rate", "Maximum steering-rate command.", "deg/s", "ATC_STR_RAT_MAX"),
                         Field("steer-accel", "Steering acceleration", "Maximum change in steering rate.", "deg/s²", "ATC_STR_ACC_MAX"),
+                        Field("turn-radius", "Turn radius", "Minimum physical turning radius.", "m", "TURN_RADIUS"),
+                        Field("wp-radius", "Waypoint radius", "Waypoint arrival radius.", "m", "WP_RADIUS"),
+                        Field("wp-overshoot", "Waypoint overshoot", "Permitted waypoint overshoot.", "m", "WP_OVERSHOOT"),
                         Field("pivot-angle", "Pivot-turn angle", "Heading error at which a pivot turn is requested.", "deg", "WP_PIVOT_ANGLE")
                     ],
                     [PositiveCompanion("steer-rate", "steer-accel", "A positive steering rate requires positive steering acceleration.")])
@@ -219,7 +231,7 @@ public sealed class BasicTuningProfileCatalog : IBasicTuningProfileCatalog
         string parameterName,
         string? warning = null)
     {
-        return new BasicTuningFieldDefinition(key, title, description, units, ParameterFieldDefinition.Exact(parameterName), warning);
+        return new BasicTuningFieldDefinition(key, title, description, units, new ParameterFieldDefinition(key, TuningParameterCompatibility.Names(parameterName)), warning);
     }
 
     private static BasicTuningFieldDefinition AliasField(

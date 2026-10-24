@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.MavFtp;
@@ -13,7 +13,7 @@ namespace MissionPlanner.Core.Vehicles;
 /// <param name="client">The MAVFTP client.</param>
 /// <param name="vehicleRegistry">The vehicle registry.</param>
 /// <param name="logger">The logger.</param>
-public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegistry vehicleRegistry, ILogger<VehicleFileSystemService> logger) : IVehicleFileSystemService
+public sealed partial class VehicleFileSystemService(IMavFtpClient client, IVehicleRegistry vehicleRegistry, ILogger<VehicleFileSystemService> logger) : IVehicleFileSystemService
 {
     /// <inheritdoc />
     public async Task<IReadOnlyList<VehicleFileSystemEntry>> ListDirectoryAsync(VehicleId vehicleId, string remotePath, IProgress<VehicleDirectoryProgress>? progress = null, CancellationToken cancellationToken = default)

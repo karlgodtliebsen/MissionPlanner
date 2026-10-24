@@ -1,25 +1,45 @@
 ﻿<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-    xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
-    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Inspector"
-    xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Inspector;assembly=MissionPlanner.Core"
-    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorListView"
-    x:TypeArguments="local:InspectorListViewModel" x:DataType="local:InspectorListViewModel"
-                            xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
-    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12">
-        <TextBox Text="{Binding Search}" MaxLength="256" PlaceholderText="Search name, ID, or sys:1 comp:1 id:0 dir:inbound"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+                               xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
+                               xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Inspector"
+                               xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Inspector;assembly=MissionPlanner.Core"
+                               x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorListView"
+                               x:TypeArguments="local:InspectorListViewModel" x:DataType="local:InspectorListViewModel"
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="12" HorizontalAlignment="Stretch">
+        <TextBox Text="{Binding Search}" 
+                 MaxLength="256" 
+                 PlaceholderText="Search name, ID, or sys:1 comp:1 id:0 dir:inbound"
                  AutomationProperties.Name="Filter inspected messages" />
-        <WrapPanel Grid.Row="1">
-            <CheckBox Content="Freeze display (continue collecting)" IsChecked="{Binding Frozen}" Margin="0,0,12,8" />
-            <CheckBox Content="Sort by count descending" IsChecked="{Binding SortByCount}" Margin="0,0,12,8" />
-            <Button Classes="EmbeddedIconButton" ToolTip.Tip="Clear statistics" Command="{Binding ClearCommand}" Margin="0,0,12,8" AutomationProperties.Name="Clear statistics">
+        <WrapPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                   Orientation="Horizontal"
+                   Margin="10,0,0,0"
+                   ItemSpacing="10">
+            <CheckBox Content="Freeze display (continue collecting)" 
+                      IsChecked="{Binding Frozen}" 
+                       />
+            <CheckBox Content="Sort by count descending" 
+                      IsChecked="{Binding SortByCount}" 
+                      />
+            <Button Classes="EmbeddedIconButton" 
+                    VerticalAlignment="Center"
+                    ToolTip.Tip="Clear statistics" 
+                    Command="{Binding ClearCommand}" 
+                    AutomationProperties.Name="Clear statistics">
                 <mdi:MaterialIcon Kind="Eraser" Classes="ActionIcon" />
             </Button>
         </WrapPanel>
-        <controls:VirtualizedItemsGrid Grid.Row="2" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}"
-            ColumnWidths="110,*,150" ColumnSpacing="10" RowMinHeight="80" ShowHeader="True"
-            ShowSearchBar="False" ShowPagination="False" SelectionMode="Single">
+        <controls:VirtualizedItemsGrid Grid.Row="2" 
+                                       ItemsSource="{Binding Rows}" 
+                                       SelectedItem="{Binding Selected}"
+                                       ColumnWidths="110,*,150" 
+                                       ColumnSpacing="10" 
+                                       RowMinHeight="80" 
+                                       ShowHeader="True"
+                                       ShowSearchBar="False" 
+                                       ShowPagination="False" 
+                                       SelectionMode="Single">
             <controls:VirtualizedItemsGrid.HeaderTemplate>
                 <DataTemplate>
                     <controls:VirtualizedItemsGridRow>

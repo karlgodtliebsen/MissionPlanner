@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:CubeIdUpdateViewModel"
+<utilities:UserControlViewBase x:TypeArguments="sections:CubeIdUpdateViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
@@ -58,12 +58,24 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Inspect firmware" Command="{Binding InspectCommand}" HorizontalAlignment="Center" AutomationProperties.Name="Inspect firmware">
                                 <mdi:MaterialIcon Kind="FileSearchOutline" Classes="ActionIcon" />
                             </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Select local firmware" Command="{Binding BrowseCommand}" AutomationProperties.Name="Select local firmware">
+                                <mdi:MaterialIcon Kind="FolderOpen" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Update CubeID" Command="{Binding UpdateCommand}" AutomationProperties.Name="Update CubeID">
+                                <mdi:MaterialIcon Kind="Upload" Classes="ActionIcon" />
+                            </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Cancel update" Command="{Binding UpdateCancelCommand}" AutomationProperties.Name="Cancel update">
+                                <mdi:MaterialIcon Kind="Cancel" Classes="ActionIcon" />
+                            </Button>
                         </WrapPanel>
                     </Border>
                     <Border Grid.Row="1" HorizontalAlignment="Stretch" Padding="12">
                         <StackPanel Spacing="10">
                             <TextBlock Text="{Binding FirmwareSummary}" />
                             <TextBox PlaceholderText="Local firmware .bin path" Text="{Binding FirmwarePath}" />
+                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding TransferProgress}" />
+                            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
                         </StackPanel>
                     </Border>
                 </Grid>

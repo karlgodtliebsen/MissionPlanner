@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+             xmlns:mandatory="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             xmlns:models="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core"
+             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.ParameterSettingEditor"
+             x:DataType="local:ParameterSettingViewModel" x:CompileBindings="True">
+    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="16" Margin="0,8">
+        <StackPanel Spacing="3" ToolTip.Tip="{Binding Editor.Description}">
+            <TextBlock Text="{Binding DisplayName}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Name}" FontSize="11" />
+            <TextBlock Text="{Binding Editor.ValueGuidance}" FontSize="11" TextWrapping="Wrap" />
+            <TextBlock Text="Reboot required after change" IsVisible="{Binding Editor.RebootRequired}" FontSize="11" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" IsEnabled="{Binding Editor.CanEdit}">
+            <NumericUpDown IsVisible="{Binding Editor.IsNumericEditor}" Value="{Binding Editor.NumericValue, Mode=TwoWay}"
+                           Minimum="{Binding Editor.Minimum}" Maximum="{Binding Editor.Maximum}" Increment="{Binding Editor.Increment}"
+                           AutomationProperties.Name="{Binding Name}" />
+            <ComboBox IsVisible="{Binding Editor.HasOptions}" ItemsSource="{Binding Editor.Options}"
+                      SelectedItem="{Binding Editor.SelectedOption, Mode=TwoWay}" HorizontalAlignment="Stretch"
+                      AutomationProperties.Name="{Binding Name}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:PeripheralSettingOption">
+                        <TextBlock Text="{Binding Name}" TextWrapping="Wrap" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <ItemsControl IsVisible="{Binding Editor.HasBits}" ItemsSource="{Binding Editor.Bits}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="mandatory:PeripheralBitViewModel">
+                        <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+        <Button Grid.Column="2" Classes="EmbeddedIconButton" Command="{Binding ApplyCommand}"
+                ToolTip.Tip="Apply this setting and verify readback" AutomationProperties.Name="Apply setting">
+            <mdi:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+        </Button>
+    </Grid>
+</UserControl>

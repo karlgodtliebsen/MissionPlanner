@@ -1,0 +1,18 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:local="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor.ParameterMaintenanceView"
+    x:TypeArguments="local:ParameterMaintenanceViewModel" x:DataType="local:ParameterMaintenanceViewModel">
+    <StackPanel Margin="24" Spacing="16" MaxWidth="850">
+        <TextBlock Text="Vehicle parameter maintenance" Classes="h2" />
+        <TextBlock TextWrapping="Wrap" Text="ArduPilot saves ordinary parameter writes automatically. No extra commit-to-flash step is needed. Downloaded official presets are available in Profiles and are staged only after review." />
+        <TextBlock TextWrapping="Wrap" Text="Reset all parameters: download the complete list and discard pending edits first. This workflow requires a new backup file and the typed confirmation RESET ALL PARAMETERS, then writes FORMAT_VERSION=0 with readback. You must disconnect and power-cycle manually. Defaults and the DroneCAN dynamic address table are reset at reboot; setup and calibrations must be repeated before flight." />
+        <SelectableTextBlock Text="https://ardupilot.org/copter/docs/common-parameter-reset.html" />
+        <StackPanel Orientation="Horizontal" Spacing="12">
+            <Button Command="{Binding PrepareResetCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Save backup and review complete parameter reset" AutomationProperties.Name="Prepare parameter reset"><mdi:MaterialIcon Kind="RestoreAlert" /></Button>
+            <Button Command="{Binding PrepareResetCancelCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Cancel reset preparation" AutomationProperties.Name="Cancel reset preparation"><mdi:MaterialIcon Kind="Cancel" /></Button>
+        </StackPanel>
+        <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+        <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
+    </StackPanel>
+</utilities:UserControlViewBase>

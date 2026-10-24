@@ -50,6 +50,7 @@ documents above in July 2026 and deleted; recover them from git history if neede
 |---|---|
 | [ANALYSIS.md](ANALYSIS.md) | Summary analysis of MissionPlanner Next Generation: structure, architecture, coverage, quality, risks |
 | [MISSING_FEATURES.md](MISSING_FEATURES.md) | Current list of missing and partial features, with impact and evidence |
+| [review-20261023/IMPLEMENTATION.md](review-20261023/IMPLEMENTATION.md) | Setup/configuration feature implementation, default choices, test results and remaining qualification |
 | [KNOWN_TEST_FAILURES.md](KNOWN_TEST_FAILURES.md) | Known test failures and their causes |
 | [tasks/](tasks/) | Open task notes and backlogs (incomplete tasks, postponed work, deferred firmware backlog) |
 

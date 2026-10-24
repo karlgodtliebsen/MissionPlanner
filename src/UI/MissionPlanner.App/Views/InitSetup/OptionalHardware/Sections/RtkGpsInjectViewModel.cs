@@ -60,6 +60,8 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
         get; set;
     }
 
+    /// <summary>Gets or sets whether to capture every currently connected target endpoint when starting.</summary>
+    [ObservableProperty] public partial bool AllConnectedVehicles { get; set; }
     [ObservableProperty] public partial string SourceStatus { get; private set; } = string.Empty;
     [ObservableProperty] public partial string TargetStatus { get; private set; } = string.Empty;
     [ObservableProperty] public partial string Statistics { get; private set; } = string.Empty;
@@ -88,15 +90,17 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
     }
 
     [RelayCommand]
-    private async Task ConnectAsync()
+    private async Task ConnectAsync(CancellationToken cancellationToken)
     {
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifetime.Token);
         SetBusy();
         try
         {
-            await injection.StartAsync(new RtkSourceOptions(SourceKind, Endpoint, PortOrBaud, MountPoint, Username, Password, UseTls), lifetime.Token);
+            await injection.StartAsync(new RtkSourceOptions(SourceKind, Endpoint, PortOrBaud, MountPoint, Username, Password, UseTls, AllConnectedVehicles), linked.Token);
             Password = string.Empty;
         }
-        catch (Exception exception) when (exception is not OperationCanceledException) { SetMessages(exception); }
+        catch (OperationCanceledException) { SetMessages("Connection cancelled."); }
+        catch (Exception exception) { SetMessages(exception); }
         finally { ResetBusy(); }
     }
 

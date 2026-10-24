@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using MissionPlanner.Library;
 
@@ -18,7 +18,7 @@ public partial class OnboardOsdPreviewView : UserControl
     public OnboardOsdPreviewView()
     {
         InitializeComponent();
-        previewCanvas = this.FindControl<OsdPreviewCanvas>("PreviewCanvas");
+        previewCanvas = this.FindControl<OsdPreviewCanvas>("PreviewCanvas") ?? throw new InvalidOperationException("OSD preview canvas is missing.");
         DomainException.ThrowIfNull(previewCanvas, "The OSD preview canvas could not be loaded.");
         DataContextChanged += OnDataContextChanged;
         OnDataContextChanged(this, EventArgs.Empty);

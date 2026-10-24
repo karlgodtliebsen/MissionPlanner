@@ -36,7 +36,7 @@ public sealed class InitTuneParametersService : MandatoryParameterServiceBase, I
     private static bool IsRelevant(string name)
     {
         return prefixes.Any(prefix => name.StartsWith(prefix, StringComparison.Ordinal)) &&
-            (name.Contains("ACCEL", StringComparison.Ordinal) || name.Contains("FILTER", StringComparison.Ordinal) ||
+            ((name.Contains("ACCEL", StringComparison.Ordinal) || name.Contains("_ACC_", StringComparison.Ordinal)) || name.Contains("FILTER", StringComparison.Ordinal) ||
              name.Contains("FLTD", StringComparison.Ordinal) || name.Contains("FLTE", StringComparison.Ordinal) ||
              name.Contains("FLTT", StringComparison.Ordinal) || name.Contains("THST", StringComparison.Ordinal) ||
              name.Contains("BAT_VOLT", StringComparison.Ordinal) || name.StartsWith("BATT_", StringComparison.Ordinal) ||

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -132,6 +132,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     /// <param name="logger">The logger.</param>
     /// <param name="comparisons">Compares the current session's live and pending values.</param>
     /// <param name="dateTimeProvider">Supplies timestamps for comparison exports.</param>
+    /// <param name="plannerSettings">Persistent name-only parameter collections.</param>
     public ParametersEditorTabViewModel(
         IDialogService dialogService,
         IDomainFactory domainFactory,
@@ -148,9 +149,12 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         ILogger<ParametersEditorTabViewModel> logger,
         IVehicleConnectionService connections,
         IParameterComparisonService comparisons,
-        IDateTimeProvider dateTimeProvider)
+        IDateTimeProvider dateTimeProvider,
+        MissionPlanner.Core.ConfigTuning.Planner.IPlannerSettingsService? plannerSettings = null)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
+        this.plannerSettings = plannerSettings;
+        Parameters.CollectionChanged += (_, _) => RefreshParameterCollections();
         this.connections = connections;
         this.activeVehicle = activeVehicle;
         this.clipboard = clipboard;
@@ -181,11 +185,15 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
         }
         PropertyChanged += OnViewModelPropertyChanged;
         await base.ActivateAsync();
+        RefreshParameterCollections();
     }
 
     /// <inheritdoc />
     public override async Task DeactivateAsync()
     {
+        SaveCollectionCommand.Cancel();
+        DeleteCollectionCommand.Cancel();
+        RefreshMetadataCommand.Cancel();
         if (disposed)
         {
             return;
@@ -205,6 +213,9 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
+        SaveCollectionCommand.Cancel();
+        DeleteCollectionCommand.Cancel();
+        RefreshMetadataCommand.Cancel();
         if (disposed)
         {
             return;
@@ -565,11 +576,19 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
             return;
         }
         var model = domainFactory.Create<ParameterProfilesViewModel, IParameterEditSession>(session);
-        await model.InitializeAsync(cancellationToken);
-        var options = dialogService.CreateOptions("Parameter profiles", "Close", null);
-        options.FullScreen = true;
-        await dialogService.ShowCustomDialogAsync<ParameterProfilesView, ParameterProfilesViewModel>(
-            model, options, cancellationToken: cancellationToken);
+        try
+        {
+            await model.InitializeAsync(cancellationToken);
+            var options = dialogService.CreateOptions("Parameter profiles", "Close", null);
+            options.FullScreen = true;
+            await dialogService.ShowCustomDialogAsync<ParameterProfilesView, ParameterProfilesViewModel>(
+                model, options, cancellationToken: cancellationToken);
+        }
+        finally
+        {
+            await model.StopLibraryAsync();
+            model.Dispose();
+        }
     }
     /// <inheritdoc />
     protected override bool CanCancelLoad()
@@ -670,6 +689,7 @@ public partial class ParametersEditorTabViewModel : ParametersViewModel
     protected override void OnEditSessionSynchronized()
     {
         base.OnEditSessionSynchronized();
+        RefreshParameterCollections();
         UpdateCommandState();
         RefreshQuickEditor();
         if (IsComparisonSelected)

@@ -20,6 +20,33 @@ namespace MissionPlanner.Core.Tests;
 /// <summary>Exercises firmware-driven accelerometer calibration with a fake decoded MAVLink sequence.</summary>
 public sealed class AccelerometerWorkflowTests
 {
+    /// <summary>Simple calibration uses its distinct command action and reports the firmware's terminal outcome.</summary>
+    [Theory]
+    [InlineData((byte)0, CalibrationWorkflowState.Success)]
+    [InlineData((byte)3, CalibrationWorkflowState.Failed)]
+    public async Task SimpleCalibrationWaitsForActualAcknowledgement(byte result, CalibrationWorkflowState expected)
+    {
+        using var fixture = new Fixture();
+        var operation = fixture.Service.StartSimpleAsync(fixture.Id, TestContext.Current.CancellationToken);
+        Assert.Contains(fixture.Commands, command => command.Command == 241 && command.Parameters[4] == 4);
+        Assert.Equal(AccelerometerCalibrationKind.Simple, fixture.Service.Current.Kind);
+        await fixture.Acknowledge(result);
+        await operation;
+        Assert.Equal(expected, fixture.Service.Current.State);
+        Assert.Null(fixture.Gate.GetCurrentOperation(fixture.Id));
+        Assert.Empty(fixture.Service.Current.CompletedOrientations);
+    }
+
+    /// <summary>A missing acknowledgement times out and releases operation ownership.</summary>
+    [Fact]
+    public async Task SimpleCalibrationTimeoutIsBounded()
+    {
+        using var fixture = new Fixture(TimeSpan.FromMilliseconds(30));
+        await fixture.Service.StartSimpleAsync(fixture.Id, TestContext.Current.CancellationToken);
+        Assert.Equal(CalibrationWorkflowState.Failed, fixture.Service.Current.State);
+        Assert.Null(fixture.Gate.GetCurrentOperation(fixture.Id));
+    }
+
     /// <summary>All orientations follow firmware requests and explicit success refreshes parameters/status.</summary>
     [Fact]
     public async Task SixPositionsCompleteAndRefreshReadiness()
@@ -154,6 +181,9 @@ public sealed class AccelerometerWorkflowTests
 
         public Task Position(float position) => receive!(new CommandLongMessage(1, 1, endpoint,
             255, 190, 42429, 0, position, 0, 0, 0, 0, 0, 0, DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
+
+        public Task Acknowledge(byte result) => receive!(new CommandAckMessage(1, 1, endpoint,
+            241, result, DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
 
         public void Dispose() => Service.Dispose();
     }

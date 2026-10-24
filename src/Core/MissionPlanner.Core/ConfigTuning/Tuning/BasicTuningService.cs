@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -84,7 +84,8 @@ public sealed class BasicTuningService(
 
             var invalid = rule.Kind switch
             {
-                BasicTuningRuleKind.LessThanOrEqual => firstField.PendingValue > secondField.PendingValue,
+                BasicTuningRuleKind.LessThanOrEqual => TuningParameterCompatibility.ToBaseUnits(firstField.PendingValue, firstField.Metadata.Units ?? TuningParameterCompatibility.Units(first.ParameterName, first.Definition.FallbackUnits)) >
+                    TuningParameterCompatibility.ToBaseUnits(secondField.PendingValue, secondField.Metadata.Units ?? TuningParameterCompatibility.Units(second.ParameterName, second.Definition.FallbackUnits)),
                 BasicTuningRuleKind.PositiveCompanion => firstField.PendingValue > 0 && secondField.PendingValue <= 0,
                 var _ => throw new ArgumentOutOfRangeException(nameof(rule.Kind), rule.Kind, "Unknown Basic Tuning rule kind.")
             };

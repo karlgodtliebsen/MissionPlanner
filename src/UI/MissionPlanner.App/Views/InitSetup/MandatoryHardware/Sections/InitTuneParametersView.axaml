@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:InitTuneParametersViewModel"
+<utilities:UserControlViewBase x:TypeArguments="sections:InitTuneParametersViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
@@ -58,6 +58,41 @@
                     <ScrollViewer VerticalScrollBarVisibility="Visible" Grid.Row="1" Margin="16,0" HorizontalAlignment="Stretch"  HorizontalScrollBarVisibility="Disabled">
                         <Border  Padding="12">
                             <StackPanel Spacing="10">
+                                <Expander Header="Initial tune calculator" HorizontalAlignment="Stretch">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="Starting estimates from the original calculator. Verify against current firmware guidance. Recommendations are not selected or written automatically." TextWrapping="Wrap" />
+                                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+                                            <StackPanel><TextBlock Text="Propeller (inches)" /><NumericUpDown Value="{Binding PropellerInches}" Minimum="1" Maximum="100" Increment="0.1" /></StackPanel>
+                                            <StackPanel Grid.Column="1"><TextBlock Text="Battery cells" /><NumericUpDown Value="{Binding BatteryCells}" Minimum="1" Maximum="32" /></StackPanel>
+                                            <StackPanel Grid.Column="2"><TextBlock Text="Maximum cell V" /><NumericUpDown Value="{Binding CellMaximumVoltage}" Minimum="1" Maximum="5" Increment="0.05" /></StackPanel>
+                                            <StackPanel Grid.Column="3"><TextBlock Text="Minimum cell V" /><NumericUpDown Value="{Binding CellMinimumVoltage}" Minimum="1" Maximum="5" Increment="0.05" /></StackPanel>
+                                        </Grid>
+                                        <CheckBox Content="T-Motor ESC low-expo estimate" IsChecked="{Binding TMotorEsc}" />
+                                        <WrapPanel ItemSpacing="10">
+                                            <Button Command="{Binding CalculateCommand}" ToolTip.Tip="Calculate without writing" AutomationProperties.Name="Calculate initial tune">
+                                                <StackPanel Orientation="Horizontal" Spacing="6"><mdi:MaterialIcon Kind="Calculator" /><TextBlock Text="Calculate" /></StackPanel>
+                                            </Button>
+                                            <Button Command="{Binding StageSelectedCommand}" ToolTip.Tip="Stage selected recommendations" AutomationProperties.Name="Stage selected recommendations">
+                                                <StackPanel Orientation="Horizontal" Spacing="6"><mdi:MaterialIcon Kind="CheckCircleOutline" /><TextBlock Text="Stage selected" /></StackPanel>
+                                            </Button>
+                                            <Button Command="{Binding ApplyModifiedCommand}" ToolTip.Tip="Write pending values and verify readback" AutomationProperties.Name="Apply modified initial tune values">
+                                                <StackPanel Orientation="Horizontal" Spacing="6"><mdi:MaterialIcon Kind="UploadOutline" /><TextBlock Text="Apply modified" /></StackPanel>
+                                            </Button>
+                                        </WrapPanel>
+                                        <ItemsControl ItemsSource="{Binding Proposals}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="sections:InitialTuneProposalViewModel">
+                                                    <Grid ColumnDefinitions="Auto,*,*,*" ColumnSpacing="10" Margin="0,4">
+                                                        <CheckBox IsChecked="{Binding IsSelected}" AutomationProperties.Name="{Binding Name}" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Name}" />
+                                                        <TextBlock Grid.Column="2" Text="{Binding Before, StringFormat='Current: {0}'}" />
+                                                        <TextBlock Grid.Column="3" Text="{Binding After, StringFormat='Proposed: {0}'}" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Expander>
                                 <ItemsControl ItemsSource="{Binding Settings}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="sections:PeripheralSettingViewModel">

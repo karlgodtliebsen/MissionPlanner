@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -153,6 +153,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IGeneratedMissionWorkflow, GeneratedMissionWorkflow>();
         services.TryAddTransient<IMapToolsWorkflow, MapToolsWorkflow>();
 
+        services.TryAddSingleton<MissionPlanner.Core.Notifications.ISpeechService, MissionPlanner.Core.Notifications.UnavailableSpeechService>();
         services.TryAddTransient<IUserNotificationService, UserNotificationService>();
         services.TryAddTransient<IUserConfirmationService, UserConfirmationService>();
         services.TryAddTransient<IMissionMapInteractionService, MissionMapInteractionService>();
@@ -344,6 +345,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<WarningSources>();
         services.TryAddTransient<WarningEngine>();
         services.TryAddSingleton<WarningRuleRepository>();
+        services.TryAddSingleton<WarningMonitor>();
         services.TryAddSingleton<WarningRuleListViewModel>();
         services.TryAddSingleton<WarningRuleEditorViewModel>();
         services.TryAddSingleton<WarningStatusViewModel>();
@@ -379,6 +381,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<GeoFenceTabViewModel>();
         services.TryAddTransient<BasicTuningTabViewModel>();
         services.TryAddTransient<ExtendedTuningTabViewModel>();
+        services.TryAddTransient<PidAdjustmentViewModel>();
         services.TryAddTransient<OnboardOsdTabViewModel>();
         services.TryAddTransient<PreferencesViewModel>();
         services.TryAddTransient<CubeLan8PortSwitchTabViewModel>();
@@ -400,11 +403,13 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FrameSetupViewModel>();
         services.TryAddTransient<AccelerometerSetupViewModel>();
         services.TryAddTransient<CompassSetupViewModel>();
+        services.TryAddTransient<CompassPriorityViewModel>();
         services.TryAddSingleton<Presentation.Documents.IArmingSetupDocumentFactory, Presentation.Documents.ArmingSetupDocumentFactory>();
         services.TryAddSingleton<Presentation.Documents.ICompassSetupDocumentFactory, Presentation.Documents.CompassSetupDocumentFactory>();
         services.TryAddTransient<RadioSetupViewModel>();
         services.TryAddTransient<ServoOutputSetupViewModel>();
         services.TryAddTransient<EscMotorSetupViewModel>();
+        services.TryAddTransient<TraditionalHelicopterViewModel>();
         services.TryAddTransient<FlightModesSetupViewModel>();
         services.TryAddTransient<FailSafeViewModel>();
         services.TryAddTransient<InitTuneParametersViewModel>();
@@ -415,6 +420,7 @@ public static class ApplicationConfigurator
 
         //// Tabs on Setup Optional Hardware View
         services.TryAddTransient<RtkGpsInjectViewModel>();
+        services.TryAddTransient<RtkBaseSetupViewModel>();
         services.TryAddTransient<CubeIdUpdateViewModel>();
         services.TryAddTransient<CanGpsOrderViewModel>();
         services.TryAddTransient<BatterySetupViewModel>();
@@ -430,11 +436,17 @@ public static class ApplicationConfigurator
         services.TryAddTransient<OnboardOsdBridgeViewModel>();
         services.TryAddTransient<CameraGimbalViewModel>();
         services.TryAddTransient<SikRadioViewModel>();
+        services.TryAddTransient<SikFirmwareViewModel>();
         services.TryAddTransient<BluetoothSetupViewModel>();
         services.TryAddTransient<MotorTestViewModel>();
         services.TryAddSingleton<MotorLayoutResolver>();
         services.TryAddTransient<ParachuteViewModel>();
         services.TryAddTransient<Esp8266SetupViewModel>();
+        services.TryAddTransient<OsdTuningSlotsViewModel>();
+        services.TryAddTransient<ParameterMaintenanceViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Position.OperatorPositionViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Scripting.ScriptingConsoleViewModel>();
+        services.TryAddTransient<MissionPlanner.App.Views.InitSetup.Advanced.Privacy.PrivacyExportViewModel>();
         services.TryAddTransient<AntennaTrackerViewModel>();
         services.TryAddTransient<FftSetupViewModel>();
         services.TryAddSingleton<MissionPlanner.App.Views.Analysis.FftAnalysisViewModel>();

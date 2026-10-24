@@ -1,16 +1,17 @@
 using System.Globalization;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
+using MissionPlanner.Core.Missions.Planning;
 
 namespace MissionPlanner.Core.Setup.Advanced.Nmea;
 
-/// <summary>Configures coalesced GGA/RMC output without fabricating unavailable measurements.</summary>
-public sealed record NmeaOptions(bool Gga = true, bool Rmc = true, int RateHz = 1)
+/// <summary>Configures coalesced, selectable navigation output without fabricating unavailable measurements.</summary>
+public sealed record NmeaOptions(bool Gga = true, bool Rmc = true, int RateHz = 1, bool Gll = false, bool Vtg = false, bool Hdt = false, bool LegacyRpy = false, bool LegacyHom = false)
 {
     /// <summary>Validates the sentence selection and one-to-ten-Hz output range.</summary>
     public void Validate()
     {
-        if ((!Gga && !Rmc) || RateHz is < 1 or > 10) { throw new ArgumentException("Select at least one sentence and an output rate from 1 to 10 Hz."); }
+        if ((!Gga && !Rmc && !Gll && !Vtg && !Hdt && !LegacyRpy && !LegacyHom) || RateHz is < 1 or > 10) { throw new ArgumentException("Select at least one sentence and an output rate from 1 to 10 Hz."); }
     }
 }
 
@@ -25,7 +26,7 @@ public static class NmeaFormatter
     public static readonly TimeSpan MaximumAge = TimeSpan.FromSeconds(3);
 
     /// <summary>Builds GGA/RMC using receiver coordinates and UTC reception time; stale fields are blank.</summary>
-    public static NmeaBatch Format(VehicleState? state, DateTimeOffset now, NmeaOptions options)
+    public static NmeaBatch Format(VehicleState? state, DateTimeOffset now, NmeaOptions options, TrackerHomeSnapshot? trackerHome = null)
     {
         options.Validate();
         var gps = state?.Gps;
@@ -58,9 +59,50 @@ public static class NmeaFormatter
                 ? (Math.Round(gps.CourseDegrees!.Value, 2) % 360).ToString("0.00", invariant) : "";
             sentences.Add(Sentence($"GPRMC,{time},{(valid ? "A" : "V")},{latitude},{northSouth},{longitude},{eastWest},{speed},{course},{date},,"));
         }
+        if (options.Gll)
+        {
+            sentences.Add(Sentence($"GPGLL,{latitude},{northSouth},{longitude},{eastWest},{time},{(valid ? "A" : "V")},{(valid ? "A" : "N")}"));
+        }
+        if (options.Vtg)
+        {
+            var course = valid && Finite(gps!.CourseDegrees, 0, 360)
+                ? (gps.CourseDegrees!.Value % 360).ToString("0.00", invariant) : "";
+            var knots = valid && Finite(gps!.GroundSpeedMetersPerSecond, 0, 10000)
+                ? (gps.GroundSpeedMetersPerSecond!.Value * 3600 / 1852).ToString("0.00", invariant) : "";
+            var kmh = valid && Finite(gps!.GroundSpeedMetersPerSecond, 0, 10000)
+                ? (gps.GroundSpeedMetersPerSecond!.Value * 3.6).ToString("0.00", invariant) : "";
+            sentences.Add(Sentence($"GPVTG,{course},T,,M,{knots},N,{kmh},K,{(valid ? "A" : "N")}"));
+        }
+        var motion = state?.Motion;
+        var attitudeFresh = Fresh(motion?.AttitudeObservedAt, now);
+        var heading = attitudeFresh && Finite(motion!.YawRadians, -Math.PI * 2, Math.PI * 2)
+            ? ((motion.YawRadians!.Value * 180 / Math.PI + 360) % 360).ToString("0.00000", invariant) : "";
+        if (options.Hdt)
+        {
+            sentences.Add(Sentence($"GPHDT,{heading},T"));
+        }
+        if (options.LegacyRpy)
+        {
+            var roll = attitudeFresh && Finite(motion!.RollRadians, -Math.PI * 2, Math.PI * 2)
+                ? (motion.RollRadians!.Value * 180 / Math.PI).ToString("0.00000", invariant) : "";
+            var pitch = attitudeFresh && Finite(motion!.PitchRadians, -Math.PI, Math.PI)
+                ? (motion.PitchRadians!.Value * 180 / Math.PI).ToString("0.00000", invariant) : "";
+            sentences.Add(Sentence($"GPRPY,{roll},{pitch},{heading},"));
+        }
+        if (options.LegacyHom)
+        {
+            var home = trackerHome is { Position.IsValid: true } && trackerHome.UpdatedAt <= now ? trackerHome : null;
+            // Preserve the original custom HOM wire convention (decimal degrees multiplied by 100), not NMEA degrees/minutes.
+            var homeLat = home is null ? "" : Math.Abs(home.Position.LatitudeDegrees * 100).ToString("0.00000", invariant);
+            var homeLon = home is null ? "" : Math.Abs(home.Position.LongitudeDegrees * 100).ToString("0.00000", invariant);
+            var homeNs = home is null ? "" : home.Position.LatitudeDegrees < 0 ? "S" : "N";
+            var homeEw = home is null ? "" : home.Position.LongitudeDegrees < 0 ? "W" : "E";
+            var homeAlt = home is null ? "" : Number(home.AltitudeMeters, -10000, 100000, "0.0");
+            sentences.Add(Sentence($"GPHOM,{(home is null ? "" : now.UtcDateTime.ToString("HHmmss.fff", invariant))},{homeLat},{homeNs},{homeLon},{homeEw},{homeAlt},M,"));
+        }
         return new(string.Concat(sentences), sentences.Count, valid,
             valid ? "Current receiver fix; unavailable fields are blank. UTC is receiver-message reception time."
-                : "No valid current receiver fix; GGA quality 0 / RMC void with blank measurements.");
+                : "No valid current receiver fix; position and velocity fields are blank. Attitude has independent freshness.");
     }
 
     /// <summary>Formats degrees/minutes with carry at rounded minute boundaries.</summary>

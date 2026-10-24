@@ -19,6 +19,9 @@ public sealed record WarningRuleLoadResult(IReadOnlyList<WarningRule> Rules, str
 /// <summary>Validates versioned documents and isolates malformed rules without preventing startup.</summary>
 public sealed class WarningRuleRepository(IWarningRuleStore store, WarningSources sources)
 {
+    /// <summary>Raised after a complete valid rule set has been saved successfully.</summary>
+    public event Action<IReadOnlyList<WarningRule>>? Saved;
+
     /// <summary>Maximum persisted size in characters; browser storage and recovery are bounded.</summary>
     public const int MaximumDocumentLength = 262144;
 
@@ -104,5 +107,6 @@ public sealed class WarningRuleRepository(IWarningRuleStore store, WarningSource
             throw new ArgumentException("The warning document exceeds 256 KiB.", nameof(rules));
         }
         await store.WriteAsync(document, token);
+        Saved?.Invoke(rules.ToArray());
     }
 }

@@ -112,6 +112,27 @@ public sealed class MavLinkSigningSession(IMavLinkCrcExtraProvider crc, TimeProv
         }
     }
 
+    /// <summary>Stops outbound signing after an explicit disable request, preserving diagnostic counters.</summary>
+    public async Task DisableOutgoingAsync(CancellationToken token)
+    {
+        await sends.WaitAsync(token).ConfigureAwait(false);
+        try
+        {
+            lock (sync)
+            {
+                CancelSetup();
+                active?.Dispose();
+                active = null;
+                persistReservation = null;
+                reserved = 0;
+            }
+        }
+        finally
+        {
+            sends.Release();
+        }
+    }
+
     /// <summary>Authenticates a CRC-checked frame. Unsigned frames remain permitted.</summary>
     public MavLinkSignatureStatus Verify(ReadOnlySpan<byte> packet)
     {

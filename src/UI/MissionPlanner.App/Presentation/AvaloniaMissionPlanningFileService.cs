@@ -62,6 +62,26 @@ public sealed class AvaloniaMissionPlanningFileService(
             return localPath;
         });
 
+    /// <inheritdoc />
+    public Task<string?> SaveNewAsync(string fileName, Stream content, CancellationToken cancellationToken = default) =>
+        dispatcher.DispatchAsync(async () =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var owner = windowProvider.ActiveWindow ?? throw new InvalidOperationException("No active window is available.");
+            var options = PlanningFilePickerOptions.ForSave(fileName);
+            options.SuggestedStartLocation = await GetStartLocationAsync(owner.StorageProvider, cancellationToken);
+            var file = await owner.StorageProvider.SaveFilePickerAsync(options);
+            if (file is null) return null;
+            var path = file.TryGetLocalPath() ?? throw new NotSupportedException("Select a new local file for this export.");
+            cancellationToken.ThrowIfCancellationRequested();
+            await using var destination = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 8192, FileOptions.Asynchronous);
+            if (content.CanSeek) content.Position = 0;
+            await content.CopyToAsync(destination, cancellationToken);
+            await destination.FlushAsync(cancellationToken);
+            await RememberParentDirectoryAsync(path, cancellationToken);
+            return path;
+        });
+
     private async Task<IStorageFolder?> GetStartLocationAsync(
         IStorageProvider storageProvider,
         CancellationToken cancellationToken)

@@ -1,6 +1,6 @@
 namespace MissionPlanner.Core.Setup.Advanced;
 
-/// <summary>Stable identities for the thirteen Advanced Setup tools.</summary>
+/// <summary>Stable identities for Advanced Setup tools; existing route values are preserved.</summary>
 public enum AdvancedFeatureId
 {
     /// <summary>Evaluates operator-defined telemetry warnings.</summary>
@@ -17,18 +17,20 @@ public enum AdvancedFeatureId
     Nmea,
     /// <summary>Sends operator location updates.</summary>
     FollowMe,
-    /// <summary>Exports parameter descriptions.</summary>
+    /// <summary>Refreshes the official parameter metadata cache.</summary>
     ParameterMetadata,
     /// <summary>Relays moving-base positions.</summary>
     MovingBase,
-    /// <summary>Removes identifying log information.</summary>
+    /// <summary>Exports a limited allowlist of diagnostic log signals.</summary>
     AnonymousLogs,
     /// <summary>Analyzes frequency content.</summary>
     Fft,
     /// <summary>Analyzes frequency content over time.</summary>
     Spectrogram,
     /// <summary>Provides a consent-controlled support connection.</summary>
-    SupportProxy
+    SupportProxy,
+    /// <summary>Opens an explicitly selected onboard scripting console.</summary>
+    ScriptingConsole
 }
 
 /// <summary>Requirements evaluated before a tool may launch.</summary>
@@ -84,11 +86,12 @@ public static class AdvancedFeatureCatalog
         new(AdvancedFeatureId.Mirror, "MAVLink Output / Mirror", "Forward telemetry to an explicitly selected endpoint.", "Output", "Forwarded telemetry may contain sensitive vehicle information.", AdvancedRequirement.Connection | AdvancedRequirement.OutputEndpoint),
         new(AdvancedFeatureId.Nmea, "NMEA Output", "Send navigation data as NMEA sentences.", "Output", "Only current, valid positions may be output.", AdvancedRequirement.Connection | AdvancedRequirement.Vehicle | AdvancedRequirement.OutputEndpoint),
         new(AdvancedFeatureId.FollowMe, "Follow Me", "Use the operator's location as a follow target.", "Operations", "This can move the vehicle. Review target, mode, and location accuracy before starting.", AdvancedRequirement.Connection | AdvancedRequirement.Vehicle | AdvancedRequirement.Location),
-        new(AdvancedFeatureId.ParameterMetadata, "Parameter Metadata Generator", "Generate and validate parameter metadata files.", "Files", "Generated metadata is documentation; it does not write vehicle parameters.", AdvancedRequirement.FileOpen | AdvancedRequirement.FileSave),
+        new(AdvancedFeatureId.ParameterMetadata, "Parameter Metadata Refresh", "Refresh official descriptions from the Parameters Editor.", "Configuration", "Review pending edits before refreshing. This does not write vehicle parameters.", AdvancedRequirement.Connection | AdvancedRequirement.Vehicle | AdvancedRequirement.Parameters),
         new(AdvancedFeatureId.MovingBase, "Moving Base", "Relay a selected moving base position.", "Operations", "Incorrect or stale base positions can affect vehicle navigation.", AdvancedRequirement.Connection | AdvancedRequirement.Vehicle),
-        new(AdvancedFeatureId.AnonymousLogs, "Anonymous Log Export", "Create a separate privacy-reviewed log export.", "Files", "Always review the export before sharing. The original is preserved.", AdvancedRequirement.FileOpen | AdvancedRequirement.FileSave),
+        new(AdvancedFeatureId.AnonymousLogs, "Reduced Diagnostic Export", "Export selected numeric diagnostic signals to a new CSV.", "Files", "Signal patterns may still identify a flight. Review the export before sharing.", AdvancedRequirement.FileOpen | AdvancedRequirement.FileSave),
         new(AdvancedFeatureId.Fft, "FFT Analysis", "Analyze recorded signals in the frequency domain.", "Analysis", "Sampling rate and gaps affect the interpretation of peaks.", AdvancedRequirement.FileOpen),
         new(AdvancedFeatureId.Spectrogram, "Spectrogram", "Explore how recorded frequency content changes over time.", "Analysis", "Window size trades time resolution for frequency resolution.", AdvancedRequirement.FileOpen),
-        new(AdvancedFeatureId.SupportProxy, "Serial Support Proxy", "Share an explicitly consented support connection.", "Security", "Review the endpoint and access mode. Stop the session to revoke access.", AdvancedRequirement.Connection | AdvancedRequirement.OutputEndpoint)
+        new(AdvancedFeatureId.SupportProxy, "Serial Support Proxy", "Historical support integration; no current service is configured.", "Security", "This legacy feature is not registered or available.", AdvancedRequirement.Connection | AdvancedRequirement.OutputEndpoint),
+        new(AdvancedFeatureId.ScriptingConsole, "Scripting Console", "Use an installed Lua REPL applet or a compatible legacy native REPL.", "Operations", "Commands execute onboard. Review the target and selected protocol before connecting.", AdvancedRequirement.Connection | AdvancedRequirement.Vehicle)
     ]);
 }

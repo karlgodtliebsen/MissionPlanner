@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+using System.Globalization;
+using System.Reflection;
+using System.Xml;
 using System.Xml.Linq;
 using MissionPlanner.Themes.Controls;
 using MissionPlanner.App.Maps;
@@ -164,6 +166,40 @@ public sealed class AvaloniaMigrationContractTests
         Assert.True(reset >= 0, "The handler must reset the previous MAVFTP connection.");
         Assert.True(tokenCreation > reset, "The new connection token must not be cancelled by reset.");
         Assert.True(refresh > tokenCreation, "The root-directory refresh must follow initialization.");
+    }
+
+    /// <summary>Rejects numeric literals that compile into a failing Decimal.Parse call when a view opens.</summary>
+    [Fact]
+    public void NumericUpDownDecimalLiteralsCanBeParsedWhenViewsLoad()
+    {
+        var root = RepositoryPath("src", "UI", "MissionPlanner.App");
+        XNamespace ui = "https://github.com/avaloniaui";
+        var invalid = new List<string>();
+        var literalCount = 0;
+        foreach (var path in Directory.EnumerateFiles(root, "*.axaml", SearchOption.AllDirectories))
+        {
+            var document = XDocument.Parse(File.ReadAllText(path), LoadOptions.SetLineInfo);
+            foreach (var attribute in document.Descendants(ui + "NumericUpDown")
+                .Attributes().Where(attribute => attribute.Name.LocalName is "Value" or "Minimum" or "Maximum" or "Increment"))
+            {
+                if (attribute.Value.TrimStart().StartsWith('{'))
+                {
+                    continue;
+                }
+
+                literalCount++;
+                // Avalonia's compiled decimal literals use Decimal.Parse(string, IFormatProvider),
+                // whose default NumberStyles.Number does not allow exponent notation.
+                if (!decimal.TryParse(attribute.Value, NumberStyles.Number, CultureInfo.InvariantCulture, out _))
+                {
+                    var line = ((IXmlLineInfo)attribute).LineNumber;
+                    invalid.Add($"{Path.GetRelativePath(root, path)}:{line}: {attribute.Name}={attribute.Value}");
+                }
+            }
+        }
+
+        Assert.True(literalCount > 0, "The scan must inspect application NumericUpDown literals.");
+        Assert.True(invalid.Count == 0, "Decimal literals must use plain decimal notation:\n" + string.Join("\n", invalid));
     }
 
     private static string RepositoryPath(params string[] parts)

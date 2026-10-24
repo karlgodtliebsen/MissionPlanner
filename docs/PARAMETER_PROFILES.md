@@ -54,6 +54,19 @@ reuse existing Core services. File dialogs reuse `IFileOpenService`/`IFileSaveSe
 Offline view-model tests cover creation scopes, metadata persistence, multi-profile
 selection, rename/duplicate/delete, import identity isolation, export, invalid inputs,
 compatibility warnings, explicit staging, session invalidation during confirmation and
-absence of writes. A headless test renders the actual AXAML with production styles.
+absence of writes. The headless AXAML rendering test is currently skipped because of the existing Avalonia
+thread-ownership issue (UI-SKIP-03); compiled bindings still build.
 Existing editor progress/threading tests and Core profile/comparison tests are also run.
 No connected flight controller is used for validation.
+
+## Official preset library (2026-10-24)
+
+The profiles dialog can browse the official ArduPilot `Tools/Frame_params` library on request.
+Selecting a file imports its verified immutable Git blob into a local profile. The usual
+comparison, selected staging and separate Apply workflow remains mandatory; downloading a preset
+does not change vehicle parameters. Files may target old firmware or different hardware.
+
+Browsing and import have cancel controls. Closing the dialog cancels and joins these requests;
+a regression test verifies cancellation without profile creation or vehicle writes. Saved local
+profiles remain available offline. Requests and parsed files have explicit size/count bounds.
+See [CF-09 in the implementation ledger](review-20261023/IMPLEMENTATION.md).

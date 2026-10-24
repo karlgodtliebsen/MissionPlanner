@@ -92,12 +92,12 @@ public sealed partial class ExtendedTuningGroupViewModel : ObservableObject
         set;
     }
 
-    /// <summary>Gets whether editor rows have been materialized.</summary>
+    /// <summary>Gets or sets whether the group is expanded, materializing editor rows on first expansion.</summary>
     [ObservableProperty]
     public partial bool IsExpanded
     {
         get;
-        private set;
+        set;
     }
 
     /// <summary>Gets whether this group contains pending changes.</summary>
@@ -265,12 +265,16 @@ public sealed partial class ExtendedTuningGroupViewModel : ObservableObject
 
     private void ToggleExpanded()
     {
-        if (!IsExpanded)
+        IsExpanded = !IsExpanded;
+    }
+
+    partial void OnIsExpandedChanged(bool value)
+    {
+        if (value)
         {
             EnsureMaterialized();
         }
 
-        IsExpanded = !IsExpanded;
         RefreshVisibleFields();
     }
 

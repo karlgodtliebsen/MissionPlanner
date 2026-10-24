@@ -1,6 +1,7 @@
-﻿using MissionPlanner.App.Utilities.Dialogs;
+using MissionPlanner.App.Utilities.Dialogs;
 using MissionPlanner.App.Utilities.Dispatching;
 using MissionPlanner.Core.Notifications;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Library.DateTime.Domain;
 
 namespace MissionPlanner.App.Presentation;
@@ -14,6 +15,8 @@ public sealed class UserNotificationService : IUserNotificationService
     private readonly IDialogService dialogService;
     private readonly IApplicationNotificationStore notificationStore;
     private readonly IDateTimeProvider clock;
+    private readonly ISpeechService? speech;
+    private readonly IPlannerSettingsService? settings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UserNotificationService"/> class.
@@ -22,22 +25,34 @@ public sealed class UserNotificationService : IUserNotificationService
     /// <param name="dialogService"></param>
     /// <param name="notificationStore">The bounded local-notification history.</param>
     /// <param name="clock">The application clock.</param>
+    /// <param name="speech">Optional local speech output.</param>
+    /// <param name="settings">Saved speech preferences.</param>
     public UserNotificationService(
         IUiDispatcher dispatcher,
         IDialogService dialogService,
         IApplicationNotificationStore notificationStore,
-        IDateTimeProvider clock)
+        IDateTimeProvider clock,
+        ISpeechService? speech = null,
+        IPlannerSettingsService? settings = null)
     {
         this.dispatcher = dispatcher;
         this.dialogService = dialogService;
         this.notificationStore = notificationStore;
         this.clock = clock;
+        this.speech = speech;
+        this.settings = settings;
     }
 
     /// <inheritdoc />
     public async Task NotifyAsync(UserNotification notification, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         notificationStore.Add(notification, clock.UtcNow);
+        if (settings?.Current.Legacy is { SpeechEnabled: true } preferences && speech?.IsAvailable == true &&
+            Enum.TryParse<UserNotificationSeverity>(preferences.SpeechSeverity, true, out var minimum) && notification.Severity >= minimum)
+        {
+            speech.TryEnqueue(notification.Message);
+        }
 
         if (notification.Presentation is not UserNotificationPresentation.Dialog)
         {

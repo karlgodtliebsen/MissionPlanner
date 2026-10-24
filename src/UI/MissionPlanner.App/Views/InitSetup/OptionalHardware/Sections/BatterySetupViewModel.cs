@@ -114,8 +114,9 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
     /// <param name="instance">The battery instance index.</param>
     /// <param name="setting">The setting to write.</param>
     /// <param name="value">The value to write.</param>
+    /// <param name="cancellationToken">Cancels the write and readback operation.</param>
     /// <returns>A task that completes after the write is confirmed or reported failed.</returns>
-    internal async Task ApplyAsync(int instance, BatterySetting setting, double value)
+    internal async Task ApplyAsync(int instance, BatterySetting setting, double value, CancellationToken cancellationToken = default)
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
@@ -123,7 +124,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
             return;
         }
 
-        var token = StartOperation();
+        var token = StartOperation(cancellationToken);
         try
         {
             var result = await batteryService.SetValueAsync(vehicleId, instance, setting, value, token);
@@ -215,11 +216,11 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         Dispatcher.Dispatch(() => Show(configuration, true));
     }
 
-    private CancellationToken StartOperation()
+    private CancellationToken StartOperation(CancellationToken cancellationToken = default)
     {
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
-        operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
+        operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken, cancellationToken);
         SetMessages(null, null);
         return operationCancellation.Token;
     }
@@ -314,12 +315,25 @@ public sealed partial class BatteryInstanceViewModel : ObservableObject
     private double liveVoltage;
     private double liveCurrent;
 
+    /// <summary>Gets backend, input-pin, scaling and failsafe-action editors for this reported monitor instance.</summary>
+    public IReadOnlyList<ParameterSettingViewModel> ConfigurationSettings { get; }
+
     /// <summary>Initializes a battery instance row.</summary>
     /// <param name="instance">The discovered instance.</param>
     /// <param name="configuration">The owning configuration projection.</param>
     /// <param name="parent">The owning battery workflow.</param>
     public BatteryInstanceViewModel(BatteryMonitorInstance instance, BatteryConfiguration configuration, BatterySetupViewModel parent)
     {
+        ConfigurationSettings = instance.Settings
+            .Where(item => item.Key is BatterySetting.Monitor or BatterySetting.VoltagePin or BatterySetting.CurrentPin or
+                BatterySetting.VoltageMultiplier or BatterySetting.CurrentPerVolt or BatterySetting.CurrentOffset or
+                BatterySetting.LowAction or BatterySetting.CriticalAction)
+            .Select(item => new ParameterSettingViewModel(item.Value, (_, value, token) =>
+            {
+                token.ThrowIfCancellationRequested();
+                return parent.ApplyAsync(instance.Index, item.Key, value, token);
+            })).ToArray();
+
         this.parent = parent;
         Index = instance.Index;
         MonitorName = instance.MonitorName;

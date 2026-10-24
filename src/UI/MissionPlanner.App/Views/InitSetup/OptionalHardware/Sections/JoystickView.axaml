@@ -56,12 +56,19 @@
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" AutomationProperties.Name="Disable and release vehicle control">
                                 <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" Width="20" Height="20" />
                             </Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Start local preview" Command="{Binding PreviewCommand}" AutomationProperties.Name="Start local preview"><mdi:MaterialIcon Kind="Play" Classes="ActionIcon" /></Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Stop preview" Command="{Binding StopPreviewCommand}" AutomationProperties.Name="Stop preview"><mdi:MaterialIcon Kind="Pause" Classes="ActionIcon" /></Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Capture axis ranges" Command="{Binding CaptureRangeCommand}" AutomationProperties.Name="Capture axis ranges"><mdi:MaterialIcon Kind="Tune" Classes="ActionIcon" /></Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Finish calibration" Command="{Binding FinishCalibrationCommand}" AutomationProperties.Name="Finish calibration"><mdi:MaterialIcon Kind="Check" Classes="ActionIcon" /></Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Save local mapping" Command="{Binding SaveCommand}" AutomationProperties.Name="Save local mapping"><mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" /></Button>
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Enable vehicle control" Command="{Binding EnableCommand}" AutomationProperties.Name="Enable vehicle control"><mdi:MaterialIcon Kind="GamepadVariant" Classes="ActionIcon" /></Button>
                         </WrapPanel>
                     </Border>
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                         <Border Classes="SectionCard" HorizontalAlignment="Stretch" Padding="12">
                             <StackPanel Spacing="20">
                                 <ComboBox ToolTip.Tip="Local device"
+                                          IsEnabled="{Binding !IsPreviewRunning}"
                                           ItemsSource="{Binding Devices}"
                                           VerticalAlignment="Bottom"
                                           HorizontalAlignment="Stretch"
@@ -69,9 +76,43 @@
                                           DisplayMemberBinding="{Binding Name}"
                                           SelectedItem="{Binding SelectedDevice}" />
                                 <TextBlock Text="Local calibration is separate from vehicle RC calibration." />
+                                <TextBlock Text="Select axes, start preview, capture full ranges, return sticks to center and finish calibration. Review reversal and low throttle, check calibration, then restart preview. Stop preview before changing mappings." TextWrapping="Wrap" />
+                                <ItemsControl ItemsSource="{Binding Axes}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="sections:JoystickAxisEditor">
+                                            <Border Classes="SectionCard" Padding="8" Margin="0,4">
+                                                <StackPanel Spacing="6">
+                                                    <TextBlock Text="{Binding Function}" FontWeight="Bold" />
+                                                    <WrapPanel ItemSpacing="8" IsEnabled="{Binding !$parent[ItemsControl].((sections:JoystickViewModel)DataContext).IsPreviewRunning}">
+                                                        <StackPanel><TextBlock Text="Axis (0-based)" /><NumericUpDown Value="{Binding AxisIndex}" Minimum="0" Maximum="63" Width="90" /></StackPanel>
+                                                        <StackPanel><TextBlock Text="Minimum" /><NumericUpDown Value="{Binding Minimum}" Minimum="-1" Maximum="1" Increment="0.01" Width="100" /></StackPanel>
+                                                        <StackPanel><TextBlock Text="Center" /><NumericUpDown Value="{Binding Center}" Minimum="-1" Maximum="1" Increment="0.01" Width="100" /></StackPanel>
+                                                        <StackPanel><TextBlock Text="Maximum" /><NumericUpDown Value="{Binding Maximum}" Minimum="-1" Maximum="1" Increment="0.01" Width="100" /></StackPanel>
+                                                        <StackPanel><TextBlock Text="Dead zone" /><NumericUpDown Value="{Binding DeadZone}" Minimum="0" Maximum="0.5" Increment="0.01" Width="100" /></StackPanel>
+                                                        <StackPanel><TextBlock Text="Expo" /><NumericUpDown Value="{Binding Expo}" Minimum="0" Maximum="1" Increment="0.05" Width="100" /></StackPanel>
+                                                        <CheckBox Content="Reverse" IsChecked="{Binding Reverse}" />
+                                                    </WrapPanel>
+                                                    <ProgressBar Minimum="-1" Maximum="1" Value="{Binding Normalized}" />
+                                                    <TextBlock Text="{Binding Raw, StringFormat='Raw: {0:F3}'}" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <StackPanel Spacing="8" IsEnabled="{Binding !IsPreviewRunning}">
+                                    <TextBlock Text="Output protocol" /><ComboBox ItemsSource="{Binding OutputModes}" SelectedItem="{Binding SelectedOutputMode}" />
+                                    <TextBlock Text="Deadman button (0-based)" /><NumericUpDown Value="{Binding DeadmanButton}" Minimum="0" Maximum="127" />
+                                    <TextBlock Text="Optional MANUAL_CONTROL button bits: comma-separated physical indices; -1 skips a bit. Exclude the deadman. RC override sends only the four mapped flight axes." TextWrapping="Wrap" />
+                                    <TextBox Text="{Binding ButtonMappings}" />
+                                    <CheckBox Content="I have reviewed axis calibration, direction and low throttle" IsChecked="{Binding CalibrationReviewed}" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding PressedButtons, StringFormat='Pressed buttons: {0}'}" />
+                                <TextBlock Text="{Binding SavedDeviceName, StringFormat='Saved calibration device: {0}'}" />
                                 <StackPanel Orientation="Horizontal">
                                     <CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Content="Vehicle MANUAL_CONTROL output (disabled by default)" />
                                 </StackPanel>
+                                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
                     </ScrollViewer>

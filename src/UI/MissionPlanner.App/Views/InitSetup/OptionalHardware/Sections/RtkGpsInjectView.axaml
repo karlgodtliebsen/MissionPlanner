@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:RtkGpsInjectViewModel" xmlns="https://github.com/avaloniaui"
+<utilities:UserControlViewBase x:TypeArguments="sections:RtkGpsInjectViewModel" xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
                                xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -63,19 +63,22 @@
                                       ToolTip.Tip="Source" ItemsSource="{Binding SourceKinds}" SelectedItem="{Binding SourceKind}"
                                       HorizontalContentAlignment="Right"
                                       />
-                            <TextBox PlaceholderText="Serial port or caster host" Text="{Binding Endpoint}"  HorizontalContentAlignment="Right"/>
+                            <TextBox PlaceholderText="Serial port, TCP/NTRIP host, or UDP bind IP" Text="{Binding Endpoint}"  HorizontalContentAlignment="Right"/>
                             <NumericUpDown ShowButtonSpinner="False" PlaceholderText="Baud or caster port" Value="{Binding PortOrBaud}" Minimum="0" FormatString="F0"  HorizontalContentAlignment="Right"/>
                             <TextBox PlaceholderText="NTRIP mount point" Text="{Binding MountPoint}" HorizontalContentAlignment="Right" />
                             <TextBox PlaceholderText="NTRIP username" Text="{Binding Username}" HorizontalContentAlignment="Right" />
                             <TextBox PlaceholderText="NTRIP password" Text="{Binding Password}" PasswordChar="●" HorizontalContentAlignment="Right" />
                             <StackPanel Orientation="Horizontal">
-                                <CheckBox IsChecked="{Binding UseTls}" Content="Use TLS" />
+                                <CheckBox IsChecked="{Binding UseTls}" Content="Use TLS for NTRIP" />
                             </StackPanel>
+                            <CheckBox IsChecked="{Binding AllConnectedVehicles}" Content="Send to all currently connected endpoints" />
+                            <TextBlock Text="Default target: the selected vehicle at start. Target membership is fixed until Stop. UDP binds the specified local IP; use 127.0.0.1 for local sources. Reconnecting requires an explicit restart." TextWrapping="Wrap" />
 
                         </StackPanel>
                     </Border>
                 </Grid>
             </TabItem>
+            <TabItem Header="Base receiver"><sections:RtkBaseSetupView/></TabItem>
         </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

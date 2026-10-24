@@ -1,4 +1,4 @@
-﻿using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.Setup.MandatoryHardware;
 
@@ -19,6 +19,8 @@ public sealed record PeripheralSetting(
     IReadOnlyList<PeripheralSettingOption> Options,
     bool IsSecret = false)
 {
+    /// <summary>Gets whether firmware metadata prohibits writes.</summary>
+    public bool ReadOnly { get; init; }
     /// <summary>Gets explanatory firmware metadata.</summary>
     public string Description { get; init; } = string.Empty;
     /// <summary>Gets the measurement units.</summary>

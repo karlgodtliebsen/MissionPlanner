@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Diagnostics;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -82,6 +82,36 @@ public sealed class ReceiverBindTests
             });
         var retry = await fixture.Service.StartReceiverBindAsync(new(1, 1), TestContext.Current.CancellationToken);
         Assert.Equal(VehicleCommandResult.Accepted, retry.Response.Result);
+    }
+
+    [Fact]
+    public async Task FixedYawUsesTrueHeadingAndExplicitPositionAndWaitsForAcknowledgement()
+    {
+        var fixture = new Fixture();
+        fixture.Protocol.SendRawAsync(Arg.Any<ReadOnlyMemory<byte>>(), Arg.Any<TransportEndPoint>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                fixture.Tracker.Handle(new CommandAckMessage(1, 1, new("test"), 42006, 0, fixture.Now));
+                return ValueTask.CompletedTask;
+            });
+        var result = await fixture.Service.CalibrateCompassFixedYawAsync(new(1, 1), 360, 55, 12, true, TestContext.Current.CancellationToken);
+        Assert.Equal(VehicleCommandResult.Accepted, result.Result);
+        fixture.Encoder.Received(1).EncodeCommandLong(1, 1, 42006,
+            Arg.Is<IReadOnlyList<float>>(values => values.SequenceEqual(new float[] { 0, 0, 55, 12, 0, 0, 0 })));
+    }
+
+    [Theory]
+    [InlineData(true, true, 90, 55, 12)]
+    [InlineData(false, false, 90, 55, 12)]
+    [InlineData(false, true, 361, 55, 12)]
+    [InlineData(false, true, 90, 0, 0)]
+    [InlineData(false, true, 90, 91, 12)]
+    public async Task FixedYawRejectsUnsafeOrUnknownInputs(bool armed, bool confirmed, double yaw, double latitude, double longitude)
+    {
+        var fixture = new Fixture(armed: armed);
+        var result = await fixture.Service.CalibrateCompassFixedYawAsync(new(1, 1), yaw, latitude, longitude, confirmed, TestContext.Current.CancellationToken);
+        Assert.Equal(VehicleCommandResult.Denied, result.Result);
+        Assert.DoesNotContain(fixture.Protocol.ReceivedCalls(), call => call.GetMethodInfo().Name == "SendRawAsync");
     }
 
     private sealed class Fixture

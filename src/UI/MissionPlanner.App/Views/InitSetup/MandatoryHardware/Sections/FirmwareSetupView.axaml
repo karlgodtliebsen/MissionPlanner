@@ -11,17 +11,19 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FirmwareSetupView"
                                x:DataType="sections:FirmwareSetupViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common">
+                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+                               xmlns:u="https://irihi.tech/ursa">
     <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-        <Border HorizontalAlignment="Stretch" Padding="12"  >
+        <u:Banner Grid.Row="0" ShowIcon="False"  Classes="Bordered" Header="ESC calibration and motor test" HorizontalAlignment="Stretch">
             <StackPanel Spacing="10">
                 <TextBlock Text="Connected identity" Classes="H2"/>
                 <ProgressBar IsIndeterminate="True" Theme="{DynamicResource ProgressRing}" IsVisible="{Binding IsBusy}" />
             </StackPanel>
-        </Border>
+        </u:Banner>
+
         <TabControl Grid.Row="1">
             <TabItem Header="Information">
                 <Grid RowDefinitions="Auto,*">

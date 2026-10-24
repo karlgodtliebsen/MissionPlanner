@@ -1,6 +1,8 @@
 # MissionPlanner Next Generation — missing features
 
-Date: 2026-10-23. This is the current list and takes precedence over the older "Missing" sections in
+Baseline date: 2026-10-23. For Mandatory Hardware, Optional Hardware, Config and Advanced, the newer
+[2026-10-24 implementation ledger](review-20261023/IMPLEMENTATION.md) takes precedence over this baseline.
+Other areas below were not re-audited by that implementation. This baseline superseded the older "Missing" sections in
 [FEATURES.md](FEATURES.md). Each item was checked against the code on branch `feature/PX4Flow`, or against a
 living document (named in the last column). "Missing" means no implementation was found; "Partial" means a
 smaller version exists. The context is in [ANALYSIS.md](ANALYSIS.md).
@@ -30,7 +32,7 @@ Impact: **H** operators notice daily, **M** useful workflow gap, **L** niche or 
 | Terrain "Verify Height" against SRTM | Missing | L | FEATURES.md |
 | Capability validation against the vehicle and firmware type | Missing | M | MISSIONS.md "next steps" 5 |
 | Incremental row updates instead of rebuilding all rows on each edit | Missing | L | MISSIONS.md "next steps" 10 |
-| Swarm or follow-me control (multi-vehicle offsets exist as data only) | Missing | L | FEATURES.md |
+| Swarm control | Missing | L | External-GPS Follow Me is now implemented separately; implementation ledger AD-07 |
 
 ## Logs and analysis
 
@@ -53,9 +55,9 @@ Impact: **H** operators notice daily, **M** useful workflow gap, **L** niche or 
 
 | Feature | State | Impact | Evidence |
 |---|---|---|---|
-| Terminal (serial or MAVLink shell) | Missing | M | Original page in the review screenshots |
-| Script REPL | Missing | L | Original page in the review screenshots |
-| User Params page (user-defined parameter list) | Missing | M | Original page in the review screenshots |
+| Legacy serial CLI Terminal | Intentionally retired | L | Implementation ledger AD-13; onboard scripting is a separate workflow |
+| Script REPL | Implemented; hardware qualification pending | L | Implementation ledger AD-12 |
+| User Params (user-defined parameter collections) | Implemented in Parameters Editor | M | Implementation ledger CF-08 |
 | Plugin system | Missing | L | No code |
 | About, version and application update check | Missing | M | No code |
 | Localization | Postponed by decision | L | postponed-2026-10-22.md |

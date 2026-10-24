@@ -1,3 +1,5 @@
+using MissionPlanner.Core.Setup.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -8,7 +10,7 @@ using MissionPlanner.App.Views.Navigation;
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>Presents optional FFT setup information and manual sample analysis.</summary>
-public sealed partial class FftSetupViewModel : OptionalHardwareBaseViewModel
+public sealed partial class FftSetupViewModel : ParameterHardwareViewModel
 {
     private CancellationTokenSource? analysisLifetime;
     private int analysisGeneration;
@@ -21,7 +23,7 @@ public sealed partial class FftSetupViewModel : OptionalHardwareBaseViewModel
         analysisLifetime = new CancellationTokenSource();
         analysisGeneration++;
         IsBusy = false;
-        return Task.CompletedTask;
+        return base.ActivateAsync();
     }
 
     /// <inheritdoc />
@@ -31,7 +33,7 @@ public sealed partial class FftSetupViewModel : OptionalHardwareBaseViewModel
         analysisLifetime?.Cancel();
         analysisLifetime?.Dispose();
         analysisLifetime = null;
-        return Task.CompletedTask;
+        return base.DeactivateAsync();
     }
 
     /// <inheritdoc />
@@ -43,18 +45,6 @@ public sealed partial class FftSetupViewModel : OptionalHardwareBaseViewModel
         analysisLifetime = null;
         base.Dispose();
     }
-    /// <summary>Refreshes the current page state without starting a hardware operation.</summary>
-    [RelayCommand]
-    private async Task RefreshAsync()
-    {
-        if (string.IsNullOrWhiteSpace(SamplesText))
-        {
-            SetMessages("Use an existing downloaded DataFlash sample export; this page does not download logs.");
-            return;
-        }
-        await AnalyzeAsync();
-    }
-
     private readonly INavigationService navigation;
 
     private readonly IFftAnalysisService analysis;
@@ -62,10 +52,13 @@ public sealed partial class FftSetupViewModel : OptionalHardwareBaseViewModel
     /// <summary>
     /// Presents manual sample analysis through the reusable FFT adapter.
     /// </summary>
+    /// <param name="vehicle">The selected connection context.</param>
+    /// <param name="hardware">Loads and confirms supported logging settings.</param>
     /// <param name="analysis">Shared FFT compatibility adapter.</param>
     /// <param name="logger">Presentation logger.</param>
     /// <param name="navigation">The application navigation service.</param>
-    public FftSetupViewModel(IFftAnalysisService analysis, ILogger<FftSetupViewModel> logger, INavigationService navigation) : base(logger)
+    public FftSetupViewModel(IActiveVehicleContext vehicle, IOptionalHardwareService hardware, IFftAnalysisService analysis, ILogger<FftSetupViewModel> logger, INavigationService navigation)
+        : base("fft-logging", vehicle, hardware, logger, navigation)
     {
         this.navigation = navigation;
         this.analysis = analysis;

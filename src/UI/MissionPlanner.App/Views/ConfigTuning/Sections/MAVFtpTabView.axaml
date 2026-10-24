@@ -29,9 +29,16 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" MinWidth="900" MaxWidth="{Binding EditorColumnMaxWidth}" />
             </Grid.ColumnDefinitions>
-            <themeControls:ExpandBanner CanExpand="True"
+           
+<!--            
+<themeControls:ExpandBanner CanExpand="True"
                                         IsExpanded="{Binding IsEditorExpanded, Mode=TwoWay}" Grid.Column="0" Classes="Bordered" Header="Mavlink Ftp" HorizontalAlignment="Stretch">
-                <StackPanel Orientation="Vertical" Grid.Row="0"
+
+            </themeControls:ExpandBanner>
+            -->
+
+            <u:Banner Grid.Row="0" ShowIcon="False"  Classes="Bordered" Header="Mavlink Ftp" HorizontalAlignment="Stretch">
+                 <StackPanel Orientation="Vertical" Grid.Row="0"
                             Margin="0,10,0,0"
                             HorizontalAlignment="Stretch" VerticalAlignment="Center" Spacing="10" >
 
@@ -39,11 +46,11 @@
                                          IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
                                          Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />
                 </StackPanel>
-            </themeControls:ExpandBanner>
-            
-            <Grid Grid.Column="0" Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+            </u:Banner>
+
+            <Grid Grid.Column="0" Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
                 
-                <Button Classes="ToolbarButton" ToolTip.Tip="Upload file to vehicle" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}"  >
+                <Button Classes="ToolbarButton" ToolTip.Tip="Go to parent directory" AutomationProperties.Name="Parent directory" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}"  >
                     <avalonia:MaterialIcon Kind="UploadOutline" Width="30" Height="30" />
                 </Button>
 
@@ -57,6 +64,23 @@
                 <Button Classes="ToolbarButton" Grid.Column="4" ToolTip.Tip="Reset sessions"  IsVisible="{Binding HasConnection}" Command="{Binding ResetSessionsCommand}" AutomationProperties.Name="Reset sessions">
                     <avalonia:MaterialIcon Kind="Restore" Classes="ActionIcon" />
                 </Button>
+                <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="6" IsEnabled="{Binding !IsBusy}">
+                    <Button Classes="ToolbarButton" Command="{Binding UploadCommand}" ToolTip.Tip="Upload new file" AutomationProperties.Name="Upload new file">
+                        <avalonia:MaterialIcon Kind="Upload" Classes="ActionIcon" />
+                    </Button>
+                    <Button Classes="ToolbarButton" Command="{Binding CreateDirectoryCommand}" ToolTip.Tip="Create directory" AutomationProperties.Name="Create directory">
+                        <avalonia:MaterialIcon Kind="FolderPlus" Classes="ActionIcon" />
+                    </Button>
+                    <Button Classes="ToolbarButton" Command="{Binding RenameSelectedCommand}" ToolTip.Tip="Rename selected entry" AutomationProperties.Name="Rename selected entry">
+                        <avalonia:MaterialIcon Kind="RenameBox" Classes="ActionIcon" />
+                    </Button>
+                    <Button Classes="ToolbarButton" Command="{Binding RemoveSelectedCommand}" ToolTip.Tip="Delete selected entry" AutomationProperties.Name="Delete selected entry">
+                        <avalonia:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
+                    </Button>
+                    <Button Classes="ToolbarButton" Command="{Binding CheckCrcCommand}" ToolTip.Tip="Read remote CRC-32" AutomationProperties.Name="Read remote CRC-32">
+                        <avalonia:MaterialIcon Kind="CheckCircleOutline" Classes="ActionIcon" />
+                    </Button>
+                </StackPanel>
             </Grid>
             <Grid Grid.Column="0" Grid.Row="2" RowDefinitions="Auto,*" MinWidth="640">
                 <Grid ColumnDefinitions="300,100,100,180" ColumnSpacing="6" Margin="12,0,12,6">

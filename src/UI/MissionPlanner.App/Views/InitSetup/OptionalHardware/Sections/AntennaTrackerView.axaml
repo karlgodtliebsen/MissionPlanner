@@ -1,42 +1,61 @@
-<utilities:UserControlViewBase x:TypeArguments="sections:AntennaTrackerViewModel"
-                               xmlns="https://github.com/avaloniaui"
-                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
-                               xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
-                               xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
-                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:appSetup="clr-namespace:MissionPlanner.App.Views.Common"
-                               xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
-                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+                               xmlns:mandatory="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections" xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa"
-                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                               x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.AntennaTrackerView"
-                               x:DataType="sections:AntennaTrackerViewModel">
+                               x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.AntennaTrackerView" x:TypeArguments="sections:AntennaTrackerViewModel" x:DataType="sections:AntennaTrackerViewModel">
+    <Grid RowDefinitions="Auto,*" MaxWidth="1100" Margin="12">
 
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
-        </Grid.ColumnDefinitions>
-        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Antenna Tracker" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
+        <u:Banner Grid.Row="0" ShowIcon="False"  Classes="Bordered" Header="Antenna trackers" HorizontalAlignment="Stretch">
+            <StackPanel Spacing="6">
+                <TextBlock Text="{Binding TargetStatus}" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"/>
+                <TextBlock Text="{Binding MovementStatus}" TextWrapping="Wrap"/>
+                <WrapPanel ItemSpacing="8">
+                    <Button Command="{Binding FirmwareTestCancelCommand}" Classes="ToolbarIconButton" 
+                            ToolTip.Tip="Stop firmware test" AutomationProperties.Name="Stop firmware test">
+                        <mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" />
+                    </Button>
+                    <Button Command="{Binding SerialTestCancelCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Stop serial test" 
+                            AutomationProperties.Name="Stop serial test"><mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" />
+                    </Button>
+                    <Button Command="{Binding TrackCancelCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Stop tracking" 
+                            AutomationProperties.Name="Stop tracking"><mdi:MaterialIcon Kind="Stop" Classes="ActionIcon" />
+                    </Button>
+                </WrapPanel>
             </StackPanel>
         </u:Banner>
+
         <TabControl Grid.Row="1">
-            <TabItem Header="Information">
-                <Grid RowDefinitions="Auto,*">
-                    <Border Grid.Row="0" Padding="12">
-                        <WrapPanel HorizontalAlignment="Center" ItemSpacing="8">
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
-                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                            </Button>
-                            <common:OpenParameterEditorsView/>
-                        </WrapPanel>
-                    </Border>
-                    <appSetup:SetupInformationView Grid.Row="1" Topic="AntennaTracker" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}" />
-                </Grid>
+            <TabItem Header="Information"><common:SetupInformationView Topic="AntennaTracker" WorkflowStatus="{Binding StatusMessage}" WorkflowError="{Binding ErrorMessage}"/></TabItem>
+            <TabItem Header="ArduPilot configuration">
+                <Grid RowDefinitions="Auto,*"><StackPanel Margin="8" Spacing="8">
+                    <TextBlock Text="Settings apply only to ArduPilot AntennaTracker firmware in Stop mode. Review geometry, servo types, output limits and controller gains; individual writes require confirmation." TextWrapping="Wrap"/>
+                    <Button Command="{Binding RefreshCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Refresh tracker settings" AutomationProperties.Name="Refresh tracker settings"><mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" /></Button>
+                </StackPanel><ScrollViewer Grid.Row="1"><ItemsControl ItemsSource="{Binding Settings}" IsEnabled="{Binding !IsTrackerRunning}"><ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="sections:ParameterSettingViewModel"><sections:ParameterSettingEditor/></DataTemplate>
+                </ItemsControl.ItemTemplate></ItemsControl></ScrollViewer></Grid>
             </TabItem>
+            <TabItem Header="ArduPilot test"><StackPanel Spacing="12" Margin="12" IsEnabled="{Binding !IsTrackerRunning}">
+                <TextBlock Text="Begin in Stop mode. The test resolves the actual assigned output and validates its reported PWM limits. ServoTest enables servo power. After the bounded test, Stop mode and disarmed state are checked against a new heartbeat. Loss of connection can prevent stopping; keep a physical power cutoff available." TextWrapping="Wrap"/>
+                <WrapPanel ItemSpacing="12"><StackPanel Spacing="4"><TextBlock Text="Logical axis (1 yaw, 2 pitch)"/><NumericUpDown Value="{Binding FirmwareAxis}" Minimum="1" Maximum="2" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Logical axis (1 yaw, 2 pitch)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Test PWM (μs)"/><NumericUpDown Value="{Binding FirmwarePwm}" Minimum="800" Maximum="2200" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Test PWM (μs)"/></StackPanel></WrapPanel>
+                <Button Command="{Binding FirmwareTestCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Run bounded tracker servo test" AutomationProperties.Name="Run bounded tracker servo test"><mdi:MaterialIcon Kind="Play" Classes="ActionIcon" /></Button>
+            </StackPanel></TabItem>
+            <TabItem Header="Standalone serial"><ScrollViewer><StackPanel Spacing="12" Margin="12" IsEnabled="{Binding !IsTrackerRunning}">
+                <TextBlock Text="A separate serial pan/tilt tracker follows the active aircraft. Review the serial protocol and mechanical calibration. Travel is clamped without automatic flipping. Maestro sends pulse-disable on stop; legacy ASCII drivers keep their last position. Serial protocols do not acknowledge movement." TextWrapping="Wrap"/>
+                <WrapPanel ItemSpacing="12" LineSpacing="8"><StackPanel><TextBlock Text="Driver"/><ComboBox ItemsSource="{Binding Drivers}" SelectedItem="{Binding Driver}" AutomationProperties.Name="Tracker driver"/></StackPanel>
+                    <StackPanel><TextBlock Text="Serial port"/><TextBox Text="{Binding Port}" Width="160" PlaceholderText="COM or /dev/..." AutomationProperties.Name="Tracker serial port"/></StackPanel>
+                    <StackPanel Spacing="4"><TextBlock Text="Baud"/><NumericUpDown Value="{Binding Baud}" Minimum="1200" Maximum="1000000" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Baud"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Zero true heading (°)"/><NumericUpDown Value="{Binding HeadingZero}" Minimum="0" Maximum="359.99" Increment="0.1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Zero true heading (°)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Tilt offset (°)"/><NumericUpDown Value="{Binding TiltOffset}" Minimum="-90" Maximum="90" Increment="0.1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Tilt offset (°)"/></StackPanel></WrapPanel>
+                <Expander Header="Pan mechanical calibration" IsExpanded="True"><WrapPanel ItemSpacing="12" LineSpacing="8"><StackPanel Spacing="4"><TextBlock Text="Minimum degrees"/><NumericUpDown Value="{Binding Pan.MinimumDegrees}" Minimum="-180" Maximum="180" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Minimum degrees"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Maximum degrees"/><NumericUpDown Value="{Binding Pan.MaximumDegrees}" Minimum="-180" Maximum="180" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Maximum degrees"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Minimum PWM (μs)"/><NumericUpDown Value="{Binding Pan.MinimumPwm}" Minimum="800" Maximum="2200" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Minimum PWM (μs)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Maximum PWM (μs)"/><NumericUpDown Value="{Binding Pan.MaximumPwm}" Minimum="800" Maximum="2200" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Maximum PWM (μs)"/></StackPanel><CheckBox Content="Reverse pan" IsChecked="{Binding Pan.Reversed}"/></WrapPanel></Expander><Expander Header="Tilt mechanical calibration" IsExpanded="True"><WrapPanel ItemSpacing="12" LineSpacing="8"><StackPanel Spacing="4"><TextBlock Text="Minimum degrees"/><NumericUpDown Value="{Binding Tilt.MinimumDegrees}" Minimum="-180" Maximum="180" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Minimum degrees"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Maximum degrees"/><NumericUpDown Value="{Binding Tilt.MaximumDegrees}" Minimum="-180" Maximum="180" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Maximum degrees"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Minimum PWM (μs)"/><NumericUpDown Value="{Binding Tilt.MinimumPwm}" Minimum="800" Maximum="2200" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Minimum PWM (μs)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Maximum PWM (μs)"/><NumericUpDown Value="{Binding Tilt.MaximumPwm}" Minimum="800" Maximum="2200" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Maximum PWM (μs)"/></StackPanel><CheckBox Content="Reverse tilt" IsChecked="{Binding Tilt.Reversed}"/></WrapPanel></Expander>
+                <Expander Header="Maestro channels and motion limits"><WrapPanel ItemSpacing="12" LineSpacing="8">
+                    <StackPanel Spacing="4"><TextBlock Text="Pan channel (zero-based)"/><NumericUpDown Value="{Binding PanChannel}" Minimum="0" Maximum="23" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Pan channel (zero-based)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Tilt channel (zero-based)"/><NumericUpDown Value="{Binding TiltChannel}" Minimum="0" Maximum="23" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Tilt channel (zero-based)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Speed (0 unlimited)"/><NumericUpDown Value="{Binding Speed}" Minimum="0" Maximum="16383" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Speed (0 unlimited)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Acceleration (0 unlimited)"/><NumericUpDown Value="{Binding Acceleration}" Minimum="0" Maximum="255" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Acceleration (0 unlimited)"/></StackPanel></WrapPanel></Expander>
+                <WrapPanel ItemSpacing="12"><Button Command="{Binding SaveCalibrationCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Save local tracker calibration" AutomationProperties.Name="Save local tracker calibration"><mdi:MaterialIcon Kind="ContentSave" Classes="ActionIcon" /></Button><StackPanel Spacing="4"><TextBlock Text="Mechanical test pan (°)"/><NumericUpDown Value="{Binding TestPan}" Minimum="-180" Maximum="180" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Mechanical test pan (°)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Mechanical test tilt (°)"/><NumericUpDown Value="{Binding TestTilt}" Minimum="-180" Maximum="180" Increment="1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Mechanical test tilt (°)"/></StackPanel><Button Command="{Binding SerialTestCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Test serial tracker for two seconds" AutomationProperties.Name="Test serial tracker for two seconds"><mdi:MaterialIcon Kind="Play" Classes="ActionIcon" /></Button></WrapPanel>
+                <TextBlock Text="Fixed physical tracker origin for this run. Altitude is mean sea level, not vehicle HOME-relative altitude. A new GPS fix and MSL altitude from the aircraft are required throughout tracking." TextWrapping="Wrap"/>
+                <WrapPanel ItemSpacing="12" LineSpacing="8"><StackPanel Spacing="4"><TextBlock Text="Tracker latitude (°)"/><NumericUpDown Value="{Binding HomeLatitude}" Minimum="-90" Maximum="90" Increment="0.000001" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Tracker latitude (°)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Tracker longitude (°)"/><NumericUpDown Value="{Binding HomeLongitude}" Minimum="-180" Maximum="180" Increment="0.000001" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Tracker longitude (°)"/></StackPanel><StackPanel Spacing="4"><TextBlock Text="Tracker altitude MSL (m)"/><NumericUpDown Value="{Binding HomeAltitude}" Minimum="-1000" Maximum="20000" Increment="0.1" Width="140" HorizontalAlignment="Left" AutomationProperties.Name="Tracker altitude MSL (m)"/></StackPanel></WrapPanel>
+                <CheckBox Content="I have reviewed the physical tracker origin and altitude" IsChecked="{Binding HomeReviewed}"/>
+                <Button Command="{Binding TrackCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Start following the active aircraft" AutomationProperties.Name="Start following the active aircraft"><mdi:MaterialIcon Kind="CrosshairsGps" Classes="ActionIcon" /></Button>
+            </StackPanel></ScrollViewer></TabItem>
         </TabControl>
     </Grid>
-
 </utilities:UserControlViewBase>

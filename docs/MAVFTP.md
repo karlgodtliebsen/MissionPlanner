@@ -2,7 +2,8 @@
 
 MAVFTP provides reusable filesystem access over MAVLink inside `MissionPlanner.MavLink`.
 `IMavFtpClient` supports session reset, file information, paged directory listing, and streaming
-or buffered download for an explicit system/component/transport target.
+or buffered download for an explicit system/component/transport target. It also supports
+streamed upload, deletion, rename, directory creation and remote CRC calculation.
 
 Incoming `FILE_TRANSFER_PROTOCOL` messages use the normal decoder and EventHub pipeline.
 Responses correlate by endpoint, system, component, sequence, requested opcode, and session.
@@ -25,7 +26,8 @@ whole-file allocation. Unknown-command responses fall back to normal reads. A bu
 `IVehicleFileSystemService` resolves a `VehicleId` through the registry and hides the MAVFTP target
 and transport endpoint from the application. The Config/Tuning MAVFTP tab lists and navigates
 remote Unix-style paths, resets sessions, downloads a selected file with progress, and cancels an
-active operation.
+active operation. Upload and destructive file actions require explicit selection/confirmation;
+no file is uploaded merely by selecting it.
 
 ## SITL interoperability fix (2026-07-19)
 
@@ -45,7 +47,9 @@ instead of being silently treated as packet loss.
 
 Automated SITL tests are not yet available. Manual validation requires connecting to ArduPilot
 SITL, listing `/`, downloading and byte-comparing a known multi-packet file twice, and cancelling
-one transfer. Upload, mutations, capability-state decoding, and packed parameters remain excluded.
+one transfer. That historical SITL check did not cover upload or mutations. The 2026-10-24
+implementation adds these operations with simulated protocol tests; real interoperability still
+needs qualification.
 
 ## MAVLink 2 frame-validation fix (2026-07-23)
 
@@ -71,10 +75,27 @@ response before the packet is sent; an observed response then reconciles the nex
 cancelled request therefore cannot leave a recreated client reusing a request sequence that
 ArduPilot may still hold in its duplicate cache.
 
+## File management (2026-10-24)
+
+The Config/Tuning tab offers upload, delete, rename, create directory and calculate CRC.
+Uploads stream bounded blocks, validate acknowledged offsets, terminate their session and then
+compare the remote file CRC with an independently accumulated MAVFTP CRC32 (initial value zero,
+no final XOR). Cancellation and failed/corrupt uploads are reported explicitly. Partial files
+may remain for inspection; cleanup does not silently delete them.
+
+Paths reject embedded NUL and reserve the wire terminator. The UI checks that a new upload path
+is absent before creating it, but MAVFTP cannot guarantee atomic no-overwrite against another
+client racing that check. These commands do not provide transactional deployment or rollback.
+
+Protocol tests cover upload boundaries, commands, CRC vectors, corrupt uploads and path limits.
+See [CF-05 in the implementation ledger](review-20261023/IMPLEMENTATION.md) for validation and limits.
+
 ## Onboard Lua boundary
 
-The Flight Data Scripts tab executes only constrained local declarative scripts. It does
-not upload or manage ArduPilot Lua scripts. Onboard Lua management requires a separately
-reviewed MAVFTP upload and filesystem-mutation workflow with atomic replacement, path
-validation, capability detection, rollback, and explicit confirmation. Existing MAVFTP
-listing and download support is insufficient and must not be presented as upload support.
+The Flight Data Scripts tab continues to execute constrained local declarative scripts.
+The separate Advanced Scripting Console connects to an already installed Lua REPL applet, or
+an explicitly chosen compatible legacy native REPL. Opening it does not install or execute code.
+
+Generic MAVFTP can now upload a user-selected Lua file, but this is not a script deployment
+manager: there is no atomic replacement, automated activation, rollback or boot verification.
+Review compatibility and the selected target/path before any upload.

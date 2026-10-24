@@ -129,7 +129,7 @@ public sealed partial class AccelerometerSetupViewModel : ViewModelBase
     {
         if (CanCancel)
         {
-            _ = calibration.CancelAsync();
+            calibration.CancelAsync().SafeFireAndForget(exception => Logger.LogError(exception, "Could not cancel accelerometer calibration."));
         }
 
         operationCancellation?.Cancel();
@@ -188,6 +188,17 @@ public sealed partial class AccelerometerSetupViewModel : ViewModelBase
         await RunAsync((vehicleId, token) => calibration.StartLevelAsync(vehicleId, token));
     }
 
+    [RelayCommand(CanExecute = nameof(CanStartCommand), IncludeCancelCommand = true)]
+    private async Task StartSimpleAsync(CancellationToken cancellationToken)
+    {
+        if (!await ConfirmSafeStartAsync("simple accelerometer calibration"))
+        {
+            return;
+        }
+
+        await RunAsync((vehicleId, token) => calibration.StartSimpleAsync(vehicleId, token), cancellationToken);
+    }
+
     private bool CanConfirm()
     {
         return CanConfirmOrientation;
@@ -240,7 +251,7 @@ public sealed partial class AccelerometerSetupViewModel : ViewModelBase
             "Start calibration");
     }
 
-    private async Task RunAsync(Func<VehicleId, CancellationToken, Task> operation)
+    private async Task RunAsync(Func<VehicleId, CancellationToken, Task> operation, CancellationToken cancellationToken = default)
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
@@ -249,7 +260,7 @@ public sealed partial class AccelerometerSetupViewModel : ViewModelBase
         }
 
         Cancel();
-        operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
+        operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken, cancellationToken);
         SetMessages(null, null);
         try
         {
@@ -304,6 +315,7 @@ public sealed partial class AccelerometerSetupViewModel : ViewModelBase
         OnPropertyChanged(nameof(CanCancel));
         StartSixPositionCommand.NotifyCanExecuteChanged();
         StartLevelCommand.NotifyCanExecuteChanged();
+        StartSimpleCommand.NotifyCanExecuteChanged();
         ConfirmOrientationCommand.NotifyCanExecuteChanged();
         CancelCalibrationCommand.NotifyCanExecuteChanged();
 

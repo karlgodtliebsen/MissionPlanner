@@ -1,0 +1,29 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+    xmlns:optional="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassPriorityView"
+    x:TypeArguments="sections:CompassPriorityViewModel" x:DataType="sections:CompassPriorityViewModel">
+    <ScrollViewer>
+        <StackPanel Spacing="12" Margin="12">
+            <TextBlock Text="Compass priority order" Classes="H3" />
+            <TextBlock Text="Move identities into the desired order. The first three become priorities. Missing means absent from the currently reported COMPASS_DEV_ID slots; refresh a complete parameter list before removing one. Changes remain local until reviewed and applied." TextWrapping="Wrap" />
+            <WrapPanel ItemSpacing="10">
+                <Button Classes="ToolbarIconButton" Command="{Binding ReadOrderCommand}" ToolTip.Tip="Reload current priorities" AutomationProperties.Name="Reload current priorities"><mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" /></Button>
+                <Button Classes="ToolbarIconButton" Command="{Binding MoveUpCommand}" ToolTip.Tip="Move selected compass up" AutomationProperties.Name="Move selected compass up"><mdi:MaterialIcon Kind="ArrowUp" Classes="ActionIcon" /></Button>
+                <Button Classes="ToolbarIconButton" Command="{Binding MoveDownCommand}" ToolTip.Tip="Move selected compass down" AutomationProperties.Name="Move selected compass down"><mdi:MaterialIcon Kind="ArrowDown" Classes="ActionIcon" /></Button>
+                <Button Classes="ToolbarIconButton" Command="{Binding RemoveMissingCommand}" ToolTip.Tip="Remove selected missing compass from staged priorities" AutomationProperties.Name="Remove selected missing compass from staged priorities"><mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" /></Button>
+                <Button Classes="ToolbarIconButton" Command="{Binding ApplyOrderCommand}" ToolTip.Tip="Review and apply compass priorities" AutomationProperties.Name="Review and apply compass priorities"><mdi:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" /></Button>
+            </WrapPanel>
+            <ListBox ItemsSource="{Binding Order}" SelectedItem="{Binding Selected}" MinHeight="120">
+                <ListBox.ItemTemplate><DataTemplate x:DataType="sections:CompassPriorityItem"><TextBlock Text="{Binding Label}" /></DataTemplate></ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap" />
+            <TextBlock Text="Calibration fitness and learning" Classes="H3" />
+            <ItemsControl ItemsSource="{Binding Settings}">
+                <ItemsControl.ItemTemplate><DataTemplate x:DataType="optional:ParameterSettingViewModel"><optional:ParameterSettingEditor /></DataTemplate></ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</utilities:UserControlViewBase>

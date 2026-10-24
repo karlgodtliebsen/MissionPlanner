@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -17,7 +17,7 @@ using MissionPlanner.Shared.Models.Vehicles.Models;
 namespace MissionPlanner.Core.Setup.OptionalHardware;
 
 /// <summary>Runs bounded, safety-gated motor tests from MAV_CMD_DO_MOTOR_TEST and reports ESC guidance.</summary>
-public sealed class ActuatorTestService : IActuatorTestService
+public sealed partial class ActuatorTestService : IActuatorTestService
 {
     private const ushort MotorTestCommand = (ushort)MavCmd.DoMotorTest;
     private const int MaximumLogEntries = 50;
@@ -101,10 +101,14 @@ public sealed class ActuatorTestService : IActuatorTestService
     public EscCalibrationGuidance GetEscCalibrationGuidance(VehicleId vehicleId)
     {
         var parameters = parameterRegistry.GetAllParameters(vehicleId);
-        var pwmType = parameters.TryGetValue("MOT_PWM_TYPE", out var parameter) ? (int)Math.Round(parameter.Value) : 0;
+        if (!parameters.TryGetValue("MOT_PWM_TYPE", out var parameter) || !float.IsFinite(parameter.Value) || parameter.Value != MathF.Truncate(parameter.Value))
+        {
+            return new(false, "Unknown", "Load the reported motor output protocol before selecting an ESC calibration procedure.", []);
+        }
+        var pwmType = (int)parameter.Value;
         // MOT_PWM_TYPE 0/1 are analog PWM/OneShot that require throttle-endpoint calibration; DShot variants do not.
-        return pwmType is 0 or 1
-            ? new EscCalibrationGuidance(true, pwmType == 0 ? "Normal PWM" : "OneShot",
+        return pwmType is 0 or 1 or 2
+            ? new EscCalibrationGuidance(true, MotorOutputDiagnostics.Protocol(pwmType),
                 "Analog ESCs learn their throttle endpoints during a manual all-at-once calibration.",
                 [
                     "Remove all propellers and disconnect the flight battery.",

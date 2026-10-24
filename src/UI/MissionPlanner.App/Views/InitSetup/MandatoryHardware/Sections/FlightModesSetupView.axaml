@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:FlightModesSetupViewModel"
+<utilities:UserControlViewBase x:TypeArguments="sections:FlightModesSetupViewModel"
                                xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
@@ -63,7 +63,7 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="sections:FlightModeSlotViewModel">
                                             <Border Padding="10" Classes="SectionCard" HorizontalAlignment="Stretch">
-                                                <Grid ColumnDefinitions="Auto,200,*,Auto" ColumnSpacing="8"  HorizontalAlignment="Stretch">
+                                                <Grid ColumnDefinitions="Auto,200,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="8"  HorizontalAlignment="Stretch">
                                                     <TextBlock Text="●" Foreground="{DynamicResource Info}"
                                                                IsVisible="{Binding IsActive}" VerticalAlignment="Center" />
                                                     <TextBlock Grid.Column="1" Text="{Binding BandDescription}" VerticalAlignment="Center" />
@@ -75,6 +75,16 @@
                                                               SelectedItem="{Binding SelectedMode}"
                                                               DisplayMemberBinding="{Binding Name}" />
                                                     <Button Grid.Column="3" Content="Apply" Command="{Binding ApplyCommand}" />
+                                                    <WrapPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" ItemSpacing="10">
+                                                        <CheckBox Content="Simple" IsVisible="{Binding SupportsSimple}" IsChecked="{Binding Simple}" />
+                                                        <CheckBox Content="Super Simple" IsVisible="{Binding SupportsSuperSimple}" IsChecked="{Binding SuperSimple}" />
+                                                        <Button IsVisible="{Binding SupportsSimpleOptions}" Command="{Binding ApplySimpleCommand}" ToolTip.Tip="Write this slot's simple-mode flags" AutomationProperties.Name="Apply simple-mode options">
+                                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                                <mdi:MaterialIcon Kind="CheckCircleOutline" />
+                                                                <TextBlock Text="Apply options" />
+                                                            </StackPanel>
+                                                        </Button>
+                                                    </WrapPanel>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>

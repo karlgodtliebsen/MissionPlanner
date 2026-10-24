@@ -18,7 +18,7 @@ public sealed class ComponentHardwareToolTests
     {
         var input = Enumerable.Range(0, 600).Select(i => (byte)i).ToArray();
         var chunks = CubeFirmwareCodec.Chunk(input);
-        Assert.Equal([0u, 253u, 506u], chunks.Select(x => x.Offset));
+        Assert.Equal([0u, 252u, 504u], chunks.Select(x => x.Offset));
         Assert.Equal(input, chunks.SelectMany(x => x.Data));
         Assert.Equal(0x2B00C0C1u, CubeFirmwareCodec.Crc32(input));
     }

@@ -41,7 +41,8 @@ public enum JoystickFunction
 /// <param name="Maximum">The raw value at full positive deflection.</param>
 /// <param name="DeadZone">The normalized dead zone around the center.</param>
 /// <param name="Reverse">Whether the axis direction is inverted.</param>
-public sealed record JoystickAxisMapping(JoystickFunction Function, int AxisIndex, double Minimum = -1, double Center = 0, double Maximum = 1, double DeadZone = .05, bool Reverse = false);
+/// <param name="Expo">The blend of cubic response, between zero and one.</param>
+public sealed record JoystickAxisMapping(JoystickFunction Function, int AxisIndex, double Minimum = -1, double Center = 0, double Maximum = 1, double DeadZone = .05, bool Reverse = false, double Expo = 0);
 
 /// <summary>A joystick opened for reading.</summary>
 public interface IJoystickDevice : IAsyncDisposable
@@ -78,12 +79,16 @@ public static class JoystickCalibration
     /// <summary>Normalizes a raw axis reading to the range -1 to 1, applying the center, dead zone and reversal of the mapping.</summary>
     public static double Normalize(double raw, JoystickAxisMapping mapping)
     {
+        if (!double.IsFinite(raw) || !double.IsFinite(mapping.Minimum) || !double.IsFinite(mapping.Center) || !double.IsFinite(mapping.Maximum) ||
+            mapping.Minimum >= mapping.Center || mapping.Center >= mapping.Maximum || !double.IsFinite(mapping.DeadZone) || mapping.DeadZone is < 0 or >= 1 ||
+            !double.IsFinite(mapping.Expo) || mapping.Expo is < 0 or > 1)
+            throw new ArgumentException("Joystick calibration requires finite, ordered limits and valid dead-zone/expo values.");
         var span = raw >= mapping.Center ? mapping.Maximum - mapping.Center : mapping.Center - mapping.Minimum;
         var value = span <= 0 ? 0 : (raw - mapping.Center) / span;
         value = Math.Clamp(value, -1, 1);
         if (Math.Abs(value) <= Math.Clamp(mapping.DeadZone, 0, .95)) value = 0;
         if (mapping.Reverse) value = -value;
-        return value;
+        return value * (1 - mapping.Expo) + value * value * value * mapping.Expo;
     }
 }
 
@@ -92,10 +97,18 @@ public static class JoystickCalibration
 /// <param name="Pitch">The pitch command from -1 to 1.</param>
 /// <param name="Throttle">The throttle command from -1 to 1.</param>
 /// <param name="Yaw">The yaw command from -1 to 1.</param>
-public sealed record JoystickVehicleCommand(double Roll, double Pitch, double Throttle, double Yaw);
+public sealed record JoystickVehicleCommand(double Roll, double Pitch, double Throttle, double Yaw)
+{
+    /// <summary>Gets explicitly mapped MANUAL_CONTROL button bits.</summary>
+    public uint Buttons { get; init; }
+}
 /// <summary>Sends joystick commands to a vehicle.</summary>
 public interface IJoystickVehicleOutput
 {
+    /// <summary>Gets whether output was explicitly enabled for a captured vehicle.</summary>
+    bool IsEnabled { get; }
+    /// <summary>Enables an explicit protocol after operator confirmation.</summary>
+    Task EnableAsync(JoystickOutputMode selectedMode, bool confirmed, CancellationToken cancellationToken);
     /// <summary>Sends a manual-control command to the vehicle.</summary>
     Task SendManualControlAsync(JoystickVehicleCommand command, CancellationToken cancellationToken);
     /// <summary>Stops sending manual-control commands and returns control to the vehicle.</summary>
@@ -104,6 +117,11 @@ public interface IJoystickVehicleOutput
 /// <summary>Joystick output that is disabled; it refuses to send commands.</summary>
 public sealed class DisabledJoystickVehicleOutput : IJoystickVehicleOutput
 {
+    /// <inheritdoc />
+    public bool IsEnabled => false;
+    /// <inheritdoc />
+    public Task EnableAsync(JoystickOutputMode selectedMode, bool confirmed, CancellationToken cancellationToken) =>
+        throw new NotSupportedException("Vehicle joystick output is unavailable.");
     /// <summary>Always throws because vehicle joystick output is disabled.</summary>
     public Task SendManualControlAsync(JoystickVehicleCommand command, CancellationToken ct) => throw new NotSupportedException("Vehicle joystick output requires an active MANUAL_CONTROL adapter.");
     /// <summary>Does nothing because no commands are being sent.</summary>

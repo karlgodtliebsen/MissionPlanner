@@ -3,7 +3,27 @@
 Implementation follows `tasks/Setup-Advanced/MissionPlanner-Setup-Advanced-Codex-Tasks.md`
 in order. Baseline: `04135bc5b` on `feature/setup-advanced`, also the local `main` head.
 
-## Foundation (ADV-00)
+## Current additions (2026-10-24)
+
+The [implementation ledger](review-20261023/IMPLEMENTATION.md) is the current status for AD-01–AD-13.
+Warnings now run in an application-owned monitor across navigation, with compound conditions and
+global notification delivery. Inspector includes bounded numeric scalar/array graphs and CSV export.
+Signing includes an explicit vehicle-disable request, with the lack of a protocol acceptance ACK
+reported rather than hidden. NMEA adds GLL, VTG, HDT and opt-in legacy RPY/HOM.
+
+The static Advanced workspace now also exposes Scripting Console, Log Privacy Export, and the
+combined Follow Me / Moving Base page. Follow Me uses an explicitly selected external GNSS stream;
+Moving Base defaults to local tracker-home updates, with existing Plane rally updates opt-in.
+Reduced diagnostic CSV exports a numeric allowlist; it does not promise anonymity. Parameter
+metadata force-refresh is located in Parameters Editor. The inventory retains IDs 1–13 and adds
+ScriptingConsole as 14; inventory entries alone do not make a page operational.
+
+Mirror remains output-only, the historical support proxy is not registered, and the legacy serial
+CLI remains retired. The detailed foundation notes below describe the earlier catalog/registry
+design; current static page composition is in `AdvancedPage.axaml`. No physical operation was used
+for the new automated verification.
+
+## Historical foundation (ADV-00)
 
 The Core catalogue contains thirteen stable feature IDs, descriptions, risk/help text,
 prerequisites, and routes. `AdvancedAvailabilityService` evaluates immutable platform and

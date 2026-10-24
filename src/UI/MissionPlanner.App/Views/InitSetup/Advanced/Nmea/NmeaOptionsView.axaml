@@ -11,6 +11,13 @@
                 <TextBlock Text="Sentence selection" Classes="H4" />
                 <CheckBox Content="GGA — position, fix and altitude" IsChecked="{Binding Gga}" />
                 <CheckBox Content="RMC — position, speed, course and date" IsChecked="{Binding Rmc}" />
+                <CheckBox Content="GLL — geographic position" IsChecked="{Binding Gll}" />
+                <CheckBox Content="VTG — track and ground speed" IsChecked="{Binding Vtg}" />
+                <CheckBox Content="HDT — true heading from vehicle attitude" IsChecked="{Binding Hdt}" />
+                <CheckBox Content="Legacy custom RPY — roll, pitch and yaw (nonstandard)" IsChecked="{Binding LegacyRpy}" />
+                <CheckBox Content="Legacy custom HOM — session-local tracker home (nonstandard)" IsChecked="{Binding LegacyHom}" />
+                <TextBlock Text="HOM uses the tracker home selected in the planner and the original decimal-degrees × 100 convention. It repeats the configured home, not a fresh GPS measurement. Missing home/altitude fields stay blank. Output is at the selected batch rate." TextWrapping="Wrap" />
+                <TextBlock Text="HDT uses the vehicle's true-north attitude. Magnetic heading/deviation are not inferred. Custom RPY is off by default." TextWrapping="Wrap" />
                 <TextBlock Text="Output batches per second" />
                 <NumericUpDown Value="{Binding RateHz}" Minimum="1" Maximum="10" 
                                AutomationProperties.Name="NMEA output rate in Hz" />

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -20,8 +20,57 @@ public partial class ParameterProfilesViewModel(
     IParameterEditSession session,
     IUiDispatcher dispatcher,
     IDomainEventHub events,
-    ILogger<ParameterProfilesViewModel> logger) : DialogViewModelBase(logger, dispatcher, events)
+    ILogger<ParameterProfilesViewModel> logger, ParameterPresetLibrary? presetLibrary = null) : DialogViewModelBase(logger, dispatcher, events)
 {
+    /// <summary>Gets the currently browsed official directory, loaded only on request.</summary>
+    public ObservableCollection<ParameterPresetEntry> LibraryEntries { get; } = [];
+    /// <summary>Gets the official directory path.</summary>
+    [ObservableProperty] public partial string LibraryPath { get; private set; } = "Tools/Frame_params";
+    /// <summary>Gets or sets the selected library entry.</summary>
+    [ObservableProperty] public partial ParameterPresetEntry? LibraryEntry { get; set; }
+
+    [RelayCommand(IncludeCancelCommand = true)]
+    private Task BrowseLibraryAsync(CancellationToken token) => RunAsync(async () =>
+    {
+        if (presetLibrary is null) throw new NotSupportedException("The official preset library is unavailable on this platform.");
+        var path = LibraryEntry?.IsDirectory == true ? LibraryEntry.Path : LibraryPath;
+        var entries = await presetLibrary.ListAsync(path, token);
+        LibraryPath = path;
+        LibraryEntries.Clear();
+        foreach (var entry in entries) LibraryEntries.Add(entry);
+        LibraryEntry = null;
+        Feedback = "Select a folder and browse, or select a preset and import for review. Files may target old firmware or different hardware. Local saved profiles remain available offline.";
+    });
+
+    [RelayCommand]
+    private void LibraryParent()
+    {
+        if (Working || LibraryPath == "Tools/Frame_params") return;
+        LibraryPath = LibraryPath[..LibraryPath.LastIndexOf('/')];
+        LibraryEntry = null;
+        LibraryEntries.Clear();
+        Feedback = "Use Browse to load the parent directory.";
+    }
+
+    [RelayCommand(IncludeCancelCommand = true)]
+    private Task ImportPresetAsync(CancellationToken token) => RunAsync(async () =>
+    {
+        if (presetLibrary is null || LibraryEntry is not { IsDirectory: false } entry) { Feedback = "Select an official preset file first."; return; }
+        var profile = await presetLibrary.DownloadAsync(entry, token);
+        await repository.SaveAsync(profile, token);
+        await ReloadAsync(profile.Id, token);
+        Feedback = "Imported the selected Git revision as a local profile. Review its differences and explicitly select compatible values to stage. Nothing has been staged or written.";
+    });
+
+    /// <summary>Cancels and joins remote library work before the owning dialog closes.</summary>
+    public async Task StopLibraryAsync()
+    {
+        BrowseLibraryCommand.Cancel();
+        ImportPresetCommand.Cancel();
+        await Task.WhenAll(BrowseLibraryCommand.ExecutionTask ?? Task.CompletedTask,
+            ImportPresetCommand.ExecutionTask ?? Task.CompletedTask);
+    }
+
     /// <summary>Stored profiles, ordered by name.</summary>
     public ObservableCollection<ParameterProfile> Profiles { get; } = [];
 

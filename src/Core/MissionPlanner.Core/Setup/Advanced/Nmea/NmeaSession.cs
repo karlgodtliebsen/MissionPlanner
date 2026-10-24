@@ -1,11 +1,13 @@
 using System.Text;
 using MissionPlanner.Core.Setup.Advanced.Output;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Missions.Planning;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup.Advanced.Nmea;
 
 /// <summary>Schedules latest-state NMEA batches on the shared output session, independently of telemetry rate.</summary>
-public sealed class NmeaSession(IActiveVehicleContext active, BoundedOutputSession output, TimeProvider clock)
+public sealed class NmeaSession(IActiveVehicleContext active, BoundedOutputSession output, TimeProvider clock, ITrackerHomeService? trackerHome = null)
 {
     private readonly SemaphoreSlim gate = new(1, 1);
     private CancellationTokenSource? cancellation;
@@ -13,6 +15,7 @@ public sealed class NmeaSession(IActiveVehicleContext active, BoundedOutputSessi
     private NmeaBatch preview = new("", 0, false, "NMEA stopped.");
     private long scheduledSentences;
     private int sentencesPerBatch;
+    private VehicleId? capturedVehicle;
     /// <summary>Gets the latest complete sentence set without exposing an unbounded history.</summary>
     public NmeaBatch Preview => Volatile.Read(ref preview);
     /// <summary>Gets the number of scheduled sentences, including batches later dropped by the endpoint.</summary>
@@ -37,7 +40,8 @@ public sealed class NmeaSession(IActiveVehicleContext active, BoundedOutputSessi
             cancellation = CancellationTokenSource.CreateLinkedTokenSource(token, active.ConnectionCancellationToken);
             created = true;
             scheduledSentences = 0;
-            sentencesPerBatch = (options.Gga ? 1 : 0) + (options.Rmc ? 1 : 0);
+            capturedVehicle = active.VehicleId;
+            sentencesPerBatch = new[] { options.Gga, options.Rmc, options.Gll, options.Vtg, options.Hdt, options.LegacyRpy, options.LegacyHom }.Count(value => value);
             await output.StartAsync(endpoint, outputOptions, cancellation.Token).ConfigureAwait(false);
             worker = RunAsync(options, cancellation.Token);
         }
@@ -82,7 +86,8 @@ public sealed class NmeaSession(IActiveVehicleContext active, BoundedOutputSessi
                 using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1d / options.RateHz), clock);
                 while (await timer.WaitForNextTickAsync(scheduling.Token).ConfigureAwait(false))
                 {
-                    var batch = NmeaFormatter.Format(active.IsOnline ? active.State : null, clock.GetUtcNow(), options);
+                    if (active.VehicleId != capturedVehicle || !active.IsOnline) break;
+                    var batch = NmeaFormatter.Format(active.State, clock.GetUtcNow(), options, trackerHome?.Snapshot);
                     Volatile.Write(ref preview, batch);
                     Interlocked.Add(ref scheduledSentences, batch.SentenceCount);
                     output.Offer(Encoding.ASCII.GetBytes(batch.Text));

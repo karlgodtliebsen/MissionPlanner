@@ -1,0 +1,45 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Privacy"
+                               xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                               xmlns:u="https://irihi.tech/ursa"
+                               xmlns:output="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
+                               x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Privacy.PrivacyExportPage"
+                               x:TypeArguments="local:PrivacyExportViewModel" x:DataType="local:PrivacyExportViewModel">
+
+
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
+        </Grid.ColumnDefinitions>
+        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Reduced diagnostic privacy export" HorizontalAlignment="Stretch">
+            <StackPanel Margin="24" Spacing="16" MaxWidth="900">
+                <TextBlock TextWrapping="Wrap" Text="Policy v1 exports a new CSV from telemetry (.tlog) or DataFlash (.bin/.log). The original log is read only. Times become elapsed seconds and telemetry sources become S1, S2, … . No locations, absolute timestamps, vehicle IDs, device identifiers, text, parameters, file contents, signatures or unknown fields are exported." />
+                <TextBlock TextWrapping="Wrap" Text="Retained telemetry: ATTITUDE roll/pitch/yaw in radians and RAW_IMU acceleration/gyro raw values. Retained DataFlash: IMU/ACC/GYR axes and IMU temperature, RPM and RCOU channels, using their decoded native units. Magnetic fields and all unlisted fields are omitted. DataFlash counts cover records decoded by the diagnostic reader, not every raw record." />
+                <TextBlock TextWrapping="Wrap" Text="This is a reduced diagnostic dataset, not a replayable anonymized flight log. Signal patterns and timing can still be identifying. Review the export before sharing. Inputs are limited to 256 MiB; exports to two million numeric rows. Choose a new destination when saving." />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+            </StackPanel>
+        </u:Banner>
+
+        <WrapPanel Grid.Row="1" Orientation="Horizontal" ItemSpacing="12" HorizontalAlignment="Center">
+            <Button Command="{Binding ExportCommand}" Classes="ToolbarIconButton" 
+                    ToolTip.Tip="Select log and export approved diagnostics" AutomationProperties.Name="Create privacy export">
+                <mdi:MaterialIcon Kind="FileExportOutline" />
+            </Button>
+            <Button Command="{Binding ExportCancelCommand}" Classes="ToolbarIconButton" 
+                    ToolTip.Tip="Cancel privacy export" AutomationProperties.Name="Cancel privacy export">
+                <mdi:MaterialIcon Kind="Cancel" />
+            </Button>
+        </WrapPanel>
+
+        <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+<!--            
+<TabItem Header="Output endpoint"><output:OutputEndpointView DataContext="{Binding Endpoint}" /></TabItem>
+            <TabItem Header="Output status"><output:OutputStatusView DataContext="{Binding Status}" /></TabItem>
+-->
+        </TabControl>
+    </Grid>
+
+</utilities:UserControlViewBase>

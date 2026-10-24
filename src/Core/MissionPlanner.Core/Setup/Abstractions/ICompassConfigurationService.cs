@@ -6,6 +6,10 @@ namespace MissionPlanner.Core.Setup.Abstractions;
 /// <summary>Discovers compass instances and applies guarded, readback-confirmed compass parameter edits.</summary>
 public interface ICompassConfigurationService
 {
+    /// <summary>Applies an explicitly reviewed priority order after checking the original device and priority snapshot.</summary>
+    Task<CompassParameterApplyResult> SetPrioritiesAsync(VehicleId vehicleId, IReadOnlyDictionary<string, float> expected,
+        IReadOnlyList<uint> orderedDeviceIds, bool confirmed, CancellationToken cancellationToken = default);
+
     /// <summary>Reads semantic configuration, capabilities and fresh diagnostic evidence.</summary>
     Task<CompassSetupState> ReadAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
 

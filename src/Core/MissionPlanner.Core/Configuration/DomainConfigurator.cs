@@ -1,3 +1,4 @@
+using MissionPlanner.Core.Setup.OptionalHardware.DroneCan;
 using Microsoft.Extensions.Configuration;
 using MissionPlanner.Library.EventHub;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -101,6 +102,7 @@ public static class DomainConfigurator
         services.TryAddSingleton<IFenceConfigurationService, FenceConfigurationService>();
         services.TryAddSingleton<IBasicTuningProfileCatalog, BasicTuningProfileCatalog>();
         services.TryAddTransient<IBasicTuningService, BasicTuningService>();
+        services.TryAddTransient<PidAdjustmentAssistant>();
         services.TryAddSingleton<IExtendedTuningProfileCatalog, ExtendedTuningProfileCatalog>();
         services.TryAddTransient<IExtendedTuningService, ExtendedTuningService>();
         services.TryAddSingleton<IControlResponseMetricsService, ControlResponseMetricsService>();
@@ -159,13 +161,26 @@ public static class DomainConfigurator
         services.TryAddTransient<ICompassMotorCalibrationService, CompassMotorCalibrationService>();
         services.TryAddTransient<IDirectSerialSessionFactory, DirectSerialSessionFactory>();
         services.TryAddTransient<ISikRadioConfigurator, SikRadioConfigurator>();
+        services.TryAddTransient<SikFirmwareUpdater>();
+        services.TryAddTransient<ComponentParameterService>();
+        services.TryAddTransient<CubeIdFirmwareService>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Scripting.ScriptingConsoleService>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Privacy.DiagnosticPrivacyExport>();
+        services.TryAddTransient<MissionPlanner.Core.ConfigTuning.Osd.OsdTuningSlotService>();
+        services.TryAddTransient<IComponentParameterService>(provider => provider.GetRequiredService<ComponentParameterService>());
         services.TryAddTransient<IBluetoothSerialConfigurator, BluetoothSerialConfigurator>();
         services.TryAddTransient<IRtkCorrectionSourceFactory, RtkCorrectionSourceFactory>();
         services.TryAddTransient<IRtkInjectionService, RtkInjectionService>();
-        services.TryAddSingleton<IDroneCanTransportFactory, UnsupportedDroneCanTransportFactory>();
+        services.TryAddSingleton<IDroneCanAllocationStore, DroneCanAllocationStore>();
+        services.TryAddSingleton<IDroneCanTransportFactory, DroneCanTransportFactory>();
         services.TryAddTransient<IDroneCanService, DroneCanService>();
         services.TryAddSingleton<IJoystickProvider, UnsupportedJoystickProvider>();
-        services.TryAddSingleton<IJoystickVehicleOutput, DisabledJoystickVehicleOutput>();
+        services.TryAddTransient<IJoystickVehicleOutput, MavLinkJoystickOutput>();
+        services.TryAddTransient<JoystickControlSession>();
+        services.TryAddTransient<UbxBaseSession>();
+        services.TryAddTransient<SerialAntennaTracker>();
+        services.TryAddTransient<AntennaTrackerTestService>();
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, AntennaTrackerModule>());
         services.TryAddSingleton<IFftAnalysisService, FftAnalysisService>();
         services.TryAddSingleton<MissionPlanner.Analysis.Frequency.FftAnalyzer>();
         services.TryAddSingleton<MissionPlanner.Analysis.Frequency.SpectrumAverager>();
@@ -192,12 +207,22 @@ public static class DomainConfigurator
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, ParachuteModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, GpsModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, RangefinderModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, FftLoggingModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CompassAdvancedModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, TraditionalHelicopterModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, ExternalOsdModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, EscMotorModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, AirspeedModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CanBusModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CanGpsOrderModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CameraGimbalModule>());
 
         services.AddHttpClient("Firmware");
+        services.AddHttpClient("ParameterPresets");
+        services.TryAddTransient<ParameterPresetLibrary>();
+        services.TryAddTransient<ParameterMaintenanceService>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Position.OperatorPositionInput>();
+        services.TryAddTransient<MissionPlanner.Core.Setup.Advanced.Position.OperatorNavigationService>();
         services.AddHttpClient("SITL");
 
         services.TryAddSingleton<IOptionalHardwareCatalog, OptionalHardwareCatalog>();
@@ -291,6 +316,7 @@ public static class DomainConfigurator
         _ = serviceProvider.GetRequiredService<MissionPlanner.Core.Diagnostics.VehicleRawDiagnosticsSource>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         domainFactory.Add<IVehicleFileSystemService, VehicleFileSystemService>();
+        domainFactory.Add<IVehicleParameterMetadataService, VehicleParameterMetadataService>();
 
         domainFactory.Add<IHeartbeatVehicleHandler, HeartbeatVehicleHandler>();
         domainFactory.Add<IAttitudeVehicleHandler, AttitudeVehicleHandler>();

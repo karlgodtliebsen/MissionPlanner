@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase x:TypeArguments="sections:DroneCanUavCanViewModel" xmlns="https://github.com/avaloniaui"
+<utilities:UserControlViewBase x:TypeArguments="sections:DroneCanUavCanViewModel" xmlns="https://github.com/avaloniaui"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
                                xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
@@ -38,46 +38,91 @@
             </TabItem>
             <TabItem Header="Configuration">
                 <Grid RowDefinitions="Auto,*">
-                    <Border Grid.Row="0" Padding="12">
-                        <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Left" AutomationProperties.Name="Connect">
-                                <mdi:MaterialIcon Kind="LanConnect" Classes="ActionIcon" />
-                            </Button>
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalAlignment="Right" AutomationProperties.Name="Refresh nodes">
-                                <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
-                            </Button>
-                            <common:OpenParameterEditorsView/>
-                        </WrapPanel>
-                    </Border>
-                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Visible"
-                                  Margin="16,0" HorizontalAlignment="Stretch" HorizontalScrollBarVisibility="Disabled">
-                        <Border Classes="SectionCard" Padding="12">
-                            <StackPanel Spacing="10">
-
-                                <ComboBox ToolTip.Tip="Transport"
-                                          HorizontalAlignment="Stretch"
-                                          HorizontalContentAlignment="Right"
-                                          ItemsSource="{Binding TransportKinds}"
-                                          SelectedItem="{Binding TransportKind}" />
-
-                                <ListBox HorizontalAlignment="Stretch"
-                                         ItemsSource="{Binding Nodes}"
-                                         SelectionMode="Single"
-                                         SelectedItem="{Binding SelectedNode}">
-                                    <ListBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid ColumnDefinitions="50,*,100,100" Margin="4">
-                                                <TextBlock Grid.Column="0" Text="{Binding NodeId}" />
-                                                <TextBlock Grid.Column="1" Text="{Binding Name}" />
-                                                <TextBlock Grid.Column="2" Text="{Binding Health}" />
-                                                <TextBlock Grid.Column="3" Text="{Binding Version}" />
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ListBox.ItemTemplate>
-                                </ListBox>
-                            </StackPanel>
-                        </Border>
+                    <WrapPanel Margin="12" ItemSpacing="8">
+                        <Button Content="Connect" Command="{Binding ConnectCommand}" />
+                        <Button Content="Refresh nodes" Command="{Binding RefreshCommand}" />
+                        <Button Content="Disconnect / cancel" Command="{Binding DisconnectCommand}" />
+                        <TextBlock Text="{Binding IsConnected, StringFormat='Connected: {0}'}" VerticalAlignment="Center" />
+                    </WrapPanel>
+                    <ScrollViewer Grid.Row="1" Margin="16,0">
+                        <StackPanel Spacing="12">
+                            <Border Classes="SectionCard" Padding="12">
+                                <StackPanel Spacing="8" IsEnabled="{Binding !IsConnected}">
+                                    <TextBlock Text="Connection settings (captured when connecting)" FontWeight="SemiBold" />
+                                    <ComboBox ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}" />
+                                    <WrapPanel ItemSpacing="10" LineSpacing="8">
+                                        <StackPanel><TextBlock Text="Direct SLCAN serial port" /><TextBox Width="180" Text="{Binding Port}" PlaceholderText="COM or /dev/…" /></StackPanel>
+                                        <StackPanel><TextBlock Text="Serial baud" /><NumericUpDown Width="130" Value="{Binding Baud}" Minimum="9600" Maximum="2000000" FormatString="0" /></StackPanel>
+                                        <StackPanel><TextBlock Text="CAN bit/s (direct)" /><ComboBox ItemsSource="{Binding CanRates}" SelectedItem="{Binding CanBitRate}" /></StackPanel>
+                                        <StackPanel><TextBlock Text="Autopilot bus" /><NumericUpDown Width="100" Value="{Binding Bus}" Minimum="1" Maximum="4" FormatString="0" /></StackPanel>
+                                        <StackPanel><TextBlock Text="Tool node ID" /><NumericUpDown Width="100" Value="{Binding LocalNodeId}" Minimum="126" Maximum="127" FormatString="0" /></StackPanel>
+                                    </WrapPanel>
+                                    <TextBlock Text="Isolated bench network name (only needed for optional ID allocation)" />
+                                    <TextBox Text="{Binding AllocationNetwork}" MaxLength="64" PlaceholderText="Use a distinct, stable name for this isolated bus" />
+                                    <TextBlock Text="Close other CAN management tools. MAVLink owns the CAN_FORWARD route and clears its capture filters on the captured disarmed vehicle. Direct SLCAN owns the selected serial adapter. Classic DroneCAN v0 only; CAN FD and UAVCAN v1 are unsupported." TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                            <ListBox MaxHeight="220" ItemsSource="{Binding Nodes}" SelectedItem="{Binding SelectedNode}" IsEnabled="{Binding !IsBusy}">
+                                <ListBox.ItemTemplate><DataTemplate>
+                                    <StackPanel Margin="4" Spacing="3">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <WrapPanel ItemSpacing="12"><TextBlock Text="{Binding NodeId, StringFormat='ID {0}'}" /><TextBlock Text="{Binding Health}" /><TextBlock Text="{Binding Mode}" /><TextBlock Text="{Binding Version}" /></WrapPanel>
+                                        <TextBlock Text="{Binding UniqueId}" FontFamily="monospace" />
+                                    </StackPanel>
+                                </DataTemplate></ListBox.ItemTemplate>
+                            </ListBox>
+                            <WrapPanel ItemSpacing="8" LineSpacing="8">
+                                <Button Content="Read parameters" Command="{Binding ReadParametersCommand}" />
+                                <Button Content="Write selected parameter" Command="{Binding WriteParameterCommand}" />
+                                <Button Content="Save parameters" Command="{Binding SaveParametersCommand}" />
+                                <Button Content="Restart node" Command="{Binding RestartCommand}" />
+                                <Button Content="Select firmware and review…" Command="{Binding FirmwareCommand}" />
+                            </WrapPanel>
+                            <TextBlock Text="Values use the node's reported type and limits. Writes verify current value and readback. Some nodes persist writes immediately; Save explicitly stores all current settings where supported. Firmware completion reports delivery; successful programming/reboot must be checked afterward." TextWrapping="Wrap" />
+                            <ProgressBar Value="{Binding TransferProgress}" Minimum="0" Maximum="100" Height="8" />
+                            <ListBox MaxHeight="340" ItemsSource="{Binding Parameters}" SelectedItem="{Binding SelectedParameter}" IsEnabled="{Binding !IsBusy}">
+                                <ListBox.ItemTemplate><DataTemplate x:DataType="sections:DroneCanParameterRow">
+                                    <Grid ColumnDefinitions="220,*,230" Margin="4">
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                        <TextBox Grid.Column="1" Text="{Binding Text}" MinWidth="130" />
+                                        <TextBlock Grid.Column="2" Margin="10,0" Text="{Binding Limits}" TextWrapping="Wrap" />
+                                    </Grid>
+                                </DataTemplate></ListBox.ItemTemplate>
+                            </ListBox>
+                            <Expander Header="Localhost RTCM / GPS passthrough">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="RTCM output is restricted to the selected node. Incoming writes default off; enabled RTCM input broadcasts valid corrections to the bus. GPS mode exposes the selected node's UART to one local client, without automatic GNSS configuration commands." TextWrapping="Wrap" />
+                                    <WrapPanel ItemSpacing="12" LineSpacing="6">
+                                        <StackPanel><TextBlock Text="TCP port (localhost only)" /><NumericUpDown Value="{Binding BridgePort}" Minimum="1024" Maximum="65535" FormatString="0" /></StackPanel>
+                                        <CheckBox Content="GPS serial mode" IsChecked="{Binding BridgeGpsSerial}" />
+                                        <CheckBox Content="Allow client writes" IsChecked="{Binding BridgeAllowWrites}" />
+                                    </WrapPanel>
+                                    <WrapPanel ItemSpacing="12" LineSpacing="6" IsVisible="{Binding BridgeGpsSerial}">
+                                        <StackPanel><TextBlock Text="UART (-1 = default)" /><NumericUpDown Value="{Binding BridgeSerialId}" Minimum="-1" Maximum="15" FormatString="0" /></StackPanel>
+                                        <CheckBox Content="Lock UART / interrupt its driver" IsChecked="{Binding BridgeLockPort}" />
+                                        <StackPanel><TextBlock Text="Baud (0 = unchanged)" /><NumericUpDown Value="{Binding BridgeBaud}" Minimum="0" Maximum="2000000" FormatString="0" /></StackPanel>
+                                    </WrapPanel>
+                                    <WrapPanel ItemSpacing="8"><Button Content="Review and start bridge�" Command="{Binding PassthroughCommand}" /><Button Content="Stop bridge" Command="{Binding PassthroughCancelCommand}" /></WrapPanel>
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="Isolated-bus node-ID allocator">
+                                <StackPanel Spacing="8">
+                                    <TextBlock Text="Default off. Direct SLCAN only, on an isolated bench network without another allocator. Reservations persist locally under the connection's network name. Existing autopilot allocation tables are not modified." TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding AllocatorEnabled, StringFormat='Enabled: {0}'}" />
+                                    <Button Content="Enable / disable allocator…" Command="{Binding ToggleAllocatorCommand}" />
+                                </StackPanel>
+                            </Expander>
+                            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="ErrorText" />
+                        </StackPanel>
                     </ScrollViewer>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Inspector / log">
+                <Grid RowDefinitions="Auto,Auto,*" Margin="12">
+                    <WrapPanel ItemSpacing="8"><Button Content="Refresh snapshot" Command="{Binding RefreshInspectorCommand}" /><Button Content="Export CSV…" Command="{Binding ExportCommand}" /></WrapPanel>
+                    <TextBlock Grid.Row="1" Margin="0,8" Text="Last 1,000 classic extended CAN frames. Payloads can contain parameter values. Export writes a new local file; no continuous disk logging occurs." TextWrapping="Wrap" />
+                    <TextBox Grid.Row="2" Text="{Binding InspectorText}" IsReadOnly="True" AcceptsReturn="True" FontFamily="monospace" ScrollViewer.VerticalScrollBarVisibility="Auto" />
                 </Grid>
             </TabItem>
         </TabControl>

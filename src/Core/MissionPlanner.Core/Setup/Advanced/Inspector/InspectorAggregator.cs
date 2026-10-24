@@ -157,7 +157,8 @@ public sealed class InspectorAggregator(IMavLinkMessageDefinitionRegistry defini
             {
                 if (property.GetIndexParameters().Length == 0 && property.Name is not ("EndPoint" or "ReceivedAt"))
                 {
-                    var value = Format(property.GetValue(message));
+                    var propertyValue = property.GetValue(message);
+                    var value = Format(propertyValue);
                     characterBudget -= property.Name.Length + value.Length;
                     if (characterBudget < 0)
                     {
@@ -165,6 +166,19 @@ public sealed class InspectorAggregator(IMavLinkMessageDefinitionRegistry defini
                         break;
                     }
                     fields[property.Name] = value;
+                    if (propertyValue is IEnumerable items and not string)
+                    {
+                        var index = 0;
+                        foreach (var item in items.Cast<object?>().Take(256))
+                        {
+                            var elementName = $"{property.Name}[{index++}]";
+                            if (item is not (byte or sbyte or short or ushort or int or uint or long or ulong or float or double or decimal)) continue;
+                            var element = Convert.ToString(item, CultureInfo.InvariantCulture) ?? string.Empty;
+                            characterBudget -= elementName.Length + element.Length;
+                            if (characterBudget < 0) break;
+                            fields[elementName] = element;
+                        }
+                    }
                 }
             }
         }

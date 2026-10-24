@@ -33,7 +33,7 @@ public sealed class WarningEngine(WarningSources sources, TimeProvider clock)
     public IReadOnlyList<WarningSnapshot> Evaluate(Func<string, WarningSample> sample)
     {
         var now = clock.GetUtcNow();
-        return entries.Values.Select(entry => Evaluate(entry, sample(entry.Rule.Source), now)).ToArray();
+        return entries.Values.Select(entry => Evaluate(entry, sample, now)).ToArray();
     }
 
     /// <summary>Acknowledges only the selected active rule when acknowledgement is configured.</summary>
@@ -68,19 +68,30 @@ public sealed class WarningEngine(WarningSources sources, TimeProvider clock)
         };
     }
 
-    private static WarningSnapshot Evaluate(Entry entry, WarningSample sample, DateTimeOffset now)
+    private static WarningSnapshot Evaluate(Entry entry, Func<string, WarningSample> read, DateTimeOffset now)
     {
         var rule = entry.Rule;
+        var sample = read(rule.Source);
+        var additional = rule.AndConditions.Select(condition => (Condition: condition, Sample: read(condition.Source))).ToArray();
         var previous = entry.State;
         var notify = false;
         var valid = sample.Value.HasValue && double.IsFinite(sample.Value.Value)
-            && sample.ObservedAt.HasValue && now >= sample.ObservedAt && now - sample.ObservedAt <= TimeSpan.FromSeconds(3);
+            && sample.ObservedAt.HasValue && now >= sample.ObservedAt && now - sample.ObservedAt <= TimeSpan.FromSeconds(3)
+            && additional.All(item => item.Sample.Value is { } value && double.IsFinite(value) &&
+                item.Sample.ObservedAt is { } observed && observed <= now && now - observed <= TimeSpan.FromSeconds(3));
         if (!rule.Enabled || !valid)
         {
             entry.State = rule.Enabled ? WarningState.Unavailable : WarningState.Disabled;
             entry.PendingSince = null;
         }
-        else if (!Matches(rule, sample.Value!.Value, entry.State is WarningState.Active or WarningState.Acknowledged))
+        else if (!Matches(rule, sample.Value!.Value, entry.State is WarningState.Active or WarningState.Acknowledged) ||
+                 additional.Any(item => !Matches(rule with
+                 {
+                     Comparison = item.Condition.Comparison,
+                     Threshold = item.Condition.Threshold,
+                     UpperThreshold = item.Condition.UpperThreshold,
+                     Hysteresis = item.Condition.Hysteresis
+                 }, item.Sample.Value!.Value, entry.State is WarningState.Active or WarningState.Acknowledged)))
         {
             entry.State = entry.State is WarningState.Active or WarningState.Acknowledged or WarningState.Cleared
                 ? WarningState.Cleared : WarningState.Inactive;

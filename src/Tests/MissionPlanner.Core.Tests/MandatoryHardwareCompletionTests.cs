@@ -51,4 +51,17 @@ public sealed class MandatoryHardwareCompletionTests
 
         action.Should().Throw<ArgumentOutOfRangeException>();
     }
+    [Fact]
+    public void InitialTuneMapsOnlyReportedNativeUnitsAndQuadPlanePrefixes()
+    {
+        var calculated = InitTuneParametersCalculator.Calculate(9, 4, 4.2, 3.3);
+        var copter = InitTuneParametersCalculator.Resolve(calculated, ["ATC_ACC_Y_MAX", "ATC_RAT_PIT_FILT"], false);
+        copter.Count.Should().Be(2);
+        copter["ATC_ACC_Y_MAX"].Should().Be(279);
+        copter["ATC_RAT_PIT_FILT"].Should().Be(23);
+        var quad = InitTuneParametersCalculator.Resolve(calculated, ["Q_A_ACCEL_Y_MAX", "Q_M_THST_EXPO", "ATC_ACCEL_R_MAX"], true);
+        quad.Count.Should().Be(2);
+        quad["Q_A_ACCEL_Y_MAX"].Should().Be(27900);
+        quad["Q_M_THST_EXPO"].Should().Be(0.58);
+    }
 }

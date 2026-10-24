@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -48,6 +49,10 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
 
     /// <summary>Gets the measurements collected during the calibration.</summary>
     public ObservableCollection<CompassMotorCalibrationSample> Samples { get; } = [];
+    /// <summary>Gets the latest bounded interference-versus-throttle graph.</summary>
+    [ObservableProperty] public partial IReadOnlyList<Point> InterferencePlot { get; private set; } = [];
+    /// <summary>Gets the latest bounded current-versus-throttle graph.</summary>
+    [ObservableProperty] public partial IReadOnlyList<Point> CurrentPlot { get; private set; } = [];
     [ObservableProperty] public partial string Instruction { get; private set; } = string.Empty;
     [ObservableProperty] public partial string Compensation { get; private set; } = string.Empty;
 
@@ -87,6 +92,8 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
             Samples.Add(sample);
         }
 
+        InterferencePlot = snapshot.Samples.TakeLast(512).Select(sample => new Point(sample.ThrottlePercent, sample.InterferencePercent)).ToArray();
+        CurrentPlot = snapshot.Samples.TakeLast(512).Select(sample => new Point(sample.ThrottlePercent, sample.CurrentAmps)).ToArray();
         Compensation = string.Empty;
         if (snapshot.Samples.LastOrDefault() is { } last)
         {

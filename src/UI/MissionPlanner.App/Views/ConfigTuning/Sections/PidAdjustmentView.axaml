@@ -1,0 +1,21 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities" xmlns:sections="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Sections"
+ xmlns:core="clr-namespace:MissionPlanner.Core.ConfigTuning;assembly=MissionPlanner.Core"
+ xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+ x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.PidAdjustmentView" x:TypeArguments="sections:PidAdjustmentViewModel" x:DataType="sections:PidAdjustmentViewModel">
+ <ScrollViewer MaxHeight="400"><StackPanel Spacing="8" Margin="12">
+  <TextBlock Text="Optional Copter P/I assistant. Scale the existing gains together, preserving their ratios before metadata rounding. This is not automatic tuning or an aircraft-specific recommendation. Keep a known-good backup and validate flight behavior after deliberate changes." TextWrapping="Wrap"/>
+  <WrapPanel ItemSpacing="12"><CheckBox Content="Couple roll/pitch P and I" IsChecked="{Binding RollPitch}"/><CheckBox Content="Climb acceleration P and I" IsChecked="{Binding Climb}"/>
+   <StackPanel><TextBlock Text="Percent of current gains (100 unchanged)"/><NumericUpDown Value="{Binding Percent}" Minimum="90" Maximum="110" Increment="1" Width="180" AutomationProperties.Name="P and I gain scale percent"/></StackPanel>
+   <Button Command="{Binding PreviewCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Preview current gains and proposed changes" AutomationProperties.Name="Preview PID changes"><mdi:MaterialIcon Kind="Eye" Classes="ActionIcon"/></Button>
+   <Button Command="{Binding PreviewCancelCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Cancel preview" AutomationProperties.Name="Cancel PID preview"><mdi:MaterialIcon Kind="Cancel" Classes="ActionIcon"/></Button>
+  </WrapPanel>
+  <TextBlock Text="{Binding PreviewDescription}" TextWrapping="Wrap"/>
+  <ItemsControl ItemsSource="{Binding Changes}"><ItemsControl.ItemTemplate><DataTemplate x:DataType="core:ReviewedParameterEdit">
+   <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="12"><TextBlock Text="{Binding Name}"/><TextBlock Grid.Column="1" Text="{Binding ExpectedLive, StringFormat='Current: {0:G7}'}"/><TextBlock Grid.Column="2" Text="{Binding Value, StringFormat='Proposed: {0:G7}'}"/></Grid>
+  </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+  <Button Command="{Binding StageCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Stage the displayed changes locally" AutomationProperties.Name="Stage reviewed PID changes"><mdi:MaterialIcon Kind="ClipboardCheckOutline" Classes="ActionIcon"/></Button>
+  <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"/>
+  <TextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap"/>
+ </StackPanel></ScrollViewer>
+</utilities:UserControlViewBase>

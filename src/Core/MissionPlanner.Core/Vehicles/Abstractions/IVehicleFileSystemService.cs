@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles.Abstractions;
@@ -8,6 +8,11 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// </summary>
 public interface IVehicleFileSystemService : IAsyncDisposable
 {
+    /// <summary>Reads a bounded file range and reports its current size.</summary>
+    Task<(uint Size, byte[] Data)> ReadRangeAsync(VehicleId vehicleId, string remotePath, uint offset, int maximumBytes, CancellationToken cancellationToken = default);
+
+    /// <summary>Appends to an existing remote file with offset acknowledgement.</summary>
+    Task AppendAsync(VehicleId vehicleId, string remotePath, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default);
     /// <summary>
     /// Lists the contents of a directory on the vehicle's file system.
     /// </summary>
@@ -45,4 +50,19 @@ public interface IVehicleFileSystemService : IAsyncDisposable
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task ResetSessionsAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
+
+    /// <summary>Creates and uploads a file; existing paths are rejected unless overwrite is explicitly requested. Interrupted transfers may leave a partial file.</summary>
+    Task UploadFileAsync(VehicleId target, string remotePath, Stream source, bool overwrite = false, IProgress<VehicleFileTransferProgress>? progress = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Removes a file or an empty directory after explicit operator selection.</summary>
+    Task RemoveAsync(VehicleId target, string remotePath, bool directory, CancellationToken cancellationToken = default);
+
+    /// <summary>Creates a remote directory.</summary>
+    Task CreateDirectoryAsync(VehicleId target, string remotePath, CancellationToken cancellationToken = default);
+
+    /// <summary>Renames a remote entry to a destination that must not already exist.</summary>
+    Task RenameAsync(VehicleId target, string remotePath, string destinationPath, CancellationToken cancellationToken = default);
+
+    /// <summary>Reads the server-computed CRC-32 of a remote file.</summary>
+    Task<uint> CalculateCrc32Async(VehicleId target, string remotePath, CancellationToken cancellationToken = default);
 }

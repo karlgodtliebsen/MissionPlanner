@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Tuning;
 using ParameterItemViewModel = MissionPlanner.App.Models.ParameterItemViewModel;
 
@@ -42,7 +42,7 @@ public sealed class BasicTuningParameterViewModel
     public string Description => Definition.Description;
 
     /// <summary>Gets metadata units with a curated fallback.</summary>
-    public string Units => string.IsNullOrWhiteSpace(Editor.Units) ? Definition.FallbackUnits : Editor.Units;
+    public string Units => string.IsNullOrWhiteSpace(Editor.Units) ? TuningParameterCompatibility.Units(ParameterName, Definition.FallbackUnits) : Editor.Units;
 
     /// <summary>Gets the optional field-level stability warning.</summary>
     public string? Warning => Definition.Warning;

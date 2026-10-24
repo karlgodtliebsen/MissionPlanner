@@ -35,10 +35,15 @@
                                        u:FormItem.Label="Altitude units" />
                             <ComboBox  HorizontalAlignment="Right" HorizontalContentAlignment="Right" ItemsSource="{Binding SpeedUnits}" SelectedItem="{Binding SpeedUnit}" 
                                        u:FormItem.Label="Speed units" />
-                            <ToggleSwitch  HorizontalAlignment="Right" HorizontalContentAlignment="Right" IsChecked="{Binding SpeechEnabled}" u:FormItem.Label="Enable speech" />
+                            <ToggleSwitch  HorizontalAlignment="Right" HorizontalContentAlignment="Right" IsChecked="{Binding SpeechEnabled}" IsEnabled="{Binding SpeechAvailable}" u:FormItem.Label="Enable speech" />
                             <ComboBox  HorizontalAlignment="Right" HorizontalContentAlignment="Right" ItemsSource="{Binding SpeechSeverities}" SelectedItem="{Binding SpeechSeverity}" 
                                        u:FormItem.Label="Minimum spoken severity" />
                         </u:Form>
+                        <TextBlock Text="{Binding SpeechStatus}" TextWrapping="Wrap" />
+                        <Button Classes="EmbeddedIconButton" Command="{Binding TestSpeechCommand}" IsEnabled="{Binding SpeechAvailable}"
+                                ToolTip.Tip="Test local speech" AutomationProperties.Name="Test local speech" HorizontalAlignment="Center">
+                            <avalonia:MaterialIcon Kind="VolumeHigh" Width="30" Height="30" />
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Border>

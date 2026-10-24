@@ -1,50 +1,47 @@
-﻿<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui"
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
                                x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningManagerPage"
-                               x:TypeArguments="local:WarningManagerViewModel" 
+                               x:TypeArguments="local:WarningManagerViewModel"
                                x:DataType="local:WarningManagerViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa">
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
-       
-        <u:Banner ShowIcon="False"  Classes="Bordered" Header="Warnings" HorizontalAlignment="Stretch">
+        <u:Banner ShowIcon="False" Classes="Bordered" Header="Warnings" HorizontalAlignment="Stretch">
             <StackPanel Spacing="6" HorizontalAlignment="Center">
-                <TextBlock Text="Visual warnings run while this page is open. Sources use native telemetry units. Values older than three seconds are unavailable. No speech or system notifications are enabled."
+                <TextBlock Text="Warnings run while the application is open. Sources use native units and become unavailable after three seconds. Global delivery is configurable per rule; speech follows the enabled severity settings in Preferences."
                            TextWrapping="Wrap" Classes="Warning" />
-                <StackPanel Spacing="10"   Margin="0,20">
-                    <WrapPanel IsEnabled="{Binding !IsBusy}">
-                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Import rules (merge by ID)" Command="{Binding ImportCommand}" 
-                                Margin="0,0,8,8" AutomationProperties.Name="Import rules (merge by ID)">
-                            <mdi:MaterialIcon Kind="FileImportOutline" Classes="ActionIcon" />
-                        </Button>
-                        <Button Classes="EmbeddedIconButton" ToolTip.Tip="Export rules" Command="{Binding ExportCommand}" 
-                                Margin="0,0,8,8" AutomationProperties.Name="Export rules">
-                            <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
-                        </Button>
-                    </WrapPanel>
-                    <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
-                                         IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                    <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
-                                         IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
-                </StackPanel>
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
         </u:Banner>
+        <WrapPanel Grid.Row="1" IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Center">
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="Import rules (merge by ID)" Command="{Binding ImportCommand}"
+                   AutomationProperties.Name="Import rules (merge by ID)">
+                <mdi:MaterialIcon Kind="FileImportOutline" Classes="ActionIcon" />
+            </Button>
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="Export rules" Command="{Binding ExportCommand}"
+                     AutomationProperties.Name="Export rules">
+                <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+            </Button>
+        </WrapPanel>
 
-        <TabControl Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-            <TabItem Header="Rules">
-                <Grid RowDefinitions="Auto,*" RowSpacing="12">
+        <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" >
+            <TabItem Header="Rules" Margin="0,20">
+                <Grid RowDefinitions="Auto,*" RowSpacing="12" Margin="0,20">
                     <local:WarningRuleListView DataContext="{Binding Rules}" IsEnabled="{Binding !IsBusy}" />
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                         <local:WarningRuleEditorView DataContext="{Binding Editor}" IsEnabled="{Binding !IsBusy}"  Margin="0,20"/>
                     </ScrollViewer>
                 </Grid>
             </TabItem>
-            <TabItem Header="Live status">
+            <TabItem Header="Live status" Margin="0,20">
                 <local:WarningStatusView DataContext="{Binding Status}" MinWidth="200" MinHeight="200" Margin="0,20"/>
             </TabItem>
         </TabControl>

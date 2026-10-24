@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
@@ -46,6 +46,9 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
         this.navigation = navigation;
 
     }
+
+    /// <summary>Gets whether traditional-helicopter parameters are reported by the current firmware.</summary>
+    [ObservableProperty] public partial bool SupportsTraditionalHelicopter { get; private set; }
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
@@ -99,6 +102,8 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
         SetMessages(null, null);
         Dispatcher.Dispatch(() =>
         {
+            SupportsTraditionalHelicopter = snapshot.VehicleId is { } id &&
+                (parameterRegistry.GetParameter(id, "H_SW_TYPE") is not null || parameterRegistry.GetParameter(id, "H_RSC_MODE") is not null);
             VehicleHeading = snapshot.IsOnline
                 ? $"{snapshot.DisplayName} · {snapshot.State!.Identity.Firmware.Family}"
                 : snapshot.VehicleId is null ? "No vehicle connected" : $"{snapshot.DisplayName} · disconnected";

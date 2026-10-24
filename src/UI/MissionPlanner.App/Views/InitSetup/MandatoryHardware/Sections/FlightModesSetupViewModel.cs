@@ -161,6 +161,33 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
         }
     }
 
+    internal async Task ApplySimpleAsync(FlightModeSlotViewModel slot, CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } id || loadedVehicleId != id || !Slots.Contains(slot))
+        {
+            return;
+        }
+        using var operation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
+        try
+        {
+            var result = await modeService.SetSimpleOptionsAsync(id, slot.Slot,
+                slot.SupportsSimple ? slot.Simple : null, slot.SupportsSuperSimple ? slot.SuperSimple : null, operation.Token);
+            if (activeVehicle.VehicleId == id)
+            {
+                Load();
+                SetMessages(result.Message);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            SetMessages("Simple-mode update cancelled. Refresh to check confirmed values.");
+        }
+        catch (Exception exception)
+        {
+            SetMessages(exception);
+        }
+    }
+
     [RelayCommand]
     private void Refresh()
     {
@@ -184,7 +211,7 @@ public sealed partial class FlightModesSetupViewModel : ViewModelBase
     {
         if (args.VehicleId == activeVehicle.VehicleId && (args.Parameter is null ||
             args.Parameter.Name.StartsWith("FLTMODE", StringComparison.Ordinal) ||
-            args.Parameter.Name.StartsWith("MODE", StringComparison.Ordinal)))
+            args.Parameter.Name.StartsWith("MODE", StringComparison.Ordinal) || args.Parameter.Name is "SIMPLE" or "SUPER_SIMPLE"))
         {
             Dispatcher.Dispatch(Load);
         }
@@ -356,11 +383,50 @@ public sealed partial class FlightModeSlotViewModel : ObservableObject
         set;
     }
 
+    /// <summary>Gets whether this firmware reports the SIMPLE mask.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SupportsSimpleOptions))]
+    public partial bool SupportsSimple { get; private set; }
+    /// <summary>Gets whether this firmware reports the SUPER_SIMPLE mask.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SupportsSimpleOptions))]
+    public partial bool SupportsSuperSimple { get; private set; }
+    /// <summary>Gets whether either simple-mode parameter is reported.</summary>
+    public bool SupportsSimpleOptions => SupportsSimple || SupportsSuperSimple;
+
+    /// <summary>Gets or sets the pending SIMPLE flag.</summary>
+    [ObservableProperty]
+    public partial bool Simple { get; set; }
+    /// <summary>Gets or sets the pending SUPER_SIMPLE flag.</summary>
+    [ObservableProperty]
+    public partial bool SuperSimple { get; set; }
+
+    private bool? receivedSimple;
+    private bool? receivedSuperSimple;
+
+    [RelayCommand(IncludeCancelCommand = true)]
+    private Task ApplySimpleAsync(CancellationToken cancellationToken)
+    {
+        return parent.ApplySimpleAsync(this, cancellationToken);
+    }
+
     /// <summary>Updates the slot from a new projection.</summary>
     /// <param name="slot">The slot projection.</param>
     /// <param name="options">The available modes.</param>
     public void Update(FlightModeSlot slot, IReadOnlyList<VehicleModeOption> options)
     {
+        if (receivedSimple is null || Simple == receivedSimple || slot.Simple != receivedSimple)
+        {
+            Simple = slot.Simple ?? false;
+        }
+        if (receivedSuperSimple is null || SuperSimple == receivedSuperSimple || slot.SuperSimple != receivedSuperSimple)
+        {
+            SuperSimple = slot.SuperSimple ?? false;
+        }
+        receivedSimple = slot.Simple;
+        receivedSuperSimple = slot.SuperSimple;
+        SupportsSimple = slot.Simple is not null;
+        SupportsSuperSimple = slot.SuperSimple is not null;
         var pending = CanApply && receivedModeNumber == slot.SelectedModeNumber ? SelectedMode : null;
         receivedModeNumber = slot.SelectedModeNumber;
         var choices = options.Select(option => new FlightModeChoice(option.Name, option.CustomMode, true)).ToList();

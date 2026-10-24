@@ -12,11 +12,32 @@
              x:DataType="parametersEditor:ParametersEditorTabViewModel"
              >
 
-    <controls:VirtualizedItemsGrid
+    <Grid RowDefinitions="Auto,*">
+    <Expander Header="Collections and parameter navigation" HorizontalAlignment="Stretch">
+        <StackPanel Spacing="8" Margin="8">
+            <WrapPanel ItemSpacing="12">
+                <ComboBox ItemsSource="{Binding CollectionNames}" SelectedItem="{Binding SelectedCollection}" AutomationProperties.Name="Parameter collection" MinWidth="160" />
+                <ComboBox ItemsSource="{Binding ParameterGroups}" SelectedItem="{Binding SelectedParameterGroup}" AutomationProperties.Name="Parameter group" MinWidth="140" />
+                <ComboBox ItemsSource="{Binding ParameterLevels}" SelectedItem="{Binding ParameterLevel}" AutomationProperties.Name="Metadata user level" MinWidth="140" />
+            </WrapPanel>
+            <TextBlock Text="Collections contain live parameter names, not saved values. Filtering keeps pending edits. Unknown means no user-level metadata was supplied." TextWrapping="Wrap" />
+            <TextBox Text="{Binding CollectionName}" PlaceholderText="Collection name (for example Favorites)" />
+            <TextBox Text="{Binding CollectionMembers}" PlaceholderText="Parameter names separated by commas or newlines" AcceptsReturn="True" MaxHeight="110" />
+            <WrapPanel ItemSpacing="12">
+                <Button Classes="EmbeddedIconButton" Command="{Binding SaveCollectionCommand}" ToolTip.Tip="Save parameter collection" AutomationProperties.Name="Save parameter collection">
+                    <avalonia:MaterialIcon Kind="ContentSaveOutline" Classes="ActionIcon" />
+                </Button>
+                <Button Classes="EmbeddedIconButton" Command="{Binding DeleteCollectionCommand}" ToolTip.Tip="Delete selected collection" AutomationProperties.Name="Delete selected collection">
+                    <avalonia:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" />
+                </Button>
+            </WrapPanel>
+        </StackPanel>
+    </Expander>
+    <controls:VirtualizedItemsGrid Grid.Row="1"
         
         HorizontalAlignment="Stretch"
         VerticalAlignment="Stretch"
-        ItemsSource="{Binding Parameters}"
+        ItemsSource="{Binding CollectionParameters}"
         ColumnWidths="160,100,180,100,100,100,100,125,150,*"
         ColumnSpacing="6"
         RowMinHeight="38"
@@ -320,4 +341,5 @@
 
         </controls:VirtualizedItemsGrid.RowTemplate>
     </controls:VirtualizedItemsGrid>
+    </Grid>
 </UserControl>

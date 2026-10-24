@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,22 @@ public sealed partial class WarningRuleEditorViewModel(WarningSources sources,
     : ViewModelBase(logger, dispatcher, events)
 {
     private Guid id = Guid.NewGuid();
+    /// <summary>Gets editable additional conditions; all must match.</summary>
+    public ObservableCollection<WarningConditionEditorViewModel> AndConditions { get; } = [];
+
+    /// <summary>Gets or sets whether to deliver alerts beyond this page.</summary>
+    [ObservableProperty]
+    public partial bool NotifyGlobally { get; set; } = true;
+
+    [RelayCommand]
+    private void AddCondition()
+    {
+        if (AndConditions.Count < 8)
+        {
+            AndConditions.Add(new(Sources, item => AndConditions.Remove(item)));
+        }
+    }
+
     /// <summary>Gets supported telemetry sources in native units.</summary>
     public IReadOnlyList<WarningSourceDescriptor> Sources => sources.All;
     /// <summary>Gets supported comparisons.</summary>
@@ -98,11 +115,28 @@ public sealed partial class WarningRuleEditorViewModel(WarningSources sources,
         Hysteresis = rule.Hysteresis;
         CooldownSeconds = rule.CooldownSeconds;
         RequiresAcknowledgement = rule.RequiresAcknowledgement;
+        NotifyGlobally = rule.NotifyGlobally;
+        AndConditions.Clear();
+        foreach (var condition in rule.AndConditions)
+        {
+            AndConditions.Add(new(Sources, item => AndConditions.Remove(item))
+            {
+                Source = Sources.FirstOrDefault(item => item.Key == condition.Source),
+                Comparison = condition.Comparison,
+                Threshold = condition.Threshold,
+                UpperThreshold = condition.UpperThreshold,
+                Hysteresis = condition.Hysteresis
+            });
+        }
         NameError = SourceError = ThresholdError = TimingError = MessageError = PreviewResult = string.Empty;
     }
 
     private WarningRule Build() => new(id, Name, Enabled, Source?.Key ?? string.Empty, Comparison,
-        Threshold, UpperThreshold, Severity, Message, DelaySeconds, Hysteresis, CooldownSeconds, RequiresAcknowledgement);
+        Threshold, UpperThreshold, Severity, Message, DelaySeconds, Hysteresis, CooldownSeconds, RequiresAcknowledgement)
+    {
+        AndConditions = AndConditions.Select(item => item.Build()).ToArray(),
+        NotifyGlobally = NotifyGlobally
+    };
 
     private bool Validate(WarningRule rule)
     {
@@ -110,7 +144,7 @@ public sealed partial class WarningRuleEditorViewModel(WarningSources sources,
         string Error(params string[] fields) => string.Join(" ", fields.Where(errors.ContainsKey).Select(field => errors[field]));
         NameError = Error(nameof(Name));
         SourceError = Error(nameof(Source));
-        ThresholdError = Error(nameof(Comparison), nameof(Threshold), nameof(UpperThreshold), nameof(Hysteresis));
+        ThresholdError = Error(nameof(Comparison), nameof(Threshold), nameof(UpperThreshold), nameof(Hysteresis), nameof(AndConditions));
         TimingError = Error(nameof(DelaySeconds), nameof(CooldownSeconds));
         MessageError = Error(nameof(Message));
         return errors.Count == 0;
@@ -132,8 +166,44 @@ public sealed partial class WarningRuleEditorViewModel(WarningSources sources,
         var rule = Build();
         if (Validate(rule))
         {
+            if (AndConditions.Count > 0)
+            {
+                PreviewResult = "The preview tests the primary condition only. Live evaluation requires every AND condition to have a current matching value.";
+                return;
+            }
             PreviewResult = !double.IsFinite(PreviewValue) ? "Unavailable input" : WarningEngine.Matches(rule, PreviewValue)
                 ? "Condition matches (preview only; delay and live state are unchanged)." : "Condition does not match.";
         }
     }
+}
+
+/// <summary>Edits one additional AND condition in its source's native units.</summary>
+public sealed partial class WarningConditionEditorViewModel(IReadOnlyList<WarningSourceDescriptor> sources,
+    Action<WarningConditionEditorViewModel> remove) : ObservableObject
+{
+    /// <summary>Gets supported numeric telemetry sources.</summary>
+    public IReadOnlyList<WarningSourceDescriptor> Sources { get; } = sources;
+    /// <summary>Gets supported comparisons.</summary>
+    public IReadOnlyList<WarningComparison> Comparisons { get; } = Enum.GetValues<WarningComparison>();
+    /// <summary>Gets or sets the source.</summary>
+    [ObservableProperty]
+    public partial WarningSourceDescriptor? Source { get; set; }
+    /// <summary>Gets or sets the comparison.</summary>
+    [ObservableProperty]
+    public partial WarningComparison Comparison { get; set; }
+    /// <summary>Gets or sets the threshold or lower bound.</summary>
+    [ObservableProperty]
+    public partial double Threshold { get; set; }
+    /// <summary>Gets or sets the upper range bound.</summary>
+    [ObservableProperty]
+    public partial double UpperThreshold { get; set; } = 100;
+    /// <summary>Gets or sets the clear hysteresis in native units.</summary>
+    [ObservableProperty]
+    public partial double Hysteresis { get; set; }
+
+    /// <summary>Creates the immutable condition for validation and persistence.</summary>
+    public WarningCondition Build() => new(Source?.Key ?? "", Comparison, Threshold, UpperThreshold, Hysteresis);
+
+    [RelayCommand]
+    private void Remove() => remove(this);
 }

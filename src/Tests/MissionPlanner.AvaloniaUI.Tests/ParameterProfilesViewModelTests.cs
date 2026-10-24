@@ -1,4 +1,4 @@
-﻿using Avalonia;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Threading;
@@ -200,6 +200,44 @@ public sealed class ParameterProfilesViewModelTests
         AssertNoWrites(fixture.Session);
     }
 
+    /// <summary>Closing the dialog cancels and joins a remote request without staging or saving a profile.</summary>
+    [Fact]
+    public async Task ClosingProfilesCancelsAndJoinsLibraryRequest()
+    {
+        using var handler = new PendingLibraryHandler();
+        using var client = new HttpClient(handler);
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(client);
+        using var fixture = new Fixture(new ParameterPresetLibrary(factory));
+        var browsing = fixture.Model.BrowseLibraryCommand.ExecuteAsync(null);
+        await handler.Started.Task.WaitAsync(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken);
+        Assert.True(fixture.Model.Working);
+        await fixture.Model.StopLibraryAsync().WaitAsync(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken);
+        await browsing;
+        Assert.True(handler.Cancelled);
+        Assert.False(fixture.Model.Working);
+        Assert.Empty(fixture.Model.LibraryEntries);
+        Assert.Empty(fixture.Model.Profiles);
+        Assert.Contains("cancelled", fixture.Model.Feedback);
+        AssertNoWrites(fixture.Session);
+    }
+
+    private sealed class PendingLibraryHandler : HttpMessageHandler
+    {
+        internal TaskCompletionSource Started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        internal bool Cancelled { get; private set; }
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
+        {
+            Started.TrySetResult();
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, token);
+                throw new InvalidOperationException("The pending request should be cancelled.");
+            }
+            finally { Cancelled = token.IsCancellationRequested; }
+        }
+    }
+
     private static void AssertNoWrites(IParameterEditSession session)
     {
         Assert.DoesNotContain(session.ReceivedCalls(), call => call.GetMethodInfo().Name is "ApplyAsync" or "RetryFailedAsync");
@@ -222,7 +260,7 @@ public sealed class ParameterProfilesViewModelTests
             get;
         }
 
-        internal Fixture()
+        internal Fixture(ParameterPresetLibrary? presetLibrary = null)
         {
             Repository = new JsonParameterProfileRepository(Options.Create(new ParameterProfileRepositoryOptions { Directory = directory }));
             var firmware = new VehicleFirmwareIdentity(FirmwareFamily.ArduCopter, 2, 3,
@@ -237,7 +275,7 @@ public sealed class ParameterProfilesViewModelTests
             Session.GetField(Arg.Any<string>()).Returns(call => fields.FirstOrDefault(field => field.Name == call.Arg<string>()));
             Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
             Model = new ParameterProfilesViewModel(Repository, Workflow, Confirmation, Files, Exports, Session,
-                Substitute.For<IUiDispatcher>(), Substitute.For<IDomainEventHub>(), NullLogger<ParameterProfilesViewModel>.Instance);
+                Substitute.For<IUiDispatcher>(), Substitute.For<IDomainEventHub>(), NullLogger<ParameterProfilesViewModel>.Instance, presetLibrary);
         }
 
         public void Dispose()

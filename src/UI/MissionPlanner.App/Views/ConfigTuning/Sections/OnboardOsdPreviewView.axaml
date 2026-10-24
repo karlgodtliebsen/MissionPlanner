@@ -8,8 +8,11 @@
              x:Class="MissionPlanner.App.Views.ConfigTuning.Sections.OnboardOsdPreviewView"
              x:DataType="sections:OnboardOsdTabViewModel"
              x:CompileBindings="True">
+        <StackPanel Spacing="8">
+        <TextBlock Text="Drag enabled items on the character grid. Example values illustrate placement; this is not a live video or an exact font preview. Apply writes the pending layout." TextWrapping="Wrap" />
         <sections:OsdPreviewCanvas
             x:Name="PreviewCanvas"
             ViewModel="{Binding}"
             MinHeight="480" />
+        </StackPanel>
 </UserControl>

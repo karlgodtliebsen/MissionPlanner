@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,7 +9,7 @@ using MissionPlanner.MavLink.Services.Abstractions;
 namespace MissionPlanner.MavLink.MavFtp;
 
 /// <inheritdoc />
-public sealed class MavFtpClient : IMavFtpClient
+public sealed partial class MavFtpClient : IMavFtpClient
 {
     private readonly IMavLinkConnection connection;
     private readonly IMavFtpMessageEncoder messageEncoder;
@@ -208,7 +208,7 @@ public sealed class MavFtpClient : IMavFtpClient
         var request = new MavFtpPacket(sequence, session, opcode, MavFtpOpcode.None, false, offset, data);
         for (var attempt = 1; ; attempt++)
         {
-            using var registration = responseDispatcher.Register(target, sequence, opcode, opcode == MavFtpOpcode.OpenFileReadOnly ? null : session);
+            using var registration = responseDispatcher.Register(target, sequence, opcode, opcode is MavFtpOpcode.OpenFileReadOnly or MavFtpOpcode.CreateFile or MavFtpOpcode.OpenFileWriteOnly ? null : session);
             await connection.SendRawAsync(messageEncoder.Encode(target.SystemId, target.ComponentId, packetCodec.Encode(request)), target.EndPoint, ct).ConfigureAwait(false);
             try
             {
@@ -412,8 +412,8 @@ public sealed class MavFtpClient : IMavFtpClient
         }
 
         var bytes = System.Text.Encoding.UTF8.GetBytes(path);
-        return bytes.Length > 239
-            ? throw new ArgumentOutOfRangeException(nameof(path), "UTF-8 remote path exceeds MAVFTP payload capacity.")
+        return bytes.Length > 238
+            ? throw new ArgumentOutOfRangeException(nameof(path), "UTF-8 remote path exceeds 238 bytes; the payload must reserve a NUL terminator.")
             : bytes;
     }
 

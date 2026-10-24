@@ -1,4 +1,4 @@
-﻿<utilities:UserControlViewBase
+<utilities:UserControlViewBase
     x:TypeArguments="sections:OnboardOsdBridgeViewModel"
     xmlns="https://github.com/avaloniaui"
     xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
@@ -41,7 +41,7 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Configuration">
-                <Grid RowDefinitions="*">
+                <Grid RowDefinitions="Auto,*">
                     <Border Grid.Row="0" Padding="12">
                         <WrapPanel Orientation="Horizontal" ItemSpacing="10" HorizontalAlignment="Center">
                             <Button Classes="ToolbarIconButton" ToolTip.Tip="Refresh" Command="{Binding RefreshCommand}"  AutomationProperties.Name="Refresh">
@@ -54,6 +54,25 @@
 
                         </WrapPanel>
                     </Border>
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="10" Margin="12">
+                            <TextBlock Text="External telemetry OSD" Classes="H4" />
+                            <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ErrorMessage}" Classes="Danger" TextWrapping="Wrap" />
+                            <TextBlock Text="MAVLink stream channel (verify its physical port mapping)" />
+                            <NumericUpDown Value="{Binding StreamChannel}" Minimum="0" Maximum="9" AutomationProperties.Name="External OSD MAVLink channel" />
+                            <Button Command="{Binding StageExternalOsdPresetCommand}" ToolTip.Tip="Stage 2 Hz rates for the selected channel" AutomationProperties.Name="Stage external OSD rate preset" HorizontalAlignment="Left">
+                                <mdi:MaterialIcon Kind="TableEdit" Classes="ActionIcon" />
+                            </Button>
+                            <ItemsControl ItemsSource="{Binding Settings}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="sections:ParameterSettingViewModel">
+                                        <sections:ParameterSettingEditor />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
                 </Grid>
             </TabItem>
         </TabControl>

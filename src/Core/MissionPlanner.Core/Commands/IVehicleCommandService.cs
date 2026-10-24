@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Commands;
@@ -8,6 +8,17 @@ namespace MissionPlanner.Core.Commands;
 /// </summary>
 public interface IVehicleCommandService : IAsyncDisposable
 {
+    /// <summary>Calibrates compasses against an independently measured true heading and known location while disarmed.</summary>
+    /// <param name="vehicleId">The selected vehicle.</param>
+    /// <param name="yawDegrees">Independently measured heading from true north, from 0 through 360 degrees.</param>
+    /// <param name="latitudeDegrees">Known latitude; both coordinates zero request the vehicle's current valid fix.</param>
+    /// <param name="longitudeDegrees">Known longitude.</param>
+    /// <param name="safetyConfirmed">Whether the operator confirmed the stationary vehicle, heading and magnetic environment.</param>
+    /// <param name="cancellationToken">Cancels transmission and acknowledgement.</param>
+    /// <returns>The firmware acknowledgement, not a guarantee of heading accuracy.</returns>
+    Task<VehicleCommandResponse> CalibrateCompassFixedYawAsync(VehicleId vehicleId, double yawDegrees,
+        double latitudeDegrees, double longitudeDegrees, bool safetyConfirmed, CancellationToken cancellationToken);
+
     /// <summary>Evaluates receiver configuration and current binding safety.</summary>
     /// <param name="vehicleId">Target vehicle.</param>
     /// <returns>Evidence-based availability.</returns>

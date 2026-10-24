@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -111,6 +111,12 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     public Task StartLevelAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
         return StartAsync(vehicleId, AccelerometerCalibrationKind.Level, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task StartSimpleAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        return StartAsync(vehicleId, AccelerometerCalibrationKind.Simple, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -269,8 +275,8 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
             null,
             new HashSet<CalibrationOrientation>(),
             0,
-            kind == AccelerometerCalibrationKind.Level
-                ? "Keep the vehicle level and motionless while level calibration starts."
+            kind != AccelerometerCalibrationKind.SixPosition
+                ? "Keep the vehicle level and motionless while stationary calibration starts."
                 : "Keep the vehicle disarmed. Waiting for the first orientation request."));
         logger.LogInformation("Starting {CalibrationKind} calibration for {VehicleId}.", kind, vehicleId);
 
@@ -281,12 +287,15 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         }
         try
         {
-            var action = kind == AccelerometerCalibrationKind.Level
-                ? PreflightCalibrationAccelerometer.Trim
-                : PreflightCalibrationAccelerometer.Full;
+            var action = kind switch
+            {
+                AccelerometerCalibrationKind.Level => PreflightCalibrationAccelerometer.Trim,
+                AccelerometerCalibrationKind.Simple => PreflightCalibrationAccelerometer.Simple,
+                _ => PreflightCalibrationAccelerometer.Full
+            };
             await SendCommandAsync(vehicleId, PreflightCalibrationCommand, [0, 0, 0, 0, (float)action, 0, 0], runToken).ConfigureAwait(false);
             await startSignal.Task.WaitAsync(startTimeout, runToken).ConfigureAwait(false);
-            if (kind == AccelerometerCalibrationKind.Level && IsActive(Current.State))
+            if (kind != AccelerometerCalibrationKind.SixPosition && IsActive(Current.State))
             {
                 await terminalSignal.Task.WaitAsync(levelTimeout, runToken).ConfigureAwait(false);
             }
@@ -360,7 +369,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         if (result == MavResult.InProgress)
         {
             startSignal?.TrySetResult();
-            if (Current.Kind == AccelerometerCalibrationKind.Level)
+            if (Current.Kind != AccelerometerCalibrationKind.SixPosition)
             {
                 Transition(Current with
                 {
@@ -382,9 +391,9 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         if (result == MavResult.Accepted)
         {
             startSignal?.TrySetResult();
-            if (Current.Kind == AccelerometerCalibrationKind.Level)
+            if (Current.Kind != AccelerometerCalibrationKind.SixPosition)
             {
-                Finish(CalibrationWorkflowState.Success, "Level calibration was confirmed by COMMAND_ACK.");
+                Finish(CalibrationWorkflowState.Success, $"{Current.Kind} calibration was confirmed by COMMAND_ACK.");
             }
             else if (Current.State == CalibrationWorkflowState.Preparing)
             {

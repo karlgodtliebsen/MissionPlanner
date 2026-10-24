@@ -6,7 +6,7 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityPage"
                                x:TypeArguments="local:ProximityViewModel" 
                                x:DataType="local:ProximityViewModel">
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
         </Grid.ColumnDefinitions>
@@ -14,11 +14,15 @@
             <StackPanel Spacing="6" HorizontalAlignment="Center">
                 <SelectableTextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
                 <TextBlock Text="Display only. Unknown, stale and unsupported readings never indicate clear space. Uses existing telemetry streams." TextWrapping="Wrap" Classes="Warning" />
+                <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
+                                     IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
+                <SelectableTextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger"
+                                     IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
         </u:Banner>
         <TabControl Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-            <TabItem Header="Radar"><local:ProximityRadarView DataContext="{Binding Radar}" /></TabItem>
-            <TabItem Header="Sensor diagnostics"><local:ProximityDiagnosticsView DataContext="{Binding Diagnostics}" /></TabItem>
+            <TabItem Header="Radar" Margin="0,20"><local:ProximityRadarView DataContext="{Binding Radar}" /></TabItem>
+            <TabItem Header="Sensor diagnostics" Margin="0,20"><local:ProximityDiagnosticsView DataContext="{Binding Diagnostics}" /></TabItem>
         </TabControl>
     </Grid>
 </utilities:UserControlViewBase>

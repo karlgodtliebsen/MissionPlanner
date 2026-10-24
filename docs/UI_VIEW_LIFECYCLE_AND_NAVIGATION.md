@@ -30,6 +30,15 @@ Use the namespace and root-element organization of a nearby production view:
 </utilities:NavigationViewBase>
 ```
 
+## Decimal numeric literals
+
+Use plain decimal notation for `NumericUpDown` literal `Value`, `Minimum`, `Maximum` and
+`Increment` attributes. For example, write `Increment="0.000000001"`, not `Increment="1e-09"`.
+Avalonia's compiled decimal conversion uses the default `Decimal.Parse` number style, which
+does not accept exponent notation. The build can succeed while constructing the view throws
+`FormatException`. `AvaloniaMigrationContractTests.NumericUpDownDecimalLiteralsCanBeParsedWhenViewsLoad`
+checks these literals across the application XAML without requiring a headless UI thread.
+
 ## Base classes and lifecycle
 
 | Role | Base class |

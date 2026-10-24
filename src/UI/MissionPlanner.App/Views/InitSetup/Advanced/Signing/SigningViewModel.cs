@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -61,6 +61,10 @@ public sealed partial class SigningViewModel(SigningKeyViewModel keys, SigningSe
             }
             keys.KeyChanged -= KeyChanged;
             await configuring;
+            if (DisableCommand.ExecutionTask is { } disabling)
+            {
+                await disabling;
+            }
             await polling;
             await keys.DeactivateAsync();
             keys.Clear();
@@ -125,6 +129,42 @@ public sealed partial class SigningViewModel(SigningKeyViewModel keys, SigningSe
             {
                 CryptographicOperations.ZeroMemory(secret);
             }
+            IsBusy = keys.Locked = false;
+        }
+    }
+
+    [RelayCommand(IncludeCancelCommand = true)]
+    private async Task DisableAsync(CancellationToken cancellationToken)
+    {
+        if (IsBusy || keys.IsBusy || lifetime is null)
+        {
+            return;
+        }
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifetime.Token);
+        IsBusy = keys.Locked = true;
+        try
+        {
+            var accepted = await dialogs.ConfirmAsync(dialogs.CreateOptions("Disable vehicle signing", "Disable signing", "Cancel"),
+                "Send a zero-key signing-disable request to the selected vehicle and stop local signing? Use trusted USB. The protocol does not acknowledge this operation. Keep the recovery key and verify the vehicle after reconnecting.", linked.Token);
+            linked.Token.ThrowIfCancellationRequested();
+            if (!accepted)
+            {
+                return;
+            }
+            await setup.DisableAsync(true, linked.Token);
+            Message = "Disable request transmitted; local outbound signing stopped. Vehicle acceptance is unconfirmed because SETUP_SIGNING has no acknowledgement. Reconnect over trusted USB and verify. Saved recovery keys were retained.";
+        }
+        catch (OperationCanceledException)
+        {
+            Message = "Disable cancelled, timed out or disconnected. Vehicle state is uncertain; retain the recovery key and reconnect over trusted USB.";
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning("Signing disable failed ({FailureType}).", exception.GetType().Name);
+            Message = "Signing disable failed. Check that the vehicle is connected, disarmed and no other operation is running. Recover over trusted USB if the request may have been sent.";
+        }
+        finally
+        {
             IsBusy = keys.Locked = false;
         }
     }

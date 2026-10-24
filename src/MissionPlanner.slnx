@@ -43,6 +43,8 @@
     <File Path="../docs/MAVLINK.md" />
     <File Path="../docs/MAVLINK_DOMAIN_PROMOTION.md" />
     <File Path="../docs/MISSING_FEATURES.md" />
+    <File Path="../docs/review-20261023/FEATURE_COMPARISON.md" />
+    <File Path="../docs/review-20261023/IMPLEMENTATION.md" />
     <File Path="../docs/MISSIONS.md" />
     <File Path="../docs/MOTOR_OUTPUT_DIAGNOSTICS.md" />
     <File Path="../docs/MOTOR_START_THRESHOLDS.md" />

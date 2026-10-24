@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Setup.MandatoryHardware;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup.Abstractions;
@@ -18,6 +18,15 @@ public interface IFlightModeConfigurationService
     /// <param name="cancellationToken">A connection-scoped cancellation token.</param>
     /// <returns>The confirmed or failed apply result.</returns>
     Task<FlightModeApplyResult> SetSlotAsync(VehicleId vehicleId, int slot, int modeNumber, CancellationToken cancellationToken = default);
+
+    /// <summary>Updates only this slot's SIMPLE/SUPER_SIMPLE bits, preserving all other reported bits.</summary>
+    /// <param name="vehicleId">The selected disarmed Copter.</param>
+    /// <param name="slot">The one-based slot.</param>
+    /// <param name="simple">Desired SIMPLE state; null leaves its mask untouched.</param>
+    /// <param name="superSimple">Desired SUPER_SIMPLE state; null leaves its mask untouched.</param>
+    /// <param name="cancellationToken">Cancels writes and readback waits.</param>
+    /// <returns>The actual confirmed or partial result.</returns>
+    Task<FlightModeApplyResult> SetSimpleOptionsAsync(VehicleId vehicleId, int slot, bool? simple, bool? superSimple, CancellationToken cancellationToken = default);
 
     /// <summary>Requests refreshed values for the flight-mode parameter set.</summary>
     /// <param name="vehicleId">The active target vehicle.</param>

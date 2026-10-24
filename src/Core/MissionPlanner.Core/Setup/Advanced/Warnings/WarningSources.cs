@@ -97,6 +97,29 @@ public sealed class WarningSources(ITelemetryFieldCatalog catalogue)
         {
             errors[nameof(rule.Message)] = "Use a message of 1 to 500 characters; {name} and {value} are supported.";
         }
+        if (rule.AndConditions is null || rule.AndConditions.Count > 8)
+        {
+            errors[nameof(rule.AndConditions)] = "Use at most eight additional AND conditions.";
+        }
+        else
+        {
+            foreach (var condition in rule.AndConditions)
+            {
+                if (condition is null || Validate(rule with
+                    {
+                        Source = condition.Source,
+                        Comparison = condition.Comparison,
+                        Threshold = condition.Threshold,
+                        UpperThreshold = condition.UpperThreshold,
+                        Hysteresis = condition.Hysteresis,
+                        AndConditions = []
+                    }).Count != 0)
+                {
+                    errors[nameof(rule.AndConditions)] = "Each AND condition needs a supported source, finite thresholds, a valid range and hysteresis.";
+                    break;
+                }
+            }
+        }
         return errors;
     }
 }

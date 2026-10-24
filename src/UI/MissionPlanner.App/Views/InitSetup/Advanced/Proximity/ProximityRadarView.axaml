@@ -4,13 +4,14 @@
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Proximity"
     x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityRadarView"
     x:TypeArguments="local:ProximityRadarViewModel" x:DataType="local:ProximityRadarViewModel">
-    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="10">
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="20" Margin="0,20">
         <StackPanel Orientation="Horizontal" Spacing="12">
             <TextBlock Text="Displayed radius (m)" VerticalAlignment="Center" />
             <NumericUpDown Value="{Binding RangeMeters}" Minimum="0.1" Maximum="1000" Increment="5"
                            AutomationProperties.Name="Radar radius in meters" Width="140" />
         </StackPanel>
         <TextBlock Grid.Row="1" Text="Blue: valid · orange: too close · white outline: nearest valid. Samples beyond the displayed radius are available in diagnostics. Readings expire after 2 seconds." TextWrapping="Wrap" />
+        
         <local:ProximityRadarControl Grid.Row="2" Snapshot="{Binding Snapshot}" RangeMeters="{Binding RangeMeters}"
                                      AutomationProperties.Name="Horizontal proximity radar; numeric readings in sensor diagnostics" />
     </Grid>

@@ -1,0 +1,57 @@
+<utilities:UserControlViewBase xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
+    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+    xmlns:optional="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:u="https://irihi.tech/ursa"
+    x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.TraditionalHelicopterView"
+    x:TypeArguments="sections:TraditionalHelicopterViewModel" x:DataType="sections:TraditionalHelicopterViewModel">
+    <TabControl>
+        <TabItem Header="Information">
+            <StackPanel Margin="16" Spacing="12">
+                <TextBlock Text="Traditional helicopter setup" Classes="H3" />
+                <TextBlock Text="Disconnect motor power and secure the rotor. Configure swash geometry and collective limits, then rotor speed and governor. Manual-servo modes may move servos immediately; restore normal mode after setup. Verify servo functions, directions, trim and limits on Servo outputs. Settings are shown only when the firmware reports them." TextWrapping="Wrap" />
+                <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger" />
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Configuration">
+            <Grid RowDefinitions="Auto,*">
+                <u:Banner ShowIcon="False"  Classes="Bordered" Header="Helicopter" HorizontalAlignment="Stretch">
+                    <StackPanel Spacing="8" Margin="12">
+                        <Button Command="{Binding RefreshCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Refresh helicopter settings" AutomationProperties.Name="Refresh helicopter settings" HorizontalAlignment="Center">
+                            <mdi:MaterialIcon Kind="Refresh" Classes="ActionIcon" />
+                        </Button>
+                        <TextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Classes="Danger" />
+                    </StackPanel>
+                </u:Banner>
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel Margin="12" Spacing="12">
+                        <Expander Header="Swashplate and collective" HorizontalAlignment="Stretch"><ItemsControl ItemsSource="{Binding Swash}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="optional:ParameterSettingViewModel"><optional:ParameterSettingEditor /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl></Expander>
+                        <Expander Header="Rotor speed and throttle curve" HorizontalAlignment="Stretch"><ItemsControl ItemsSource="{Binding Rotor}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="optional:ParameterSettingViewModel"><optional:ParameterSettingEditor /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl></Expander>
+                        <Expander Header="Governor" HorizontalAlignment="Stretch"><ItemsControl ItemsSource="{Binding Governor}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="optional:ParameterSettingViewModel"><optional:ParameterSettingEditor /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl></Expander>
+                        <Expander Header="Other helicopter settings" HorizontalAlignment="Stretch"><ItemsControl ItemsSource="{Binding Other}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="optional:ParameterSettingViewModel"><optional:ParameterSettingEditor /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl></Expander>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </TabItem>
+        <TabItem Header="Servo outputs"><sections:ServoOutputSetupView /></TabItem>
+    </TabControl>
+</utilities:UserControlViewBase>

@@ -95,6 +95,13 @@ public interface IParameterEditSession : IDisposable
     /// <returns><see langword="true"/> when the value is valid.</returns>
     bool TrySetPending(string name, double value, out string? error);
 
+    /// <summary>Atomically stages reviewed values only if every live/pending baseline still matches and all values validate.</summary>
+    bool TryStageReviewed(IReadOnlyList<ReviewedParameterEdit> proposals, out string? error)
+    {
+        error = "This edit session does not support atomic reviewed staging.";
+        return false;
+    }
+
     /// <summary>Creates an immutable preview of the current valid modifications.</summary>
     ParameterWritePlan CreateWritePlan(IReadOnlyList<string>? names = null);
 

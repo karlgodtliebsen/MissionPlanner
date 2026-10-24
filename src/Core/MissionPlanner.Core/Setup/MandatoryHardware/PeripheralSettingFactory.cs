@@ -1,4 +1,4 @@
-﻿using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.Setup.MandatoryHardware;
 
@@ -36,6 +36,7 @@ public static class PeripheralSettingFactory
             options,
             isSecret)
         {
+            ReadOnly = definition?.ReadOnly ?? false,
             Description = definition?.Description ?? string.Empty,
             Units = definition?.Units ?? string.Empty,
             Minimum = definition?.MinValue,
