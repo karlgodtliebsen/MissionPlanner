@@ -2,8 +2,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Output"
-    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Output.OutputEndpointView"
-    x:TypeArguments="local:OutputEndpointViewModel" x:DataType="local:OutputEndpointViewModel">
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Output.OutputEndpointView" x:DataType="local:OutputEndpointViewModel">
     <Grid>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled">
             <Border Classes="SectionCard">

@@ -17,19 +17,24 @@
     x:DataType="local:AdvancedViewModel"
     x:CompileBindings="True">
     <ContentPage Header="Advanced Tools"  >
-        <TabControl Margin="20" TabStripPlacement="Left"  HorizontalAlignment="Stretch">
+        <TabControl Classes="AdvancedNavigation" Margin="20" TabStripPlacement="Left" HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+            <TabControl.Styles>
+                <Style Selector="TabControl.AdvancedNavigation > TabItem">
+                    <Setter Property="MinWidth" Value="220" />
+                </Style>
+            </TabControl.Styles>
             <TabItem Header="Warning Manager" ToolTip.Tip="Enable custom warnings based on a set of conditions"><warnings:WarningManagerPage /></TabItem>
             <TabItem Header="Proximity observations"  ToolTip.Tip="View the data from a 360 lidar"><proximity:ProximityPage /></TabItem>
             <TabItem Header="MAVLink Inspector"  ToolTip.Tip="View decode MAVLink data being sent and received"><inspector:MavLinkInspectorPage /></TabItem>
             <TabItem Header="MAVLink Signing"  ToolTip.Tip="Enable MAVLink signing to secure communication with the MAV"><signing:SigningPage /></TabItem>
-            <TabItem Header="MAVLink Mirror"  ToolTip.Tip="MAVLink mirror to an external location. For Monitoring or control"><output:MirrorPage /></TabItem>
+            <TabItem Header="MAVLink Mirror"  ToolTip.Tip="Copy observed MAVLink traffic to a selected output endpoint; incoming commands are not relayed"><output:MirrorPage /></TabItem>
             <TabItem Header="NMEA"  ToolTip.Tip="Output the MAV locations as a NMEA string"><nmea:NmeaPage /></TabItem>
 
-            <TabItem Header="Follow Me ++"  ToolTip.Tip="Use an external NMEA gps and send guided mode waypoints to the MAV based on that location"><position:OperatorPositionPage /></TabItem>
-           
-            <TabItem Header="Anon Log"  ToolTip.Tip="Scramble lat/lng in bin or log"><privacy:PrivacyExportPage /></TabItem>
-            <TabItem Header="Terminal"  ToolTip.Tip="To Be Done"><scripting:ScriptingConsolePage /></TabItem>
-            <TabItem Header="Scripting console"  ToolTip.Tip="Execute custom scripts to interact with the MAV"><scripting:ScriptingConsolePage /></TabItem>
+            <TabItem Header="Follow Me / Moving Base"  ToolTip.Tip="Use an external NMEA gps and send guided mode waypoints to the MAV based on that location"><position:OperatorPositionPage /></TabItem>
+
+            <TabItem Header="Log privacy export"  ToolTip.Tip="Export a reduced diagnostic CSV while omitting locations and identifying fields"><privacy:PrivacyExportPage /></TabItem>
+            <TabItem Header="Scripting console"  ToolTip.Tip="Open an onboard Lua console on supported firmware"><scripting:ScriptingConsolePage /></TabItem>
         </TabControl>
     </ContentPage>
 </utilities:NavigationViewBase>

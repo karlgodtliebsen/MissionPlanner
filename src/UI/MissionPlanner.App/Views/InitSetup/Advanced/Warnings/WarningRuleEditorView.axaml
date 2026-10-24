@@ -3,11 +3,10 @@
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Warnings"
                                xmlns:telemetry="clr-namespace:MissionPlanner.Core.Setup.Advanced.Warnings;assembly=MissionPlanner.Core"
-                               x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleEditorView"
-                               x:TypeArguments="local:WarningRuleEditorViewModel" x:DataType="local:WarningRuleEditorViewModel"
+                               x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Warnings.WarningRuleEditorView" x:DataType="local:WarningRuleEditorViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Border Classes="SectionCard" Padding="18">
-        <StackPanel Spacing="10" MaxWidth="850" HorizontalAlignment="Stretch">
+        <StackPanel Spacing="10" HorizontalAlignment="Stretch">
             <TextBlock Text="Rule editor" Classes="H4" />
             <TextBlock Text="Name" />
             <TextBox Text="{Binding Name}" AutomationProperties.Name="Rule name" />

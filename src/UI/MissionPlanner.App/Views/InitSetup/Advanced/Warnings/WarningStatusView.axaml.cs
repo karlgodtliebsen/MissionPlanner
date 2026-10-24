@@ -1,7 +1,7 @@
 namespace MissionPlanner.App.Views.InitSetup.Advanced.Warnings;
 
 /// <summary>Displays the WarningStatusView panel.</summary>
-public partial class WarningStatusView : UserControlViewBase<WarningStatusViewModel>
+public partial class WarningStatusView : UserControlViewBase
 {
     /// <summary>Initializes the view.</summary>
     public WarningStatusView()

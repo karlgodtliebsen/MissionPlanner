@@ -4,8 +4,7 @@
     xmlns:controls="clr-namespace:MissionPlanner.Themes.Controls;assembly=MissionPlanner.Themes"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Proximity"
     xmlns:model="clr-namespace:MissionPlanner.Core.Setup.Advanced.Proximity;assembly=MissionPlanner.Core"
-    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityDiagnosticsView"
-    x:TypeArguments="local:ProximityDiagnosticsViewModel" x:DataType="local:ProximityDiagnosticsViewModel">
+    x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityDiagnosticsView" x:DataType="local:ProximityDiagnosticsViewModel">
     <Grid Margin="0,20">
         <controls:VirtualizedItemsGrid ItemsSource="{Binding Points}" ColumnWidths="*,*,*" ColumnSpacing="12"
             RowMinHeight="125" ShowHeader="True" ShowSearchBar="False" ShowPagination="False">

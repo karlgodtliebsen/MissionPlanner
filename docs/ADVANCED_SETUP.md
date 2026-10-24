@@ -289,3 +289,41 @@ carry, missing measurements, stale/future fixes, five wire fix-type mappings, sa
 promotion, fake-clock scheduling, endpoint failure and ten scheduler/page lifecycle cycles.
 
 ADV-06 verification: Desktop, Browser and full solution builds passed with `--no-restore -p:UsedAvaloniaProducts= -v quiet`. `scripts/Generate-MavLinkDialect.ps1 -Mode Verify -SkipTests` passed. `src/Tests/Run-AllTests.ps1` passed 929 .NET tests and 7 JavaScript tests, with 29 existing skips. Results: `TestResults/all-tests/20260907-042422-010`. No physical vehicle or interactive UI test was performed.
+
+## Advanced page composition and layout (2026-10-25)
+
+Advanced exposes nine workflow pages: Warning Manager, Proximity observations, MAVLink
+Inspector, MAVLink Signing, MAVLink Mirror, NMEA, Follow Me / Moving Base, Log privacy
+export and Scripting console. The duplicate Terminal entry displayed the same Scripting
+console and has been removed. Related operations remain grouped in each page's tabs.
+
+`OutputEndpointView` and `OutputStatusView` are intentionally shared by Mirror and NMEA.
+Each binds to its owning workflow's `Endpoint` and `Status` instances. They do not belong
+in Privacy Export, which reads a local log and writes a reduced diagnostic CSV. Its stale
+output-tab markup has been removed and the export policy remains visible below its actions.
+Reusable child panels inherit the parent-provided ViewModel instead of resolving and
+activating another instance through a generic view base.
+
+Every workflow uses a stretching root grid with `MinWidth="600"` and `MaxWidth="900"`,
+and the parent tab controls stretch their content. This keeps the frame centered and its
+width independent of a selected tab's desired content width. The sidebar reserves enough
+width for the longest selected (bold) label. The existing 600-unit minimum is retained.
+Longer information panels and the Inspector graph can scroll vertically.
+
+`TelemetryLinePlot.EmSize` is a bindable styled property controlling the caption, axis
+labels and empty-state text. It defaults to 11 device-independent units; the Inspector
+uses 14. Values must be positive and finite. Label spacing is measured from the selected
+size, and the caption is trimmed to fit the control. For example:
+
+```xml
+<common:TelemetryLinePlot EmSize="16" Height="300"
+                          Samples="{Binding Graph}" Caption="{Binding GraphCaption}" />
+```
+
+Verification: four regression tests cover bounded page widths, unique page composition,
+parent-owned output views and font-size binding/rendering. An offline headless smoke check
+constructed the production Advanced page and rendered all 21 page/tab states at window
+widths of 1600 and 1100, with unchanged frame bounds across page and tab switches. No vehicle
+connection or workflow command was started. The complete UI suite reported 549 passed,
+17 existing skips and one unrelated failure: Optional Hardware's `FFT Setup` tab title
+does not match its `FFT` help article title. This mismatch is present in the starting revision.

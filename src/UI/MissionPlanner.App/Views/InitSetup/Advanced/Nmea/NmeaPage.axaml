@@ -8,12 +8,9 @@
                                x:DataType="local:NmeaViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
-        </Grid.ColumnDefinitions>
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600" MaxWidth="900" RowSpacing="20">
         <u:Banner ShowIcon="False" Classes="Bordered" Header="NMEA navigation output" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
+            <StackPanel Spacing="6" HorizontalAlignment="Stretch">
                 <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
@@ -22,11 +19,11 @@
             </StackPanel>
         </u:Banner>
         <WrapPanel Grid.Row="1" HorizontalAlignment="Center" ItemSpacing="10">
-            <Button Classes="ToolbarIconButton" ToolTip.Tip="Start NMEA" Command="{Binding StartCommand}" 
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="Start NMEA" Command="{Binding StartCommand}"
                     IsEnabled="{Binding !Running}" AutomationProperties.Name="Start NMEA">
                 <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
             </Button>
-            <Button Classes="ToolbarIconButton" ToolTip.Tip="Stop NMEA" Command="{Binding StopCommand}" 
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="Stop NMEA" Command="{Binding StopCommand}"
                     IsEnabled="{Binding Running}"  AutomationProperties.Name="Stop NMEA">
                 <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
             </Button>

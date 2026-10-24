@@ -2,21 +2,20 @@
                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Inspector"
-                               x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorDetailView"
-                               x:TypeArguments="local:InspectorDetailViewModel" x:DataType="local:InspectorDetailViewModel"
+                               x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Inspector.InspectorDetailView" x:DataType="local:InspectorDetailViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
     <Grid RowDefinitions="Auto,*" RowSpacing="12" HorizontalAlignment="Stretch" Margin="0,20">
-        <Button Classes="ToolbarIconButton" 
+        <Button Classes="ToolbarIconButton"
                 HorizontalAlignment="Center"
-                ToolTip.Tip="Copy selected row and details" 
-                Command="{Binding CopyCommand}" 
+                ToolTip.Tip="Copy selected row and details"
+                Command="{Binding CopyCommand}"
                 AutomationProperties.Name="Copy selected row and details">
             <mdi:MaterialIcon Kind="ContentCopy" Classes="ActionIcon" />
         </Button>
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled">
             <Border Classes="SectionCard" Padding="16">
-                <SelectableTextBlock Text="{Binding Text}" 
+                <SelectableTextBlock Text="{Binding Text}"
                                      TextWrapping="Wrap" FontFamily="monospace" />
             </Border>
         </ScrollViewer>

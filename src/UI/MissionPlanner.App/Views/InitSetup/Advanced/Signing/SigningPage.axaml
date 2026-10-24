@@ -7,12 +7,9 @@
                                x:DataType="local:SigningViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa">
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
-        </Grid.ColumnDefinitions>
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600" MaxWidth="900" RowSpacing="20">
         <u:Banner ShowIcon="False"  Classes="Bordered" Header="MAVLink signing" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
+            <StackPanel Spacing="6" HorizontalAlignment="Stretch">
                 <TextBlock Text="{Binding Storage}" TextWrapping="Wrap" Classes="Warning" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
                                      IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
@@ -29,7 +26,7 @@
                         <TextBlock Text="Vehicle setup" Classes="H4" />
                         <SelectableTextBlock Text="{Binding Message}" TextWrapping="Wrap" />
                         <WrapPanel ItemSpacing="10" HorizontalAlignment="Center">
-                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Configure signing…" Command="{Binding ConfigureCommand}" 
+                            <Button Classes="ToolbarIconButton" ToolTip.Tip="Configure signing…" Command="{Binding ConfigureCommand}"
                                     IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Left" AutomationProperties.Name="Configure signing…">
                                 <mdi:MaterialIcon Kind="KeyOutline" Classes="ActionIcon" />
                             </Button>

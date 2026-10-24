@@ -3,17 +3,14 @@
                                xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
                                xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Scripting"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                               xmlns:proximity="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Proximity"
+
                                xmlns:u="https://irihi.tech/ursa"
                                x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Scripting.ScriptingConsolePage"
                                x:TypeArguments="local:ScriptingConsoleViewModel" x:DataType="local:ScriptingConsoleViewModel">
 
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
-        </Grid.ColumnDefinitions>
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600" MaxWidth="900" RowSpacing="20">
         <u:Banner ShowIcon="False"  Classes="Bordered" Header="Onboard Lua console" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
+            <StackPanel Spacing="6" HorizontalAlignment="Stretch">
                 <TextBlock TextWrapping="Wrap" Text="LuaApplet requires ArduPilot 4.6 or newer, the official repl.lua applet with PORT_IDX=nil, mavport.lua and the MAVLink modules installed in APM/SCRIPTS/MODULES. SCR_ENABLE must already be enabled. Use MAVFTP to manage scripts separately. Opening the channel does not install scripts or prove the applet is running; look for actual output." />
 
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
@@ -22,33 +19,33 @@
                                      IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"/>
             </StackPanel>
         </u:Banner>
-        <TabControl Grid.Row="1" Margin="16">
+        <TabControl Grid.Row="1" Margin="16" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
             <TabItem Header="Information" Margin="0,20">
-                <StackPanel Spacing="12" MaxWidth="850" Margin="16">
-                    <SelectableTextBlock TextWrapping="Wrap" Text="Setup: https://github.com/ArduPilot/ardupilot/blob/master/libraries/AP_Scripting/applets/repl.md" />
-                    <TextBlock TextWrapping="Wrap" Text="LegacyNative uses MAV_CMD_SCRIPTING and the repl input/output files. Newer firmware may deny that command; select LuaApplet instead. Commands can affect vehicle outputs. This console requires a fresh, disarmed connection and closes on arming or target change." />
-                    <TextBlock TextWrapping="Wrap" Text="Commands are never automatically retried. The applet protocol has no delivery acknowledgement; loss can leave a partial line. Output is plain text, limited to 64 KiB. History is local to this page session. Closing does not undo commands or stop the installed Lua applet. Raw telemetry recordings may contain console text." />
-                </StackPanel>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="12" MaxWidth="850" Margin="16">
+                        <SelectableTextBlock TextWrapping="Wrap" Text="Setup: https://github.com/ArduPilot/ardupilot/blob/master/libraries/AP_Scripting/applets/repl.md" />
+                        <TextBlock TextWrapping="Wrap" Text="LegacyNative uses MAV_CMD_SCRIPTING and the repl input/output files. Newer firmware may deny that command; select LuaApplet instead. Commands can affect vehicle outputs. This console requires a fresh, disarmed connection and closes on arming or target change." />
+                        <TextBlock TextWrapping="Wrap" Text="Commands are never automatically retried. The applet protocol has no delivery acknowledgement; loss can leave a partial line. Output is plain text, limited to 64 KiB. History is local to this page session. Closing does not undo commands or stop the installed Lua applet. Raw telemetry recordings may contain console text." />
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
             <TabItem Header="Configuration" Margin="0,20">
-                <Grid RowDefinitions="Auto,Auto,Auto,Auto" Margin="12" RowSpacing="8">
+                <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="12" RowSpacing="8">
                     <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
                         <ComboBox ItemsSource="{Binding Modes}" SelectedItem="{Binding Mode}" IsEnabled="{Binding !IsBusy}" />
-                        <Button Command="{Binding OpenCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Open console" AutomationProperties.Name="Open console"><mdi:MaterialIcon Kind="PlayOutline" /></Button>
-                        <Button Command="{Binding OpenCancelCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Stop console" AutomationProperties.Name="Stop console"><mdi:MaterialIcon Kind="StopCircleOutline" /></Button>
-                        <Button Command="{Binding ClearCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Clear local output and history" AutomationProperties.Name="Clear console"><mdi:MaterialIcon Kind="DeleteOutline" /></Button>
+                        <Button Command="{Binding OpenCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Open console" AutomationProperties.Name="Open console"><mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" /></Button>
+                        <Button Command="{Binding OpenCancelCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Stop console" AutomationProperties.Name="Stop console"><mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" /></Button>
+                        <Button Command="{Binding ClearCommand}" Classes="EmbeddedIconButton" ToolTip.Tip="Clear local output and history" AutomationProperties.Name="Clear console"><mdi:MaterialIcon Kind="DeleteOutline" Classes="ActionIcon" /></Button>
                     </StackPanel>
-                    <TextBox Grid.Row="1" Text="{Binding Output, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" FontFamily="monospace" TextWrapping="Wrap" MinHeight="240" />
+                    <TextBox Grid.Row="1" Text="{Binding Output, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True" FontFamily="monospace" TextWrapping="Wrap" MinHeight="120" />
                     <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
                         <TextBox Text="{Binding Input}" PlaceholderText="One Lua command line; Enter does not automatically execute" MaxLength="4096" />
-                        <Button Grid.Column="1" Command="{Binding SendCommand}" IsEnabled="{Binding IsBusy}" Classes="EmbeddedIconButton" ToolTip.Tip="Send command once" AutomationProperties.Name="Send Lua command"><mdi:MaterialIcon Kind="SendOutline" /></Button>
+                        <Button Grid.Column="1" Command="{Binding SendCommand}" IsEnabled="{Binding IsBusy}" Classes="EmbeddedIconButton" ToolTip.Tip="Send command once" AutomationProperties.Name="Send Lua command"><mdi:MaterialIcon Kind="SendOutline" Classes="ActionIcon" /></Button>
                     </Grid>
                     <ComboBox Grid.Row="3" ItemsSource="{Binding History}" SelectedItem="{Binding SelectedHistory}" PlaceholderText="Recent commands (select to edit, then send explicitly)" HorizontalAlignment="Stretch" />
                 </Grid>
             </TabItem>
         </TabControl>
     </Grid>
-
-
 
 </utilities:UserControlViewBase>

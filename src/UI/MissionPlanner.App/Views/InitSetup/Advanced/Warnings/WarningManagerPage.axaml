@@ -7,12 +7,9 @@
                                x:DataType="local:WarningManagerViewModel"
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa">
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
-        </Grid.ColumnDefinitions>
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600" MaxWidth="900" RowSpacing="20">
         <u:Banner ShowIcon="False" Classes="Bordered" Header="Warnings" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
+            <StackPanel Spacing="6" HorizontalAlignment="Stretch">
                 <TextBlock Text="Warnings run while the application is open. Sources use native units and become unavailable after three seconds. Global delivery is configurable per rule; speech follows the enabled severity settings in Preferences."
                            TextWrapping="Wrap" Classes="Warning" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"

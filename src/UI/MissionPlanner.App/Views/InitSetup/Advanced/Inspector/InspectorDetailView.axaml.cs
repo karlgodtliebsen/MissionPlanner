@@ -1,7 +1,7 @@
 namespace MissionPlanner.App.Views.InitSetup.Advanced.Inspector;
 
 /// <summary>Displays the InspectorDetailView panel.</summary>
-public partial class InspectorDetailView : UserControlViewBase<InspectorDetailViewModel>
+public partial class InspectorDetailView : UserControlViewBase
 {
     /// <summary>Initializes the view.</summary>
     public InspectorDetailView()

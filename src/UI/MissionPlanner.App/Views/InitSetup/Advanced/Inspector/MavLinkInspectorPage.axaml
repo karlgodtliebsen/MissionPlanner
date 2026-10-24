@@ -9,12 +9,9 @@
                                xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                                xmlns:u="https://irihi.tech/ursa">
 
-    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
-        </Grid.ColumnDefinitions>
+    <Grid RowDefinitions="Auto,Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600" MaxWidth="900" RowSpacing="20">
         <u:Banner ShowIcon="False" Classes="Bordered" Header="Traffic inspection" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
+            <StackPanel Spacing="6" HorizontalAlignment="Stretch">
                 <TextBlock Text="{Binding Dropped, StringFormat='Dropped / omitted observations: {0}'}"
                            IsVisible="{Binding Dropped, Converter={StaticResource StringNotNullEmptyConverter}}"
                            Classes="Warning" />
@@ -27,7 +24,7 @@
         </u:Banner>
 
         <WrapPanel  Grid.Row="1" HorizontalAlignment="Center">
-            <Button Classes="ToolbarIconButton" ToolTip.Tip="Export bounded snapshot" Command="{Binding ExportCommand}" 
+            <Button Classes="ToolbarIconButton" ToolTip.Tip="Export bounded snapshot" Command="{Binding ExportCommand}"
                     HorizontalAlignment="Left" AutomationProperties.Name="Export bounded snapshot">
                 <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
             </Button>
@@ -41,24 +38,26 @@
                 <local:InspectorDetailView DataContext="{Binding Detail}" />
             </TabItem>
             <TabItem Header="Field graph" Margin="0,20">
-                <StackPanel Spacing="20" Margin="0" HorizontalAlignment="Stretch">
-                    <TextBlock Text="Select a message in Messages, then a numeric field. The latest 512 display samples are retained; rapid messages are downsampled. Freeze/Clear are shared with the message list." TextWrapping="Wrap" />
-                    <WrapPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Orientation="Horizontal" ItemSpacing="10">
-                        <ComboBox ItemsSource="{Binding NumericFields}" SelectedItem="{Binding SelectedField}" 
-                                  HorizontalAlignment="Stretch" 
-                                  MinWidth="200"
-                                  AutomationProperties.Name="Numeric message field" />
-                        <Button Classes="EmbeddedIconButton" Command="{Binding ExportGraphCommand}"
-                                ToolTip.Tip="Export plotted samples to a new CSV"
-                                AutomationProperties.Name="Export plotted samples" HorizontalAlignment="Left">
-                            <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
-                        </Button>
-                    </WrapPanel>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="20" Margin="0" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Select a message in Messages, then a numeric field. The latest 512 display samples are retained; rapid messages are downsampled. Freeze/Clear are shared with the message list." TextWrapping="Wrap" />
+                        <WrapPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Orientation="Horizontal" ItemSpacing="10">
+                            <ComboBox ItemsSource="{Binding NumericFields}" SelectedItem="{Binding SelectedField}"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="200"
+                                      AutomationProperties.Name="Numeric message field" />
+                            <Button Classes="EmbeddedIconButton" Command="{Binding ExportGraphCommand}"
+                                    ToolTip.Tip="Export plotted samples to a new CSV"
+                                    AutomationProperties.Name="Export plotted samples" HorizontalAlignment="Left">
+                                <mdi:MaterialIcon Kind="FileExportOutline" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
 
-                    <common:TelemetryLinePlot Height="300"
-                                              Samples="{Binding Graph}"
-                                              Caption="{Binding GraphCaption}" />
-                </StackPanel>
+                        <common:TelemetryLinePlot Height="300" EmSize="14"
+                                                  Samples="{Binding Graph}"
+                                                  Caption="{Binding GraphCaption}" />
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
         </TabControl>
     </Grid>

@@ -5,10 +5,7 @@
                                x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Position.OperatorPositionPage"
                                x:TypeArguments="local:OperatorPositionViewModel"
                                x:DataType="local:OperatorPositionViewModel">
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
-        </Grid.ColumnDefinitions>
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600" MaxWidth="900" RowSpacing="20">
 
         <u:Banner Header="Operator GPS, Follow Me and Moving Base" ShowIcon="False" Classes="Bordered"
                   HorizontalAlignment="Stretch">
@@ -22,56 +19,62 @@
             </StackPanel>
         </u:Banner>
 
-        <TabControl Grid.Row="1">
+        <TabControl Grid.Row="1" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
             <TabItem Header="Information"  Margin="0,20">
-                <StackPanel Margin="16" Spacing="12" MaxWidth="900">
-                    <TextBlock TextWrapping="Wrap" Text="Start with local GPS preview. Serial, TCP client and UDP listener inputs accept checksum-validated GPGGA/GNGGA sentences. Use a trusted source, a correct computer UTC clock, at least four satellites and HDOP ≤ 4. Fixes expire after three seconds; bad checksums, invalid fixes, time reversal and large position jumps stop navigation output." />
-                    <TextBlock TextWrapping="Wrap" Text="Follow Me sends acknowledged DO_REPOSITION targets at most once per second to an already armed Copter or Plane in Guided mode. It does not arm, take off or enter Guided automatically. Review altitude above HOME and maximum distance. On stop it requests Hold on the original connection when possible; loss of the link can leave the vehicle following its last target. The pilot must retain control." />
-                    <TextBlock TextWrapping="Wrap" Text="Moving Base updates the planner's session-local tracker home. Optional ArduPlane rally updates require a downloaded plan and explicit index selection. Only that existing point moves; its altitude is GPS MSL plus clearance. Updates preserve other points and stop on plan conflicts or failed readback. This changes a possible RTL destination and leaves the last uploaded location in place when stopped. Vehicle HOME is not rewritten." />
-                    <TextBlock TextWrapping="Wrap" Text="Source fields: for Serial, enter the OS port name and baud (typically 9600); for TCP, enter the server host and port; for UDP, enter a local bind address (127.0.0.1 for local applications) and port. A vehicle's active serial port cannot also be used as external GPS input. No position stream is recorded by this tool." />
-                </StackPanel>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" Spacing="12" MaxWidth="900">
+                        <TextBlock TextWrapping="Wrap" Text="Start with local GPS preview. Serial, TCP client and UDP listener inputs accept checksum-validated GPGGA/GNGGA sentences. Use a trusted source, a correct computer UTC clock, at least four satellites and HDOP ≤ 4. Fixes expire after three seconds; bad checksums, invalid fixes, time reversal and large position jumps stop navigation output." />
+                        <TextBlock TextWrapping="Wrap" Text="Follow Me sends acknowledged DO_REPOSITION targets at most once per second to an already armed Copter or Plane in Guided mode. It does not arm, take off or enter Guided automatically. Review altitude above HOME and maximum distance. On stop it requests Hold on the original connection when possible; loss of the link can leave the vehicle following its last target. The pilot must retain control." />
+                        <TextBlock TextWrapping="Wrap" Text="Moving Base updates the planner's session-local tracker home. Optional ArduPlane rally updates require a downloaded plan and explicit index selection. Only that existing point moves; its altitude is GPS MSL plus clearance. Updates preserve other points and stop on plan conflicts or failed readback. This changes a possible RTL destination and leaves the last uploaded location in place when stopped. Vehicle HOME is not rewritten." />
+                        <TextBlock TextWrapping="Wrap" Text="Source fields: for Serial, enter the OS port name and baud (typically 9600); for TCP, enter the server host and port; for UDP, enter a local bind address (127.0.0.1 for local applications) and port. A vehicle's active serial port cannot also be used as external GPS input. No position stream is recorded by this tool." />
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
             <TabItem Header="GPS preview"  Margin="0,20">
-                <StackPanel Margin="16" Spacing="12" MaxWidth="800">
-                    <WrapPanel Orientation="Horizontal" ItemSpacing="12" HorizontalAlignment="Center">
-                        <Button Command="{Binding PreviewCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Open GPS preview only"
-                                AutomationProperties.Name="Start operator GPS preview">
-                            <mdi:MaterialIcon Kind="PlayOutline" />
-                        </Button>
-                        <Button Command="{Binding PreviewCancelCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Stop GPS input and navigation output"
-                                AutomationProperties.Name="Stop operator GPS">
-                            <mdi:MaterialIcon Kind="StopCircleOutline" />
-                        </Button>
-                    </WrapPanel>
-                    <StackPanel Spacing="8" IsEnabled="{Binding !PreviewCommand.IsRunning}">
-                        <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding Source}" />
-                        <TextBox Text="{Binding Endpoint}" PlaceholderText="Serial port / TCP host / UDP bind address" />
-                        <NumericUpDown Value="{Binding PortOrBaud}" Minimum="1" Maximum="2000000" />
-                    </StackPanel>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" Spacing="12" MaxWidth="800">
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="12" HorizontalAlignment="Center">
+                            <Button Command="{Binding PreviewCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Open GPS preview only"
+                                    AutomationProperties.Name="Start operator GPS preview">
+                                <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
+                            </Button>
+                            <Button Command="{Binding PreviewCancelCommand}" Classes="ToolbarIconButton" ToolTip.Tip="Stop GPS input and navigation output"
+                                    AutomationProperties.Name="Stop operator GPS">
+                                <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                        <StackPanel Spacing="8" IsEnabled="{Binding !PreviewCommand.IsRunning}">
+                            <ComboBox ItemsSource="{Binding Sources}" SelectedItem="{Binding Source}" />
+                            <TextBox Text="{Binding Endpoint}" PlaceholderText="Serial port / TCP host / UDP bind address" />
+                            <NumericUpDown Value="{Binding PortOrBaud}" Minimum="1" Maximum="2000000" />
+                        </StackPanel>
 
-                </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
             <TabItem Header="Follow Me" Margin="0,20">
-                <StackPanel Margin="16" Spacing="12" MaxWidth="800">
-                    <WrapPanel Orientation="Horizontal" ItemSpacing="12" HorizontalAlignment="Center">
-                        <Button Command="{Binding FollowCommand}" Classes="ToolbarIconButton"
-                                ToolTip.Tip="Review and start guided following"
-                                AutomationProperties.Name="Start Follow Me">
-                            <mdi:MaterialIcon Kind="NavigationVariantOutline" />
-                        </Button>
-                        <Button Command="{Binding FollowCancelCommand}" Classes="ToolbarIconButton"
-                                ToolTip.Tip="Stop following and request Hold"
-                                AutomationProperties.Name="Stop Follow Me">
-                            <mdi:MaterialIcon Kind="StopCircleOutline" />
-                        </Button>
-                    </WrapPanel>
-                    <TextBlock Text="Altitude above vehicle HOME (m)" />
-                    <NumericUpDown Value="{Binding FollowAltitude}"
-                                   Minimum="2" Maximum="1000" IsEnabled="{Binding !FollowCommand.IsRunning}" />
-                    <TextBlock Text="Maximum vehicle-to-operator horizontal distance (m)" />
-                    <NumericUpDown Value="{Binding MaximumDistance}"
-                                   Minimum="5" Maximum="1000" IsEnabled="{Binding !FollowCommand.IsRunning}" />
-                </StackPanel>
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="16" Spacing="12" MaxWidth="800">
+                        <WrapPanel Orientation="Horizontal" ItemSpacing="12" HorizontalAlignment="Center">
+                            <Button Command="{Binding FollowCommand}" Classes="ToolbarIconButton"
+                                    ToolTip.Tip="Review and start guided following"
+                                    AutomationProperties.Name="Start Follow Me">
+                                <mdi:MaterialIcon Kind="NavigationVariantOutline" Classes="ActionIcon" />
+                            </Button>
+                            <Button Command="{Binding FollowCancelCommand}" Classes="ToolbarIconButton"
+                                    ToolTip.Tip="Stop following and request Hold"
+                                    AutomationProperties.Name="Stop Follow Me">
+                                <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
+                            </Button>
+                        </WrapPanel>
+                        <TextBlock Text="Altitude above vehicle HOME (m)" />
+                        <NumericUpDown Value="{Binding FollowAltitude}"
+                                       Minimum="2" Maximum="1000" IsEnabled="{Binding !FollowCommand.IsRunning}" />
+                        <TextBlock Text="Maximum vehicle-to-operator horizontal distance (m)" />
+                        <NumericUpDown Value="{Binding MaximumDistance}"
+                                       Minimum="5" Maximum="1000" IsEnabled="{Binding !FollowCommand.IsRunning}" />
+                    </StackPanel>
+                </ScrollViewer>
             </TabItem>
             <TabItem Header="Moving Base" Margin="0,20">
                 <ScrollViewer>
@@ -80,25 +83,25 @@
                             <Button Command="{Binding MoveBaseCommand}"
                                     Classes="ToolbarIconButton" ToolTip.Tip="Review and start moving base"
                                     AutomationProperties.Name="Start Moving Base">
-                                <mdi:MaterialIcon Kind="PlayOutline" />
+                                <mdi:MaterialIcon Kind="PlayOutline" Classes="ActionIcon" />
                             </Button>
                             <Button Command="{Binding MoveBaseCancelCommand}"
                                     Classes="ToolbarIconButton" ToolTip.Tip="Stop moving base updates"
                                     AutomationProperties.Name="Stop Moving Base">
-                                <mdi:MaterialIcon Kind="StopCircleOutline" />
+                                <mdi:MaterialIcon Kind="StopCircleOutline" Classes="ActionIcon" />
                             </Button>
                         </WrapPanel>
                         <StackPanel Spacing="8" IsEnabled="{Binding !MoveBaseCommand.IsRunning}">
-                            <CheckBox Content="Also update one reviewed ArduPlane rally point" 
+                            <CheckBox Content="Also update one reviewed ArduPlane rally point"
                                       IsChecked="{Binding UpdateRally}" />
                             <Button Command="{Binding ReadRallyCommand}"
                                     Classes="EmbeddedIconButton" ToolTip.Tip="Read existing rally plan for review"
                                     AutomationProperties.Name="Read moving base rally plan">
-                                <mdi:MaterialIcon Kind="DownloadOutline" />
+                                <mdi:MaterialIcon Kind="DownloadOutline" Classes="ActionIcon" />
                             </Button>
                             <SelectableTextBlock Text="{Binding RallySummary}" TextWrapping="Wrap" />
-                            <ComboBox ItemsSource="{Binding RallyIndexes}" 
-                                      SelectedItem="{Binding SelectedRally}" 
+                            <ComboBox ItemsSource="{Binding RallyIndexes}"
+                                      SelectedItem="{Binding SelectedRally}"
                                       PlaceholderText="Existing rally point index" />
                             <TextBlock Text="Rally clearance above GPS mean-sea-level altitude (m)" />
                             <NumericUpDown Value="{Binding RallyClearance}" Minimum="0" Maximum="1000" />

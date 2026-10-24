@@ -44,7 +44,8 @@ checks these literals across the application XAML without requiring a headless U
 | Role | Base class |
 |---|---|
 | Navigable Ursa page | `NavigationViewBase<TViewModel>` |
-| Reusable content | `UserControlViewBase<TViewModel>` |
+| Content that owns its ViewModel | `UserControlViewBase<TViewModel>` |
+| Reusable content bound to a parent-owned ViewModel | `UserControlViewBase` (non-generic) |
 | Tab content | `TabItemViewBase<TViewModel>` |
 | Dialog content | `DialogViewModelBase` plus an AXAML view |
 | Top-level window | `WindowBase<TViewModel>` or `UrsaWindow` |
@@ -52,6 +53,13 @@ checks these literals across the application XAML without requiring a headless U
 The generic view bases resolve their ViewModel from DI, assign `DataContext`, install dialog
 and notification managers, and call `ActivateAsync`/`DeactivateAsync` from Avalonia's
 loaded/unloaded lifecycle. Keep view constructors parameterless.
+
+When a parent supplies a child ViewModel through `DataContext="{Binding Child}"`, use the
+non-generic `UserControlViewBase` and omit `x:TypeArguments`; retain `x:DataType` for compiled
+bindings. The parent owns the child's state and lifecycle. Using a generic base in this case
+resolves a second instance from DI and activates that instance even after the displayed
+`DataContext` has been replaced. Advanced's endpoint/status and other child panels follow
+this parent-owned pattern; its root workflow pages use the generic base.
 
 Activation and deactivation can repeat. Each activation owns a fresh cancellation source;
 deactivation atomically detaches, cancels, and disposes it. Never reactivate with a cancelled

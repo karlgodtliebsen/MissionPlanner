@@ -16,9 +16,14 @@ public sealed class TelemetryLinePlot : Control
     public static readonly StyledProperty<string> CaptionProperty =
         AvaloniaProperty.Register<TelemetryLinePlot, string>(nameof(Caption), "");
 
+    /// <summary>Identifies the font size, in device-independent units, used by every plot label.</summary>
+    public static readonly StyledProperty<double> EmSizeProperty =
+        AvaloniaProperty.Register<TelemetryLinePlot, double>(nameof(EmSize), 11,
+            validate: value => double.IsFinite(value) && value > 0);
+
     static TelemetryLinePlot()
     {
-        AffectsRender<TelemetryLinePlot>(SamplesProperty, CaptionProperty);
+        AffectsRender<TelemetryLinePlot>(SamplesProperty, CaptionProperty, EmSizeProperty);
     }
 
     /// <summary>Gets or sets an ordered snapshot, limited to the latest 512 points when rendered.</summary>
@@ -35,17 +40,29 @@ public sealed class TelemetryLinePlot : Control
         set => SetValue(CaptionProperty, value);
     }
 
+    /// <summary>Gets or sets the positive, finite font size for the caption, axes and empty-state text.</summary>
+    public double EmSize
+    {
+        get => GetValue(EmSizeProperty);
+        set => SetValue(EmSizeProperty, value);
+    }
+
     /// <inheritdoc />
     public override void Render(DrawingContext context)
     {
         base.Render(context);
-        var area = new Rect(58, 30, Math.Max(1, Bounds.Width - 76), Math.Max(1, Bounds.Height - 58));
         context.FillRectangle(new SolidColorBrush(Color.Parse("#17212B")), new Rect(Bounds.Size));
-        DrawText(context, Caption, new Point(8, 5));
+        using var clip = context.PushClip(new Rect(Bounds.Size));
+        var caption = CreateText(Caption);
+        caption.MaxTextWidth = Math.Max(1, Bounds.Width - 16);
+        caption.MaxTextHeight = EmSize * 1.5;
+        caption.Trimming = TextTrimming.CharacterEllipsis;
+        context.DrawText(caption, new Point(8, 5));
+        var plotTop = Math.Max(30, 5 + caption.Height + 12);
         var points = Samples?.TakeLast(512).Where(p => double.IsFinite(p.X) && double.IsFinite(p.Y)).ToArray() ?? [];
         if (points.Length == 0)
         {
-            DrawText(context, "Waiting for samples", new Point(65, 55));
+            context.DrawText(CreateText("Waiting for samples"), new Point(16, plotTop + EmSize));
             return;
         }
 
@@ -56,14 +73,32 @@ public sealed class TelemetryLinePlot : Control
         var padding = Math.Max(0.1, (maxY - minY) * .05);
         minY -= padding;
         maxY += padding;
+        var yLabels = Enumerable.Range(0, 5)
+            .Select(line => CreateText((maxY - (maxY - minY) * line / 4).ToString("G4", CultureInfo.InvariantCulture)))
+            .ToArray();
+        var firstX = CreateText(minX.ToString("G4", CultureInfo.InvariantCulture));
+        var lastX = CreateText(maxX.ToString("G4", CultureInfo.InvariantCulture));
+        plotTop = Math.Max(plotTop, 5 + caption.Height + 8 + yLabels.Max(label => label.Height) / 2);
+        var plotLeft = Math.Max(58, yLabels.Max(label => label.Width) + 12);
+        var plotBottom = Bounds.Height - Math.Max(firstX.Height, lastX.Height) - 12;
+        var plotRight = Bounds.Width - 18;
+        if (plotRight <= plotLeft || plotBottom <= plotTop)
+        {
+            return;
+        }
+        var area = new Rect(plotLeft, plotTop, plotRight - plotLeft, plotBottom - plotTop);
         for (var line = 0; line <= 4; line++)
         {
             var y = area.Top + area.Height * line / 4;
             context.DrawLine(new Pen(Brushes.DimGray), new Point(area.Left, y), new Point(area.Right, y));
-            DrawText(context, (maxY - (maxY - minY) * line / 4).ToString("G4", CultureInfo.InvariantCulture), new Point(3, y - 6));
+            var label = yLabels[line];
+            context.DrawText(label, new Point(area.Left - label.Width - 8, y - label.Height / 2));
         }
-        DrawText(context, minX.ToString("G4", CultureInfo.InvariantCulture), new Point(area.Left, area.Bottom + 4));
-        DrawText(context, maxX.ToString("G4", CultureInfo.InvariantCulture), new Point(area.Right - 40, area.Bottom + 4));
+        context.DrawText(firstX, new Point(area.Left, area.Bottom + 4));
+        if (lastX.Width + firstX.Width + 12 < area.Width)
+        {
+            context.DrawText(lastX, new Point(area.Right - lastX.Width, area.Bottom + 4));
+        }
         Point Position(Point p) => new(area.Left + (p.X - minX) / (maxX - minX) * area.Width,
             area.Bottom - (p.Y - minY) / (maxY - minY) * area.Height);
         using (context.PushClip(area))
@@ -77,9 +112,9 @@ public sealed class TelemetryLinePlot : Control
         }
     }
 
-    private static void DrawText(DrawingContext context, string text, Point point)
+    private FormattedText CreateText(string text)
     {
-        context.DrawText(new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-            Typeface.Default, 11, Brushes.White), point);
+        return new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
+            Typeface.Default, EmSize, Brushes.White);
     }
 }

@@ -4,14 +4,11 @@
                                xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced.Proximity"
                                xmlns:u="https://irihi.tech/ursa"
                                x:Class="MissionPlanner.App.Views.InitSetup.Advanced.Proximity.ProximityPage"
-                               x:TypeArguments="local:ProximityViewModel" 
+                               x:TypeArguments="local:ProximityViewModel"
                                x:DataType="local:ProximityViewModel">
-    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Center" VerticalAlignment="Stretch" RowSpacing="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" MinWidth="600" MaxWidth="900" />
-        </Grid.ColumnDefinitions>
+    <Grid RowDefinitions="Auto,*" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MinWidth="600" MaxWidth="900" RowSpacing="20">
         <u:Banner ShowIcon="False"  Classes="Bordered" Header="Proximity observations" HorizontalAlignment="Stretch">
-            <StackPanel Spacing="6" HorizontalAlignment="Center">
+            <StackPanel Spacing="6" HorizontalAlignment="Stretch">
                 <SelectableTextBlock Text="{Binding Summary}" TextWrapping="Wrap" />
                 <TextBlock Text="Display only. Unknown, stale and unsupported readings never indicate clear space. Uses existing telemetry streams." TextWrapping="Wrap" Classes="Warning" />
                 <SelectableTextBlock Text="{Binding StatusMessage}" TextWrapping="Wrap"
