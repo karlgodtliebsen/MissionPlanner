@@ -114,6 +114,37 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     /// <summary>Gets the themes supported by Avalonia and Semi.</summary>
     public ObservableCollection<ThemeItem> Themes { get; } = [.. AvaloniaThemeCatalog.Items];
 
+    public ObservableCollection<ThemeColorViewModel> ThemeColors { get; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FilteredThemeColors))]
+    public partial string ColorSearch { get; set; } = string.Empty;
+
+    public IEnumerable<ThemeColorViewModel> FilteredThemeColors => ThemeColors.Where(row =>
+        string.IsNullOrWhiteSpace(ColorSearch) || row.Name.Contains(ColorSearch.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private void RefreshThemeColors()
+    {
+        ThemeColors.Clear();
+        foreach (var item in AvaloniaThemeCatalog.Colors.Items)
+            ThemeColors.Add(new ThemeColorViewModel(AvaloniaThemeCatalog.Colors, item, RefreshRelatedColors));
+        OnPropertyChanged(nameof(FilteredThemeColors));
+    }
+
+    private void RefreshRelatedColors(ThemeColorViewModel edited)
+    {
+        // Palette changes also change defaults of controls which have no explicit override.
+        foreach (var row in ThemeColors)
+            if (!ReferenceEquals(row, edited) && row.Error is null) row.Refresh();
+    }
+
+    [RelayCommand]
+    private void ResetThemeColors()
+    {
+        AvaloniaThemeCatalog.Colors.ResetTheme();
+        foreach (var row in ThemeColors) row.Refresh();
+    }
+
     /// <summary>Gets or sets the live application theme.</summary>
     [ObservableProperty]
     public partial ThemeItem? SelectedTheme
@@ -126,6 +157,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         if (!loading && !changingTheme && value is not null)
         {
             AvaloniaThemeCatalog.Apply(value);
+            RefreshThemeColors();
         }
     }
 
@@ -796,6 +828,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         Debug.Print("Deactivating PreferencesViewModel");
         active = false;
         AvaloniaThemeCatalog.ThemeChanged -= OnThemeChanged;
+        AvaloniaThemeCatalog.Colors.Load(settingsService.Current.Appearance.ColorOverrides);
         Cancel(Interlocked.Exchange(ref activationCancellation, null));
         Cancel(Interlocked.Exchange(ref operationCancellation, null));
     }
@@ -1056,6 +1089,11 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     [RelayCommand]
     private Task SaveAsync()
     {
+        if (ThemeColors.Any(row => row.Error is not null))
+        {
+            SetMessages("Correct the invalid color values before saving preferences.");
+            return Task.CompletedTask;
+        }
         operationCancellation ??= new CancellationTokenSource();
         return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
@@ -1158,6 +1196,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         try
         {
             IsTutorialVisibleAtStartup = settings.Appearance.IsTutorialVisibleAtStartup;
+            AvaloniaThemeCatalog.Colors.Load(settings.Appearance.ColorOverrides);
             SetSelectedTheme(AvaloniaThemeCatalog.Resolve(settings.Appearance.ThemeId));
 
             SelectedUnitSystem = settings.Units.System;
@@ -1234,7 +1273,12 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings { DefaultZoom = DefaultMapZoom, SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard", HttpCacheEnabled = MapHttpCacheEnabled, HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L },
             Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
-            Appearance = new PlannerAppearanceSettings { ThemeId = SelectedTheme?.Id ?? PlannerAppearanceSettings.DefaultThemeId, IsTutorialVisibleAtStartup = IsTutorialVisibleAtStartup },
+            Appearance = settingsService.Current.Appearance with
+            {
+                ThemeId = SelectedTheme?.Id ?? PlannerAppearanceSettings.DefaultThemeId,
+                IsTutorialVisibleAtStartup = IsTutorialVisibleAtStartup,
+                ColorOverrides = AvaloniaThemeCatalog.Colors.Snapshot()
+            },
             Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays, LogDirectory = LogDirectory },
             Connection = new PlannerConnectionSettings { Channel = ConnectionChannel, Host = ConnectionHost, Port = ConnectionPort, BaudRate = ConnectionBaudRate },
             ParameterCache = new PlannerParameterCacheSettings { Policy = SelectedParameterCachePolicy, MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes },
@@ -1286,6 +1330,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         SelectedTheme = Themes.First(item => item.Id == theme.Id);
         changingTheme = false;
         AvaloniaThemeCatalog.Apply(SelectedTheme);
+        RefreshThemeColors();
     }
 
     private void OnThemeChanged(object? sender, ThemeItem theme)
@@ -1300,6 +1345,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             changingTheme = true;
             SelectedTheme = Themes.First(item => item.Id == theme.Id);
             changingTheme = false;
+            RefreshThemeColors();
         });
     }
 

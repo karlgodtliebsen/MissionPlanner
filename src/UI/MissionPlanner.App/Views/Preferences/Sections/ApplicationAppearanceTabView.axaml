@@ -9,7 +9,7 @@
 
              >
 
-    <Grid RowDefinitions="Auto,*"
+    <Grid
           HorizontalAlignment="Center"
           VerticalAlignment="Stretch">
         <Grid.ColumnDefinitions>
@@ -23,6 +23,7 @@
                 <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,*">
                     <StackPanel Orientation="Horizontal" Grid.Column="1">
                         <Button Classes="EmbeddedIconButton" ToolTip.Tip="Reset appearance"
+                                AutomationProperties.Name="Reset appearance"
                                 Command="{Binding ResetApplicationCommand}"
                                 CommandParameter="Appearance" >
                             <avalonia:MaterialIcon Kind="Restore" Width="30" Height="30" />
@@ -46,6 +47,39 @@
                             <ComboBox HorizontalAlignment="Right" HorizontalContentAlignment="Right"  ItemsSource="{Binding LayoutModes}" 
                                       SelectedItem="{Binding LayoutMode}" u:FormItem.Label="Layout" />
                         </u:Form>
+                        <TextBlock Text="Customize theme colors" FontSize="18" FontWeight="SemiBold" Margin="0,16,0,0" />
+                        <TextBlock Text="Changes preview immediately. Save preferences to keep them; leaving this page discards unsaved color changes. Colors are stored separately for each theme."
+                                   TextWrapping="Wrap" MaxWidth="620" />
+                        <Button Command="{Binding ResetThemeColorsCommand}" HorizontalAlignment="Left"
+                                ToolTip.Tip="Restore every color in the selected theme" AutomationProperties.Name="Reset selected theme colors">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <avalonia:MaterialIcon Kind="Restore" Width="20" Height="20" />
+                                <TextBlock Text="Reset theme colors" />
+                            </StackPanel>
+                        </Button>
+                        <TextBox Text="{Binding ColorSearch, Mode=TwoWay}" PlaceholderText="Search colors, e.g. button, input, hover"
+                                 AutomationProperties.Name="Search theme colors" />
+                        <ItemsControl ItemsSource="{Binding FilteredThemeColors}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="preferences:ThemeColorViewModel">
+                                    <Grid ColumnDefinitions="*,Auto,150,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="10" Margin="0,5">
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                                        <ColorPicker Grid.Column="1" Color="{Binding Color, Mode=TwoWay}"
+                                                     ToolTip.Tip="{Binding Name}" AutomationProperties.Name="{Binding Name}" />
+                                        <TextBox Grid.Column="2" Text="{Binding Hex, Mode=TwoWay}"
+                                                 PlaceholderText="#AARRGGBB" AutomationProperties.Name="{Binding Name}" />
+                                        <Button Grid.Column="3" Command="{Binding ResetCommand}"
+                                                ToolTip.Tip="Restore this color to the theme default" AutomationProperties.Name="Reset color to theme default"
+                                                Classes="EmbeddedIconButton">
+                                            <avalonia:MaterialIcon Kind="Restore" Width="20" Height="20" />
+                                        </Button>
+                                        <TextBlock Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Text="{Binding Error}" TextWrapping="Wrap"
+                                                   IsVisible="{Binding Error, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                                   Foreground="{DynamicResource SemiColorDanger}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                 </Grid>
             </Border>

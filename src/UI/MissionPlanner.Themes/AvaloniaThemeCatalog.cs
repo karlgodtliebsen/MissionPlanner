@@ -9,6 +9,33 @@ namespace MissionPlanner.Themes;
 /// </summary>
 public static class AvaloniaThemeCatalog
 {
+    private static Application? colorApplication;
+    private static ThemeColorCustomizer? colors;
+
+    /// <summary>Gets the live color preferences for the current application.</summary>
+    public static ThemeColorCustomizer Colors
+    {
+        get
+        {
+            var application = Application.Current ?? throw new InvalidOperationException("Avalonia is not initialized.");
+            if (!ReferenceEquals(colorApplication, application))
+            {
+                if (colorApplication is not null) colorApplication.PropertyChanged -= OnApplicationPropertyChanged;
+                colors?.Restore();
+                colorApplication = application;
+                colors = new ThemeColorCustomizer(application);
+                application.PropertyChanged += OnApplicationPropertyChanged;
+            }
+            return colors!;
+        }
+    }
+
+    private static void OnApplicationPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.Property == Application.ActualThemeVariantProperty && colors is not null)
+            colors.Apply(colors.ThemeId);
+    }
+
     private static readonly IReadOnlyList<ThemeItem> items =
     [
         new("system", "Default", ThemeVariant.Default),
@@ -75,7 +102,10 @@ public static class AvaloniaThemeCatalog
         ArgumentNullException.ThrowIfNull(theme);
         if (Application.Current is { } application)
         {
+            var customizer = Colors;
+            customizer.Restore();
             application.RequestedThemeVariant = theme.Theme;
+            customizer.Apply(theme.Id);
         }
 
         ThemeChanged?.Invoke(null, theme);

@@ -9,6 +9,9 @@ public sealed record PlannerAppearanceSettings
     /// <summary>Gets the stable persisted theme or selection-policy identifier.</summary>
     public string ThemeId { get; init; } = DefaultThemeId;
 
+    /// <summary>Gets per-theme, semantic color overrides encoded as #AARRGGBB.</summary>
+    public Dictionary<string, Dictionary<string, string>> ColorOverrides { get; init; } = new();
+
     /// <summary>Gets or sets whether the legacy navigation flyout is shown at startup.</summary>
     public bool IsFlyoutVisibleAtStartup { get; set; }
 

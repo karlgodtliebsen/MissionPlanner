@@ -30,6 +30,7 @@
     <Application.Styles>
         <semi:SemiTheme Locale="en-US" />
         <semi:DataGridSemiTheme />
+        <semi:ColorPickerSemiTheme />
         <semi:UrsaSemiTheme Locale="en-US" />
         <themes:MissionPlannerTheme />
         <semi:SemiPopupAnimations />

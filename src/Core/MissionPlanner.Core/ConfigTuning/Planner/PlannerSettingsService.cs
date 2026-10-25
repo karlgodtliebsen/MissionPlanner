@@ -172,6 +172,17 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         ValidateRange(settings.Telemetry.DisplayRateHz, 1, 30, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.DisplayRateHz), errors);
         ValidateRange(settings.Telemetry.ChartHistorySeconds, 10, 3600, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.ChartHistorySeconds), errors);
         ValidateThemeId(settings.Appearance.ThemeId, errors);
+        var colorOverrides = settings.Appearance.ColorOverrides;
+        if (colorOverrides is null || colorOverrides.Count > 64 || colorOverrides.Any(theme =>
+                string.IsNullOrWhiteSpace(theme.Key) || theme.Key.Length > 80 || theme.Value is null ||
+                theme.Value.Count > 64 || theme.Value.Any(color =>
+                    string.IsNullOrWhiteSpace(color.Key) || color.Key.Length > 80 ||
+                    color.Value is null || color.Value.Length != 9 || color.Value[0] != '#' ||
+                    !color.Value.AsSpan(1).ToArray().All(char.IsAsciiHexDigit))))
+        {
+            errors.Add(new(PlannerSettingsSection.Appearance, nameof(PlannerAppearanceSettings.ColorOverrides),
+                "Theme color overrides must contain valid #AARRGGBB colors (up to 64 themes and 64 colors per theme)."));
+        }
         ValidateEnum(settings.Logging.Level, PlannerSettingsSection.Logging, nameof(settings.Logging.Level), errors);
         ValidateRange(settings.Logging.RetentionDays, 1, 90, PlannerSettingsSection.Logging, nameof(settings.Logging.RetentionDays), errors);
 

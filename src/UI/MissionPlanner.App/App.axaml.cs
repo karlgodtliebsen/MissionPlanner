@@ -35,6 +35,12 @@ public partial class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        if (ServiceProvider?.GetService<MissionPlanner.Core.ConfigTuning.Planner.IPlannerSettingsService>() is { } settings)
+        {
+            MissionPlanner.Themes.AvaloniaThemeCatalog.Colors.Load(settings.Current.Appearance.ColorOverrides);
+            MissionPlanner.Themes.AvaloniaThemeCatalog.Apply(
+                MissionPlanner.Themes.AvaloniaThemeCatalog.Resolve(settings.Current.Appearance.ThemeId));
+        }
     }
 
     /// <summary>

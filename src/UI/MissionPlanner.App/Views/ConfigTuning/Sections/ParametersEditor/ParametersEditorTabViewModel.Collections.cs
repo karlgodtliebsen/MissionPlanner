@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.App.Models;
@@ -8,7 +8,7 @@ namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 
 public partial class ParametersEditorTabViewModel
 {
-    private IPlannerSettingsService? plannerSettings;
+    private readonly IPlannerSettingsService? plannerSettings;
     /// <summary>Gets filtered references to the shared live editors; filtering never discards pending values.</summary>
     public ObservableCollection<ParameterItemViewModel> CollectionParameters { get; } = [];
     /// <summary>Gets named live subsets, including the standard RC auxiliary-function subset.</summary>
@@ -30,6 +30,11 @@ public partial class ParametersEditorTabViewModel
 
     partial void OnSelectedCollectionChanged(string value)
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (value is null)
+        {
+            return;
+        }
         if (plannerSettings?.Current.ParameterCollections.TryGetValue(value, out var members) == true)
         {
             CollectionName = value;
@@ -99,7 +104,10 @@ public partial class ParametersEditorTabViewModel
         collections[name] = names;
         try
         {
-            var result = await plannerSettings.SaveAsync(plannerSettings.Current with { ParameterCollections = collections }, token);
+            var result = await plannerSettings.SaveAsync(plannerSettings.Current with
+            {
+                ParameterCollections = collections
+            }, token);
             if (!result.Success)
             {
                 SetMessages(errorMessage: string.Join(Environment.NewLine, result.Errors.Select(error => error.Message)));
@@ -124,7 +132,10 @@ public partial class ParametersEditorTabViewModel
         collections.Remove(SelectedCollection);
         try
         {
-            var result = await plannerSettings.SaveAsync(plannerSettings.Current with { ParameterCollections = collections }, token);
+            var result = await plannerSettings.SaveAsync(plannerSettings.Current with
+            {
+                ParameterCollections = collections
+            }, token);
             if (result.Success)
             {
                 SelectedCollection = "All";

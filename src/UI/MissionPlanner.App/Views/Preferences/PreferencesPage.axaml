@@ -19,10 +19,10 @@
 
             <TabControl x:Name="PreferencesTabs" Grid.Row="2" TabStripPlacement="Left" HorizontalAlignment="Stretch">
                 <TabItem Header="Application appearance">
-                    <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
+                    <Grid RowDefinitions="Auto,*" RowSpacing="14" HorizontalAlignment="Stretch">
                         <sections:TopSectionView/>
-                        <sections:ApplicationAppearanceTabView />
-                    </StackPanel>
+                        <sections:ApplicationAppearanceTabView Grid.Row="1" />
+                    </Grid>
                 </TabItem>
                 <TabItem Header="Units">
                     <StackPanel  Orientation="Vertical" Spacing="14"  HorizontalAlignment="Stretch" >
