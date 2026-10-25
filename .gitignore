@@ -276,5 +276,7 @@ testem.log
 .DS_Store
 Thumbs.db
 *.xml
+# Pinned MAVLink schemas are source inputs, not generated XML documentation.
+!/src/Core/MissionPlanner.MavLink/Dialects/*.xml
 /src/.vs/MissionPlanner.slnx/v18/.suo
 /src/UI/UraniumUI.Material.Control.Extensions/.xml

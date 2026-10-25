@@ -12,6 +12,12 @@ The selected root is `ardupilotmega.xml`. Its transitive include closure contain
 `COPYING` contains the upstream license. Normal builds and tests use these vendored inputs
 and do not access the network. Do not edit the XML files manually.
 
+Keep the root dialect and all eight included XML files in Git. The repository ignores
+other `*.xml` files, but explicitly includes this directory because generation and Core
+tests read these schemas from a clean checkout. When updating the pinned revision, include
+the complete declared include closure in the change; locally present, ignored files cannot
+satisfy CI.
+
 `mavlink-generation.json` is the machine-readable generation contract. It declares this
 revision, the complete include closure, hand-written decoder ownership, compatibility
 exceptions, promotion input, generated outputs, and the documented legacy-constant

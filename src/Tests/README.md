@@ -22,6 +22,24 @@ Use `--solution src/MissionPlanner.slnx` for a solution run. Old command example
 
 The automated simulator tests create their own loopback UDP vehicle and connection session; no external simulator is needed. Local networking must be available. The UI suite targets Windows.
 
+## MAVLink dialect inputs in CI
+
+Core's MAVLink generation, coverage and conformance tests require the nine pinned XML files
+in `src/Core/MissionPlanner.MavLink/Dialects`, declared by `mavlink-generation.json`.
+They are versioned source inputs and must be included in every checkout; no network fetch
+or locally installed MAVLink package is needed.
+
+On 2026-10-25, the CI log showed 22 failing cases because the broad `*.xml` ignore rule had
+excluded every dialect input from Git. The fix is a scoped exception for the dialect
+directory and inclusion of all nine files, retaining their existing revision and license.
+The tests and assertions remain enabled. The reported log used a Linux runner, but a clean
+Windows checkout would have lacked the same inputs.
+
+Verification: Windows Release Core suite **1,183 passed, 8 existing skips, 0 failed**;
+all six affected MAVLink test classes in an isolated Debian source snapshot **43 passed,
+0 skipped, 0 failed**. The Linux snapshot used native LF checkout endings for generated
+source comparisons. No additional tests were skipped.
+
 The following tests remain explicitly skipped because they need external equipment or perform manual maintenance:
 
 - Five serial integration tests require a connected physical vehicle.
