@@ -237,7 +237,7 @@ public static class SectionHelpCatalog
             "Connect the intended tracker and inspect available identity and target status.|Review supported tracker parameters in Parameters Editor.|Check mechanical limits and the tracker-specific setup documentation.",
             "Confirm that target information is current and belongs to the intended vehicle.",
             "Actuator testing is currently unavailable on this page; it must not be treated as a completed pointing test."),
-        T(Optional, "FFT",
+        T(Optional, "FFT Setup",
             "Analyse an existing sample export to inspect vibration-frequency content.",
             "Obtain a suitable exported DataFlash sample set.|Supply the samples and their correct sample rate, then run the analysis.|Review the spectrum and reported peak alongside the operating conditions recorded in the log.",
             "Check sample spacing, units and whether the data represents the condition being investigated.",
