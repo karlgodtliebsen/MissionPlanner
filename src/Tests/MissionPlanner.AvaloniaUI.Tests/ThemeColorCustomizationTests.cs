@@ -26,7 +26,7 @@ public sealed class ThemeColorCustomizationTests
             .AddSingleton(Substitute.For<IDomainEventHub>()).BuildServiceProvider()))
         .UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 
-    [Fact]
+    [Fact(Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
     public async Task LiveColorsUpdateStaticAliasesAndRemainIsolatedAcrossThemes()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(ThemeColorCustomizationTests));

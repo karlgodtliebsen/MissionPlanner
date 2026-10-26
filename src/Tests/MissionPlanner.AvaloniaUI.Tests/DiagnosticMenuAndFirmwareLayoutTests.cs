@@ -81,7 +81,7 @@ public sealed class DiagnosticMenuAndFirmwareLayoutTests
         .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 
     /// <summary>Diagnostic menu actions close their flyout on keyboard activation, ignoring separators.</summary>
-    [Fact]
+    [Fact(Skip = "UI-SKIP-03: Headless rendering accesses Avalonia objects owned by another thread. See src/Tests/README.md.")]
     public async Task SelectingDiagnosticMenuItemClosesFlyout()
     {
         var session = HeadlessUnitTestSession.StartNew(typeof(DiagnosticMenuAndFirmwareLayoutTests));
