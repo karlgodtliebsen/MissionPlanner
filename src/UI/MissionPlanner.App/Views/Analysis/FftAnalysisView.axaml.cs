@@ -1,6 +1,4 @@
-﻿using MissionPlanner.App.Utilities;
-
-using Avalonia;
+﻿using Avalonia;
 
 namespace MissionPlanner.App.Views.Analysis;
 

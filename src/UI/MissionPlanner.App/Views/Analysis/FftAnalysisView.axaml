@@ -13,9 +13,9 @@
     x:DataType="local:FftAnalysisViewModel"
     x:CompileBindings="True">
 
-    <Grid RowDefinitions="Auto,Auto,*" Margin="12">
+    <Grid RowDefinitions="Auto,Auto,*" Margin="12" RowSpacing="10">
         <StackPanel Grid.Row="0" Spacing="8">
-            <WrapPanel ItemSpacing="8" LineSpacing="8">
+            <WrapPanel ItemSpacing="5" LineSpacing="5" HorizontalAlignment="Center">
                 <Button Command="{Binding OpenLogCommand}"
                         IsVisible="{Binding IsDrawerMode, ElementName=FftWorkspaceView}"
                         ToolTip.Tip="Open log" AutomationProperties.Name="Open log">
@@ -53,16 +53,18 @@
                     <mdi:MaterialIcon Kind="Stop"  Classes="ActionIcon"  />
                 </Button>
             </WrapPanel>
-
         </StackPanel>
-        <StackPanel Grid.Row="1" Margin="0,8" Spacing="4">
+        <StackPanel Grid.Row="1"  Spacing="4">
             <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="4" />
-            <TextBlock Text="{Binding ErrorMessage}" Classes="Warning" TextWrapping="Wrap" />
-        </StackPanel>
-        <TabControl IsVisible="{Binding !IsDrawerMode, ElementName=FftWorkspaceView}" Grid.Row="2" SelectedIndex="{Binding SelectedTab}" AutomationProperties.Name="DataFlash workspace tabs">
+            <SelectableTextBlock Text="{Binding ErrorMessage}"
+                                 IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotNullEmptyConverter}}"
+                                 Classes="Danger" TextWrapping="Wrap" VerticalAlignment="Center" />        </StackPanel>
+        <TabControl Grid.Row="2" IsVisible="{Binding !IsDrawerMode, ElementName=FftWorkspaceView}"
+                    SelectedIndex="{Binding SelectedTab}" 
+                    AutomationProperties.Name="DataFlash workspace tabs">
             <TabItem Header="File Information">
                 <ScrollViewer>
-                    <StackPanel Margin="12" Spacing="12">
+                    <StackPanel Margin="12,15,12,0" Spacing="15">
                         <u:UrsaGroupBox >
                             <u:UrsaGroupBox.Header >
                                 <TextBlock
@@ -70,7 +72,7 @@
                                     Foreground="{DynamicResource SemiColorSecondary}"
                                     Text="{Binding FileName,StringFormat=Filename: {0}}" />
                             </u:UrsaGroupBox.Header>
-                            <StackPanel Margin="12" Spacing="12">
+                            <StackPanel Margin="12" Spacing="15">
                                 <TextBlock Text="{Binding SourceDescription}" TextWrapping="Wrap" />
                                 <TextBlock Text="Data quality and skipped data" FontWeight="SemiBold" />
                                 <TextBlock Text="{Binding SourceDiagnostics}" TextWrapping="Wrap" />
@@ -140,10 +142,13 @@
             </TabItem>
             <TabItem Header="Graphs">
                 <Grid ColumnDefinitions="*,5,390" Margin="0,8" ColumnSpacing="12">
-                    <Grid RowDefinitions="Auto,*,Auto">
+                    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="15">
                         <TextBlock Text="{Binding SelectedSource.DisplayName,FallbackValue='', TargetNullValue=''}"
                                    FontWeight="SemiBold" TextWrapping="Wrap" HorizontalAlignment="Center" />
-                        <local:FrequencyPlot Grid.Row="1" Result="{Binding Result}" ShowSpectrogram="{Binding ShowSpectrogram}" MinHeight="320" MinWidth="300" AutomationProperties.Name="Frequency spectrum and spectrogram plot" />
+                        <local:FrequencyPlot Grid.Row="1" Result="{Binding Result}" 
+                                             ShowSpectrogram="{Binding ShowSpectrogram}" 
+                                             MinHeight="320" MinWidth="300" 
+                                             AutomationProperties.Name="Frequency spectrum and spectrogram plot" />
                         <TextBlock Grid.Row="2" Text="Green: measured · Blue: current filters · Orange: proposed filter. Hover to inspect values." TextWrapping="Wrap" />
                     </Grid>
                     <GridSplitter Grid.Column="1" Width="5" ResizeDirection="Columns" />
@@ -166,7 +171,7 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
-                                    <StackPanel Orientation="Vertical" Spacing="12">
+                                    <StackPanel Orientation="Vertical" Spacing="15">
                                         <WrapPanel ItemSpacing="12" LineSpacing="8">
                                             <StackPanel>
                                                 <TextBlock Text="Start (log seconds)" />
