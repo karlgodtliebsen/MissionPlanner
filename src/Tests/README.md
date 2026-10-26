@@ -52,7 +52,7 @@ No automated command test should be run against real flight hardware. Keep the e
 
 ## Temporarily skipped UI regressions
 
-On 2026-10-24, the following **17 failing cases across 14 test methods** were explicitly skipped at the user's request after migrating CI to Microsoft.Testing.Platform. The initial run exposed 14 failures; a follow-up run exposed three more cases with the same headless thread ownership error. They remain unresolved regressions; skipping them does not mean their assertions pass. Each `Skip` reason contains the tracking ID below. Test bodies and assertions are retained, and unrelated cases in the same theories remain enabled.
+On 2026-10-24, **17 failing cases across 14 test methods** were explicitly skipped at the user's request after migrating CI to Microsoft.Testing.Platform. The initial run exposed 14 failures; a follow-up run exposed three more cases with the same headless thread ownership error. A later Windows Release run exposed two additional test methods with that same UI-SKIP-03 failure; the current inventory is **19 cases across 16 methods**. These unresolved regressions are skipped, not fixed; skipping them does not mean their assertions pass. Each `Skip` reason contains the tracking ID below. Test bodies and assertions are retained, and unrelated cases in the same theories remain enabled.
 
 | ID | Observed failure | Required before removing the skip |
 |---|---|---|
@@ -66,9 +66,11 @@ On 2026-10-24, the following **17 failing cases across 14 test methods** were ex
 | [SectionHelpTests.EveryVisibleSectionHasOneCompleteHelpArticle](MissionPlanner.AvaloniaUI.Tests/SectionHelpTests.cs) | Mandatory Hardware only (1); Optional Hardware and Configuration remain enabled. | UI-SKIP-01 |
 | [DiagnosticMenuAndFirmwareLayoutTests.TopbarRetainsLayoutWithDistinctMenuIcons](MissionPlanner.AvaloniaUI.Tests/DiagnosticMenuAndFirmwareLayoutTests.cs) | 1 | UI-SKIP-02 |
 | [DiagnosticMenuAndFirmwareLayoutTests.FirmwareConfigurationScrollsInShortWindow](MissionPlanner.AvaloniaUI.Tests/DiagnosticMenuAndFirmwareLayoutTests.cs) | 1 | UI-SKIP-03 |
+| [DiagnosticMenuAndFirmwareLayoutTests.SelectingDiagnosticMenuItemClosesFlyout](MissionPlanner.AvaloniaUI.Tests/DiagnosticMenuAndFirmwareLayoutTests.cs) | 1 | UI-SKIP-03 |
 | [DiagnosticPanelViewTests.DestinationsMountAndRetainSelectionAtNarrowWidth](MissionPlanner.AvaloniaUI.Tests/DiagnosticPanelViewTests.cs) | 1 | UI-SKIP-03 |
 | [ParameterProfilesViewModelTests.ProfileDialogRenders](MissionPlanner.AvaloniaUI.Tests/ParameterProfilesViewModelTests.cs) | 1 | UI-SKIP-03 |
 | [PaletteThemeRenderingTests.PalettesResolveAndRenderIndependentlyAcrossWindows](MissionPlanner.AvaloniaUI.Tests/PaletteThemeRenderingTests.cs) | 1 | UI-SKIP-03 |
+| [ThemeColorCustomizationTests.LiveColorsUpdateStaticAliasesAndRemainIsolatedAcrossThemes](MissionPlanner.AvaloniaUI.Tests/ThemeColorCustomizationTests.cs) | 1 | UI-SKIP-03 |
 | [ParameterEditorToolbarTests.EditorWidthTogglePreservesViewAndModel](MissionPlanner.AvaloniaUI.Tests/ParameterEditorToolbarTests.cs) | 1 | UI-SKIP-03 |
 | [ParameterEditorToolbarTests.SelectedTabControlsVisibleActionsAndQuickEditorCommands](MissionPlanner.AvaloniaUI.Tests/ParameterEditorToolbarTests.cs) | 1 | UI-SKIP-03 |
 | [QuickEditorLayoutTests.EditorSectionsDoNotOverlapAtDifferentWindowSizes](MissionPlanner.AvaloniaUI.Tests/QuickEditorLayoutTests.cs) | 800x550, 1200x850, 1920x1030 (3) | UI-SKIP-03 |
