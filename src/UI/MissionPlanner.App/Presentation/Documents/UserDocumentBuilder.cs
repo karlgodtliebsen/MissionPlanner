@@ -1,6 +1,6 @@
 using MissionPlanner.Themes.Documents;
 using System.Text;
-using System.Globalization;
+using MissionPlanner.Core.ConfigTuning;
 
 namespace MissionPlanner.App.Presentation.Documents;
 
@@ -100,7 +100,7 @@ public sealed class UserDocumentBuilder
         {
             throw new ArgumentException("Parameter assignments require a valid name and finite numeric value.");
         }
-        return name + " = " + value.ToString("G", CultureInfo.InvariantCulture) +
+        return name + " = " + ParameterValueText.Format(value) +
             (string.IsNullOrWhiteSpace(comment) ? string.Empty : " // " + Normalize(comment));
     }
 

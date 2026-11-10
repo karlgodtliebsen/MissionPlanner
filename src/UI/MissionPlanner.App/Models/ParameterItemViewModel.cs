@@ -7,7 +7,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using MissionPlanner.Core.ConfigTuning;
-using MissionPlanner.Library.Math;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.App.Models;
@@ -454,10 +453,7 @@ public partial class ParameterItemViewModel : ObservableObject
         if (ValuesItems is not null)
         {
             var item = ValuesItems.FirstOrDefault(i => i.Name == newValue);
-            if (item is not null &&
-
-                // Math.Abs(item.Value - Value) > 0.0001f)
-                MathUtils.AreNearlyEqual(item.Value, Value) == false)
+            if (item is not null && !ParameterValueEquivalence.Default.AreEquivalent(item.Value, Value))
             {
                 Value = item.Value;
             }
@@ -485,7 +481,7 @@ public partial class ParameterItemViewModel : ObservableObject
             return;
         }
 
-        IsModified = MathUtils.AreNearlyEqual(value, OriginalValue) == false;
+        IsModified = !ParameterValueEquivalence.Default.AreEquivalent(value, OriginalValue);
         if (editSession is not null)
         {
             editSession.TrySetPending(Name, value, out var error);
@@ -510,7 +506,7 @@ public partial class ParameterItemViewModel : ObservableObject
         }
 
         var pendingValue = field.PendingValue;
-        var pendingValueChanged = Math.Abs(Value - pendingValue) > 0.0001f;
+        var pendingValueChanged = !ParameterValueEquivalence.Default.AreEquivalent(Value, pendingValue);
         var editorDefinitionChanged =
             EditType != field.Type ||
             editMetadata != field.Metadata ||
@@ -530,6 +526,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
             if (editorDefinitionChanged)
             {
+                hasNumericPresets = field.Type == MavParamType.Real32 && field.Metadata.HasNumericPresets;
                 ApplyEditorMetadata(CreateEditorMetadata(field));
                 editMetadata = field.Metadata;
                 EditType = field.Type;
@@ -601,15 +598,18 @@ public partial class ParameterItemViewModel : ObservableObject
         Max = Math.Max(Max, value);
     }
 
+    private bool hasNumericPresets;
+
     private void SynchronizeSelections(double pendingValue)
     {
-        if (ValuesItems is { Length: > 0 } && !ValuesItems.Any(option => Math.Abs(option.Value - pendingValue) < 0.0001f))
+        if (ValuesItems is { Length: > 0 } && !ValuesItems.Any(option => ParameterValueEquivalence.Default.AreEquivalent(option.Value, pendingValue)))
         {
-            ValuesItems = [.. ValuesItems, new SelectItem($"Unknown ({pendingValue.ToString(CultureInfo.InvariantCulture)})", pendingValue)];
+            var label = hasNumericPresets ? "Custom" : "Unknown";
+            ValuesItems = [.. ValuesItems, new SelectItem($"{label} ({ParameterValueText.Format(pendingValue)})", pendingValue)];
             ValuesData = ValuesItems.Select(option => option.Name).ToArray();
         }
         SelectedValue = ValuesItems?
-            .FirstOrDefault(option => Math.Abs(option.Value - pendingValue) < 0.0001f)?
+            .FirstOrDefault(option => ParameterValueEquivalence.Default.AreEquivalent(option.Value, pendingValue))?
             .Name;
 
         var selectedBitmaskItems = new List<object>();
@@ -758,19 +758,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
     private static string FormatParameterValue(double value)
     {
-        var culture = CultureInfo.CurrentCulture;
-
-        if (!double.IsFinite(value) ||
-            value > float.MaxValue ||
-            value < -float.MaxValue)
-        {
-            return value.ToString("G15", culture);
-        }
-
-        // MAVLink PARAM_VALUE is a float32. Formatting its single-precision projection
-        // restores the concise representation used before the UI properties became double,
-        // while the bound numeric value itself remains a double.
-        return ((float)value).ToString(culture);
+        return ParameterValueText.Format(value, CultureInfo.CurrentCulture);
     }
 
     private static bool TryParseParameterValue(string? text, out double value)

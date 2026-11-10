@@ -147,7 +147,7 @@ public sealed class ParameterComparisonService(IParameterValueEquivalence equiva
 
     private static string Number(double? value)
     {
-        return value?.ToString("R", CultureInfo.InvariantCulture) ?? string.Empty;
+        return value.HasValue ? ParameterValueText.Format(value.Value) : string.Empty;
     }
 
     private static string Quote(string? value)

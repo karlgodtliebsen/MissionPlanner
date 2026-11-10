@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Themes.Documents;
+using MissionPlanner.Themes.Documents;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -47,6 +47,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private readonly IUserConfirmationService confirmation;
     private readonly MotorStartThresholdService? thresholdAssistant;
     private readonly IMotorOutputResolver? outputResolver;
+    private readonly MotorOrderService? motorOrder;
     private bool disposed;
     private bool activated;
     private bool spinInputsInitialized;
@@ -183,6 +184,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// <param name="thresholdAssistant">Guided frame-aware motor start-threshold workflow.</param>
     /// <param name="outputResolver">Existing logical-to-physical output resolver.</param>
     /// <param name="externalLinkLauncher">Opens documentation in the default external browser.</param>
+    /// <param name="motorOrder">Guided physical motor identification and verified output assignments.</param>
     public MotorTestViewModel(
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
@@ -199,7 +201,8 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         IUserConfirmationService confirmation,
         MotorStartThresholdService? thresholdAssistant = null,
         IMotorOutputResolver? outputResolver = null,
-        IExternalLinkLauncher? externalLinkLauncher = null)
+        IExternalLinkLauncher? externalLinkLauncher = null,
+        MotorOrderService? motorOrder = null)
         : base(connectionSession, activeVehicle, editSessionFactory, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.externalLinkLauncher = externalLinkLauncher ?? new ExternalLinkLauncher();
@@ -211,6 +214,9 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         this.confirmation = confirmation;
         this.thresholdAssistant = thresholdAssistant;
         this.outputResolver = outputResolver;
+        this.motorOrder = motorOrder;
+        Wizard = motorOrder is null ? null : new MotorOrderViewModel(motorOrder, ThrottlePercent);
+        if (Wizard is not null) Wizard.Changed += WizardChanged;
     }
 
     /// <summary>Gets motor-by-motor observed start thresholds.</summary>
@@ -280,7 +286,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     [RelayCommand]
     private async Task CancelThresholdAsync(CancellationToken cancellationToken)
     {
-        if (thresholdAssistant is not null)
+        if (thresholdAssistant?.HasSession == true)
         {
             await thresholdAssistant.CancelAsync(cancellationToken);
             RefreshThreshold();
@@ -334,6 +340,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
     private void RefreshThreshold()
     {
+        RefreshDiagram();
         RefreshOutputDiagnostics();
         if (thresholdAssistant is null)
         {
@@ -373,17 +380,17 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
     private bool CanExecuteCommand()
     {
-        return canExecute && thresholdAssistant?.HasSession != true;
+        return canExecute && thresholdAssistant?.HasSession != true && !IsChangingSetupMode && Wizard?.IsPulsing != true && Wizard?.OperationBusy != true;
     }
 
     private bool CanTestMotors()
     {
-        return IsMotorTestSafetyAcknowledged && CanExecuteCommand();
+        return IsMotorTestSafetyAcknowledged && !manualTestBusy && CanExecuteCommand();
     }
 
     private bool CanStartThreshold()
     {
-        return IsMotorTestSafetyAcknowledged && thresholdAssistant is not null && !ThresholdBusy;
+        return IsMotorTestSafetyAcknowledged && thresholdAssistant is not null && !ThresholdBusy && !IsChangingSetupMode && Wizard?.IsPulsing != true && Wizard?.OperationBusy != true;
     }
 
     private bool CanPulseThreshold()
@@ -479,10 +486,37 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             return;
         }
 
-        var result = await service.TestMotorAsync(id,
-            new MotorTestRequest(motor.TestOrder, MotorThrottleType.Percent, ThrottlePercent, DurationSeconds),
-            activeVehicle.ConnectionCancellationToken);
-        SetMessages(result.Message);
+        var version = navigationVersion;
+        manualTestBusy = true;
+        manualTestCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
+        var token = manualTestCancellation.Token;
+        NotifySetupCommands();
+        await setupNavigation.WaitAsync();
+        try
+        {
+            token.ThrowIfCancellationRequested();
+            if (service.Current?.VehicleId == id)
+            {
+                await service.EmergencyStopAsync(token);
+                await MotorTestTelemetry.WaitUntilDisarmedAsync(activeVehicle, id, token);
+            }
+            token.ThrowIfCancellationRequested();
+            if (version != navigationVersion || !IsMotorTestSafetyAcknowledged || disposed) return;
+            var result = await service.TestMotorAsync(id,
+                new MotorTestRequest(motor.TestOrder, MotorThrottleType.Percent, ThrottlePercent, DurationSeconds), token);
+            SetMessages(result.Message);
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception exception) { SetMessages(errorMessage: exception.Message); }
+        finally
+        {
+            manualTestCancellation.Dispose();
+            manualTestCancellation = null;
+            manualTestBusy = false;
+            setupNavigation.Release();
+            RefreshDiagram();
+            NotifySetupCommands();
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanTestMotors))]
@@ -533,7 +567,10 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
     private async Task StopAsync(CancellationToken cancellationToken)
     {
-        await service.EmergencyStopAsync(cancellationToken);
+        manualTestCancellation?.Cancel();
+        await setupNavigation.WaitAsync(cancellationToken);
+        try { await service.EmergencyStopAsync(cancellationToken); }
+        finally { setupNavigation.Release(); }
     }
 
     [RelayCommand]
@@ -544,8 +581,6 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             return;
         }
 
-        canExecute = false;
-        IsReady = false;
         SpinMessage = null;
 
         if (activeVehicle.VehicleId is { } spinVehicleId)
@@ -564,10 +599,11 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             ? resolver.Resolve(parameters.GetAllParameters(id))
             : null;
         RefreshOutputDiagnostics();
-        DiagramMotors = layout?.Motors.Select(motor => new MotorDiagramPoint(motor,
-            activeVehicle.VehicleId is { } diagramId ? outputResolver?.Resolve(diagramId, motor.MotorNumber) : null)).ToArray() ?? [];
+        RefreshDiagram();
         if (layout is null)
         {
+            canExecute = false;
+            IsReady = false;
             Motors.Clear();
             FrameDisplay = "Frame layout unavailable; testing is disabled.";
             return;
@@ -668,6 +704,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             {
                 SetMessages(e.Snapshot.Instruction);
                 RefreshOutputDiagnostics();
+                RefreshDiagram();
                 NotificationManager?.Show(StatusMessage!);
 
             }
@@ -695,15 +732,19 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         NotificationManager?.Show(StatusMessage!);
         activeVehicle.Changed += Changed;
         service.StateChanged += StateChanged;
+        parameters.Changed += ParameterChanged;
         try
         {
             await base.ActivateAsync();
             await Dispatcher.DispatchAsync(Refresh);
+            QueueSetupNavigation();
+            await SetupNavigationTask;
         }
         catch
         {
             activeVehicle.Changed -= Changed;
             service.StateChanged -= StateChanged;
+            parameters.Changed -= ParameterChanged;
             activated = false;
             throw;
         }
@@ -717,9 +758,11 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             return;
         }
         activated = false;
+        await StopSetupAsync(endSession: true);
         IsMotorTestSafetyAcknowledged = false;
         activeVehicle.Changed -= Changed;
         service.StateChanged -= StateChanged;
+        parameters.Changed -= ParameterChanged;
         if (thresholdAssistant?.HasSession == true)
         {
             await thresholdAssistant.CancelAsync();
@@ -738,11 +781,15 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         disposed = true;
+        manualTestCancellation?.Cancel();
         activated = false;
         IsMotorTestSafetyAcknowledged = false;
         activeVehicle.Changed -= Changed;
         service.StateChanged -= StateChanged;
+        parameters.Changed -= ParameterChanged;
         thresholdAssistant?.Dispose();
+        Wizard?.Dispose();
+        motorOrder?.Dispose();
         base.Dispose();
     }
 }

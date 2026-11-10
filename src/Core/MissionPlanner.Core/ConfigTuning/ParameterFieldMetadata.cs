@@ -6,10 +6,10 @@
 /// <param name="Units">The unit symbol.</param>
 /// <param name="Minimum">The inclusive minimum, when defined.</param>
 /// <param name="Maximum">The inclusive maximum, when defined.</param>
-/// <param name="Increment">The step increment, when defined.</param>
+/// <param name="Increment">The suggested editor step, not a restriction on stored precision.</param>
 /// <param name="ReadOnly">Whether the parameter is read-only.</param>
 /// <param name="RebootRequired">Whether changing the parameter requires a reboot.</param>
-/// <param name="Options">The enumerated value options.</param>
+/// <param name="Options">The named enum options or numeric presets.</param>
 /// <param name="Bitmask">The bitmask bit options.</param>
 public sealed record ParameterFieldMetadata(
     string? DisplayName,
@@ -23,6 +23,10 @@ public sealed record ParameterFieldMetadata(
     IReadOnlyList<ParameterValueOption> Options,
     IReadOnlyList<ParameterBitOption> Bitmask)
 {
+    /// <summary>Fractional named values alongside a range are numeric presets (for example motor-spin Low/Default/High).</summary>
+    public bool HasNumericPresets => Minimum.HasValue && Maximum.HasValue &&
+        Options.Any(option => option.Value != Math.Truncate(option.Value));
+
     /// <summary>Gets the descriptive unit text supplied by the firmware metadata.</summary>
     public string? UnitText { get; init; }
 

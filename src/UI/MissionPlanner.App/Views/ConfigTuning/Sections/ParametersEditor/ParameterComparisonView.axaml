@@ -15,7 +15,7 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             ItemsSource="{Binding Items}"
-            ColumnWidths="60,150,100,100,150,90,*"
+            ColumnWidths="60,240,180,180,200,140,*"
             ColumnSpacing="6"
             RowMinHeight="38"
             ShowHeader="True"
@@ -56,10 +56,10 @@
                                   AutomationProperties.Name="{Binding Name, StringFormat='Select {0} for writing'}"
                                   HorizontalAlignment="Center"
                                   Classes="DataGridRow" />
-                        <TextBlock Grid.Column="1" Text="{Binding Name}" HorizontalAlignment="Center" Classes="DataGridRow" />
-                        <TextBlock Grid.Column="2" Text="{Binding LeftValueText}" HorizontalAlignment="Center" Classes="DataGridRow" />
-                        <TextBlock Grid.Column="3" Text="{Binding RightValueText}" HorizontalAlignment="Center" Classes="DataGridRow" />
-                        <TextBlock Grid.Column="4" Text="{Binding DifferenceText}" HorizontalAlignment="Center" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" ToolTip.Tip="{Binding Name}" HorizontalAlignment="Center" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="2" Text="{Binding LeftValueText}" ToolTip.Tip="{Binding LeftValueText}" HorizontalAlignment="Center" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="3" Text="{Binding RightValueText}" ToolTip.Tip="{Binding RightValueText}" HorizontalAlignment="Center" Classes="DataGridRow" />
+                        <TextBlock Grid.Column="4" Text="{Binding DifferenceText}" ToolTip.Tip="{Binding DifferenceText}" HorizontalAlignment="Center" Classes="DataGridRow" />
                         <TextBlock Grid.Column="5" Text="{Binding Status}" HorizontalAlignment="Center" Classes="DataGridRow" />
                         <TextBlock Grid.Column="6" Text="{Binding Message}" HorizontalAlignment="Center" Classes="DataGridRow" />
                     </controls:VirtualizedItemsGridRow>

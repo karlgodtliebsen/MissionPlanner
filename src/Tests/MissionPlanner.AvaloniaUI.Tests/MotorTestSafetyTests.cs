@@ -61,11 +61,6 @@ public sealed class MotorTestSafetyTests
             {
                 designMode.SetValue(null, true);
                 view = new MotorTestView { DataContext = model };
-            }
-            finally
-            {
-                designMode.SetValue(null, previous);
-            }
             var checkbox = view.FindControl<CheckBox>("MotorTestSafetyCheckBox")!;
             Assert.False(checkbox.IsChecked);
             Assert.False(model.TestMotorCommand.CanExecute(motor));
@@ -96,6 +91,11 @@ public sealed class MotorTestSafetyTests
             Assert.True(model.StopCommand.CanExecute(null));
             await model.StopCommand.ExecuteAsync(null);
             await fixture.Actuators.Received(1).EmergencyStopAsync(Arg.Any<CancellationToken>());
+            }
+            finally
+            {
+                designMode.SetValue(null, previous);
+            }
         });
     }
 
@@ -191,7 +191,7 @@ public sealed class MotorTestSafetyTests
         var session = HeadlessUnitTestSession.StartNew(typeof(MotorTestSafetyTests));
         try
         {
-            await session.Dispatch(test, TestContext.Current.CancellationToken);
+            await session.Dispatch(async () => { await test(); return true; }, TestContext.Current.CancellationToken);
         }
         finally
         {
@@ -243,6 +243,7 @@ public sealed class MotorTestSafetyTests
                 Substitute.For<IDomainFactory>(), Substitute.For<IDomainEventHub>(), NullLogger<MotorTestViewModel>.Instance,
                 registry, Actuators, spin, resolver, Confirmation, Assistant);
             Model.RefreshCommand.Execute(null);
+            Actuators.ClearReceivedCalls();
         }
 
         internal void ChangeVehicle(ActiveVehicleSnapshot previous, ActiveVehicleSnapshot current)

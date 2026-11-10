@@ -1,7 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.ConfigTuning.Comparison;
-using MissionPlanner.Library.Math;
+using MissionPlanner.Core.ConfigTuning;
+using System.Globalization;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Sections.ParametersEditor;
 
@@ -41,20 +42,22 @@ public sealed partial class ParameterComparisonItemViewModel(ParameterComparison
     /// <summary>Gets the left value.</summary>
     public double? LeftValue => Row.LeftValue;
 
-    /// <summary>Gets the left value formatted at the parameter's declared precision.</summary>
+    /// <summary>Gets the left value without rounding to the suggested editor step.</summary>
     public string? LeftValueText => FormatValue(Row.LeftValue);
 
     /// <summary>Gets the right value.</summary>
     public double? RightValue => Row.RightValue;
 
-    /// <summary>Gets the right value formatted at the parameter's declared precision.</summary>
+    /// <summary>Gets the right value without rounding to the suggested editor step.</summary>
     public string? RightValueText => FormatValue(Row.RightValue);
 
     /// <summary>Gets the numeric difference.</summary>
     public double? Difference => Row.Difference;
 
-    /// <summary>Gets the difference formatted at the parameter's declared precision.</summary>
-    public string? DifferenceText => Row.Status == ParameterComparisonStatus.Equal ? "0" : FormatValue(Row.Difference);
+    /// <summary>Gets the difference between the displayed values.</summary>
+    public string? DifferenceText => Row.Status == ParameterComparisonStatus.Equal ? "0" :
+        Row.LeftValue is { } left && Row.RightValue is { } right
+            ? ParameterValueText.FormatDifference(left, right, CultureInfo.CurrentCulture) : null;
 
     /// <summary>Gets the classification.</summary>
     public ParameterComparisonStatus Status => Row.Status;
@@ -101,9 +104,6 @@ public sealed partial class ParameterComparisonItemViewModel(ParameterComparison
             return null;
         }
 
-        var increment = Row.Metadata?.Increment;
-        return increment is > 0 && double.IsFinite(increment.Value)
-            ? MathUtils.FormatAtStepPrecision(value.Value, increment)
-            : value.Value.ToString("G7", System.Globalization.CultureInfo.CurrentCulture);
+        return ParameterValueText.Format(value.Value, CultureInfo.CurrentCulture);
     }
 }

@@ -1,6 +1,6 @@
 namespace MissionPlanner.Core.ConfigTuning;
 
-/// <summary>Compares parameter values using firmware precision when it is available.</summary>
+/// <summary>Compares values at MAVLink parameter wire precision without quantizing to editor steps.</summary>
 public interface IParameterValueEquivalence
 {
     /// <summary>Returns whether two values represent the same parameter value.</summary>

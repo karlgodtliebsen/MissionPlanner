@@ -148,9 +148,6 @@ public partial class ParametersEditorViewModel
 
     private static string FormatValue(double value)
     {
-        // Round-trip REAL32 values without exposing the double conversion's binary tail.
-        return value.Equals((double)(float)value)
-            ? ((float)value).ToString("R", CultureInfo.InvariantCulture)
-            : value.ToString("R", CultureInfo.InvariantCulture);
+        return ParameterValueText.Format(value);
     }
 }

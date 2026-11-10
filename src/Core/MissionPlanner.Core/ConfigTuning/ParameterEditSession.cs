@@ -951,19 +951,19 @@ public sealed class ParameterEditSession : IParameterEditSession
             return "Value must be a finite MAVLink 32-bit parameter value.";
         }
 
-        if (field.Metadata.ReadOnly && !MathUtils.AreNearlyEqual(value, field.LiveValue))
+        if (field.Metadata.ReadOnly && !Equivalent(value, field.LiveValue, field.Metadata))
         {
             return "This parameter is read-only and cannot be modified.";
         }
 
-        if (field.Metadata.Minimum is { } minimum && value < minimum)
+        if (field.Metadata.Minimum is { } minimum && value < minimum && !Equivalent(value, minimum, null))
         {
-            return $"Value must be at least {minimum}.";
+            return $"Value must be at least {ParameterValueText.Format(minimum)}.";
         }
 
-        if (field.Metadata.Maximum is { } maximum && value > maximum)
+        if (field.Metadata.Maximum is { } maximum && value > maximum && !Equivalent(value, maximum, null))
         {
-            return $"Value must be at most {maximum}.";
+            return $"Value must be at most {ParameterValueText.Format(maximum)}.";
         }
 
         if (field.Type != MavParamType.Real32 && !MathUtils.AreNearlyEqual(value, Math.Round(value)))
@@ -977,7 +977,8 @@ public sealed class ParameterEditSession : IParameterEditSession
             return typeError;
         }
 
-        if (field.Metadata.Options.Count > 0 && !field.Metadata.Options.Any(option => MathUtils.AreNearlyEqual(option.Value, value)))
+        var numericPresets = field.Type == MavParamType.Real32 && field.Metadata.HasNumericPresets;
+        if (!numericPresets && field.Metadata.Options.Count > 0 && !field.Metadata.Options.Any(option => Equivalent(option.Value, value, null)))
         {
             return "Select one of the values advertised by the vehicle firmware metadata.";
         }
@@ -1000,16 +1001,8 @@ public sealed class ParameterEditSession : IParameterEditSession
             }
         }
 
-        if (field.Metadata.Increment is > 0 and var increment && field.Metadata.Options.Count == 0)
-        {
-            var origin = field.Metadata.Minimum ?? 0;
-            var steps = (value - origin) / increment;
-            if (!Equivalent(steps, Math.Round(steps), null))
-            {
-                return $"Value must use increments of {increment}.";
-            }
-        }
-
+        // Firmware Increment describes the spinner step. Calibrated values can fall
+        // anywhere inside the range and must survive imports without quantization.
         return null;
     }
 

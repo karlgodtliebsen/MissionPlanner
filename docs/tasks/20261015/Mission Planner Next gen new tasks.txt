@@ -41,7 +41,6 @@ Please remove that, and add a Checkbox that warns and when Unchecked the buttons
 Install Firmware -> Done
 
 ********************************************************
-
 I just flashed a new Foxeer F405 V2+ FC
 After flashing, when I disconnect the FC to get it started up on Ardupilot mode, Mission Planner Next Gen waits. It takes some time, but the Windows Device Settings eventually registers the FC as an Ardupilot device.
 However Mission Planner Next Gen continues waiting.
@@ -50,7 +49,7 @@ I chose to cancel, and apart from some messages about Cancelled DFU Bootloader, 
 
 
 ********************************************************
-Extending Parameters Editor functionality:
+Extending Parameters Editor functionality  -> Done
 ********************************************************
 
 Currently the ParameterComparisonView/ParameterComparisonViewModel seems a little strange

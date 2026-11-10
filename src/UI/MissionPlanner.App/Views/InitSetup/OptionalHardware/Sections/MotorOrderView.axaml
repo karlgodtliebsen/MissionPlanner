@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+             xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.MotorOrderView"
+             x:DataType="sections:MotorOrderViewModel">
+    <StackPanel Spacing="12" Margin="12">
+        <TextBlock Text="{Binding StepDisplay}" Classes="H3" />
+        <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" MinHeight="36" />
+        <TextBlock Text="Selections are collected. Nothing is written until you choose Save motor order."
+                   TextWrapping="Wrap" Foreground="DarkOrange" IsVisible="{Binding CollectingOrder}" />
+        <SelectableTextBlock Text="{Binding Review}" FontFamily="monospace" IsVisible="{Binding IsComplete}" />
+        <SelectableTextBlock Text="{Binding Review}" FontFamily="monospace" IsVisible="{Binding NeedsRepair}" />
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding OperationBusy}" Height="4" />
+        <StackPanel Orientation="Horizontal" Spacing="12" IsVisible="{Binding !NeedsRepair}">
+            <TextBlock Text="Burst throttle (%)" VerticalAlignment="Center" />
+            <NumericUpDown Value="{Binding ThrottlePercent}" Minimum="1" Maximum="20" Increment="1"
+                           IsEnabled="{Binding !OperationBusy}" Width="100" AutomationProperties.Name="Motor order burst throttle percent" />
+            <TextBlock Text="1 second on · short pause · repeat" VerticalAlignment="Center" />
+        </StackPanel>
+        <WrapPanel ItemSpacing="10" LineSpacing="10">
+            <Button Classes="EmbeddedTextButton" Command="{Binding StartCommand}" IsVisible="{Binding !NeedsRepair}"
+                    ToolTip.Tip="Start or resume repeated bursts on the current output" AutomationProperties.Name="Resume motor bursts">
+                <StackPanel Orientation="Horizontal" Spacing="8"><mdi:MaterialIcon Kind="Play" Width="20" Height="20" /><TextBlock Text="Start / resume bursts" /></StackPanel>
+            </Button>
+            <Button Classes="EmbeddedTextButton" Command="{Binding StopCommand}"
+                    ToolTip.Tip="Stop the bursts and retain your selections" AutomationProperties.Name="Stop motor bursts">
+                <StackPanel Orientation="Horizontal" Spacing="8"><mdi:MaterialIcon Kind="Stop" Width="20" Height="20" /><TextBlock Text="Stop" /></StackPanel>
+            </Button>
+            <Button Classes="EmbeddedTextButton" Command="{Binding RestartCommand}" IsVisible="{Binding !NeedsRepair}"
+                    ToolTip.Tip="Clear the observations and start identification again" AutomationProperties.Name="Restart motor identification">
+                <StackPanel Orientation="Horizontal" Spacing="8"><mdi:MaterialIcon Kind="Restart" Width="20" Height="20" /><TextBlock Text="Restart" /></StackPanel>
+            </Button>
+            <Button Classes="EmbeddedTextButton" Command="{Binding SaveCommand}" IsVisible="{Binding IsComplete}"
+                    ToolTip.Tip="Write and verify all collected motor assignments" AutomationProperties.Name="Save motor order">
+                <StackPanel Orientation="Horizontal" Spacing="8"><mdi:MaterialIcon Kind="ContentSave" Width="20" Height="20" /><TextBlock Text="Save motor order" /></StackPanel>
+            </Button>
+            <Button Classes="EmbeddedTextButton" Command="{Binding RepairCommand}" IsVisible="{Binding NeedsRepair}"
+                    ToolTip.Tip="Save unique output functions immediately, then reboot before identification" AutomationProperties.Name="Repair motor assignments">
+                <StackPanel Orientation="Horizontal" Spacing="8"><mdi:MaterialIcon Kind="Wrench" Width="20" Height="20" /><TextBlock Text="Repair motor assignments" /></StackPanel>
+            </Button>
+        </WrapPanel>
+    </StackPanel>
+</UserControl>

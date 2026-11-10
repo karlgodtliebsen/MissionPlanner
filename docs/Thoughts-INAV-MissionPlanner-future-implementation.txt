@@ -1,0 +1,54 @@
+**INAV is designed around navigation-assisted RC and FPV flight, with genuine autonomous mission capability.** It has a particularly strong focus on airplanes and flying wings, while also supporting multirotors. Position hold, altitude hold, return-to-home and waypoint missions are established parts of its purpose. ([GitHub][1])
+
+For understanding their scope, I would distinguish the three like this:
+
+| Aspect           | Betaflight                               | INAV                                                            | ArduPilot                                                              |
+| ---------------- | ---------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Main emphasis    | Responsive pilot-controlled flight       | RC/FPV flight with integrated navigation                        | Broad autonomous vehicle operation                                     |
+| Typical use      | Racing, freestyle, manually flown FPV    | FPV aircraft, assisted cruising, return-home and planned routes | Missions, surveys, inspection, research and integrated robotic systems |
+| Navigation       | GPS Rescue; newer altitude/position hold | Navigation is a central feature                                 | Navigation is part of a larger autonomy system                         |
+| Mission planning | Not its main workflow                    | Onboard waypoint missions                                       | Extensive mission commands and vehicle-specific behavior               |
+| Ground software  | Configuration, tuning and logs           | Configuration, mission planning and monitoring                  | Configuration, planning, monitoring and operational control            |
+
+This is a comparison of emphasis. Features overlap, and the boundaries continue to move—for example, Betaflight added altitude and position hold in 2025.12. ([betaflight.com][2])
+
+**INAV already covers a substantial part of what someone normally means by “an autopilot.”** Its mission system includes waypoints, timed holds, return-home, landing, repeat/jump actions and heading or point-of-interest control where applicable to the aircraft type. Its Configurator includes a Mission Control map for creating and uploading these missions. It also supports multiple stored missions. ([GitHub][3])
+
+For example, a pilot can launch an aircraft and engage a mission that visits several locations, holds at one, repeats part of the route and returns home. The onboard controller executes the mission, subject to its configured operating conditions and failsafes.
+
+INAV also has **Geozones** for permitted and excluded areas, and a programming framework with logic conditions and variables. Those capabilities make it useful beyond basic stabilization and emergency return. Availability depends on the firmware build and hardware. ([GitHub][4])
+
+**The difference from ArduPilot becomes clearer when you examine the depth behind each feature.** Two systems can both offer “return home” or “waypoint navigation” while differing in their sensor handling, trajectory generation, failure responses, available commands and external interfaces.
+
+ArduPilot’s EKF3 infrastructure, for example, supports multiple estimator instances, sensor-consistency checks and switching among navigation sources. That infrastructure supports a broad range of operational configurations. INAV’s navigation design is more concentrated around its RC/FPV use cases, with particularly detailed fixed-wing behavior. I would evaluate the actual requirements of an aircraft rather than assume that one firmware’s feature name guarantees equivalence with another’s. ([Copter documentation][5])
+
+There is a **particularly relevant change for MissionPlanner Next Gen**:
+
+* **INAV’s established mission interface is MSP.** Its native tools use MSP to upload, retrieve and validate missions.
+* **INAV 10 release candidates add MAVLink mission upload/download and guided navigation control**, alongside MSP-over-MAVLink tunnelling.
+* As of **28 October 2026**, the official releases page lists **9.1.0 as the latest stable release and 10.0.0-RC2 as a prerelease**. Therefore, support must be associated with the firmware version and build. Older statements that INAV’s MAVLink implementation is only for monitoring are incomplete for the 10.0 series. ([GitHub][6])
+
+Even when both systems speak MAVLink, **protocol compatibility does not imply identical mission semantics**. A ground station still needs to know which commands, coordinate frames, parameters and operations the particular firmware supports. ArduPilot’s mission interface includes both mission transfer and operations such as starting a mission, changing speed and pausing/continuing. INAV support needs to be checked against its own implementation. ([Dev documentation][7])
+
+For your upcoming mission-planning work, I would use that distinction to establish four architectural boundaries:
+
+| Responsibility               | What it should own                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| Mission model and editor     | Locations, altitude references, actions, ordering and the user’s intended behavior |
+| Firmware-specific validation | Supported actions, limits, vehicle restrictions and parameter semantics            |
+| Transfer adapter             | Encoding, upload/download, acknowledgements, retries and verification              |
+| Execution monitoring         | Current mission item, progress, mode changes, completion and interruption          |
+
+You can implement the ArduPilot workflow first while keeping those boundaries explicit. That leaves a practical route to INAV support later.
+
+A useful example is **survey planning**: generating a survey grid is ground-station work. Executing the resulting navigation and camera instructions is onboard work. MissionPlanner Next Gen should validate whether the selected vehicle can perform those instructions before presenting the plan as executable.
+
+INAV also encounters the memory pressures we discussed: official F411 releases ended with INAV 7, and its Geozones feature is omitted on STM32F722 targets because of flash limits. Its navigation focus therefore does not mean that every Betaflight-compatible board can run it. ([GitHub][1])
+
+[1]: https://github.com/iNavFlight/inav?utm_source=chatgpt.com "GitHub - iNavFlight/inav: INAV: Navigation-enabled flight control software"
+[2]: https://betaflight.com/docs/wiki/guides/current/Position-Hold-2025-12?utm_source=chatgpt.com "Position Hold 2025.12"
+[3]: https://github.com/iNavFlight/iNavFlight.github.io/blob/master/docs/08-mission-control/waypoint-missions.mdx?utm_source=chatgpt.com "iNavFlight.github.io/docs/08-mission-control/waypoint-missions.mdx at master · iNavFlight/iNavFlight.github.io"
+[4]: https://github.com/iNavFlight/inav/releases?utm_source=chatgpt.com "Releases · iNavFlight/inav"
+[5]: https://ardupilot.org/copter/docs/common-apm-navigation-extended-kalman-filter-overview.html?utm_source=chatgpt.com "Extended Kalman Filter (EKF)"
+[6]: https://github.com/iNavFlight/inav/wiki/INAV-Missions?utm_source=chatgpt.com "INAV Missions · iNavFlight/inav Wiki"
+[7]: https://ardupilot.org/dev/docs/mavlink-mission-upload-download.html?utm_source=chatgpt.com "Mission Upload / Download"
