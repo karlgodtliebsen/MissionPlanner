@@ -240,6 +240,17 @@ public sealed class VirtualizedItemsGrid : TemplatedControl
         set => SetValue(ShowSearchBarProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="SearchBarContent"/> styled property.</summary>
+    public static readonly StyledProperty<object?> SearchBarContentProperty =
+        AvaloniaProperty.Register<VirtualizedItemsGrid, object?>(nameof(SearchBarContent));
+
+    /// <summary>Gets or sets optional controls displayed beside the search box.</summary>
+    public object? SearchBarContent
+    {
+        get => GetValue(SearchBarContentProperty);
+        set => SetValue(SearchBarContentProperty, value);
+    }
+
     /// <summary>Identifies the <see cref="SearchText"/> styled property.</summary>
     public static readonly StyledProperty<string?> SearchTextProperty =
         AvaloniaProperty.Register<VirtualizedItemsGrid, string?>(nameof(SearchText));

@@ -23,6 +23,8 @@ public partial class ParametersEditorTabViewModel
     public IReadOnlyList<string> ParameterLevels { get; } = ["All", "Standard", "Advanced", "Unknown"];
     /// <summary>Gets or sets the metadata user-level filter.</summary>
     [ObservableProperty] public partial string ParameterLevel { get; set; } = "All";
+    /// <summary>Gets or sets whether only unapplied parameter changes are shown.</summary>
+    [ObservableProperty] public partial bool ShowPendingOnly { get; set; }
     /// <summary>Gets or sets a name for saving the entered live subset.</summary>
     [ObservableProperty] public partial string CollectionName { get; set; } = "Favorites";
     /// <summary>Gets or sets comma, space or newline separated parameter names.</summary>
@@ -44,6 +46,7 @@ public partial class ParametersEditorTabViewModel
     }
     partial void OnSelectedParameterGroupChanged(string value) => RefreshParameterCollections();
     partial void OnParameterLevelChanged(string value) => RefreshParameterCollections();
+    partial void OnShowPendingOnlyChanged(bool value) => RefreshParameterCollections();
 
     private void RefreshParameterCollections()
     {
@@ -72,6 +75,10 @@ public partial class ParametersEditorTabViewModel
         {
             rows = rows.Where(parameter => ParameterLevel == "Unknown" ? string.IsNullOrWhiteSpace(parameter.UserLevel)
                 : string.Equals(parameter.UserLevel, ParameterLevel, StringComparison.OrdinalIgnoreCase));
+        }
+        if (ShowPendingOnly)
+        {
+            rows = rows.Where(parameter => parameter.IsModified);
         }
         var result = rows.ToArray();
         if (!CollectionParameters.SequenceEqual(result))

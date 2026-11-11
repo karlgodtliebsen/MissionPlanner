@@ -35,6 +35,8 @@
                                 <avalonia:MaterialIcon Kind="ClearCircleOutline" Classes="ActionIcon" />
                             </Button>
                             <StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="5"  HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                <ContentPresenter Content="{TemplateBinding SearchBarContent}"
+                                                  VerticalAlignment="Center" />
                                 <Label  HorizontalAlignment="Stretch"
                                         HorizontalContentAlignment="Center"
                                         Content="{Binding FilteredItemCount,StringFormat=Matching: {0},RelativeSource={RelativeSource TemplatedParent}}" ></Label>

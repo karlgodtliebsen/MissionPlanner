@@ -48,6 +48,13 @@
         ShowPagination="False"
         >
 
+        <controls:VirtualizedItemsGrid.SearchBarContent>
+            <CheckBox Content="Pending only"
+                      IsChecked="{Binding ShowPendingOnly, Mode=TwoWay}"
+                      ToolTip.Tip="Show only parameter values that differ from the vehicle and have not been applied"
+                      AutomationProperties.Name="Show pending parameter changes only" />
+        </controls:VirtualizedItemsGrid.SearchBarContent>
+
         <!-- ================================================= -->
         <!-- Empty view               -->
         <!-- ================================================= -->
@@ -67,7 +74,7 @@
                     HorizontalAlignment="Center"
                     HorizontalContentAlignment="Center" />
                 <Label
-                    Content="Refresh parameters or clear the search text to display parameters."
+                    Content="Refresh parameters or clear the search and filters to display parameters."
                     Classes="H3"
                     Opacity="0.75"
                     HorizontalAlignment="Center"

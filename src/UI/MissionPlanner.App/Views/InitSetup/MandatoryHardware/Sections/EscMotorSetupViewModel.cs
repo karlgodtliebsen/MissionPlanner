@@ -1,5 +1,4 @@
 using MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
-using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -14,15 +13,14 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
-/// <summary>Projects ESC calibration guidance and bounded, safety-gated motor testing into Setup controls.</summary>
+/// <summary>Projects ESC calibration guidance and preparation into Setup controls.</summary>
 public sealed partial class EscMotorSetupViewModel : ParameterHardwareViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IActuatorTestService actuatorService;
     private readonly IUserConfirmationService confirmation;
-    private readonly INavigationService navigation;
 
-    /// <summary>Initializes the ESC and motor-test Setup workflow.</summary>
+    /// <summary>Initializes the ESC calibration Setup workflow.</summary>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="actuatorService">The actuator-test service.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
@@ -41,9 +39,6 @@ public sealed partial class EscMotorSetupViewModel : ParameterHardwareViewModel
         this.activeVehicle = activeVehicle;
         this.actuatorService = actuatorService;
         this.confirmation = confirmation;
-        this.navigation = navigation;
-        MaximumDuration = actuatorService.MaximumDurationSeconds;
-        MaximumThrottle = actuatorService.MaximumThrottlePercent;
     }
 
     /// <summary>Gets the audit log of actuator operations.</summary>
@@ -51,14 +46,6 @@ public sealed partial class EscMotorSetupViewModel : ParameterHardwareViewModel
     {
         get;
     } = [];
-
-    /// <summary>Gets whether the connected vehicle family supports motor testing.</summary>
-    [ObservableProperty]
-    public partial bool SupportsMotorTest
-    {
-        get;
-        private set;
-    }
 
     /// <summary>Gets the ESC calibration explanation.</summary>
     [ObservableProperty]
@@ -86,60 +73,8 @@ public sealed partial class EscMotorSetupViewModel : ParameterHardwareViewModel
         get; private set;
     }
 
-    /// <summary>Gets the current actuator-test instruction.</summary>
-    [ObservableProperty]
-    public partial string Instruction
-    {
-        get;
-        private set;
-    } = string.Empty;
-
-    /// <summary>Gets or sets the motor index to test.</summary>
-    [ObservableProperty]
-    public partial int MotorIndex
-    {
-        get;
-        set;
-    } = 1;
-
-    /// <summary>Gets or sets the throttle percentage to apply.</summary>
-    [ObservableProperty]
-    public partial double ThrottlePercent
-    {
-        get;
-        set;
-    } = 10;
-
-    /// <summary>Gets or sets the bounded test duration in seconds.</summary>
-    [ObservableProperty]
-    public partial double DurationSeconds
-    {
-        get;
-        set;
-    } = 2;
-
-    /// <summary>Gets the maximum permitted duration.</summary>
-    public double MaximumDuration
-    {
-        get;
-    }
-
-    /// <summary>Gets the maximum permitted throttle percentage.</summary>
-    public double MaximumThrottle
-    {
-        get;
-    }
-
     /// <summary>Gets whether an actuator test is running.</summary>
     public bool IsRunning => TestState == MotorTestState.Running;
-
-    /// <inheritdoc />
-    public void Cancel()
-    {
-        actuatorService.EmergencyStopAsync().SafeFireAndForget();
-    }
-
-
 
     /// <inheritdoc />
     public override Task ActivateAsync()
@@ -171,41 +106,6 @@ public sealed partial class EscMotorSetupViewModel : ParameterHardwareViewModel
         base.Dispose();
     }
 
-    private bool CanTest()
-    {
-        return SupportsMotorTest && activeVehicle.IsOnline && TestState != MotorTestState.Running;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanTest))]
-    private async Task TestMotorAsync()
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            return;
-        }
-
-        if (!await ConfirmSafetyAsync())
-        {
-            return;
-        }
-
-        try
-        {
-            var result = await actuatorService.TestMotorAsync(vehicleId,
-                new MotorTestRequest(MotorIndex, MotorThrottleType.Percent, ThrottlePercent, DurationSeconds),
-                activeVehicle.ConnectionCancellationToken);
-            if (!result.Success)
-            {
-                SetMessages(null, result.Message);
-            }
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            Logger.LogError(exception, "Motor test failed for {VehicleId}.", vehicleId);
-            SetMessages(exception);
-        }
-    }
-
     [RelayCommand]
     private async Task RefreshSetupAsync()
     {
@@ -214,69 +114,18 @@ public sealed partial class EscMotorSetupViewModel : ParameterHardwareViewModel
         await base.RefreshCommand.ExecuteAsync(null);
     }
 
-    [RelayCommand(CanExecute = nameof(CanTest))]
-    private async Task TestSequenceAsync()
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId)
-        {
-            return;
-        }
-
-        if (!await ConfirmSafetyAsync())
-        {
-            return;
-        }
-
-        try
-        {
-            var result = await actuatorService.TestSequenceAsync(vehicleId, ThrottlePercent, DurationSeconds, MotorIndex, activeVehicle.ConnectionCancellationToken);
-            if (!result.Success)
-            {
-                SetMessages(null, result.Message);
-            }
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            Logger.LogError(exception, "Sequence test failed for {VehicleId}.", vehicleId);
-            SetMessages(exception);
-        }
-    }
-
-    private bool CanStop()
-    {
-        return TestState == MotorTestState.Running;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanStop))]
-    private Task StopAsync()
-    {
-        return actuatorService.EmergencyStopAsync();
-    }
-
-    private async Task<bool> ConfirmSafetyAsync()
-    {
-        return await confirmation.ConfirmAsync(
-            "Confirm actuator test safety",
-            "Confirm that ALL propellers are removed and the area is clear. Motors will spin.",
-            "Propellers removed – test");
-    }
-
     private void Load()
     {
         SetBusy();
         EscSteps.Clear();
         EscCalibrationApplicable = false;
         EscExplanation = "Connect a vehicle to inspect ESC calibration guidance.";
-        if (activeVehicle.State is not { } state)
+        if (activeVehicle.State is null)
         {
-            SupportsMotorTest = false;
-            TestMotorCommand.NotifyCanExecuteChanged();
-            TestSequenceCommand.NotifyCanExecuteChanged();
             ResetBusy();
             return;
         }
 
-        SupportsMotorTest = actuatorService.SupportsMotorTest(state.Identity.Firmware.Family);
         if (activeVehicle.VehicleId is { } vehicleId)
         {
             var guidance = actuatorService.GetEscCalibrationGuidance(vehicleId);
@@ -285,8 +134,6 @@ public sealed partial class EscMotorSetupViewModel : ParameterHardwareViewModel
             EscSteps.AddRange(guidance.Steps);
         }
 
-        TestMotorCommand.NotifyCanExecuteChanged();
-        TestSequenceCommand.NotifyCanExecuteChanged();
         ResetBusy();
 
     }
@@ -309,15 +156,11 @@ public sealed partial class EscMotorSetupViewModel : ParameterHardwareViewModel
         SetBusy();
 
         TestState = snapshot.State;
-        Instruction = snapshot.Instruction;
         SetMessages(null, snapshot.FailureReason);
         Log.Clear();
         Log.AddRange(snapshot.Log.AsEnumerable().Reverse().Select(entry => $"{entry.Timestamp:HH:mm:ss} — {entry.Description}: {entry.Outcome}"));
 
         OnPropertyChanged(nameof(IsRunning));
-        TestMotorCommand.NotifyCanExecuteChanged();
-        TestSequenceCommand.NotifyCanExecuteChanged();
-        StopCommand.NotifyCanExecuteChanged();
         ResetBusy();
 
     }
