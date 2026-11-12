@@ -7,33 +7,57 @@
                               xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
                               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                               xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
+                              xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.App.Views.FlightData.FlightDataPage" 
                               x:DataType="flightData:FlightDataViewModel">
     <ContentPage Header="Flight Data">
-        <Grid ColumnDefinitions="400,5,*">
-            <Grid Grid.Column="0" RowDefinitions="350,5,Auto,*" RowSpacing="2">
-                <hud:HudView Grid.Row="0" />
-                <GridSplitter Grid.Row="1" Height="5" ResizeDirection="Rows" />
-                <Button Grid.Row="2" 
-                        Classes="ToolbarTextButton"
-                        Content="{Binding Diagnostics.ActiveReadinessSummary,FallbackValue='',TargetNullValue=''}"
-                        Command="{Binding Diagnostics.OpenActiveReadinessCommand,FallbackValue='',TargetNullValue=''}" 
-                        HorizontalAlignment="Stretch">
-<!--                    <TextBlock Text="{Binding Diagnostics.ActiveReadinessSummary,FallbackValue='',TargetNullValue=''}" TextWrapping="Wrap" />
--->                </Button>
-                <TabControl x:Name="TabView" Grid.Row="3" Margin="5" >
-                    <TabItem Header="Quick"><tabs:QuickTabItemView /></TabItem>
-                    <TabItem Header="Actions"><tabs:ActionsTabItemView /></TabItem>
-                    <TabItem Header="Gauges"><tabs:GaugesTabItemView /></TabItem>
-                    <TabItem Header="Transponder"><tabs:TransponderTabItemView /></TabItem>
-                    <TabItem Header="Servo/Relay"><tabs:ServoRelayTabItemView /></TabItem>
-                    <TabItem Header="Aux Function"><tabs:AuxFunctionTabItemView /></TabItem>
-                    <TabItem Header="Scripts"><tabs:ScriptsTabItemView /></TabItem>
-                    <TabItem Header="Payload Control"><tabs:PayloadControlTabItemView /></TabItem>
-                </TabControl>
+        <Grid x:Name="FlightLayout" ColumnDefinitions="400,5,*">
+            <Grid x:Name="LeftPanels" Grid.Column="0" RowDefinitions="400,5,*" RowSpacing="2">
+                <ContentControl x:Name="HudHost" Grid.Row="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <Grid RowDefinitions="Auto,*,Auto">
+                        <Grid ColumnDefinitions="*,Auto" Margin="6,2">
+                            <TextBlock Text="HUD" VerticalAlignment="Center" FontWeight="SemiBold" />
+                            <Button x:Name="PopOutHudButton" Grid.Column="1" Click="PopOutHud"
+                                    IsVisible="False" Width="32" Height="32" Padding="4"
+                                    Theme="{DynamicResource BorderlessIconButton}"
+                                    ToolTip.Tip="Open HUD in a separate window" AutomationProperties.Name="Pop out HUD">
+                                <mdi:MaterialIcon Kind="OpenInNew" Width="24" Height="24" />
+                            </Button>
+                        </Grid>
+                        <hud:HudView Grid.Row="1" />
+                        <Button Grid.Row="2" Classes="ToolbarTextButton"
+                                Content="{Binding Diagnostics.ActiveReadinessSummary,FallbackValue='',TargetNullValue=''}"
+                                Command="{Binding Diagnostics.OpenActiveReadinessCommand,FallbackValue='',TargetNullValue=''}"
+                                HorizontalAlignment="Stretch" />
+                    </Grid>
+                </ContentControl>
+                <GridSplitter x:Name="PanelSplitter" Grid.Row="1" Height="5" ResizeDirection="Rows" />
+                <ContentControl x:Name="TabsHost" Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid ColumnDefinitions="*,Auto" Margin="6,2">
+                            <TextBlock Text="Flight Data tabs" VerticalAlignment="Center" FontWeight="SemiBold" />
+                            <Button x:Name="PopOutTabsButton" Grid.Column="1" Click="PopOutTabs"
+                                    IsVisible="False" Width="32" Height="32" Padding="4"
+                                    Theme="{DynamicResource BorderlessIconButton}"
+                                    ToolTip.Tip="Open Flight Data tabs in a separate window" AutomationProperties.Name="Pop out Flight Data tabs">
+                                <mdi:MaterialIcon Kind="OpenInNew" Width="24" Height="24" />
+                            </Button>
+                        </Grid>
+                        <TabControl x:Name="TabView" Grid.Row="1" Margin="5">
+                            <TabItem Header="Quick"><tabs:QuickTabItemView /></TabItem>
+                            <TabItem Header="Actions"><tabs:ActionsTabItemView /></TabItem>
+                            <TabItem Header="Gauges"><tabs:GaugesTabItemView /></TabItem>
+                            <TabItem Header="Transponder"><tabs:TransponderTabItemView /></TabItem>
+                            <TabItem Header="Servo/Relay"><tabs:ServoRelayTabItemView /></TabItem>
+                            <TabItem Header="Aux Function"><tabs:AuxFunctionTabItemView /></TabItem>
+                            <TabItem Header="Scripts"><tabs:ScriptsTabItemView /></TabItem>
+                            <TabItem Header="Payload Control"><tabs:PayloadControlTabItemView /></TabItem>
+                        </TabControl>
+                    </Grid>
+                </ContentControl>
             </Grid>
-            <GridSplitter Grid.Column="1" Width="5" ResizeDirection="Columns" />
+            <GridSplitter x:Name="SidebarSplitter" Grid.Column="1" Width="5" ResizeDirection="Columns" />
             <flightData:FlightDataMissionMapView x:Name="MapView" Grid.Column="2" />
             <ProgressBar x:Name="MapLoadingIndicator" Grid.Column="2" Width="160" Theme="{DynamicResource ProgressRing}" 
                          IsIndeterminate="True" HorizontalAlignment="Center" VerticalAlignment="Center" />

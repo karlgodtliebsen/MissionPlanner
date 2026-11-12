@@ -1,7 +1,3 @@
-using AsyncAwaitBestPractices;
-using Avalonia.Interactivity;
-using MissionPlanner.App.Utilities.Dialogs;
-
 namespace MissionPlanner.App.Utilities;
 
 /// <summary>
@@ -11,30 +7,8 @@ namespace MissionPlanner.App.Utilities;
 public class TabItemViewBase<TViewModel> : UserControlViewBase<TViewModel> where TViewModel : ViewModelBase
 {
 
-    /// <inheritdoc />
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        if (Avalonia.Controls.Design.IsDesignMode)
-        {
-            return;
-        }
-        NotificationHelper.SetupManagers(this, ViewModel);
-        ViewModel.ActivateAsync().SafeFireAndForget();
-    }
-
-
-    /// <inheritdoc />
-    protected override void OnUnloaded(RoutedEventArgs e)
-    {
-        if (Avalonia.Controls.Design.IsDesignMode)
-        {
-            base.OnUnloaded(e);
-            return;
-        }
-        ViewModel.DeactivateAsync().SafeFireAndForget();
-        base.OnUnloaded(e);
-    }
+    // UserControlViewBase owns activation and deactivation. Calling them here too
+    // duplicates telemetry subscriptions every time a tab moves between windows.
 }
 /// <summary>
 /// A base class for tab item views that are associated with a specific view model.

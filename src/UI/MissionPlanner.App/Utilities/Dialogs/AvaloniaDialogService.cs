@@ -155,6 +155,10 @@ public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvi
         return await dispatcher.DispatchAsync(async () =>
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (overLayHost is null)
+            {
+                options.TopLevelHashCode ??= windowProvider.ActiveWindow?.GetHashCode();
+            }
             var result = await ShowCustomDialogAsync<ConfirmDialogView, ConfirmDialogViewModel>(new ConfirmDialogViewModel(message), options, overLayHost, cancellationToken);
             return result.Confirmation;
         });
