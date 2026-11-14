@@ -154,15 +154,17 @@ internal static class HudPainter
 
     private static void DrawReadouts(SKCanvas canvas, float width, float height, HudSnapshot hud)
     {
-        using var font = new SKFont(SKTypeface.Default, 14);
+        using var font = new SKFont(SKTypeface.Default, width < 280 ? 11 : 14);
         using var text = Fill(SKColors.White);
         using var background = Fill(new SKColor(0, 0, 0, 150));
-        DrawBox(canvas, 4, height / 2f - 38, 96, $"ASPD {hud.AirSpeed:0.0}", $"GSPD {hud.GroundSpeed:0.0}", font, text, background);
-        DrawBox(canvas, width - 100, height / 2f - 38, 96, $"ALT {hud.Altitude:0.0}", $"VSI {hud.VerticalSpeed:0.0}", font, text, background);
-        canvas.DrawRect(new SKRect(4, height - 25, 154, height - 4), background);
+        var boxWidth = Math.Min(96, (width - 16) / 2);
+        DrawBox(canvas, 4, height / 2f - 38, boxWidth, $"ASPD {hud.AirSpeed:0.0}", $"GSPD {hud.GroundSpeed:0.0}", font, text, background);
+        DrawBox(canvas, width - boxWidth - 4, height / 2f - 38, boxWidth, $"ALT {hud.Altitude:0.0}", $"VSI {hud.VerticalSpeed:0.0}", font, text, background);
+        var gpsWidth = width < 280 ? 56 : 80;
+        canvas.DrawRect(new SKRect(4, height - 25, Math.Min(154, width - gpsWidth - 8), height - 4), background);
         canvas.DrawText($"BATT {hud.BatteryVoltage:0.0}V {hud.BatteryRemaining:0}%", 8, height - 9, SKTextAlign.Left, font, text);
-        canvas.DrawRect(new SKRect(width - 84, height - 25, width - 4, height - 4), background);
-        canvas.DrawText($"GPS {hud.GpsSatellites}", width - 80, height - 9, SKTextAlign.Left, font, text);
+        canvas.DrawRect(new SKRect(width - gpsWidth - 4, height - 25, width - 4, height - 4), background);
+        canvas.DrawText($"GPS {hud.GpsSatellites}", width - gpsWidth, height - 9, SKTextAlign.Left, font, text);
     }
 
     private static void DrawBox(SKCanvas canvas, float x, float y, float width, string first, string second, SKFont font, SKPaint text, SKPaint background)

@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+             xmlns:models="clr-namespace:MissionPlanner.App.Models"
              xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              xmlns:u="https://irihi.tech/ursa"
              x:Class="MissionPlanner.App.Views.Preferences.Sections.TelemetryDisplayTabView"
@@ -25,6 +26,16 @@
                     <StackPanel Grid.Row="1" Orientation="Vertical" Spacing="8" Grid.ColumnSpan="2" 
                                 VerticalAlignment="Center" HorizontalAlignment="Stretch">
                         <u:Form LabelPosition="Left" LabelWidth="220" MinWidth="400" HorizontalAlignment="Center">
+                            <ComboBox x:Name="DefaultAttitudeDisplaySelector" HorizontalAlignment="Right" MinWidth="150"
+                                      ItemsSource="{Binding AttitudeDisplayChoices}" SelectedItem="{Binding SelectedAttitudeDisplay, Mode=TwoWay}"
+                                      u:FormItem.Label="Default attitude display" AutomationProperties.Name="Default attitude display"
+                                      ToolTip.Tip="Choose HUD, 3D frame or Both for Flight Data. Save Preferences to apply this default.">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="models:HudDisplayChoice">
+                                        <TextBlock Text="{Binding Label}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                             <NumericUpDown  HorizontalAlignment="Right" HorizontalContentAlignment="Right" Value="{Binding TelemetryDisplayRateHz, Mode=TwoWay}" FormatString="F0" u:FormItem.Label="Maximum display rate (Hz)" />
                             <NumericUpDown  HorizontalAlignment="Right" HorizontalContentAlignment="Right" Value="{Binding ChartHistorySeconds, Mode=TwoWay}" FormatString="F0" u:FormItem.Label="Chart history (seconds)" />
                         </u:Form>

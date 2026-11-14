@@ -2,6 +2,7 @@ using MissionPlanner.App.Models;
 using MissionPlanner.App.Views.FlightData.Hud;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.MavLink.Parameters;
@@ -32,11 +33,13 @@ public sealed class DiagnosticConfigurationTests
         active.State.Returns(state);
         using var stream = new Subject<VehicleHudData>();
         var data = Substitute.For<IVehicleHudDataService>();
-        data.ObservePrimaryVehicleHudData().Returns(stream);
+        data.ObserveHudData(id).Returns(stream);
         var dispatcher = Substitute.For<IUiDispatcher>();
         dispatcher.When(d => d.Dispatch(Arg.Any<Action>())).Do(call => call.Arg<Action>()!());
+        var settings = Substitute.For<IPlannerSettingsService>();
+        settings.Current.Returns(new PlannerSettings());
         using var model = new HudViewModel(data, dispatcher, active, TimeProvider.System,
-            NullLogger<HudViewModel>.Instance, Substitute.For<IDomainEventHub>());
+            NullLogger<HudViewModel>.Instance, Substitute.For<IDomainEventHub>(), settings);
         stream.OnNext(VehicleHudData.CreateDefault(id) with { Roll = 25, Pitch = -17, Heading = 90, Yaw = 90 });
         model.RefreshHeadingReference();
         Assert.True(model.CanResetModelHeading);
@@ -56,7 +59,7 @@ public sealed class DiagnosticConfigurationTests
         model.ResetModelHeadingCommand.Execute(null);
         active.VehicleId.Returns(new VehicleId(2, 1));
         model.RefreshHeadingReference();
-        Assert.Equal(90, model.ModelHeading, 6);
+        Assert.Equal(0, model.ModelHeading, 6);
         Assert.Contains("Unadjusted", model.HeadingReferenceStatus);
         active.State.Returns(state with { Motion = state.Motion with { AttitudeObservedAt = now.AddSeconds(-5) } });
         model.RefreshHeadingReference();

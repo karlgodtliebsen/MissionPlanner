@@ -339,6 +339,13 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         set;
     } = string.Empty;
 
+    /// <summary>Gets the available Flight Data attitude presentations.</summary>
+    public IReadOnlyList<HudDisplayChoice> AttitudeDisplayChoices => HudDisplayChoice.All;
+
+    /// <summary>Gets or sets the default Flight Data attitude presentation.</summary>
+    [ObservableProperty]
+    public partial HudDisplayChoice SelectedAttitudeDisplay { get; set; } = HudDisplayChoice.Resolve(AttitudeDisplayMode.Both);
+
     /// <summary>Gets the telemetry display rate in hertz.</summary>
     [ObservableProperty]
     public partial int TelemetryDisplayRateHz
@@ -1206,6 +1213,7 @@ public sealed partial class PreferencesViewModel : ViewModelBase
             MapHttpCacheLimitMiB = checked((int)(settings.Map.HttpCacheLimitBytes / 1_048_576));
             TelemetryDisplayRateHz = settings.Telemetry.DisplayRateHz;
             ChartHistorySeconds = settings.Telemetry.ChartHistorySeconds;
+            SelectedAttitudeDisplay = HudDisplayChoice.Resolve(settings.Telemetry.DefaultAttitudeDisplay);
             SelectedLoggingLevel = settings.Logging.Level;
             LogRetentionDays = settings.Logging.RetentionDays;
             LogDirectory = settings.Logging.LogDirectory;
@@ -1272,7 +1280,12 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         {
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings { DefaultZoom = DefaultMapZoom, SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard", HttpCacheEnabled = MapHttpCacheEnabled, HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L },
-            Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
+            Telemetry = new PlannerTelemetrySettings
+            {
+                DisplayRateHz = TelemetryDisplayRateHz,
+                ChartHistorySeconds = ChartHistorySeconds,
+                DefaultAttitudeDisplay = SelectedAttitudeDisplay.Mode
+            },
             Appearance = settingsService.Current.Appearance with
             {
                 ThemeId = SelectedTheme?.Id ?? PlannerAppearanceSettings.DefaultThemeId,

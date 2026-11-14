@@ -1,6 +1,6 @@
 namespace MissionPlanner.App.Views.FlightData.Hud;
 
-/// <summary>Display-only yaw reference for a top-view arrow; horizon roll/pitch are not transformed.</summary>
+/// <summary>Display-only yaw reference for the 3D frame; horizon roll/pitch are not transformed.</summary>
 public sealed class HudHeadingReference
 {
     /// <summary>Captured yaw, or null for unadjusted heading.</summary>

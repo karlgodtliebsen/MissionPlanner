@@ -4,26 +4,57 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.App.Utilities"
     xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
+    xmlns:models="clr-namespace:MissionPlanner.App.Models"
+    xmlns:mdi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     x:Class="MissionPlanner.App.Views.FlightData.Hud.HudView"
     x:DataType="hud:HudViewModel">
-    <Grid RowDefinitions="*,Auto">
-        <hud:HudCanvas x:Name="Canvas" />
-        <Border Grid.Row="1"  Padding="2" VerticalAlignment="Stretch">
+    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="3">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="4,2">
+            <TextBlock Text="Attitude" VerticalAlignment="Center" />
+            <ComboBox x:Name="DisplaySelector" Grid.Column="1" HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding DisplayChoices}" SelectedItem="{Binding SelectedDisplay}"
+                      AutomationProperties.Name="Attitude display"
+                      ToolTip.Tip="Show the cockpit HUD, an illustrative 3D frame, or both">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate x:DataType="models:HudDisplayChoice">
+                        <TextBlock Text="{Binding Label}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+        <Grid x:Name="AttitudeViews" Grid.Row="1" RowDefinitions="*,*" RowSpacing="3" ColumnSpacing="3"
+              SizeChanged="OnAttitudeSizeChanged" ClipToBounds="True">
+            <hud:HudCanvas x:Name="Canvas" IsVisible="{Binding ShowHud}" />
+            <hud:VehicleFrameCanvas x:Name="FrameCanvas" Grid.Row="1" IsVisible="{Binding ShowFrame}"
+                                    Attitude="{Binding FrameAttitude}"
+                                    AutomationProperties.Name="Vehicle attitude frame"
+                                    ToolTip.Tip="Illustrative quadcopter: green front propellers and a gold nose arrow. Follows roll, pitch and yaw; does not show the configured motor layout or motor activity." />
+        </Grid>
+        <Border Grid.Row="2" Padding="2" VerticalAlignment="Stretch">
             <StackPanel Spacing="3" VerticalAlignment="Center">
-                <WrapPanel ItemSpacing="6">
-                    <TextBlock Text="↑" FontSize="26" ToolTip.Tip="Top-view heading reference; up is nose-away at the captured heading" RenderTransformOrigin="50%,50%">
-                        <TextBlock.RenderTransform>
-                            <RotateTransform Angle="{Binding ModelHeading}" />
-                        </TextBlock.RenderTransform>
-                    </TextBlock>
-                    <Button Content="Reset model heading" 
+                <WrapPanel ItemSpacing="6" IsVisible="{Binding ShowFrame}">
+                    <Button
                             Classes="ToolbarTextButton"
-                            Command="{Binding ResetModelHeadingCommand}" />
-                    <Button Content="Restore heading"
+                            Command="{Binding ResetModelHeadingCommand}"
+                            ToolTip.Tip="Make the model point away at the current heading. Does not change telemetry, roll, pitch or the HUD compass."
+                            AutomationProperties.Name="Reset model heading">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <mdi:MaterialIcon Kind="AxisZRotateClockwise" Width="18" Height="18" />
+                            <TextBlock Text="Reset model heading" />
+                        </StackPanel>
+                    </Button>
+                    <Button
                             Classes="ToolbarTextButton"
-                            Command="{Binding RestoreModelHeadingCommand}" />
+                            Command="{Binding RestoreModelHeadingCommand}"
+                            ToolTip.Tip="Restore the model's unadjusted heading, with north pointing away"
+                            AutomationProperties.Name="Restore model heading">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <mdi:MaterialIcon Kind="Restore" Width="18" Height="18" />
+                            <TextBlock Text="Restore heading" />
+                        </StackPanel>
+                    </Button>
                 </WrapPanel>
-                <TextBlock Text="{Binding HeadingReferenceStatus}" TextWrapping="Wrap" FontSize="11" />
+                <TextBlock Text="{Binding HeadingReferenceStatus}" IsVisible="{Binding ShowFrame}" TextWrapping="Wrap" FontSize="11" />
                 <TextBlock Text="{Binding ArmingLabel}" Classes="H5" TextWrapping="Wrap" 
                            IsVisible="{Binding ArmingLabel, Converter={StaticResource StringNotNullEmptyConverter}}"/>
                 <TextBlock Text="{Binding PreArmReason}" Classes="Warning H5" TextWrapping="Wrap" 

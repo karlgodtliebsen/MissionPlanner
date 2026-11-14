@@ -171,6 +171,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         ValidateRange(settings.Map.HttpCacheLimitBytes, 16L * 1_048_576, 8L * 1024 * 1_048_576, PlannerSettingsSection.Map, nameof(settings.Map.HttpCacheLimitBytes), errors);
         ValidateRange(settings.Telemetry.DisplayRateHz, 1, 30, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.DisplayRateHz), errors);
         ValidateRange(settings.Telemetry.ChartHistorySeconds, 10, 3600, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.ChartHistorySeconds), errors);
+        ValidateEnum(settings.Telemetry.DefaultAttitudeDisplay, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.DefaultAttitudeDisplay), errors);
         ValidateThemeId(settings.Appearance.ThemeId, errors);
         var colorOverrides = settings.Appearance.ColorOverrides;
         if (colorOverrides is null || colorOverrides.Count > 64 || colorOverrides.Any(theme =>
