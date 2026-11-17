@@ -1,4 +1,4 @@
-name: .NET 11 Build
+name: .NET 11 Build and Test
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Windows Release
+    name: Build and Test Windows Release
     runs-on: windows-latest
     timeout-minutes: 30
 
