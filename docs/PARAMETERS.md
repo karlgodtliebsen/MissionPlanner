@@ -226,6 +226,10 @@ increment metadata used by the raw editor. When numeric metadata provides both r
 but no increment, the increment/decrement controls use the rounded range divided by ten.
 Numeric stepping uses decimal arithmetic to avoid accumulated binary floating-point drift;
 an overshooting step lands on the advertised minimum or maximum instead of being ignored.
+Editor values and metadata bounds/steps convert through invariant 15-significant-digit text
+before decimal arithmetic. This preserves the previous editor precision after .NET 11 changed
+floating-point-to-decimal casts to retain binary approximation digits. Step-based display formatting
+parses the normalized REAL32 increment directly as decimal so `0.01` still means two decimal places.
 
 ### Parameter editor tabs and shared toolbar
 

@@ -154,7 +154,20 @@ public static class FirmwareConfigurator
                 client.Timeout = configured.HttpRequestTimeout;
                 client.DefaultRequestHeaders.UserAgent.ParseAdd(configured.HttpUserAgent);
             })
-            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate, ConnectTimeout = TimeSpan.FromSeconds(15) });
+            .ConfigurePrimaryHttpMessageHandler(() =>
+            {
+                // Browser requests use Fetch, which owns decompression and connection handling.
+                if (OperatingSystem.IsBrowser())
+                {
+                    return new HttpClientHandler();
+                }
+
+                return new SocketsHttpHandler
+                {
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    ConnectTimeout = TimeSpan.FromSeconds(15)
+                };
+            });
         services.TryAddSingleton<IFirmwareManifestClient>(serviceProvider => new HttpFirmwareManifestClient(
             serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(FirmwareHttpClient.Name),
             serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>()));

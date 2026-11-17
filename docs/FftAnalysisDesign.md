@@ -46,7 +46,7 @@ No general-purpose charting package is referenced by `MissionPlanner.App.csproj`
 
 ## Implemented domain and numerical contract
 
-`src/Core/MissionPlanner.Analysis` is a standalone .NET 10 project in the solution.
+`src/Core/MissionPlanner.Analysis` is a standalone .NET 11 project in the solution.
 The task set explicitly requested this independent boundary. It uses
 `System.Numerics.Complex` with a small radix-two FFT, avoiding a new package and
 avoiding coupling the generic domain to the older Core setup service.

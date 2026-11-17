@@ -8,7 +8,7 @@ initialization is asynchronous, and browser logging writes to the console.
 
 ## Run
 
-With the .NET 10 SDK installed, from the repository root:
+With the .NET 11 SDK installed, from the repository root:
 
 ```powershell
 dotnet workload install wasm-tools
@@ -58,6 +58,18 @@ Native WebAssembly linking is required by Avalonia/Skia and SQLite. A managed
 build with `WasmBuildNative=false` checks C# and XAML only; it does not produce a
 validated runnable application. Trimming is disabled while shared application
 services depend on reflection-based discovery and configuration binding.
+
+.NET 11 uses Emscripten 6. The browser head explicitly references SkiaSharp 4.156.1
+and HarfBuzzSharp 14.4.0.101 WebAssembly assets because Avalonia 12.1's transitive
+graphics packages contain incompatible Emscripten 3 archives. Its build target
+removes the legacy archives that Avalonia adds alongside the new ones. These
+overrides apply only to the browser dependency graph.
+
+LiveMarkdown's Onigwrap dependency also selects an archive by the exact Emscripten
+version, but currently only packages versions through 3.1.56. The browser target
+uses that packaged archive when the SDK-matched file is absent; it automatically
+prefers the matched file when available. Recheck both workarounds when updating
+Avalonia or Onigwrap. Do not override `EmscriptenVersion` or disable native linking.
 
 ## Home-network HTTPS
 
@@ -135,7 +147,7 @@ For an alternate local port, start the native host directly with `--UdpPort N`
 and select that same port in the app:
 
 ```powershell
-dotnet run --project ..\MissionPlanner.BrowserBridge -- --BrowserAssets "$PWD\bin\Debug\net10.0-browser\MissionPlanner.Browser.staticwebassets.runtime.json" --UdpPort 14551
+dotnet run --project ..\MissionPlanner.BrowserBridge -- --BrowserAssets "$PWD\bin\Debug\net11.0-browser\MissionPlanner.Browser.staticwebassets.runtime.json" --UdpPort 14551
 ```
 
 The standalone bridge does not include the WebAssembly C# debugger proxy. Use the
@@ -149,6 +161,10 @@ and `HttpClientHandler` for browser fetch requests. OS application-data folders
 are unavailable in WebAssembly. Map packs, custom map sources, HTTP cache and
 terrain cache in this filesystem last only for the current page instance; these
 registrations do not add persistent browser offline-map storage.
+
+The firmware HTTP client also uses `HttpClientHandler` in the browser; Fetch owns
+decompression and connection handling there. Managed startup exceptions are written
+to standard error so the page's failure report includes their stack and inner cause.
 
 `MissionPlanner.Library.Browser` owns the browser implementations and JavaScript
 bridge. The build copies that bridge into the host's `wwwroot/browser-platform.js`

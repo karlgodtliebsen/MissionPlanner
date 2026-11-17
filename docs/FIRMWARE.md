@@ -64,6 +64,10 @@ The catalogue cache layers an in-process value over a durable host-selected cach
 
 Manifest and artifact traffic uses the named `MissionPlanner.Firmware` client with a configurable MissionPlanner User-Agent, bounded request timeout, bounded connection establishment, and gzip/deflate decompression. Manifest and artifact readers still enforce independent streaming byte limits and propagate caller cancellation. Large artifact downloads have no automatic retry policy.
 
+In the browser, this client uses `HttpClientHandler` backed by Fetch. The browser owns connection
+handling and HTTP decompression; desktop-only `SocketsHttpHandler` settings are not applied.
+The request timeout and reader limits still apply.
+
 Manifest entries are parsed independently. Invalid URLs, board IDs, USB identifiers, unsupported formats, and missing required fields skip only the affected entry and produce categorized counts; unknown future fields remain in raw metadata. Invalid JSON/gzip and manifests with no usable entries still fail as a whole. Equivalent mirror entries are deterministically deduplicated and reported.
 
 Catalogue refresh is latest-request-wins. Selecting a new release channel cancels the preceding request and invalidates late responses; only the current response applies a single collection snapshot on the UI dispatcher. The page exposes catalogue-refresh activity and retains an explicitly selected target while that exact board/channel/artifact remains available.

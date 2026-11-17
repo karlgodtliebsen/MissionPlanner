@@ -11,6 +11,30 @@ namespace MissionPlanner.AvaloniaUI.Tests;
 
 public sealed class ParameterPrecisionViewTests
 {
+    /// <summary>Repeated decimal steps remain exact after the .NET 11 conversion changes.</summary>
+    [Fact]
+    public void RepeatedNumericStepsDoNotAccumulateBinaryNoise()
+    {
+        var metadata = ParameterFieldMetadata.Empty with { Minimum = -2, Maximum = 2, Increment = .01 };
+        var session = Substitute.For<IParameterEditSession>();
+        var field = new ParameterEditField("OFFSET", MavParamType.Real32, 0, 0, 0, metadata, null);
+        var model = new ParameterItemViewModel(session, field);
+
+        for (var step = 0; step < 100; step++)
+        {
+            model.IncrementNumberCommand.Execute(null);
+        }
+
+        Assert.Equal(1d, model.Value);
+
+        for (var step = 0; step < 100; step++)
+        {
+            model.DecrementNumberCommand.Execute(null);
+        }
+
+        Assert.Equal(0d, model.Value);
+    }
+
     [Fact]
     public void ComparisonRetainsCalibrationPrecisionRegardlessOfSuggestedStep()
     {

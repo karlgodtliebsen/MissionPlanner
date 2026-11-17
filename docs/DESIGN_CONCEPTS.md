@@ -20,7 +20,7 @@ responses remain distinct from measurements in both presentation and evidence ex
 
 
 
-MissionPlanner is a modern, cross-platform Ground Control Station (GCS) for ArduPilot-based vehicles, written in .NET 10 using Avalonia UI.
+MissionPlanner is a modern, cross-platform Ground Control Station (GCS) for ArduPilot-based vehicles, written in .NET 11 using Avalonia UI.
 
 
 

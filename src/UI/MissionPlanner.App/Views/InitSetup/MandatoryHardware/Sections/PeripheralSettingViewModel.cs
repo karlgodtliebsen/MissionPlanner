@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.Core.Setup.MandatoryHardware;
+using MissionPlanner.Library.Math;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -108,7 +109,7 @@ public sealed partial class PeripheralSettingViewModel : ObservableObject
 
     private static decimal ToDecimal(double value) => !double.IsFinite(value) ? 0
         : value >= (double)decimal.MaxValue ? decimal.MaxValue
-        : value <= (double)decimal.MinValue ? decimal.MinValue : (decimal)value;
+        : value <= (double)decimal.MinValue ? decimal.MinValue : MathUtils.ToDecimal(value);
 
     /// <summary>Gets whether firmware metadata permits writes.</summary>
     public bool CanEdit => !setting.ReadOnly;

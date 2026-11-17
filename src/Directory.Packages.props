@@ -1,28 +1,23 @@
 <Project>
   <PropertyGroup>
     <!-- Central package versions -->
-    <MicrosoftExtensionsVersion>10.0.13</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsVersion>11.0.0</MicrosoftExtensionsVersion>
     <!-- Keep Avalonia core, renderers, platform backends and headless host in sync. -->
-    <AvaloniaVersion>12.1.4</AvaloniaVersion>
+    <AvaloniaVersion>12.1.6</AvaloniaVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Silk.NET.SDL" Version="2.23.0" />
     <!-- Microsoft.Extensions family -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.FileExtensions" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="11.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="11.0.0" />
     <!-- Logging family -->
     <PackageVersion Include="Serilog" Version="4.4.0" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
@@ -40,36 +35,42 @@
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="18.12.1" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="All" />
-    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.13" />    
-    <PackageVersion Include="System.IO.Ports" Version="10.0.13" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="11.0.0" />
+    <PackageVersion Include="System.IO.Ports" Version="11.0.0" />
     <PackageVersion Include="System.Reactive" Version="7.0.0" />
-    <PackageVersion Include="Polly" Version="8.8.0" />
+    <PackageVersion Include="Polly" Version="8.9.1" />
     <PackageVersion Include="DynamicData" Version="9.4.31" />
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
     <PackageVersion Include="Ulid" Version="1.4.1" />
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.5" />
-    <PackageVersion Include="Mapsui" Version="5.1.0" />
-    <PackageVersion Include="Mapsui.Avalonia12" Version="5.1.0" />
+    <PackageVersion Include="Mapsui" Version="5.2.0" />
+    <PackageVersion Include="Mapsui.Avalonia12" Version="5.2.0" />
     <PackageVersion Include="ScottPlot.Avalonia" Version="5.1.59" />
-    <PackageVersion Include="Mapsui.Tiling" Version="5.1.0" />
+    <PackageVersion Include="Mapsui.Tiling" Version="5.2.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageVersion Include="AsyncAwaitBestPractices.MVVM" Version="10.0.0" />
+    <PackageVersion Include="AsyncAwaitBestPractices.MVVM" Version="11.0.0" />
+    <PackageVersion Include="Silk.NET.SDL" Version="2.23.0" />
     <!--Avalonia-->
-    <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
-    <PackageVersion Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />
-    <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
-    <PackageVersion Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
-    <PackageVersion Include="Avalonia.Browser" Version="$(AvaloniaVersion)" />
+    <PackageVersion Include="Avalonia" Version="12.1.6" />
+    <PackageVersion Include="Avalonia.Headless" Version="12.1.6" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.1.6" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.6" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.6" />
+    <PackageVersion Include="Avalonia.Browser" Version="12.1.6" />
+    <!-- The browser needs native assets built with the .NET 11 Emscripten toolchain. -->
+    <PackageVersion Include="SkiaSharp" Version="4.156.1" />
+    <PackageVersion Include="SkiaSharp.HarfBuzz" Version="4.156.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.156.1" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.WebAssembly" Version="14.4.0.101" />
     <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
       <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageVersion>
     <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.2" />
     <PackageVersion Include="Avalonia.Controls.ItemsRepeater" Version="12.0.0" />
-    <PackageVersion Include="LiveMarkdown.Avalonia" Version="2.5.1" />
-    <PackageVersion Include="Irihi.Ursa" Version="2.2.0" />
-    <PackageVersion Include="Irihi.Ursa.Themes.Semi" Version="2.2.0" />
+    <PackageVersion Include="LiveMarkdown.Avalonia" Version="2.7.0" />
+    <PackageVersion Include="Irihi.Ursa" Version="2.3.1" />
+    <PackageVersion Include="Irihi.Ursa.Themes.Semi" Version="2.3.1" />
     <PackageVersion Include="Semi.Avalonia" Version="12.1.0.1" />
     <PackageVersion Include="Semi.Avalonia.AvaloniaEdit" Version="12.0.0" />
     <PackageVersion Include="Semi.Avalonia.DataGrid" Version="12.1.0.1" />
@@ -77,12 +78,12 @@
     <PackageVersion Include="Semi.Avalonia.ColorPicker" Version="12.1.0.1" />
     <!-- Testing family -->
     <PackageVersion Include="Shouldly" Version="4.3.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
-    <PackageVersion Include="xunit.v3" Version="4.0.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
+    <PackageVersion Include="xunit.v3" Version="4.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
-    <PackageVersion Include="coverlet.collector" Version="10.1.0" />
+    <PackageVersion Include="coverlet.collector" Version="10.1.1" />
     <PackageVersion Include="Testcontainers" Version="4.12.0" />
-    <PackageVersion Include="Meziantou.Extensions.Logging.Xunit.v3" Version="3.0.9" />
+    <PackageVersion Include="Meziantou.Extensions.Logging.Xunit.v3" Version="3.0.12" />
     <PackageVersion Include="FluentAssertions" Version="[7.0.0]" />
     <PackageVersion Include="NSubstitute" Version="6.2.0" />
     <PackageVersion Include="AutoBogus" Version="2.13.1" />

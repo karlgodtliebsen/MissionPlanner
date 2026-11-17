@@ -1,7 +1,7 @@
 # Platforms
 
 MissionPlanner Next Gen is a desktop application. The shared code (`Core/*`, `MissionPlanner.App`,
-`MissionPlanner.Themes`) targets plain `net10.0`; each operating system adds a small platform library and
+`MissionPlanner.Themes`) targets plain `net11.0`; each operating system adds a small platform library and
 an application head.
 
 | Platform | Head | Platform library | Status |
@@ -17,6 +17,34 @@ warning-rule storage and offline MBTiles map support. A platform library only ad
 secret storage, location, and Avalonia backend selection.
 
 ## Building and running
+
+Install the .NET 11 SDK. The repository's `global.json` requires SDK 11.0.100 or a later stable
+11.0 feature band and preserves the Microsoft.Testing.Platform test runner. CI uses the same file.
+The `windows10.0.19041.0` suffix on the Windows projects is the Windows API target, not the .NET version.
+
+From the repository root, install the browser workload and verify the solution:
+
+```powershell
+dotnet workload install wasm-tools
+dotnet restore src/MissionPlanner.slnx
+dotnet build src/MissionPlanner.slnx --no-restore
+dotnet test --solution src/MissionPlanner.slnx --no-build
+```
+
+With SDK 11, `wasm-tools` supplies the .NET 11 WebAssembly tools; version-suffixed workloads such as
+`wasm-tools-net10` are for older targets. The browser head links native Avalonia/Skia code and requires
+this workload even in Debug. Desktop, Linux, macOS and BrowserBridge builds need no extra .NET workloads.
+The SDK includes the matching .NET and ASP.NET Core runtimes; runtime-only installations cannot build
+the projects. Android, iOS and MAUI workloads are not required to build the solution.
+
+The browser head has scoped SkiaSharp/HarfBuzz native-package overrides and an Onigwrap archive
+fallback for the .NET 11 Emscripten toolchain. See the [browser build notes](../src/Platforms/MissionPlanner.Browser/README.md)
+before updating these dependencies.
+
+.NET 11 includes the configuration, dependency injection and logging abstractions, plus options,
+in its base shared framework. The projects use those built-in assemblies without redundant NuGet
+references, avoiding `NU1510` warnings (which are errors in the firmware project). The implementation
+packages such as `Microsoft.Extensions.Hosting` and `Microsoft.Extensions.Http` remain NuGet dependencies.
 
 ```bash
 # Linux (x64 or arm64)
@@ -68,7 +96,8 @@ Any platform's head can be built from any host with `dotnet build`; only the bun
 ## Mobile (Android and iOS)
 
 MissionPlanner Next Gen is a desktop application, so Android and iOS are not supported. The two template
-folders `Platforms/MissionPlanner.Android` and `Platforms/MissionPlanner.iOS` are still in the repository but
+folders `Platforms/MissionPlanner.Android` and `Platforms/MissionPlanner.iOS` target `net11.0-android`
+and `net11.0-ios` and are still in the repository but
 were removed from `MissionPlanner.slnx`, so `dotnet build` of the solution no longer needs the Android or iOS
 workloads (iOS can only be built on macOS) and the CI jobs never build them.
 

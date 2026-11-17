@@ -1,4 +1,4 @@
-name: .NET 10 Build
+name: .NET 11 Build
 
 on:
   push:
@@ -22,11 +22,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Set up .NET 10 for Windows
+      - name: Set up .NET 11 for Windows
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
-          workloads: wasm-tools
+          global-json-file: global.json
 
       - name: Restore Windows application
         run: dotnet restore src/Platforms/MissionPlanner.Desktop/MissionPlanner.Desktop.csproj
@@ -78,10 +77,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Set up .NET 10
+      - name: Set up .NET 11
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          global-json-file: global.json
 
       - name: Publish Linux application
         run: >-
@@ -114,10 +113,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Set up .NET 10
+      - name: Set up .NET 11
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          global-json-file: global.json
 
       - name: Publish macOS application
         run: >-

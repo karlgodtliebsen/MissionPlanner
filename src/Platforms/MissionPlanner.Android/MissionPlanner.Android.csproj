@@ -2,7 +2,7 @@
   <PropertyGroup>
     <RootNamespace>MissionPlanner</RootNamespace>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0-android</TargetFramework>
+    <TargetFramework>net11.0-android</TargetFramework>
     <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
     <ApplicationId>com.CompanyName.MissionPlanner</ApplicationId>

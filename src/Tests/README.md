@@ -1,6 +1,6 @@
 # Running the tests
 
-From the repository root, using PowerShell 7 on Windows with the .NET 10 SDK and Node.js installed:
+From the repository root, using PowerShell 7 on Windows with the .NET 11 SDK and Node.js installed:
 
 ```powershell
 .\src\Tests\Run-AllTests.ps1
@@ -8,7 +8,7 @@ From the repository root, using PowerShell 7 on Windows with the .NET 10 SDK and
 
 Use `-Configuration Release` for a Release run. The script restores and runs all seven .NET test projects sequentially, then the browser JavaScript tests. `MissionPlanner.Test.Support` is a helper library, not a test suite. Logs and TRX reports go into a timestamped folder under `TestResults/all-tests`. Any failed suite makes the script fail, while allowing the remaining suites to finish. Each suite has a ten-minute total execution timeout.
 
-The root `global.json` selects Microsoft.Testing.Platform for `dotnet test` on .NET 10. The current xUnit packages use MTP v2, which no longer supports the legacy VSTest target with this SDK. This configuration does not pin or change the installed SDK version. See [Microsoft's migration guide](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test#migrate-to-mtp-mode-of-dotnet-test).
+The root `global.json` selects the .NET 11 SDK (11.0.100 or a later stable 11.0 feature band) and Microsoft.Testing.Platform for `dotnet test`. The current xUnit packages use MTP v2, which no longer supports the legacy VSTest target with this SDK. See [Microsoft's migration guide](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-with-dotnet-test#migrate-to-mtp-mode-of-dotnet-test).
 
 For individual suites and focused runs, use the MTP command-line options:
 

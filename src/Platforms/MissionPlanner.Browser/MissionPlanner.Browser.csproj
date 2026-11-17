@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.WebAssembly">
   <PropertyGroup>
     <RootNamespace>MissionPlanner</RootNamespace>
-    <TargetFramework>net10.0-browser</TargetFramework>
+    <TargetFramework>net11.0-browser</TargetFramework>
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
@@ -13,6 +13,10 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia.Browser" />
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.HarfBuzz" />
+    <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.WebAssembly" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +31,33 @@
   <ItemGroup>
     <EmbeddedResource Include="appsettings.json" LogicalName="MissionPlanner.Browser.appsettings.json" />
   </ItemGroup>
+
+  <!-- Onigwrap currently ships up to Emscripten 3.1.56.
+       Its targets require a library matching the SDK's exact version.
+       Only replace the missing reference; prefer an SDK-matched asset when the package adds one. -->
+  <Target Name="ResolveOnigwrapWasmLibrary" BeforeTargets="PrepareForBuild"
+          Condition="'$(TargetFramework)' == 'net11.0-browser' and '$(OnigwrapWasmLibraryPath)' != '' and '$(EmscriptenVersion)' != ''">
+    <PropertyGroup>
+      <_OnigwrapThreading Condition="'$(WasmEnableThreads)' == 'true'">mt</_OnigwrapThreading>
+      <_OnigwrapThreading Condition="'$(WasmEnableThreads)' != 'true'">st</_OnigwrapThreading>
+      <_OnigwrapSdkLibrary>$(OnigwrapWasmLibraryPath)/$(EmscriptenVersion.Trim())/$(_OnigwrapThreading)/libonigwrap.a</_OnigwrapSdkLibrary>
+      <_OnigwrapPackagedLibrary>$(OnigwrapWasmLibraryPath)/3.1.56/$(_OnigwrapThreading)/libonigwrap.a</_OnigwrapPackagedLibrary>
+    </PropertyGroup>
+    <ItemGroup Condition="!Exists('$(_OnigwrapSdkLibrary)') and Exists('$(_OnigwrapPackagedLibrary)')">
+      <NativeFileReference Remove="$(_OnigwrapSdkLibrary)" />
+      <NativeFileReference Include="$(_OnigwrapPackagedLibrary)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Avalonia 12.1 also adds the old 3.1.56 graphics archives. Keep only the
+       .NET 11 archives selected by the newer native-asset packages above. -->
+  <Target Name="RemoveLegacyAvaloniaWasmLibraries" BeforeTargets="PrepareForBuild"
+          Condition="'$(TargetFramework)' == 'net11.0-browser'">
+    <ItemGroup>
+      <NativeFileReference Remove="$(SkiaSharpStaticLibraryPath)/3.1.56/**/*.a" />
+      <NativeFileReference Remove="$(HarfBuzzSharpStaticLibraryPath)/3.1.56/**/*.a" />
+    </ItemGroup>
+  </Target>
 
   <!-- Linked external content gets the host's wwwroot as its development content root.
        Materialize the file there before discovery so development and publish agree. -->

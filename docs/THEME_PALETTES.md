@@ -117,7 +117,7 @@ Run rendering fixtures in separate processes from fixtures using a different hea
 drawing configuration. For example, after building the UI test project:
 
 ```powershell
-dotnet src/Tests/MissionPlanner.AvaloniaUI.Tests/bin/Debug/net10.0-windows10.0.19041.0/MissionPlanner.AvaloniaUI.Tests.dll -class '*PaletteThemeRenderingTests' -noLogo
+dotnet src/Tests/MissionPlanner.AvaloniaUI.Tests/bin/Debug/net11.0-windows10.0.19041.0/MissionPlanner.AvaloniaUI.Tests.dll -class '*PaletteThemeRenderingTests' -noLogo
 ```
 
 These checks cover compiled resources and headless rendering, not native window chrome,

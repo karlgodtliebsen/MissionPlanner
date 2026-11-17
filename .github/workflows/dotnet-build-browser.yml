@@ -1,4 +1,4 @@
-name: .NET 10 WASM Build
+name: .NET 11 WASM Build
 
 on:
   push:
@@ -22,20 +22,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Set up .NET 10 for Windows
+      - name: Set up .NET 11 for WebAssembly
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          global-json-file: global.json
           workloads: wasm-tools
 
-      - name: Restore Windows application
+      - name: Restore browser application
         run: dotnet restore src/Platforms/MissionPlanner.Browser/MissionPlanner.Browser.csproj
 
-      - name: Build Windows application
+      - name: Build browser application
         run: >-
           dotnet build
           src/Platforms/MissionPlanner.Browser/MissionPlanner.Browser.csproj
           --configuration Release
           --no-restore
-
-  

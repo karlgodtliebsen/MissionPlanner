@@ -8,7 +8,7 @@ test run is marked as such. The gaps are listed in [MISSING_FEATURES.md](MISSING
 ## What it is
 
 MissionPlanner Next Generation is a clean re-implementation of the ArduPilot Mission Planner ground control
-station. It is a desktop application: **.NET 10 and Avalonia 12** (Semi.Avalonia and Ursa controls,
+station. It is a desktop application: **.NET 11 and Avalonia 12** (Semi.Avalonia and Ursa controls,
 CommunityToolkit.Mvvm, Mapsui maps, ScottPlot plots). It is built around a typed domain and an owned MAVLink
 stack, and the old WinForms source is used only as a behavioral reference.
 

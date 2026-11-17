@@ -10,7 +10,7 @@
 		<Version>2.0.0.0</Version>
 		<ApplicationDisplayVersion>2.0</ApplicationDisplayVersion>
 		<ApplicationVersion>2</ApplicationVersion>
-		<ApplicationTitle>MissionPlanner Next Gen AvaloniaUI</ApplicationTitle>
+		<ApplicationTitle>MissionPlanner Next Gen</ApplicationTitle>
 		<ApplicationId>com.ardupilot.missionplanner</ApplicationId>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

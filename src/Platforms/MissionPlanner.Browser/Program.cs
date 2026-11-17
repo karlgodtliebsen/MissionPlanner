@@ -8,6 +8,20 @@ internal sealed partial class Program
 
     public static async Task Main(string[] args)
     {
+        try
+        {
+            await StartAsync(args);
+        }
+        catch (Exception exception)
+        {
+            // Preserve the managed stack and inner exceptions for the browser failure report.
+            Console.Error.WriteLine(exception);
+            throw;
+        }
+    }
+
+    private static async Task StartAsync(string[] args)
+    {
         MissionPlannerProgram.Start(args);
         Mapsui.Logging.Logger.LogDelegate = (level, message, exception) =>
         {

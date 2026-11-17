@@ -1,6 +1,6 @@
 # Maps platform verification
 
-The current application project targets `net10.0-windows10.0.19041.0`. Windows is therefore
+The Windows application project targets `net11.0-windows10.0.19041.0`. Windows is therefore
 the required map release target. Linux and macOS remain future Avalonia targets and must not
 be reported as supported until dedicated heads, packaging, and interactive verification exist.
 

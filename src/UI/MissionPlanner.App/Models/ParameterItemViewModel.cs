@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Library.Math;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.App.Models;
@@ -742,8 +743,8 @@ public partial class ParameterItemViewModel : ObservableObject
 
         try
         {
-            var decimalValue = Convert.ToDecimal(Value);
-            var decimalStep = Convert.ToDecimal(stepSize);
+            var decimalValue = MathUtils.ToDecimal(Value);
+            var decimalStep = MathUtils.ToDecimal(stepSize);
 
             steppedValue = Convert.ToDouble(
                 decimalValue + (direction * decimalStep));
