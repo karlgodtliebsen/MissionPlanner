@@ -22,6 +22,21 @@ Use `--solution src/MissionPlanner.slnx` for a solution run. Old command example
 
 The automated simulator tests create their own loopback UDP vehicle and connection session; no external simulator is needed. Local networking must be available. The UI suite targets Windows.
 
+## Headless icon isolation
+
+The UI test assembly disables Material Icons' process-wide geometry cache before any
+headless sessions start. Each session can use a different UI thread, but cached Avalonia
+geometry retains its original dispatcher. Serializing the rendering tests alone does not
+prevent a later session from retrieving geometry owned by an earlier thread. This setting
+applies only to the test process; the application's icon cache remains enabled.
+
+This fixes both `FlightDataPanelWindowTests.SectionsMoveIndependentlyAndRestoreTheSidebar`
+cases from [Windows CI run 44200266906](https://github.com/karlgodtliebsen/MissionPlanner/actions/runs/44200266906),
+which failed during layout with a thread-ownership exception. `MaterialIconSessionTests`
+guards the cause by creating the same icon on two distinct session threads and checking
+its ownership and bounds. The sessions dispatch sequentially to preserve Avalonia's
+process-wide platform isolation. The existing skipped tests below remain tracked separately.
+
 ## MAVLink dialect inputs in CI
 
 Core's MAVLink generation, coverage and conformance tests require the nine pinned XML files
