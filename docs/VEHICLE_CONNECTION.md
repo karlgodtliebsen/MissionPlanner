@@ -51,6 +51,12 @@ public interface IVehicleConnectionService : IAsyncDisposable
 - Connection status transitions (online/degraded/offline based on valid packet age) are driven
   by `VehicleConnectionMonitor`.
 
+Heartbeats update mode, armed state and connection freshness while preserving the landed/VTOL
+state and observation timestamp from `EXTENDED_SYS_STATE`. A heartbeat neither clears that
+evidence nor refreshes its age. Command policies can therefore use the last reported flight
+state between extended-state messages. Disarm requires confirmation when ground-state evidence
+is missing, airborne or older than the five-second action-telemetry limit.
+
 ### Connect flow
 
 ```

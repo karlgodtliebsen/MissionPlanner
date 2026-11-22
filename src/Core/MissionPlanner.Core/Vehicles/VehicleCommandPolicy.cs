@@ -32,7 +32,8 @@ public sealed class VehicleCommandPolicy(IDateTimeProvider clock) : IVehicleComm
             VehicleAction.Arm => ValidateArmAction(state),
             VehicleAction.Disarm => !state.IsArmed
                 ? VehicleCommandDecision.Deny("Vehicle is already disarmed.")
-                : state.Flight.LandedState == VehicleLandedState.OnGround
+                : state.Flight.LandedState == VehicleLandedState.OnGround &&
+                  !state.Flight.IsStale(clock.UtcNow, maximumActionTelemetryAge)
                     ? VehicleCommandDecision.Allow()
                     : VehicleCommandDecision.Allow(true, "Disarming a vehicle that is not confirmed on the ground can stop its motors in flight."),
             VehicleAction.SetMode => VehicleCommandDecision.Allow(),

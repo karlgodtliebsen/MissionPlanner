@@ -41,6 +41,76 @@ public sealed class CoreVehicleStateTelemetryTests
         Assert.False(session.State.Flight.IsStale(ObservedAt.AddSeconds(1), TimeSpan.FromSeconds(2)));
     }
 
+    /// <summary>Heartbeats preserve landed and VTOL evidence used by the disarm safety policy.</summary>
+    [Theory]
+    [InlineData(VehicleLandedState.OnGround, 1, false)]
+    [InlineData(VehicleLandedState.InAir, 1, true)]
+    [InlineData(VehicleLandedState.OnGround, 10, true)]
+    public void HeartbeatPreservesExtendedFlightState(VehicleLandedState landedState, int ageSeconds, bool requiresConfirmation)
+    {
+        var (session, _, _) = CreateSession();
+        session.ApplyExtendedFlightState(new VehicleExtendedFlightStateObservation(
+            VehicleVtolState.FixedWing, landedState, ObservedAt));
+        var heartbeatAt = ObservedAt.AddSeconds(ageSeconds);
+
+        session.ApplyHeartbeat(new VehicleHeartbeatObservation(4, 2, 3, 129, 5, 3, heartbeatAt));
+
+        var state = session.State;
+        Assert.Equal((uint)4, state.Flight.CustomMode);
+        Assert.Equal((byte)129, state.Flight.BaseMode);
+        Assert.Equal((byte)5, state.Flight.SystemStatus);
+        Assert.Equal(VehicleMode.Guided, state.Flight.Mode);
+        Assert.True(state.IsArmed);
+        Assert.Equal(heartbeatAt, state.LastHeartbeatAt);
+        Assert.Equal(VehicleVtolState.FixedWing, state.Flight.VtolState);
+        Assert.Equal(landedState, state.Flight.LandedState);
+        Assert.Equal(ObservedAt, state.Flight.ObservedAt);
+
+        var clock = Substitute.For<IDateTimeProvider>();
+        clock.UtcNow.Returns(heartbeatAt);
+        var decision = new VehicleCommandPolicy(clock).Evaluate(state, VehicleAction.Disarm);
+        Assert.True(decision.IsAllowed, decision.Reason);
+        Assert.Equal(requiresConfirmation, decision.RequiresConfirmation);
+    }
+
+    /// <summary>A newer heartbeat cannot make old extended flight telemetry fresh enough to arm.</summary>
+    [Fact]
+    public void HeartbeatDoesNotRefreshExtendedFlightState()
+    {
+        var (session, _, _) = CreateSession();
+        session.ApplyExtendedFlightState(new VehicleExtendedFlightStateObservation(
+            VehicleVtolState.FixedWing, VehicleLandedState.OnGround, ObservedAt));
+        var heartbeatAt = ObservedAt.AddSeconds(10);
+
+        session.ApplyHeartbeat(new VehicleHeartbeatObservation(0, 2, 3, 0, 4, 3, heartbeatAt));
+
+        Assert.Equal(heartbeatAt, session.State.LastHeartbeatAt);
+        Assert.Equal(ObservedAt, session.State.Flight.ObservedAt);
+        Assert.True(session.State.Flight.IsStale(heartbeatAt, TimeSpan.FromSeconds(5)));
+        var clock = Substitute.For<IDateTimeProvider>();
+        clock.UtcNow.Returns(heartbeatAt);
+        var decision = new VehicleCommandPolicy(clock).Evaluate(session.State, VehicleAction.Arm);
+        Assert.False(decision.IsAllowed);
+        Assert.Equal("Fresh flight-state telemetry is required before arming.", decision.Reason);
+    }
+
+    /// <summary>A heartbeat alone cannot establish that an armed vehicle is on the ground.</summary>
+    [Fact]
+    public void HeartbeatWithoutExtendedFlightStateRequiresDisarmConfirmation()
+    {
+        var (session, _, _) = CreateSession();
+        session.ApplyHeartbeat(new VehicleHeartbeatObservation(0, 2, 3, 128, 4, 3, ObservedAt));
+
+        Assert.Equal(VehicleVtolState.Undefined, session.State.Flight.VtolState);
+        Assert.Equal(VehicleLandedState.Undefined, session.State.Flight.LandedState);
+        Assert.Null(session.State.Flight.ObservedAt);
+        var clock = Substitute.For<IDateTimeProvider>();
+        clock.UtcNow.Returns(ObservedAt);
+        var decision = new VehicleCommandPolicy(clock).Evaluate(session.State, VehicleAction.Disarm);
+        Assert.True(decision.IsAllowed);
+        Assert.True(decision.RequiresConfirmation);
+    }
+
     /// <summary>Verifies GPS2 sentinels and scaling are isolated from the primary receiver.</summary>
     [Fact]
     public async Task NavigationHandlerAppliesSecondaryGpsWithNormalizedUnits()

@@ -113,12 +113,15 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
         {
             Identity = identity,
             LocalDetails = localDetailsKey is { } key ? localDetails?.Get(key) : null,
-            Flight = new VehicleFlightState(
-                observation.CustomMode,
-                observation.BaseMode,
-                observation.SystemStatus,
-                MapMode(observation.CustomMode),
-                (observation.BaseMode & MavModeFlagSafetyArmed) != 0),
+            // Landed/VTOL state and its freshness belong to EXTENDED_SYS_STATE.
+            Flight = state.Flight with
+            {
+                CustomMode = observation.CustomMode,
+                BaseMode = observation.BaseMode,
+                SystemStatus = observation.SystemStatus,
+                Mode = MapMode(observation.CustomMode),
+                IsArmed = (observation.BaseMode & MavModeFlagSafetyArmed) != 0
+            },
             Connection = state.Connection with
             {
                 LastHeartbeatAt = observation.ObservedAt,

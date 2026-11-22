@@ -37,6 +37,21 @@ guards the cause by creating the same icon on two distinct session threads and c
 its ownership and bounds. The sessions dispatch sequentially to preserve Avalonia's
 process-wide platform isolation. The existing skipped tests below remain tracked separately.
 
+## Heartbeat and extended flight-state regression
+
+[Windows CI run 45054328236](https://github.com/karlgodtliebsen/MissionPlanner/actions/runs/45054328236)
+failed `DomainVehicleServiceSimulatorTests.Should_Disarm_Vehicle_Through_VehicleService_When_Command_Is_Acked`
+with `Denied` instead of `Accepted`. `VehicleSession.ApplyHeartbeat` recreated the flight-state
+record and cleared landed/VTOL evidence received through `EXTENDED_SYS_STATE`. A disarm request
+between those messages then required confirmation because the ground state was unknown.
+
+Heartbeats now update only their own flight fields, preserving extended-state evidence and
+its original timestamp. Disarm requires confirmation when retained ground evidence is stale.
+`CoreVehicleStateTelemetryTests` checks ground/air disarm behavior, retention of VTOL state,
+stale extended telemetry despite fresh heartbeats, and missing extended telemetry requiring
+confirmation. The loopback simulator smoke test remains enabled; no policy checks or test
+assertions were relaxed.
+
 ## MAVLink dialect inputs in CI
 
 Core's MAVLink generation, coverage and conformance tests require the nine pinned XML files
