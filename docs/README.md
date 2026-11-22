@@ -1,10 +1,8 @@
 # Documentation Index
 
-The new application lives in `src/`;
 
 The original Mission Planner source is on
-[GitHub](https://github.com/ArduPilot/MissionPlanner); the local `src-v.1.38` tree
-has been deleted. See [LEGACY_SOURCE.md](LEGACY_SOURCE.md) for how to resolve
+[GitHub](https://github.com/ArduPilot/MissionPlanner); See [LEGACY_SOURCE.md](LEGACY_SOURCE.md) for how to resolve
 legacy paths in older tasks and preserve historical audit provenance.
 
 Documentation lives in `docs/` and is organized into core documents, subsystem references, analysis and open work, and an archive.
