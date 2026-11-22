@@ -1,5 +1,10 @@
 # MissionPlanner Next Generation — missing features
 
+> **Historical baseline, not the active task list.** Remaining candidates were reconciled
+> on 22 November 2026 into the [unified task review](tasks/README.md). Several entries below
+> have since been implemented. See the [source reconciliation ledger](Archived/tasks/README.md)
+> for completed/superseded requests and use current subsystem guides before starting work.
+
 Baseline date: 2026-10-23. For Mandatory Hardware, Optional Hardware, Config and Advanced, the newer
 [2026-10-24 implementation ledger](review-20261023/IMPLEMENTATION.md) takes precedence over this baseline.
 Other areas below were not re-audited by that implementation. This baseline superseded the older "Missing" sections in
@@ -86,7 +91,7 @@ Impact: **H** operators notice daily, **M** useful workflow gap, **L** niche or 
 |---|---|---|---|
 | Install Firmware on Linux and macOS (the page shows an unsupported-platform notice) | Disabled | H | FIRMWARE.md; `OperatingSystem.IsWindows()` gate |
 | STM32 DFU installation and device catalog outside Windows | Missing | M | FIRMWARE.md |
-| Legacy firmware (AVR `.hex`, VRBrain) | Deferred | L | tasks/firmware/Deferred feature backlog.md |
+| Legacy firmware (AVR `.hex`, VRBrain) | Deferred | L | [Preserved firmware backlog](Archived/tasks/backlog-sources-2026-11-22/firmware/Deferred%20feature%20backlog.md) |
 | Secure firmware and secure bootloaders | Research | L | Deferred feature backlog |
 | Force Bootloader | Research | L | Deferred feature backlog |
 | Extra transports: UART adapter, DroneCAN, BlueOS, SD-card `.abin` | Deferred | L | Deferred feature backlog |
@@ -112,5 +117,5 @@ Impact: **H** operators notice daily, **M** useful workflow gap, **L** niche or 
 
 ## Implemented, but not yet confirmed on hardware
 
-Accelerometer calibration page, motor-test start thresholds, CompassMot, geofence option values, Onboard OSD
+Accelerometer calibration page, CompassMot, geofence option values, Onboard OSD
 layout, CubeLAN switch, receiver binding, and the live read/write mission workflow against a vehicle.

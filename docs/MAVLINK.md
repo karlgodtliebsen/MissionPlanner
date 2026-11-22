@@ -369,6 +369,8 @@ semantics, and add state/event tests. Otherwise keep it diagnostic/raw, protocol
 outbound-only.
 
 Coverage can be inspected in `artifacts/mavlink-coverage.json` after the verification script,
-or generated directly with the generator's coverage command documented above. The dedicated
-GitHub Actions workflow `.github/workflows/mavlink.yml` performs the same offline regeneration
-comparison and test gate on relevant changes, so stale or manually edited output fails CI.
+or generated directly with the generator's coverage command documented above. As reconciled
+on 22 November 2026, the current GitHub Actions workflows do not invoke this script, and the
+previously documented `.github/workflows/mavlink.yml` is absent. Wiring the offline regeneration
+comparison and test gate into CI is tracked as [MP-074](tasks/README.md#mp-074); do not assume
+that CI currently detects every stale or manually edited generated artifact.

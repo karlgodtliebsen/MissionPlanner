@@ -1,5 +1,11 @@
 # Domain
 
+> For work selection, use the [unified task review](tasks/README.md), reconciled on
+> 22 November 2026. This inventory contains older "Missing"/"Remaining" sections alongside
+> newer implementation notes; current subsystem guides and the
+> [source reconciliation ledger](Archived/tasks/README.md) resolve those differences.
+> Do not treat every historical gap below as an open implementation task.
+
 Historical `src-v.1.38/...` references in this feature inventory refer to the original
 [Mission Planner repository](https://github.com/ArduPilot/MissionPlanner), not a local
 source tree. See [LEGACY_SOURCE.md](LEGACY_SOURCE.md) for path and version conventions.
